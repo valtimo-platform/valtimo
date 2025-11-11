@@ -15,13 +15,13 @@
   -->
 
 <form
-  class="building-block-management-artwork"
-  [formGroup]="formGroup"
-  [cdsLayer]="1"
   *ngIf="{
     artwork: artwork$ | async,
     loadingArtwork: loadingArtwork$ | async,
   } as obs"
+  class="building-block-management-artwork"
+  [formGroup]="formGroup"
+  [cdsLayer]="1"
 >
   <h4 class="building-block-management-artwork__title">
     {{ 'buildingBlockManagement.artwork.title' | translate }}
@@ -36,8 +36,15 @@
       <img
         class="building-block-management-artwork__image"
         [src]="'data:image/png;base64,' + obs.artwork.imageBase64"
-        alt="{{ 'buildingBlockManagement.artwork.alt' | translate }}"
       />
+    </div>
+
+    <div class="building-block-management-artwork__buttons">
+      <button cdsButton="danger" (click)="onDelete()">
+        {{ 'interface.delete' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </button>
     </div>
   }
 
@@ -49,7 +56,7 @@
       buttonType="primary"
       [title]="'buildingBlockManagement.artwork.fileUploaderTitle' | translate"
       [description]="'buildingBlockManagement.artwork.fileUploaderDescription' | translate"
-      [buttonText]="'buildingBlockManagement.artwork.fileUploaderButton' | translate"
+      [buttonText]="'interface.upload' | translate"
       formControlName="file"
     >
     </cds-file-uploader>
@@ -60,7 +67,9 @@
         [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
         (click)="onSave()"
       >
-        {{ 'interface.save' | translate }}
+        {{ 'interface.upload' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
       </button>
     </div>
   }

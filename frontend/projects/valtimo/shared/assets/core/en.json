@@ -2109,6 +2109,11 @@
           "title": "Plugin Configuration"
         }
       }
+    },
+    "artwork": {
+      "title": "Artwork",
+      "fileUploaderTitle": "Select artwork for this building block",
+      "fileUploaderDescription": "Maximum file size is 10mb. Only .png images are supported. Make sure the background of the image is transparent."
     }
   }
 }
