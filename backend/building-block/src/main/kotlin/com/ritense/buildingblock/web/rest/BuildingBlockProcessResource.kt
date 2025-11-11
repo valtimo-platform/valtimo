@@ -18,10 +18,12 @@ package com.ritense.buildingblock.web.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -40,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockProcessResource(
     private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+    private val buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
 ) {
 
     @GetMapping("/{key}/version/{versionTag}/process-definition")
@@ -98,5 +101,29 @@ class BuildingBlockProcessResource(
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
+
+    @GetMapping("/{key}/version/{versionTag}/plugin")
+    fun getPluginDefinitionsForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String
+    ): ResponseEntity<List<String>> {
+        val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
+        val pluginKeys = runWithoutAuthorization {
+            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForBuildingBlock(buildingBlockId)
+        }
+        return ResponseEntity.ok(pluginKeys.toList().sorted())
+    }
+
+    @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/plugin")
+    fun getPluginDefinitionsForProcessDefinition(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable processDefinitionId: String
+    ): ResponseEntity<List<String>> {
+        val pluginKeys = runWithoutAuthorization {
+            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForProcessDefinition(processDefinitionId)
+        }
+        return ResponseEntity.ok(pluginKeys.toList().sorted())
     }
 }

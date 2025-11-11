@@ -19,10 +19,12 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
@@ -47,6 +49,9 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @MockitoBean
     lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
+
+    @MockitoBean
+    lateinit var buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService
 
     private val base = "/api/management/v1/building-block"
     private val key = "bb-key"
@@ -197,5 +202,50 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             eq("\"$processDefinitionId\""),
             eq(true)
         )
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return plugin definitions for building block`() {
+        val pluginKeys = setOf("plugin-a", "plugin-b")
+        whenever(
+            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForBuildingBlock(
+                eq(BuildingBlockDefinitionId.of(key, version))
+            )
+        ).thenReturn(pluginKeys)
+
+        mockMvc.get("$base/{key}/version/{version}/plugin", key, version)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$", hasSize<Any>(2))
+                jsonPath("$[0]") { value("plugin-a") }
+                jsonPath("$[1]") { value("plugin-b") }
+            }
+
+        verify(buildingBlockPluginDefinitionService)
+            .getPluginDefinitionKeysForBuildingBlock(eq(BuildingBlockDefinitionId.of(key, version)))
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return plugin definitions for process definition`() {
+        val pluginKeys = setOf("plugin-c")
+        whenever(
+            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForProcessDefinition(eq(processDefinitionId))
+        ).thenReturn(pluginKeys)
+
+        mockMvc.get(
+            "$base/{key}/version/{version}/process-definition/{processDefinitionId}/plugin",
+            key,
+            version,
+            processDefinitionId
+        ).andExpect {
+            status { isOk() }
+            jsonPath("$", hasSize<Any>(1))
+            jsonPath("$[0]") { value("plugin-c") }
+        }
+
+        verify(buildingBlockPluginDefinitionService)
+            .getPluginDefinitionKeysForProcessDefinition(eq(processDefinitionId))
     }
 }

@@ -73,14 +73,23 @@ export class PluginStateService {
     return this._selectedProcessLink$.pipe(
       switchMap(selectedProcesLink =>
         !selectedProcesLink
-          ? this._selectedPluginConfiguration$.pipe(
-              map(configuration => configuration?.pluginDefinition.key)
+          ? combineLatest([
+              this._selectedPluginConfiguration$,
+              this._selectedPluginDefinition$,
+            ]).pipe(
+              map(
+                ([configuration, definition]) =>
+                  configuration?.pluginDefinition.key || definition?.key
+              )
             )
           : combineLatest([
               this._selectedProcessLink$,
               this.pluginService.pluginSpecifications$,
             ]).pipe(
               map(([processLink, pluginSpecifications]) => {
+                if (processLink?.pluginDefinitionKey) {
+                  return processLink.pluginDefinitionKey;
+                }
                 const pluginSpecification = pluginSpecifications.find(specification => {
                   const functionKeys =
                     specification?.functionConfigurationComponents &&
@@ -99,7 +108,7 @@ export class PluginStateService {
     this._selectedPluginDefinition$.next(definition);
   }
 
-  selectPluginConfiguration(configuration: PluginConfiguration): void {
+  selectPluginConfiguration(configuration: PluginConfiguration | undefined): void {
     this._selectedPluginConfiguration$.next(configuration);
   }
 

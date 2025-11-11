@@ -1,0 +1,210 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.buildingblock.processlink.mapper
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateRequestDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkDeployDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkResponseDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkUpdateRequestDto
+import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.logging.withLoggingContext
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginProcessLink
+import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
+import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
+import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
+import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.springframework.stereotype.Component
+import java.util.UUID
+
+@Component
+@SkipComponentScan
+class BuildingBlockProcessLinkMapper(
+    objectMapper: ObjectMapper,
+    private val processLinkService: ProcessLinkService,
+    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+) : ProcessLinkMapper {
+
+    init {
+        objectMapper.registerSubtypes(
+            BuildingBlockProcessLinkCreateRequestDto::class.java,
+            BuildingBlockProcessLinkUpdateRequestDto::class.java,
+            BuildingBlockProcessLinkResponseDto::class.java,
+            BuildingBlockProcessLinkExportResponseDto::class.java,
+            BuildingBlockProcessLinkDeployDto::class.java
+        )
+    }
+
+    override fun supportsProcessLinkType(processLinkType: String): Boolean {
+        return processLinkType == BuildingBlockProcessLink.PROCESS_LINK_TYPE
+    }
+
+    override fun toProcessLinkResponseDto(processLink: ProcessLink): ProcessLinkResponseDto {
+        processLink as BuildingBlockProcessLink
+        return withLoggingContext(ProcessLink::class, processLink.id) {
+            BuildingBlockProcessLinkResponseDto(
+                id = processLink.id,
+                processDefinitionId = processLink.processDefinitionId,
+                activityId = processLink.activityId,
+                activityType = processLink.activityType,
+                buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
+                buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
+                pluginConfigurationMappings = processLink.pluginConfigurationMappings
+            )
+        }
+    }
+
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+        deployDto as BuildingBlockProcessLinkDeployDto
+        return BuildingBlockProcessLinkCreateRequestDto(
+            processDefinitionId = deployDto.processDefinitionId,
+            activityId = deployDto.activityId,
+            activityType = deployDto.activityType,
+            buildingBlockDefinitionKey = deployDto.buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag = deployDto.buildingBlockDefinitionVersionTag,
+            pluginConfigurationMappings = deployDto.pluginConfigurationMappings
+        )
+    }
+
+    override fun toProcessLinkUpdateRequestDto(
+        deployDto: ProcessLinkDeployDto,
+        existingProcessLinkId: UUID
+    ): ProcessLinkUpdateRequestDto {
+        deployDto as BuildingBlockProcessLinkDeployDto
+        return BuildingBlockProcessLinkUpdateRequestDto(
+            id = existingProcessLinkId,
+            buildingBlockDefinitionKey = deployDto.buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag = deployDto.buildingBlockDefinitionVersionTag,
+            pluginConfigurationMappings = deployDto.pluginConfigurationMappings
+        )
+    }
+
+    override fun toProcessLinkExportResponseDto(processLink: ProcessLink): ProcessLinkExportResponseDto {
+        processLink as BuildingBlockProcessLink
+        return withLoggingContext(ProcessLink::class, processLink.id) {
+            BuildingBlockProcessLinkExportResponseDto(
+                activityId = processLink.activityId,
+                activityType = processLink.activityType,
+                buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
+                buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
+                pluginConfigurationMappings = processLink.pluginConfigurationMappings
+            )
+        }
+    }
+
+    override fun toNewProcessLink(
+        createRequestDto: ProcessLinkCreateRequestDto,
+        caseDefinitionId: CaseDefinitionId?
+    ): ProcessLink {
+        createRequestDto as BuildingBlockProcessLinkCreateRequestDto
+        requireNotNull(caseDefinitionId) {
+            "CaseDefinitionId is required for building-block process links"
+        }
+        val buildingBlockDefinitionId = toDefinitionId(
+            createRequestDto.buildingBlockDefinitionKey,
+            createRequestDto.buildingBlockDefinitionVersionTag
+        )
+        return BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = createRequestDto.processDefinitionId,
+            activityId = createRequestDto.activityId,
+            activityType = createRequestDto.activityType,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            pluginConfigurationMappings = ensureMappings(
+                createRequestDto.pluginConfigurationMappings,
+                buildingBlockDefinitionId
+            )
+        )
+    }
+
+    override fun toUpdatedProcessLink(
+        processLinkToUpdate: ProcessLink,
+        updateRequestDto: ProcessLinkUpdateRequestDto,
+        caseDefinitionId: CaseDefinitionId?
+    ): ProcessLink {
+        processLinkToUpdate as BuildingBlockProcessLink
+        updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
+        requireNotNull(caseDefinitionId) {
+            "CaseDefinitionId is required for building-block process links"
+        }
+        return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
+            val buildingBlockDefinitionId = toDefinitionId(
+                updateRequestDto.buildingBlockDefinitionKey,
+                updateRequestDto.buildingBlockDefinitionVersionTag
+            )
+            BuildingBlockProcessLink(
+                id = updateRequestDto.id,
+                processDefinitionId = processLinkToUpdate.processDefinitionId,
+                activityId = processLinkToUpdate.activityId,
+                activityType = processLinkToUpdate.activityType,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                pluginConfigurationMappings = ensureMappings(
+                    updateRequestDto.pluginConfigurationMappings,
+                    buildingBlockDefinitionId
+                )
+            )
+        }
+    }
+
+    private fun ensureMappings(
+        mappings: Map<String, UUID>,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Map<String, UUID> {
+        val mainProcessDefinitionId = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .firstOrNull { it.main }
+            ?.id
+            ?.processDefinitionId
+            ?.id
+            ?: throw IllegalStateException(
+                "No main process definition configured for building block '$buildingBlockDefinitionId'"
+            )
+
+        val requiredKeys = processLinkService.getProcessLinks(mainProcessDefinitionId)
+            .filterIsInstance<PluginProcessLink>()
+            .filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.BUILDING_BLOCK }
+            .mapNotNull { it.pluginConfigurationReference.pluginDefinitionKey }
+            .toSet()
+
+        if (requiredKeys.isEmpty()) {
+            return mappings
+        }
+
+        require(mappings.isNotEmpty()) { "pluginConfigurationMappings must not be empty" }
+        require(mappings.keys.none { it.isBlank() }) { "pluginConfigurationMappings contains blank plugin definition keys" }
+
+        val missingKeys = requiredKeys - mappings.keys
+        require(missingKeys.isEmpty()) {
+            "pluginConfigurationMappings missing entries for plugin definitions: ${missingKeys.joinToString()}"
+        }
+        return mappings
+    }
+
+    private fun toDefinitionId(key: String, versionTag: String): BuildingBlockDefinitionId {
+        return BuildingBlockDefinitionId.of(key, versionTag)
+    }
+}

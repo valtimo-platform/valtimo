@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 
 interface ProcessLink {
@@ -22,6 +23,8 @@ interface ProcessLink {
   activityType: string;
   processLinkType: string;
   pluginConfigurationId?: string;
+  pluginDefinitionKey?: string;
+  referenceType?: PluginConfigurationReferenceType;
   pluginActionDefinitionKey?: string;
   actionProperties?: {
     [key: string]: any;
@@ -57,6 +60,8 @@ type ProcessLinkConfigurationStep =
   | 'selectFormFlow'
   | 'empty';
 
+type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';
+
 interface FormProcessLinkCreateRequestDto {
   processDefinitionId: string;
   activityId: string;
@@ -83,19 +88,23 @@ interface PluginProcessLinkCreateDto {
   activityId: string;
   activityType: string;
   processLinkType: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: object;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface PluginProcessLinkUpdateDto {
   id: string;
   activityId: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: {
     [key: string]: any;
   };
+  referenceType: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface FormFlowProcessLinkUpdateRequestDto {
@@ -240,6 +249,15 @@ interface CompatiblePluginProcessLinks {
   versions: CompatibleProcessVersion[];
 }
 
+type PluginListItem = {
+  id: string;
+  title: string;
+  description: string;
+  logo?: string | null;
+  payload: PluginConfiguration | string;
+  isDefinition: boolean;
+};
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -260,6 +278,8 @@ export {
   ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
+  PluginConfigurationReferenceType,
+  PluginListItem,
   TaskProcessLinkResult,
   TaskProcessLinkType,
   TaskWithProcessLink,

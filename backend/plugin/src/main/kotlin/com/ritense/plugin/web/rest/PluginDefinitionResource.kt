@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,10 @@ class PluginDefinitionResource(
 ) {
 
     @GetMapping("/v1/plugin/definition")
-    fun getPluginDefinitions(): ResponseEntity<List<PluginDefinition>> {
-        return ResponseEntity.ok(pluginService.getPluginDefinitions())
+    fun getPluginDefinitions(
+        @RequestParam(value = "activityType", required = false) activityType: ActivityTypeWithEventName?
+    ): ResponseEntity<List<PluginDefinition>> {
+        return ResponseEntity.ok(pluginService.getPluginDefinitions(activityType))
     }
 
     @GetMapping("/v1/plugin/definition/{pluginDefinitionKey}/action")

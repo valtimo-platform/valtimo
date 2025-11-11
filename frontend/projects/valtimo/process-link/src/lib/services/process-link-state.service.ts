@@ -29,6 +29,7 @@ import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
 import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
+import {ManagementContext} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -49,6 +50,7 @@ export class ProcessLinkStateService implements OnDestroy {
   private readonly _processLinkUpdateEvents$ = new Subject<ProcessLinkUpdateEvent>();
   private readonly _processLinkCreateEvents$ = new Subject<ProcessLinkCreateEvent>();
   private readonly _processLinkDeleteEvents$ = new Subject<ProcessLinkDeleteEvent>();
+  private readonly _context$ = new BehaviorSubject<ManagementContext>('independent');
 
   public get processLinkUpdateEvents$(): Observable<ProcessLinkUpdateEvent> {
     return this._processLinkUpdateEvents$.asObservable();
@@ -116,6 +118,9 @@ export class ProcessLinkStateService implements OnDestroy {
   }
   public get url$(): Observable<string> {
     return this._url$.asObservable();
+  }
+  public get context$(): Observable<ManagementContext> {
+    return this._context$.asObservable();
   }
 
   private _availableProcessLinkTypesSubscription!: Subscription;
@@ -194,6 +199,11 @@ export class ProcessLinkStateService implements OnDestroy {
     this._modalParams$.next(params);
   }
 
+  public setContext(context: ManagementContext): void {
+    this._context$.next(context);
+    this.processLinkStepService.setContext(context);
+  }
+
   public selectProcessLink(processLink: ProcessLink | undefined): void {
     if (!processLink) return;
     this._selectedProcessLink$.next(processLink);
@@ -231,6 +241,10 @@ export class ProcessLinkStateService implements OnDestroy {
         }
       }
     );
+  }
+
+  public isBuildingBlockContext(): boolean {
+    return this._context$.getValue() === 'buildingBlock';
   }
 
   private reset(): void {

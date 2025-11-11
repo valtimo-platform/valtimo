@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
@@ -61,7 +63,9 @@ class PluginProcessLinkMapper(
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-                pluginConfigurationId = processLink.pluginConfigurationId.id,
+                pluginConfigurationId = processLink.pluginConfigurationId?.id,
+                referenceType = processLink.pluginConfigurationReference.type,
+                pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
             )
@@ -77,6 +81,8 @@ class PluginProcessLinkMapper(
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
             activityType = deployDto.activityType,
+            referenceType = deployDto.referenceType,
+            pluginDefinitionKey = deployDto.pluginDefinitionKey,
         )
     }
 
@@ -90,6 +96,8 @@ class PluginProcessLinkMapper(
             pluginConfigurationId = deployDto.pluginConfigurationId,
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
+            referenceType = deployDto.referenceType,
+            pluginDefinitionKey = deployDto.pluginDefinitionKey,
         )
     }
 
@@ -99,21 +107,27 @@ class PluginProcessLinkMapper(
             PluginProcessLinkExportResponseDto(
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-                pluginConfigurationId = processLink.pluginConfigurationId.id,
+                pluginConfigurationId = processLink.pluginConfigurationId?.id,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
+                referenceType = processLink.pluginConfigurationReference.type,
+                pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
             )
         }
     }
 
     override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): PluginProcessLink {
         createRequestDto as PluginProcessLinkCreateDto
+        val reference = createReference(createRequestDto.referenceType, createRequestDto.pluginDefinitionKey)
+        val configurationId = createRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
+        validateReference(reference.type, configurationId)
         return PluginProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = createRequestDto.processDefinitionId,
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
-            pluginConfigurationId = PluginConfigurationId.existingId(createRequestDto.pluginConfigurationId),
+            pluginConfigurationId = configurationId,
+            pluginConfigurationReference = reference,
             pluginActionDefinitionKey = createRequestDto.pluginActionDefinitionKey,
             actionProperties = createRequestDto.actionProperties,
         )
@@ -126,15 +140,48 @@ class PluginProcessLinkMapper(
     ): PluginProcessLink {
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             updateRequestDto as PluginProcessLinkUpdateDto
+            val reference = createReference(updateRequestDto.referenceType, updateRequestDto.pluginDefinitionKey)
+            val configurationId = updateRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
+            validateReference(reference.type, configurationId)
             PluginProcessLink(
                 id = updateRequestDto.id,
                 processDefinitionId = processLinkToUpdate.processDefinitionId,
                 activityId = processLinkToUpdate.activityId,
                 activityType = processLinkToUpdate.activityType,
-                pluginConfigurationId = PluginConfigurationId.existingId(updateRequestDto.pluginConfigurationId),
+                pluginConfigurationId = configurationId,
+                pluginConfigurationReference = reference,
                 pluginActionDefinitionKey = updateRequestDto.pluginActionDefinitionKey,
                 actionProperties = updateRequestDto.actionProperties,
             )
+        }
+    }
+
+    private fun createReference(
+        type: PluginConfigurationReferenceType,
+        pluginDefinitionKey: String?
+    ): PluginConfigurationReference {
+        return when (type) {
+            PluginConfigurationReferenceType.FIXED -> PluginConfigurationReference(type)
+            PluginConfigurationReferenceType.BUILDING_BLOCK -> PluginConfigurationReference(
+                type = type,
+                pluginDefinitionKey = requireNotNull(pluginDefinitionKey) {
+                    "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
+                }
+            )
+        }
+    }
+
+    private fun validateReference(
+        type: PluginConfigurationReferenceType,
+        pluginConfigurationId: PluginConfigurationId?
+    ) {
+        when (type) {
+            PluginConfigurationReferenceType.FIXED -> requireNotNull(pluginConfigurationId) {
+                "pluginConfigurationId is required when reference type is FIXED"
+            }
+            PluginConfigurationReferenceType.BUILDING_BLOCK -> require(pluginConfigurationId == null) {
+                "pluginConfigurationId must be empty when reference type is BUILDING_BLOCK"
+            }
         }
     }
 }
