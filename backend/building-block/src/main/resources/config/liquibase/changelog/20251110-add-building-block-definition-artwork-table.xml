@@ -32,7 +32,7 @@
             </column>
 
             <!-- Base64-encoded PNG image -->
-            <column name="image_base64" type="CLOB">
+            <column name="image_base64" type="TEXT">
                 <constraints nullable="false"/>
             </column>
         </createTable>

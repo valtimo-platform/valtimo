@@ -19,7 +19,6 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
-import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionArtworkDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.http.ResponseEntity
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -60,19 +58,6 @@ class BuildingBlockDefinitionArtworkResource(
     ): ResponseEntity<BuildingBlockDefinitionArtworkDto> {
         val created = buildingBlockDefinitionArtworkService.createArtwork(key, versionTag, dto)
         return ResponseEntity.ok(created)
-    }
-
-    @PutMapping(
-        path = ["/{key}/version/{versionTag}/artwork"],
-        consumes = [APPLICATION_JSON_UTF8_VALUE]
-    )
-    fun updateArtwork(
-        @PathVariable key: String,
-        @PathVariable versionTag: String,
-        @RequestBody dto: UpdateBuildingBlockDefinitionArtworkDto
-    ): ResponseEntity<BuildingBlockDefinitionArtworkDto> {
-        val updated = buildingBlockDefinitionArtworkService.updateArtwork(key, versionTag, dto)
-        return ResponseEntity.ok(updated)
     }
 
     @DeleteMapping("/{key}/version/{versionTag}/artwork")

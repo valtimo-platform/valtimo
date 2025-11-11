@@ -62,10 +62,8 @@ open class BuildingBlockDefinition(
 
     @Column(name = "is_final")
     open var final: Boolean = false
-
-
-
 ) {
+
     @OneToOne(
         mappedBy = "definition",
         optional = true
