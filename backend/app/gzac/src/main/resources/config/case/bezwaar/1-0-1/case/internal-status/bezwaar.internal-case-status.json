@@ -3,14 +3,14 @@
         "key": "aanvraag-ontvangen",
         "title": "Aanvraag ontvangen",
         "visibleInCaseListByDefault": true,
-        "retentionPeriod": 100,
+        "retentionPeriod": -1,
         "color": "BLUE"
     },
     {
         "key": "in-behandeling",
         "title": "In behandeling",
         "visibleInCaseListByDefault": true,
-        "retentionPeriod": 200,
+        "retentionPeriod": -1,
         "color": "PURPLE"
     },
     {

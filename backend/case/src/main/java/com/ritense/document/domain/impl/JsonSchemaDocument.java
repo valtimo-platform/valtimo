@@ -114,6 +114,12 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Column(name = "sequence", columnDefinition = "BIGINT")
     private Long sequence;
 
+    @Column(name = "retention_period", columnDefinition = "INTEGER")
+    private int retentionPeriod;
+
+    @Column(name = "retention_date", columnDefinition = "DATETIME")
+    private LocalDateTime retentionDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     // TODO: Fix this. Using a new column for it is not nice at all
     @JoinColumn(
@@ -126,7 +132,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "case_tag_link",
-        joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName="json_schema_document_id"),
+        joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName = "json_schema_document_id"),
         inverseJoinColumns = {
             @JoinColumn(name = "case_tag_key", referencedColumnName = "case_tag_key"),
             @JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
@@ -340,6 +346,19 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
             throw new IllegalArgumentException("Invalid status key: '" + internalCaseStatus.getId().getKey() + "'.");
         }
         this.internalStatus = internalCaseStatus;
+        if (internalCaseStatus != null) {
+            setRetentionInfo(internalCaseStatus.getRetentionPeriod());
+        }
+    }
+
+    private void setRetentionInfo(int days) {
+        if (days >= 0) {
+            this.retentionPeriod = days;
+            this.retentionDate = LocalDateTime.now().plusDays(days);
+        } else {
+            this.retentionPeriod = -1;
+            this.retentionDate = null;
+        }
     }
 
     public void addCaseTag(CaseTag caseTag) {
@@ -363,6 +382,12 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     public LocalDateTime createdOn() {
         return createdOn;
     }
+
+    @Override
+    public Optional<LocalDateTime> retentionDate() {
+        return Optional.ofNullable(retentionDate);
+    }
+
 
     @Override
     public Optional<LocalDateTime> modifiedOn() {

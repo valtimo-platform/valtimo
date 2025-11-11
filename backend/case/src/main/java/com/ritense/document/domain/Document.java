@@ -42,6 +42,9 @@ public interface Document {
     String createdBy();
 
     @JsonProperty
+    Optional<LocalDateTime> retentionDate();
+
+    @JsonProperty
     Optional<LocalDateTime> modifiedOn();
 
     @JsonProperty

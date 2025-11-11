@@ -6,6 +6,14 @@
         "formDefinitionName": "start-form-bezwaar"
     },
     {
+        "activityId": "set-internal-case-status1",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "user-task-set-internal-case-status",
+        "processLinkType": "form",
+        "formDisplayType": "panel",
+        "formSize": "medium"
+    },
+    {
         "activityId": "validate-request",
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "user-task-validate-request",
