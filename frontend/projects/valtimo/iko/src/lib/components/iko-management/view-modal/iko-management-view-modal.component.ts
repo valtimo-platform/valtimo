@@ -69,11 +69,13 @@ export class IkoManagementViewModalComponent {
   }
 
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
+  public readonly $selectedKey = signal<string>('');
 
   @Input() public set prefillData(value: IkoDataAggregateResponse | null) {
     this.$prefillData.set(value);
     if (!value) return;
 
+    this.$selectedKey.set(value.key);
     this.$modalMode.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
@@ -87,7 +89,6 @@ export class IkoManagementViewModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public readonly $selectedKey = signal<string>('');
   public readonly $modalMode = signal<ModalMode>('add');
   public showAutoKey = true;
 

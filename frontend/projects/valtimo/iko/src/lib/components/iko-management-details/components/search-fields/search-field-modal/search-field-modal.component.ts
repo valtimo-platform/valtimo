@@ -111,6 +111,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
     this.$prefillData.set(value);
     if (!value) return;
 
+    this.$selectedKey.set(value.key);
     this.$modalMode.set('edit');
     this.setPrefilledForm(value);
     this.formGroup.get('key')?.disable();
@@ -370,6 +371,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
   }
 
   public onCancel(): void {
+    this.$isOpen.set(false);
     this.closeEvent.emit(null);
     this.showAutoKey = false;
     this.resetForm();

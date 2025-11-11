@@ -63,20 +63,26 @@ export class IkoManagementSearchActionModalComponent {
   @Input() public set open(value: boolean) {
     this.$isOpen.set(value);
 
-    if (value) return;
-
-    setTimeout(() => {
+    if (value) {
       this.showAutoKey = true;
-      this.$modalType.set('add');
-      this.formGroup.reset();
-      this.formGroup.get('key')?.enable();
-    }, CARBON_CONSTANTS.modalAnimationMs);
+    } else {
+      setTimeout(() => {
+        this.showAutoKey = false;
+        this.$modalType.set('add');
+        this.formGroup.reset();
+        this.formGroup.get('key')?.enable();
+      }, CARBON_CONSTANTS.modalAnimationMs);
+    }
   }
+
+  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
     this.$prefillData.set(value);
+
     if (!value) return;
 
+    this.$selectedKey.set(value.key);
     this.$modalType.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
@@ -91,7 +97,6 @@ export class IkoManagementSearchActionModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public readonly $selectedKey = signal<string>('');
   public showAutoKey = true;
 
   public readonly propertyFields$: Observable<PropertyField[]> = toObservable(this.$isOpen).pipe(
@@ -125,6 +130,7 @@ export class IkoManagementSearchActionModalComponent {
   public onCancel(): void {
     this.modalClose.emit(null);
     this.showAutoKey = false;
+    this.$modalType.set('add');
   }
 
   public onSave(): void {
@@ -144,6 +150,7 @@ export class IkoManagementSearchActionModalComponent {
       });
       this.showAutoKey = false;
       this.modalClose.emit(formData);
+      this.$modalType.set('add');
     });
   }
 }
