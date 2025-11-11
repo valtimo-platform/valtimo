@@ -403,11 +403,19 @@ export class ProcessManagementBuilderComponent
 
           switch (context) {
             case 'independent':
-            case 'buildingBlock':
               return this.processLinkService.deployProcessWithProcessLinks(
                 mappedProcessLinks,
                 null,
                 result.xml ?? ''
+              );
+            case 'buildingBlock':
+              const buildingBlockParams = params as BuildingBlockManagementParams;
+              return this.processLinkService.deployProcessWithProcessLinksForBuildingBlock(
+                mappedProcessLinks,
+                null,
+                result.xml ?? '',
+                buildingBlockParams.buildingBlockDefinitionKey,
+                buildingBlockParams.buildingBlockDefinitionVersionTag
               );
             case 'case':
               const caseManagementParams = params as CaseManagementParams;
@@ -747,6 +755,8 @@ export class ProcessManagementBuilderComponent
         getBuildingBlockManagementRouteParams(this.route),
       ]).subscribe(([context, caseManagementParams, buildingBlockManagementParams]) => {
         if (context) this.processManagementService.context = context;
+
+        this.processLinkStateService.setContext(context);
 
         if (caseManagementParams) {
           this.processManagementService.setParams(

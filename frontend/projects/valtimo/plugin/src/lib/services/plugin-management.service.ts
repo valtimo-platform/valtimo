@@ -41,9 +41,11 @@ export class PluginManagementService {
     private readonly http: HttpClient
   ) {}
 
-  public getPluginDefinitions(): Observable<Array<PluginDefinition>> {
+  public getPluginDefinitions(activityType?: string): Observable<Array<PluginDefinition>> {
+    const params = activityType ? new HttpParams().set('activityType', activityType) : undefined;
     return this.http.get<Array<PluginDefinition>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition`,
+      {params}
     );
   }
 

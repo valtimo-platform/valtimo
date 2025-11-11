@@ -24,6 +24,10 @@ spring:
         hibernate:
             ddl-auto: none
 
+valtimo:
+    plugin:
+        encryption-secret: "abcdefghijklmnop"
+
 spring-actuator:
     username: test
     password: test
