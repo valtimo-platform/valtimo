@@ -41,7 +41,7 @@ import {
   ValtimoCdsModalDirective,
   ValuePathSelectorPrefix,
   ViewType,
-  AutoKeyInputComponent,
+  AutoKeyInputComponent, runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -382,10 +382,11 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
   }
 
   public onCancel(): void {
-    this.resetForm();
     this.closeEvent.emit(null);
-    this.showAutoKey = false;
-    this.resetForm();
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+      this.resetForm();
+    });
   }
 
   public onSave(): void {
@@ -408,8 +409,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
       }),
     });
 
-    this.showAutoKey = false;
-    this.resetForm();
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+      this.resetForm();
+    });
   }
 
   private setPrefilledForm(prefillData: IkoSearchField | null): void {

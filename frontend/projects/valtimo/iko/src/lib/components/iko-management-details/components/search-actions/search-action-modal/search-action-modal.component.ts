@@ -33,7 +33,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_CONSTANTS,
   ValtimoCdsModalDirective,
-  AutoKeyInputComponent,
+  AutoKeyInputComponent, runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
@@ -145,7 +145,9 @@ export class IkoManagementSearchActionModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
-    this.showAutoKey = false;
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+    });
   }
 
   public onSave(): void {
@@ -163,8 +165,10 @@ export class IkoManagementSearchActionModalComponent {
             : {};
         }
       });
-      this.showAutoKey = false;
       this.modalClose.emit(formData);
+      runAfterCarbonModalClosed(() => {
+        this.showAutoKey = false;
+      });
     });
   }
 }
