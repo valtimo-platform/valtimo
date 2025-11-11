@@ -2135,6 +2135,11 @@
           "title": "Plugin-Konfiguration"
         }
       }
+    },
+    "artwork": {
+      "title": "Grafik",
+      "fileUploaderTitle": "Wählen Sie eine Grafik für diesen Baublock aus",
+      "fileUploaderDescription": "Die maximale Dateigröße beträgt 10 MB. Nur .png-Bilder werden unterstützt. Stellen Sie sicher, dass der Hintergrund des Bildes transparent ist."
     }
   }
 }

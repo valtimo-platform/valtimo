@@ -2142,6 +2142,11 @@
           "title": "Plug-inconfiguratie"
         }
       }
+    },
+    "artwork": {
+      "title": "Illustratie",
+      "fileUploaderTitle": "Selecteer illustratie voor dit bouwblok",
+      "fileUploaderDescription": "Maximale bestandsgrootte is 10 MB. Alleen .png-afbeeldingen worden ondersteund. Zorg ervoor dat de achtergrond van de afbeelding transparant is."
     }
   }
 }
