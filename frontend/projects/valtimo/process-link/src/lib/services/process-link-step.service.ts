@@ -22,7 +22,8 @@ import {TranslateService} from '@ngx-translate/core';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {take} from 'rxjs/operators';
 import {PluginStateService} from './plugin-state.service';
-import {PluginTranslationService} from '@valtimo/plugin';
+import {PluginConfiguration, PluginDefinition, PluginTranslationService} from '@valtimo/plugin';
+import {ManagementContext} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +33,7 @@ export class ProcessLinkStepService {
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);
   private readonly _disableSteps$ = new BehaviorSubject<boolean>(false);
   private readonly _hasOneProcessLinkType$ = new BehaviorSubject<boolean>(false);
+  private context: ManagementContext = 'independent';
 
   get steps$(): Observable<Array<Step>> {
     return combineLatest([
@@ -145,12 +147,17 @@ export class ProcessLinkStepService {
     combineLatest([
       this._hasOneProcessLinkType$,
       this.pluginStateService.selectedPluginConfiguration$,
+      this.pluginStateService.selectedPluginDefinition$,
     ])
       .pipe(take(1))
-      .subscribe(([hasOneType, selectedConfiguration]) => {
+      .subscribe(([hasOneType, selectedConfiguration, selectedDefinition]) => {
+        const selectionLabel = this.getPluginSelectionLabel(
+          selectedConfiguration,
+          selectedDefinition
+        );
         if (hasOneType) {
           this._steps$.next([
-            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectionLabel},
             {label: 'choosePluginAction'},
             {label: 'configurePluginAction', disabled: true},
           ]);
@@ -162,7 +169,7 @@ export class ProcessLinkStepService {
         } else {
           this._steps$.next([
             {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
-            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectionLabel},
             {label: 'choosePluginAction'},
             {label: 'configurePluginAction', disabled: true},
           ]);
@@ -181,17 +188,23 @@ export class ProcessLinkStepService {
       this._hasOneProcessLinkType$,
       this.pluginStateService.selectedPluginConfiguration$,
       this.pluginStateService.selectedPluginFunction$,
+      this.pluginStateService.selectedPluginDefinition$,
     ])
       .pipe(take(1))
-      .subscribe(([hasOneType, selectedConfiguration, selectedFunction]) => {
-        const selectedFunctionTranslation = this.pluginTranslateService.instant(
-          selectedFunction.key,
-          selectedConfiguration.pluginDefinition.key
+      .subscribe(([hasOneType, selectedConfiguration, selectedFunction, selectedDefinition]) => {
+        const pluginKey =
+          selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key || '';
+        const selectedFunctionTranslation = pluginKey
+          ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
+          : selectedFunction.key;
+        const selectionLabel = this.getPluginSelectionLabel(
+          selectedConfiguration,
+          selectedDefinition
         );
 
         if (hasOneType) {
           this._steps$.next([
-            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectionLabel},
             {label: 'choosePluginAction', secondaryLabel: selectedFunctionTranslation},
             {label: 'configurePluginAction'},
           ]);
@@ -201,7 +214,7 @@ export class ProcessLinkStepService {
         } else {
           this._steps$.next([
             {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
-            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectionLabel},
             {label: 'choosePluginAction', secondaryLabel: selectedFunctionTranslation},
             {label: 'configurePluginAction'},
           ]);
@@ -297,5 +310,20 @@ export class ProcessLinkStepService {
       {label: 'empty', disabled: true},
     ]);
     this._currentStepIndex$.next(0);
+  }
+
+  private getPluginSelectionLabel(
+    selectedConfiguration: PluginConfiguration | undefined,
+    selectedDefinition: PluginDefinition | undefined
+  ): string {
+    if (this.context === 'buildingBlock') {
+      const definitionKey = selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key;
+      return definitionKey ? this.pluginTranslateService.instant('title', definitionKey) : '';
+    }
+    return selectedConfiguration?.title || '';
+  }
+
+  public setContext(context: ManagementContext): void {
+    this.context = context;
   }
 }

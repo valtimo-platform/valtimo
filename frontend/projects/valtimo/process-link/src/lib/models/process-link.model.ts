@@ -22,6 +22,8 @@ interface ProcessLink {
   activityType: string;
   processLinkType: string;
   pluginConfigurationId?: string;
+  pluginDefinitionKey?: string;
+  referenceType?: PluginConfigurationReferenceType;
   pluginActionDefinitionKey?: string;
   actionProperties?: {
     [key: string]: any;
@@ -57,6 +59,8 @@ type ProcessLinkConfigurationStep =
   | 'selectFormFlow'
   | 'empty';
 
+type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';
+
 interface FormProcessLinkCreateRequestDto {
   processDefinitionId: string;
   activityId: string;
@@ -83,19 +87,23 @@ interface PluginProcessLinkCreateDto {
   activityId: string;
   activityType: string;
   processLinkType: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: object;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface PluginProcessLinkUpdateDto {
   id: string;
   activityId: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: {
     [key: string]: any;
   };
+  referenceType: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface FormFlowProcessLinkUpdateRequestDto {
@@ -260,6 +268,7 @@ export {
   ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
+  PluginConfigurationReferenceType,
   TaskProcessLinkResult,
   TaskProcessLinkType,
   TaskWithProcessLink,
