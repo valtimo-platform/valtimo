@@ -64,9 +64,9 @@ export class IkoManagementSearchActionModalComponent {
     this.$isOpen.set(value);
 
     if (value) return;
-    this.showAutoKey = true;
 
     setTimeout(() => {
+      this.showAutoKey = true;
       this.$modalType.set('add');
       this.formGroup.reset();
       this.formGroup.get('key')?.enable();

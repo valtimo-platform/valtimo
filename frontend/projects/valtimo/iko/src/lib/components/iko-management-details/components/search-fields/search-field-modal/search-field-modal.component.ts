@@ -97,20 +97,10 @@ import {ModalMode} from '@valtimo/shared';
 export class IkoManagementSearchFieldModalComponent implements OnInit {
   public readonly $isOpen = signal<boolean>(false);
   @Input() public set open(value: boolean) {
+    if(!value) return;
+
     this.$isOpen.set(value);
-
-    if (value) {
-      this.showAutoKey = true;
-    } else {
-      return;
-    }
-
-    setTimeout(() => {
-      if (this.$modalMode() === 'add') {
-        this.formGroup.reset();
-        this.formGroup.get('key')?.enable();
-      }
-    }, CARBON_CONSTANTS.modalAnimationMs);
+    this.showAutoKey = true;
   }
 
   @Input() public usedKeys: string[] = [];
