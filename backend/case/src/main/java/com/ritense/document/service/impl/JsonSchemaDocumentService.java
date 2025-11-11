@@ -800,7 +800,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             internalStatusKey
         ) : null;
         document.setInternalStatus(internalCaseStatus);
-
+        document.setRetentionDate();
         documentRepository.save(document);
 
         outboxService.send(() ->

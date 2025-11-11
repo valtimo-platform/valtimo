@@ -31,7 +31,7 @@
             },
             "type": "select",
             "input": true,
-            "label": "template",
+            "label": "internalStatus",
             "widget": "choicesjs",
             "dataSrc": "url",
             "template": "<span>{{ item.key }}</span>",

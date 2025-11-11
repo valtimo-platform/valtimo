@@ -171,6 +171,32 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         assertThat(event.result?.get("internalStatus")?.asText()).isEqualTo(newStatusKey)
     }
 
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should set retention date when setting document status with retention Period larger then 0`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        assertThat(document.internalStatus()).isNull()
+
+        reset(outboxService)
+
+        val newStatusKey = "started"
+        documentService.setInternalStatus(document.id, newStatusKey)
+
+        //Assert change
+        val modifiedDocument = documentService.findBy(document.id).get()
+        assertThat(modifiedDocument.internalStatus()).isEqualTo(newStatusKey)
+
+        //Assert outbox event
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+        verify(outboxService, atLeastOnce()).send(eventCapture.capture())
+        val event = eventCapture.allValues.map { it.get() }
+            .single { it is DocumentStatusChanged }
+        assertThat(event.resultId).isEqualTo(document.id!!.toString())
+        assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+        assertThat(event.result?.get("internalStatus")?.asText()).isEqualTo(newStatusKey)
+    }
+
     @Test
     @WithMockUser(username = USERNAME, authorities = [ADMIN])
     fun `should set document status to null and send outbox event`() {
