@@ -22,7 +22,6 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkReposi
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
-import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionArtworkDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -49,8 +48,8 @@ class BuildingBlockDefinitionArtworkService(
         val artwork = buildingBlockDefinitionArtworkRepository.findByIdOrNull(id) ?: return null
 
         return BuildingBlockDefinitionArtworkDto(
-            key = artwork.id.key,
-            versionTag = artwork.id.versionTag.toString(),
+            key = artwork.id!!.key,
+            versionTag = artwork.id!!.versionTag.toString(),
             imageBase64 = artwork.imageBase64
         )
     }
@@ -73,7 +72,6 @@ class BuildingBlockDefinitionArtworkService(
         val normalizedBase64 = normalizeAndValidateImage(dto.imageBase64)
 
         val entity = BuildingBlockDefinitionArtwork(
-            id = id,
             definition = definition,
             imageBase64 = normalizedBase64
         )
@@ -81,32 +79,8 @@ class BuildingBlockDefinitionArtworkService(
         val saved = buildingBlockDefinitionArtworkRepository.save(entity)
 
         return BuildingBlockDefinitionArtworkDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
-            imageBase64 = saved.imageBase64
-        )
-    }
-
-    @Transactional
-    fun updateArtwork(
-        key: String,
-        versionTag: String,
-        dto: UpdateBuildingBlockDefinitionArtworkDto
-    ): BuildingBlockDefinitionArtworkDto {
-        val id = BuildingBlockDefinitionId(key, versionTag)
-
-        val existing = buildingBlockDefinitionArtworkRepository.findByIdOrNull(id)
-            ?: throw IllegalStateException("No artwork found for building block definition $key:$versionTag")
-
-        val normalizedBase64 = normalizeAndValidateImage(dto.imageBase64)
-
-        existing.imageBase64 = normalizedBase64
-
-        val saved = buildingBlockDefinitionArtworkRepository.save(existing)
-
-        return BuildingBlockDefinitionArtworkDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
+            key = saved.id!!.key,
+            versionTag = saved.id!!.versionTag.toString(),
             imageBase64 = saved.imageBase64
         )
     }
@@ -120,9 +94,10 @@ class BuildingBlockDefinitionArtworkService(
     }
 
     private fun normalizeAndValidateImage(base64: String): String {
+        val pureBase64 = base64.substringAfter(",", base64)
         val decoder = Base64.getDecoder()
         val originalBytes = try {
-            decoder.decode(base64)
+            decoder.decode(pureBase64)
         } catch (e: IllegalArgumentException) {
             throw IllegalArgumentException("Invalid base64 image data", e)
         }

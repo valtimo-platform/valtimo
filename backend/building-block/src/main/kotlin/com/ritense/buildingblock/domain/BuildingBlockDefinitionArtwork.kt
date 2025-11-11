@@ -24,33 +24,32 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinColumns
 import jakarta.persistence.Lob
+import jakarta.persistence.MapsId
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 
 @Entity
 @Table(name = "building_block_definition_artwork")
 open class BuildingBlockDefinitionArtwork(
-    @EmbeddedId
-    open var id: BuildingBlockDefinitionId,
 
+    @EmbeddedId
+    open var id: BuildingBlockDefinitionId? = null,
+
+    @MapsId
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns(
         JoinColumn(
             name = "building_block_definition_key",
-            referencedColumnName = "building_block_definition_key",
-            insertable = false,
-            updatable = false
+            referencedColumnName = "building_block_definition_key"
         ),
         JoinColumn(
             name = "building_block_definition_version_tag",
-            referencedColumnName = "building_block_definition_version_tag",
-            insertable = false,
-            updatable = false
+            referencedColumnName = "building_block_definition_version_tag"
         )
     )
     open var definition: BuildingBlockDefinition? = null,
 
     @Lob
     @Column(name = "image_base64", nullable = false)
-    open var imageBase64: String
+    open var imageBase64: String = ""
 )

@@ -14,73 +14,54 @@
   ~ limitations under the License.
   -->
 
-<form class="building-block-management-artwork" [formGroup]="formGroup" [cdsLayer]="1">
-  <h4 class="building-block-management-artwork_title">
+<form
+  class="building-block-management-artwork"
+  [formGroup]="formGroup"
+  [cdsLayer]="1"
+  *ngIf="{
+    artwork: artwork$ | async,
+    loadingArtwork: loadingArtwork$ | async,
+  } as obs"
+>
+  <h4 class="building-block-management-artwork__title">
     {{ 'buildingBlockManagement.artwork.title' | translate }}
   </h4>
 
-  <div class="cds--text-input__field-wrapper">
-    <cds-label [disabled]="formGroup.disabled" [invalid]="name.touched && name.invalid">
-      <span class="label-with-tooltip select-label">
-        {{ 'buildingBlockManagement.createDefinition.name' | translate }}
+  @if (obs.loadingArtwork) {
+    <div class="loading-container"><cds-loading></cds-loading></div>
+  }
 
-        <v-tooltip-icon
-          [tooltip]="'buildingBlockManagement.createDefinition.nameTooltip' | translate"
-          [disabled]="formGroup.disabled"
-        ></v-tooltip-icon>
-      </span>
-
-      <input
-        formControlName="name"
-        cdsText
-        placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
+  @if (!obs.loadingArtwork && obs.artwork) {
+    <div class="building-block-management-artwork__preview">
+      <img
+        class="building-block-management-artwork__image"
+        [src]="'data:image/png;base64,' + obs.artwork.imageBase64"
+        alt="{{ 'buildingBlockManagement.artwork.alt' | translate }}"
       />
-    </cds-label>
-  </div>
+    </div>
+  }
 
-  <div class="cds--text-input__field-wrapper">
-    <cds-label [disabled]="formGroup.disabled">
-      <span class="label-with-tooltip select-label">
-        {{ 'buildingBlockManagement.createDefinition.keyTitle' | translate }}
-      </span>
-
-      <input formControlName="key" cdsText valtimoReadOnly [isReadOnly]="true" />
-    </cds-label>
-  </div>
-
-  <div class="cds--text-input__field-wrapper">
-    <cds-label
-      [disabled]="formGroup.disabled"
-      [invalid]="description.touched && description.invalid"
+  @if (!obs.loadingArtwork && !obs.artwork) {
+    <cds-file-uploader
+      *ngIf="!obs.loadingArtwork && !obs.artwork"
+      [accept]="ACCEPTED_FILES"
+      [multiple]="false"
+      buttonType="primary"
+      [title]="'buildingBlockManagement.artwork.fileUploaderTitle' | translate"
+      [description]="'buildingBlockManagement.artwork.fileUploaderDescription' | translate"
+      [buttonText]="'buildingBlockManagement.artwork.fileUploaderButton' | translate"
+      formControlName="file"
     >
-      <span class="label-with-tooltip select-label">
-        {{ 'buildingBlockManagement.createDefinition.description' | translate }}
+    </cds-file-uploader>
 
-        <v-tooltip-icon
-          [tooltip]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
-          [disabled]="formGroup.disabled"
-        ></v-tooltip-icon>
-      </span>
-
-      <textarea
-        cdsTextArea
-        formControlName="description"
-        placeholder="{{
-          'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
-        }}"
-        [rows]="3"
-        [cols]="150"
-      ></textarea>
-    </cds-label>
-  </div>
-
-  <div class="building-block-management-artwork__buttons">
-    <button
-      cdsButton="primary"
-      [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
-      (click)="onSave()"
-    >
-      {{ 'interface.save' | translate }}
-    </button>
-  </div>
+    <div class="building-block-management-artwork__buttons">
+      <button
+        cdsButton="primary"
+        [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
+        (click)="onSave()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    </div>
+  }
 </form>

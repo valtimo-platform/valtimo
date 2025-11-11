@@ -18,10 +18,12 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
@@ -31,6 +33,7 @@ import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
+import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
@@ -61,7 +64,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
         BuildingBlockJsonSchemaDocumentDefinitionRepository::class,
-        ProcessDefinitionBuildingBlockDefinitionRepository::class
+        ProcessDefinitionBuildingBlockDefinitionRepository::class,
+        BuildingBlockDefinitionArtworkRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
@@ -110,6 +114,18 @@ class BuildingBlockAutoConfiguration {
             processDeploymentService,
             authorizationService,
             buildingBlockDefinitionChecker
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)
+    fun buildingBlockDefinitionArtworkService(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository
+    ): BuildingBlockDefinitionArtworkService {
+        return BuildingBlockDefinitionArtworkService(
+            buildingBlockDefinitionRepository,
+            buildingBlockDefinitionArtworkRepository
         )
     }
 
@@ -166,6 +182,14 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkResource::class)
+    fun buildingBlockDefinitionArtworkResource(
+        buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
+    ): BuildingBlockDefinitionArtworkResource {
+        return BuildingBlockDefinitionArtworkResource(buildingBlockDefinitionArtworkService)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionChecker::class)
     fun buildingBlockDefinitionChecker(
         repository: BuildingBlockDefinitionRepository,
@@ -175,7 +199,7 @@ class BuildingBlockAutoConfiguration {
     ) = BuildingBlockDefinitionCheckerImpl(repository, environment, draftEnvironments, draftsEnabled)
 
     @Bean
-    @DependsOn("importService") // TODO: Figure out why this is needed
+    @DependsOn("importService")
     fun buildingBlockDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
         valtimoImportService: ValtimoImportService,
