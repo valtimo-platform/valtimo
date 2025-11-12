@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,45 +14,45 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.autodeployment
+package com.ritense.form.autodeployment
 
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.processlink.BaseIntegrationTest
-import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.form.BaseIntegrationTest
+import com.ritense.form.domain.FormProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.hasSize
+import org.hamcrest.Matchers.isA
+import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 
 
 @Transactional
-class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired constructor(
+class ProcessLinkDeploymentIntTest @Autowired constructor(
     private val repositoryService: OperatonRepositoryService,
     private val processLinkRepository: ProcessLinkRepository,
-    private val listener: ProcessLinkDeploymentApplicationReadyEventListener
-) : BaseIntegrationTest() {
+): BaseIntegrationTest() {
 
     @Test
     fun `should find 1 deployed process link on user task`() {
         val processDefinition = getLatestProcessDefinition()
         val processLinks =
-            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "test-user-task")
+            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "do-something")
 
         assertThat(processLinks, hasSize(1))
         val processLink = processLinks.first()
-        assertThat(processLink, Matchers.isA(TestProcessLink::class.java))
-        processLink as TestProcessLink
-        assertThat(processLink.someValue, Matchers.equalTo("test"))
+        assertThat(processLink, isA(FormProcessLink::class.java))
+        processLink as FormProcessLink
+        assertThat(processLink.formDefinitionId, notNullValue())
     }
 
     private fun getLatestProcessDefinition(): OperatonProcessDefinition {
         return AuthorizationContext.runWithoutAuthorization {
-            repositoryService.findLatestProcessDefinition("test-system-process")!!
+            repositoryService.findLatestProcessDefinition("form-one-task-process")!!
         }
     }
 }
