@@ -19,6 +19,7 @@ import {BuildingBlockManagementDetailService} from '../../services';
 import {MuuriDirectiveModule} from '@valtimo/components';
 import {BuildingBlockManagementMetadataComponent} from '../building-block-management-metadata/building-block-management-metadata.component';
 import {BuildingBlockManagementArtworkComponent} from '../building-block-management-artwork/building-block-management-artwork.component';
+import {BuildingBlockManagementPluginsComponent} from '../building-block-management-plugins/building-block-management-plugins.component';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ import {BuildingBlockManagementArtworkComponent} from '../building-block-managem
     MuuriDirectiveModule,
     BuildingBlockManagementMetadataComponent,
     BuildingBlockManagementArtworkComponent,
+    BuildingBlockManagementPluginsComponent,
   ],
 })
 export class BuildingBlockManagementGeneralComponent {
