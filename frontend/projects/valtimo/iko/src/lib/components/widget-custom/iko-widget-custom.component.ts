@@ -16,11 +16,13 @@
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BehaviorSubject, filter, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap, tap} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule} from 'carbon-components-angular';
-import {CustomWidget, WidgetCustomComponent} from '@valtimo/layout';
+import {CustomWidget, WidgetCustomComponent, WidgetLayoutService} from '@valtimo/layout';
+import {IkoWidgetParams} from '../../models';
+import {IkoApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-iko-widget-custom',
@@ -34,6 +36,12 @@ export class IkoWidgetCustomComponent {
     if (!value) return;
     this._widgetConfigSubject$.next(value);
   }
+
+  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
+  @Input() public set widgetParams(value: IkoWidgetParams) {
+    this._widgetParams$.next(value);
+  }
+
   @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigSubject$ = new BehaviorSubject<CustomWidget | null>(null);
@@ -41,4 +49,26 @@ export class IkoWidgetCustomComponent {
   public get widgetConfig$(): Observable<CustomWidget> {
     return this._widgetConfigSubject$.pipe(filter(config => config !== null));
   }
+
+  public readonly widgetData$ = combineLatest([
+    this._widgetConfigSubject$,
+    this._widgetParams$,
+  ]).pipe(
+    switchMap(([widgetConfiguration, widgetParams]) =>
+      !widgetParams || !widgetConfiguration
+        ? of(null)
+        : this.ikoApiService.getIkoWidgetData(
+            widgetParams.dataAggregateKey,
+            widgetParams.tabKey,
+            widgetConfiguration.key,
+            widgetParams.entryId
+          )
+    ),
+    tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
+  );
+
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 }
