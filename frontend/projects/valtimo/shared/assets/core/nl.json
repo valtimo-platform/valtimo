@@ -2151,6 +2151,10 @@
       "fileUploaderDescription": "Maximale bestandsgrootte is 10 MB. Alleen .png-afbeeldingen worden ondersteund. Zorg ervoor dat de achtergrond van de afbeelding transparant is.",
       "fileUploaderButton": "Bestand kiezen",
       "deleteConfirmationModalText": "Weet u zeker dat u deze illustratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "plugins": {
+      "title": "Gebruikte plugins",
+      "noPluginsUsed": "Dit bouwblok gebruikt geen plugins"
     }
   }
 }
