@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-11-10 16:49:13.
+// Generated using typescript-generator version 3.2.1263 on 2025-11-12 12:14:43.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -650,23 +650,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
+    activityId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
+    activityId: string;
 }
 
 export interface ProcessLinkResponseDto {
-    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
+    activityId: string;
     id: string;
 }
 
@@ -821,10 +821,10 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    width: number;
-    title: string;
     highContrast: boolean;
     displayConditions: Condition<any>[] | null;
+    width: number;
+    title: string;
     key: string;
     actions: WidgetAction[];
 }
@@ -846,10 +846,10 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdBy: string;
     createdOn: DateAsString;
     fileId: string;
     sizeInBytes: number;
+    createdBy: string;
     fileName: string;
 }
 
@@ -866,9 +866,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    activityId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -942,8 +942,8 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    label: string;
     validationConstraints: FormFieldValidationConstraint[];
+    label: string;
     businessKey: boolean;
     value: TypedValue;
     typeName: string;
@@ -974,26 +974,26 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
+    processInstanceId: string;
+    processDefinitionKey: string;
+    rootProcessInstanceId: string;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    parentActivityInstanceId: string;
+    calledProcessInstanceId: string;
+    calledCaseInstanceId: string;
+    processDefinitionId: string;
+    activityType: string;
     startTime: DateAsString;
     endTime: DateAsString;
     taskId: string;
     activityId: string;
     assignee: string;
-    tenantId: string;
-    processDefinitionId: string;
-    activityType: string;
     executionId: string;
-    processInstanceId: string;
-    processDefinitionKey: string;
-    rootProcessInstanceId: string;
-    parentActivityInstanceId: string;
-    calledProcessInstanceId: string;
-    calledCaseInstanceId: string;
+    tenantId: string;
     canceled: boolean;
     removalTime: DateAsString;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
     id: string;
 }
 

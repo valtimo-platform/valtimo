@@ -2144,6 +2144,10 @@
       "fileUploaderDescription": "Die maximale Dateigröße beträgt 10 MB. Nur .png-Bilder werden unterstützt. Stellen Sie sicher, dass der Hintergrund des Bildes transparent ist.",
       "fileUploaderButton": "Datei auswählen",
       "deleteConfirmationModalText": "Sind Sie sicher, dass Sie diese Grafik löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "plugins": {
+      "title": "Verwendete Plugins",
+      "noPluginsUsed": "Dieser Baublock verwendet keine Plugins"
     }
   }
 }
