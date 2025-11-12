@@ -171,10 +171,10 @@ interface CreateZaakNotitieConfig {
 }
 
 interface PatchZaakNotitieConfig {
-//  notitieUrl?: string;
+  zaakNotitieUrl: string;
   onderwerp?: string;
   tekst?: string;
-//  aangemaaktDoor?: string;
+  aangemaaktDoor?: string;
   notitieType?: string;
   status?: string;
 }

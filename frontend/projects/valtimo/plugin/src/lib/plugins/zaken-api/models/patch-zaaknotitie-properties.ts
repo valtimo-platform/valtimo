@@ -17,6 +17,7 @@
 export const PatchZaakNotitiePropertyOptions = [
   'onderwerp',
   'tekst',
+  'aangemaaktDoor',
   'notitieType',
   'status'
 ] as const;

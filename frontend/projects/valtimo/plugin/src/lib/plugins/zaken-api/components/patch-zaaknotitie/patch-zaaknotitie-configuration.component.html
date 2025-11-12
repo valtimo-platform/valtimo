@@ -24,23 +24,34 @@
     {{ 'patchZaakNotitieInformation' | pluginTranslate: pluginId | async }}
   </v-paragraph>
 
-  <div class="row">
-    <div class="col-12">
-      <button
-        cdsButton="primary"
-        class="add-button"
-        [size]="'md'"
-        [cdsOverflowMenu]="addPropertyList"
-        [customPane]="true"
-        placement="bottom"
-      >
-        {{ 'addPatchZaakNotitieProperty' | pluginTranslate: pluginId | async }}
-        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
-  </div>
-
   <v-form (valueChange)="onFormValueChanged($event)">
+    <v-input
+      name="zaakNotitieUrl"
+      [title]="'zaakNotitieUrl' | pluginTranslate: pluginId | async"
+      [tooltip]="'zaakNotitieUrlTooltip' | pluginTranslate: pluginId | async"
+      [required]="true"
+      [defaultValue]="obs.prefill?.zaakNotitieUrl"
+      [disabled]="obs.disabled"
+      [margin]="true"
+      [trim]="true"
+    ></v-input>
+
+    <div class="row">
+      <div class="col-12">
+        <button
+          cdsButton="primary"
+          class="add-button"
+          [size]="'md'"
+          [cdsOverflowMenu]="addPropertyList"
+          [customPane]="true"
+          placement="bottom"
+        >
+          {{ 'addPatchZaakNotitieProperty' | pluginTranslate: pluginId | async }}
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
     @for (property of propertyList; track property) {
       <div class="row">
         <div class="col-11">

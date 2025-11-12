@@ -45,7 +45,7 @@ export class PatchZaakNotitieConfigurationComponent
   public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES;
   public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES;
 
-  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig>({});
+  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig>({zaakNotitieUrl: undefined});
   private readonly _properties = new Map<PatchZaakNotitieProperties, string>();
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
@@ -61,9 +61,9 @@ export class PatchZaakNotitieConfigurationComponent
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       if (prefill) {
-        PatchZaakNotitiePropertyOptions.filter(property => !!prefill[property]).forEach(property =>
-          this.addProperty(property)
-        );
+        PatchZaakNotitiePropertyOptions
+          .filter(property => !!prefill[property])
+          .forEach(property => this.addProperty(property));
       }
     });
   }
@@ -73,17 +73,14 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public onFormValueChanged(formValue: PatchZaakNotitieConfig): void {
-    this._formValue$.next(formValue);
-    this.handleValid(formValue);
+    const _formValue = this.formValueIncludingProperties(formValue);
+    this._formValue$.next(_formValue);
+    this.handleValid(_formValue);
   }
 
   public onPropertyChanged(property: PatchZaakNotitieProperties, value: any): void {
     this._properties.set(property, value);
-    const formValue = this._formValue$.value;
-    this._properties.forEach((value, key) => {
-      formValue[key] = value;
-    });
-    this.onFormValueChanged(formValue);
+    this.onFormValueChanged(this._formValue$.getValue());
   }
 
   public addProperty(property: PatchZaakNotitieProperties): void {
@@ -108,6 +105,13 @@ export class PatchZaakNotitieConfigurationComponent
 
   public prefillValueFor(property: PatchZaakNotitieProperties, prefill: PatchZaakNotitieConfig): string | null {
     return prefill != null ? prefill[property] : null;
+  }
+
+  private formValueIncludingProperties(formValue: PatchZaakNotitieConfig): PatchZaakNotitieConfig {
+    this._properties.forEach((value, key) => {
+      formValue[key] = value;
+    });
+    return formValue;
   }
 
   private propertyFormFieldFor(property: PatchZaakNotitieProperties): PropertyFormField {
