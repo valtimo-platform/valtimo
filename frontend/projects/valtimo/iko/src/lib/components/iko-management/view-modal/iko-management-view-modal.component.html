@@ -1,38 +1,40 @@
 <cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>{{ 'ikoManagement.views.add' | translate }}</h3>
+    <h3 cdsModalHeaderHeading>
+      {{ 'ikoManagement.views.' + modalMode | translate }}
+    </h3>
   </cds-modal-header>
 
   <form [formGroup]="formGroup" cdsModalContent>
-    <cds-label>
-      {{ 'interface.title' | translate }}
+    @if(open$ | async)
+    {
+      <cds-label>
+        {{ 'interface.title' | translate }}
 
-      <input
-        formControlName="title"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.title' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        <input
+          formControlName="title"
+          cdsText
+          cdsLayer
+          placeholder="{{ 'interface.title' | translate }}"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
-
-      <input
+      <valtimo-auto-key-input
         formControlName="key"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        placeholderTranslationKey="interface.key"
+        [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
+        [mode]="modalMode"
+        [usedKeys]="usedKeys"
+      >
+      </valtimo-auto-key-input>
 
-    <valtimo-iko-management-properties
-      [propertiesFormGroup]="properties"
-      [fields]="propertyFields$ | async"
-      [prefillData]="$prefillData()?.properties"
-    />
+      <valtimo-iko-management-properties
+        [propertiesFormGroup]="properties"
+        [fields]="propertyFields$ | async"
+        [prefillData]="$prefillData()?.properties"
+      />
+    }
   </form>
 
   <cds-modal-footer>

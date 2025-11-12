@@ -22,9 +22,19 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  ValtimoCdsModalDirective,
+  AutoKeyInputComponent,
+} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   PropertyField,
@@ -36,6 +46,7 @@ import {filter, map, Observable, switchMap, take} from 'rxjs';
 import {IkoManagementApiService} from '../../../../../services';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {PropertiesFormComponent} from '../../../../iko-management-properties/iko-management-properties.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-action-modal',
@@ -53,10 +64,19 @@ import {PropertiesFormComponent} from '../../../../iko-management-properties/iko
     ButtonModule,
     LayerModule,
     PropertiesFormComponent,
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementSearchActionModalComponent {
-  public readonly $modalType = signal<'add' | 'edit'>('add');
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
+  }
+
   public readonly $isOpen = signal<boolean>(false);
   @Input() public set open(value: boolean) {
     this.$isOpen.set(value);
@@ -64,24 +84,31 @@ export class IkoManagementSearchActionModalComponent {
     if (value) return;
 
     setTimeout(() => {
-      this.$modalType.set('add');
       this.formGroup.reset();
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
+  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
-    this.$prefillData.set(value);
     if (!value) return;
 
-    this.$modalType.set('edit');
+    this.$prefillData.set(value);
+    this.$selectedKey.set(value?.key);
+
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
+
+  @Input() public usedKeys: string[] = [];
   @Input() repositoryKey: string;
   @Input() aggregateKey: string;
 
   @Output() public readonly modalClose = new EventEmitter<IkoDataRequestResponse | null>();
+
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
 
   public readonly propertyFields$: Observable<PropertyField[]> = toObservable(this.$isOpen).pipe(
     filter((open: boolean) => !!open),

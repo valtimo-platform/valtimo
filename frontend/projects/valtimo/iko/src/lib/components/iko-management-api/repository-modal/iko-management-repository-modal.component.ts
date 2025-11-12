@@ -68,15 +68,22 @@ export class IkoManagementRepositoryModalComponent {
     return this._open$.asObservable();
   }
 
-  public modalMode: ModalMode = 'add';
   public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoRepositoryConfigResponse | null>(null);
   @Input() public set prefillData(value: IkoRepositoryConfigResponse | null) {
     this.$prefillData.set(value);
     if (!value) return;
-    this.modalMode = 'edit';
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
+  }
+
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
   }
   @Output() public readonly modalClose = new EventEmitter<any | null>();
 
@@ -133,7 +140,6 @@ export class IkoManagementRepositoryModalComponent {
     this.modalClose.emit(null);
     runAfterCarbonModalClosed(() => {
       this.showAutoKey = false;
-      this.modalMode = 'add';
     });
   }
 

@@ -181,7 +181,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
       .replace(/_[-_]+/g, '_')
       .replace(/^[^a-z]+/g, '');
 
-    if (!usedKeys.includes(baseKey)) {
+    if (!usedKeys.includes(baseKey) || this._mode$.getValue() === 'edit') {
       return baseKey;
     }
 
