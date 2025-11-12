@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.contract.event
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.audit.AuditEvent
 import com.ritense.valtimo.contract.audit.AuditMetaData
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
@@ -24,21 +24,23 @@ import com.ritense.valtimo.contract.utils.RequestHelper
 import java.time.LocalDateTime
 import java.util.UUID
 
-@JsonIgnoreProperties(value = [
-    "noteDocumentId", "noteContent", "noteCreatedByUserId", "noteCreatedByUserFullName", "noteCreatedOn"
-])
 class NoteCreatedEvent(
     id: UUID = UUID.randomUUID(),
     origin: String = RequestHelper.getOrigin(),
     occurredOn: LocalDateTime = LocalDateTime.now(),
     user: String = AuditHelper.getActor(),
     val noteId: UUID,
-    val noteDocumentId: UUID,
-    val noteContent: String,
-    val noteCreatedByUserId: String,
-    val noteCreatedByUserFullName: String,
-    val noteCreatedOn: LocalDateTime,
+    @JsonIgnore
+    val noteDocumentId: UUID? = null,
+    @JsonIgnore
+    val noteContent: String? = null,
+    @JsonIgnore
+    val noteCreatedByUserId: String? = null,
+    @JsonIgnore
+    val noteCreatedByUserFullName: String? = null,
+    @JsonIgnore
+    val noteCreatedOn: LocalDateTime? = null,
 ) : AuditMetaData(id, origin, occurredOn, user), AuditEvent {
 
-    override fun getDocumentId(): UUID = noteDocumentId
+    override fun getDocumentId(): UUID? = noteDocumentId
 }

@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.contract.event
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.audit.AuditEvent
 import com.ritense.valtimo.contract.audit.AuditMetaData
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
@@ -24,15 +24,15 @@ import com.ritense.valtimo.contract.utils.RequestHelper
 import java.time.LocalDateTime
 import java.util.UUID
 
-@JsonIgnoreProperties(value = ["noteDocumentId"])
 class NoteDeletedEvent(
     id: UUID = UUID.randomUUID(),
     origin: String = RequestHelper.getOrigin(),
     occurredOn: LocalDateTime = LocalDateTime.now(),
     user: String = AuditHelper.getActor(),
     val noteId: UUID,
-    val noteDocumentId: UUID,
+    @JsonIgnore
+    val noteDocumentId: UUID? = null,
 ) : AuditMetaData(id, origin, occurredOn, user), AuditEvent {
 
-    override fun getDocumentId(): UUID = noteDocumentId
+    override fun getDocumentId(): UUID? = noteDocumentId
 }
