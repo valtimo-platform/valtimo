@@ -169,6 +169,29 @@ class BuildingBlockDefinitionArtworkResourceIT @Autowired constructor(
         assertThat(buildingBlockDefinitionArtworkRepository.findById(definition.id)).isEmpty
     }
 
+    @Test
+    @WithMockUser
+    fun `should remove artwork when definition is deleted`() {
+        val id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
+        val definition = buildingBlockDefinitionRepository.findById(id).orElseThrow()
+
+        val imageBytes = createPngBytes(10, 10)
+        val artwork = BuildingBlockDefinitionArtwork(
+            id = id,
+            definition = definition,
+            imageBase64 = Base64.getEncoder().encodeToString(imageBytes)
+        )
+        definition.artwork = artwork
+        buildingBlockDefinitionRepository.saveAndFlush(definition)
+
+        assertThat(buildingBlockDefinitionArtworkRepository.findById(id)).isPresent
+
+        buildingBlockDefinitionRepository.delete(definition)
+        buildingBlockDefinitionRepository.flush()
+
+        assertThat(buildingBlockDefinitionArtworkRepository.findById(id)).isEmpty
+    }
+
     private fun createPngBytes(width: Int, height: Int): ByteArray {
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val g = image.createGraphics()

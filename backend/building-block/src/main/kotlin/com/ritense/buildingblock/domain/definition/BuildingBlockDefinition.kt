@@ -22,10 +22,12 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.repository.SemverConverter
 import com.ritense.valtimo.contract.serializer.SemverSerializer
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.semver4j.Semver
@@ -66,7 +68,9 @@ open class BuildingBlockDefinition(
 
     @OneToOne(
         mappedBy = "definition",
-        optional = true
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
     )
     open var artwork: BuildingBlockDefinitionArtwork? = null
 
