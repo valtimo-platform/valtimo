@@ -26,7 +26,8 @@ jobs:
 
   build_and_push_image:
     name: Build and push image
-    needs: build_and_test_libraries
+    needs:
+      - build_and_test_libraries
     uses: "./.github/workflows/frontend_build_push_docker_image.yml"
     secrets: inherit
     with:
@@ -39,6 +40,7 @@ jobs:
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: "snapshot"
+      project_version: ${{ needs.build_and_test_libraries.outputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
     secrets: inherit
 
