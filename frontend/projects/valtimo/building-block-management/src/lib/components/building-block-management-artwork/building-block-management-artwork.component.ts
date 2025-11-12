@@ -21,7 +21,11 @@ import {
 } from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
 import {FormBuilder, FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ReadOnlyDirective, TooltipIconModule} from '@valtimo/components';
+import {
+  ConfirmationModalModule,
+  RenderInBodyComponent,
+  TooltipIconModule,
+} from '@valtimo/components';
 import {
   ButtonModule,
   FileUploaderModule,
@@ -46,11 +50,12 @@ import {TrashCan16, Upload16} from '@carbon/icons';
     InputModule,
     TooltipIconModule,
     LayerModule,
-    ReadOnlyDirective,
     ButtonModule,
     FileUploaderModule,
     LoadingModule,
     IconModule,
+    ConfirmationModalModule,
+    RenderInBodyComponent,
   ],
 })
 export class BuildingBlockManagementArtworkComponent {
@@ -77,6 +82,8 @@ export class BuildingBlockManagementArtworkComponent {
     ),
     tap(() => this.loadingArtwork$.next(false))
   );
+
+  public readonly showDeleteConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -110,6 +117,10 @@ export class BuildingBlockManagementArtworkComponent {
           this.formGroup.enable();
         },
       });
+  }
+
+  public onDeleteButtonClick(): void {
+    this.showDeleteConfirmationModal$.next(true);
   }
 
   public onDelete(): void {
