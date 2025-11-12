@@ -25,7 +25,6 @@ import {
   CreateBuildingBlockDefinitionArtworkDto,
   CreateBuildingBlockDefinitionDto,
   InterceptorSkip,
-  UpdateBuildingBlockDefinitionArtworkDto,
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
@@ -146,20 +145,18 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     );
   }
 
-  public updateBuildingBlockArtwork(
-    key: string,
-    versionTag: string,
-    dto: UpdateBuildingBlockDefinitionArtworkDto
-  ): Observable<BuildingBlockDefinitionArtworkDto> {
-    return this.httpClient.put<BuildingBlockDefinitionArtworkDto>(
-      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`),
-      dto
-    );
-  }
-
   public deleteBuildingBlockArtwork(key: string, versionTag: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`)
+    );
+  }
+
+  public getPluginDefinitionsForBuildingBlock(
+    key: string,
+    versionTag: string
+  ): Observable<string[]> {
+    return this.httpClient.get<string[]>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/plugin`)
     );
   }
 }

@@ -21,7 +21,6 @@
   padding: 16px;
   background-color: var(--cds-layer-01);
   max-width: 625px;
-  border-radius: 8px;
 
   &__title {
     font-size: 16px;
@@ -35,7 +34,6 @@
     justify-content: center;
     align-items: center;
     background-color: var(--cds-layer-02);
-    border: 1px solid var(--cds-border-subtle);
     padding: 12px;
     min-height: 180px;
   }
