@@ -212,7 +212,7 @@ class BuildingBlockAutoConfiguration {
     ) = BuildingBlockDefinitionCheckerImpl(repository, environment, draftEnvironments, draftsEnabled)
 
     @Bean
-    @DependsOn("importService")
+    @DependsOn("importService") // TODO: Figure out why this is needed
     fun buildingBlockDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
         valtimoImportService: ValtimoImportService,
