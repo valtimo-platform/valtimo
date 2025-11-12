@@ -43,7 +43,7 @@ class BuildingBlockDefinitionDeploymentService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
-    @Order(Ordered.LOWEST_PRECEDENCE-1)
+    @Order(Ordered.LOWEST_PRECEDENCE)
     @EventListener(ApplicationReadyEvent::class)
     fun deployOnStartup() {
         deployBuildingBlock()
