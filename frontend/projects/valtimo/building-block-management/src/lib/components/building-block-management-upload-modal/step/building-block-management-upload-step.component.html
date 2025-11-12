@@ -14,14 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div class="muuri-container">
-  <div muuri [columnMinWidth]="400">
-    <valtimo-muuri-item>
-      <valtimo-building-block-management-metadata></valtimo-building-block-management-metadata>
-    </valtimo-muuri-item>
+<div class="valtimo-upload-step__content">
+  <div class="valtimo-upload-step__title">{{ title }}</div>
 
-    <valtimo-muuri-item>
-      <valtimo-building-block-management-artwork></valtimo-building-block-management-artwork>
-    </valtimo-muuri-item>
-  </div>
+  <div class="valtimo-upload-step__message">{{ message }}</div>
 </div>
+
+<img [src]="illustration" alt="{{ illustration }}" class="valtimo-upload-step__illustration" />

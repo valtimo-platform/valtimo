@@ -22,10 +22,13 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.repository.SemverConverter
 import com.ritense.valtimo.contract.serializer.SemverSerializer
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.semver4j.Semver
 import org.springframework.data.annotation.CreatedBy
@@ -34,27 +37,43 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "building_block_definition")
-data class BuildingBlockDefinition(
+open class BuildingBlockDefinition(
     @EmbeddedId
-    val id: BuildingBlockDefinitionId,
+    open var id: BuildingBlockDefinitionId,
+
     @Column(name = "name")
-    val name: String,
+    open var name: String,
+
     @Column(name = "description")
-    val description: String? = null,
+    open var description: String? = null,
+
     @CreatedBy
-    @Column(name = "created_by", updatable = false) @JsonIgnore
-    val createdBy: String? = null,
+    @Column(name = "created_by", updatable = false)
+    @JsonIgnore
+    open var createdBy: String? = null,
+
     @CreatedDate
     @Column(name = "created_date", updatable = false)
     @JsonIgnore
-    val createdDate: LocalDateTime?,
+    open var createdDate: LocalDateTime? = null,
+
     @Convert(converter = SemverConverter::class)
     @Column(name = "based_on_version_tag", updatable = false)
     @JsonSerialize(using = SemverSerializer::class)
-    val basedOnVersionTag: Semver? = null,
+    open var basedOnVersionTag: Semver? = null,
+
     @Column(name = "is_final")
-    val final: Boolean = false,
+    open var final: Boolean = false
 ) {
+
+    @OneToOne(
+        mappedBy = "definition",
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    open var artwork: BuildingBlockDefinitionArtwork? = null
+
     fun toDto(): BuildingBlockDefinitionDto {
         return BuildingBlockDefinitionDto(
             key = this.id.key,
@@ -66,5 +85,49 @@ data class BuildingBlockDefinition(
             basedOnVersionTag = this.basedOnVersionTag?.toString(),
             final = this.final
         )
+    }
+
+    fun copy(
+        id: BuildingBlockDefinitionId = this.id,
+        name: String = this.name,
+        description: String? = this.description,
+        createdBy: String? = this.createdBy,
+        createdDate: LocalDateTime? = this.createdDate,
+        basedOnVersionTag: Semver? = this.basedOnVersionTag,
+        final: Boolean = this.final,
+        artwork: BuildingBlockDefinitionArtwork? = this.artwork,
+    ): BuildingBlockDefinition {
+        val clone = BuildingBlockDefinition(
+            id = id,
+            name = name,
+            description = description,
+            createdBy = createdBy,
+            createdDate = createdDate,
+            basedOnVersionTag = basedOnVersionTag,
+            final = final
+        )
+
+        if (artwork != null) {
+            clone.artwork = BuildingBlockDefinitionArtwork(
+                definition = clone,
+                imageBase64 = artwork.imageBase64,
+                id = artwork.id
+            )
+        }
+
+        return clone
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as BuildingBlockDefinition
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String {
+        return "BuildingBlockDefinition(id=$id, name='$name', final=$final)"
     }
 }

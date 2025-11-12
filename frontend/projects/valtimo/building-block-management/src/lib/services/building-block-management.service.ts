@@ -21,6 +21,8 @@ import {BehaviorSubject} from 'rxjs';
 export class BuildingBlockManagementService {
   private readonly _showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showCreateModal$ = this._showCreateModal$.asObservable();
+  private readonly _showUploadModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showUploadModal$ = this._showUploadModal$.asObservable();
   private readonly _usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly usedKeys$ = this._usedKeys$.asObservable();
   private readonly _reload$ = new BehaviorSubject<null>(null);
@@ -29,9 +31,15 @@ export class BuildingBlockManagementService {
   public showCreateModal(): void {
     this._showCreateModal$.next(true);
   }
-
   public hideCreateModal(): void {
     this._showCreateModal$.next(false);
+  }
+
+  public showUploadModal(): void {
+    this._showUploadModal$.next(true);
+  }
+  public hideUploadModal(): void {
+    this._showUploadModal$.next(false);
   }
 
   public setUsedKeys(keys: string[]): void {

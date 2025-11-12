@@ -25,6 +25,7 @@ import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 
 @Component({
   standalone: true,
@@ -38,6 +39,7 @@ import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
     IconModule,
     TranslatePipe,
     BuildingBlockManagementCreateModalComponent,
+    BuildingBlockManagementUploadModalComponent,
   ],
   providers: [BuildingBlockManagementService],
 })
@@ -73,6 +75,10 @@ export class BuildingBlockManagementListComponent {
 
   public showCreateModal(): void {
     this.buildingBlockManagementService.showCreateModal();
+  }
+
+  public showUploadModal(): void {
+    this.buildingBlockManagementService.showUploadModal();
   }
 
   public onRowClick(buildingBlockDefinition: BuildingBlockDefinitionDto): void {

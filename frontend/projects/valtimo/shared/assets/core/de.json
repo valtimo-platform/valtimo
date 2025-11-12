@@ -2103,6 +2103,47 @@
       "name": "Name",
       "key": "Schlüssel",
       "mainText": "Hauptprozess"
+    },
+    "importDefinition": {
+      "title": "Baublock-Definition importieren",
+      "overwriteWarning": "Wenn Ihre Baublock-Definition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits im System vorhanden, werden diese überschrieben.",
+      "startUpload": "Upload starten",
+      "checkbox": {
+        "message": "Ich verstehe, dass Konfigurationen überschrieben werden können",
+        "error": "Dieses Feld ist erforderlich"
+      },
+      "info": {
+        "title": "Achtung",
+        "message": "Bevor Sie importieren, stellen Sie bitte sicher, dass die in dieser Baublock-Definition referenzierten Plugin-Konfigurationen oder Prozessdefinitionen bereits im System vorhanden sind."
+      },
+      "upload": {
+        "title": "Datei hochladen",
+        "description": "Maximale Dateigröße ist 500 KB. Unterstützte Dateitypen sind ZIP und JSON.",
+        "buttonText": "Datei auswählen"
+      },
+      "progressBar": {
+        "active": "Dies kann eine Weile dauern",
+        "error": "Die Baublock-Definition konnte nicht importiert werden. Aufgrund eines Fehlers wurde nichts importiert. Bitte versuchen Sie es später erneut. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
+        "finished": "Baublock-Definition erfolgreich importiert",
+        "label": "Baublock-Definition wird importiert"
+      },
+      "invalidJsonError": {
+        "text": "Bitte stellen Sie sicher, dass die Datei einen gültigen JSON-Wert enthält.",
+        "title": "Die Datei enthält einen Fehler."
+      },
+      "steps": {
+        "plugins": {
+          "message": "Dieser Baublock kann Plugins verwenden. Stellen Sie sicher, dass Sie diese korrekt konfigurieren.",
+          "title": "Plugin-Konfiguration"
+        }
+      }
+    },
+    "artwork": {
+      "title": "Grafik",
+      "fileUploaderTitle": "Wählen Sie eine Grafik für diesen Baublock aus",
+      "fileUploaderDescription": "Die maximale Dateigröße beträgt 10 MB. Nur .png-Bilder werden unterstützt. Stellen Sie sicher, dass der Hintergrund des Bildes transparent ist.",
+      "fileUploaderButton": "Datei auswählen",
+      "deleteConfirmationModalText": "Sind Sie sicher, dass Sie diese Grafik löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
     }
   }
 }
