@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class ProcessLinkImporter(
+open class ProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
     private val repositoryService: OperatonRepositoryService,
     private val objectMapper: ObjectMapper
@@ -49,7 +49,7 @@ class ProcessLinkImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val processDefinitionKey = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
+        val processDefinitionKey = getFilenameRegexToImport().matchEntire(request.fileName)!!.groupValues[1]
         withLoggingContext("processDefinitionKey", processDefinitionKey) {
             val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
                 repositoryService.findLatestProcessDefinition(processDefinitionKey)?.id
@@ -87,6 +87,10 @@ class ProcessLinkImporter(
                 }
             }
         }
+    }
+
+    protected fun getFilenameRegexToImport(): Regex {
+        return FILENAME_REGEX
     }
 
     private companion object {

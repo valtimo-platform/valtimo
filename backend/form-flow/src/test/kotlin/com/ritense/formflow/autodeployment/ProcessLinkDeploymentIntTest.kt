@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 package com.ritense.formflow.autodeployment
 
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
+import com.ritense.formflow.BaseIntegrationTest
+import com.ritense.formflow.domain.FormFlowProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.formflow.BaseIntegrationTest
-import com.ritense.formflow.domain.FormFlowProcessLink
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.equalTo
@@ -33,10 +32,9 @@ import org.springframework.transaction.annotation.Transactional
 
 
 @Transactional
-class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired constructor(
+class ProcessLinkDeploymentIntTest @Autowired constructor(
     private val repositoryService: OperatonRepositoryService,
-    private val processLinkRepository: ProcessLinkRepository,
-    private val listener: ProcessLinkDeploymentApplicationReadyEventListener
+    private val processLinkRepository: ProcessLinkRepository
 ): BaseIntegrationTest() {
 
     @Test
