@@ -19,9 +19,11 @@ package com.ritense.buildingblock.processlink.mapper
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateRequestDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkUpdateRequestDto
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
@@ -33,21 +35,38 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
 class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     private val mapper: BuildingBlockProcessLinkMapper,
-    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
 ) : BaseIntegrationTest() {
 
     @MockBean
     lateinit var processLinkService: ProcessLinkService
+
+    lateinit var buildingBlock: BuildingBlockDefinition
+
+    @BeforeEach
+    fun setUp() {
+        val bbToSave = BuildingBlockDefinition(
+            BuildingBlockDefinitionId.of("bb", "1.0.0"),
+            "Test Building Block",
+            "This is a building block used to test process links.",
+            "Me",
+            LocalDateTime.now(),
+        )
+        this.buildingBlock = buildingBlockDefinitionRepository.save(bbToSave)
+    }
 
     @AfterEach
     fun tearDown() {
@@ -56,7 +75,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
     @Test
     fun `should create process link when mappings cover required plugins`() {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
+        val buildingBlockDefinitionId = buildingBlock.id
         val mainProcessDefinitionId = "bb-process"
         stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
         stubBuildingBlockPluginLink(mainProcessDefinitionId, "zaken")
@@ -79,7 +98,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
     @Test
     fun `should throw when required plugin mapping missing`() {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
+        val buildingBlockDefinitionId = buildingBlock.id
         val mainProcessDefinitionId = "bb-process"
         stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
         stubBuildingBlockPluginLink(mainProcessDefinitionId, "zaken")
@@ -107,7 +126,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
     @Test
     fun `should allow empty mappings when no placeholders`() {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
+        val buildingBlockDefinitionId = buildingBlock.id
         val mainProcessDefinitionId = "bb-process"
         stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
         doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
