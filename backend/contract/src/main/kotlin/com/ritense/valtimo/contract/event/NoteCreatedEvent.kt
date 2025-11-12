@@ -24,7 +24,9 @@ import com.ritense.valtimo.contract.utils.RequestHelper
 import java.time.LocalDateTime
 import java.util.UUID
 
-@JsonIgnoreProperties(value = ["noteContent", "noteCreatedByUserId", "noteCreateByUserFullName", "noteCreatedOn"])
+@JsonIgnoreProperties(value = [
+    "noteDocumentId", "noteContent", "noteCreatedByUserId", "noteCreatedByUserFullName", "noteCreatedOn"
+])
 class NoteCreatedEvent(
     id: UUID = UUID.randomUUID(),
     origin: String = RequestHelper.getOrigin(),
