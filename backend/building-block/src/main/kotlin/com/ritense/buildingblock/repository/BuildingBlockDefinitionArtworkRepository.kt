@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-.muuri-container {
-  display: block;
-  width: 100%;
-}
+package com.ritense.buildingblock.repository
+
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwork
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface BuildingBlockDefinitionArtworkRepository :
+    JpaRepository<BuildingBlockDefinitionArtwork, BuildingBlockDefinitionId>

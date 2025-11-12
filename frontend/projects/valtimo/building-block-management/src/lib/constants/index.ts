@@ -15,3 +15,4 @@
  */
 
 export * from './building-block-management.constants';
+export * from './building-block-management-upload.constants';

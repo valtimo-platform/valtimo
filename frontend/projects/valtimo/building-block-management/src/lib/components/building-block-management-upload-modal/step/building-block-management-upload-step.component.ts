@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-.muuri-container {
-  display: block;
-  width: 100%;
+import {Component, Input} from '@angular/core';
+import {CommonModule} from '@angular/common';
+
+@Component({
+  standalone: true,
+  selector: 'valtimo-building-block-management-upload-step',
+  templateUrl: './building-block-management-upload-step.component.html',
+  styleUrls: ['./building-block-management-upload-step.component.scss'],
+  imports: [CommonModule],
+})
+export class BuildingBlockManagementUploadStepComponent {
+  @Input() illustration!: string;
+  @Input() message!: string;
+  @Input() title!: string;
 }
