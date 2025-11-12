@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,11 @@
 
 package com.ritense.importer
 
+import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,6 +32,12 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class ValtimoImportServiceTest {
 
@@ -134,11 +136,29 @@ class ValtimoImportServiceTest {
                 ))
             }
 
-        val importService = ValtimoImportService(importers.shuffled().toSet(), mock(), emptyList())
+        //since import only imports files for a case definition, we add a fake case definition
+        val caseDefinitionImporterMock = mock<Importer>()
+        whenever(caseDefinitionImporterMock.dependsOn()).thenReturn(emptySet())
+        whenever(caseDefinitionImporterMock.type()).thenReturn(CASE_DEFINITION)
+        whenever(caseDefinitionImporterMock.partOfCaseDefinition()).thenReturn(true)
+        whenever(caseDefinitionImporterMock.supports(any())).thenAnswer { invocation ->
+            (invocation.arguments[0] as String) == "test-case"
+        }
+
+        val fakeCaseDefinition = """
+            {
+                "key": "fake",
+                "name": "Case",
+                "versionTag": "1.0.0",
+                "final": true
+            }
+        """.trimIndent()
+
+        val importService = ValtimoImportService(importers.shuffled().toSet()+caseDefinitionImporterMock, mock(), emptyList())
 
         // do not create file "3"
         val skip = 3
-        val inputStream = createZipInputStream(fileCount, skip)
+        val inputStream = createZipInputStream(fileCount, skip, listOf(Pair("test-case", fakeCaseDefinition)))
         importService.import(inputStream, emptyList())
 
         // Verify the importers are called in the correct order
@@ -156,7 +176,7 @@ class ValtimoImportServiceTest {
         }
     }
 
-    private fun createZipInputStream(size: Int = 5, skip: Int? = null): InputStream {
+    private fun createZipInputStream(size: Int = 5, skip: Int? = null, extraEntries: List<Pair<String, String>> = emptyList()): InputStream {
         val outputStream = ByteArrayOutputStream()
         ZipOutputStream(outputStream).use { zipStream ->
             // Start at 0 to add a file that has no candidate importer
@@ -168,6 +188,12 @@ class ValtimoImportServiceTest {
                     zipStream.write(index.toByteArray())
                     zipStream.closeEntry()
                 }
+
+            extraEntries.forEach { pair ->
+                zipStream.putNextEntry(ZipEntry(pair.first))
+                zipStream.write(pair.second.toByteArray())
+                zipStream.closeEntry()
+            }
         }
 
         return ByteArrayInputStream(outputStream.toByteArray())
