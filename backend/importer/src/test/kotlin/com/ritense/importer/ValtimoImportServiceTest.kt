@@ -201,7 +201,8 @@ class ValtimoImportServiceTest {
             supportsFunction = { true },
             importFunction = { req ->
                 received[req.fileName] = req.content
-            }
+            },
+            isCaseDefinition = false
         )
 
         val service = ValtimoImportService(setOf(importer), mock(), emptyList())

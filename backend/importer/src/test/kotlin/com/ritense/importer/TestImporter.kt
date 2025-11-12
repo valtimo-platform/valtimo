@@ -20,7 +20,8 @@ open class TestImporter(
     private val type: String = "test",
     private val dependsOn: Set<String> = setOf(),
     private val supportsFunction: (String) -> Boolean = { true },
-    private val importFunction: (ImportRequest) -> Unit = { }
+    private val importFunction: (ImportRequest) -> Unit = { },
+    private val isCaseDefinition: Boolean = true
 ) : Importer {
     override fun type() = type
 
@@ -30,5 +31,5 @@ open class TestImporter(
 
     override fun import(request: ImportRequest) = importFunction(request)
 
-    override fun partOfCaseDefinition(): Boolean = true
+    override fun partOfCaseDefinition(): Boolean = isCaseDefinition
 }
