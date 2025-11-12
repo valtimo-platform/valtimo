@@ -7,9 +7,19 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  ValtimoCdsModalDirective,
+  AutoKeyInputComponent,
+} from '@valtimo/components';
 import {
   ButtonModule,
   IconModule,
@@ -25,6 +35,7 @@ import {
 } from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-view-modal',
@@ -43,6 +54,7 @@ import {PropertiesFormComponent} from '../../iko-management-properties/iko-manag
     IconModule,
     PropertiesFormComponent,
     LayerModule,
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementViewModalComponent {
@@ -52,6 +64,15 @@ export class IkoManagementViewModalComponent {
     this._open$.next(value);
 
     if (!value) this.resetForm();
+  }
+
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
   }
 
   public get open$(): Observable<boolean> {
@@ -67,16 +88,23 @@ export class IkoManagementViewModalComponent {
   }
 
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
+  public readonly $selectedKey = signal<string>('');
 
   @Input() public set prefillData(value: IkoDataAggregateResponse | null) {
-    this.$prefillData.set(value);
     if (!value) return;
 
+    this.$selectedKey.set(value?.key);
+    this.$prefillData.set(value);
     this.formGroup.patchValue(value);
-    this.formGroup.get('key')?.disable();
   }
 
+  @Input() public usedKeys: string[] = [];
+
   @Output() public readonly modalClose = new EventEmitter<any | null>();
+
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
 
   public readonly propertyFields$: Observable<PropertyField[]> = this.open$.pipe(
     filter((open: boolean) => !!open),
@@ -106,6 +134,7 @@ export class IkoManagementViewModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
+    this.$prefillData.set(null);
   }
 
   public onSave(): void {

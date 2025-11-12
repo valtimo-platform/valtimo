@@ -19,45 +19,46 @@
   [open]="$isOpen()"
   size="sm"
   showFooter="true"
-  [title]="'ikoManagement.searchActions.' + $modalType() + 'ActionTitle' | translate"
+  [title]="'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate"
   (close)="onCancel()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 cdsModalHeaderHeading>
-      {{ 'ikoManagement.searchActions.' + $modalType() + 'ActionTitle' | translate }}
+      {{ 'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate }}
     </h3>
   </cds-modal-header>
 
   <form cdsModalContent [formGroup]="formGroup">
-    <cds-label>
-      {{ 'interface.title' | translate }}
+    @if($isOpen())
+    {
+      <cds-label>
+        {{ 'interface.title' | translate }}
 
-      <input
-        formControlName="title"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.title' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        <input
+          formControlName="title"
+          cdsText
+          cdsLayer
+          placeholder="{{ 'interface.title' | translate }}"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
-
-      <input
+      <valtimo-auto-key-input
         formControlName="key"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        labelTranslationKey="ikoManagement.keyTitle"
+        placeholderTranslationKey="interface.key"
+        [usedKeys]="usedKeys"
+        [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
+        [mode]="modalMode"
+      >
+      </valtimo-auto-key-input>
 
-    <valtimo-iko-management-properties
-      [propertiesFormGroup]="properties"
-      [fields]="propertyFields$ | async"
-      [prefillData]="$prefillData()?.properties"
+      <valtimo-iko-management-properties
+        [propertiesFormGroup]="properties"
+        [fields]="propertyFields$ | async"
+        [prefillData]="$prefillData()?.properties"
       />
+    }
   </form>
 
   <cds-modal-footer>
