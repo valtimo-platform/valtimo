@@ -32,5 +32,5 @@ class NoteDeletedEvent(
     val noteDocumentId: UUID,
 ) : AuditMetaData(id, origin, occurredOn, user), AuditEvent {
 
-    override fun getDocumentId(): UUID? = noteDocumentId
+    override fun getDocumentId(): UUID = noteDocumentId
 }

@@ -35,5 +35,5 @@ class NoteUpdatedEvent(
     val noteContent: String,
 ) : AuditMetaData(id, origin, occurredOn, user), AuditEvent {
 
-    override fun getDocumentId(): UUID? = noteDocumentId
+    override fun getDocumentId(): UUID = noteDocumentId
 }
