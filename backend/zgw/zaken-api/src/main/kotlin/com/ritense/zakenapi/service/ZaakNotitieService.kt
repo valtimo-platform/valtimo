@@ -27,12 +27,12 @@ class ZaakNotitieService(
                 "Note(id=${event.noteId}, documentId=${event.noteDocumentId})"
         }
         logger.trace { "Event: $event" }
-        zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
+        zaakUrlProvider.getZaakUrl(event.noteDocumentId!!).let { zaakUrl ->
             if (!zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
                 zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                     zakenApiPlugin.createZaakNotitie(
                         onderwerp = zakenApiPlugin.noteSubject,
-                        tekst = event.noteContent,
+                        tekst = event.noteContent!!,
                         zaakUrl = zaakUrl,
                         aangemaaktDoor = event.noteCreatedByUserFullName
                     ).let { zaakNotitie ->
@@ -65,12 +65,12 @@ class ZaakNotitieService(
         logger.trace { "Event: $event" }
         if (zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
             zaakNotitieLinkRepository.getByNoteId(event.noteId).let { zaakNotitieLink ->
-                zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
+                zaakUrlProvider.getZaakUrl(event.noteDocumentId!!).let { zaakUrl ->
                     zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                         zakenApiPlugin.updateZaakNotitie(
                             zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
                             onderwerp = zakenApiPlugin.noteSubject,
-                            tekst = event.noteContent,
+                            tekst = event.noteContent!!,
                             zaakUrl = zaakUrl
                         ).also {
                             logger.info { "Updated ZaakNotitie(url=${it.url})" }
@@ -91,7 +91,7 @@ class ZaakNotitieService(
         logger.trace { "Event: $event" }
         if (zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
             zaakNotitieLinkRepository.getByNoteId(event.noteId).let { zaakNotitieLink ->
-                zakenApiPluginInstanceFor(event.noteDocumentId)?.let { zakenApiPlugin ->
+                zakenApiPluginInstanceFor(event.noteDocumentId!!)?.let { zakenApiPlugin ->
                     zakenApiPlugin.deleteZaakNotitie(zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl)
                     zaakNotitieLinkRepository.deleteById(zaakNotitieLink.id).also {
                         logger.debug { "Deleted ZaakNotitieLink for " +

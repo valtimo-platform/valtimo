@@ -71,7 +71,7 @@ internal class ZaakNotitieServiceTest {
                 notitieType = anyOrNull(),
                 status = anyOrNull()
             )
-        ).thenReturn(zaakNotitie(tekst = event.noteContent))
+        ).thenReturn(zaakNotitie(tekst = event.noteContent!!))
 
         whenever(zaakNotitieLinkRepository.existsByNoteId(event.noteId))
             .thenReturn(false)
@@ -82,7 +82,7 @@ internal class ZaakNotitieServiceTest {
         // then
         verify(zakenApiPlugin).createZaakNotitie(
             onderwerp = any(),
-            tekst = eq(event.noteContent),
+            tekst = eq(event.noteContent!!),
             zaakUrl = eq(zaakUrl()),
             aangemaaktDoor = eq(event.noteCreatedByUserFullName),
             notitieType = eq(null),
@@ -125,7 +125,7 @@ internal class ZaakNotitieServiceTest {
                 notitieType = anyOrNull(),
                 status = anyOrNull()
             )
-        ).thenReturn(zaakNotitie(tekst = event.noteContent))
+        ).thenReturn(zaakNotitie(tekst = event.noteContent!!))
 
         whenever(zaakNotitieLinkRepository.existsByNoteId(event.noteId))
             .thenReturn(true)
@@ -140,7 +140,7 @@ internal class ZaakNotitieServiceTest {
         verify(zakenApiPlugin).updateZaakNotitie(
             zaakNotitieUrl = eq(zaakNotitieLink.zaakNotitieUrl),
             onderwerp = any(),
-            tekst = eq(event.noteContent),
+            tekst = eq(event.noteContent!!),
             zaakUrl = eq(zaakUrl()),
             aangemaaktDoor = eq(null),
             notitieType = eq(null),

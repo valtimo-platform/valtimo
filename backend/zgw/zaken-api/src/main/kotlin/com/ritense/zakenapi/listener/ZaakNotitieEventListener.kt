@@ -28,7 +28,7 @@ class ZaakNotitieEventListener(
     @EventListener(NoteCreatedEvent::class)
     fun handleNoteCreatedEvent(event: NoteCreatedEvent) {
         logger.debug { "Note created event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId)) {
+        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
             zaakNotitieService.createZaakNotitieFrom(event)
         }
     }
@@ -37,7 +37,7 @@ class ZaakNotitieEventListener(
     @EventListener(NoteUpdatedEvent::class)
     fun handleNoteUpdatedEvent(event: NoteUpdatedEvent) {
         logger.debug { "Note updated event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId)) {
+        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
             zaakNotitieService.updateZaakNotitieFrom(event)
         }
     }
@@ -46,7 +46,7 @@ class ZaakNotitieEventListener(
     @EventListener(NoteDeletedEvent::class)
     fun handleNoteDeletedEvent(event: NoteDeletedEvent) {
         logger.debug { "Note deleted event received: $event" }
-        if (noteEventListenerEnabled(event.noteDocumentId)) {
+        if (noteEventListenerEnabled(event.noteDocumentId!!)) {
             zaakNotitieService.deleteZaakNotitieFrom(event)
         }
     }
