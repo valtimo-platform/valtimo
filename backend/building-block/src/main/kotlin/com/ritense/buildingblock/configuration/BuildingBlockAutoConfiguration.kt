@@ -18,11 +18,11 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -130,11 +130,13 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)
     fun buildingBlockDefinitionArtworkService(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository
+        buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
+        authroizationService: AuthorizationService
     ): BuildingBlockDefinitionArtworkService {
         return BuildingBlockDefinitionArtworkService(
             buildingBlockDefinitionRepository,
-            buildingBlockDefinitionArtworkRepository
+            buildingBlockDefinitionArtworkRepository,
+            authroizationService
         )
     }
 

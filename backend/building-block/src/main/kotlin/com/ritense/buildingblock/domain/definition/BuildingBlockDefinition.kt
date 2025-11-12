@@ -90,9 +90,10 @@ open class BuildingBlockDefinition(
         createdBy: String? = this.createdBy,
         createdDate: LocalDateTime? = this.createdDate,
         basedOnVersionTag: Semver? = this.basedOnVersionTag,
-        final: Boolean = this.final
+        final: Boolean = this.final,
+        artwork: BuildingBlockDefinitionArtwork? = this.artwork,
     ): BuildingBlockDefinition {
-        return BuildingBlockDefinition(
+        val clone = BuildingBlockDefinition(
             id = id,
             name = name,
             description = description,
@@ -101,6 +102,16 @@ open class BuildingBlockDefinition(
             basedOnVersionTag = basedOnVersionTag,
             final = final
         )
+
+        if (artwork != null) {
+            clone.artwork = BuildingBlockDefinitionArtwork(
+                definition = clone,
+                imageBase64 = artwork.imageBase64,
+                id = artwork.id
+            )
+        }
+
+        return clone
     }
 
     override fun equals(other: Any?): Boolean {

@@ -16,6 +16,9 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwork
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
@@ -39,17 +42,20 @@ import kotlin.math.roundToInt
 @Service
 class BuildingBlockDefinitionArtworkService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    private val buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository
+    private val buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
+    private val authorizationService: AuthorizationService,
 ) {
 
     @Transactional(readOnly = true)
     fun getArtwork(key: String, versionTag: String): BuildingBlockDefinitionArtworkDto? {
+        denyAuthorization()
+
         val id = BuildingBlockDefinitionId(key, versionTag)
         val artwork = buildingBlockDefinitionArtworkRepository.findByIdOrNull(id) ?: return null
 
         return BuildingBlockDefinitionArtworkDto(
-            key = artwork.id!!.key,
-            versionTag = artwork.id!!.versionTag.toString(),
+            key = artwork.id.key,
+            versionTag = artwork.id.versionTag.toString(),
             imageBase64 = artwork.imageBase64
         )
     }
@@ -60,6 +66,8 @@ class BuildingBlockDefinitionArtworkService(
         versionTag: String,
         dto: CreateBuildingBlockDefinitionArtworkDto
     ): BuildingBlockDefinitionArtworkDto {
+        denyAuthorization()
+
         val id = BuildingBlockDefinitionId(key, versionTag)
 
         val definition = buildingBlockDefinitionRepository.findByIdOrNull(id)
@@ -73,20 +81,23 @@ class BuildingBlockDefinitionArtworkService(
 
         val entity = BuildingBlockDefinitionArtwork(
             definition = definition,
-            imageBase64 = normalizedBase64
+            imageBase64 = normalizedBase64,
+            id = id
         )
 
         val saved = buildingBlockDefinitionArtworkRepository.save(entity)
 
         return BuildingBlockDefinitionArtworkDto(
-            key = saved.id!!.key,
-            versionTag = saved.id!!.versionTag.toString(),
+            key = saved.id.key,
+            versionTag = saved.id.versionTag.toString(),
             imageBase64 = saved.imageBase64
         )
     }
 
     @Transactional
     fun deleteArtwork(key: String, versionTag: String) {
+        denyAuthorization()
+
         val id = BuildingBlockDefinitionId(key, versionTag)
         if (buildingBlockDefinitionArtworkRepository.existsById(id)) {
             buildingBlockDefinitionArtworkRepository.deleteById(id)
@@ -147,6 +158,15 @@ class BuildingBlockDefinitionArtworkService(
         }
 
         return Base64.getEncoder().encodeToString(pngBytes)
+    }
+
+    private fun denyAuthorization() {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                BuildingBlockDefinitionArtwork::class.java,
+                Action.deny()
+            )
+        )
     }
 
     companion object {

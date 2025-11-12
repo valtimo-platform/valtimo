@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
@@ -41,11 +42,13 @@ class BuildingBlockDefinitionArtworkImporter(
         val base64 = Base64.getEncoder().encodeToString(request.content)
         val dto = CreateBuildingBlockDefinitionArtworkDto(imageBase64 = base64)
 
-        buildingBlockDefinitionArtworkService.createArtwork(
-            buildingBlockDefinitionId.key,
-            buildingBlockDefinitionId.versionTag.toString(),
-            dto
-        )
+        runWithoutAuthorization {
+            buildingBlockDefinitionArtworkService.createArtwork(
+                buildingBlockDefinitionId.key,
+                buildingBlockDefinitionId.versionTag.toString(),
+                dto
+            )
+        }
     }
 
     override fun partOfCaseDefinition() = false
@@ -53,6 +56,6 @@ class BuildingBlockDefinitionArtworkImporter(
     override fun partOfBuildingBlockDefinition() = true
 
     private companion object {
-        val FILENAME_REGEX = """.*/artwork/[^/]+\.png$""".toRegex()
+        val FILENAME_REGEX = """/building-block/artwork\.png""".toRegex()
     }
 }

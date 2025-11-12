@@ -51,20 +51,18 @@ class BuildingBlockDefinitionArtworkImporterTest(
     }
 
     @Test
-    fun `should support single png in artwork root folder`() {
-        assertThat(importer.supports("/artwork/icon.png")).isTrue()
-        assertThat(
-            importer.supports(
-                "config/building-block/my-bb/0.1.0/artwork/icon.png"
-            )
-        ).isTrue()
+    fun `should support only single artwork png in building-block folder`() {
+        assertThat(importer.supports("/building-block/artwork.png")).isTrue()
     }
 
     @Test
-    fun `should not support nested or non-png artwork paths`() {
-        assertThat(importer.supports("/artwork/nested/icon.png")).isFalse()
-        assertThat(importer.supports("/artwork/icon.jpg")).isFalse()
-        assertThat(importer.supports("/artwork/icon.png.bak")).isFalse()
+    fun `should not support nested or renamed artwork files`() {
+        assertThat(importer.supports("/building-block/images/artwork.png")).isFalse()
+        assertThat(importer.supports("/building-block/artwork/icon.png")).isFalse()
+        assertThat(importer.supports("/building-block/artwork.jpg")).isFalse()
+        assertThat(importer.supports("/building-block/icon.png")).isFalse()
+        assertThat(importer.supports("/artwork/icon.png")).isFalse()
+        assertThat(importer.supports("/building-block/somethingelse.png")).isFalse()
     }
 
     @Test
@@ -72,7 +70,7 @@ class BuildingBlockDefinitionArtworkImporterTest(
         val id = BuildingBlockDefinitionId("block-key", "1.0.0")
         val content = byteArrayOf(1, 2, 3, 4)
         val request = ImportRequest(
-            fileName = "artwork/icon.png",
+            fileName = "/building-block/artwork.png",
             content = content,
             buildingBlockDefinitionId = id
         )
@@ -88,5 +86,45 @@ class BuildingBlockDefinitionArtworkImporterTest(
 
         val expectedBase64 = Base64.getEncoder().encodeToString(content)
         assertThat(dtoCaptor.firstValue.imageBase64).isEqualTo(expectedBase64)
+    }
+
+    @Test
+    fun `should throw when building block definition id missing`() {
+        val request = ImportRequest(
+            fileName = "/building-block/artwork.png",
+            content = byteArrayOf(1, 2, 3, 4)
+        )
+
+        var thrown = false
+        try {
+            importer.import(request)
+        } catch (ex: IllegalArgumentException) {
+            thrown = true
+            assertThat(ex.message).contains("BuildingBlockDefinitionId is required for artwork import")
+        }
+        assertThat(thrown).isTrue()
+    }
+
+    @Test
+    fun `should correctly encode large binary file`() {
+        val bytes = ByteArray(1024) { it.toByte() }
+        val id = BuildingBlockDefinitionId("large-block", "2.0.0")
+        val request = ImportRequest(
+            fileName = "/building-block/artwork.png",
+            content = bytes,
+            buildingBlockDefinitionId = id
+        )
+
+        importer.import(request)
+
+        val dtoCaptor = argumentCaptor<CreateBuildingBlockDefinitionArtworkDto>()
+        verify(artworkService).createArtwork(
+            eq("large-block"),
+            eq("2.0.0"),
+            dtoCaptor.capture()
+        )
+
+        val expected = Base64.getEncoder().encodeToString(bytes)
+        assertThat(dtoCaptor.firstValue.imageBase64).isEqualTo(expected)
     }
 }
