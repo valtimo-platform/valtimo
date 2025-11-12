@@ -136,7 +136,6 @@ export class IkoManagementViewModalComponent {
     runAfterCarbonModalClosed(() => {
       this.resetForm();
     });
-    // this.$prefillData.set(null);
   }
 
   public onSave(): void {

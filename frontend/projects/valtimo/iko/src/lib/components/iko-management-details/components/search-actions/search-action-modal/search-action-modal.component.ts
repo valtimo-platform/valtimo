@@ -88,6 +88,7 @@ export class IkoManagementSearchActionModalComponent {
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
+  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
     if (!value) {

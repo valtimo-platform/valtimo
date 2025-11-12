@@ -29,17 +29,19 @@
   </cds-modal-header>
 
   <form cdsModalContent [formGroup]="formGroup">
-    <cds-label>
-      {{ 'interface.title' | translate }}
+    @if($isOpen())
+    {
+      <cds-label>
+        {{ 'interface.title' | translate }}
 
-      <input
-        formControlName="title"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.title' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        <input
+          formControlName="title"
+          cdsText
+          cdsLayer
+          placeholder="{{ 'interface.title' | translate }}"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
 
     <valtimo-auto-key-input
       [mode]="modalMode"
