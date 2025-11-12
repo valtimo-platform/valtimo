@@ -6,17 +6,19 @@
   </cds-modal-header>
 
   <form [formGroup]="formGroup" cdsModalContent>
-    <cds-label>
-      {{ 'interface.title' | translate }}
+    @if(open$ | async)
+    {
+      <cds-label>
+        {{ 'interface.title' | translate }}
 
-      <input
-        formControlName="title"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.title' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+        <input
+          formControlName="title"
+          cdsText
+          cdsLayer
+          placeholder="{{ 'interface.title' | translate }}"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
 
     <valtimo-auto-key-input
       [mode]="modalMode"
@@ -27,11 +29,12 @@
     >
     </valtimo-auto-key-input>
 
-    <valtimo-iko-management-properties
-      [propertiesFormGroup]="properties"
-      [fields]="propertyFields$ | async"
-      [prefillData]="$prefillData()?.properties"
-    />
+      <valtimo-iko-management-properties
+        [propertiesFormGroup]="properties"
+        [fields]="propertyFields$ | async"
+        [prefillData]="$prefillData()?.properties"
+      />
+    }
   </form>
 
   <cds-modal-footer>

@@ -82,6 +82,15 @@ export class IkoManagementRepositoryModalComponent {
   public get modalMode(): ModalMode {
     return this._modalMode;
   }
+
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
+  }
   @Output() public readonly modalClose = new EventEmitter<any | null>();
 
   public get title(): AbstractControl<string> {
