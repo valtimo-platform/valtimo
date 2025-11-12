@@ -14,5 +14,10 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.constants';
-export * from './building-block-management-upload.constants';
+package com.ritense.buildingblock.web.rest.dto
+
+data class BuildingBlockDefinitionArtworkDto(
+    val key: String,
+    val versionTag: String,
+    val imageBase64: String
+)

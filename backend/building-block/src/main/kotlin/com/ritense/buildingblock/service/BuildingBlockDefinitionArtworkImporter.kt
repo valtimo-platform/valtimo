@@ -16,37 +16,37 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_ARTWORK
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITION
-import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
-import com.ritense.processdocument.domain.ProcessDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
+import java.util.Base64
 
-class ProcessDefinitionBuildingBlockDefinitionImporter(
-    private val operatonProcessService: OperatonProcessService,
-    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+class BuildingBlockDefinitionArtworkImporter(
+    private val buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
 ) : Importer {
-    override fun type() = BUILDING_BLOCK_PROCESS_DEFINITION
+
+    override fun type() = BUILDING_BLOCK_ARTWORK
 
     override fun dependsOn(): Set<String> = setOf(BUILDING_BLOCK_DEFINITION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        request.content.inputStream().use {
+        val buildingBlockDefinitionId = requireNotNull(request.buildingBlockDefinitionId) {
+            "BuildingBlockDefinitionId is required for artwork import"
+        }
 
-            val deployment = operatonProcessService.deploy(
-                request.buildingBlockDefinitionId,
-                fileNameWithoutPath(request.fileName),
-                it
-            )
+        val base64 = Base64.getEncoder().encodeToString(request.content)
+        val dto = CreateBuildingBlockDefinitionArtworkDto(imageBase64 = base64)
 
-            buildingBlockDefinitionProcessDefinitionService.setMainLink(
-                request.buildingBlockDefinitionId!!,
-                null,
-                ProcessDefinitionId(deployment.deployedProcessDefinitions.first().id),
-                false
+        runWithoutAuthorization {
+            buildingBlockDefinitionArtworkService.createArtwork(
+                buildingBlockDefinitionId.key,
+                buildingBlockDefinitionId.versionTag.toString(),
+                dto
             )
         }
     }
@@ -55,11 +55,7 @@ class ProcessDefinitionBuildingBlockDefinitionImporter(
 
     override fun partOfBuildingBlockDefinition() = true
 
-    private fun fileNameWithoutPath(fileName: String): String {
-        return fileName.substringAfterLast('/')
-    }
-
     private companion object {
-        val FILENAME_REGEX = """/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
+        val FILENAME_REGEX = """/building-block/artwork\.png""".toRegex()
     }
 }

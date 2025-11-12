@@ -14,5 +14,11 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.constants';
-export * from './building-block-management-upload.constants';
+package com.ritense.buildingblock.repository
+
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwork
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface BuildingBlockDefinitionArtworkRepository :
+    JpaRepository<BuildingBlockDefinitionArtwork, BuildingBlockDefinitionId>

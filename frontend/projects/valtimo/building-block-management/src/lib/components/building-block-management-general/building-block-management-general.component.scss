@@ -13,3 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.muuri-container {
+  display: block;
+  width: 100%;
+}
+
+.building-block-management-general {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

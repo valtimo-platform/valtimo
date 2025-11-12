@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,5 +14,36 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.constants';
-export * from './building-block-management-upload.constants';
+.building-block-management-plugins {
+  display: flex;
+  padding: 16px 24px;
+  width: 100%;
+  background-color: var(--cds-layer-01);
+  align-items: center;
+  gap: 16px;
+
+  &__title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  &__tags {
+    display: flex;
+    flex-flow: row wrap;
+    height: 100%;
+    gap: 8px;
+  }
+
+  &__description {
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.loading-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
