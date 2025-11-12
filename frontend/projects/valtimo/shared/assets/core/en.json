@@ -2115,7 +2115,9 @@
     "artwork": {
       "title": "Artwork",
       "fileUploaderTitle": "Select artwork for this building block",
-      "fileUploaderDescription": "Maximum file size is 10mb. Only .png images are supported. Make sure the background of the image is transparent."
+      "fileUploaderDescription": "Maximum file size is 10mb. Only .png images are supported. Make sure the background of the image is transparent.",
+      "fileUploaderButton": "Choose file",
+      "deleteConfirmationModalText": "Are you sure you want to delete this artwork? This action cannot be undone."
     }
   }
 }
