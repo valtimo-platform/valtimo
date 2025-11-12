@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
@@ -42,7 +43,7 @@ class BuildingBlockDefinitionArtworkResource(
         @PathVariable key: String,
         @PathVariable versionTag: String
     ): ResponseEntity<BuildingBlockDefinitionArtworkDto> {
-        val dto = buildingBlockDefinitionArtworkService.getArtwork(key, versionTag)
+        val dto = runWithoutAuthorization { buildingBlockDefinitionArtworkService.getArtwork(key, versionTag) }
         return dto?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.notFound().build()
     }
@@ -56,7 +57,8 @@ class BuildingBlockDefinitionArtworkResource(
         @PathVariable versionTag: String,
         @RequestBody dto: CreateBuildingBlockDefinitionArtworkDto
     ): ResponseEntity<BuildingBlockDefinitionArtworkDto> {
-        val created = buildingBlockDefinitionArtworkService.createArtwork(key, versionTag, dto)
+        val created =
+            runWithoutAuthorization { buildingBlockDefinitionArtworkService.createArtwork(key, versionTag, dto) }
         return ResponseEntity.ok(created)
     }
 
@@ -65,7 +67,7 @@ class BuildingBlockDefinitionArtworkResource(
         @PathVariable key: String,
         @PathVariable versionTag: String
     ): ResponseEntity<Void> {
-        buildingBlockDefinitionArtworkService.deleteArtwork(key, versionTag)
+        runWithoutAuthorization { buildingBlockDefinitionArtworkService.deleteArtwork(key, versionTag) }
         return ResponseEntity.noContent().build()
     }
 }

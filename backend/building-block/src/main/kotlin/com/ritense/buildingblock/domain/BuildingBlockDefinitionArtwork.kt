@@ -33,7 +33,7 @@ import jakarta.persistence.Table
 open class BuildingBlockDefinitionArtwork(
 
     @EmbeddedId
-    open var id: BuildingBlockDefinitionId? = null,
+    open var id: BuildingBlockDefinitionId,
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
@@ -47,7 +47,7 @@ open class BuildingBlockDefinitionArtwork(
             referencedColumnName = "building_block_definition_version_tag"
         )
     )
-    open var definition: BuildingBlockDefinition? = null,
+    open var definition: BuildingBlockDefinition,
 
     @Lob
     @Column(name = "image_base64", nullable = false)

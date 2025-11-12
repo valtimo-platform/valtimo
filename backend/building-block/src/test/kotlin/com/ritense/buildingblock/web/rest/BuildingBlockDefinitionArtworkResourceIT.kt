@@ -156,7 +156,8 @@ class BuildingBlockDefinitionArtworkResourceIT @Autowired constructor(
         val imageBytes = createPngBytes(16, 16)
         val artwork = BuildingBlockDefinitionArtwork(
             definition = definition,
-            imageBase64 = Base64.getEncoder().encodeToString(imageBytes)
+            imageBase64 = Base64.getEncoder().encodeToString(imageBytes),
+            id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
         )
 
         buildingBlockDefinitionArtworkRepository.saveAndFlush(artwork)
