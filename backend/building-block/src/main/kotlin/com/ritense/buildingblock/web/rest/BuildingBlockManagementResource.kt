@@ -20,6 +20,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
@@ -107,5 +108,13 @@ class BuildingBlockManagementResource(
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
+    }
+
+    @GetMapping("/{key}/versions")
+    fun getBuildingBlockDefinitionVersions(
+        @PathVariable key: String
+    ): ResponseEntity<List<BuildingBlockVersionDto>> {
+        val versions = buildingBlockManagementService.getVersionsWithFinalFlag(key)
+        return ResponseEntity.ok(versions)
     }
 }

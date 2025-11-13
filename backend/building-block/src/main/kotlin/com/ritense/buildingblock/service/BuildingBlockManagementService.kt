@@ -21,10 +21,12 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import jakarta.transaction.Transactional
 import org.semver4j.Semver
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -143,5 +145,19 @@ class BuildingBlockManagementService(
 
         val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
         return finalized.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getVersionsWithFinalFlag(key: String): List<BuildingBlockVersionDto> {
+        val defs = buildingBlockDefinitionRepository.findAllByIdKey(key)
+
+        return defs
+            .sortedWith(compareBy { Semver(it.id.versionTag.toString()) })
+            .map {
+                BuildingBlockVersionDto(
+                    versionTag = it.id.versionTag.toString(),
+                    final = it.final
+                )
+            }
     }
 }
