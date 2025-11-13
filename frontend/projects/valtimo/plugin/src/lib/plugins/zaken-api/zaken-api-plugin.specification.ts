@@ -323,7 +323,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
       'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.'
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
     },
     en: {
       title: 'Zaken API',
@@ -537,7 +537,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
-      resultProcessVariable: 'Result process variable',
       resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
     },
     de: {
@@ -753,7 +752,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Mindestens eines der folgenden Felder muss ausgefüllt werden, um die juristische Person zu identifizieren:<br/>- Keine natürliche Personennummer<br/>- Andere Identifizierung keine natürlicher Personen<br/>- Handelskammernummer<br/>- Niederlassungsnummer',
       'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       resultProcessVariable: 'Ergebnis Prozessvariable',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.'
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
+      rolUuid: 'Rolle UUID',
+      rolUuidTooltip: 'Die UUID der Rolle'
     },
   },
 };
