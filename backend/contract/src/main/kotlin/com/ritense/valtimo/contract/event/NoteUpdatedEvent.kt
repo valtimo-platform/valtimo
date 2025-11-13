@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.contract.event
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.audit.AuditEvent
 import com.ritense.valtimo.contract.audit.AuditMetaData
@@ -24,7 +25,7 @@ import com.ritense.valtimo.contract.utils.RequestHelper
 import java.time.LocalDateTime
 import java.util.UUID
 
-class NoteUpdatedEvent(
+class NoteUpdatedEvent @JsonCreator constructor(
     id: UUID = UUID.randomUUID(),
     origin: String = RequestHelper.getOrigin(),
     occurredOn: LocalDateTime = LocalDateTime.now(),
