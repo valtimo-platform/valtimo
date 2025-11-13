@@ -10,6 +10,15 @@ on:
         required: true
         description: Name of the frontend build artifact to download with 'download-artifact'
         type: "string"
+      release_image:
+        description: "Push the built image to Docker Hub as well"
+        required: false
+        type: boolean
+        default: false
+      release_image_tag:
+        description: "Tag to use when pushing the Docker Hub release image"
+        required: false
+        type: string
 
     outputs:
       tagged_image:
@@ -22,6 +31,7 @@ defaults:
 
 env:
   NODE_VERSION: "20.x"
+  DOCKERHUB_IMAGE: ritense/gzac-frontend
 
 jobs:
   build_image:
@@ -39,6 +49,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate release image inputs
+        if: ${{ inputs.release_image }}
+        run: |
+          if [ -z "${{ inputs.release_image_tag }}" ]; then
+            echo "::error::'release_image_tag' input must be provided when 'release_image' is true."
+            exit 1
+          fi
 
       - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -103,6 +121,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        if: ${{ inputs.release_image }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       - name: Resolve frontend tree hash
         id: frontend_tree
         run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
@@ -139,7 +164,10 @@ jobs:
           # gebruik het ge-downloadde artefact als build context
           context: frontend/
           file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ steps.generate_tags.outputs.tags }}
+          tags: |
+            ${{ steps.generate_tags.outputs.tags }}
+            ${{ inputs.release_image && format('docker.io/{0}:{1}', env.DOCKERHUB_IMAGE, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
