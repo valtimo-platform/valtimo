@@ -43,6 +43,27 @@ class JsonSchemaDocumentSpecificationHelper {
         }
 
         @JvmStatic
+        fun byRetainedDocumentDefinitionIdName(name: String): Specification<JsonSchemaDocument> {
+            return Specification { root: Root<JsonSchemaDocument>,
+                                   _: CriteriaQuery<*>?,
+                                   criteriaBuilder: CriteriaBuilder ->
+
+                val namePredicate = criteriaBuilder.equal(
+                    root.get<Any>(DOCUMENT_DEFINITION_ID).get<String>(NAME),
+                    name
+                )
+                val retentionDateNotNullPredicate = criteriaBuilder.isNotNull(root.get<java.time.LocalDateTime>("retentionDate"),)
+
+                val retentionDateBeforeNowPredicate = criteriaBuilder.lessThan(
+                    root.get<java.time.LocalDateTime>("retentionDate"),
+                    java.time.LocalDateTime.now()
+                )
+
+                criteriaBuilder.and(namePredicate, retentionDateNotNullPredicate, retentionDateBeforeNowPredicate)
+            }
+        }
+
+        @JvmStatic
         fun byDocumentDefinitionIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
             return Specification { root: Root<JsonSchemaDocument>,
                                    _: CriteriaQuery<*>?,
@@ -57,6 +78,19 @@ class JsonSchemaDocumentSpecificationHelper {
         @JvmStatic
         fun byDocumentDefinitionId(id: DocumentDefinition.Id): Specification<JsonSchemaDocument> {
             return byDocumentDefinitionIdName(id.name()).and(byDocumentDefinitionIdCaseDefinitionId(id.caseDefinitionId()))
+        }
+
+
+        @JvmStatic
+        fun byCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
+            return Specification { root: Root<JsonSchemaDocument>,
+                                   _: CriteriaQuery<*>?,
+                                   criteriaBuilder: CriteriaBuilder ->
+                criteriaBuilder.equal(
+                    root.get<CaseDefinitionId>(CASE_DEFINITION_ID),
+                    caseDefinitionId
+                )
+            }
         }
 
         @JvmStatic

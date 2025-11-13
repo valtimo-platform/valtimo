@@ -58,6 +58,17 @@ class OperatonHistoryService(
         return operatonHistoricProcessInstanceRepository.count(specification)
     }
 
+    @Transactional()
+    fun setRemovalTime(processInstanceId: String, removalTime: java.util.Date) {
+        denyAuthorization()
+        val batch = historyService
+            .setRemovalTimeToHistoricProcessInstances()
+            .absoluteRemovalTime(removalTime)
+            .byIds(processInstanceId)
+            .hierarchical()
+            .executeAsync()
+    }
+
     private fun denyAuthorization() {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
