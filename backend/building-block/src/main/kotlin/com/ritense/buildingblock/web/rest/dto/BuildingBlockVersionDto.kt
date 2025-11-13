@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.repository
+package com.ritense.buildingblock.web.rest.dto
 
-import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
-
-interface BuildingBlockDefinitionRepository
-    : JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>, JpaSpecificationExecutor<BuildingBlockDefinition> {
-    fun findAllByIdKey(key: String): List<BuildingBlockDefinition>
-}
+data class BuildingBlockVersionDto(
+    val versionTag: String,
+    val final: Boolean
+)
