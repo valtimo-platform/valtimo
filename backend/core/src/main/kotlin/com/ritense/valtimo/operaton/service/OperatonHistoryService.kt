@@ -61,7 +61,7 @@ class OperatonHistoryService(
     @Transactional()
     fun setRemovalTime(processInstanceId: String, removalTime: java.util.Date) {
         denyAuthorization()
-        val batch = historyService
+        historyService
             .setRemovalTimeToHistoricProcessInstances()
             .absoluteRemovalTime(removalTime)
             .byIds(processInstanceId)

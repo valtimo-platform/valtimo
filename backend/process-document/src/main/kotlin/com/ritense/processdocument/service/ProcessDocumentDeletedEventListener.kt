@@ -18,18 +18,24 @@ package com.ritense.processdocument.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
+import com.ritense.valtimo.operaton.service.OperatonHistoryService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.context.event.EventListener
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.*
 
 class ProcessDocumentDeletedEventListener(
     private val runtimeService: RuntimeService,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService
+    private val processDocumentAssociationService: ProcessDocumentAssociationService,
+    private val operatonHistoryService: OperatonHistoryService,
 ) {
 
     @EventListener(ProcessDefinitionDeleted::class)
@@ -58,6 +64,21 @@ class ProcessDocumentDeletedEventListener(
                     .forEach {
                         deleteProcessInstance(it.processInstanceId)
                     }
+
+                val processes = processDocumentAssociationService.findProcessDocumentInstances2(
+                    JsonSchemaDocumentId.newId(event.documentId)
+                )
+
+                val removalTime = Date.from(
+                    Instant.now().minus(1, ChronoUnit.DAYS)
+                )
+
+                processes.forEach {
+                    operatonHistoryService.setRemovalTime(
+                        it.processDocumentInstanceId().processInstanceId().toString(),
+                        removalTime
+                    )
+                }
             }
         }
     }

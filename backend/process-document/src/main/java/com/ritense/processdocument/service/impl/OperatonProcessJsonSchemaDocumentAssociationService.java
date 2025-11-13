@@ -112,6 +112,22 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
     }
 
     @Override
+    public List<OperatonProcessJsonSchemaDocumentInstance> findProcessDocumentInstances2(Document.Id documentId) {
+
+        var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
+        for (var process : processes) {
+            OperatonProcessJsonSchemaDocumentInstanceId id = process.getId();
+            if (id != null) {
+                var operatonProcess = runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(id.processInstanceId().toString())
+                    .singleResult();
+                process.setActive(operatonProcess != null && !operatonProcess.isEnded());
+            }
+        }
+        return processes;
+    }
+
+    @Override
     public List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId) {
         var document = documentService.findBy(documentId).orElseThrow();
 
