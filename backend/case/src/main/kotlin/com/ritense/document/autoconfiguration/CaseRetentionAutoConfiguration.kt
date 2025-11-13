@@ -32,12 +32,12 @@ class CaseRetentionAutoConfiguration {
     fun documentRetentionPeriodWorker(
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         caseDefinitionRepository: CaseDefinitionRepository,
-        historyService: HistoryService,
+//        historyService: HistoryService,
         ): CaseRetentionPeriodWorker {
         return CaseRetentionPeriodWorker(
             jsonSchemaDocumentService,
             caseDefinitionRepository,
-            historyService
+//            historyService
         )
     }
 

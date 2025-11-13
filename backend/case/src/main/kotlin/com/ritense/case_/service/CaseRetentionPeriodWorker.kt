@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 open class CaseRetentionPeriodWorker(
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val operatonHistoryService: HistoryService,
+//    private val operatonHistoryService: HistoryService,
 ) {
 
     private val running = AtomicBoolean(false)
@@ -33,8 +33,8 @@ open class CaseRetentionPeriodWorker(
                         logger.debug { "------ retained doc found ${doc.retentionDate()} for case ${case.id.key}" }
 
                         jsonSchemaDocumentService.deleteDocument(doc.id)
-                        val removalTime = java.util.Date.from(java.time.Instant.parse("2026-12-31T23:59:59Z"))
-                        setRemovalTime("239152af-c06d-11f0-8edf-02f9a38bc30e", removalTime)
+//                        val removalTime = java.util.Date.from(java.time.Instant.parse("2026-12-31T23:59:59Z"))
+//                        setRemovalTime("239152af-c06d-11f0-8edf-02f9a38bc30e", removalTime)
                     }
                 }
             }
@@ -45,16 +45,16 @@ open class CaseRetentionPeriodWorker(
         }
     }
 
-    fun setRemovalTime(processInstanceId: String, removalTime: java.util.Date) {
+//    fun setRemovalTime(processInstanceId: String, removalTime: java.util.Date) {
 //        denyAuthorization()
 
-        operatonHistoryService
-            .setRemovalTimeToHistoricProcessInstances()
-            .absoluteRemovalTime(removalTime)
-            .byIds(processInstanceId)
-            .hierarchical()
-            .executeAsync()
-    }
+//        operatonHistoryService
+//            .setRemovalTimeToHistoricProcessInstances()
+//            .absoluteRemovalTime(removalTime)
+//            .byIds(processInstanceId)
+//            .hierarchical()
+//            .executeAsync()
+//    }
 
 //    private fun denyAuthorization() {
 //        authorizationService.requirePermission(
