@@ -53,7 +53,15 @@ export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConf
   }
 
   private handleValid(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
-    const valid = !!(formValue.rolToelichting && formValue.roltypeUrl);
+    const valid = !!(
+      formValue.rolToelichting &&
+      formValue.roltypeUrl && (
+        formValue.innNnpId ||
+        formValue.annIdentificatie ||
+        formValue.kvkNummer ||
+        formValue.vestigingsNummer
+      )
+    );
 
     this._valid$.next(valid);
     this.valid.emit(valid);
