@@ -54,12 +54,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.prepare.outputs.version }}
-          release_name: ${{ needs.prepare.outputs.version }}
+          name: ${{ needs.prepare.outputs.version }}
           body: "Release for Valtimo version ${{ needs.prepare.outputs.version }}."
           draft: false
           prerelease: false
