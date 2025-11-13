@@ -118,7 +118,7 @@ export class WidgetTableComponent {
     }
 
     this.widgetData$.next(widgetData);
-    this.resolvedData$.next((value as any)?.resolved);
+    this.resolvedData$.next(value?.resolved);
 
     if (!this._paginationInitialized) {
       this.showPagination.set(value.totalElements > value.size);
