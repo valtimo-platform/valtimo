@@ -270,8 +270,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identificatie',
       'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.'
-      resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol'
     },
@@ -478,9 +477,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identification',
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
-      rolUuidTooltip: 'The UUID of the rol'
+      rolUuidTooltip: 'The UUID of the rol',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
-      resultProcessVariable: 'Result process variable',
       resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
     },
     de: {
@@ -686,8 +684,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Objektidentifikation',
       'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       resultProcessVariable: 'Ergebnis Prozessvariable',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.'
-      resultProcessVariable: 'Ergebnis process variable',
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle'
     },
