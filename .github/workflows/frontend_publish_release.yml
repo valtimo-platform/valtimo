@@ -49,8 +49,7 @@ jobs:
       project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
 
-  publish:
-    if: ${{ startsWith(github.ref_name, 'release/') }}
+  publish_libs:
     needs:
       - build_and_test_libs
       - determine_version
@@ -59,3 +58,13 @@ jobs:
       project_version: ${{ needs.determine_version.outputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
     secrets: inherit
+
+  publish_image:
+    needs:
+      - build_and_test_libs
+      - determine_version
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      release_image: true
+      release_image_tag: ${{ needs.determine_version.outputs.project_version }}
