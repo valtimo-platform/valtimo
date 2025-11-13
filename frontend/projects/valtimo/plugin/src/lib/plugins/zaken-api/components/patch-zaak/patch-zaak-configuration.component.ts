@@ -61,15 +61,8 @@ export class PatchZaakConfigurationComponent
   }
 
   public ngOnInit(): void {
+    this.initPropertyList();
     this.openSaveSubscription();
-
-    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      if (prefill) {
-        PatchZaakPropertyOptions.filter(property => !!prefill[property]).forEach(property =>
-          this.addProperty(property)
-        );
-      }
-    });
   }
 
   public ngOnDestroy(): void {
@@ -91,7 +84,6 @@ export class PatchZaakConfigurationComponent
   }
 
   public addProperty(property: PatchZaakProperties): void {
-    // only add the property to the list if it is not in the list
     if (!this.hasPropertyBeenAdded(property)) {
       this.propertyList.push(this.propertyFormFieldFor(property));
       this.onPropertyChanged(property, undefined);
@@ -103,7 +95,6 @@ export class PatchZaakConfigurationComponent
   }
 
   public removeProperty(property: PatchZaakProperties): void {
-    // only remove the property from the list if it is in the list
     if (this.hasPropertyBeenAdded(property)) {
       this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
       this.onPropertyChanged(property, undefined);
@@ -124,6 +115,16 @@ export class PatchZaakConfigurationComponent
 
   public translationKeyForPropertyList(property: PatchZaakProperties): string {
     return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
+  }
+
+  private initPropertyList(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
+      if (prefill) {
+        PatchZaakPropertyOptions.forEach(property => {
+          if (!!prefill[property]) this.addProperty(property);
+        });
+      }
+    });
   }
 
   private propertyFormFieldFor(property: PatchZaakProperties): PropertyFormField {
@@ -148,7 +149,6 @@ export class PatchZaakConfigurationComponent
       return null;
     }
   }
-
 
   private presetOptionsForProperty(property: PatchZaakProperties): string[] {
     switch (property) {

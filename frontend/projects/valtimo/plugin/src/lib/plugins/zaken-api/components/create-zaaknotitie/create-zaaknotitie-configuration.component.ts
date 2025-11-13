@@ -46,21 +46,7 @@ export class CreateZaakNotitieConfigurationComponent
   private _saveSubscription!: Subscription;
 
   public ngOnInit(): void {
-    this._saveSubscription = this.save$?.subscribe(() => {
-      combineLatest([this._formValue$, this._valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid && formValue) {
-            this.configuration.emit({
-              onderwerp: formValue.onderwerp,
-              tekst: formValue.tekst,
-              aangemaaktDoor: formValue.aangemaaktDoor,
-              notitieType: formValue.notitieType,
-              status: formValue.status,
-            });
-          }
-        });
-    });
+    this.openSaveSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -76,5 +62,23 @@ export class CreateZaakNotitieConfigurationComponent
     const valid = !!formValue?.onderwerp && !!formValue?.tekst;
     this._valid$.next(valid);
     this.valid.emit(valid);
+  }
+
+  private openSaveSubscription(): void {
+    this._saveSubscription = this.save$.subscribe(() => {
+      combineLatest([this._formValue$, this._valid$])
+        .pipe(take(1))
+        .subscribe(([formValue, valid]) => {
+          if (valid && formValue) {
+            this.configuration.emit({
+              onderwerp: formValue.onderwerp,
+              tekst: formValue.tekst,
+              aangemaaktDoor: formValue.aangemaaktDoor,
+              notitieType: formValue.notitieType,
+              status: formValue.status,
+            });
+          }
+        });
+    });
   }
 }

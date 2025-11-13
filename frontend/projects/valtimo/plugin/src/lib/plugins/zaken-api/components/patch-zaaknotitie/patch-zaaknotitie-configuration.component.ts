@@ -57,15 +57,8 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public ngOnInit(): void {
+    this.initPropertyList();
     this.openSaveSubscription();
-
-    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      if (prefill) {
-        PatchZaakNotitiePropertyOptions
-          .filter(property => !!prefill[property])
-          .forEach(property => this.addProperty(property));
-      }
-    });
   }
 
   public ngOnDestroy(): void {
@@ -84,7 +77,6 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public addProperty(property: PatchZaakNotitieProperties): void {
-    // only add the property to the list if it is not in the list
     if (!this.hasPropertyBeenAdded(property)) {
       this.propertyList.push(this.propertyFormFieldFor(property));
       this.onPropertyChanged(property, undefined);
@@ -92,7 +84,6 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public removeProperty(property: PatchZaakNotitieProperties): void {
-    // only remove the property from the list if it is in the list
     if (this.hasPropertyBeenAdded(property)) {
       this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
       this.onPropertyChanged(property, undefined);
@@ -104,7 +95,18 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public prefillValueFor(property: PatchZaakNotitieProperties, prefill: PatchZaakNotitieConfig): string | null {
-    return prefill != null ? prefill[property] : null;
+    return prefill !== null ? prefill[property] : null;
+  }
+
+  private initPropertyList(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
+      if (prefill) {
+        PatchZaakNotitiePropertyOptions
+          .forEach(property => {
+            if (!!prefill[property]) this.addProperty(property)
+          });
+      }
+    });
   }
 
   private formValueIncludingProperties(formValue: PatchZaakNotitieConfig): PatchZaakNotitieConfig {
@@ -159,7 +161,7 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this._saveSubscription = this.save$?.subscribe(save => {
+    this._saveSubscription = this.save$.subscribe(save => {
       combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {

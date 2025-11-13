@@ -54,9 +54,10 @@ export class ZakenApiConfigurationComponent
     );
   public readonly noteEventListenerEnabled$ = new BehaviorSubject<boolean>(false);
 
+  private _eventListenerEnabledSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<ZakenApiConfig | null>(null);
+  private _saveSubscription!: Subscription;
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
@@ -65,22 +66,14 @@ export class ZakenApiConfigurationComponent
   ) {}
 
   public ngOnInit(): void {
+    this.initNoteEventListenerEnabled()
+    this.openEventListenerEnabledSubscription();
     this.openSaveSubscription();
-
-    this._subscriptions.add(
-      this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
-        this.noteEventListenerEnabled$.next(configuration.noteEventListenerEnabled);
-      })
-    )
-    this._subscriptions.add(
-      this.noteEventListenerEnabled$.subscribe( value => {
-        this.formValueChange(this.formValue$.getValue());
-      })
-    )
   }
 
   public ngOnDestroy() {
-    this._subscriptions.unsubscribe();
+    this._saveSubscription?.unsubscribe();
+    this._eventListenerEnabledSubscription?.unsubscribe();
   }
 
   public formValueChange(formValue: ZakenApiConfig): void {
@@ -96,12 +89,24 @@ export class ZakenApiConfigurationComponent
     this.noteEventListenerEnabled$.next(event);
   }
 
+  private initNoteEventListenerEnabled(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
+      this.noteEventListenerEnabled$.next(configuration.noteEventListenerEnabled);
+    })
+  }
+
+  private openEventListenerEnabledSubscription(): void {
+    this._eventListenerEnabledSubscription = this.noteEventListenerEnabled$.subscribe( value => {
+      this.formValueChange(this.formValue$.getValue());
+    })
+  }
+
   private handleValid(formValue: ZakenApiConfig): void {
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
       formValue.authenticationPluginConfiguration &&
-      formValue.noteEventListenerEnabled != null &&
+      formValue.noteEventListenerEnabled !== null &&
       (
         formValue.noteEventListenerEnabled === false
         ||
@@ -114,16 +119,14 @@ export class ZakenApiConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this._subscriptions.add(
-      this.save$.subscribe(() => {
-        combineLatest([this.formValue$, this.valid$])
-          .pipe(take(1))
-          .subscribe(([formValue, valid]) => {
-            if (valid) {
-              this.configuration.emit(formValue);
-            }
-          });
-      })
-    )
+    this._saveSubscription = this.save$.subscribe(() => {
+      combineLatest([this.formValue$, this.valid$])
+        .pipe(take(1))
+        .subscribe(([formValue, valid]) => {
+          if (valid) {
+            this.configuration.emit(formValue);
+          }
+        });
+    })
   }
 }
