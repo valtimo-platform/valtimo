@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -46,6 +47,7 @@ import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RestClient
 
 @AutoConfiguration
@@ -108,13 +110,15 @@ class NotificatiesApiAutoConfiguration {
         inboundEventRepository: NotificatiesApiInboundEventRepository,
         applicationEventPublisher: ApplicationEventPublisher,
         objectMapper: ObjectMapper,
-        processingProperties: NotificatiesApiProcessingProperties
+        processingProperties: NotificatiesApiProcessingProperties,
+        transactionManager: PlatformTransactionManager
     ): NotificatiesApiInboundEventProcessingService {
         return NotificatiesApiInboundEventProcessingService(
             inboundEventRepository,
             applicationEventPublisher,
             objectMapper,
-            processingProperties
+            processingProperties,
+            transactionManager
         )
     }
 
