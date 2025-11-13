@@ -17,6 +17,7 @@
 package com.ritense.widget.test
 
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
@@ -37,12 +38,13 @@ class TestWidget(
     width: Int,
     highContrast: Boolean,
     actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: TestWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions
+    id, key, title, order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
@@ -51,7 +53,8 @@ class TestWidget(
         order: Int,
         width: Int,
         highContrast: Boolean,
-        actions: List<WidgetAction>
+        actions: List<WidgetAction>,
+        displayConditions: List<Condition<*>>,
     ): Widget = TestWidget(
         id = id,
         key = key,
@@ -60,6 +63,7 @@ class TestWidget(
         width = width,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions,
         properties = properties
     )
 

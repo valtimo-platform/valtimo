@@ -24,8 +24,17 @@
 
   gap: 16px;
 
+  &__title-form {
+    padding: 8px 0 16px 16px;
+    background: var(--cds-layer);
+  }
+
   &__input {
     max-width: 288px;
+
+    input {
+      background: var(--cds-layer-02);
+    }
   }
 
   &__heading {

@@ -33,12 +33,10 @@
 }
 
 .value-path-selector__form {
-  display: grid;
-  grid-template-columns: 110px 1fr;
+  display: flex;
   width: 100%;
   align-items: center;
   gap: 16px;
-  justify-content: space-between;
 
   ::ng-deep &--case-def-input {
     display: flex !important;

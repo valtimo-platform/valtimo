@@ -18,6 +18,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {FormioComponent} from './form-io/form-io.component';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
+import {NotificationTestComponent} from './notification-test/notification-test.component';
 
 const routes: Routes = [
   {
@@ -32,12 +33,19 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {title: 'Upload - Showcase'},
   },
+  {
+    path: 'notification-test',
+    component: NotificationTestComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Notification test'},
+  },
 ];
 
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
       errorHandler: error => {
+        console.error({error});
         window.location.href = '/';
       },
     }),

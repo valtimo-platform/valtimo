@@ -25,25 +25,21 @@ import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepos
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
+import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import org.springframework.context.event.EventListener
 import java.net.URI
 import java.security.SecureRandom
 import java.util.Base64
+import org.springframework.context.event.EventListener
 
 class PluginsDeployedEventListener(
     private val client: NotificatiesApiClient,
     private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
     private val pluginService: PluginService,
     private val registerAbonnementen: Boolean
-) : ApplicationContextAware {
+) {
 
-    lateinit var context: ApplicationContext
-
-    @EventListener(PluginsDeployedEvent::class, PluginConfigurationDeletedEvent::class)
+    @EventListener(ApplicationFullyReadyEvent::class, PluginConfigurationDeletedEvent::class)
     fun registerAbonnementenForNotificatiesApiPlugins() {
         if (!registerAbonnementen) return
 
@@ -58,24 +54,12 @@ class PluginsDeployedEventListener(
             val notificatiesApiPluginInstance =
                 configurations.first().getNotificatiesApiPlugin()
 
-            var nrOfTriesLeftRetrievingAbonnementen = 3
-            var abonnementenApiException: Exception? = null
-            while (nrOfTriesLeftRetrievingAbonnementen > 0) {
-                try {
-                    registerAbonnementenForPluginNotificatiesApiPlugins(
-                        notificatiesApiPluginInstance,
-                        knownNotificatiesApiAbonnementLinks,
-                        configurations
-                    )
-                    break
-                } catch (e: Exception) {
-                    abonnementenApiException = e
-                    --nrOfTriesLeftRetrievingAbonnementen
-                }
-            }
-            if (nrOfTriesLeftRetrievingAbonnementen == 0) {
-                val e = NotificatiesApiAbonnementException(abonnementenApiException)
-                throw e
+            retry {
+                registerAbonnementenForPluginNotificatiesApiPlugins(
+                    notificatiesApiPluginInstance,
+                    knownNotificatiesApiAbonnementLinks,
+                    configurations
+                )
             }
         }
     }
@@ -92,15 +76,12 @@ class PluginsDeployedEventListener(
 
         abonnementenInApi.filter { abonnement -> abonnement.callbackUrl == notificatiesApiPluginInstance.callbackUrl.toString() }
             .filter { abonnement ->
-                (
-                    knownNotificatiesApiAbonnementLinks.firstOrNull {
-                        it.url == abonnement.url
-                    } == null)
-            }.forEach {
+                knownNotificatiesApiAbonnementLinks.none { it.url == abonnement.url }
+            }.forEach { abonnement ->
                 client.deleteAbonnement(
                     notificatiesApiPluginInstance.authenticationPluginConfiguration,
                     notificatiesApiPluginInstance.url,
-                    it.url!!.substring(notificatiesApiPluginInstance.url.toString().length + 11)
+                    abonnement.getId()!!
                 )
             }
 
@@ -121,7 +102,7 @@ class PluginsDeployedEventListener(
             notificatiesApiPluginInstance.url
         )
 
-        val currentNotificatiesApiAbonnement = abonnementenInApi.firstOrNull {abonnement ->
+        val currentNotificatiesApiAbonnement = abonnementenInApi.firstOrNull { abonnement ->
             currentNotificatiesApiAbonnementLink != null &&
             currentNotificatiesApiAbonnementLink.url == abonnement.url
         }
@@ -175,7 +156,7 @@ class PluginsDeployedEventListener(
         )
     }
 
-    fun ensureKanalenExist(
+    private fun ensureKanalenExist(
         kanalen: Set<String>,
         authenticationPluginConfiguration: NotificatiesApiAuthentication,
         url: URI,
@@ -191,15 +172,23 @@ class PluginsDeployedEventListener(
             }
     }
 
+    private fun <T> retry(times: Int = 3, block: () -> T): T {
+        var lastException: Exception? = null
+        repeat(times) {
+            try {
+                return block()
+            } catch (e: Exception) {
+                lastException = e
+            }
+        }
+        throw NotificatiesApiAbonnementException(lastException)
+    }
+
     private fun createRandomKey(): String {
         val random = SecureRandom()
         val bytes = ByteArray(32)
         random.nextBytes(bytes)
         return Base64.getEncoder().encodeToString(bytes)
-    }
-
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        context = applicationContext
     }
 
     companion object {

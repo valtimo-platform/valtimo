@@ -17,17 +17,25 @@
 package com.ritense.iko.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
+import com.ritense.exporter.ExportService
+import com.ritense.iko.exporter.IkoDataAggregateExportRequest
 import com.ritense.iko.service.IkoDataAggregateService
 import com.ritense.iko.web.rest.request.IkoDataAggregateCreateRequest
 import com.ritense.iko.web.rest.request.IkoDataAggregateUpdateRequest
 import com.ritense.iko.web.rest.response.IkoDataAggregateResponse
+import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction.ASC
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -38,12 +46,15 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.multipart.MultipartFile
 
 @Controller
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class IkoDataAggregateManagementResource(
     private val service: IkoDataAggregateService,
+    private val exportService: ExportService,
+    private val importService: ImportService,
 ) {
 
     @RunWithoutAuthorization
@@ -117,5 +128,36 @@ class IkoDataAggregateManagementResource(
     ): ResponseEntity<IkoDataAggregateResponse> {
         service.deleteIkoDataAggregate(key)
         return ResponseEntity.noContent().build()
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping(
+        "/v1/iko-data-aggregate/{key}/export",
+        produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
+    )
+    fun getExport(
+        @PathVariable key: String,
+    ): ResponseEntity<ByteArray> {
+        val baos = exportService.export(IkoDataAggregateExportRequest(key))
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
+        val fileName = "${key}_$timestamp.iko.zip"
+        return ResponseEntity
+            .ok()
+            .header("Content-Disposition", "attachment;filename=$fileName")
+            .body(baos.toByteArray())
+    }
+
+    @PostMapping("/v1/iko-data-aggregate/import")
+    @RunWithoutAuthorization
+    fun import(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Unit> {
+        return try {
+            importService.importGlobal(file.inputStream)
+            ResponseEntity.ok().build()
+        } catch (exception: ImportServiceException) {
+            logger.error(exception) { "Import failed" }
+            ResponseEntity.badRequest().build()
+        }
     }
 }

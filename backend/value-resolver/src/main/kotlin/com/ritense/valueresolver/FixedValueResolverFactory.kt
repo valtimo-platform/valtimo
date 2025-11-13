@@ -46,6 +46,10 @@ class FixedValueResolverFactory(
         return createResolver()
     }
 
+    override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
+        return createResolver()
+    }
+
     override fun handleValues(
         processInstanceId: String,
         variableScope: VariableScope?,

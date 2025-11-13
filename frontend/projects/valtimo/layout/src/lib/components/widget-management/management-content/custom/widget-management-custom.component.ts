@@ -29,7 +29,6 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {IWidgetContentComponent} from '../../../../interfaces';
 import {CustomWidgetConfig, WidgetCustomContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
@@ -48,9 +47,7 @@ import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
     DropdownModule,
   ],
 })
-export class WidgetManagementCustomComponent implements IWidgetContentComponent, OnDestroy, OnInit {
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
-
+export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
   });
@@ -104,7 +101,7 @@ export class WidgetManagementCustomComponent implements IWidgetContentComponent,
 
     this._selectedCustomComponentKey$.next(componentKey);
     this.widgetWizardService.$widgetContent.set({componentKey});
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 
   public ngOnInit(): void {
@@ -131,6 +128,6 @@ export class WidgetManagementCustomComponent implements IWidgetContentComponent,
     if (!componentKey || Object.keys(this.customWidgetConfig || {}).length === 0) return;
 
     this._selectedCustomComponentKey$.next(componentKey);
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 }

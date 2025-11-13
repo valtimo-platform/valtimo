@@ -19,7 +19,10 @@ package com.ritense.outbox
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.PostLoad
+import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
+import org.springframework.data.domain.Persistable
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -29,11 +32,26 @@ class OutboxMessage(
 
     @Id
     @Column(name = "id")
-    val id: UUID = UUID.randomUUID(),
+    private val id: UUID = UUID.randomUUID(),
 
     @Column(name = "message")
     val message: String,
 
     @Column(name = "created_on")
     val createdOn: LocalDateTime = LocalDateTime.now()
-)
+): Persistable<UUID> {
+    @Transient
+    private var isNew = true
+
+    override fun getId(): UUID {
+        return id
+    }
+
+    override fun isNew() = isNew
+
+    @PostPersist
+    @PostLoad
+    fun markNotNew() {
+        this.isNew = false
+    }
+}

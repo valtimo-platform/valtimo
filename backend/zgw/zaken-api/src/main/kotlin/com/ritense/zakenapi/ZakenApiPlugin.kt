@@ -233,7 +233,7 @@ class ZakenApiPlugin(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString()
         ) {
             val documentId = UUID.fromString(execution.businessKey)
-            val caseGeometry = geometryOrNullFrom(caseGeometryType , caseGeometryCoordinates)
+            val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
             createZaak(
                 documentId = documentId,
@@ -339,7 +339,7 @@ class ZakenApiPlugin(
         @PluginActionProperty startDateRetentionPeriod: String? = null
     ) {
         val documentId = UUID.fromString(execution.businessKey)
-        val caseGeometry = geometryOrNullFrom(caseGeometryType , caseGeometryCoordinates)
+        val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
         patchZaak(
             documentId = documentId,
@@ -440,6 +440,7 @@ class ZakenApiPlugin(
         @PluginActionProperty inpA_nummer: String?,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -470,6 +471,10 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info {
                 "Natuurlijk persoon zaakrol with URL '${rol.url}' created for " +
                     "document with id '$documentId' and zaak with URL '$zaakUrl'."
@@ -493,6 +498,7 @@ class ZakenApiPlugin(
         @PluginActionProperty vestigingsNummer: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -524,6 +530,10 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info {
                 "Niet-natuurlijk persoon zaakrol with URL '${rol.url}' created for " +
                     "document with id '$documentId' and " +
@@ -549,7 +559,8 @@ class ZakenApiPlugin(
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
+        @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -583,6 +594,10 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info {
                 "Medewerker zaakrol with URL '${rol.url}' created for " +
                     "document with id '$documentId' and " +
@@ -607,7 +622,8 @@ class ZakenApiPlugin(
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
+        @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -640,6 +656,10 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info {
                 "Organisatorische eenheid zaakrol with URL '${rol.url}' created for " +
                     "document with id '$documentId' and " +
@@ -662,13 +682,16 @@ class ZakenApiPlugin(
         @PluginActionProperty vestigingsNummer: String,
         @PluginActionProperty handelsnaam: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
+        @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
         ) {
-            logger.debug { "Creating vestiging zaakrol with roltype URL '$roltypeUrl' for " +
-                "document with id '${execution.businessKey}'" }
+            logger.debug {
+                "Creating vestiging zaakrol with roltype URL '$roltypeUrl' for " +
+                    "document with id '${execution.businessKey}'"
+            }
 
             val documentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
@@ -691,12 +714,34 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info {
                 "Vestiging zaakrol with URL '${rol.url}' created for " +
                     "document with id '$documentId' and " +
                     "zaak with URL '$zaakUrl'."
             }
         }
+    }
+
+    @PluginAction(
+        key = "delete-zaak-rol",
+        title = "Delete vestiging zaakrol",
+        description = "Delete a zaakrol from the zaak in the Zaken API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun deleteZaakRol(
+        execution: DelegateExecution,
+        @PluginActionProperty rolUuid: String,
+    ) {
+        logger.debug { "Deleting zaakrol with uuid '${rolUuid}' for document with id '${execution.businessKey}'" }
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+        client.deleteZaakRol(authenticationPluginConfiguration, url, UUID.fromString(rolUuid))
+        logger.info { "Zaakrol with uuid '${rolUuid}' deleted for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
+
     }
 
     @PluginAction(
@@ -987,7 +1032,12 @@ class ZakenApiPlugin(
         val currentRelevanteAndereZaken = currentZaak.relevanteAndereZaken?.toMutableList() ?: mutableListOf()
 
         if (currentRelevanteAndereZaken.none { relevanteZaak -> relevanteZaak.url == currentZaak.url }) {
-            currentRelevanteAndereZaken.add(RelevanteZaak(teRelaterenZaakUri, AardRelatie.entries.find { it.key == aardRelatie }!!))
+            currentRelevanteAndereZaken.add(
+                RelevanteZaak(
+                    teRelaterenZaakUri,
+                    AardRelatie.entries.find { it.key == aardRelatie }!!
+                )
+            )
 
             logger.trace { "Sending patch request add the zaak with URL '$teRelaterenZaakUri' to the relevanteAndereZaken of zaak with URL '$zaakUrl'" }
             client.patchZaak(
@@ -1035,7 +1085,10 @@ class ZakenApiPlugin(
         }
     }
 
-    private fun resolveProperties(zaakObjectRequest: ZaakObjectRequest, execution: DelegateExecution): ZaakObjectRequest {
+    private fun resolveProperties(
+        zaakObjectRequest: ZaakObjectRequest,
+        execution: DelegateExecution
+    ): ZaakObjectRequest {
         // Convert object to JsonNode
         val properties = objectMapper.valueToTree<JsonNode>(zaakObjectRequest)
 
@@ -1059,6 +1112,7 @@ class ZakenApiPlugin(
                     }
                 }
             }
+
             is ArrayNode -> {
                 for (i in 0 until node.size()) {
                     val child = node[i]

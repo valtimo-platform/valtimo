@@ -23,6 +23,7 @@ import {
   WidgetInteractiveTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
+import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
@@ -31,6 +32,7 @@ enum WidgetType {
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -42,15 +44,16 @@ interface WidgetAction {
   caseDefinitionKey?: string;
   navigateTo?: string;
 }
-
+ 
 interface BasicWidget {
   type: WidgetType;
   title: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: WidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsWidgetValue {
@@ -98,13 +101,18 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
+interface DividerWidget extends BasicWidget {
+  type: WidgetType.DIVIDER;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
   | CustomWidget
   | TableWidget
   | InteractiveTableWidget
-  | FormioWidget;
+  | FormioWidget
+  | DividerWidget
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -167,7 +175,14 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
-type WidgetComponentMap = Record<WidgetType, Type<any>>;
+interface WidgetGroup {
+  divider: DividerWidget | null;
+  widgets: Widget[];
+}
+
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+
+type WidgetContext = 'case' | 'iko';
 
 export {
   BasicWidget,
@@ -177,13 +192,13 @@ export {
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
   WidgetPackResult,
-  // WidgetsRes,
   WidgetType,
   WidgetWidth,
   WidgetWidthsPx,
   WidgetWithUuid,
   WidgetXY,
   CollectionFieldWidth,
+  DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
   CollectionWidget,
@@ -196,4 +211,6 @@ export {
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
+  WidgetContext,
+  WidgetGroup
 };

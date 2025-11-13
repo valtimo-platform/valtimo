@@ -58,6 +58,7 @@ import com.ritense.zakenapi.event.ZaakPatched
 import com.ritense.zakenapi.event.ZaakResultaatCreated
 import com.ritense.zakenapi.event.ZaakResultaatViewed
 import com.ritense.zakenapi.event.ZaakRolCreated
+import com.ritense.zakenapi.event.ZaakRolDeleted
 import com.ritense.zakenapi.event.ZaakRolUpdated
 import com.ritense.zakenapi.event.ZaakRollenListed
 import com.ritense.zakenapi.event.ZaakStatusCreated
@@ -253,6 +254,26 @@ class ZakenApiClient(
             event
         }
         return result
+    }
+
+    fun deleteZaakRol(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        rolUuid: UUID,
+    ) {
+        buildRestClient(authentication)
+            .delete()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .pathSegment("rollen", "{rolUuid}")
+                    .build(rolUuid)
+            }
+            .retrieve()
+            .toBodilessEntity()
+
+        val event = ZaakRolDeleted(zaakRolUuid = rolUuid.toString())
+        applicationEventPublisher.publishEvent(event)
+        outboxService.send { event }
     }
 
     fun updateZaakRol(

@@ -67,6 +67,7 @@ import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
 import {CustomCaseTabComponent} from './custom-case-tab/custom-case-tab.component';
+import {NotificationTestComponent} from './notification-test/notification-test.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
 import {AnalyseModule} from '@valtimo/analyse';
@@ -162,6 +163,7 @@ export function tabsFactory() {
     UploadShowcaseComponent,
     CustomCaseTabComponent,
     CustomMapsTabComponent,
+    NotificationTestComponent,
   ],
   bootstrap: [AppComponent],
   imports: [

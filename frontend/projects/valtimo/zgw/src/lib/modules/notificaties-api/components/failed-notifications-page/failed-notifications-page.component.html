@@ -1,0 +1,26 @@
+<div class="failed-notifications-page">
+  <valtimo-carbon-list
+    *ngIf="{items: notifications$ | async} as obs"
+    [items]="obs.items || []"
+    [fields]="FIELDS"
+    [loading]="loading$ | async"
+    [pagination]="pagination$ | async"
+    paginationIdentifier="zgw-notificaties-api-failed"
+    (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <valtimo-no-results
+      [title]="'zgw.notifications.failed.noResults.title' | translate"
+      [description]="'zgw.notifications.failed.noResults.description' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-notificaties-api-failed-notification-detail
+    [open]="(selectedNotification$ | async) !== null"
+    [notification]="selectedNotification$ | async"
+    [retryInProgress]="retryInProgress$ | async"
+    (closeModalEvent)="onCloseModal()"
+    (retryEvent)="onRetry()"
+  ></valtimo-notificaties-api-failed-notification-detail>
+</div>

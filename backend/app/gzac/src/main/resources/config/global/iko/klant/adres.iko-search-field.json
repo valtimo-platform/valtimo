@@ -27,7 +27,7 @@
             "dataType": "text",
             "fieldType": "single",
             "matchType": "exact",
-            "required": true
+            "required": false
         },
         {
             "key": "toevoeging",
@@ -36,7 +36,7 @@
             "dataType": "text",
             "fieldType": "single",
             "matchType": "exact",
-            "required": true
+            "required": false
         }
     ]
 }

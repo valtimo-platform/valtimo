@@ -13,32 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/core';
 
-import {
-  computed,
-  Injectable,
-  Injector,
-  runInInjectionContext,
-  Signal,
-  signal,
-  WritableSignal,
-} from '@angular/core';
 import {
   BasicWidget,
   WidgetAction,
   WidgetContentProperties,
+  WidgetContext,
   WidgetStyle,
   WidgetType,
   WidgetTypeSelection,
   WidgetWidth,
+  WidgetWizardStep,
 } from '../models';
-import {Observable} from 'rxjs';
-import {toObservable} from '@angular/core/rxjs-interop';
+import {Condition} from '@valtimo/shared';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WidgetWizardService {
+  public readonly $currentStepIndex: WritableSignal<number> = signal(0);
+
   public readonly $selectedWidget: WritableSignal<WidgetTypeSelection | null> = signal(null);
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
@@ -47,15 +43,68 @@ export class WidgetWizardService {
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
+  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
+
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
 
-  private _defaultWidth!: WidgetWidth;
+  public readonly $widgetContext: WritableSignal<WidgetContext | null> = signal(null);
 
-  public get defaultWidth(): WidgetWidth {
+  public readonly $widgetContentValid: WritableSignal<boolean> = signal(false);
+
+  public readonly $widgetConditionsValid: WritableSignal<boolean> = signal(false);
+
+  public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
+
+  public readonly $disableActionButton: WritableSignal<boolean> = signal(false);
+
+  public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
+    WidgetWizardStep.TYPE,
+    WidgetWizardStep.WIDTH,
+    WidgetWizardStep.STYLE,
+    WidgetWizardStep.CONTENT,
+    WidgetWizardStep.DISPLAY_CONDITIONS,
+  ]);
+
+  public readonly $editMode: WritableSignal<boolean> = signal(false);
+
+  private readonly _$stepCompleteCondition: Signal<Record<WidgetWizardStep, boolean>> = computed(
+    () => ({
+      [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
+      [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
+      [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
+      [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
+      [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
+    })
+  );
+
+  public readonly $widgetWizardStepProperties: Signal<
+    Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
+  > = computed(() =>
+    this.$widgetWizardSteps().reduce(
+      (acc, curr, index, steps) => ({
+        ...acc,
+        [curr]: {
+          disabled:
+            (this.$editMode() && index === 0) ||
+            (!this._$stepCompleteCondition()[steps[index - 1]] && index > 0),
+          complete: this._$stepCompleteCondition()[curr] || this.$editMode(),
+        },
+      }),
+      {} as Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
+    )
+  );
+
+  public readonly $nextButtonDisabled = computed(
+    () => !this._$stepCompleteCondition()[this.$widgetWizardSteps()[this.$currentStepIndex()]]
+  );
+
+  private _defaultWidth!: WidgetWidth | null;
+
+  public get defaultWidth(): WidgetWidth | null {
     return this._defaultWidth;
   }
 
@@ -67,38 +116,46 @@ export class WidgetWizardService {
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
+    displayConditions: this.$widgetDisplayConditions() ?? [],
   }));
-
-  public readonly $editMode: WritableSignal<boolean> = signal(false);
-
-  public get editMode$(): Observable<boolean> {
-    return runInInjectionContext(this.injector, () => toObservable(this.$editMode));
-  }
 
   public readonly $usedWidgetKeys: WritableSignal<string[]> = signal([]);
 
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
 
-  constructor(private readonly injector: Injector) {}
-
   public resetWizard(): void {
-    this.$selectedWidget.set(null);
-    this.$widgetWidth.set(this._defaultWidth || null);
-    this.$widgetStyle.set(null);
-    this.$widgetContent.set(null);
-    this.$widgetTitle.set(null);
-    this.$widgetKey.set(null);
-    this.$widgetActions.set(undefined);
-    this.$editMode.set(false);
+    setTimeout(() => {
+      this.$currentStepIndex.set(0);
+      this.$selectedWidget.set(null);
+      this.$widgetWidth.set(this._defaultWidth || null);
+      this.$widgetStyle.set(null);
+      this.$widgetContent.set(null);
+      this.$widgetTitle.set(null);
+      this.$widgetKey.set(null);
+      this.$widgetActions.set(undefined);
+      this.$widgetDisplayConditions.set(null);
+      this.$editMode.set(false);
+      this.$disableActionButton.set(false);
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public setDefaultWidth(width: number): void {
+  public resetWizardSteps(): void {
+    this.$widgetWizardSteps.set([
+      WidgetWizardStep.TYPE,
+      WidgetWizardStep.WIDTH,
+      WidgetWizardStep.STYLE,
+      WidgetWizardStep.CONTENT,
+      WidgetWizardStep.DISPLAY_CONDITIONS,
+    ]);
+  }
+
+  public setDefaultWidth(width: number | null): void {
     if (!this.isWidgetWidth(width)) return;
     this._defaultWidth = width;
     this.$widgetWidth.set(this._defaultWidth);
   }
 
-  private isWidgetWidth(value: unknown): value is WidgetWidth {
-    return [1, 2, 3, 4].includes(value as number);
+  private isWidgetWidth(value: number | null): value is WidgetWidth | null {
+    return [1, 2, 3, 4, null].includes(value as number);
   }
 }

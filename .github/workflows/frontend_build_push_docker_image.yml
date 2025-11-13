@@ -4,27 +4,17 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-    branches:
-      - "next-minor"
-    types:
-      - synchronize
-    paths:
-      - frontend/**
-
-  push:
-    branches:
-      - 'next-minor'
-    paths:
-      - frontend/**
-
-  workflow_dispatch:
-
   workflow_call:
+    inputs:
+      frontend_libraries_build_artifact_name:
+        required: true
+        description: Name of the frontend build artifact to download with 'download-artifact'
+        type: "string"
+
     outputs:
-      imageTag:
+      tagged_image:
         description: "The Docker image tag"
-        value: ${{ jobs.buildImage.outputs.imageTag }}
+        value: ${{ jobs.build_image.outputs.image_tag }}
 
 defaults:
   run:
@@ -34,20 +24,17 @@ env:
   NODE_VERSION: "20.x"
 
 jobs:
-  build_and_test:
-    uses: ./.github/workflows/frontend_build_test.yml
-    secrets: inherit
-
   build_image:
-    needs: [build_and_test]
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
 
     outputs:
-      imageTag: ${{ steps.generate_tags.outputs.tags }}
+      image_tag: ${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}
+
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout repository
@@ -58,10 +45,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Download dist artifact
+      - name: Download libraries dist artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist/
 
       - name: Move local devDependencies to dependencies and install
@@ -116,16 +103,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract branch name
-        id: vars
-        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Resolve frontend tree hash
+        id: frontend_tree
+        run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
 
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
-          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
+            type=raw,value=commit-${{ github.sha }}
+            type=raw,value=contents-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false
 

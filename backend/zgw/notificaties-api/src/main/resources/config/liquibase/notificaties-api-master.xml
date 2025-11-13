@@ -25,5 +25,6 @@
 
     <include file="changelog/20230105-add-notificaties-api-abonnement-link-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230123-rename-primary-key-column-in-notificaties-api-abonnement-link-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20240525-add-notificaties-api-inbound-event-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

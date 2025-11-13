@@ -36,7 +36,6 @@ export class CaseHeaderWidgetManagementService
   private readonly paramsRequired$ = this._params$.pipe(
     filter((p): p is CaseManagementParams => !!p)
   );
-  public readonly valueResolverApi$ = new BehaviorSubject<string | null>('');
 
   constructor(
     protected override httpClient: HttpClient,

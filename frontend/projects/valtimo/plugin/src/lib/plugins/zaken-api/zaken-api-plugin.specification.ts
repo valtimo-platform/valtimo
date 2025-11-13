@@ -37,6 +37,7 @@ import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-z
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -48,6 +49,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
+    'delete-zaak-rol': DeleteZaakRolComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -115,6 +117,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol aanmaken - Medewerker',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol aanmaken - Organisatorische eenheid',
       'create-vestiging-zaak-rol': 'Zaakrol aanmaken - Vestiging',
+      'delete-zaak-rol': 'Verwijderen Zaakrol',
       'set-zaakopschorting': 'Schort een zaak op',
       'start-hersteltermijn': 'Start hersteltermijn',
       startRecoveryPeriodInformation:
@@ -268,6 +271,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
       resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.'
+      resultProcessVariable: 'Resultaat process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'De UUID van de rol'
     },
     en: {
       title: 'Zaken API',
@@ -319,6 +325,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Create Zaakrol - Employee',
       'create-organisatorische-eenheid-zaak-rol': 'Create Zaakrol - Organizational unit',
       'create-vestiging-zaak-rol': 'Create Zaakrol - Branch',
+      'delete-zaak-rol': 'Removing Zaakrol',
       'set-zaakopschorting': 'Suspend case',
       'start-hersteltermijn': 'Start recovery period',
       startHersteltermijnInformation:
@@ -469,6 +476,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
+      resultProcessVariable: 'Result process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'The UUID of the rol'
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
       resultProcessVariable: 'Result process variable',
       resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
@@ -677,6 +687,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       resultProcessVariable: 'Ergebnis Prozessvariable',
       resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.'
+      resultProcessVariable: 'Ergebnis process variable',
+      rolUuid: 'Rolle UUID',
+      rolUuidTooltip: 'Die UUID der Rolle'
     },
   },
 };

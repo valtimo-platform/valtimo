@@ -58,5 +58,6 @@
     <include file="changelog/20250515-camunda-process-version-tag.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250424-major-13-drop-deprecated-tables.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250812-operaton-migration.xml" relativeToChangelogFile="true"/>
+    <include file="camunda/20251023-operaton-upgrade-1-0-0-rc-1-changelog.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

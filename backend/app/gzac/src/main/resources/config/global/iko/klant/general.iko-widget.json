@@ -125,9 +125,9 @@
             }
         },
         {
-            "key": "lopendeZaken",
+            "key": "personen",
             "type": "interactive-table",
-            "title": "Lopende zaken",
+            "title": "Personen",
             "width": 4,
             "highContrast": false,
             "canStartCase": true,
@@ -138,63 +138,24 @@
                 }
             ],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
+                "collection": "iko:?ikoDataAggregateKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
                 "rowClickAction": {
-                    "navigateTo": "${$.kenmerken[?(@.kenmerk =~ /^originUrl[0-9]*$/)].bron}"
+                    "navigateTo": "http://www.ritense.nl/persoon/${/burgerservicenummer}"
                 },
                 "canStartCase": true,
                 "defaultPageSize": 4,
                 "columns": [
                     {
-                        "key": "identificatie",
-                        "title": "Identificatie",
-                        "value": "/identificatie"
+                        "key": "naam",
+                        "title": "Naam",
+                        "value": "/naam/volledigeNaam"
                     },
                     {
-                        "key": "verantwoordelijkeOrganisatie",
-                        "title": "VerantwoordelijkeOrganisatie",
-                        "value": "/verantwoordelijkeOrganisatie"
-                    },
-                    {
-                        "key": "uiterlijkeEinddatum",
-                        "title": "Uiterlijke einddatum",
-                        "value": "/uiterlijkeEinddatumAfdoening",
-                        "displayProperties": {
-                            "type": "date",
-                            "format": "DD-MM-YYYY",
-                            "hideWhenEmpty": false
-                        }
+                        "key": "bsn",
+                        "title": "BSN",
+                        "value": "/burgerservicenummer"
                     }
                 ]
-            }
-        },
-        {
-            "type": "table",
-            "key": "bomen",
-            "title": "Bomen",
-            "width": 4,
-            "highContrast": false,
-            "properties": {
-                "collection": "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
-                "defaultPageSize": 4,
-                "columns": [
-                    {
-                        "key": "boombeeld",
-                        "title": "Boombeeld",
-                        "value": "/record/data/boombeeld"
-                    },
-                    {
-                        "key": "groeifase",
-                        "title": "Groeifase",
-                        "value": "/record/data/groeifase"
-                    },
-                    {
-                        "key": "boomveiligheidsklasse",
-                        "title": "Boomveiligheidsklasse",
-                        "value": "/record/data/boomveiligheidsklasse"
-                    }
-                ],
-                "firstColumnAsTitle": false
             }
         }
     ]

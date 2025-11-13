@@ -89,6 +89,7 @@ export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-z
 export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
 export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component'
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
