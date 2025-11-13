@@ -19,6 +19,7 @@ import {BesluitenApiConfigurationComponent} from './components/besluiten-api-con
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
 import {LoadingModule} from 'carbon-components-angular';
 import {
@@ -34,6 +35,7 @@ import {
   declarations: [
     BesluitenApiConfigurationComponent,
     CreateZaakBesluitConfigurationComponent,
+    PatchZaakBesluitConfigurationComponent,
     LinkDocumentToBesluitConfigurationComponent,
   ],
   imports: [
@@ -50,6 +52,7 @@ import {
   exports: [
     BesluitenApiConfigurationComponent,
     CreateZaakBesluitConfigurationComponent,
+    PatchZaakBesluitConfigurationComponent,
     LinkDocumentToBesluitConfigurationComponent,
   ],
 })

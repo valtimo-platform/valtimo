@@ -18,6 +18,7 @@ import {PluginSpecification} from '../../models';
 import {BesluitenApiConfigurationComponent} from './components/besluiten-api-configuration/besluiten-api-configuration.component';
 import {BESLUITEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
 
 const besluitenApiPluginSpecification: PluginSpecification = {
@@ -26,6 +27,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
   pluginLogoBase64: BESLUITEN_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'create-besluit': CreateZaakBesluitConfigurationComponent,
+    'patch-besluit': PatchZaakBesluitConfigurationComponent,
     'link-document-to-besluit': LinkDocumentToBesluitConfigurationComponent,
   },
   pluginTranslations: {
@@ -54,10 +56,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Ingangsdatum van de werkingsperiode van het besluit. Ondersteunt de value resolver, bijv: pv:ingangsdatum of doc:/besluit/ingangsdatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
       vervaldatum: 'Vervaldatum',
       vervaldatumTooltip:
-        'Datum waarop de werkingsperiode van het besluit eindigt. Ondersteunt de value resolver, bijv: pv:vervaldatum of doc:/besluit/vervaldatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
+        'Datum waarop de werkingsperiode van het besluit eindigt. Ondersteunt de value resolver, bijv: pv:vervaldatum of doc:/besluit/vervaldatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervalreden: 'Vervalreden',
       vervalredenTooltip:
-        'De omschrijving die aangeeft op grond waarvan het besluit is of komt te vervallen.',
+        'De omschrijving die aangeeft op grond waarvan het besluit is of komt te vervallen. Mogelijke waarden: tijdelijk, ingetrokken_overheid, ingetrokken_belanghebbende',
       tijdelijk: 'Tijdelijk',
       ingetrokken_overheid: 'Ingetrokken door overheid',
       ingetrokken_belanghebbende: 'Ingetrokken door belanghebbende',
@@ -87,6 +89,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Selecteer de dossierdefinitie waarvan u een Besluit-type wilt selecteren. Als er slechts één besluittype beschikbaar is, wordt deze standaard geselecteerd.',
       besluittypeUrlSelect: 'Besluittype',
       besluittypeUrlSelectTooltip: 'Selecteer het besluittype.',
+      'patch-besluit': 'Zaakbesluit bijwerken',
+      patchZaakBesluitInformation: 'Deze actie wijzigt een zaakbesluit in de Besluiten API.',
+      beslisdatum: 'Beslisdatum',
+      beslisdatumTooltip: 'De beslisdatum (AWB) van het besluit',
     },
     en: {
       title: 'Besluiten API',
@@ -113,10 +119,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Commencement date of the effective period of the besluit. Supports the value resolver eg: pv:ingangsdatum or doc:/besluit/ingangsdatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
       vervaldatum: 'Expiration date',
       vervaldatumTooltip:
-        'Date on which the period of operation of the besluit ends. Supports the value resolver eg: pv:vervaldatum or doc:/besluit/vervaldatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
+        'Date on which the period of operation of the besluit ends. Supports the value resolver eg: pv:vervaldatum or doc:/besluit/vervaldatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervalreden: 'Reason for expiry',
       vervalredenTooltip:
-        'The description that indicates on the basis of which the decision has been or will be cancelled.',
+        'The description that indicates on the basis of which the decision has been or will be cancelled. Possible value: tijdelijk, ingetrokken_overheid, ingetrokken_belanghebbende',
       tijdelijk: 'Temporary',
       ingetrokken_overheid: 'Withdrawn by government',
       ingetrokken_belanghebbende: 'Withdrawn by interested party',
@@ -147,6 +153,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Select the case definition from which you want to select a Besluit type. If only one Besluit type is available, it will be selected by default.',
       besluittypeUrlSelect: 'Besluittype',
       besluittypeUrlSelectTooltip: 'Select the Besluit type.',
+      'patch-besluit': 'Patch Zaakbesluit',
+      patchZaakBesluitInformation: 'This action patches a Zaakbesluit in the Besluiten API.',
+      beslisdatum: 'Decision date',
+      beslisdatumTooltip: 'The decision date (AWB) of the decision.',
     },
     de: {
       title: 'Besluiten API',
@@ -174,10 +184,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Datum des Beginns der Geltungsdauer der Entscheidung. Unterstützt den Werteauflöser, z. B.: pv:ingangsdatum oder doc:/besluit/ingangdatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
       vervaldatum: 'Verfallsdatum',
       vervaldatumTooltip:
-        'Datum, an dem die Geltungsdauer der Entscheidung endet. Unterstützt den Werteauflöser, z. B.: pv:vervaldatum oder doc:/besluit/vervaldatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
+        'Datum, an dem die Geltungsdauer der Entscheidung endet. Unterstützt den Werteauflöser, z. B.: pv:vervaldatum oder doc:/besluit/vervaldatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervalreden: 'Ablaufgrund',
       vervalredenTooltip:
-        'Die Beschreibung, auf deren Grundlage die Entscheidung aufgehoben wurde oder wird.',
+        'Die Beschreibung, auf deren Grundlage die Entscheidung aufgehoben wurde oder wird. Mögliche Werte: tijdelijk, ingetrokken_overheid, ingetrokken_belanghebbende',
       tijdelijk: 'Temporär',
       ingetrokken_overheid: 'Von der Regierung zurückgezogen',
       ingetrokken_belanghebbende: 'Von interessierter Partei zurückgezogen',
@@ -208,6 +218,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Wählen Sie die Falltyp aus, aus der Sie einen Besluit-typ auswählen möchten. Wenn nur ein Besluit-typ verfügbar ist, wird dieser standardmäßig ausgewählt.',
       besluittypeUrlSelect: 'Besluittype',
       besluittypeUrlSelectTooltip: 'Wählen Sie den Besluit-typ aus.',
+      'patch-besluit': 'Patch Zaakbesluit',
+      patchZaakBesluitInformation: 'Diese Aktion patcht einen Fallbeschluss in der Besluiten-API.',
+      beslisdatum: 'Entscheidungsdatum',
+      beslisdatumTooltip: 'Das Entscheidungsdatum (AWB) des Beschlusses',
     },
   },
 };
