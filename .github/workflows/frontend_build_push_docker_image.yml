@@ -10,7 +10,7 @@ on:
         required: true
         description: Name of the frontend build artifact to download with 'download-artifact'
         type: "string"
-      release_image:
+      push_to_dockerhub:
         description: "Push the built image to Docker Hub as well"
         required: false
         type: boolean
@@ -51,10 +51,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate release image inputs
-        if: ${{ inputs.release_image }}
+        if: ${{ inputs.push_to_dockerhub }}
         run: |
           if [ -z "${{ inputs.release_image_tag }}" ]; then
-            echo "::error::'release_image_tag' input must be provided when 'release_image' is true."
+            echo "::error::'release_image_tag' input must be provided when 'push_to_dockerhub' is true."
             exit 1
           fi
 
@@ -122,7 +122,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
-        if: ${{ inputs.release_image }}
+        if: ${{ inputs.push_to_dockerhub }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -162,6 +162,6 @@ jobs:
           push: true
           tags: |
             ${{ steps.generate_tags.outputs.tags }}
-            ${{ inputs.release_image && format('docker.io/{0}:{1}', env.DOCKERHUB_IMAGE, inputs.release_image_tag) || '' }}
+            ${{ inputs.push_to_dockerhub && format('docker.io/{0}:{1}', env.DOCKERHUB_IMAGE, inputs.release_image_tag) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
