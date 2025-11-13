@@ -16,6 +16,8 @@
 
 package com.valtimo.keycloak.liquibase.changelog
 
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import okhttp3.mockwebserver.Dispatcher
@@ -31,14 +33,12 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.mock.env.MockEnvironment
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
-internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
+internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
 
     lateinit var server: MockWebServer
 
-    lateinit var changeLog: ChangeLog20250506MigrateToKeycloakUsername
+    lateinit var changeLog: ChangeLog20251113MigrateActRuTaskAssigneeToUsername
     lateinit var environment: MockEnvironment
 
 
@@ -55,9 +55,9 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             this.setProperty("keycloak.credentials.secret", "example-secret")
         }
 
-        ChangeLog20250506MigrateToKeycloakUsername().postProcessEnvironment(environment, mock())
+        ChangeLog20251113MigrateActRuTaskAssigneeToUsername().postProcessEnvironment(environment, mock())
 
-        changeLog = ChangeLog20250506MigrateToKeycloakUsername()
+        changeLog = ChangeLog20251113MigrateActRuTaskAssigneeToUsername()
     }
 
     @AfterEach
@@ -203,6 +203,7 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             .addHeader("Content-Type", "application/json")
             .setBody(body)
     }
+
     fun readFileAsString(fileName: String): String = this::class.java.getResource(fileName).readText(Charsets.UTF_8)
 
 }
