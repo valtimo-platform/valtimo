@@ -25,6 +25,10 @@
     <span class="widget-title">{{ widgetConfiguration?.title }}</span>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="widgetConfiguration"
+    ></valtimo-widget-action-button>
   </section>
 
   @if (obs.widgetData && obs.fields && obs.widgetData.length) {

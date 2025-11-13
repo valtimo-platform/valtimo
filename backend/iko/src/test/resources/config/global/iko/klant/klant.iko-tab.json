@@ -1,0 +1,45 @@
+{
+  "ikoDataAggregateKey" : "klant",
+  "ikoTabs" : [
+    {
+      "key" : "general",
+      "title" : "Algemeen",
+      "type" : "widgets"
+    },
+    {
+      "key" : "case-progress",
+      "title" : "Lopende Zaken",
+      "type" : "widgets"
+    },
+    {
+      "key" : "notes",
+      "title" : "Notities",
+      "type" : "widgets"
+    },
+    {
+      "key" : "products",
+      "title" : "Producten",
+      "type" : "widgets"
+    },
+    {
+      "key" : "contact-moments",
+      "title" : "Contactmomenten",
+      "type" : "widgets"
+    },
+    {
+      "key" : "zaakobjecten",
+      "title" : "Documenten",
+      "type" : "widgets"
+    },
+    {
+      "key" : "work",
+      "title" : "Werk",
+      "type" : "widgets"
+    },
+    {
+      "key" : "income",
+      "title" : "Inkomen",
+      "type" : "widgets"
+    }
+  ]
+}

@@ -125,6 +125,17 @@
   transition: height 0.15s ease-in-out;
 }
 
+.split-area {
+  &__content {
+    height: 100% !important;
+  }
+
+  &__content .tab-container {
+    height: min-content !important;
+    overflow: hidden !important;
+  }
+}
+
 :host ::ng-deep .container-fluid {
   height: 100% !important;
   width: 100% !important;

@@ -17,6 +17,7 @@
 package com.ritense.widget.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
 import jakarta.validation.constraints.Max
@@ -35,6 +36,7 @@ interface WidgetDto {
     val width: Int
     val highContrast: Boolean
     val actions: List<WidgetAction>
+    val displayConditions: List<Condition<*>>?
 
     fun toEntity(id: UUID, order: Int): Widget
 }

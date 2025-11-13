@@ -15,11 +15,11 @@
  */
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {isEqual} from 'lodash';
 import {BehaviorSubject, filter, Observable, switchMap} from 'rxjs';
 import {IkoManagementParams} from '../models';
-import {isEqual} from 'lodash';
 
 @Injectable()
 export class IkoWidgetManagementApiService
@@ -33,7 +33,6 @@ export class IkoWidgetManagementApiService
   public get params$(): Observable<IkoManagementParams> {
     return this._params$.pipe(filter(params => !!params));
   }
-  public readonly valueResolverApi$ = new BehaviorSubject<string | null>('');
 
   constructor(
     protected override httpClient: HttpClient,
@@ -52,7 +51,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.get<BasicWidget[]>(
           this.getApiUrl(
-            `/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
+            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
           )
         )
       )

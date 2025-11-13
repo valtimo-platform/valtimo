@@ -37,7 +37,6 @@ import {
 } from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
 import {WidgetManagementTableComponent} from '../..';
-import {IWidgetContentComponent} from '../../../../interfaces';
 import {
   WidgetAction,
   WidgetContentProperties,
@@ -64,11 +63,8 @@ import {WidgetWizardService} from '../../../../services';
     LayerModule,
   ],
 })
-export class WidgetManagementInteractiveTableComponent
-  implements IWidgetContentComponent, OnInit, OnDestroy
-{
+export class WidgetManagementInteractiveTableComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-interactive-table';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public formGroup = this.fb.group({
     canStartCase: this.fb.control<boolean>(
@@ -98,16 +94,19 @@ export class WidgetManagementInteractiveTableComponent
     private readonly widgetWizardService: WidgetWizardService
   ) {
     effect(() => {
-      if (this.widgetWizardService.$editMode()) this.changeValidEvent.emit(true);
+      if (this.widgetWizardService.$editMode())
+        this.widgetWizardService.$widgetContentValid.set(true);
     });
   }
 
   public ngOnInit(): void {
+    this.widgetWizardService.$disableActionButton.set(true);
     this.openActionsSubscription();
     this.openDetailsSubscription();
   }
 
   public ngOnDestroy(): void {
+    this.widgetWizardService.$disableActionButton.set(false);
     this._subscriptions.unsubscribe();
   }
 
@@ -124,17 +123,13 @@ export class WidgetManagementInteractiveTableComponent
     this.actionsControl.removeAt(index);
   }
 
-  public onTableChangeValidEvent(valid: boolean): void {
-    this.changeValidEvent.emit(valid);
-  }
-
   private openActionsSubscription(): void {
     this._subscriptions.add(
       this.actionsControl.valueChanges.pipe(debounceTime(500)).subscribe(() => {
         const valid = !this.actionsControl
           .getRawValue()
           .some(action => !action.key || !action.value);
-        this.changeValidEvent.emit(valid);
+        this.widgetWizardService.$widgetContentValid.set(valid);
 
         if (!valid) return;
         this.widgetWizardService.$widgetActions.set(

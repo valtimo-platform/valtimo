@@ -16,42 +16,18 @@
 
 package com.ritense.inbox
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.cloudevents.core.provider.EventFormatProvider
-import io.cloudevents.jackson.JsonFormat
-
 class ValtimoInboxEventHandler(
     private val eventHandlers: List<ValtimoEventHandler>,
-    private val objectMapper: ObjectMapper
+    private val cloudEventMapper: ValtimoCloudEventMapper
 ): InboxEventHandler {
-    val cloudEventFormat = EventFormatProvider
-        .getInstance()
-        .resolveFormat(JsonFormat.CONTENT_TYPE)!!
-
     override fun handle(event: Any) {
-        event as String
-        val deserializedEvent = try {
-            val cloudEvent = cloudEventFormat.deserialize(event.encodeToByteArray())
-            val cloudEventData = cloudEvent.data?.let { objectMapper.readValue<CloudEventData>(it.toBytes()) }
+        val message = event as String
+        val valtimoEvent = cloudEventMapper
+            .fromJson(message)
+            ?.let { cloudEventMapper.toValtimoEvent(it) }
 
-            ValtimoEvent(
-                id = cloudEvent.id,
-                type = cloudEvent.type,
-                date = cloudEvent.time?.toLocalDateTime(),
-                userId = cloudEventData?.userId,
-                roles = cloudEventData?.roles,
-                resultType = cloudEventData?.resultType,
-                resultId = cloudEventData?.resultId,
-                result = cloudEventData?.result
-            )
-        } catch (e: Exception) {
-            //ignore messages that can't be parsed as cloud events
-            null
-        }
-
-        deserializedEvent?.let {
-            eventHandlers.forEach { handler -> handler.handle(it) }
+        valtimoEvent?.let { resolvedEvent ->
+            eventHandlers.forEach { handler -> handler.handle(resolvedEvent) }
         }
     }
 }

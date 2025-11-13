@@ -45,28 +45,32 @@
             },
             {
                 "type": "table",
-                "key": "bomen",
-                "title": "Bomen",
+                "key": "klanten",
+                "title": "Klanten",
                 "width": 4,
                 "highContrast": false,
                 "properties": {
-                    "collection": "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld",
+                    "collection": "iko:?ikoDataAggregateKey=klant&bsn=999990755",
                     "defaultPageSize": 4,
                     "columns": [
                         {
-                            "key": "boombeeld",
-                            "title": "Boombeeld",
-                            "value": "/record/data/boombeeld"
+                            "key": "naam",
+                            "title": "Naam",
+                            "value": "/naam/volledigeNaam"
                         },
                         {
-                            "key": "groeifase",
-                            "title": "Groeifase",
-                            "value": "/record/data/groeifase"
+                            "key": "geboortedatum",
+                            "title": "Geboortedatum",
+                            "value": "/geboorte/datum/datum",
+                            "displayProperties": {
+                                "type": "date",
+                                "format": "DD-MM-YYYY"
+                            }
                         },
                         {
-                            "key": "boomveiligheidsklasse",
-                            "title": "Boomveiligheidsklasse",
-                            "value": "/record/data/boomveiligheidsklasse"
+                            "key": "bsn",
+                            "title": "BSN",
+                            "value": "/burgerservicenummer"
                         }
                     ],
                     "firstColumnAsTitle": false
