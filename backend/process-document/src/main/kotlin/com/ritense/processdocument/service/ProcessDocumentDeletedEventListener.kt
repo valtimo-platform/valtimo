@@ -27,6 +27,7 @@ import com.ritense.valtimo.event.ProcessDefinitionDeleted
 import com.ritense.valtimo.operaton.service.OperatonHistoryService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RuntimeService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -37,6 +38,9 @@ class ProcessDocumentDeletedEventListener(
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val operatonHistoryService: OperatonHistoryService,
 ) {
+
+    @Value("\${valtimo.case.processing.retention.historyRemovalPeriodInSeconds}")
+    val historyRemovalPeriodInSeconds: Long = 60
 
     @EventListener(ProcessDefinitionDeleted::class)
     fun handle(event: ProcessDefinitionDeleted) {
@@ -55,7 +59,6 @@ class ProcessDocumentDeletedEventListener(
     fun handle(event: DocumentDeletedEvent) {
         withLoggingContext(JsonSchemaDocument::class, event.documentId) {
             logger.info { "Deleting all process instances for deleted document ${event.documentId}" }
-
             runWithoutAuthorization {
                 runtimeService.createProcessInstanceQuery()
                     .processInstanceBusinessKey(event.documentId.toString())
@@ -65,12 +68,12 @@ class ProcessDocumentDeletedEventListener(
                         deleteProcessInstance(it.processInstanceId)
                     }
 
-                val processes = processDocumentAssociationService.findProcessDocumentInstances2(
+                val processes = processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
                     JsonSchemaDocumentId.newId(event.documentId)
                 )
 
                 val removalTime = Date.from(
-                    Instant.now().minus(1, ChronoUnit.DAYS)
+                    Instant.now().plus(historyRemovalPeriodInSeconds, ChronoUnit.SECONDS)
                 )
 
                 processes.forEach {

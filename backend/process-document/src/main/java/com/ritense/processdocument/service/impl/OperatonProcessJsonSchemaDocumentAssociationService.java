@@ -98,21 +98,11 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             )
         );
 
-        var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
-        for (var process : processes) {
-            OperatonProcessJsonSchemaDocumentInstanceId id = process.getId();
-            if (id != null) {
-                var operatonProcess = runtimeService.createProcessInstanceQuery()
-                    .processInstanceId(id.processInstanceId().toString())
-                    .singleResult();
-                process.setActive(operatonProcess != null && !operatonProcess.isEnded());
-            }
-        }
-        return processes;
+        return findProcessDocumentInstancesWithoutPermissionCheck(documentId);
     }
 
     @Override
-    public List<OperatonProcessJsonSchemaDocumentInstance> findProcessDocumentInstances2(Document.Id documentId) {
+    public List<OperatonProcessJsonSchemaDocumentInstance> findProcessDocumentInstancesWithoutPermissionCheck(Document.Id documentId) {
 
         var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
         for (var process : processes) {

@@ -188,6 +188,7 @@ valtimo:
         processing:
             retention:
                 poll-interval: PT10S
+                historyRemovalPeriodInSeconds: 120
 
     hardening:
         allowStacktraceOnIps:
@@ -268,8 +269,8 @@ scheduling:
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
 operaton:
     bpm:
-        job-execution:
-            enabled: true
+#        job-execution:
+#            enabled: true
         database:
             type: ${OPERATON_BPM_DATABASE_TYPE:postgres}
         history-level: AUDIT
