@@ -1,21 +1,5 @@
-<!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
-  ~
-  ~ Licensed under EUPL, Version 1.2 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" basis,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 <ng-container
-        *ngIf="{
+  *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
@@ -24,124 +8,69 @@
     {{ 'patchZaakBesluitInformation' | pluginTranslate: pluginId | async }}
   </v-paragraph>
 
-  <v-form (valueChange)="formValueChange($event)">
+  <v-form (valueChange)="onFormValueChanged($event)">
     <v-input
-            name="besluitUrl"
-            [title]="'besluitUrl' | pluginTranslate: pluginId | async"
+      name="besluitUrl"
+      [title]="'besluitUrl' | pluginTranslate: pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.besluitUrl"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [trim]="true"
+      [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
+      [widthPx]="350"
+    ></v-input>
+
+    <div class="row">
+      <div class="col-12">
+        <button
+          cdsButton="primary"
+          [size]="'md'"
+          [cdsOverflowMenu]="addPropertyList"
+          [customPane]="true"
+          placement="bottom"
+          class="add-button"
+        >
+          {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @for (property of propertyList; track property) {
+      <div class="row">
+        <div class="col-11">
+          <v-input
+            [name]="property"
+            [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
             [margin]="true"
-            [defaultValue]="obs.prefill?.besluitUrl"
+            [defaultValue]="prefillValueFor(property, obs.prefill)"
             [disabled]="obs.disabled"
             [required]="true"
             [trim]="true"
-            [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
+            [tooltip]="translationKeyFor(property + 'Tooltip') | pluginTranslate: pluginId | async"
             [widthPx]="350"
-    ></v-input>
+            (valueChange)="onPropertyChanged(property, $event)"
+          ></v-input>
+        </div>
 
-    <v-input
-            name="beslisdatum"
-            [title]="'beslisdatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.beslisdatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'beslisdatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-
-    <v-input
-            name="toelichting"
-            [title]="'toelichting' | pluginTranslate: pluginId | async"
-            [margin]="true"
-            [defaultValue]="obs.prefill?.toelichting"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [tooltip]="'toelichtingTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-    ></v-input>
-    <v-input
-            name="bestuursorgaan"
-            [title]="'bestuursorgaan' | pluginTranslate: pluginId | async"
-            [margin]="true"
-            [defaultValue]="obs.prefill?.bestuursorgaan"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'bestuursorgaanTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-    >
-    </v-input>
-
-    <v-input
-            name="ingangsdatum"
-            [title]="'ingangsdatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.ingangsdatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'ingangsdatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-
-    <v-input
-            name="vervaldatum"
-            [title]="'vervaldatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.vervaldatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'vervaldatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-    <v-input
-            name="vervalreden"
-            [title]="'vervalreden' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.vervalreden"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'vervalredenTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-    <v-input
-            name="publicatiedatum"
-            [title]="'publicatiedatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.publicatiedatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'publicatiedatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-
-    <v-input
-            name="verzenddatum"
-            [title]="'verzenddatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.verzenddatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'verzenddatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-
-    <v-input
-            name="uiterlijkeReactieDatum"
-            [title]="'uiterlijkeReactieDatum' | pluginTranslate: pluginId | async"
-            [defaultValue]="obs.prefill?.uiterlijkeReactieDatum"
-            [disabled]="obs.disabled"
-            [required]="false"
-            [trim]="true"
-            [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate: pluginId | async"
-            [widthPx]="350"
-            [margin]="true"
-    ></v-input>
-
+        <div class="col-1">
+          <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+          </button>
+        </div>
+      </div>
+    }
   </v-form>
-
 </ng-container>
+
+<ng-template #addPropertyList>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    <cds-overflow-menu-option
+      *ngIf="!hasPropertyBeenAdded(propertyOption)"
+      (click)="addProperty(propertyOption)"
+    >
+      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+    </cds-overflow-menu-option>
+  }
+</ng-template>

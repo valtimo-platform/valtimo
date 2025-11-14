@@ -1,24 +1,13 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {PatchZaakBesluitConfig} from '../../models';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {Add16, TrashCan16} from '@carbon/icons';
+import {
+  PatchBesluitProperties,
+  PatchBesluitPropertyOptions,
+} from '../../models/patch-besluit-properties';
+import {IconService} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -31,54 +20,135 @@ export class PatchZaakBesluitConfigurationComponent
 {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() set pluginId(value: string) {
-    this.pluginId$.next(value);
-  }
+  @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<PatchZaakBesluitConfig>;
-  @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
+  @Output() valid = new EventEmitter<boolean>();
+  @Output() configuration = new EventEmitter<PatchZaakBesluitConfig>();
 
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PatchZaakBesluitConfig> =
-    new EventEmitter<PatchZaakBesluitConfig>();
+  public readonly propertyOptions: PatchBesluitProperties[] = [...PatchBesluitPropertyOptions];
+  public propertyList: PatchBesluitProperties[] = [];
 
-  readonly pluginId$ = new BehaviorSubject<string>('');
+  private readonly _formValue$ = new BehaviorSubject<PatchZaakBesluitConfig | null>(null);
+  private readonly _properties = new Map<PatchBesluitProperties, string>();
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
+  private _saveSubscription!: Subscription;
+  private _prefillConfig: PatchZaakBesluitConfig | null = null;
 
-  private readonly formValue$ = new BehaviorSubject<PatchZaakBesluitConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private readonly _subscriptions = new Subscription();
-
-  public ngOnInit(): void {
-    this.initSaveHandling();
+  constructor(private readonly iconService: IconService) {
+    this.iconService.registerAll([Add16, TrashCan16]);
   }
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  ngOnInit(): void {
+    this.openSaveSubscription();
+
+    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
+      if (!prefill) return;
+
+      this._prefillConfig = prefill;
+
+      const prefilledProperties = this.propertyOptions.filter(
+        property => !!this.prefillValueFor(property, prefill)
+      );
+
+      this.propertyList = [...prefilledProperties];
+    });
   }
 
-  public formValueChange(formValue: PatchZaakBesluitConfig): void {
-    this.formValue$.next(formValue);
+  ngOnDestroy(): void {
+    this._saveSubscription?.unsubscribe();
+  }
+
+  public onFormValueChanged(formValue: PatchZaakBesluitConfig): void {
+    this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
+  public onPropertyChanged(property: PatchBesluitProperties, value: any): void {
+    this._properties.set(property, value);
+
+    const formValue = this._formValue$.value;
+    if (!formValue) return;
+
+    this._properties.forEach((propValue, key) => {
+      formValue[key] = propValue;
+    });
+
+    this.onFormValueChanged(formValue);
+  }
+
+  public prefillValueFor(property: string, prefill: PatchZaakBesluitConfig): string | null {
+    return prefill ? ((prefill as any)[property] ?? null) : null;
+  }
+
+  public translationKeyFor(property: string): string {
+    return property === 'description' ? 'omschrijving' : property;
+  }
+
+  public translationKeyForPropertyList(property: string): string {
+    return this.translationKeyFor(property);
+  }
+
+  public addProperty(property: PatchBesluitProperties): void {
+    if (!this.propertyList.includes(property)) {
+      this.propertyList = [...this.propertyList, property];
+      const formValue = this._formValue$.value;
+      if (formValue) this.handleValid(formValue);
+    }
+  }
+
+  public removeProperty(property: PatchBesluitProperties): void {
+    if (this.propertyList.includes(property)) {
+      this.propertyList = this.propertyList.filter(p => p !== property);
+      this._properties.delete(property);
+
+      const formValue = this._formValue$.value;
+      if (formValue) {
+        (formValue as any)[property] = undefined;
+        this.handleValid(formValue);
+      }
+    }
+  }
+
+  public hasPropertyBeenAdded(property: PatchBesluitProperties): boolean {
+    return this.propertyList.includes(property);
+  }
+
   private handleValid(formValue: PatchZaakBesluitConfig): void {
-    const valid = !!formValue.besluitUrl
-    this.valid$.next(valid);
+    const combined: any = {
+      ...((this._prefillConfig as any) || {}),
+      ...(formValue as any),
+    };
+
+    const besluitUrlValid = !!combined.besluitUrl;
+    const dynamicValid = this.propertyList.every(p => !!combined[p]);
+    const valid = besluitUrlValid && dynamicValid;
+
+    this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
-  private initSaveHandling(): void {
-    if (!this.save$) return;
-
-    const sub = this.save$.subscribe(() => {
-      combineLatest([this.formValue$, this.valid$])
+  private openSaveSubscription(): void {
+    this._saveSubscription = this.save$?.subscribe(() => {
+      combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit(formValue);
-          }
+          if (!valid || !formValue) return;
+
+          const combined: any = {
+            ...((this._prefillConfig as any) || {}),
+            ...(formValue as any),
+          };
+
+          const payload: PatchZaakBesluitConfig = {
+            besluitUrl: combined.besluitUrl,
+          };
+
+          this.propertyList.forEach(property => {
+            (payload as any)[property] = combined[property];
+          });
+
+          this.configuration.emit(payload);
         });
     });
-
-    this._subscriptions.add(sub);
   }
 }

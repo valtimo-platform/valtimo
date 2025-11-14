@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-.loading-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  align-items: center;
+button.delete-button {
+  height: 46px;
+  width: 46px;
+  margin-top: 20px;
+}
+
+button.delete-button:hover {
+  background-color: #e12717;
+}
+
+button.add-button {
+  margin-block-end: var(--v-input-margin);
+}
+
+::ng-deep .cds--overflow-menu-options {
+  z-index: 10000 !important;
+  width: 230px;
 }
