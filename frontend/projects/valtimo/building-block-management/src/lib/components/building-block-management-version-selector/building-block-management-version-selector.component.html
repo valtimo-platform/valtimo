@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{versionListItems: versionListItems$ | async} as obs">
-  <cds-dropdown>
-    <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
+<ng-container *ngIf="{versionListItems: (versionListItems$ | async) || []} as obs">
+  <cds-dropdown [disabled]="obs.versionListItems.length === 1">
+    <cds-dropdown-list [items]="obs.versionListItems"></cds-dropdown-list>
   </cds-dropdown>
 </ng-container>
