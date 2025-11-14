@@ -28,14 +28,6 @@
     </changeSet>
 
     <changeSet author="Ritense" id="2">
-        <addColumn tableName="json_schema_document">
-            <column name="retention_period" type="${intType}" defaultValueNumeric="-1">
-                <constraints nullable="true"/>
-            </column>
-        </addColumn>
-    </changeSet>
-
-    <changeSet author="Ritense" id="3">
         <addColumn tableName="json_schema_document_snapshot">
             <column name="document_retention_date" type="DATETIME">
                 <constraints nullable="true"/>
