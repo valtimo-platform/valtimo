@@ -114,9 +114,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Column(name = "sequence", columnDefinition = "BIGINT")
     private Long sequence;
 
-    @Column(name = "retention_period", columnDefinition = "INTEGER")
-    private int retentionPeriod;
-
     @Column(name = "retention_date", columnDefinition = "DATETIME")
     private LocalDateTime retentionDate;
 
@@ -353,10 +350,8 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
             throw new IllegalArgumentException("Internal status not set");
         }
         if (this.internalStatus.getRetentionPeriod() >= 0) {
-            this.retentionPeriod = this.internalStatus.getRetentionPeriod();
             this.retentionDate = LocalDateTime.now().plusDays(this.internalStatus.getRetentionPeriod());
         } else {
-            this.retentionPeriod = -1;
             this.retentionDate = null;
         }
     }
