@@ -94,7 +94,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       beslisdatum: 'Beslisdatum',
       beslisdatumTooltip:
         'De beslisdatum (AWB) van het besluit. Ondersteunt value resolver. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
-      addBesluitProperty: 'Voeg nieuwe parameter toe',
+      addPatchBesluitProperty: 'Voeg nieuwe parameter toe',
     },
     en: {
       title: 'Besluiten API',
@@ -160,7 +160,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       beslisdatum: 'Decision date',
       beslisdatumTooltip:
         'The decision date (AWB) of the decision. Supports value resolver. Supported date examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
-      addBesluitProperty: 'Add besluit property',
+      addPatchBesluitProperty: 'Add besluit property',
     },
     de: {
       title: 'Besluiten API',
@@ -227,7 +227,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       beslisdatum: 'Entscheidungsdatum',
       beslisdatumTooltip:
         'Das Entscheidungsdatum (AWB) des Beschlusses. Unterstützt Value Resolver. Unterstützte Datumsbeispiele: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
-      addBesluitProperty: 'Besluit-Property hinzufügen',
+      addPatchBesluitProperty: 'Besluit-Property hinzufügen',
     },
   },
 };
