@@ -1921,7 +1921,8 @@
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity",
-    "pageTitle": "Views"
+    "pageTitle": "Views",
+    "searchVia": "Search via"
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",

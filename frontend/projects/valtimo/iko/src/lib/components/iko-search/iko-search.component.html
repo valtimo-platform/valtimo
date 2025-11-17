@@ -18,7 +18,7 @@
   @if (dataRequests.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
   } @else {
-    <h4>Zoeken via:</h4>
+    <h4>{{ 'iko.searchVia' | translate }}</h4>
 
     <cds-tabs type="contained">
       @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
