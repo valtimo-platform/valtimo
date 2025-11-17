@@ -25,7 +25,6 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
 import org.springframework.data.jpa.domain.Specification
-
 class JsonSchemaDocumentDefinitionSpecificationHelper {
 
     companion object {
@@ -38,6 +37,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             }
         }
 
+        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
         @JvmStatic
         fun byLatestVersion(): Specification<JsonSchemaDocumentDefinition> {
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
@@ -56,6 +56,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             }
         }
 
+        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
         @JvmStatic
         fun byIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocumentDefinition> {
             val solutionModuleId = JsonSchemaDocumentDefinitionSolutionModuleId.forCase(caseDefinitionId)
@@ -71,6 +72,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             }
         }
 
+        // TODO: make this dynamic, solution module type should be able to be passed
         @JvmStatic
         fun byCaseDefinitionActive() = Specification<JsonSchemaDocumentDefinition> { root, query, cb ->
             val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)

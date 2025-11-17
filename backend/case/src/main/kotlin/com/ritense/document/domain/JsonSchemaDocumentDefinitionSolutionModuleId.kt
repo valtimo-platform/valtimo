@@ -15,13 +15,18 @@
  */
 package com.ritense.document.domain
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.repository.SemverConverter
+import com.ritense.valtimo.contract.serializer.SemverSerializer
 import com.ritense.valtimo.contract.utils.AssertionConcern
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Embeddable
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import org.semver4j.Semver
 import java.io.Serializable
 import java.util.Objects
 
@@ -29,23 +34,19 @@ import java.util.Objects
 class JsonSchemaDocumentDefinitionSolutionModuleId(
     @Enumerated(EnumType.STRING)
     @Column(name = "solution_module_type", length = 40, nullable = false)
-    private var solutionModuleType: JsonSchemaDocumentDefinitionSolutionModuleType,
+    var solutionModuleType: JsonSchemaDocumentDefinitionSolutionModuleType,
     @Column(name = "solution_module_key", length = 256, nullable = false)
-    private var solutionModuleKey: String,
-    @Column(name = "solution_module_version_tag", length = 200, nullable = false)
-    private var solutionModuleVersionTag: String,
+    var solutionModuleKey: String,
+    @Convert(converter = SemverConverter::class)
+    @Column(name = "solution_module_version_tag", nullable = false)
+    @JsonSerialize(using = SemverSerializer::class)
+    var solutionModuleVersionTag: Semver,
 ) : Serializable {
     init {
         AssertionConcern.assertArgumentLength(solutionModuleKey,
             1,
             256,
             "solutionModuleKey must be between 1-256 characters"
-        )
-        AssertionConcern.assertArgumentLength(
-            solutionModuleVersionTag,
-            1,
-            200,
-            "solutionModuleVersionTag must be between 1-200 characters"
         )
     }
 
@@ -57,7 +58,7 @@ class JsonSchemaDocumentDefinitionSolutionModuleId(
         return solutionModuleKey
     }
 
-    fun solutionModuleVersionTag(): String {
+    fun solutionModuleVersionTag(): Semver {
         return solutionModuleVersionTag
     }
 
@@ -65,14 +66,14 @@ class JsonSchemaDocumentDefinitionSolutionModuleId(
         if (solutionModuleType != JsonSchemaDocumentDefinitionSolutionModuleType.CASE) {
             return null
         }
-        return CaseDefinitionId.of(solutionModuleKey, solutionModuleVersionTag)
+        return CaseDefinitionId.of(solutionModuleKey, solutionModuleVersionTag.toString())
     }
 
     fun asBuildingBlockDefinitionId(): BuildingBlockDefinitionId? {
         if (solutionModuleType != JsonSchemaDocumentDefinitionSolutionModuleType.BUILDING_BLOCK) {
             return null
         }
-        return BuildingBlockDefinitionId.of(solutionModuleKey, solutionModuleVersionTag)
+        return BuildingBlockDefinitionId.of(solutionModuleKey, solutionModuleVersionTag.toString())
     }
 
     override fun equals(o: Any?): Boolean {
@@ -97,7 +98,7 @@ class JsonSchemaDocumentDefinitionSolutionModuleId(
             return JsonSchemaDocumentDefinitionSolutionModuleId(
                 JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
                 caseDefinitionId!!.key,
-                caseDefinitionId.versionTag.toString()
+                caseDefinitionId.versionTag
             )
         }
 
@@ -106,7 +107,7 @@ class JsonSchemaDocumentDefinitionSolutionModuleId(
             return JsonSchemaDocumentDefinitionSolutionModuleId(
                 JsonSchemaDocumentDefinitionSolutionModuleType.BUILDING_BLOCK,
                 buildingBlockDefinitionId!!.key,
-                buildingBlockDefinitionId.versionTag.toString()
+                buildingBlockDefinitionId.versionTag
             )
         }
     }
