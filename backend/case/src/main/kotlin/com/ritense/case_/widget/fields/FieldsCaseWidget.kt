@@ -16,6 +16,7 @@
 
 package com.ritense.case_.widget.fields
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.widget.domain.WidgetAction
@@ -55,4 +56,20 @@ class FieldsCaseWidget(
         displayConditions = displayConditions,
         properties = properties
     )
+
+    @JsonIgnore
+    override fun getUnresolvedValues(): List<String> {
+        return (actions.flatMap { it.getUnresolvedValues() } +
+            properties.columns.flatMap { column -> column.map { field -> field.value } }).distinct()
+    }
+
+    @JsonIgnore
+    override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> {
+        return properties.columns.flatMap { column ->
+            column.map { field ->
+                field.key to resolveValue(field.value)
+            }
+        }.toMap() + actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+    }
 }

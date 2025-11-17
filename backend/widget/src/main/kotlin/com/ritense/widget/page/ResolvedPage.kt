@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.widget
+package com.ritense.widget.page
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 
-class PageWithData<T>(
+class ResolvedPage<T>(
     val content: List<T>,
     val first: Boolean,
     val last: Boolean,
@@ -32,11 +31,14 @@ class PageWithData<T>(
     val size: Int,
     val number: Int,
     val sort: Sort,
-    @JsonAnyGetter
-    private val data: Map<String, Any> = emptyMap(),
+    val resolved: Map<String, Any?> = emptyMap(),
 ) {
 
-    constructor(page: Page<T>, vararg data: Any) : this(
+    constructor(content: List<T>, pageable: Pageable, total: Long, resolved: Map<String, Any?>) : this(
+        PageImpl(content, pageable, total), resolved
+    )
+
+    constructor(page: Page<T>, resolved: Map<String, Any?>) : this(
         content = page.content,
         first = page.isFirst,
         last = page.isLast,
@@ -46,18 +48,6 @@ class PageWithData<T>(
         size = page.size,
         number = page.number,
         sort = page.sort,
-        data = mergeData(data.toList())
+        resolved = resolved
     )
-
-    @JsonAnyGetter
-    fun any(): Map<String, Any> = data
-
-    companion object {
-        private fun mergeData(data: List<Any>): Map<String, Any> {
-            return data
-                .map { item -> jacksonObjectMapper().convertValue<Map<String, Any>>(item) }
-                .flatMap { it.entries }
-                .associate { it.key to it.value }
-        }
-    }
 }

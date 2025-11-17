@@ -17,17 +17,24 @@
 package com.ritense.form.casewidget
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.springframework.data.domain.Pageable
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
+import com.ritense.valueresolver.ValueResolverService
 import java.util.UUID
+import org.springframework.data.domain.Pageable
 import kotlin.jvm.optionals.getOrNull
 
 class FormIoCaseWidgetDataProvider(
+    private val valueResolverService: ValueResolverService,
     private val formDefinitionService: FormDefinitionService,
-    private val formService: PrefillFormService
+    private val formService: PrefillFormService,
+    private val objectMapper: ObjectMapper,
 ) : CaseWidgetDataProvider {
 
     override fun supports(widget: Any): Boolean =
@@ -46,7 +53,17 @@ class FormIoCaseWidgetDataProvider(
         ).getOrNull()
 
         return formDefinition?.let {
-            formService.getPrefilledFormDefinition(it.id, documentId).asJson()
+            val formDefinitionJson = formService.getPrefilledFormDefinition(it.id, documentId).asJson()
+            if (formDefinitionJson.isObject) {
+                val resolvedValues = valueResolverService.resolveValues(
+                    mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
+                    widget.getUnresolvedValues()
+                )
+                val resolved =
+                    objectMapper.valueToTree<JsonNode>(widget.getExposedValues { path -> resolvedValues[path] })
+                (formDefinitionJson as ObjectNode).putIfAbsent("resolved", resolved)
+            }
+            formDefinitionJson
         }
     }
 }
