@@ -268,7 +268,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identificatie',
       resultProcessVariable: 'Resultaat process variable',
       rolUuid: 'Rol UUID',
-      rolUuidTooltip: 'De UUID van de rol'
+      rolUuidTooltip: 'De UUID van de rol',
     },
     en: {
       title: 'Zaken API',
@@ -473,7 +473,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identification',
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
-      rolUuidTooltip: 'The UUID of the rol'
+      rolUuidTooltip: 'The UUID of the rol',
     },
     de: {
       title: 'Zaken API',
@@ -679,7 +679,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Objektidentifikation',
       resultProcessVariable: 'Ergebnis process variable',
       rolUuid: 'Rolle UUID',
-      rolUuidTooltip: 'Die UUID der Rolle'
+      rolUuidTooltip: 'Die UUID der Rolle',
     },
   },
 };

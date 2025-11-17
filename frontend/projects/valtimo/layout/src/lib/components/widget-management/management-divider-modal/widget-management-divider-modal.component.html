@@ -17,7 +17,7 @@
 <cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ ('widgetTabManagement.list.dividerModal.' + modalMode + 'DividerTitle') | translate }}
+      {{ 'widgetTabManagement.list.dividerModal.' + modalMode + 'DividerTitle' | translate }}
     </h3>
   </cds-modal-header>
 
@@ -29,7 +29,9 @@
         class="title-input"
         formControlName="title"
         cdsText
-        placeholder="{{ 'widgetTabManagement.list.dividerModal.dividerTitlePlaceholder' | translate }}"
+        placeholder="{{
+          'widgetTabManagement.list.dividerModal.dividerTitlePlaceholder' | translate
+        }}"
         [cdsLayer]="1"
         [attr.modal-primary-focus]="true"
         (keyup)="onFocusOut()"
@@ -46,7 +48,6 @@
       placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
     >
     </valtimo-auto-key-input>
-
   </form>
 
   <cds-modal-footer>
