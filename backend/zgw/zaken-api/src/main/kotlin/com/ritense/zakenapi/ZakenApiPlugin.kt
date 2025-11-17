@@ -723,6 +723,7 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty statustypeUrl: URI,
         @PluginActionProperty statustoelichting: String?,
+        @PluginActionProperty datumStatusGezet: LocalDateTime?,
     ) {
         withLoggingContext(
             CATALOGI_API.STATUSTYPE to statustypeUrl.toString(),
@@ -737,7 +738,7 @@ class ZakenApiPlugin(
                 CreateZaakStatusRequest(
                     zaak = zaakUrl,
                     statustype = statustypeUrl,
-                    datumStatusGezet = LocalDateTime.now().minusSeconds(5),
+                    datumStatusGezet = datumStatusGezet?.minusSeconds(5) ?: LocalDateTime.now().minusSeconds(5),
                     statustoelichting = statustoelichting,
                 )
             )

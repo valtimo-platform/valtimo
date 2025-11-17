@@ -27,10 +27,10 @@ import {
 } from '@valtimo/components';
 import {
   ButtonModule,
-  DatePickerInputModule,
+  DatePickerInputModule, DatePickerModule,
   DialogModule,
   IconModule,
-  LoadingModule,
+  LoadingModule, TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
@@ -55,6 +55,7 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -96,6 +97,10 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    DatePickerModule,
+    FormsModule,
+    ReactiveFormsModule,
+    TimePickerModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
