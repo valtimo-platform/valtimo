@@ -753,8 +753,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       resultProcessVariable: 'Ergebnis Prozessvariable',
       resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
-      rolUuid: 'Rolle UUID',
-      rolUuidTooltip: 'Die UUID der Rolle'
     },
   },
 };
