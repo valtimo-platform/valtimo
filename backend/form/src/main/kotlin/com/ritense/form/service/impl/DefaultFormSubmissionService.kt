@@ -121,7 +121,7 @@ class DefaultFormSubmissionService(
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
                 ?: getProcessDocumentDefinition(processDefinition, document).run {
-                    documentDefinitionService.findByCaseDefinitionId(this.id.caseDefinitionId).orElseThrow().id?.name()
+                    documentDefinitionService.findBySolutionModuleId(this.id.caseDefinitionId).orElseThrow().id?.name()
                         ?: throw ProcessDocumentDefinitionNotFoundException("DocumentDefinition not found for processDefinitionId: ${processDefinition.id}")
                 }
             val processVariables = getProcessVariables(taskInstanceId)

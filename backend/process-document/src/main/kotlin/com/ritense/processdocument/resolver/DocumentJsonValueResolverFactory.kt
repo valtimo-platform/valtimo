@@ -233,7 +233,7 @@ class DocumentJsonValueResolverFactory(
     }
 
     override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
-        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).orElseThrow()
+        val documentDefinition = documentDefinitionService.findBySolutionModuleId(caseDefinitionId).orElseThrow()
         val schemaAsNode = documentDefinition.schema
             .asJson() as ObjectNode
         return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")

@@ -21,6 +21,8 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentTrue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId;
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
@@ -43,7 +45,10 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     private JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId;
 
     @JsonCreator
-    private JsonSchemaDocumentDefinitionId(String name, JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId) {
+    private JsonSchemaDocumentDefinitionId(
+        @JsonProperty("name") String name,
+        @JsonProperty("solutionModuleId") JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId
+    ) {
         assertArgumentId(name, solutionModuleId);
         this.name = name;
         this.solutionModuleId = solutionModuleId;
@@ -84,21 +89,25 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     }
 
     @Override
+    @JsonProperty
     public String name() {
         return name;
     }
 
     @Override
+    @JsonIgnore
     public CaseDefinitionId caseDefinitionId() {
         return solutionModuleId.asCaseDefinitionId();
     }
 
     @Override
+    @JsonIgnore
     public BuildingBlockDefinitionId buildingBlockDefinitionId() {
         return solutionModuleId.asBuildingBlockDefinitionId();
     }
 
-    public JsonSchemaDocumentDefinitionSolutionModuleId ownerId() {
+    @JsonProperty("solutionModuleId")
+    public JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId() {
         return solutionModuleId;
     }
 

@@ -34,6 +34,7 @@ import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitio
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -147,10 +148,12 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionResource::class)
     fun buildingBlockDocumentDefinitionResource(
         buildingBlockJsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
+        service: JsonSchemaDocumentDefinitionService,
         objectMapper: ObjectMapper
     ): BuildingBlockDocumentDefinitionResource {
         return BuildingBlockDocumentDefinitionResource(
             buildingBlockJsonSchemaDocumentDefinitionRepository,
+            service,
             objectMapper
         )
     }

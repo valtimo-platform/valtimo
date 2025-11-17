@@ -52,5 +52,4 @@
     <include file="changelog/20251009-add-document-index-case-status.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250113-major13-upgrade.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251013-add-document-index-case-status-post-13-migration.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20251111-json-schema-definition-solution-definition.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

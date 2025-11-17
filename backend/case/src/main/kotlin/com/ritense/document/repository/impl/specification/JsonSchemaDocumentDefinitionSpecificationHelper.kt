@@ -20,6 +20,8 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
+import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -52,6 +54,26 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
                 cb.and(
                     cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
                     cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG), subquery)
+                )
+            }
+        }
+
+        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
+        @JvmStatic
+        fun byIdSolutionModuleId(solutionModuleId: SolutionModuleId): Specification<JsonSchemaDocumentDefinition> {
+            val solutionModuleId =  if (solutionModuleId is CaseDefinitionId) {
+                JsonSchemaDocumentDefinitionSolutionModuleId.forCase(solutionModuleId)
+            } else {
+                JsonSchemaDocumentDefinitionSolutionModuleId.forBuildingBlock(solutionModuleId as BuildingBlockDefinitionId)
+            }
+            return Specification { root: Root<JsonSchemaDocumentDefinition>,
+                                   _: CriteriaQuery<*>,
+                                   cb: CriteriaBuilder ->
+                val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)
+                cb.and(
+                    cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), solutionModuleId.solutionModuleType),
+                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_KEY), solutionModuleId.solutionModuleKey()),
+                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG), solutionModuleId.solutionModuleVersionTag())
                 )
             }
         }
