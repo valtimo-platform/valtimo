@@ -38,7 +38,7 @@ export class PatchZaakBesluitConfigurationComponent
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
@@ -54,7 +54,7 @@ export class PatchZaakBesluitConfigurationComponent
     });
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._saveSubscription?.unsubscribe();
   }
 
