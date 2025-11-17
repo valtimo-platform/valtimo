@@ -65,7 +65,9 @@ import {filter} from 'rxjs/operators';
     },
   ],
 })
-export class AutoKeyInputComponent implements ControlValueAccessor, Validators, OnChanges, OnDestroy {
+export class AutoKeyInputComponent
+  implements ControlValueAccessor, Validators, OnChanges, OnDestroy
+{
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
 
@@ -99,10 +101,8 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
   private onChange = (_: any) => {};
   public onTouched = () => {};
   public onValidatorChange = () => {};
-  public validate = (control: any): { [key: string]: any } | null =>
-    this.idError$.getValue()
-      ? { idError: { value: this.idError$.getValue() } }
-      : null;
+  public validate = (control: any): {[key: string]: any} | null =>
+    this.idError$.getValue() ? {idError: {value: this.idError$.getValue()}} : null;
 
   private readonly subscription = new Subscription();
 
@@ -162,7 +162,9 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
 
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
     const usedKeys = this._usedKeys$.getValue();
-    this.idError$.next(usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null);
+    this.idError$.next(
+      usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null
+    );
     this.onChange((this.value = event.target.value));
   }
 

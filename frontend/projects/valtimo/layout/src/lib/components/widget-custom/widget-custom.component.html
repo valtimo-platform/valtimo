@@ -14,8 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="{widgetConfiguration: widgetConfig$ | async,
-    widgetData: widgetData$ | async} as obs" class="custom-widget">
+<div
+  *ngIf="{widgetConfiguration: widgetConfig$ | async, widgetData: widgetData$ | async} as obs"
+  class="custom-widget"
+>
   <section class="custom-widget__header">
     <div class="custom-widget__title-container">
       <valtimo-mdi-icon-viewer

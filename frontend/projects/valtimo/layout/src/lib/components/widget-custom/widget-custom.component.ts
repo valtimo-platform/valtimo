@@ -51,7 +51,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     ButtonModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
-    LayerModule
+    LayerModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
