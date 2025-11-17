@@ -30,7 +30,7 @@ import {DOCUMENT} from '@angular/common';
 
 @Directive({selector: '[fitPage]', standalone: true})
 export class FitPageDirective implements AfterViewInit, OnDestroy {
-  @Input() extraSpace: number = 0;
+  @Input() spaceAdjustment: number = 0;
   @Input() disabled = false;
   @Input() disableOverflow = false;
 
@@ -56,7 +56,7 @@ export class FitPageDirective implements AfterViewInit, OnDestroy {
           this.renderer.setStyle(
             nativeElement,
             'height',
-            `calc(100vh - ${compactMode ? 104 : 120}px - ${pageHeadHeight + this.extraSpace}px)`
+            `calc(100vh - ${compactMode ? 104 : 120}px - ${pageHeadHeight + this.spaceAdjustment}px)`
           );
         } else {
           this.removeDocumentOverflowStyle();

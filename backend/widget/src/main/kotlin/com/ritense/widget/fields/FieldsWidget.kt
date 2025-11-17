@@ -16,6 +16,7 @@
 
 package com.ritense.widget.fields
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
@@ -24,8 +25,8 @@ import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
 import java.util.UUID
+import org.hibernate.annotations.Type
 
 @AllOpen
 @Entity
@@ -80,4 +81,20 @@ class FieldsWidget(
         displayConditions = this.displayConditions,
         properties = this.properties,
     )
+
+    @JsonIgnore
+    override fun getUnresolvedValues(): List<String> {
+        return (actions.flatMap { it.getUnresolvedValues() } +
+            properties.columns.flatMap { column -> column.map { field -> field.value } }).distinct()
+    }
+
+    @JsonIgnore
+    override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> {
+        return properties.columns.flatMap { column ->
+            column.map { field ->
+                field.key to resolveValue(field.value)
+            }
+        }.toMap() + actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+    }
 }

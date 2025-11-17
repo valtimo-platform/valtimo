@@ -101,6 +101,7 @@ export class WidgetTableComponent {
   public readonly showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
+  public readonly resolvedData$ = new BehaviorSubject<object | null>(null);
 
   private _paginationInitialized = false;
 
@@ -124,6 +125,7 @@ export class WidgetTableComponent {
     }
 
     this.widgetData$.next(widgetData);
+    this.resolvedData$.next(value?.resolved);
 
     if (!this._paginationInitialized) {
       this.showPagination.set(value.totalElements > value.size);

@@ -62,6 +62,11 @@ export class WidgetFormioComponent {
     this._widgetConfigurationSubject$.next(value);
   }
 
+  @Input() public set widgetData(value: object) {
+    if (!value) return;
+    this.widgetData$.next(value);
+  }
+
   @Input() public set widgetUuid(value: string) {
     this._widgetUuid = value;
     this._hasSignalledExternalDataReady = false;
@@ -70,6 +75,7 @@ export class WidgetFormioComponent {
   }
 
   private readonly _refreshTrigger$ = new BehaviorSubject<void>(undefined);
+  public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   private _refreshEmitter: EventEmitter<void> | null = null;
   private _refreshSubscription: Subscription | null = null;
