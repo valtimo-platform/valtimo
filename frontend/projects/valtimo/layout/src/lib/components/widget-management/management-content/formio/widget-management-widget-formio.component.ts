@@ -25,7 +25,13 @@ import {
   MdiIconSelectorComponent,
 } from '@valtimo/components';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
-import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
+import {
+  DropdownModule,
+  InputModule,
+  LayerModule,
+  ListItem,
+  SelectModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
@@ -46,6 +52,7 @@ import {WidgetFormioContent} from '../../../../models';
     DropdownModule,
     InputLabelModule,
     MdiIconSelectorComponent,
+    LayerModule,
   ],
 })
 export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit {

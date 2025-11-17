@@ -1946,7 +1946,8 @@
     "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
   },
   "iko": {
-    "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
+    "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden",
+    "pageTitle": "Bilder"
   },
   "ikoManagement": {
     "preparingDownload": "Download wird vorbereitet",

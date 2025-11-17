@@ -1953,7 +1953,8 @@
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
   },
   "iko": {
-    "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
+    "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit",
+    "pageTitle": "Beelden"
   },
   "ikoManagement": {
     "preparingDownload": "Download aan het voorbereiden",
