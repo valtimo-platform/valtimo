@@ -138,7 +138,7 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(500)).subscribe(value => {
         this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
-        this.widgetWizardService.$widgetIcon.set(value?.icon ?? '');
+        this.widgetWizardService.$widgetIcon.set(value?.widgetIcon ?? '');
 
         this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>
