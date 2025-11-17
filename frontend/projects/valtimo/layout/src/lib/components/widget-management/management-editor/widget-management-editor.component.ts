@@ -224,6 +224,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
       return;
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
+    this.widgetWizardService.$widgetIcon.set(widget.icon);
     this.widgetWizardService.$widgetStyle.set(
       widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );

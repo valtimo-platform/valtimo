@@ -22,7 +22,14 @@
   class="valtimo-widget-table"
 >
   <section class="valtimo-widget-table__header">
-    <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+    <div class="valtimo-widget-table__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+    </div>
 
     <ng-content></ng-content>
 

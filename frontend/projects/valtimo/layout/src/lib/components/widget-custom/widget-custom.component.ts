@@ -29,7 +29,7 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, MdiIconViewerComponent} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {PermissionService} from '@valtimo/access-control';
@@ -44,7 +44,14 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   templateUrl: './widget-custom.component.html',
   styleUrls: ['./widget-custom.component.scss'],
   standalone: true,
-  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, WidgetActionButtonComponent],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    TranslateModule,
+    ButtonModule,
+    WidgetActionButtonComponent,
+    MdiIconViewerComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
