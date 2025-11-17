@@ -38,7 +38,7 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {CarbonListModule, ViewContentService} from '@valtimo/components';
+import {CarbonListModule, MdiIconViewerComponent, ViewContentService} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/shared';
 import {
@@ -67,6 +67,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {

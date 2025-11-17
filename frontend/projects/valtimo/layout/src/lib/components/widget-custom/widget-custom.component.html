@@ -16,7 +16,14 @@
 
 <div *ngIf="{widgetConfig: widgetConfig$ | async} as obs" class="custom-widget">
   <section class="custom-widget__header">
-    <h4 class="custom-widget__title">{{ obs.widgetConfig?.title || '-' }}</h4>
+    <div class="custom-widget__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfig?.icon"
+        [mdiIcon]="obs.widgetConfig?.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <h4 class="custom-widget__title">{{ obs.widgetConfig?.title || '-' }}</h4>
+    </div>
 
     <ng-content></ng-content>
 

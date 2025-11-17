@@ -26,6 +26,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
         return TestCaseWidgetTabWidget(
             CaseWidgetTabWidgetId(dto.key),
             dto.title,
+            dto.icon,
             index,
             dto.width,
             dto.highContrast,
@@ -39,6 +40,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
         return TestCaseWidgetTabWidgetDto(
             key = entity.id.key,
             title = entity.title,
+            icon = entity.icon,
             width = entity.width,
             highContrast = entity.highContrast,
             properties = entity.properties,

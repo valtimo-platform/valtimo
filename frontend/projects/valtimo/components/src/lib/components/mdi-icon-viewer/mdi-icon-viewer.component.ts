@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,41 +14,18 @@
  * limitations under the License.
  */
 
-.cds--tab-content {
-  padding: 0 !important;
-}
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
-.valtimo-widget-management-fields {
-  display: flex;
-  flex-direction: column;
-
-  gap: 16px;
-
-  &__title-form {
-    padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
-    display: flex;
-    gap: 16px;
-  }
-
-  &__input {
-    max-width: 288px;
-
-    input {
-      background: var(--cds-layer-02);
-    }
-  }
-
-  &__heading {
-    display: flex;
-    align-items: center;
-  }
-
-  #addColumn-header {
-    padding: 0 !important;
-  }
-
-  .cds--tabs__nav-item {
-    padding-right: 0 !important;
-  }
+@Component({
+  selector: 'valtimo-mdi-icon-viewer',
+  standalone: true,
+  templateUrl: './mdi-icon-viewer.component.html',
+  styleUrls: ['./mdi-icon-viewer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule],
+  providers: [],
+})
+export class MdiIconViewerComponent {
+  @Input() public mdiIcon: string = 'mdi-minus';
 }
