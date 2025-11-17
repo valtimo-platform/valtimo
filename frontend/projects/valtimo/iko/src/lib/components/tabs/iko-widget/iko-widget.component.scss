@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.fields
+:host ::ng-deep.widgets-container {
+  overflow: hidden;
+}
 
-import com.ritense.valueresolver.ValueResolverService
-import com.ritense.widget.WidgetDataProvider
-
-class FieldsWidgetDataProvider(
-    private val valueResolverService: ValueResolverService,
-) : WidgetDataProvider<FieldsWidget> {
-
-    override fun supportedWidgetType() = FieldsWidget::class.java
-
-    override fun getData(widget: FieldsWidget, properties: Map<String, Any>): Any {
-        val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
-        return widget.getExposedValues { path -> resolvedValues[path] }
-    }
+.iko-widget-container {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }

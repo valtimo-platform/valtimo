@@ -33,7 +33,7 @@ import {CarbonListModule, MdiIconViewerComponent} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {PermissionService} from '@valtimo/access-control';
-import {ButtonModule} from 'carbon-components-angular';
+import {ButtonModule, LayerModule} from 'carbon-components-angular';
 import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
@@ -51,6 +51,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     ButtonModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
+    LayerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -63,13 +64,19 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
     this._widgetConfigSubject$.next(value);
   }
 
+  @Input() public set widgetData(value: object) {
+    if (!value) return;
+    this.widgetData$.next(value);
+  }
+
   @Input() public set widgetUuid(value: string) {
     this.widgetLayoutService.setWidgetDataLoaded(value);
   }
 
   private readonly _customWidgetConfig$ = new BehaviorSubject<CustomWidgetConfig | {}>({});
-
   private readonly _widgetConfigSubject$ = new BehaviorSubject<CustomWidget | null>(null);
+
+  public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   public get widgetConfig$(): Observable<CustomWidget> {
     return this._widgetConfigSubject$.pipe(filter(config => config !== null));

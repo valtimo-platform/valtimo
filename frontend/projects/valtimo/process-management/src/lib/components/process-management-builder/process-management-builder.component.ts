@@ -257,7 +257,7 @@ export class ProcessManagementBuilderComponent
 
   public readonly creatingNewProcess$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $extraSpace: Signal<number> = computed(() =>
+  public readonly $spaceAdjustment: Signal<number> = computed(() =>
     this.processManagementService.$context() === 'case' ? 0 : 0
   );
 

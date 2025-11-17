@@ -15,7 +15,12 @@
   -->
 
 <valtimo-widget-formio
-  [widgetConfiguration]="widgetConfiguration$ | async"
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
+  [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
   [widgetUuid]="widgetUuid"
 >
 </valtimo-widget-formio>

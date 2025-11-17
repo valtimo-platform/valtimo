@@ -27,8 +27,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import com.ritense.widget.exception.InvalidCollectionException
 import com.ritense.widget.exception.InvalidCollectionNodeTypeException
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
+import com.ritense.widget.page.ResolvedPage
 import org.springframework.data.domain.Pageable
 
 class CollectionWidgetDataProvider(
@@ -38,18 +37,22 @@ class CollectionWidgetDataProvider(
 
     override fun supportedWidgetType() = CollectionWidget::class.java
 
-    override fun getData(widget: CollectionWidget, properties: Map<String, Any>): Page<CollectionWidgetDataResult> {
+    override fun getData(
+        widget: CollectionWidget,
+        properties: Map<String, Any>
+    ): ResolvedPage<CollectionWidgetDataResult> {
         val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.ofSize(widget.properties.defaultPageSize)
 
         val resolvedValues = valueResolverService.resolveValues(
             properties,
-            listOf(widget.properties.collection)
+            widget.getUnresolvedValues()
         )
+        val exposedValues = widget.getExposedValues { path -> resolvedValues[path] }
 
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedValues[widget.properties.collection])
 
         if (collectionNode.isNull) {
-            return PageImpl(emptyList(), pageable, 0)
+            return ResolvedPage(emptyList(), pageable, 0, exposedValues)
         }
 
         if (!collectionNode.isArray) {
@@ -73,7 +76,7 @@ class CollectionWidgetDataProvider(
                     }
                 )
             }
-        return PageImpl(result, pageable, collectionNode.size().toLong())
+        return ResolvedPage(result, pageable, collectionNode.size().toLong(), exposedValues)
     }
 
     private fun resolveValueRef(valueRef: String, child: JsonNode): Any? {

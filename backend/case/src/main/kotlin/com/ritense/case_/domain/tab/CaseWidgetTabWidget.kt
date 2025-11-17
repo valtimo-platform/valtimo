@@ -16,6 +16,7 @@
 
 package com.ritense.case_.domain.tab
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
 import com.ritense.valtimo.contract.annotation.AllOpen
@@ -69,6 +70,16 @@ abstract class CaseWidgetTabWidget(
     @Column(name = "display_conditions", nullable = false)
     val displayConditions: List<Condition<*>> = listOf()
 ) {
+    @JsonIgnore
+    fun getUnresolvedValues(): List<String> {
+        return actions.flatMap { it.getUnresolvedValues() }.distinct()
+    }
+
+    fun getExposedValues(resolveValue: (String) -> Any? = { null }): Map<String, Any?> =
+        actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+            .toMap()
+
     abstract fun copy(id: CaseWidgetTabWidgetId = this.id): CaseWidgetTabWidget
 
     override fun equals(other: Any?): Boolean {

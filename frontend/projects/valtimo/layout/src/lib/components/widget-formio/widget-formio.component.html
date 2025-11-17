@@ -19,6 +19,7 @@
   *ngIf="{
     prefilledFormDefinition: prefilledFormDefinition$ | async,
     widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
   } as obs"
 >
   <section class="formio-widget__header">
@@ -35,6 +36,7 @@
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
     ></valtimo-widget-action-button>
   </section>
 
