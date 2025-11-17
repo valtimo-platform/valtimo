@@ -204,7 +204,6 @@ export const POPULAR_MDI_ICONS: string[] = [
   'mdi-lightbulb-on',
   'mdi-lifebuoy',
   'mdi-headset',
-  'mdi-headset-help',
   'mdi-wrench',
   'mdi-hammer-wrench',
   'mdi-cog-transfer',
