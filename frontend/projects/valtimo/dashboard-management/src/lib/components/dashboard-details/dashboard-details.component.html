@@ -55,7 +55,7 @@
       <valtimo-json-editor
         [model]="obs.jsonEditorModel"
         [fitPage]="true"
-        [fitPageExtraSpace]="56"
+        [fitPageSpaceAdjustment]="56"
         (saveEvent)="updateWidgetData($event)"
       >
         <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
