@@ -1947,7 +1947,8 @@
   },
   "iko": {
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden",
-    "pageTitle": "Bilder"
+    "pageTitle": "Bilder",
+    "searchVia": "Suche über"
   },
   "ikoManagement": {
     "preparingDownload": "Download wird vorbereitet",
