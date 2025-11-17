@@ -19,16 +19,22 @@
   [formGroup]="form"
   [attr.data-carbon-theme]="theme$ | async"
 >
-  <cds-text-label class="valtimo-case-management-widget-field__input">
-    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+  <div class="valtimo-case-management-widget-formio__title-container">
+    <cds-text-label class="valtimo-case-management-widget-field__input">
+      <v-input-label
+        [title]="'widgetTabManagement.content.widgetTitle' | translate"
+        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+      >
+      </v-input-label>
 
-    <input
-      formControlName="widgetTitle"
-      cdsText
-      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
-      type="text"
-    />
-  </cds-text-label>
+      <input
+        formControlName="widgetTitle"
+        cdsText
+        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+  </div>
 
   <ng-content></ng-content>
 
