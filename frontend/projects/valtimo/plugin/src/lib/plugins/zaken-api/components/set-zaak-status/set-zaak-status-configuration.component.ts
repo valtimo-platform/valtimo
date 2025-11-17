@@ -230,6 +230,77 @@ export class SetZaakStatusConfigurationComponent
     return `${hours}:${minutes}:${seconds.split('.')[0]}`;
   }
 
+  public onDateSelected(event: Date[]): void {
+    const date = Array.isArray(event) && event[0];
+    if (!date) return;
+    this.selectedDate = date.toISOString();
+    this.updateDatumStatusGezet();
+  }
+
+  public onTimeSelected(event: string): void {
+    // assuming event is like "14:15" or "14:15:22"
+    this.selectedTime = event;
+    this.updateDatumStatusGezet();
+  }
+
+  private updateDatumStatusGezet(): void {
+    if (!this.selectedDate || !this.selectedTime) {
+      return;
+    }
+
+    const [hoursStr, minutesStr = '00', secondsStr = '00'] = this.selectedTime.split(':');
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    const seconds = Number(secondsStr);
+
+
+    const date = new Date(this.selectedDate);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hh = String(hours).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+
+    const isoWithoutMs = `${year}-${month}-${day}T${hh}:${mm}:${ss}Z`;
+
+    const currentFormValue = this.formValue$.value ?? ({} as SetZaakStatusConfig);
+    const updatedFormValue: SetZaakStatusConfig = {
+      ...currentFormValue,
+      datumStatusGezet: isoWithoutMs,
+    };
+
+    // Reuse existing form handling logic
+    this.formValueChange(updatedFormValue);
+  }
+
+  private prefillToday(): void {
+    this._subscriptions.add(
+      this.prefillConfiguration$.subscribe((config) => {
+        console.log(config);
+
+        const baseDate = flatpickr.formatDate(!!config?.datumStatusGezet
+          ? new Date(config!.datumStatusGezet)
+          : new Date(), 'Z');
+
+        console.log(baseDate);
+
+
+        this.selectedDate = baseDate;
+        this.selectedTime = this.formatTime(baseDate);
+        console.log(this.selectedTime);
+      })
+    );
+
+    this.updateDatumStatusGezet();
+  }
+
+  private formatTime(date: string): string {
+    const [hours, minutes, seconds] = date.split('T')[1].split(':');
+    return `${hours}:${minutes}:${seconds.split('.')[0]}`;
+  }
+
   public oneSelectItem(selectItems: Array<SelectItem>): boolean {
     return Array.isArray(selectItems) && selectItems.length === 1;
   }

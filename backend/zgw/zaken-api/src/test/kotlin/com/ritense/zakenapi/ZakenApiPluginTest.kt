@@ -813,7 +813,7 @@ internal class ZakenApiPluginTest {
             authenticationMock = authenticationMock
         )
 
-        plugin.setZaakStatus(executionMock, statustypeUrl, "Status description")
+        plugin.setZaakStatus(executionMock, statustypeUrl, "Status description", null)
 
         val captor = argumentCaptor<CreateZaakStatusRequest>()
         verify(zakenApiClient).createZaakStatus(any(), any(), captor.capture())
