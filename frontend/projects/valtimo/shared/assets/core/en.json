@@ -1920,7 +1920,8 @@
     "noCustomComponentDescription": "The custom component configured for this widget is not available."
   },
   "iko": {
-    "searchFieldsNoResults": "No search fields found for this entity"
+    "searchFieldsNoResults": "No search fields found for this entity",
+    "pageTitle": "Views"
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
