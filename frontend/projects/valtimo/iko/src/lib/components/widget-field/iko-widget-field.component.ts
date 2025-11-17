@@ -24,7 +24,7 @@ import {
   WidgetLayoutService,
 } from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
@@ -78,8 +78,4 @@ export class IkoWidgetFieldComponent {
     private readonly ikoApiService: IkoApiService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {}
-
-  public onWidgetActionClick(action: WidgetAction): void {
-    this.ikoApiService.handleAction(action);
-  }
 }

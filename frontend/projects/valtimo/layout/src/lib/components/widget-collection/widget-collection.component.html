@@ -19,6 +19,7 @@
     widgetConfiguration: widgetConfiguration$ | async,
     collectionWidgetCards: collectionWidgetCards$ | async,
     noVisibleFields: noVisibleFields$ | async,
+    widgetData: widgetData$ | async,
   } as obs"
 >
   <section class="valtimo-widget-collection__header">
@@ -28,6 +29,7 @@
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
     ></valtimo-widget-action-button>
   </section>
 

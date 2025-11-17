@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.ritense.widget.fields
+package com.ritense.widget.custom
 
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 
-class FieldsWidgetDataProvider(
+class CustomWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
-) : WidgetDataProvider<FieldsWidget> {
+) : WidgetDataProvider<CustomWidget> {
 
-    override fun supportedWidgetType() = FieldsWidget::class.java
+    override fun supportedWidgetType() = CustomWidget::class.java
 
-    override fun getData(widget: FieldsWidget, properties: Map<String, Any>): Any {
+    override fun getData(widget: CustomWidget, properties: Map<String, Any>): Any {
         val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
         return widget.getExposedValues { path -> resolvedValues[path] }
     }

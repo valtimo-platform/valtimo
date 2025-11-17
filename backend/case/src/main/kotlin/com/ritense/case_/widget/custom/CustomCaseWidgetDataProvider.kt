@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package com.ritense.case_.widget.fields
+package com.ritense.case_.widget.custom
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.custom.CustomWidget
 import java.util.UUID
 import org.springframework.data.domain.Pageable
 
-class FieldsCaseWidgetDataProvider(
+class CustomCaseWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
-    private val objectMapper: ObjectMapper
 ) : CaseWidgetDataProvider {
 
-    override fun supports(widget: Any): Boolean = widget is FieldsCaseWidget
+    override fun supports(widget: Any): Boolean = widget is CustomWidget
 
     override fun getData(
         documentId: UUID,
@@ -38,7 +37,7 @@ class FieldsCaseWidgetDataProvider(
         pageable: Pageable,
         caseDefinitionId: CaseDefinitionId
     ): Any {
-        widget as FieldsCaseWidget
+        widget as CustomWidget
         val resolvedValues = valueResolverService.resolveValues(
             mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
             widget.getUnresolvedValues()
