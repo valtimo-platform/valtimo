@@ -138,7 +138,7 @@ export class SetZaakStatusConfigurationComponent
   }
 
   public onTimeSelected(event: string): void {
-    // assuming event is like "14:15" or "14:15:22"
+    // expected format: HH:mm or HH:mm:ss
     this.selectedTime = event;
     this.updateDatumStatusGezet();
   }
