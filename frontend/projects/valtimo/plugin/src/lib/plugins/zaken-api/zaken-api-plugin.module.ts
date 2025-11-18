@@ -30,7 +30,9 @@ import {
   DatePickerInputModule, DatePickerModule,
   DialogModule,
   IconModule,
-  LoadingModule, TimePickerModule,
+  LoadingModule,
+  NotificationModule,
+  TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
@@ -99,6 +101,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
     DatePickerInputModule,
     DatePickerModule,
     FormsModule,
+    NotificationModule,
     ReactiveFormsModule,
     TimePickerModule,
   ],
