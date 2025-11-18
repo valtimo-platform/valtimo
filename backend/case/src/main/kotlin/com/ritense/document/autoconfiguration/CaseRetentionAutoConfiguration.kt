@@ -30,14 +30,10 @@ class CaseRetentionAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseRetentionPeriodWorker::class)
     fun documentRetentionPeriodWorker(
-        jsonSchemaDocumentService: JsonSchemaDocumentService,
-        caseDefinitionRepository: CaseDefinitionRepository,
-        historyService: HistoryService,
+        jsonSchemaDocumentService: JsonSchemaDocumentService
         ): CaseRetentionPeriodWorker {
         return CaseRetentionPeriodWorker(
-            jsonSchemaDocumentService,
-            caseDefinitionRepository,
-            historyService
+            jsonSchemaDocumentService
         )
     }
 }

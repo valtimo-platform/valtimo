@@ -18,9 +18,11 @@ package com.ritense.document.event
 
 import com.ritense.outbox.domain.BaseEvent
 
-class DocumentDeleted(documentId: String) : BaseEvent(
-    type = "com.ritense.valtimo.document.deleted",
+class DocumentDeleted(documentId: String, type: String) : BaseEvent(
+    type = type,
     resultType = "com.ritense.document.domain.impl.JsonSchemaDocument",
     resultId = documentId,
     result = null
-)
+) {
+    constructor(documentId: String) : this(documentId, "com.ritense.valtimo.document.deleted")
+}

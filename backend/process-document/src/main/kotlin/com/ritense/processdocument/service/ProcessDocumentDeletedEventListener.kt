@@ -24,24 +24,16 @@ import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
-import com.ritense.valtimo.operaton.service.OperatonHistoryService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RuntimeService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.*
 
 class ProcessDocumentDeletedEventListener(
     private val runtimeService: RuntimeService,
+    private val historyService: HistoryService,
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
-    private val operatonHistoryService: OperatonHistoryService,
 ) {
-
-    @Value("\${valtimo.case.processing.retention.historyRemovalPeriodInSeconds}")
-    val historyRemovalPeriodInSeconds: Long = 60
-
     @EventListener(ProcessDefinitionDeleted::class)
     fun handle(event: ProcessDefinitionDeleted) {
         runWithoutAuthorization {
@@ -50,7 +42,7 @@ class ProcessDocumentDeletedEventListener(
                 .rootProcessInstances()
                 .list()
                 .forEach {
-                    deleteProcessInstance(it.processInstanceId)
+                    deleteProcessInstance(it.processInstanceId, "Document type deleted")
                 }
         }
     }
@@ -65,36 +57,37 @@ class ProcessDocumentDeletedEventListener(
                     .rootProcessInstances()
                     .list()
                     .forEach {
-                        deleteProcessInstance(it.processInstanceId)
+                        deleteProcessInstance(
+                            it.processInstanceId,
+                            if (event.type == "com.ritense.valtimo.document.retained") {
+                                "Document retained"
+                            } else {
+                                "Document deleted"
+                            }
+                        )
                     }
 
-                val processes = processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
+                val pros = processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
                     JsonSchemaDocumentId.newId(event.documentId)
                 )
-
-                val removalTime = Date.from(
-                    Instant.now().plus(historyRemovalPeriodInSeconds, ChronoUnit.SECONDS)
-                )
-
-                processes.forEach {
-                    operatonHistoryService.setRemovalTime(
-                        it.processDocumentInstanceId().processInstanceId().toString(),
-                        removalTime
+                logger.info { "Process document ${event.documentId} has been deleted pros: ${pros.size}" }
+                pros.forEach {
+                    deleteHistoryProcessInstance(
+                        it.processDocumentInstanceId().processInstanceId().toString()
                     )
                 }
             }
         }
     }
 
-    private fun deleteProcessInstance(processInstanceId: String) {
-        runtimeService.deleteProcessInstance(
-            processInstanceId,
-            "Document deleted",
-            true,
-            true,
-            true,
-            false
+    private fun deleteHistoryProcessInstance(processInstanceId: String) {
+        historyService.deleteHistoricProcessInstanceIfExists(
+            processInstanceId
         )
+        deleteProcessDocumentInstance(processInstanceId)
+    }
+
+    private fun deleteProcessDocumentInstance(processInstanceId: String) {
         processDocumentAssociationService.findProcessDocumentInstance(
             OperatonProcessInstanceId(processInstanceId),
         )?.let { processDocumentInstance ->
@@ -106,6 +99,21 @@ class ProcessDocumentDeletedEventListener(
                     .ifPresent(processDocumentAssociationService::deleteProcessDocumentInstance)
             }
         }
+    }
+
+    private fun deleteProcessInstance(processInstanceId: String, deleteReason: String) {
+        runtimeService.deleteProcessInstance(
+            processInstanceId,
+            deleteReason,
+            true,
+            true,
+            true,
+            false
+        )
+        historyService.deleteHistoricProcessInstanceIfExists(
+            processInstanceId
+        )
+        deleteProcessDocumentInstance(processInstanceId)
     }
 
     companion object {

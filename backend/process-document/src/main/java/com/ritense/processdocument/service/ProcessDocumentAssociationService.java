@@ -20,6 +20,7 @@ import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.ProcessDocumentInstance;
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId;
 import com.ritense.processdocument.domain.ProcessInstanceId;
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance;
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;

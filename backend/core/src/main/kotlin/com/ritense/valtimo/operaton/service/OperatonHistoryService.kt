@@ -23,7 +23,6 @@ import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.operaton.bpm.engine.HistoryService
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @SkipComponentScan
 class OperatonHistoryService(
-    private val historyService: HistoryService,
     private val operatonHistoricProcessInstanceRepository: OperatonHistoricProcessInstanceRepository,
     private val authorizationService: AuthorizationService
 ) {
@@ -56,17 +54,6 @@ class OperatonHistoryService(
     fun countHistoricProcessInstances(specification: Specification<OperatonHistoricProcessInstance>): Long {
         denyAuthorization()
         return operatonHistoricProcessInstanceRepository.count(specification)
-    }
-
-    @Transactional()
-    fun setRemovalTime(processInstanceId: String, removalTime: java.util.Date) {
-        denyAuthorization()
-        historyService
-            .setRemovalTimeToHistoricProcessInstances()
-            .absoluteRemovalTime(removalTime)
-            .byIds(processInstanceId)
-            .hierarchical()
-            .executeAsync()
     }
 
     private fun denyAuthorization() {

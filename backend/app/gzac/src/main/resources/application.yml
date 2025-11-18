@@ -188,7 +188,6 @@ valtimo:
         processing:
             retention:
                 poll-interval: PT10S
-                historyRemovalPeriodInSeconds: 120
 
     hardening:
         allowStacktraceOnIps:
@@ -229,7 +228,7 @@ valtimo:
             - image/png
 
     outbox:
-        enabled: false
+        enabled: true
         publisher:
             cloudevent-source: "com.ritense.gzac"
             rabbitmq:

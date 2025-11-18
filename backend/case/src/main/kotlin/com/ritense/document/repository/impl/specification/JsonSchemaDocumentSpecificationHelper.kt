@@ -43,15 +43,11 @@ class JsonSchemaDocumentSpecificationHelper {
         }
 
         @JvmStatic
-        fun byRetainedDocumentDefinitionIdName(name: String): Specification<JsonSchemaDocument> {
+        fun retainedDocuments(): Specification<JsonSchemaDocument> {
             return Specification { root: Root<JsonSchemaDocument>,
                                    _: CriteriaQuery<*>?,
                                    criteriaBuilder: CriteriaBuilder ->
 
-                val namePredicate = criteriaBuilder.equal(
-                    root.get<Any>(DOCUMENT_DEFINITION_ID).get<String>(NAME),
-                    name
-                )
                 val retentionDateNotNullPredicate = criteriaBuilder.isNotNull(root.get<java.time.LocalDateTime>("retentionDate"),)
 
                 val retentionDateBeforeNowPredicate = criteriaBuilder.lessThan(
@@ -59,7 +55,7 @@ class JsonSchemaDocumentSpecificationHelper {
                     java.time.LocalDateTime.now()
                 )
 
-                criteriaBuilder.and(namePredicate, retentionDateNotNullPredicate, retentionDateBeforeNowPredicate)
+                criteriaBuilder.and(retentionDateNotNullPredicate, retentionDateBeforeNowPredicate)
             }
         }
 

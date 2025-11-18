@@ -18,7 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byDocumentDefinitionIdName;
-import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byRetainedDocumentDefinitionIdName;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.retainedDocuments;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGN;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
@@ -201,9 +201,8 @@ public class JsonSchemaDocumentService implements DocumentService {
         return document;
     }
 
-    public Page<JsonSchemaDocument> getRetainedDocumentDefinitionsByName(
-        Pageable pageable,
-        @LoggableResource("documentDefinitionName") String definitionName
+    public Page<JsonSchemaDocument> getRetainedDocuments(
+        Pageable pageable
     ) {
         AuthorizationSpecification<JsonSchemaDocument> spec = authorizationService
             .getAuthorizationSpecification(
@@ -215,7 +214,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             );
 
         Page<JsonSchemaDocument> documentPage = documentRepository.findAll(
-            spec.and(byRetainedDocumentDefinitionIdName(definitionName)), pageable);
+            spec.and(retainedDocuments()), pageable);
 
         outboxService.send(() ->
             new DocumentsListed(
@@ -618,7 +617,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     @Override
     public void deleteDocument(
-        Document.Id documentId
+        Document.Id documentId,
+        String type
     ) {
         JsonSchemaDocument document = getDocumentBy(documentId);
         authorizationService.requirePermission(
@@ -633,15 +633,24 @@ public class JsonSchemaDocumentService implements DocumentService {
 
         applicationEventPublisher.publishEvent(
             new DocumentDeletedEvent(
-                documentId.getId()
+                documentId.getId(),
+                type
             )
         );
 
         outboxService.send(() ->
             new DocumentDeleted(
-                document.id().toString()
+                document.id().toString(),
+                type
             )
         );
+    }
+
+    @Override
+    public void deleteDocument(
+        Document.Id documentId
+    ) {
+        deleteDocument(documentId, "com.ritense.valtimo.document.deleted");
     }
 
     @Override
@@ -826,7 +835,6 @@ public class JsonSchemaDocumentService implements DocumentService {
             internalStatusKey
         ) : null;
         document.setInternalStatus(internalCaseStatus);
-        document.setRetentionDate();
         documentRepository.save(document);
 
         outboxService.send(() ->

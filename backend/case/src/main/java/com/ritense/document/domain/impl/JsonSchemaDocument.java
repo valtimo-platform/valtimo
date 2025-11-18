@@ -343,13 +343,8 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
             throw new IllegalArgumentException("Invalid status key: '" + internalCaseStatus.getId().getKey() + "'.");
         }
         this.internalStatus = internalCaseStatus;
-    }
-
-    public void setRetentionDate() {
-        if (this.internalStatus == null) {
-            throw new IllegalArgumentException("Internal status not set");
-        }
-        if (this.internalStatus.getRetentionPeriod() >= 0) {
+        if (internalCaseStatus != null && internalCaseStatus.getRetentionPeriod() >= 0) {
+            logger.info("Internal status set to {}", internalCaseStatus.getRetentionPeriod());
             this.retentionDate = LocalDateTime.now().plusDays(this.internalStatus.getRetentionPeriod());
         } else {
             this.retentionDate = null;

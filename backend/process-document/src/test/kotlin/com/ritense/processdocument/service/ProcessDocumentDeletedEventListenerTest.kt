@@ -16,12 +16,14 @@
 
 package com.ritense.processdocument.service
 
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
@@ -31,19 +33,22 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.Optional
-import java.util.UUID
+import org.operaton.bpm.engine.HistoryService
+import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.runtime.ProcessInstance
+import java.util.*
 
 class ProcessDocumentDeletedEventListenerTest {
 
     var processDocumentDeletedEventListener: ProcessDocumentDeletedEventListener? = null
     var runtimeService = mock<RuntimeService>(RETURNS_DEEP_STUBS)
     var processDocumentAssociationService = mock<ProcessDocumentAssociationService>(RETURNS_DEEP_STUBS)
+    var historyService = mock<HistoryService>(RETURNS_DEEP_STUBS)
 
     @BeforeEach
     fun setUp() {
         processDocumentDeletedEventListener =
-            ProcessDocumentDeletedEventListener(runtimeService, processDocumentAssociationService)
+            ProcessDocumentDeletedEventListener(runtimeService, historyService, processDocumentAssociationService)
     }
 
     @Test
@@ -88,6 +93,103 @@ class ProcessDocumentDeletedEventListenerTest {
             true,
             false
         )
+        verify(processDocumentAssociationService, times(2)).deleteProcessDocumentInstance(pdiId)
+    }
+
+    @Test
+    fun `should delete retained process instances with business key`() {
+        val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
+
+        val processInstance1 = mock<ProcessInstance>()
+        val processInstanceId1 = "4320f9c0-5568-4ed2-91f9-d2c85fd4ce55"
+        whenever(processInstance1.processInstanceId).thenReturn(processInstanceId1)
+        val processInstance2 = mock<ProcessInstance>()
+        val processInstanceId2 = "a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f"
+        whenever(processInstance2.processInstanceId).thenReturn(processInstanceId2)
+
+        val processDocumentInstance = mock<ProcessDocumentInstance>()
+        whenever(processDocumentAssociationService.findProcessDocumentInstance(any()))
+            .thenReturn(Optional.of(processDocumentInstance))
+
+        val pdiId = mock<ProcessDocumentInstanceId>()
+        whenever(processDocumentInstance.processDocumentInstanceId()).thenReturn(pdiId)
+
+        whenever(
+            runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(documentId.toString())
+                .rootProcessInstances().list()
+        )
+            .thenReturn(listOf(processInstance1, processInstance2))
+
+        processDocumentDeletedEventListener!!.handle(
+            DocumentDeletedEvent(
+                documentId,
+                "com.ritense.valtimo.document.retained"
+            )
+        )
+
+        verify(runtimeService).deleteProcessInstance(
+            "4320f9c0-5568-4ed2-91f9-d2c85fd4ce55",
+            "Document retained",
+            true,
+            true,
+            true,
+            false
+        )
+        verify(runtimeService).deleteProcessInstance(
+            "a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f",
+            "Document retained",
+            true,
+            true,
+            true,
+            false
+        )
+        verify(processDocumentAssociationService, times(2)).deleteProcessDocumentInstance(pdiId)
+    }
+
+
+    @Test
+    fun `should delete retained process instances with business key when case is completed`() {
+        val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
+        val processDocumentInstance = mock<ProcessDocumentInstance>()
+        whenever(processDocumentAssociationService.findProcessDocumentInstance(any()))
+            .thenReturn(Optional.of(processDocumentInstance))
+
+        val pdiId = mock<ProcessDocumentInstanceId>()
+        whenever(processDocumentInstance.processDocumentInstanceId()).thenReturn(pdiId)
+
+        whenever(
+            runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(documentId.toString())
+                .rootProcessInstances().list()
+        )
+            .thenReturn(emptyList())
+
+        val processInstance1 = OperatonProcessJsonSchemaDocumentInstance(
+            OperatonProcessJsonSchemaDocumentInstanceId.newId(
+                OperatonProcessInstanceId("4320f9c0-5568-4ed2-91f9-d2c85fd4ce55"),
+                JsonSchemaDocumentId.newId(documentId)
+            ),
+            "person")
+        val processInstance2 = OperatonProcessJsonSchemaDocumentInstance(
+            OperatonProcessJsonSchemaDocumentInstanceId.newId(
+                OperatonProcessInstanceId("a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f"),
+                JsonSchemaDocumentId.newId(documentId)
+            ),
+            "person")
+
+        whenever(
+            processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
+                JsonSchemaDocumentId.newId(documentId)
+            )
+        ).thenReturn(listOf(processInstance1, processInstance2))
+
+        processDocumentDeletedEventListener!!.handle(
+            DocumentDeletedEvent(
+                documentId,
+                "com.ritense.valtimo.document.retained"
+            )
+        )
+        verify(historyService).deleteHistoricProcessInstanceIfExists("4320f9c0-5568-4ed2-91f9-d2c85fd4ce55")
+        verify(historyService).deleteHistoricProcessInstanceIfExists("a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f")
         verify(processDocumentAssociationService, times(2)).deleteProcessDocumentInstance(pdiId)
     }
 

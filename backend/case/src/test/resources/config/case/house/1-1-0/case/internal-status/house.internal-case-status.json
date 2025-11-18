@@ -17,6 +17,7 @@
         "key": "started",
         "title": "Started",
         "visibleInCaseListByDefault": true,
+        "retentionPeriod": -1,
         "color": "GRAY"
     }
 ]
