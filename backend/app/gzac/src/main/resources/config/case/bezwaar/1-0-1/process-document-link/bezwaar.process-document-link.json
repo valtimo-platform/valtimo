@@ -18,5 +18,10 @@
         "processDefinitionKey": "catalogi-get-typen",
         "canInitializeDocument": false,
         "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "vastleggen-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]

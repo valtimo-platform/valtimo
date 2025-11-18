@@ -218,6 +218,88 @@ class BesluitenApiClientTest {
         assertEquals(LocalDate.of(2023, 4, 25), besluit.uiterlijkeReactiedatum)
     }
 
+    @Test
+    fun `should send patch besluit request and parse response`() {
+        val restClientBuilder = RestClient.builder()
+        val client = BesluitenApiClient(restClientBuilder)
+
+        val responseBody = """
+        {
+            "url": "http://besluit.api/besluit",
+            "identificatie": "identificatie",
+            "verantwoordelijkeOrganisatie": "633182801",
+            "besluittype": "http://catalogus.api/besluittype",
+            "zaak": "http://zaken.api/zaak",
+            "datum": "2019-11-01",
+            "toelichting": "toelichting",
+            "bestuursorgaan": "680572442",
+            "ingangsdatum": "2019-11-02",
+            "vervaldatum": "2019-11-03",
+            "vervalreden": "tijdelijk",
+            "vervalredenWeergave": "reden",
+            "publicatiedatum": "2019-11-04",
+            "verzenddatum": "2019-11-05",
+            "uiterlijkeReactiedatum": "2019-11-06"
+        }
+    """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val besluitUrl = URI(mockApi.url("/besluit").toString())
+
+        val besluit = client.patchBesluit(
+            TestAuthentication(),
+            besluitUrl,
+            PatchBesluitRequest(
+                datum = LocalDate.of(2025, 11, 1),
+                toelichting = "toelichting",
+                bestuursorgaan = "680572442",
+                ingangsdatum = LocalDate.of(2025, 11, 2),
+                vervaldatum = LocalDate.of(2025, 11, 3),
+                vervalreden = Vervalreden.TIJDELIJK,
+                publicatiedatum = LocalDate.of(2025, 11, 4),
+                verzenddatum = LocalDate.of(2025, 11, 5),
+                uiterlijkeReactiedatum = LocalDate.of(2025, 11, 6)
+            )
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+        val body = recordedRequest.body.readUtf8()
+
+        // validate PATCH request body: only the patchable fields
+        assertThat(body, jsonPathMissingOrNull("$.identificatie"))
+        assertThat(body, jsonPathMissingOrNull("$.verantwoordelijkeOrganisatie"))
+        assertThat(body, jsonPathMissingOrNull("$.besluittype"))
+        assertThat(body, jsonPathMissingOrNull("$.zaak"))
+
+        assertThat(body, hasJsonPath("$.datum", equalTo("2025-11-01")))
+        assertThat(body, hasJsonPath("$.toelichting", equalTo("toelichting")))
+        assertThat(body, hasJsonPath("$.bestuursorgaan", equalTo("680572442")))
+        assertThat(body, hasJsonPath("$.ingangsdatum", equalTo("2025-11-02")))
+        assertThat(body, hasJsonPath("$.vervaldatum", equalTo("2025-11-03")))
+        assertThat(body, hasJsonPath("$.vervalreden", equalTo("tijdelijk")))
+        assertThat(body, hasJsonPath("$.publicatiedatum", equalTo("2025-11-04")))
+        assertThat(body, hasJsonPath("$.verzenddatum", equalTo("2025-11-05")))
+        assertThat(body, hasJsonPath("$.uiterlijkeReactiedatum", equalTo("2025-11-06")))
+
+        // validate response mapping
+        assertEquals(URI("http://besluit.api/besluit"), besluit.url)
+        assertEquals("identificatie", besluit.identificatie)
+        assertEquals("633182801", besluit.verantwoordelijkeOrganisatie)
+        assertEquals(URI("http://catalogus.api/besluittype"), besluit.besluittype)
+        assertEquals(URI("http://zaken.api/zaak"), besluit.zaak)
+        assertEquals(LocalDate.of(2019, 11, 1), besluit.datum)
+        assertEquals("toelichting", besluit.toelichting)
+        assertEquals("680572442", besluit.bestuursorgaan)
+        assertEquals(LocalDate.of(2019, 11, 2), besluit.ingangsdatum)
+        assertEquals(LocalDate.of(2019, 11, 3), besluit.vervaldatum)
+        assertEquals(Vervalreden.TIJDELIJK, besluit.vervalreden)
+        assertEquals("reden", besluit.vervalredenWeergave)
+        assertEquals(LocalDate.of(2019, 11, 4), besluit.publicatiedatum)
+        assertEquals(LocalDate.of(2019, 11, 5), besluit.verzenddatum)
+        assertEquals(LocalDate.of(2019, 11, 6), besluit.uiterlijkeReactiedatum)
+    }
+
     private fun mockResponse(body: String): MockResponse {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
