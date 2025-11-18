@@ -740,7 +740,7 @@ class ZakenApiPlugin(
                 CreateZaakStatusRequest(
                     zaak = zaakUrl,
                     statustype = statustypeUrl,
-                    datumStatusGezet = convertedDatumStatusGezet ?: LocalDateTime.now(),
+                    datumStatusGezet = convertedDatumStatusGezet ?: LocalDateTime.now().minusSeconds(5),
                     statustoelichting = statustoelichting,
                 )
             )
