@@ -100,11 +100,13 @@ export class WidgetManagementInteractiveTableComponent implements OnInit, OnDest
   }
 
   public ngOnInit(): void {
+    this.widgetWizardService.$disableActionButton.set(true);
     this.openActionsSubscription();
     this.openDetailsSubscription();
   }
 
   public ngOnDestroy(): void {
+    this.widgetWizardService.$disableActionButton.set(false);
     this._subscriptions.unsubscribe();
   }
 

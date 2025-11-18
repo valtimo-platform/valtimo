@@ -25,12 +25,12 @@ import {
   signal,
 } from '@angular/core';
 import {Edit16, Save16} from '@carbon/icons';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {EditorModel} from '../../models';
-import {EditorModule} from '../editor/editor.module';
 import {TranslateModule} from '@ngx-translate/core';
-import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
+import {EditorModel} from '../../models';
+import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
+import {EditorModule} from '../editor/editor.module';
 
 @Component({
   selector: 'valtimo-json-editor',
@@ -61,7 +61,7 @@ export class JsonEditorComponent {
   }
   @Input() editorOptions;
   @Input() fitPage = false;
-  @Input() fitPageExtraSpace = 0;
+  @Input() fitPageSpaceAdjustment = 0;
   @Input() formatOnLoad = true;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
@@ -69,7 +69,7 @@ export class JsonEditorComponent {
   @Input() showEditButton = true;
   @Input() widthPx!: number;
 
-  @Output() public readonly changeEvent = new EventEmitter<string>();
+  @Output() public readonly changeEvent = new EventEmitter();
   @Output() public readonly discardEvent = new EventEmitter();
   @Output() public readonly keepEditingEvent = new EventEmitter();
   @Output() public readonly saveEvent = new EventEmitter<object>();
@@ -125,7 +125,9 @@ export class JsonEditorComponent {
 
   public onValueChangeEvent(value: string): void {
     this._changesToSave = value;
-    this.changeEvent.emit(value);
+    if (!this.isValidJson()) return;
+
+    this.changeEvent.emit();
   }
 
   private resetEditor(): void {

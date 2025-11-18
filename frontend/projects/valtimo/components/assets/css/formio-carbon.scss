@@ -2951,11 +2951,13 @@
   .form-group {
     margin-bottom: 15px;
   }
+  .checkbox {
+    display: block;
+    margin-top: 10px;
+  }
   .radio,
   .checkbox {
     position: relative;
-    display: block;
-    margin-top: 10px;
     margin-bottom: 10px;
   }
   .radio.disabled label,

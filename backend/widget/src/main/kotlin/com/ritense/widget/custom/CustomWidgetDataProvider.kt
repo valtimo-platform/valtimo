@@ -14,4 +14,19 @@
  * limitations under the License.
  */
 
-export * from './process-selector/case-management-widget-process-selector.component';
+package com.ritense.widget.custom
+
+import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.WidgetDataProvider
+
+class CustomWidgetDataProvider(
+    private val valueResolverService: ValueResolverService,
+) : WidgetDataProvider<CustomWidget> {
+
+    override fun supportedWidgetType() = CustomWidget::class.java
+
+    override fun getData(widget: CustomWidget, properties: Map<String, Any>): Any {
+        val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
+        return widget.getExposedValues { path -> resolvedValues[path] }
+    }
+}
