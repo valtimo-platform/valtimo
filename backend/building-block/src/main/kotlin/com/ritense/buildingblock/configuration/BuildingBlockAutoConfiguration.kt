@@ -18,10 +18,17 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
+import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
+import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
+import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
+import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
@@ -30,14 +37,18 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitio
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
+import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
+import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
+import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
@@ -51,6 +62,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
@@ -61,11 +73,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
-        JsonSchemaDocumentDefinitionRepository::class,
-        ProcessDefinitionBuildingBlockDefinitionRepository::class
+        ProcessDefinitionBuildingBlockDefinitionRepository::class,
+        BuildingBlockDefinitionArtworkRepository::class
     ]
 )
-@EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
+@EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
 class BuildingBlockAutoConfiguration {
     @Order(HIGHEST_PRECEDENCE + 27)
     @ConditionalOnMissingBean(name = ["buildingBlockLiquibaseMasterChangeLogLocation"])
@@ -111,6 +123,20 @@ class BuildingBlockAutoConfiguration {
             processDeploymentService,
             authorizationService,
             buildingBlockDefinitionChecker
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)
+    fun buildingBlockDefinitionArtworkService(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
+        authroizationService: AuthorizationService
+    ): BuildingBlockDefinitionArtworkService {
+        return BuildingBlockDefinitionArtworkService(
+            buildingBlockDefinitionRepository,
+            buildingBlockDefinitionArtworkRepository,
+            authroizationService
         )
     }
 
@@ -162,10 +188,20 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
     fun buildingBlockProcessResource(
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+        buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
     ): BuildingBlockProcessResource {
         return BuildingBlockProcessResource(
             buildingBlockDefinitionProcessDefinitionService,
+            buildingBlockPluginDefinitionService
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkResource::class)
+    fun buildingBlockDefinitionArtworkResource(
+        buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
+    ): BuildingBlockDefinitionArtworkResource {
+        return BuildingBlockDefinitionArtworkResource(buildingBlockDefinitionArtworkService)
     }
 
     @Bean
@@ -202,6 +238,29 @@ class BuildingBlockAutoConfiguration {
     ) = BuildingBlockDefinitionImporter(objectMapper, repository, checker)
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkMapper::class)
+    fun buildingBlockProcessLinkMapper(
+        objectMapper: ObjectMapper,
+        @Lazy processLinkService: ProcessLinkService,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    ) = BuildingBlockProcessLinkMapper(objectMapper, processLinkService, processDefinitionBuildingBlockDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockSupportedProcessLinksHandler::class)
+    fun buildingBlockSupportedProcessLinksHandler() = BuildingBlockSupportedProcessLinksHandler()
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginConfigurationResolver::class)
+    fun buildingBlockPluginConfigurationResolver(): BuildingBlockPluginConfigurationResolver =
+        DefaultBuildingBlockPluginConfigurationResolver()
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)
+    fun buildingBlockCallActivityListener(
+        processLinkService: ProcessLinkService,
+    ) = BuildingBlockCallActivityListener(processLinkService)
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionMainProcessDefinitionImporter::class)
     fun buildingBlockDefinitionMainProcessDefinitionImporter(
         objectMapper: ObjectMapper,
@@ -228,4 +287,19 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockJsonSchemaDocumentDefinitionImporter(
         service: BuildingBlockDocumentDefinitionService,
     ) = BuildingBlockJsonSchemaDocumentDefinitionImporter(service)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
+    fun buildingBlockPluginDefinitionService(
+        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    ) = BuildingBlockPluginDefinitionService(pluginProcessLinkRepository, processDefinitionBuildingBlockDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkImporter::class)
+    fun buildingBlockDefinitionArtworkImporter(
+        buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
+    ): BuildingBlockDefinitionArtworkImporter {
+        return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
+    }
 }

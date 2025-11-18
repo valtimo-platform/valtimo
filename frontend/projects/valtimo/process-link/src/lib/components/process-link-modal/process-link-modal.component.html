@@ -92,7 +92,12 @@
         <valtimo-select-form-flow></valtimo-select-form-flow>
       </ng-container>
 
-      <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'choosePluginConfiguration' ||
+          obs.currentStepId === 'choosePluginDefinition'
+        "
+      >
         <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
 

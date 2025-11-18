@@ -55,4 +55,6 @@ class CollectionCaseWidget(
         displayConditions = displayConditions,
         properties = properties
     )
+
+    override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }

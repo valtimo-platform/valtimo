@@ -29,10 +29,9 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import com.ritense.widget.page.ResolvedPage
 import java.util.UUID
+import org.springframework.data.domain.Pageable
 
 class TableCaseWidgetDataProvider(
     private val objectMapper: ObjectMapper,
@@ -47,16 +46,17 @@ class TableCaseWidgetDataProvider(
         widget: Any,
         pageable: Pageable,
         caseDefinitionId: CaseDefinitionId
-    ): Page<Map<String, Any?>> {
+    ): ResolvedPage<Map<String, Any?>> {
         widget as TableCaseWidget
-        val resolvedCollection = valueResolverService.resolveValues(
+        val resolvedValues = valueResolverService.resolveValues(
             mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
-            listOf(widget.properties.collection)
-        )[widget.properties.collection]
-        val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)
+            widget.getUnresolvedValues()
+        )
+        val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedValues[widget.properties.collection])
+        val exposedValues = widget.getExposedValues { path -> resolvedValues[path] }
 
         if (collectionNode.isNull) {
-            return PageImpl(emptyList(), pageable, 0)
+            return ResolvedPage(emptyList(), pageable, 0, exposedValues)
         }
 
         if (!collectionNode.isArray) {
@@ -89,11 +89,12 @@ class TableCaseWidgetDataProvider(
                 }
             }
 
-        return PageImpl(result, pageable, collectionNode.size().toLong())
+        return ResolvedPage(result, pageable, collectionNode.size().toLong(), exposedValues)
     }
 
 
     private companion object {
-        val JSONPATH_CONTEXT = JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+        val JSONPATH_CONTEXT =
+            JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
     }
 }

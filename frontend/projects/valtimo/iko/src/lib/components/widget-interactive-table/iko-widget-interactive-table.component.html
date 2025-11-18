@@ -15,12 +15,15 @@
   -->
 
 <valtimo-widget-interactive-table
-  *ngIf="widgetConfiguration$ | async as widgetConfiguration"
-  [widgetData]="widgetData$ | async"
-  [widgetConfiguration]="widgetConfiguration"
-  (actionEvent)="onActionEvent($event)"
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
+  [widgetData]="obs.widgetData"
+  [widgetConfiguration]="obs.widgetConfiguration"
+  (actionEvent)="onActionEvent($event, obs.widgetData.resolved)"
   (paginationEvent)="onPaginationEvent($event)"
-  (rowClickEvent)="onRowClickEvent($event, widgetConfiguration)"
+  (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
 >
 </valtimo-widget-interactive-table>

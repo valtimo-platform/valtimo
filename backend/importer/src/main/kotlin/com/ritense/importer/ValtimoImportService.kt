@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -297,13 +297,6 @@ class ValtimoImportService(
 
             }
 
-            importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
-                entries.forEach { entry ->
-                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content))
-                }
-            }
-
             importerEntriesList.forEach { (importer, entries) ->
                 entries.forEach { entry ->
                     importer.afterImport(ImportRequest(entry.fileName, entry.content))
@@ -420,11 +413,26 @@ class ValtimoImportService(
     }
 
     private fun getEntriesFromResources(resources: List<Pair<String, Resource>>): List<ZipFileEntry> {
-        return resources.map {
-            val resolvedContent = resolveProperties(it.second.getContentAsString(Charsets.UTF_8))
+        return resources.map { (path, resource) ->
+            val bytes =
+                if (isTextResource(path)) {
+                    val resolvedContent = resolveProperties(resource.getContentAsString(Charsets.UTF_8))
+                    resolvedContent.toByteArray(Charsets.UTF_8)
+                } else {
+                    resource.inputStream.use { it.readBytes() }
+                }
 
-            ZipFileEntry(it.first, resolvedContent.toByteArray(Charsets.UTF_8))
+            ZipFileEntry(path, bytes)
         }
+    }
+
+    private fun isTextResource(path: String): Boolean {
+        return path.endsWith(".json", ignoreCase = true) ||
+            path.endsWith(".yml", ignoreCase = true) ||
+            path.endsWith(".yaml", ignoreCase = true) ||
+            path.endsWith(".xml", ignoreCase = true) ||
+            path.endsWith(".sql", ignoreCase = true) ||
+            path.endsWith(".txt", ignoreCase = true)
     }
 
     private fun resolveProperties(content: String): String {

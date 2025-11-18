@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objecttypenapi.ObjecttypenApiAuthentication
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -443,13 +443,14 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
 
         pluginProcessLinkRepository.save(
             PluginProcessLink(
-                PluginProcessLinkId(UUID.randomUUID()),
-                processDefinitionId,
-                "user_task",
-                objectMapper.readTree(propertiesConfig) as ObjectNode,
-                portaalTaakPluginConfiguration.id,
-                "create-portaaltaak",
-                activityType = ActivityTypeWithEventName.USER_TASK_CREATE
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = "user_task",
+                activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+                actionProperties = objectMapper.readTree(propertiesConfig) as ObjectNode,
+                pluginConfigurationId = portaalTaakPluginConfiguration.id,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = "create-portaaltaak"
             )
         )
     }
