@@ -48,8 +48,10 @@ class BuildingBlockManagementResource(
     private val importService: ImportService
 ) {
     @GetMapping
-    fun getBuildingBlockDefinitions(): ResponseEntity<List<BuildingBlockDefinitionDto>> {
-        val dtoList = buildingBlockManagementService.getLatestPerKey()
+    fun getBuildingBlockDefinitions(
+        @RequestParam(value = "includeArtwork", required = false) includeArtwork: Boolean = false,
+    ): ResponseEntity<List<BuildingBlockDefinitionDto>> {
+        val dtoList = buildingBlockManagementService.getLatestPerKey(includeArtwork)
         return if (dtoList.isEmpty()) {
             ResponseEntity.notFound().build()
         } else {
@@ -63,6 +65,14 @@ class BuildingBlockManagementResource(
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val savedDto = buildingBlockManagementService.create(dto)
         return ResponseEntity.ok(savedDto)
+    }
+
+    @GetMapping("/{key}/version")
+    fun getBuildingBlockVersions(
+        @PathVariable key: String
+    ): ResponseEntity<List<String>> {
+        val versions = buildingBlockManagementService.getVersionsForKey(key)
+        return ResponseEntity.ok(versions)
     }
 
     @GetMapping("/{key}/version/{versionTag}")

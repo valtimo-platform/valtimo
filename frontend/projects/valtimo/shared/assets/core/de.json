@@ -1792,14 +1792,19 @@
     "selectVersion": "Wählen Sie eine Version aus",
     "activity": "Prozessaktivität",
     "selectActivity": "Wählen Sie eine Prozessaktivität aus",
-    "noProcess": "Kein Upload-Prozess"
+    "noProcess": "Kein Upload-Prozess",
+    "buildingBlock": {
+      "name": "Name",
+      "description": "Beschreibung"
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formular",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Building block"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Linktyp wählen",
