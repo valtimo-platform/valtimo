@@ -1774,6 +1774,7 @@
       "selectedBuildingBlock": "Selected building block",
       "noRequirements": "This building block does not require any plugin configurations.",
       "configurationLabel": "Plugin configuration",
+      "pluginLabel": "Choose configuration",
       "configurationPlaceholder": "Select a configuration",
       "noConfigurationsForPlugin": "No configurations are available for this plugin definition.",
       "selectConfigurationWarning": "Select a configuration to continue.",
