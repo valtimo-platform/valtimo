@@ -140,8 +140,6 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   public closeModal(item: IkoRepositoryConfigResponse | null): void {
     this.$modalOpen.set(false);
     this.disable();
-
-    const prefillData: IkoDataAggregateResponse | null = this.$prefillData();
     this.$prefillData.set(null);
     if (!item) return;
 

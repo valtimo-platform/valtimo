@@ -22,164 +22,161 @@
   </cds-modal-header>
 
   <form cdsModalContent [formGroup]="formGroup" class="valtimo-search-fields-modal__content">
-    @if(open)
-    {
+    <div class="valtimo-search-fields-modal__input">
+      <v-input-label
+        [title]="'searchFieldsOverview.title' | translate"
+        [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+      >
+      </v-input-label>
+
+      <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer />
+    </div>
+
+    <div class="valtimo-search-fields-modal__input">
+      <valtimo-auto-key-input
+        [mode]="modalMode"
+        [usedKeys]="usedKeys"
+        [sourceText]="title.value"
+        data-testid="iko-search-key"
+        formControlName="key"
+        placeholderTranslationKey="interface.key"
+      >
+      </valtimo-auto-key-input>
+    </div>
+
+    <div class="valtimo-search-fields-modal__input">
+      <v-input-label
+        [title]="'searchFieldsOverview.path' | translate"
+        [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+      >
+      </v-input-label>
+
+      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" />
+
+      <!-- TODO: When BE value resolver is in place -->
+      <!-- <valtimo-value-path-selector
+        formControlName="path"
+        [caseDefinitionKey]="caseDefinitionKey$ | async"
+        [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+      ></valtimo-value-path-selector> -->
+    </div>
+
+    <div class="valtimo-search-fields-modal__input">
+      <v-input-label
+        [title]="'searchFieldsOverview.dataType' | translate"
+        [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+      >
+      </v-input-label>
+
+      <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
+        <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    @if (dataTypeValue === SearchFieldDataType.TEXT) {
       <div class="valtimo-search-fields-modal__input">
         <v-input-label
-          [title]="'searchFieldsOverview.title' | translate"
-          [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+          [title]="'searchFieldsOverview.matchType' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
         >
         </v-input-label>
 
-        <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer />
+        <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
+          <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
       </div>
+    }
 
-      <div class="valtimo-search-fields-modal__input">
-        <valtimo-auto-key-input
-          data-testid="iko-search-key"
-          formControlName="key"
-          placeholderTranslationKey="interface.key"
-          [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
-          [mode]="modalMode"
-          [usedKeys]="usedKeys"
-        >
-        </valtimo-auto-key-input>
-      </div>
+    <div class="valtimo-search-fields-modal__input">
+      <v-input-label
+        [title]="'searchFieldsOverview.fieldType' | translate"
+        [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+      >
+      </v-input-label>
 
+      <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
+        <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    @if (
+      dataTypeValue === SearchFieldDataType.TEXT &&
+      (fieldTypeValue === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
+        fieldTypeValue === SearchFieldFieldType.MULTI_SELECT_DROPDOWN)
+    ) {
       <div class="valtimo-search-fields-modal__input">
         <v-input-label
-          [title]="'searchFieldsOverview.path' | translate"
-          [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+          [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
         >
         </v-input-label>
 
-        <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" />
-
-        <!-- TODO: When BE value resolver is in place -->
-        <!-- <valtimo-value-path-selector
-          formControlName="path"
-          [caseDefinitionKey]="caseDefinitionKey$ | async"
-          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-        ></valtimo-value-path-selector> -->
-      </div>
-
-      <div class="valtimo-search-fields-modal__input">
-        <v-input-label
-          [title]="'searchFieldsOverview.dataType' | translate"
-          [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+        <cds-dropdown
+          data-testid="-search-dropdownDataProvider"
+          formControlName="dropdownDataProvider"
+          cdsLayer
         >
-        </v-input-label>
-
-        <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
-          <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
+          <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
 
-      @if (dataTypeValue === SearchFieldDataType.TEXT) {
-        <div class="valtimo-search-fields-modal__input">
+      @if (dropdownDataProviderValue === SearchDropdownDataProvider.DATABASE) {
+        <div class="valtimo-search-fields-modal__list" formArrayName="dropdownValues">
           <v-input-label
-            [title]="'searchFieldsOverview.matchType' | translate"
-            [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+            [title]="'searchFieldsOverview.dropdownListValues' | translate"
+            [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+            [noMargin]="true"
           >
           </v-input-label>
 
-          <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
-            <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
-          </cds-dropdown>
-        </div>
-      }
+          @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
+            <form [formGroup]="dropdownValue" class="valtimo-search-fields-modal__dropdown-values">
+              <cds-text-label>
+                {{ 'interface.value' | translate }}
 
-      <div class="valtimo-search-fields-modal__input">
-        <v-input-label
-          [title]="'searchFieldsOverview.fieldType' | translate"
-          [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
-        >
-        </v-input-label>
+                <input
+                  data-testid="iko-search-dropdownKey"
+                  cdsText
+                  type="text"
+                  formControlName="key"
+                  cdsLayer
+                />
+              </cds-text-label>
 
-        <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
-          <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
-      </div>
+              <cds-text-label>
+                {{ 'interface.display' | translate }}
 
-      @if (
-        dataTypeValue === SearchFieldDataType.TEXT &&
-        (fieldTypeValue === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
-          fieldTypeValue === SearchFieldFieldType.MULTI_SELECT_DROPDOWN)
-      ) {
-        <div class="valtimo-search-fields-modal__input">
-          <v-input-label
-            [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
-            [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+                <input
+                  data-testid="-search-dropdownValue"
+                  cdsText
+                  type="text"
+                  formControlName="value"
+                  cdsLayer
+                />
+              </cds-text-label>
+
+              <button
+                cdsButton="danger"
+                data-testid="iko-search-deleteEnum"
+                [disabled]="$count === 1"
+                [iconOnly]="true"
+                (click)="removeDropdownValue($index)"
+              >
+                <svg cdsIcon="trash-can" size="16"></svg>
+              </button>
+            </form>
+          }
+
+          <button
+            data-testid="-search-addDropdownValue"
+            cdsButton="primary"
+            (click)="addDropdownValue()"
           >
-          </v-input-label>
+            {{ 'interface.addRow' | translate }}
 
-          <cds-dropdown
-            data-testid="-search-dropdownDataProvider"
-            formControlName="dropdownDataProvider"
-            cdsLayer
-          >
-            <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
-          </cds-dropdown>
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
         </div>
-
-        @if (dropdownDataProviderValue === SearchDropdownDataProvider.DATABASE) {
-          <div class="valtimo-search-fields-modal__list" formArrayName="dropdownValues">
-            <v-input-label
-              [title]="'searchFieldsOverview.dropdownListValues' | translate"
-              [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
-              [noMargin]="true"
-            >
-            </v-input-label>
-
-            @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
-              <form [formGroup]="dropdownValue" class="valtimo-search-fields-modal__dropdown-values">
-                <cds-text-label>
-                  {{ 'interface.value' | translate }}
-
-                  <input
-                    data-testid="iko-search-dropdownKey"
-                    cdsText
-                    type="text"
-                    formControlName="key"
-                    cdsLayer
-                  />
-                </cds-text-label>
-
-                <cds-text-label>
-                  {{ 'interface.display' | translate }}
-
-                  <input
-                    data-testid="-search-dropdownValue"
-                    cdsText
-                    type="text"
-                    formControlName="value"
-                    cdsLayer
-                  />
-                </cds-text-label>
-
-                <button
-                  cdsButton="danger"
-                  data-testid="iko-search-deleteEnum"
-                  [disabled]="$count === 1"
-                  [iconOnly]="true"
-                  (click)="removeDropdownValue($index)"
-                >
-                  <svg cdsIcon="trash-can" size="16"></svg>
-                </button>
-              </form>
-            }
-
-            <button
-              data-testid="-search-addDropdownValue"
-              cdsButton="primary"
-              (click)="addDropdownValue()"
-            >
-              {{ 'interface.addRow' | translate }}
-
-              <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-            </button>
-          </div>
-        }
       }
     }
   </form>

@@ -62,22 +62,19 @@ export class IkoManagementRepositoryModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    value ? (this.showAutoKey = true) : this.resetForm();
+    if(!value) this.resetForm();
   }
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
   }
 
-  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoRepositoryConfigResponse | null>(null);
   @Input() public set prefillData(value: IkoRepositoryConfigResponse | null) {
     this.$prefillData.set(value);
-    if (!value) return;
     this.formGroup.patchValue(value);
-    this.formGroup.get('key')?.disable();
   }
 
-  private _modalMode: ModalMode = 'add';
+  private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {
     this._modalMode = value;
@@ -91,7 +88,6 @@ export class IkoManagementRepositoryModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public showAutoKey = true;
   public enableIkoType = false;
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
@@ -138,16 +134,10 @@ export class IkoManagementRepositoryModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
-    runAfterCarbonModalClosed(() => {
-      this.showAutoKey = false;
-    });
   }
 
   public onSave(): void {
     this.modalClose.emit(this.formGroup.getRawValue());
-    runAfterCarbonModalClosed(() => {
-      this.showAutoKey = false;
-    });
   }
 
   public getControlInvalid(controlKey: string): boolean {
@@ -166,13 +156,7 @@ export class IkoManagementRepositoryModalComponent {
 
   private resetForm(): void {
     setTimeout(() => {
-      this.formGroup.reset({
-        title: '',
-        key: '',
-        type: 'iko',
-        properties: {},
-      });
-      this.formGroup.get('key')?.enable();
+      this.formGroup.reset();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

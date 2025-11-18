@@ -6,35 +6,32 @@
   </cds-modal-header>
 
   <form [formGroup]="formGroup" cdsModalContent>
-    @if(open$ | async)
-    {
-      <cds-label>
-        {{ 'interface.title' | translate }}
+    <cds-label>
+      {{ 'interface.title' | translate }}
 
-        <input
-          formControlName="title"
-          cdsText
-          cdsLayer
-          placeholder="{{ 'interface.title' | translate }}"
-          [attr.modal-primary-focus]="true"
-        />
-      </cds-label>
-
-      <valtimo-auto-key-input
-        formControlName="key"
-        placeholderTranslationKey="interface.key"
-        [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
-        [mode]="modalMode"
-        [usedKeys]="usedKeys"
-      >
-      </valtimo-auto-key-input>
-
-      <valtimo-iko-management-properties
-        [propertiesFormGroup]="properties"
-        [fields]="propertyFields$ | async"
-        [prefillData]="$prefillData()?.properties"
+      <input
+        formControlName="title"
+        cdsText
+        cdsLayer
+        placeholder="{{ 'interface.title' | translate }}"
+        [attr.modal-primary-focus]="true"
       />
-    }
+    </cds-label>
+
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      placeholderTranslationKey="interface.key"
+    >
+    </valtimo-auto-key-input>
+
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="$prefillData()?.properties"
+    />
   </form>
 
   <cds-modal-footer>

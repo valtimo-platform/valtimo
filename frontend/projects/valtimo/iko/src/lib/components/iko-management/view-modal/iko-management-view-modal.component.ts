@@ -19,6 +19,7 @@ import {
   CARBON_CONSTANTS,
   ValtimoCdsModalDirective,
   AutoKeyInputComponent,
+  runAfterCarbonModalClosed
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -62,21 +63,19 @@ export class IkoManagementViewModalComponent {
 
   @Input() public set open(value: boolean) {
     this._open$.next(value);
-
-    if (!value) this.resetForm();
+    if (!value) this.formGroup.reset();
+  }
+  public get open$(): Observable<boolean> {
+    return this._open$.asObservable();
   }
 
-  private _modalMode: ModalMode = 'add';
+  private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {
     this._modalMode = value;
   }
   public get modalMode(): ModalMode {
     return this._modalMode;
-  }
-
-  public get open$(): Observable<boolean> {
-    return this._open$.asObservable();
   }
 
   private readonly _apiKey$ = new BehaviorSubject<string | null>(null);
@@ -88,12 +87,12 @@ export class IkoManagementViewModalComponent {
   }
 
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
-  public readonly $selectedKey = signal<string>('');
-
   @Input() public set prefillData(value: IkoDataAggregateResponse | null) {
-    if (!value) return;
+    if (!value) {
+      this.$prefillData.set(null);
+      return;
+    }
 
-    this.$selectedKey.set(value?.key);
     this.$prefillData.set(value);
     this.formGroup.patchValue(value);
   }
@@ -134,7 +133,10 @@ export class IkoManagementViewModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
-    this.$prefillData.set(null);
+    runAfterCarbonModalClosed(() => {
+      this.resetForm();
+    });
+    // this.$prefillData.set(null);
   }
 
   public onSave(): void {
@@ -154,6 +156,9 @@ export class IkoManagementViewModalComponent {
       });
       this.modalClose.emit(formData);
     });
+    runAfterCarbonModalClosed(() => {
+      this.resetForm();
+    });
   }
 
   private resetForm(): void {
@@ -163,7 +168,6 @@ export class IkoManagementViewModalComponent {
         key: '',
         properties: {},
       });
-      this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }
