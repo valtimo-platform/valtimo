@@ -60,6 +60,7 @@ export class SetZaakStatusConfigurationComponent
   readonly clearStatusSelection$ = new Subject<void>();
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly datumStatusGezetSelectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly formValue$ = new BehaviorSubject<SetZaakStatusConfig | null>(null);
   readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -116,10 +117,12 @@ export class SetZaakStatusConfigurationComponent
     this.formValue$.next(updatedFormValue);
     this.handleValid(updatedFormValue);
 
-    console.log(updatedFormValue);
 
     if (updatedFormValue.inputTypeZaakStatusToggle) {
       this.selectedInputOption$.next(updatedFormValue.inputTypeZaakStatusToggle);
+    }
+    if (updatedFormValue.inputDatumStatusGezetToggle) {
+      this.datumStatusGezetSelectedInputOption$.next(updatedFormValue.inputDatumStatusGezetToggle);
     }
   }
 
@@ -171,18 +174,19 @@ export class SetZaakStatusConfigurationComponent
   private prefillToday(): void {
     this._subscriptions.add(
       this.prefillConfiguration$.subscribe((config) => {
-        console.log(config);
+        let baseDate;
 
-        const baseDate = flatpickr.formatDate(!!config?.datumStatusGezet
-          ? new Date(config!.datumStatusGezet)
-          : new Date(), 'Z');
-
-        console.log(baseDate);
-
+        try {
+          baseDate = flatpickr.formatDate(!!config?.datumStatusGezet
+            ? new Date(config!.datumStatusGezet)
+            : new Date(), 'Z');
+        } catch(error) {
+          baseDate = config.datumStatusGezet;
+          this.datumStatusGezetSelectedInputOption$.next('text');
+        }
 
         this.selectedDate = baseDate;
         this.selectedTime = this.formatTime(baseDate);
-        console.log(this.selectedTime);
       })
     );
 
@@ -247,7 +251,7 @@ export class SetZaakStatusConfigurationComponent
             this.configuration.emit({
               statustoelichting: formValue.statustoelichting,
               statustypeUrl: formValue.statustypeUrl,
-              datumStatusGezet: "${datumStatusGezet}"
+              datumStatusGezet: formValue.datumStatusGezet
             });
           }
         });
