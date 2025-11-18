@@ -16,7 +16,7 @@
 
 <div class="configure-building-block-plugins">
 
-  <ng-container *ngIf="versions$ | async as versions">
+  @if (versions$ | async; as versions) {
     <div class="version-select">
       <cds-select
         cdsLayer
@@ -27,72 +27,82 @@
         <option value="">
           {{ 'processLinkConfiguration.buildingBlock.versionPlaceholder' | translate }}
         </option>
-        <option *ngFor="let version of versions" [value]="version">
-          {{ version }}
-        </option>
+        @for (version of versions; track version) {
+          <option [value]="version">
+            {{ version }}
+          </option>
+        }
       </cds-select>
     </div>
-  </ng-container>
+  }
 
-  <div class="loading-container" *ngIf="loading$ | async">
-    <cds-loading></cds-loading>
-  </div>
+  @if (loading$ | async ) {
+    <div class="loading-container">
+      <cds-loading></cds-loading>
+    </div>
+  } @else {
+    <div class="plugin-list">
+      @if (selectedVersion) {
+        @if (pluginKeys$ | async; as pluginKeys) {
 
-  <ng-container *ngIf="!(loading$ | async)">
+          @if (pluginKeys.length === 0) {
 
-    <ng-container *ngIf="selectedVersion">
-      <ng-container *ngIf="pluginKeys$ | async as pluginKeys">
-        <div class="empty-state" *ngIf="pluginKeys.length === 0">
-          {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
-        </div>
-
-        <div
-          class="plugin-row"
-          *ngFor="let pluginKey of pluginKeys; trackBy: trackByPluginKey"
-        >
-          <div class="plugin-row__header">
-            <h4>{{ pluginLabel(pluginKey) }}</h4>
-          </div>
-
-          <ng-container *ngIf="optionsFor(pluginKey) | async as options">
-            <cds-select
-              cdsLayer
-              [label]="
-                'processLinkConfiguration.buildingBlock.configurationLabel' | translate
-              "
-              [value]="selectedMappings[pluginKey] || ''"
-              (change)="onMappingChange(pluginKey, $event.target.value)"
-            >
-              <option value="">
-                {{
-                  'processLinkConfiguration.buildingBlock.configurationPlaceholder'
-                    | translate
-                }}
-              </option>
-              <option *ngFor="let option of options" [value]="option.id">
-                {{ option.title }}
-              </option>
-            </cds-select>
-
-            <div class="helper-text warning" *ngIf="options.length === 0">
-              {{
-                'processLinkConfiguration.buildingBlock.noConfigurationsForPlugin'
-                  | translate
-              }}
+            <div class="empty-state">
+              {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
             </div>
 
-            <div
-              class="helper-text warning"
-              *ngIf="options.length > 0 && !selectedMappings[pluginKey]"
-            >
-              {{
-                'processLinkConfiguration.buildingBlock.selectConfigurationWarning'
-                  | translate
-              }}
+          } @else {
+
+            <div class="plugin-row">
+              <v-input-label
+                [title]="'processLinkConfiguration.buildingBlock.pluginLabel' | translate"
+              >
+              </v-input-label>
+              <v-input-label
+                [title]="'processLinkConfiguration.buildingBlock.configurationLabel' | translate"
+                required="true"
+              >
+              </v-input-label>
             </div>
-          </ng-container>
-        </div>
-      </ng-container>
-    </ng-container>
-  </ng-container>
+
+            @for (pluginKey of pluginKeys; track $index) {
+              <div class="plugin-row">
+                {{ pluginLabel(pluginKey) }}
+
+                @if (optionsFor(pluginKey) | async; as options) {
+                  @if (options.length > 0) {
+                    <cds-select
+                      size="lg"
+                      cdsLayer
+                      [value]="selectedMappings[pluginKey] || ''"
+                      (change)="onMappingChange(pluginKey, $event.target.value)"
+                    >
+                      <option value="">
+                        {{
+                          'processLinkConfiguration.buildingBlock.configurationPlaceholder'
+                            | translate
+                        }}
+                      </option>
+                      @for (option of options; track option.id) {
+                        <option [value]="option.id">
+                          {{ option.title }}
+                        </option>
+                      }
+                    </cds-select>
+                  } @else {
+                    <div class="helper-text warning">
+                      {{
+                        'processLinkConfiguration.buildingBlock.noConfigurationsForPlugin'
+                                | translate
+                      }}
+                    </div>
+                  }
+                }
+              </div>
+            }
+          }
+        }
+      }
+    </div>
+  }
 </div>

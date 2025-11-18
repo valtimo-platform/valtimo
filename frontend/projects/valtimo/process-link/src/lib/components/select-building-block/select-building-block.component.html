@@ -4,10 +4,6 @@
 -->
 
 <div class="select-building-block" *ngIf="!loading; else loadingState">
-  <p class="description">
-    {{ 'processLinkConfiguration.buildingBlock.selectDescription' | translate }}
-  </p>
-
   <ng-container *ngIf="buildingBlocks$ | async as buildingBlocks">
     <ng-container *ngIf="buildingBlocks.length; else emptyState">
       <div class="list-container">

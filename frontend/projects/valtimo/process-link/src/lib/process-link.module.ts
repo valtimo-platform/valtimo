@@ -24,6 +24,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
   CarbonMultiInputModule,
   FormIoModule,
+  InputLabelModule,
   ModalModule,
   ParagraphModule,
   RemoveClassnamesDirective,
@@ -135,6 +136,7 @@ import {ConfigureBuildingBlockPluginsComponent} from './components/configure-bui
     ToggletipModule,
     RemoveClassnamesDirective,
     ReactiveFormsModule,
+    InputLabelModule,
   ],
   exports: [
     ProcessLinkComponent,
