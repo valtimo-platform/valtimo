@@ -263,9 +263,17 @@ class ValueResolverServiceImpl(
             }
     }
 
+    private fun hasPrefix(value: String): Boolean {
+        val idx = value.indexOf(DELIMITER)
+        if (idx <= 0) return false
 
-    private fun getPrefix(value: String) = value.substringBefore(DELIMITER, missingDelimiterValue = "")
-    private fun trimPrefix(value: String) = value.substringAfter(DELIMITER)
+        val prefix = value.take(idx)
+        return prefixRegex.matches(prefix)
+    }
+    private fun getPrefix(value: String): String =
+        if (hasPrefix(value)) value.substringBefore(DELIMITER) else ""
+    private fun trimPrefix(value: String): String =
+        if (hasPrefix(value)) value.substringAfter(DELIMITER) else value
 
     private fun addPrefixToResolvableKeys(prefix: String, resolvableKeys: List<String>?): List<String> {
         return (resolvableKeys ?: emptyList()).map { "$prefix:$it" }
@@ -303,5 +311,6 @@ class ValueResolverServiceImpl(
 
     companion object {
         const val DELIMITER = ":"
+        private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
     }
 }
