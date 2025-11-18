@@ -724,7 +724,7 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty statustypeUrl: URI,
         @PluginActionProperty statustoelichting: String?,
-        @PluginActionProperty datumStatusGezet: String?,
+        @PluginActionProperty datumStatusGezet: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.STATUSTYPE to statustypeUrl.toString(),
