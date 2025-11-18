@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-button.delete-button {
+.delete-button {
   height: 46px;
   width: 46px;
   margin-top: 20px;
+
+  &:hover {
+    background-color: #e12717;
+  }
 }
 
-button.delete-button:hover {
-  background-color: #e12717;
-}
-
-button.add-button {
+.add-button {
   margin-block-end: var(--v-input-margin);
 }
 
