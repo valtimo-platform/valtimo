@@ -36,12 +36,14 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.exception.DocumentDefinitionNameMismatchException;
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.semver4j.Semver;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.jpa.domain.Specification;
@@ -81,8 +83,14 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
             .thenReturn(Optional.of(definition));
 
-        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person", mock());
-        final var otherJsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person2", mock());
+        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of(
+            "person",
+            new CaseDefinitionId("test", Semver.of(1, 0, 0))
+        );
+        final var otherJsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of(
+            "person2",
+            new CaseDefinitionId("test", Semver.of(1, 0, 0))
+        );
         final var jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         assertThrows(
             DocumentDefinitionNameMismatchException.class,
