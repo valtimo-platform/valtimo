@@ -28,7 +28,13 @@ import {
   tap,
 } from 'rxjs';
 import {InputOption, SetZaakStatusConfig} from '../../models';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme, RadioValue, SelectItem} from '@valtimo/components';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  RadioValue,
+  SelectItem,
+} from '@valtimo/components';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
@@ -111,13 +117,11 @@ export class SetZaakStatusConfigurationComponent
     const currentFormValue = this.formValue$.value ?? ({} as SetZaakStatusConfig);
     const updatedFormValue: SetZaakStatusConfig = {
       ...currentFormValue,
-      ...formValue
+      ...formValue,
     };
 
     this.formValue$.next(updatedFormValue);
     this.handleValid(updatedFormValue);
-
-
     if (updatedFormValue.inputTypeZaakStatusToggle) {
       this.selectedInputOption$.next(updatedFormValue.inputTypeZaakStatusToggle);
     }
@@ -148,8 +152,6 @@ export class SetZaakStatusConfigurationComponent
     const hours = Number(hoursStr);
     const minutes = Number(minutesStr);
     const seconds = Number(secondsStr);
-
-
     const date = new Date(this.selectedDate);
 
     const year = date.getFullYear();
@@ -173,14 +175,15 @@ export class SetZaakStatusConfigurationComponent
 
   private prefillToday(): void {
     this._subscriptions.add(
-      this.prefillConfiguration$.subscribe((config) => {
+      this.prefillConfiguration$.subscribe(config => {
         let baseDate;
 
         try {
-          baseDate = flatpickr.formatDate(!!config?.datumStatusGezet
-            ? new Date(config!.datumStatusGezet)
-            : new Date(), 'Z');
-        } catch(error) {
+          baseDate = flatpickr.formatDate(
+            !!config?.datumStatusGezet ? new Date(config!.datumStatusGezet) : new Date(),
+            'Z'
+          );
+        } catch (error) {
           baseDate = config.datumStatusGezet;
           this.datumStatusGezetSelectedInputOption$.next('text');
         }
@@ -251,7 +254,7 @@ export class SetZaakStatusConfigurationComponent
             this.configuration.emit({
               statustoelichting: formValue.statustoelichting,
               statustypeUrl: formValue.statustypeUrl,
-              datumStatusGezet: formValue.datumStatusGezet
+              datumStatusGezet: formValue.datumStatusGezet,
             });
           }
         });
