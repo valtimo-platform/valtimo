@@ -732,7 +732,9 @@ class ZakenApiPlugin(
             logger.debug { "Setting zaak status with type URL '$statustypeUrl' for document with id '${execution.businessKey}'" }
             val documentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val convertedDatumStatusGezet = ZonedDateTime.parse(datumStatusGezet!!).toLocalDateTime()
+            val convertedDatumStatusGezet = datumStatusGezet?.let {
+                ZonedDateTime.parse(datumStatusGezet).toLocalDateTime()
+            }
 
             client.createZaakStatus(
                 authenticationPluginConfiguration,
