@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-:host {
-  padding: 12px 0 16px 16px;
-  background: var(--cds-layer);
-}
-
 .valtimo-widget-management-process-selector {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: flex-end;
   gap: 16px;
 
-  > * {
-    max-width: 288px;
-    width: 100%;
-  }
-
-  .cds--text-input,
-  .cds--list-box {
-    background: var(--cds-layer-01);
+  ::ng-deep.cds--text-input,
+  ::ng-deep.cds--list-box {
+    background: var(--cds-layer-01) !important;
   }
 }

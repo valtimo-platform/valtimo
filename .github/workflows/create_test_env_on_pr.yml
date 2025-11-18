@@ -74,7 +74,8 @@ jobs:
           TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
           DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
         run: |
-          curl -L \
+          set -euo pipefail
+          curl --fail-with-body -sS -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${TOKEN}" \
@@ -144,7 +145,8 @@ jobs:
           TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
           DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
         run: |
-          curl -L \
+          set -euo pipefail
+          curl --fail-with-body -sS -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${TOKEN}" \
@@ -213,7 +215,8 @@ jobs:
           TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
           DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
         run: |
-          curl -L \
+          set -euo pipefail
+          curl --fail-with-body -sS -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${TOKEN}" \

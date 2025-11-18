@@ -66,7 +66,7 @@ internal class IkoPluginTest {
             connectorTag = "personen",
             connectorInstanceTag = "personen",
             endpointOperation = "personen",
-            filters = mapOf(
+            queryParams = mapOf(
                 "geslachtsnaam" to "Moulin",
                 "geboortedatum" to "1985-12-01",
             )

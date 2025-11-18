@@ -93,8 +93,4 @@ export class IkoWidgetCollectionComponent {
   public onPaginationEvent(event: PaginationModel): void {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
-
-  public onWidgetActionClick(action: WidgetAction): void {
-    this.ikoApiService.handleAction(action);
-  }
 }

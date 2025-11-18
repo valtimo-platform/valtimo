@@ -104,7 +104,7 @@ export class IkoApiService extends BaseApiService {
     );
   }
 
-  public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
+  public handleAction(action: WidgetAction, resolved: {[key: string]: any} = null) {
     if (!action) return;
 
     const navigateTo = this.resolveProperty(action?.navigateTo, resolved);
@@ -150,7 +150,7 @@ export class IkoApiService extends BaseApiService {
     });
   }
 
-  private resolveProperty(property: string, resolved: {[key: string]: string}): string {
-    return property ? (resolved ? resolved[property] : property) : null;
+  private resolveProperty(property: string, resolved: {[key: string]: any}): string {
+    return property ? (resolved ? String(resolved[property]) : property) : null;
   }
 }

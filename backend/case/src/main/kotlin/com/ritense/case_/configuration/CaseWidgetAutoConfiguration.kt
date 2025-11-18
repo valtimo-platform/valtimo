@@ -45,10 +45,12 @@ import com.ritense.case_.widget.CaseWidgetJacksonModule
 import com.ritense.case_.widget.CaseWidgetMapper
 import com.ritense.case_.widget.collection.CollectionCaseWidgetDataProvider
 import com.ritense.case_.widget.collection.CollectionCaseWidgetMapper
+import com.ritense.case_.widget.custom.CustomCaseWidgetDataProvider
 import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
+import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.CaseTagService
@@ -205,6 +207,12 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun customCaseWidgetMapper() = CustomCaseWidgetMapper()
 
+    @ConditionalOnMissingBean(CustomCaseWidgetDataProvider::class)
+    @Bean
+    fun customCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = CustomCaseWidgetDataProvider(valueResolverService)
+
     @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
     @Bean
     fun dividerCaseWidgetMapper() = DividerCaseWidgetMapper()
@@ -233,6 +241,13 @@ class CaseWidgetAutoConfiguration {
     ) = CaseTagCaseEventListener(
         caseTagService,
     )
+
+    @ConditionalOnMissingBean(FieldsCaseHeaderWidgetDataProvider::class)
+    @Bean
+    fun fieldsCaseHeaderWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
     @Bean

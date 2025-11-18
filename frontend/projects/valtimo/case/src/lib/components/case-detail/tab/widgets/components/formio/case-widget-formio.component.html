@@ -17,20 +17,24 @@
 <valtimo-widget-formio
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
     documentId: documentId$ | async,
   } as obs"
   [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
   [documentId]="obs.documentId"
   [widgetUuid]="widgetUuid"
   [refreshForm]="refreshForm"
 >
   @if (obs.widgetConfiguration?.actions?.length === 1) {
-    <button
-      *ngIf="canCreateCamundaExecution$ | async"
-      cdsButton="ghost"
-      (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
-    >
-      {{ obs.widgetConfiguration?.actions[0].name }}
-    </button>
+    @if (obs.widgetConfiguration.actions[0].processDefinitionKey) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+      >
+        {{ obs.widgetConfiguration.actions[0].name }}
+      </button>
+    }
   }
 </valtimo-widget-formio>

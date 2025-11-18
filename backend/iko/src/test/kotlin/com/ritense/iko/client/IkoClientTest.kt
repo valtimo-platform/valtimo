@@ -144,7 +144,7 @@ class IkoClientTest {
             connectorTag = "brp",
             connectorInstanceTag = "brp",
             endpointOperation = "personen",
-            filters = mapOf(
+            queryParams = mapOf(
                 "geslachtsnaam" to "Moulin",
                 "geboortedatum" to "1985-12-01",
             )

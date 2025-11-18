@@ -22,13 +22,15 @@
   [widgetConfiguration]="obs.widgetConfiguration"
   [widgetData]="obs.widgetData"
 >
-  @if (obs.widgetConfiguration.actions?.length === 1) {
-    <button
-      *ngIf="canCreateCamundaExecution$ | async"
-      cdsButton="ghost"
-      (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-    >
-      {{ obs.widgetConfiguration.actions[0].name }}
-    </button>
+  @if (obs.widgetConfiguration?.actions?.length === 1) {
+    @if (obs.widgetConfiguration.actions[0].processDefinitionKey) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+      >
+        {{ obs.widgetConfiguration.actions[0].name }}
+      </button>
+    }
   }
 </valtimo-widget-field>

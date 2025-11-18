@@ -24,7 +24,17 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, filter, Observable} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {PermissionService} from '@valtimo/access-control';
@@ -38,6 +48,8 @@ import {
   WidgetFormioComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
+import {HttpErrorResponse} from '@angular/common/http';
+import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 
 @Component({
   selector: 'valtimo-case-widget-formio',
@@ -67,17 +79,40 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   public readonly refreshForm = new EventEmitter<void>();
 
   private readonly _documentIdSubject$ = new BehaviorSubject<string>('');
+  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   public get documentId$(): Observable<string> {
     return this._documentIdSubject$.pipe(filter(id => !!id));
   }
 
+  public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
+    this._widgetConfigurationSubject$,
+    this._tabKey$,
+    this._documentIdSubject$,
+    this._refresh$,
+  ]).pipe(
+    switchMap(([widget, tabKey, documentId]) =>
+      this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget.key, undefined)
+    ),
+    tap(() => {
+      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+    }),
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+
+      return of(null);
+    })
+  );
+
   constructor(
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService,
-    private readonly layoutService: WidgetLayoutService,
     private readonly widgetsService: WidgetsService,
-    private readonly destroyRef: DestroyRef
+    private readonly destroyRef: DestroyRef,
+    private readonly caseTabService: CaseTabService,
+    private readonly caseWidgetApiService: CaseWidgetsApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
   ) {
     super(documentService, permissionService);
   }

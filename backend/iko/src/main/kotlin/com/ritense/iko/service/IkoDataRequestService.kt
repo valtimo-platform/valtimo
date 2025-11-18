@@ -22,6 +22,7 @@ import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VI
 import com.ritense.iko.domain.IkoDataRequest
 import com.ritense.iko.domain.IkoDataRequestId
 import com.ritense.iko.event.IkoDataRequestPreDeleteEvent
+import com.ritense.iko.helper.MergeHelper.deepMerge
 import com.ritense.iko.repository.IkoDataRequestRepository
 import com.ritense.iko.repository.IkoDataRequestSpecificationHelper.Companion.byIkoDataAggregateKey
 import com.ritense.iko.repository.IkoDataRequestSpecificationHelper.Companion.byKey
@@ -58,9 +59,9 @@ class IkoDataRequestService(
             it.getType() == dataRequest.id.ikoDataAggregate.ikoRepositoryConfig.type
         }
         return ikoRepository.findAll(
-            dataRequest.id.ikoDataAggregate.ikoRepositoryConfig.properties +
-                    dataRequest.id.ikoDataAggregate.properties +
-                    dataRequest.properties,
+            dataRequest.id.ikoDataAggregate.ikoRepositoryConfig.properties
+                .deepMerge(dataRequest.id.ikoDataAggregate.properties)
+                .deepMerge(dataRequest.properties),
             filters,
             pageable
         )
