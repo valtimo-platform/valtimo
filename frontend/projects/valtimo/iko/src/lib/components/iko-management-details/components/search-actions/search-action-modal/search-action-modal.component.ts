@@ -68,7 +68,7 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchActionModalComponent {
-  private _modalMode: ModalMode = 'add';
+  private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {
     this._modalMode = value;
@@ -88,14 +88,14 @@ export class IkoManagementSearchActionModalComponent {
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
-  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
-    if (!value) return;
+    if (!value) {
+      this.$prefillData.set(null);
+      return;
+    }
 
     this.$prefillData.set(value);
-    this.$selectedKey.set(value?.key);
-
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
