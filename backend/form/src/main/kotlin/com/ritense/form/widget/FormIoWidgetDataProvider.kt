@@ -17,18 +17,23 @@
 package com.ritense.form.widget
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.service.DocumentService
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
 class FormIoWidgetDataProvider(
+    private val valueResolverService: ValueResolverService,
     private val formDefinitionService: FormDefinitionService,
     private val formService: PrefillFormService,
     private val documentService: DocumentService,
+    private val objectMapper: ObjectMapper,
 ) : WidgetDataProvider<FormIoWidget> {
 
     override fun supportedWidgetType() = FormIoWidget::class.java
@@ -48,7 +53,13 @@ class FormIoWidgetDataProvider(
         }
 
         return formDefinition?.let {
-            formService.getPrefilledFormDefinition(formDefinition.id, UUID.fromString(documentId)).asJson()
+            val formDefinitionJson = formService.getPrefilledFormDefinition(formDefinition.id, UUID.fromString(documentId)).asJson()
+            if (formDefinitionJson.isObject) {
+                val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
+                val resolved = objectMapper.valueToTree<JsonNode>(widget.getExposedValues { path -> resolvedValues[path] })
+                (formDefinitionJson as ObjectNode).putIfAbsent("resolved", resolved)
+            }
+            formDefinitionJson
         }
     }
 

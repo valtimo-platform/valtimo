@@ -28,8 +28,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import com.ritense.widget.exception.InvalidCollectionException
 import com.ritense.widget.exception.InvalidCollectionNodeTypeException
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
+import com.ritense.widget.page.ResolvedPage
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
@@ -42,7 +41,7 @@ class TableWidgetDataProvider(
 
     override fun supportedWidgetType() = TableWidget::class.java
 
-    override fun getData(widget: TableWidget, properties: Map<String, Any>): Page<Map<String, Any?>> {
+    override fun getData(widget: TableWidget, properties: Map<String, Any>): ResolvedPage<Map<String, Any?>> {
         val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.ofSize(widget.properties.defaultPageSize)
 
         val resolvedValues = valueResolverService.resolveValues(
@@ -51,9 +50,15 @@ class TableWidgetDataProvider(
         )
 
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedValues[widget.properties.collection])
+        val exposedValues = widget.getExposedValues { path -> resolvedValues[path] }
 
         if (collectionNode.isNull) {
-            return PageImpl(emptyList(), pageable, 0)
+            return ResolvedPage(
+                content = emptyList(),
+                resolved = exposedValues,
+                pageable = pageable,
+                total = 0
+            )
         }
 
         if (!collectionNode.isArray) {
@@ -71,24 +76,31 @@ class TableWidgetDataProvider(
                 }
             }.map { child ->
                 widget.properties.columns.associate { column ->
-                    val value = if (column.value.startsWith("$")) {
-                        JSONPATH_CONTEXT.parse(child.toString()).read<Any>(column.value)
-                    } else {
-                        val pointer = if (column.value.startsWith("/")) column.value else "/${column.value}"
-                        val valueNode = child.at(pointer)
-
-                        if (valueNode.isValueNode && !valueNode.isNull) {
-                            objectMapper.treeToValue<Any?>(valueNode)
-                        } else {
-                            null
-                        }
-                    }
-
-                    column.key to value
+                    column.key to getValueAt(child, column.value)
                 }
             }
 
-        return PageImpl(result, pageable, collectionNode.size().toLong())
+        return ResolvedPage(
+            content = result,
+            resolved = exposedValues,
+            pageable = pageable,
+            total = collectionNode.size().toLong()
+        )
+    }
+
+    private fun getValueAt(data: JsonNode, path: String): Any? {
+        return if (path.startsWith("$")) {
+            JSONPATH_CONTEXT.parse(data.toString()).read<Any?>(path)
+        } else {
+            val pointer = if (path.startsWith("/")) path else "/${path}"
+            val valueNode = data.at(pointer)
+
+            if (valueNode.isValueNode && !valueNode.isNull) {
+                objectMapper.treeToValue(valueNode)
+            } else {
+                null
+            }
+        }
     }
 
     private companion object {
