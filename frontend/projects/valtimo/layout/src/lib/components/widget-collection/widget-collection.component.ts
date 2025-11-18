@@ -49,6 +49,7 @@ import {
   CollectionWidgetTitle,
   WidgetDisplayTypeKey,
 } from '../../models';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-collection',
@@ -65,6 +66,7 @@ import {
     CarbonListModule,
     TranslateModule,
     ButtonModule,
+    WidgetActionButtonComponent,
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {

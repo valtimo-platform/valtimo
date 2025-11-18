@@ -40,6 +40,7 @@ class IkoPlugin(
         connectorInstanceTag: String,
         endpointOperation: String,
         id: String,
+        queryParams: Map<String, String>,
     ): JsonNode {
         return ikoClient.getByEndpointId(
             baseUrl = url,
@@ -47,17 +48,20 @@ class IkoPlugin(
             connectorInstanceTag = connectorInstanceTag,
             endpointOperation = endpointOperation,
             id = id,
+            queryParams = queryParams,
         )
     }
 
     fun getByAggregatedDataProfileId(
         aggregatedDataProfileName: String,
         id: String,
+        queryParams: Map<String, String>,
     ): JsonNode {
         return ikoClient.getByAggregatedDataProfileId(
             baseUrl = url,
             aggregatedDataProfileName = aggregatedDataProfileName,
             id = id,
+            queryParams = queryParams,
         )
     }
 
@@ -65,14 +69,14 @@ class IkoPlugin(
         connectorTag: String,
         connectorInstanceTag: String,
         endpointOperation: String,
-        filters: Map<String, String>,
+        queryParams: Map<String, String>,
     ): JsonNode {
         return ikoClient.search(
             baseUrl = url,
             connectorTag = connectorTag,
             connectorInstanceTag = connectorInstanceTag,
             endpointOperation = endpointOperation,
-            filters = filters,
+            queryParams = queryParams,
         )
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,10 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
@@ -42,8 +45,12 @@ class NotificatiesApiInboundEventProcessingService(
     private val inboundEventRepository: NotificatiesApiInboundEventRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
-    private val processingProperties: NotificatiesApiProcessingProperties
+    private val processingProperties: NotificatiesApiProcessingProperties,
+    transactionManager: PlatformTransactionManager
 ) {
+    private val notificationPublishTemplate = TransactionTemplate(transactionManager).apply {
+        propagationBehavior = TransactionDefinition.PROPAGATION_NOT_SUPPORTED
+    }
 
     @Transactional
     fun processBatch() {
@@ -104,7 +111,7 @@ class NotificatiesApiInboundEventProcessingService(
 
         try {
             val notification: NotificatiesApiNotificationReceivedEvent = objectMapper.readValue(event.payload)
-            applicationEventPublisher.publishEvent(notification)
+            publishNotification(notification)
             markProcessed(event, now)
             logger.debug { "Processed inbound event ${event.id}" }
         } catch (ex: Exception) {
@@ -181,5 +188,12 @@ class NotificatiesApiInboundEventProcessingService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+    }
+
+    private fun publishNotification(notification: NotificatiesApiNotificationReceivedEvent) {
+        // Suspend the processing transaction so failures in listeners do not mark it rollback-only.
+        notificationPublishTemplate.executeWithoutResult {
+            applicationEventPublisher.publishEvent(notification)
+        }
     }
 }

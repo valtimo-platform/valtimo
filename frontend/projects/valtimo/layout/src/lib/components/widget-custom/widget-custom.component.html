@@ -14,11 +14,21 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="{widgetConfig: widgetConfig$ | async} as obs" class="custom-widget">
+<div
+  *ngIf="{
+    widgetConfiguration: widgetConfig$ | async,
+    widgetData: widgetData$ | async
+    } as obs"
+  class="custom-widget">
   <section class="custom-widget__header">
-    <h4 class="custom-widget__title">{{ obs.widgetConfig?.title || '-' }}</h4>
+    <h4 class="custom-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
+    ></valtimo-widget-action-button>
   </section>
 
   <div class="custom-widget__content">

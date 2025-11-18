@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {FitPageDirective} from '@valtimo/components';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -29,9 +30,10 @@ import {IkoWidgetTableComponent} from '../../widget-table';
 
 @Component({
   templateUrl: './iko-widget.component.html',
+  styleUrl: './iko-widget.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, WidgetContainerComponent],
+  imports: [CommonModule, WidgetContainerComponent, FitPageDirective],
 })
 export class IkoWidgetComponent {
   public readonly dataAggregateKey$ = this.ikoTabService.dataAggregateKey$;

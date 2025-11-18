@@ -170,12 +170,11 @@ jobs:
         run: ./gradlew ${{ matrix.integration_test_suite }}
 
   security-testing:
-    needs: [determine-tests, check_cache]
+    needs: [determine-tests]
     strategy:
       matrix:
         security_test_suite: ${{ fromJson(needs.determine-tests.outputs.security_test_matrix) }}
     if: |
-      needs.check_cache.outputs.cache-hit != 'true' &&
       github.ref_type == 'branch' && 
       (
         startsWith(github.ref_name, 'development/') ||

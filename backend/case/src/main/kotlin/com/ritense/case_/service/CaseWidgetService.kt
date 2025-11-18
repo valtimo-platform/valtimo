@@ -45,7 +45,6 @@ import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Valid
 import org.springframework.context.event.EventListener
@@ -140,7 +139,7 @@ class CaseWidgetService(
             documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
         } ?: return null
         val caseDefinitionId = document.definitionId().caseDefinitionId()
-        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW)
+        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document as JsonSchemaDocument)
         val widgetTab = caseWidgetTabRepository.findByIdOrNull(CaseTabId(caseDefinitionId, tabKey)) ?: return null
         val widget = widgetTab.widgets.firstOrNull { it.id.key == widgetKey } ?: return null
 
@@ -178,15 +177,27 @@ class CaseWidgetService(
         return callCaseWidgetDataProvider(widget, document, pageable, caseDefinitionId)
     }
 
-    private fun checkCaseTabAccess(caseDefinitionId: CaseDefinitionId, key: String, action: Action<CaseTab>) {
+    private fun checkCaseTabAccess(
+        caseDefinitionId: CaseDefinitionId,
+        key: String,
+        action: Action<CaseTab>,
+        document: JsonSchemaDocument? = null
+    ) {
         caseTabRepository.findByIdOrNull(CaseTabId(caseDefinitionId, key))?.let { caseTab ->
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    CaseTab::class.java,
-                    action,
-                    caseTab
-                )
+            val request = EntityAuthorizationRequest(
+                CaseTab::class.java,
+                action,
+                caseTab
             )
+            document?.let {
+                request.withContext(
+                    AuthorizationResourceContext(
+                        JsonSchemaDocument::class.java,
+                        document
+                    )
+                )
+            }
+            authorizationService.requirePermission(request)
         }
     }
 

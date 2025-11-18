@@ -27,3 +27,4 @@ export * from './widget-custom';
 export * from './widget-block';
 export * from './widget-container';
 export * from './widget-management';
+export * from './widget-action-button/widget-action-button.component';
