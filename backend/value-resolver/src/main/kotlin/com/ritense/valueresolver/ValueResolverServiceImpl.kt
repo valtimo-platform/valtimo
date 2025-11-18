@@ -263,7 +263,7 @@ class ValueResolverServiceImpl(
             }
     }
 
-    private fun hasPrefix(value: String): Boolean {
+    private fun hasPrefix(value: String): Boolean { // TODO find a proper "breaking solution for next major
         val idx = value.indexOf(DELIMITER)
         if (idx <= 0) return false
 

@@ -51,33 +51,33 @@
 
     <ng-container *ngIf="obs.datumStatusGezetSelectedInputOption === 'selection'">
       <cds-date-picker
-              [attr.data-carbon-theme]="theme$ | async"
-              [label]="'logging.search.afterTimestamp' | translate"
-              placeholder="DD-MM-YYYY"
-              [dateFormat]="'d-m-Y'"
-              [value]="[selectedDate]"
-              (valueChange)="onDateSelected($event)"
+        [attr.data-carbon-theme]="theme$ | async"
+        [label]="'logging.search.afterTimestamp' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        [value]="[selectedDate]"
+        (valueChange)="onDateSelected($event)"
       ></cds-date-picker>
 
       <cds-timepicker
-              [attr.data-carbon-theme]="theme$ | async"
-              [value]="selectedTime"
-              (valueChange)="onTimeSelected($event)"
+        [attr.data-carbon-theme]="theme$ | async"
+        [value]="selectedTime"
+        (valueChange)="onTimeSelected($event)"
       ></cds-timepicker>
-      <br/>
+      <br />
     </ng-container>
 
     <v-input
-        *ngIf="obs.datumStatusGezetSelectedInputOption === 'text'"
-        name="datumStatusGezet"
-        [title]="'datumStatusGezet' | pluginTranslate: obs.pluginId | async"
-        [margin]="true"
-        [defaultValue]="obs.prefill?.datumStatusGezet"
-        [disabled]="obs.disabled"
-        [required]="true"
-        [trim]="true"
-        [tooltip]="'datumStatusGezetTooltip' | pluginTranslate: obs.pluginId | async"
-        [fullWidth]="true"
+      *ngIf="obs.datumStatusGezetSelectedInputOption === 'text'"
+      name="datumStatusGezet"
+      [title]="'datumStatusGezet' | pluginTranslate: obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.datumStatusGezet"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [trim]="true"
+      [tooltip]="'datumStatusGezetTooltip' | pluginTranslate: obs.pluginId | async"
+      [fullWidth]="true"
     ></v-input>
 
     <v-radio
