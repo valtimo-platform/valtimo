@@ -21,6 +21,9 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 
-interface BuildingBlockDefinitionRepository
-    : JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>, JpaSpecificationExecutor<BuildingBlockDefinition> {
+interface BuildingBlockDefinitionRepository :
+    JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>,
+    JpaSpecificationExecutor<BuildingBlockDefinition> {
+
+    fun findAllByIdKey(key: String): List<BuildingBlockDefinition>
 }

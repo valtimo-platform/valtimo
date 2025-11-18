@@ -25,7 +25,6 @@ import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.semver4j.Semver
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -38,16 +37,14 @@ class BuildingBlockManagementService(
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 ) {
     @Transactional(readOnly = true)
-    fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
+    fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         val all = buildingBlockDefinitionRepository.findAll()
         val latestPerKey = all
             .groupBy { it.id.key }
             .values
             .mapNotNull { defsForKey ->
                 defsForKey.maxWithOrNull { a, b ->
-                    val va = Semver(a.id.versionTag.toString())
-                    val vb = Semver(b.id.versionTag.toString())
-                    va.compareTo(vb)
+                    a.id.versionTag.compareTo(b.id.versionTag)
                 }
             }
         return latestPerKey.map {
@@ -59,9 +56,22 @@ class BuildingBlockManagementService(
                 createdBy = it.createdBy,
                 createdDate = it.createdDate,
                 basedOnVersionTag = it.basedOnVersionTag?.toString(),
-                final = it.final
+                final = it.final,
+                imageBase64 = if (includeArtwork) it.artwork?.imageBase64 else null,
             )
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getVersionsForKey(key: String): List<String> {
+        val definitions = buildingBlockDefinitionRepository.findAllByIdKey(key)
+        if (definitions.isEmpty()) return emptyList()
+
+        return definitions
+            .sortedWith { a, b ->
+                b.id.versionTag.compareTo(a.id.versionTag)
+            }
+            .map { it.id.versionTag.toString() }
     }
 
     @Transactional

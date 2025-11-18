@@ -1762,14 +1762,33 @@
     "selectVersion": "Select version",
     "activity": "Process activity",
     "selectActivity": "Select process activity",
-    "noProcess": "No upload process"
+    "noProcess": "No upload process",
+    "buildingBlock": {
+      "name": "Name",
+      "description": "Description",
+      "selectDescription": "Choose which building block should handle this process activity.",
+      "selectLabel": "Building block",
+      "selectPlaceholder": "Select a building block",
+      "emptyState": "No building blocks available. Create a building block first.",
+      "mappingDescription": "Map every required plugin definition to an available plugin configuration.",
+      "selectedBuildingBlock": "Selected building block",
+      "noRequirements": "This building block does not require any plugin configurations.",
+      "configurationLabel": "Plugin configuration",
+      "configurationPlaceholder": "Select a configuration",
+      "noConfigurationsForPlugin": "No configurations are available for this plugin definition.",
+      "selectConfigurationWarning": "Select a configuration to continue.",
+      "versionLabel": "Choose building block version",
+      "versionPlaceholder": "Select a version",
+      "selectVersionWarning": "Select a building block version to continue."
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Form",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Building block"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -1799,7 +1818,9 @@
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
     "addSubtitle": "Add subtitle",
-    "uiComponent": "Select UI component"
+    "uiComponent": "Select UI component",
+    "selectBuildingBlock": "Select building block",
+    "configureBuildingBlockPlugins": "Configure plugin mappings"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",

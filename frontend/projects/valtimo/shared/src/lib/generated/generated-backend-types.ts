@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-11-12 12:14:43.
+// Generated using typescript-generator version 3.2.1263 on 2025-11-17 15:13:46.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -17,6 +17,7 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+    imageBase64: string | null;
 }
 
 export interface BuildingBlockProcessDefinitionDto {
@@ -466,8 +467,8 @@ export interface FormProcessLinkUpdateRequestDto extends ProcessLinkUpdateReques
 }
 
 export interface FormSubmissionResult {
-    documentId: string | null;
     errors: OperationError[];
+    documentId: string | null;
 }
 
 export interface FormSubmissionResultFailed extends FormSubmissionResult, TransactionalResult {
@@ -650,29 +651,29 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
+    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    activityId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
+    activityId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    activityId: string;
 }
 
 export interface ProcessLinkResponseDto {
+    id: string;
+    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    activityId: string;
-    id: string;
 }
 
 export interface ProcessLinkUpdateRequestDto {
-    processLinkType: string;
     id: string;
+    processLinkType: string;
 }
 
 export interface SearchFieldV2Dto {
@@ -821,12 +822,12 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    highContrast: boolean;
-    displayConditions: Condition<any>[] | null;
-    width: number;
-    title: string;
     key: string;
     actions: WidgetAction[];
+    title: string;
+    width: number;
+    highContrast: boolean;
+    displayConditions: Condition<any>[] | null;
 }
 
 export interface CaseDefinitionId extends AbstractId<CaseDefinitionId>, SolutionModuleId {
@@ -846,11 +847,11 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
+    fileName: string;
+    createdBy: string;
     createdOn: DateAsString;
     fileId: string;
     sizeInBytes: number;
-    createdBy: string;
-    fileName: string;
 }
 
 export interface OperationError {
@@ -866,9 +867,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
+    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    activityId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -942,9 +943,6 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    validationConstraints: FormFieldValidationConstraint[];
-    label: string;
-    businessKey: boolean;
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -954,6 +952,9 @@ export interface FormField {
      * @deprecated since 1.0
      */
     defaultValue: any;
+    businessKey: boolean;
+    label: string;
+    validationConstraints: FormFieldValidationConstraint[];
 }
 
 export interface ProcessDefinitionDto {
@@ -974,27 +975,27 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    processInstanceId: string;
+    id: string;
+    executionId: string;
+    activityId: string;
+    assignee: string;
+    tenantId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    startTime: DateAsString;
+    processDefinitionId: string;
+    activityType: string;
     processDefinitionKey: string;
     rootProcessInstanceId: string;
+    processInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    processDefinitionId: string;
-    activityType: string;
-    startTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    activityId: string;
-    assignee: string;
-    executionId: string;
-    tenantId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
-    id: string;
 }
 
 export interface ProcessVariableDTOV2 {
@@ -1002,13 +1003,13 @@ export interface ProcessVariableDTOV2 {
     name: string;
 }
 
+export interface WidgetAction {
+}
+
 export interface Condition<T> {
     path: string;
     operator: ExpressionOperator;
     value: T;
-}
-
-export interface WidgetAction {
 }
 
 export interface Semver extends Comparable<Semver> {
@@ -1049,11 +1050,6 @@ export interface ChoiceField extends AbstractAuditingEntity, Serializable {
 export interface AbstractAuditingEntity {
 }
 
-export interface FormFieldValidationConstraint {
-    configuration: any;
-    name: string;
-}
-
 export interface TypedValue extends Serializable {
     value: any;
     type: ValueType;
@@ -1062,6 +1058,11 @@ export interface TypedValue extends Serializable {
 
 export interface FormType {
     name: string;
+}
+
+export interface FormFieldValidationConstraint {
+    name: string;
+    configuration: any;
 }
 
 export interface StringProcessVariableDTOV2 extends ProcessVariableDTOV2 {
@@ -1108,10 +1109,10 @@ export interface ProcessDefinitionId {
 }
 
 export interface ValueType extends Serializable {
-    primitiveValueType: boolean;
     name: string;
     parent: ValueType;
     abstract: boolean;
+    primitiveValueType: boolean;
 }
 
 export interface DateRange {

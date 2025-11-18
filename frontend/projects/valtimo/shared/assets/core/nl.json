@@ -1795,14 +1795,19 @@
     "selectVersion": "Selecteer een versie",
     "activity": "Procesactiviteit",
     "selectActivity": "Selecteer een procesactiviteit",
-    "noProcess": "Geen uploadproces"
+    "noProcess": "Geen uploadproces",
+    "buildingBlock": {
+      "name": "Naam",
+      "description": "Omschrijving"
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formulier",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Bouwblok"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",

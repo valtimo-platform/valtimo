@@ -1,0 +1,29 @@
+.list-container {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.empty-state {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f4f4f4;
+  color: #8d8d8d;
+}
+
+.building-block-artwork {
+  object-fit: contain;
+  height: 60px;
+  width: 100%;
+  margin-bottom: -0.5rem;
+}
+
+::ng-deep .list-container .cds--structured-list-td {
+  vertical-align: top;
+}

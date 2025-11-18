@@ -30,6 +30,7 @@ import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
 import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
 import {ManagementContext} from '@valtimo/shared';
+import {BuildingBlockStateService} from './building-block-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -129,6 +130,7 @@ export class ProcessLinkStateService implements OnDestroy {
     private readonly processLinkStepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginStateService: PluginStateService,
+    private readonly buildingBlockStateService: BuildingBlockStateService,
     @Optional()
     @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
     private readonly formCustomComponentConfig: FormCustomComponentConfig
@@ -210,11 +212,13 @@ export class ProcessLinkStateService implements OnDestroy {
     this.pluginStateService.selectProcessLink(processLink);
     this.setViewModelEnabled(processLink.viewModelEnabled ?? false);
     this._url$.next(processLink.url ?? '');
+    this.buildingBlockStateService.setProcessLink(processLink);
   }
 
   public deselectProcessLink(): void {
     this._selectedProcessLink$.next(undefined);
     this.pluginStateService.deselectProcessLink();
+    this.resetBuildingBlockState();
   }
 
   public setEditMode(editMode: ProcessLinkEditMode): void {
@@ -247,6 +251,10 @@ export class ProcessLinkStateService implements OnDestroy {
     return this._context$.getValue() === 'buildingBlock';
   }
 
+  private resetBuildingBlockState(): void {
+    this.buildingBlockStateService.reset();
+  }
+
   private reset(): void {
     this.setAvailableProcessLinkTypes([]);
     this.processLinkStepService.reset();
@@ -254,5 +262,6 @@ export class ProcessLinkStateService implements OnDestroy {
     this.buttonService.resetButtons();
     this.clearSelectedProcessLinkType();
     this.deselectProcessLink();
+    this.resetBuildingBlockState();
   }
 }
