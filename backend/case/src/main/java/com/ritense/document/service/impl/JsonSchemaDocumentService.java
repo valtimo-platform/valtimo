@@ -617,8 +617,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     @Override
     public void deleteDocument(
-        Document.Id documentId,
-        String type
+        Document.Id documentId
     ) {
         JsonSchemaDocument document = getDocumentBy(documentId);
         authorizationService.requirePermission(
@@ -633,24 +632,15 @@ public class JsonSchemaDocumentService implements DocumentService {
 
         applicationEventPublisher.publishEvent(
             new DocumentDeletedEvent(
-                documentId.getId(),
-                type
+                documentId.getId()
             )
         );
 
         outboxService.send(() ->
             new DocumentDeleted(
-                document.id().toString(),
-                type
+                document.id().toString()
             )
         );
-    }
-
-    @Override
-    public void deleteDocument(
-        Document.Id documentId
-    ) {
-        deleteDocument(documentId, "com.ritense.valtimo.document.deleted");
     }
 
     @Override

@@ -19,8 +19,5 @@ package com.ritense.valtimo.contract.event
 import java.util.UUID
 
 class DocumentDeletedEvent(
-    val documentId: UUID,
-    val type: String
-) {
-    constructor(documentId: UUID) : this(documentId, "com.ritense.valtimo.document.deleted")
-}
+    val documentId: UUID
+)

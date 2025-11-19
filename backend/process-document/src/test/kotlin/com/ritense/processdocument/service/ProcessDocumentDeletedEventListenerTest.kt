@@ -97,7 +97,7 @@ class ProcessDocumentDeletedEventListenerTest {
     }
 
     @Test
-    fun `should delete retained process instances with business key`() {
+    fun `should delete expired process instances with business key`() {
         val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
 
         val processInstance1 = mock<ProcessInstance>()
@@ -122,14 +122,13 @@ class ProcessDocumentDeletedEventListenerTest {
 
         processDocumentDeletedEventListener!!.handle(
             DocumentDeletedEvent(
-                documentId,
-                "com.ritense.valtimo.document.retained"
+                documentId
             )
         )
 
         verify(runtimeService).deleteProcessInstance(
             "4320f9c0-5568-4ed2-91f9-d2c85fd4ce55",
-            "Document retained",
+            "Document deleted",
             true,
             true,
             true,
@@ -137,7 +136,7 @@ class ProcessDocumentDeletedEventListenerTest {
         )
         verify(runtimeService).deleteProcessInstance(
             "a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f",
-            "Document retained",
+            "Document deleted",
             true,
             true,
             true,
@@ -148,7 +147,7 @@ class ProcessDocumentDeletedEventListenerTest {
 
 
     @Test
-    fun `should delete retained process instances with business key when case is completed`() {
+    fun `should delete expired process instances with business key when case is completed`() {
         val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
         val processDocumentInstance = mock<ProcessDocumentInstance>()
         whenever(processDocumentAssociationService.findProcessDocumentInstance(any()))
@@ -183,10 +182,7 @@ class ProcessDocumentDeletedEventListenerTest {
         ).thenReturn(listOf(processInstance1, processInstance2))
 
         processDocumentDeletedEventListener!!.handle(
-            DocumentDeletedEvent(
-                documentId,
-                "com.ritense.valtimo.document.retained"
-            )
+            DocumentDeletedEvent(documentId)
         )
         verify(historyService).deleteHistoricProcessInstanceIfExists("4320f9c0-5568-4ed2-91f9-d2c85fd4ce55")
         verify(historyService).deleteHistoricProcessInstanceIfExists("a69cf6c5-5e65-4dc9-81f6-2b64c12e3f0f")

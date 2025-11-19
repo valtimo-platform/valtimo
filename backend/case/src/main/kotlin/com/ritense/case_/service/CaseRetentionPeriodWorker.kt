@@ -24,8 +24,7 @@ open class CaseRetentionPeriodWorker(
                 jsonSchemaDocumentService.getRetainedDocuments(Pageable.unpaged()).forEach { doc ->
                     logger.debug { "retained doc found ${doc.retentionDate()} for case ${doc.caseTags()?.first()?.key?:"not found"}" }
                     jsonSchemaDocumentService.deleteDocument(
-                        doc.id,
-                        "com.ritense.valtimo.document.retained"
+                        doc.id
                     )
                 }
             }

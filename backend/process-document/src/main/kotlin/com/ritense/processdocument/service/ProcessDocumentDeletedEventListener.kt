@@ -42,7 +42,7 @@ class ProcessDocumentDeletedEventListener(
                 .rootProcessInstances()
                 .list()
                 .forEach {
-                    deleteProcessInstance(it.processInstanceId, "Document type deleted")
+                    deleteProcessInstance(it.processInstanceId)
                 }
         }
     }
@@ -58,12 +58,7 @@ class ProcessDocumentDeletedEventListener(
                     .list()
                     .forEach {
                         deleteProcessInstance(
-                            it.processInstanceId,
-                            if (event.type == "com.ritense.valtimo.document.retained") {
-                                "Document retained"
-                            } else {
-                                "Document deleted"
-                            }
+                            it.processInstanceId
                         )
                     }
 
@@ -101,10 +96,10 @@ class ProcessDocumentDeletedEventListener(
         }
     }
 
-    private fun deleteProcessInstance(processInstanceId: String, deleteReason: String) {
+    private fun deleteProcessInstance(processInstanceId: String) {
         runtimeService.deleteProcessInstance(
             processInstanceId,
-            deleteReason,
+            "Document deleted",
             true,
             true,
             true,
