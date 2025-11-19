@@ -2,6 +2,9 @@
   "events": {
     "TaskCompletedEvent": "Aufgabe abgeschlossen > {{taskName}}",
     "TaskAssignedEvent": "Aufgabe zugeordnet > {{taskName}}",
+    "DocumentInternalStatusSetEvent": "interner Status gesetzt: {{internalStatusKey}}",
+    "DocumentRetentionPeriodSetEvent": "Das Aufbewahrungsdatum läuft ab am: {{retentionDate}}",
+    "DocumentRetentionPeriodUnsetEvent": "Aufbewahrungsdatum gelöscht",
     "JsonSchemaDocumentCreatedEvent": "Case erstellt",
     "JsonSchemaDocumentModifiedEvent": "Case angepasst",
     "ProcessStartedEvent": "Prozess gestartet: {{processDefinitionKey}}",

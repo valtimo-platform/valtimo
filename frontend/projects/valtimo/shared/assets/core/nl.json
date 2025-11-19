@@ -2,6 +2,9 @@
   "events": {
     "TaskCompletedEvent": "Taak afgerond > {{taskName}}",
     "TaskAssignedEvent": "Taak toegewezen > {{taskName}}",
+    "DocumentInternalStatusSetEvent": "Interne status gezet: {{internalStatusKey}}",
+    "DocumentRetentionPeriodSetEvent": "Bewaartermijn verloopt op: {{retentionDate}}",
+    "DocumentRetentionPeriodUnsetEvent": "Bewaartermijn verwijderd",
     "JsonSchemaDocumentCreatedEvent": "Dossier aangemaakt",
     "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
     "ProcessStartedEvent": "Proces gestart: {{processDefinitionKey}}",
