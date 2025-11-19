@@ -12,4 +12,4 @@ com.ritense.document.autoconfiguration.DocumentEventAutoConfiguration
 com.ritense.document.autoconfiguration.DocumentWidgetAutoConfiguration
 com.ritense.document.autoconfiguration.InternalCaseStatusAutoConfiguration
 com.ritense.document.autoconfiguration.DocumentMigrationAutoConfiguration
-com.ritense.case_.service.CaseRetentionPeriodWorker
+com.ritense.case_.service.DocumentRetentionPeriodExpiredWorkerService

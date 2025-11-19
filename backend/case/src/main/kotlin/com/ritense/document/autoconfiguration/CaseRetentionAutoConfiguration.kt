@@ -16,10 +16,10 @@
 
 package com.ritense.document.autoconfiguration
 
-import com.ritense.case_.repository.CaseDefinitionRepository
-import com.ritense.case_.service.CaseRetentionPeriodWorker
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case_.service.DocumentRetentionPeriodExpiredWorkerService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
-import org.operaton.bpm.engine.HistoryService
+import com.ritense.outbox.OutboxService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -28,12 +28,16 @@ import org.springframework.context.annotation.Bean
 class CaseRetentionAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(CaseRetentionPeriodWorker::class)
+    @ConditionalOnMissingBean(DocumentRetentionPeriodExpiredWorkerService::class)
     fun documentRetentionPeriodWorker(
-        jsonSchemaDocumentService: JsonSchemaDocumentService
-        ): CaseRetentionPeriodWorker {
-        return CaseRetentionPeriodWorker(
-            jsonSchemaDocumentService
+        jsonSchemaDocumentService: JsonSchemaDocumentService,
+        outboxService: OutboxService,
+        objectMapper: ObjectMapper
+        ): DocumentRetentionPeriodExpiredWorkerService {
+        return DocumentRetentionPeriodExpiredWorkerService(
+            jsonSchemaDocumentService,
+            outboxService,
+            objectMapper
         )
     }
 }

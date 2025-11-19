@@ -18,7 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byDocumentDefinitionIdName;
-import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.retainedDocuments;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.expiredDocuments;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGN;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
@@ -208,7 +208,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         return document;
     }
 
-    public Page<JsonSchemaDocument> getRetainedDocuments(
+    public Page<JsonSchemaDocument> getExpiredDocuments(
         Pageable pageable
     ) {
         AuthorizationSpecification<JsonSchemaDocument> spec = authorizationService
@@ -221,14 +221,13 @@ public class JsonSchemaDocumentService implements DocumentService {
             );
 
         Page<JsonSchemaDocument> documentPage = documentRepository.findAll(
-            spec.and(retainedDocuments()), pageable);
+            spec.and(expiredDocuments()), pageable);
 
         outboxService.send(() ->
             new DocumentsListed(
                 objectMapper.valueToTree(documentPage.getContent())
             )
         );
-        logger.info("getRetainedDocumentDefinitionsByName");
         return documentPage;
     }
 

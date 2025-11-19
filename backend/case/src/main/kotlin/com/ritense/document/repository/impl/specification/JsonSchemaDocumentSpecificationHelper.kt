@@ -43,7 +43,7 @@ class JsonSchemaDocumentSpecificationHelper {
         }
 
         @JvmStatic
-        fun retainedDocuments(): Specification<JsonSchemaDocument> {
+        fun expiredDocuments(): Specification<JsonSchemaDocument> {
             return Specification { root: Root<JsonSchemaDocument>,
                                    _: CriteriaQuery<*>?,
                                    criteriaBuilder: CriteriaBuilder ->
