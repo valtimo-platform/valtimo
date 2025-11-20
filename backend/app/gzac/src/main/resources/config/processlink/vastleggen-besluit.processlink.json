@@ -12,7 +12,7 @@
         "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
         "pluginActionDefinitionKey": "create-besluit",
         "actionProperties": {
-            "besluittypeUrl": "http://localhost:8001/catalogi/api/v1/besluittypen/239b9760-cce2-4ae1-a3b7-4337ce51c83a",
+            "besluittypeUrl": "Fill in the besluitTypeUrl here",
             "toelichting": "Besluit",
             "bestuursorgaan": "Bestuursorgaan",
             "ingangsdatum": "2025-11-11",
