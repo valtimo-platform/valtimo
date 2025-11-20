@@ -263,8 +263,35 @@ export class SetZaakStatusConfigurationComponent
     this._subscriptions.add(saveSub);
   }
 
+  private isValidDatumStatusGezet(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
+      return true;
+    }
+
+    const trimmed = value.trim();
+
+    // Required format: YYYY-MM-DDTHH:mm:ssZ
+    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    if (!regex.test(trimmed)) {
+      return false;
+    }
+
+    // Optional: sanity-check that it's a valid date
+    const date = new Date(trimmed);
+    return !isNaN(date.getTime());
+  }
+
   private handleValid(formValue: SetZaakStatusConfig): void {
-    const valid = !!formValue.statustypeUrl;
+    const hasStatusType = !!formValue.statustypeUrl;
+    const hasValidDatumStatusGezet = this.isValidDatumStatusGezet(formValue.datumStatusGezet);
+
+    const valid = hasStatusType && hasValidDatumStatusGezet;
+
     this.valid$.next(valid);
     this.valid.emit(valid);
   }
