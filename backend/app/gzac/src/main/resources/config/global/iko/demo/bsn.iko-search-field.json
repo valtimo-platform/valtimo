@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoDataAggregateKey": "demo",
     "ikoDataRequestKey": "bsn",
     "ikoSearchFields": [
         {
@@ -9,7 +9,7 @@
             "dataType": "text",
             "fieldType": "single",
             "matchType": "exact",
-            "required": true
+            "required": false
         }
     ]
 }

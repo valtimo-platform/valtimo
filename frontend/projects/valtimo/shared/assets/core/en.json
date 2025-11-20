@@ -851,7 +851,8 @@
         "description": "Create an interactive table"
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
-      "divider": {"title": "Divider"}
+      "divider": {"title": "Divider"},
+      "map": {"title": "Map", "description": "Create a map widget"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -908,6 +909,13 @@
         "linkText": "Link text",
         "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
         "linkTextPlaceholder": "Link text (optional)"
+      },
+      "map": {
+        "add": "Add field",
+        "layerTitle": "Map layer {{ layer }}",
+        "key": "Path to GeoJSON data",
+        "keyPlaceholder": "Source path",
+        "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "displayType": {
         "text": "Text",

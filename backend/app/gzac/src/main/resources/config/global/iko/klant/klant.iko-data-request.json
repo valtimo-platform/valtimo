@@ -6,7 +6,7 @@
             "title": "Zoek met BSN",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "RaadpleegMetBurgerservicenummer"
+                    "type": "RaadpleegMetBurgerservicenummer"
                 }
             }
         },
@@ -15,7 +15,7 @@
             "title": "Zoek met achternaam en geboortedatum",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "ZoekMetGeslachtsnaamEnGeboortedatum"
+                    "type": "ZoekMetGeslachtsnaamEnGeboortedatum"
                 }
             }
         },
@@ -24,7 +24,7 @@
             "title": "Zoek met adres",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "ZoekMetAdres"
+                    "type": "ZoekMetAdres"
                 }
             }
         }

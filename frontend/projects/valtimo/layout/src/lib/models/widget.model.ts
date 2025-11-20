@@ -21,6 +21,7 @@ import {
   WidgetFieldsContent,
   WidgetTableContent,
   WidgetInteractiveTableContent,
+  WidgetMapContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 import {Condition} from '@valtimo/shared';
@@ -33,6 +34,7 @@ enum WidgetType {
   COLLECTION = 'collection',
   FORMIO = 'formio',
   DIVIDER = 'divider',
+  MAP = 'map',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -44,7 +46,7 @@ interface WidgetAction {
   caseDefinitionKey?: string;
   navigateTo?: string;
 }
- 
+
 interface BasicWidget {
   type: WidgetType;
   title: string;
@@ -62,6 +64,10 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+}
+
+interface GeoJsonSource {
+  key: string;
 }
 
 interface FieldsWidget extends BasicWidget {
@@ -105,6 +111,11 @@ interface DividerWidget extends BasicWidget {
   type: WidgetType.DIVIDER;
 }
 
+interface MapWidget extends BasicWidget {
+  type: WidgetType.MAP;
+  properties: WidgetMapContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -113,6 +124,7 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
+  | MapWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -201,16 +213,18 @@ export {
   DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
+  GeoJsonSource,
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,
   TableWidget,
   InteractiveTableWidget,
+  MapWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
   WidgetContext,
-  WidgetGroup
+  WidgetGroup,
 };

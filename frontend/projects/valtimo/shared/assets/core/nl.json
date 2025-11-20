@@ -870,7 +870,8 @@
         "description": "Maak een interactieve tabel"
       },
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
-      "divider": {"title": "Scheidingslijn"}
+      "divider": {"title": "Scheidingslijn"},
+      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -930,6 +931,13 @@
         "linkText": "Link tekst",
         "linkTextTooltip": "De tekst die wordt weergegeven als een link. Als dit leeg is, wordt de URL als tekst gebruikt.",
         "linkTextPlaceholder": "Link tekst (optioneel)"
+      },
+      "map": {
+        "add": "Veld toevoegen",
+        "layerTitle": "Kaart laag {{ layer }}",
+        "key": "Pad naar GeoJSON data",
+        "keyPlaceholder": "Bron pad",
+        "keyTooltip": "Value resolver pad naar GeoJSON data"
       },
       "displayType": {
         "text": "Tekst",

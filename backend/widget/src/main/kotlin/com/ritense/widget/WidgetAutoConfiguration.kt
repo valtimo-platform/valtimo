@@ -29,6 +29,7 @@ import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDataProvider
 import com.ritense.widget.interactivetable.InteractiveTableWidget
+import com.ritense.widget.map.MapWidget
 import com.ritense.widget.map.MapWidgetDataProvider
 import com.ritense.widget.map.geojson.GeoJsonFeatureCollectionMapper
 import com.ritense.widget.map.geojson.GeoJsonFeatureMapper
@@ -68,6 +69,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         DividerWidget::class,
         FieldsWidget::class,
         InteractiveTableWidget::class,
+        MapWidget::class,
         TableWidget::class,
         Widget::class,
     ]

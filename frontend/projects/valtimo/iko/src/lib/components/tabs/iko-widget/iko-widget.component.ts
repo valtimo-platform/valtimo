@@ -26,6 +26,7 @@ import {IkoWidgetFieldComponent} from '../../widget-field';
 import {IkoWidgetFormioComponent} from '../../widget-formio';
 import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
 import {IkoWidgetTableComponent} from '../../widget-table';
+import {IkoWidgetMapComponent} from '../../widget-map';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -74,6 +75,7 @@ export class IkoWidgetComponent {
     [WidgetType.TABLE]: IkoWidgetTableComponent,
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
+    [WidgetType.MAP]: IkoWidgetMapComponent,
   };
 
   constructor(

@@ -1,0 +1,100 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  *ngIf="$showTitleInput()"
+  [formGroup]="form"
+  class="valtimo-widget-management-map__title-form"
+>
+  <cds-text-label class="valtimo-widget-management-map__input">
+    <v-input-label
+      [title]="'widgetTabManagement.content.widgetTitle' | translate"
+      [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+    >
+    </v-input-label>
+    <input
+      formControlName="widgetTitle"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+</form>
+
+<ng-content></ng-content>
+
+<form
+  *ngIf="{
+    inputTheme: inputTheme$ | async,
+  } as data"
+  class="valtimo-widget-management-map-layer"
+  [formGroup]="form"
+>
+  <cds-accordion
+    formArrayName="geoJsonSources" align="start" size="sm">
+    @for (formGeoJsonSource of formGeoJsonSources.controls; track $index) {
+      <cds-accordion-item
+        [title]="fieldTitle"
+        [context]="{count: $count, index: $index, key: formGeoJsonSource.get('key')?.value}"
+        [expanded]="$index === 0"
+        class="valtimo-widget-management-map-layer__item"
+      >
+        <form [formGroup]="formGeoJsonSource" class="valtimo-widget-management-map-layer__container">
+          <div class="valtimo-widget-management-map-layer__content">
+            <cds-text-label>
+              <v-input-label
+                [title]="'widgetTabManagement.content.map.key' | translate"
+                [tooltip]="'widgetTabManagement.content.map.keyTooltip' | translate"
+              >
+              </v-input-label>
+
+              <input
+                cdsText
+                cdsLayer="2"
+                [attr.data-carbon-theme]="data.inputTheme"
+                [placeholder]="'widgetTabManagement.content.map.keyPlaceholder' | translate"
+                type="text"
+                formControlName="key"
+              />
+            </cds-text-label>
+          </div>
+        </form>
+      </cds-accordion-item>
+    }
+  </cds-accordion>
+
+  <button cdsButton="primary" size="sm" (click)="addField()">
+    {{ 'widgetTabManagement.content.map.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</form>
+
+<ng-template #fieldTitle let-count="count" let-index="index">
+  <div class="valtimo-widget-management-map-layer__title">
+    {{ 'widgetTabManagement.content.map.layerTitle' | translate: {layer: index + 1} }}
+
+    <button
+      cdsButton="danger"
+      [disabled]="count === 1"
+      [iconOnly]="true"
+      (click)="onDeleteRowClick($event, formGeoJsonSources, index)"
+      class="valtimo-widget-management-map-layer__delete-button"
+    >
+      <svg cdsIcon="trash-can" size="16"></svg>
+    </button>
+  </div>
+</ng-template>

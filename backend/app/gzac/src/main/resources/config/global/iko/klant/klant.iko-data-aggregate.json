@@ -3,8 +3,9 @@
     "ikoRepositoryConfigKey": "iko-server",
     "title": "Klant",
     "properties": {
-        "connectorTag": "",
-        "connectorInstanceTag": "",
-        "endpointOperation": "personen"
+        "connectorTag": "brp",
+        "connectorInstanceTag": "brp1",
+        "endpointOperation": "Personen",
+        "aggregatedDataProfileName": "personen"
     }
 }
