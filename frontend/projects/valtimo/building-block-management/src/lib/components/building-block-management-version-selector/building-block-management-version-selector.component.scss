@@ -13,3 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.version-selector {
+  margin: 0;
+  max-width: 300px;
+}
+
+::ng-deep .version-selector-dropdown-template {
+  display: flex;
+
+  .cds--tag {
+    margin: 0 8px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
+    max-width: 100%;
+  }
+}

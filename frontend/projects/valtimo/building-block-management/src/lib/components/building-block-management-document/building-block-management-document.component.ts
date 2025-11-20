@@ -61,6 +61,8 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     filter(model => model !== null)
   );
 
+  public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
+
   private _modifiedDefinition: string | null = null;
 
   constructor(

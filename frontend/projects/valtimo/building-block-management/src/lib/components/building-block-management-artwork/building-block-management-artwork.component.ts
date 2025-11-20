@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   BuildingBlockManagementApiService,
@@ -35,7 +35,7 @@ import {
   LayerModule,
   LoadingModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, Subscription, switchMap, tap} from 'rxjs';
 import {TrashCan16, Upload16} from '@carbon/icons';
 
 @Component({
@@ -58,7 +58,7 @@ import {TrashCan16, Upload16} from '@carbon/icons';
     RenderInBodyComponent,
   ],
 })
-export class BuildingBlockManagementArtworkComponent {
+export class BuildingBlockManagementArtworkComponent implements OnInit, OnDestroy {
   public readonly ACCEPTED_FILES: string[] = ['png'];
 
   public readonly formGroup = this.formBuilder.group({
@@ -85,6 +85,8 @@ export class BuildingBlockManagementArtworkComponent {
 
   public readonly showDeleteConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
@@ -92,6 +94,22 @@ export class BuildingBlockManagementArtworkComponent {
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Upload16, TrashCan16]);
+  }
+
+  public ngOnInit(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.isFinal$.subscribe(isFinal => {
+        if (isFinal) {
+          this.formGroup.disable();
+        } else {
+          this.formGroup.enable();
+        }
+      })
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public async onSave(): Promise<void> {

@@ -15,7 +15,27 @@
   -->
 
 <ng-container *ngIf="{versionListItems: (versionListItems$ | async) || []} as obs">
-  <cds-dropdown [disabled]="obs.versionListItems.length === 1">
-    <cds-dropdown-list [items]="obs.versionListItems"></cds-dropdown-list>
+  <cds-dropdown
+    class="version-selector"
+    [disabled]="obs.versionListItems.length === 1"
+    [displayValue]="versionTemplate"
+    (selected)="onVersionSelected($event)"
+  >
+    <cds-dropdown-list
+      [items]="obs.versionListItems"
+      [listTpl]="versionTemplate"
+    ></cds-dropdown-list>
   </cds-dropdown>
 </ng-container>
+
+<ng-template #versionTemplate let-item="item">
+  <div class="version-selector-dropdown-template">
+    <cds-tag
+      class="cds-tag--no-margin"
+      [type]="!item.final ? 'red' : 'green'"
+      [title]="item?.content"
+    >
+      {{ !item?.final ? 'DRAFT: ' + item?.content : item?.content }}
+    </cds-tag>
+  </div>
+</ng-template>
