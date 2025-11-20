@@ -24,7 +24,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
   styleUrls: ['./mdi-icon-viewer.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
-  providers: [],
 })
 export class MdiIconViewerComponent {
   @Input() public mdiIcon: string = 'mdi-minus';
