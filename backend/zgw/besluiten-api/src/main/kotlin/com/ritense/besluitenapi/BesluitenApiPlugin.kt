@@ -16,11 +16,11 @@
 
 package com.ritense.besluitenapi
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.besluitenapi.client.Besluit
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
+import com.ritense.besluitenapi.client.PatchBesluitRequest
 import com.ritense.besluitenapi.client.Vervalreden
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
@@ -127,6 +127,75 @@ class BesluitenApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "patch-besluit",
+        title = "Patch besluit",
+        description = "Patches a besluit in the Besluiten API",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun patchBesluit(
+        execution: DelegateExecution,
+        @PluginActionProperty besluitUrl: String,
+        @PluginActionProperty beslisdatum: String? = null,
+        @PluginActionProperty toelichting: String? = null,
+        @PluginActionProperty bestuursorgaan: String? = null,
+        @PluginActionProperty ingangsdatum: String? = null,
+        @PluginActionProperty vervaldatum: String? = null,
+        @PluginActionProperty vervalreden: Vervalreden? = null,
+        @PluginActionProperty publicatiedatum: String? = null,
+        @PluginActionProperty verzenddatum: String? = null,
+        @PluginActionProperty uiterlijkeReactieDatum: String? = null
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        withLoggingContext(
+            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString()
+        ) {
+            patchBesluit(
+                besluitUrl = URI(besluitUrl),
+                beslisdatum = beslisdatum?.let { toLocalDate(it) },
+                toelichting = toelichting,
+                bestuursorgaan = bestuursorgaan,
+                ingangsdatum = ingangsdatum?.let { toLocalDate(it) },
+                vervaldatum = vervaldatum?.let { toLocalDate(it) },
+                vervalreden = vervalreden,
+                publicatiedatum = publicatiedatum?.let { toLocalDate(it) },
+                verzenddatum = verzenddatum?.let { toLocalDate(it) },
+                uiterlijkeReactieDatum = uiterlijkeReactieDatum?.let { toLocalDate(it) }
+            )
+        }
+    }
+
+    fun patchBesluit(
+        besluitUrl: URI,
+        beslisdatum: LocalDate? = null,
+        toelichting: String? = null,
+        bestuursorgaan: String? = null,
+        ingangsdatum: LocalDate? = null,
+        vervaldatum: LocalDate? = null,
+        vervalreden: Vervalreden? = null,
+        publicatiedatum: LocalDate? = null,
+        verzenddatum: LocalDate? = null,
+        uiterlijkeReactieDatum: LocalDate? = null,
+    ): Besluit {
+        val request = PatchBesluitRequest(
+            datum = beslisdatum,
+            toelichting = toelichting,
+            bestuursorgaan = bestuursorgaan,
+            ingangsdatum = ingangsdatum,
+            vervaldatum = vervaldatum,
+            vervalreden = vervalreden,
+            publicatiedatum = publicatiedatum,
+            verzenddatum = verzenddatum,
+            uiterlijkeReactiedatum = uiterlijkeReactieDatum
+        )
+
+        return besluitenApiClient.patchBesluit(
+            authenticationPluginConfiguration,
+            besluitUrl,
+            request
+        )
+    }
+
     fun createBesluit(
         zaakUrl: URI,
         besluittypeUrl: URI,
@@ -162,13 +231,12 @@ class BesluitenApiPlugin(
         }
     }
 
+    private fun toLocalDate(date: String): LocalDate {
+        return LocalDate.parse(date.take(10))
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
         const val PLUGIN_KEY = "besluitenapi"
-        const val URL_PROPERTY = "url"
-
-        fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
-            url.toString().startsWith(properties[URL_PROPERTY].textValue())
-        }
     }
 }

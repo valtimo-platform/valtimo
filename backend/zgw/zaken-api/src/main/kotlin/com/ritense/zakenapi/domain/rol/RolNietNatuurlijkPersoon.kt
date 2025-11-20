@@ -37,8 +37,13 @@ data class RolNietNatuurlijkPersoon(
     }?.value
 
     init {
-        require(!annIdentificatie.isNullOrBlank() || !innNnpId.isNullOrBlank()) {
-            "Either annIdentificatie or innNnpId should be provided!"
+        require(
+            !annIdentificatie.isNullOrBlank() ||
+                !innNnpId.isNullOrBlank() ||
+                !kvkNummer.isNullOrBlank() ||
+                !vestigingsNummer.isNullOrBlank()
+        ) {
+            "Either annIdentificatie, innNnpId, kvkNummer or vestigingsNummer should be provided!"
         }
     }
 }
