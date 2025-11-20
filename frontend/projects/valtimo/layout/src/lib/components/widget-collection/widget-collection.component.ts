@@ -137,7 +137,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   @Output() public readonly paginationEvent = new EventEmitter<PaginationModel>();
 
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
-  public readonly widgetTitle = signal('-');
+  public readonly $widgetTitle = signal('-');
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
@@ -148,7 +148,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     filter(([widgetConfig, widgetData]) => !!widgetConfig && !!widgetData),
     tap(([widgetConfig]) => {
-      this.widgetTitle.set(widgetConfig.title);
+      this.$widgetTitle.set(widgetConfig.title);
     }),
     map(([widgetConfig, widgetData]) =>
       widgetData.content.map((cardData, index) => ({
