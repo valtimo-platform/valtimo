@@ -1984,6 +1984,7 @@
       "title": "Bilder",
       "upload": "Upload",
       "add": "Bild hinzufügen",
+      "edit": "Bild bearbeiten",
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
       "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."

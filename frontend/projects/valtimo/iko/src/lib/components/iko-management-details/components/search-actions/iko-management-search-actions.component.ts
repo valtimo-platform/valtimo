@@ -15,7 +15,7 @@
  */
 
 import {CommonModule, DOCUMENT} from '@angular/common';
-import {Component, Inject, TemplateRef, ViewChild} from '@angular/core';
+import {Component, Inject, TemplateRef, ViewChild, signal} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -37,7 +37,7 @@ import {map, take} from 'rxjs/operators';
 import {IkoDataRequestResponse} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService, ModalMode} from '@valtimo/shared';
 import {HttpResponse} from '@angular/common/http';
 
 @Component({
@@ -59,6 +59,7 @@ export class IkoManagementSearchActionsComponent {
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
+  public readonly $modalMode = signal<ModalMode>('add');
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly FIELDS: ColumnConfig[] = [
     {
@@ -98,13 +99,18 @@ export class IkoManagementSearchActionsComponent {
     filter(key => !!key)
   );
 
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly searchActions$: Observable<IkoDataRequestResponse[]> = combineLatest([
     this.aggregateKey$,
     this._refresh$,
   ]).pipe(
     switchMap(([key]) => this.ikoManagementApiService.getManagementIkoDataRequests(key)),
-    tap(() => this.loading$.next(false))
+    tap(content => {
+      const keys = content?.map(item => item.key) ?? [];
+      this.usedKeys$.next(keys);
+      this.loading$.next(false);
+    })
   );
 
   private _currentNotification!: Notification;
@@ -138,6 +144,7 @@ export class IkoManagementSearchActionsComponent {
   }
 
   public editSearchAction(action: IkoDataRequestResponse): void {
+    this.$modalMode.set('edit');
     this.prefillData$.next(action);
     this.actionModalOpen$.next(true);
   }
@@ -151,14 +158,13 @@ export class IkoManagementSearchActionsComponent {
 
   public onModalClose(action: IkoDataRequestResponse | null): void {
     this.actionModalOpen$.next(false);
-    const prefillData: IkoDataRequestResponse | null = this.prefillData$.getValue();
     this.prefillData$.next(null);
 
     if (!action) return;
     this.aggregateKey$
       .pipe(
         switchMap((aggregateKey: string) =>
-          prefillData === null
+          this.$modalMode() === 'add'
             ? this.ikoManagementApiService.createIkoDataRequest(aggregateKey, action.key, action)
             : this.ikoManagementApiService.updateIkoDataRequest(aggregateKey, action.key, action)
         )
@@ -212,6 +218,7 @@ export class IkoManagementSearchActionsComponent {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
     this.actionModalOpen$.next(true);
   }
 

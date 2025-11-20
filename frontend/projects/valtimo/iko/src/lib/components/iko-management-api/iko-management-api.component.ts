@@ -45,6 +45,7 @@ import {
 } from '../../models';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {IkoManagementRepositoryModalComponent} from './repository-modal/iko-management-repository-modal.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-api',
@@ -73,6 +74,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   public readonly $modalOpen = signal<boolean>(false);
   public readonly $prefillData = signal<any | null>(null);
   public readonly $keyToDelete = signal<string | null>(null);
+  public readonly $modalMode = signal<ModalMode>('add');
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly disabled$ = new BehaviorSubject(true);
@@ -131,19 +133,18 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   }
 
   public openModal(): void {
+    this.$modalMode.set('add');
     this.$modalOpen.set(true);
   }
 
   public closeModal(item: IkoRepositoryConfigResponse | null): void {
     this.$modalOpen.set(false);
     this.disable();
-
-    const prefillData: IkoDataAggregateResponse | null = this.$prefillData();
     this.$prefillData.set(null);
     if (!item) return;
 
     let saveObservable;
-    if (prefillData !== null) {
+    if (this.$modalMode() === 'edit') {
       saveObservable = this.ikoManagementApiService.updateIkoRepositoryConfig(item.key, item);
     } else {
       saveObservable = this.ikoManagementApiService.createIkoRepositoryConfig(item.key, item);
@@ -159,6 +160,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   }
 
   public onEditClick(item: IkoDataAggregateResponse): void {
+    this.$modalMode.set('edit');
     this.$prefillData.set(item);
     this.$modalOpen.set(true);
   }

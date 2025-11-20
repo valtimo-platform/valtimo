@@ -33,13 +33,15 @@
     </div>
 
     <div class="valtimo-search-fields-modal__input">
-      <v-input-label
-        [title]="'searchFieldsOverview.key' | translate"
-        [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+      <valtimo-auto-key-input
+        [mode]="modalMode"
+        [usedKeys]="usedKeys"
+        [sourceText]="title.value"
+        data-testid="iko-search-key"
+        formControlName="key"
+        placeholderTranslationKey="interface.key"
       >
-      </v-input-label>
-
-      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="key" />
+      </valtimo-auto-key-input>
     </div>
 
     <div class="valtimo-search-fields-modal__input">

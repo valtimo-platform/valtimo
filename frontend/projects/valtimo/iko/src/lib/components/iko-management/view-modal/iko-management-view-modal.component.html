@@ -1,6 +1,8 @@
 <cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>{{ 'ikoManagement.views.add' | translate }}</h3>
+    <h3 cdsModalHeaderHeading>
+      {{ 'ikoManagement.views.' + modalMode | translate }}
+    </h3>
   </cds-modal-header>
 
   <form [formGroup]="formGroup" cdsModalContent>
@@ -16,17 +18,14 @@
       />
     </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
-
-      <input
-        formControlName="key"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      placeholderTranslationKey="interface.key"
+    >
+    </valtimo-auto-key-input>
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
