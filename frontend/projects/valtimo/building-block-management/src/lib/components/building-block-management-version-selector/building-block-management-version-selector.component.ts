@@ -20,14 +20,14 @@ import {
   BuildingBlockManagementDetailService,
 } from '../../services';
 import {combineLatest, map, Observable, switchMap} from 'rxjs';
-import {DropdownModule, ListItem} from 'carbon-components-angular';
+import {DropdownModule, ListItem, TagModule} from 'carbon-components-angular';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-version-selector',
   templateUrl: './building-block-management-version-selector.component.html',
   styleUrls: ['./building-block-management-version-selector.component.scss'],
-  imports: [CommonModule, DropdownModule],
+  imports: [CommonModule, DropdownModule, TagModule],
 })
 export class BuildingBlockManagementVersionSelectorComponent {
   private readonly _versions$ =
@@ -46,9 +46,16 @@ export class BuildingBlockManagementVersionSelectorComponent {
         id: version.versionTag,
         content: version.versionTag,
         selected: versionTag === version.versionTag,
+        final: version.final,
       }))
     )
   );
+
+  public onVersionSelected(event: {item?: {id?: string}}): void {
+    const versionTag = event?.item?.id;
+    if (!versionTag) return;
+    this.buildingBlockManagementDetailService.navigateToVersionTag(versionTag);
+  }
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
