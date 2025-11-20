@@ -82,7 +82,6 @@ export class BuildingBlockStateService implements OnDestroy {
       .getBuildingBlockVersions(key)
       .subscribe({
         next: versions => {
-          console.log('versions', versions);
           this._versions$.next(versions ?? []);
           if (initialVersionTag) {
             this.setDefinitionVersionTag(initialVersionTag, true);

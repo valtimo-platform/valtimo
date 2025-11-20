@@ -15,6 +15,7 @@
  */
 import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
+import {ListItem} from 'carbon-components-angular/dropdown';
 
 interface ProcessLink {
   id: string;
@@ -284,6 +285,13 @@ type PluginListItem = {
   isDefinition: boolean;
 };
 
+interface PluginConfigurationViewModel {
+  key: string;
+  label: string;
+  dropdownItems: Array<ListItem>;
+  hasOptions: boolean;
+}
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -297,6 +305,7 @@ export {
   BuildingBlockProcessLinkUpdateDto,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginConfigurationViewModel,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLink,

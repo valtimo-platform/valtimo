@@ -16,23 +16,19 @@
 
 <div class="configure-building-block-plugins">
 
-  @if (versions$ | async; as versions) {
+  @if (versionItems$ | async; as versionItems) {
+    @let versionPlaceholder = versionPlaceholder$ | async;
     <div class="version-select">
-      <cds-select
+      <cds-dropdown
         cdsLayer
+        size="lg"
+        [appendInline]="true"
         [label]="'processLinkConfiguration.buildingBlock.versionLabel' | translate"
-        [value]="selectedVersion || ''"
-        (change)="onVersionChange($event.target.value)"
+        [placeholder]="versionPlaceholder || ''"
+        (selected)="onVersionChange($event?.item?.id || '')"
       >
-        <option value="">
-          {{ 'processLinkConfiguration.buildingBlock.versionPlaceholder' | translate }}
-        </option>
-        @for (version of versions; track version) {
-          <option [value]="version">
-            {{ version }}
-          </option>
-        }
-      </cds-select>
+        <cds-dropdown-list [items]="versionItems"></cds-dropdown-list>
+      </cds-dropdown>
     </div>
   }
 
@@ -42,16 +38,16 @@
     </div>
   } @else {
     <div class="plugin-list">
-      @if (selectedVersion) {
-        @if (pluginKeys$ | async; as pluginKeys) {
-
-          @if (pluginKeys.length === 0) {
+      @if (definitionVersionTag$ | async;) {
+        @if (pluginConfigurationViewModels$ | async; as pluginConfigurationViewModels) {
+          @if (pluginConfigurationViewModels.length === 0) {
 
             <div class="empty-state">
               {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
             </div>
 
           } @else {
+            @let configurationPlaceholder = configurationPlaceholder$ | async;
 
             <div class="plugin-row">
               <v-input-label
@@ -65,39 +61,21 @@
               </v-input-label>
             </div>
 
-            @for (pluginKey of pluginKeys; track $index) {
+            @for (plugin of pluginConfigurationViewModels; track plugin.key) {
               <div class="plugin-row">
-                {{ pluginLabel(pluginKey) }}
+                <div class="plugin-label">
+                  {{plugin.label}}
+                </div>
 
-                @if (optionsFor(pluginKey) | async; as options) {
-                  @if (options.length > 0) {
-                    <cds-select
-                      size="lg"
-                      cdsLayer
-                      [value]="selectedMappings[pluginKey] || ''"
-                      (change)="onMappingChange(pluginKey, $event.target.value)"
-                    >
-                      <option value="">
-                        {{
-                          'processLinkConfiguration.buildingBlock.configurationPlaceholder'
-                            | translate
-                        }}
-                      </option>
-                      @for (option of options; track option.id) {
-                        <option [value]="option.id">
-                          {{ option.title }}
-                        </option>
-                      }
-                    </cds-select>
-                  } @else {
-                    <div class="helper-text warning">
-                      {{
-                        'processLinkConfiguration.buildingBlock.noConfigurationsForPlugin'
-                                | translate
-                      }}
-                    </div>
-                  }
-                }
+                <cds-dropdown
+                  cdsLayer
+                  size="lg"
+                  [appendInline]="true"
+                  [placeholder]="configurationPlaceholder || ''"
+                  (selected)="onMappingChange(plugin.key, $event?.item?.id || '')"
+                >
+                  <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
+                </cds-dropdown>
               </div>
             }
           }
