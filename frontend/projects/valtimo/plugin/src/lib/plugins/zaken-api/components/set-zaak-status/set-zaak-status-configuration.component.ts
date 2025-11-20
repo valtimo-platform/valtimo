@@ -71,6 +71,7 @@ export class SetZaakStatusConfigurationComponent
   readonly formValue$ = new BehaviorSubject<SetZaakStatusConfig | null>(null);
   readonly valid$ = new BehaviorSubject<boolean>(false);
   readonly statusTypeSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
+  readonly datePickerInvalid$ = new BehaviorSubject<boolean>(false);
 
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
@@ -280,11 +281,30 @@ export class SetZaakStatusConfigurationComponent
     return !isNaN(date.getTime());
   }
 
+  private isDateNotInFuture(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
+      return true;
+    }
+
+    const date = new Date(value);
+    const now = new Date();
+    const isDateNotInFuture = date.getTime() <= now.getTime();
+
+    this.datePickerInvalid$.next(!isDateNotInFuture);
+
+    return isDateNotInFuture;
+  }
+
   private handleValid(formValue: SetZaakStatusConfig): void {
     const hasStatusType = !!formValue.statustypeUrl;
     const hasValidDatumStatusGezet = this.isValidDatumStatusGezet(formValue.datumStatusGezet);
+    const dateIsNotInFuture = this.isDateNotInFuture(formValue.datumStatusGezet);
 
-    const valid = hasStatusType && hasValidDatumStatusGezet;
+    const valid = hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture;
 
     this.valid$.next(valid);
     this.valid.emit(valid);

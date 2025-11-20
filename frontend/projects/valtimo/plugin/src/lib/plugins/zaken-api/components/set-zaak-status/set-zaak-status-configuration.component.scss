@@ -25,12 +25,13 @@
 
 .date-time-row {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 34px;
 }
 
-.timepicker cds-time-picker {
+.timepicker {
+  margin-top: 24px !important;
   height: 48px !important;
 }
 
