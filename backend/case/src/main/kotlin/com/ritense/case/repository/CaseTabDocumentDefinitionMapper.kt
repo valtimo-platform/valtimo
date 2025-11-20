@@ -21,6 +21,8 @@ import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentDefinitionService
@@ -56,10 +58,28 @@ class CaseTabDocumentDefinitionMapper(
         subquery.select(criteriaBuilder.literal(1))
             .where(
                 criteriaBuilder.equal(
-                    root.get<CaseTabId>("id").get<String>("caseDefinitionId"),
                     subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionSolutionModuleId>("solutionModuleId")
+                        .get<JsonSchemaDocumentDefinitionSolutionModuleType>("solutionModuleType"),
+                    JsonSchemaDocumentDefinitionSolutionModuleType.CASE
+                ),
+                criteriaBuilder.equal(
+                    root.get<CaseTabId>("id")
                         .get<CaseDefinitionId>("caseDefinitionId")
+                        .get<String>("key"),
+                    subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionSolutionModuleId>("solutionModuleId")
+                        .get<String>("solutionModuleKey")
+                ),
+                criteriaBuilder.equal(
+                    root.get<CaseTabId>("id")
+                        .get<CaseDefinitionId>("caseDefinitionId")
+                        .get<String>("versionTag"),
+                    subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionSolutionModuleId>("solutionModuleId")
+                        .get<String>("solutionModuleVersionTag")
                 )
+
             )
 
         return AuthorizationEntityMapperResult(

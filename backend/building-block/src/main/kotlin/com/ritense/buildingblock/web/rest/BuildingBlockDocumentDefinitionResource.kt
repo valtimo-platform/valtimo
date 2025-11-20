@@ -18,6 +18,7 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -51,8 +52,10 @@ class BuildingBlockDocumentDefinitionResource(
         @PathVariable versionTag: String
     ): ResponseEntity<JsonNode> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        val definition = service
-            .findBySolutionModuleId(buildingBlockId)
+        val definition = runWithoutAuthorization {
+            service
+                .findBySolutionModuleId(buildingBlockId)
+        }
             .getOrElse { return ResponseEntity.notFound().build() }
         return ResponseEntity.ok(definition.schema())
     }

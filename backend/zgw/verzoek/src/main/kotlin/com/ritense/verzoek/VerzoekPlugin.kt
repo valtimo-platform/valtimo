@@ -39,7 +39,7 @@ import jakarta.validation.Valid
 import jakarta.validation.ValidationException
 import org.semver4j.Semver
 import kotlin.jvm.optionals.getOrNull
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
 @Plugin(

@@ -283,8 +283,8 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         final var definitions = documentDefinitionRepository.findAll(
             byIdName(documentDefinitionName).and(byCaseDefinitionActive()),
             org.springframework.data.domain.Sort.by(
-                org.springframework.data.domain.Sort.Order.asc("id.ownerId.ownerKey"),
-                org.springframework.data.domain.Sort.Order.desc("id.ownerId.ownerVersionTag")
+                org.springframework.data.domain.Sort.Order.asc("id.solutionModuleId.solutionModuleKey"),
+                org.springframework.data.domain.Sort.Order.desc("id.solutionModuleId.solutionModuleVersionTag")
             )
         );
 

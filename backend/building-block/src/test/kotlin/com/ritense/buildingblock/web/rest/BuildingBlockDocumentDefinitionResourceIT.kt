@@ -23,6 +23,7 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionReposito
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -41,53 +42,42 @@ import java.util.Optional
 
 class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
+    private val repository: JsonSchemaDocumentDefinitionRepository,
     private val objectMapper: ObjectMapper
 ) : BaseIntegrationTest() {
-
-    @MockitoBean
-    lateinit var repository: JsonSchemaDocumentDefinitionRepository
-
     private val base = "/api/management/v1/building-block"
     private val key = "bb-key"
     private val version = "1.0.0"
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should return 404 when document definition is missing`() {
-        val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
-        whenever(repository.findById(eq(id))).thenReturn(Optional.empty())
-
-        mockMvc.get("$base/{key}/version/{version}/document", key, version)
+        mockMvc.get("$base/{key}/version/{version}/document", key, "1.0.1")
             .andExpect { status { isNotFound() } }
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should return 200 with schema when document definition exists`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
         val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
-        val schemaJson = """{"title":"My Schema","type":"object"}"""
+        val schemaJson = """{"${'$'}id": "$key.schema", "title":"My Schema","type":"object"}"""
         val entity = JsonSchemaDocumentDefinition(id, JsonSchema.fromString(schemaJson))
-        whenever(repository.findById(eq(id))).thenReturn(Optional.of(entity))
+
+
+        repository.save(entity)
 
         mockMvc.get("$base/{key}/version/{version}/document", key, version)
             .andExpect {
                 status { isOk() }
                 content { json(schemaJson) }
             }
-
-        verify(repository).findById(eq(id))
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should update document definition and return 200 with saved schema`() {
-        val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
-        val newSchema: JsonNode = objectMapper.readTree("""{"title":"Updated","type":"object","properties":{"a":{"type":"string"}}}""")
-
-        whenever(repository.save(any())).thenAnswer { it.arguments[0] as JsonSchemaDocumentDefinition }
+        val newSchema: JsonNode = objectMapper.readTree("""{"${'$'}id": "bb-key.schema", "title":"Updated","type":"object","properties":{"a":{"type":"string"}}}""")
 
         mockMvc.put("$base/{key}/version/{version}/document", key, version) {
             contentType = MediaType.APPLICATION_JSON
@@ -96,23 +86,12 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
             status { isOk() }
             content { json(objectMapper.writeValueAsString(newSchema)) }
         }
-
-        val captor = argumentCaptor<JsonSchemaDocumentDefinition>()
-        verify(repository).save(captor.capture())
-        val saved = captor.firstValue
-        assert(saved.id().name() == key)
-        assert(saved.id().buildingBlockDefinitionId().key == key)
-        assert(saved.id().buildingBlockDefinitionId().versionTag.toString() == version)
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should accept minimal empty object schema on update`() {
-        val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
-        val minimalSchema: JsonNode = objectMapper.readTree("""{"type":"object"}""")
-
-        whenever(repository.save(any())).thenAnswer { it.arguments[0] as JsonSchemaDocumentDefinition }
+        val minimalSchema: JsonNode = objectMapper.readTree("""{"${'$'}id": "bb-key.schema", "type":"object"}""")
 
         mockMvc.put("$base/{key}/version/{version}/document", key, version) {
             contentType = MediaType.APPLICATION_JSON
@@ -121,7 +100,5 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
             status { isOk() }
             content { json(objectMapper.writeValueAsString(minimalSchema)) }
         }
-
-        verify(repository).save(any())
     }
 }

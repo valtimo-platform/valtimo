@@ -55,7 +55,7 @@ import kotlin.random.Random
  *
  * The value of the requestedValue should be in the format doc:some.json.path
  */
-class DocumentJsonValueResolverFactory(
+class CaseDocumentJsonValueResolverFactory(
     private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
