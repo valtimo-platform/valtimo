@@ -68,27 +68,6 @@ const klantinteractiesApiPluginSpecification: PluginSpecification = {
       processVariableNameTooltip:
         "The person's URL is stored in a process variable. This variable can be used to log further interactions with the person in another BPMN task.",
     },
-    de: {
-      title: 'Klantinteracties API',
-      url: 'Klantinteracties API-URL',
-      urlTooltip: 'Die URL der REST-API für Klantinteracties.',
-      description:
-        'Mit den Spezifikationen der Klantinteracties-API können Kommunen Kundeninteraktionen einheitlich erfassen, speichern und bereitstellen.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Unter diesem Namen ist das Plug-in in der gesamten Anwendung erkennbar.',
-      authenticationPluginConfiguration: 'Konfiguration des Authentifizierungs-Plug-ins',
-      'create-persoon': 'Person erstellen',
-      bsn: 'BSN',
-      bsnTooltip: 'Bürger-Service-Nummer.',
-      voorletters: 'Initialen',
-      voornaam: 'Vorname',
-      voorvoegselAchternaam: 'Namensvorsatz Nachname',
-      achternaam: 'Nachname',
-      processVariableName: 'Name der Prozessvariablen zur Speicherung der Personen-URL',
-      processVariableNameTooltip:
-        'Die URL der Person wird in einer Prozessvariablen gespeichert. Diese Variable kann verwendet werden, um weitere Interaktionen mit der Person in einer anderen BPMN-Aufgabe zu erfassen.',
-    },
   },
 };
 
