@@ -133,55 +133,6 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       zaakTypeUrlTooltip:
         'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',
     },
-    de: {
-      title: 'Catalogi API',
-      url: 'Catalogi API URL',
-      urlTooltip: 'Die URL zur REST API von Catalogi',
-      description:
-        'API zum Speichern und Abrufen von Zaaktype katalogen, Zaaktypen und untergeordneten Typen.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
-      'get-statustypen': 'Statustypen anfordern',
-      getStatustypenInformation:
-        'Der Statustypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
-      'get-statustype': 'Statustype anfordern',
-      getStatustypeInformation:
-        'Die zum Zaaktype gehörenden Statustypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
-      statustype: 'Statustype',
-      statustypeTooltip: 'Generische Angabe der Art eines Status.',
-      processVariable: 'Prozessvariablenname',
-      processVariableTooltip:
-        'Sobald der Statustype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
-      'get-besluittype': 'Besluittype anfordern',
-      getBesluittypeInformation:
-        'Der besluittype wird abgerufen und dann in einer Prozessvariablen gespeichert.',
-      besluittype: 'Besluittype',
-      besluittypeTooltip: 'Beschreibung der Art der besluit.',
-      besluitProcessVariableTooltip:
-        'Sobald der besluittype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
-      'get-resultaattypen': 'Resultaattypen anfordern',
-      getResultaattypenInformation:
-        'Die zum Zaaktype gehörenden Ergebnistypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
-      'get-resultaattype': 'Resultaattype anfordern',
-      getResultaattypeInformation:
-        'Der resultaattype wird abgerufen und dann in einer Prozessvariablen gespeichert.',
-      resultaattype: 'Resultaattype',
-      resultaattypeTooltip: 'Beschreibung der Art der resultaat.',
-      reslutaatProcessVariableTooltip:
-        'Sobald der resultaattype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
-      'get-eigenschap': 'Eigenschap anfordern',
-      getEigenschapInformation:
-        'Der eigenschap wird abgerufen und dann in einer Prozessvariablen gespeichert.',
-      eigenschap: 'Eigenschap',
-      eigenschapTooltip: 'Name der Art der eigenschap.',
-      eigenschapProcessVariableTooltip:
-        'Sobald der eigenschap abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
-      zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip:
-        'Geben Sie hier die URL des jeweiligen Zaaktype an, falls diese von der mit dem Fall verknüpften Zaak abweicht.',
-    },
   },
 };
 
