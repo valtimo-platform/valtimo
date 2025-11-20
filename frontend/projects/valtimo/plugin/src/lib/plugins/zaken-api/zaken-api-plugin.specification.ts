@@ -578,7 +578,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
-      datumStatusGezet: 'Datum status gezet.',
+      datumStatusGezet: 'Datumsstatus festgelegt.',
       datumStatusGezetTooltip: 'Datums-/Uhrzeitwert des zaakstatus.',
       statustoelichting: 'Erklärung des Zaakstatus',
       statustoelichtingTooltip:
