@@ -138,7 +138,6 @@ export class SetZaakStatusConfigurationComponent
   }
 
   public onTimeSelected(event: string): void {
-    // expected format: HH:mm or HH:mm:ss
     this.selectedTime = event;
     this.updateDatumStatusGezet();
   }
@@ -149,17 +148,14 @@ export class SetZaakStatusConfigurationComponent
     }
 
     const [hoursStr, minutesStr = '00', secondsStr = '00'] = this.selectedTime.split(':');
-    const hours = Number(hoursStr);
-    const minutes = Number(minutesStr);
-    const seconds = Number(secondsStr);
     const date = new Date(this.selectedDate);
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const hh = String(hours).padStart(2, '0');
-    const mm = String(minutes).padStart(2, '0');
-    const ss = String(seconds).padStart(2, '0');
+    const hh = hoursStr.padStart(2, '0');
+    const mm = minutesStr.padStart(2, '0');
+    const ss = secondsStr.padStart(2, '0');
 
     const isoWithoutMs = `${year}-${month}-${day}T${hh}:${mm}:${ss}Z`;
 
@@ -169,7 +165,6 @@ export class SetZaakStatusConfigurationComponent
       datumStatusGezet: isoWithoutMs,
     };
 
-    // Reuse existing form handling logic
     this.formValueChange(updatedFormValue);
   }
 
@@ -281,7 +276,6 @@ export class SetZaakStatusConfigurationComponent
       return false;
     }
 
-    // Optional: sanity-check that it's a valid date
     const date = new Date(trimmed);
     return !isNaN(date.getTime());
   }

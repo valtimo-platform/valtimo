@@ -26,11 +26,11 @@
 .date-time-row {
   display: flex;
   align-items: flex-end;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .timepicker cds-time-picker {
-  height: 3rem !important;
+  height: 48px !important;
 }
 
 .date-time-row cds-date-picker,

@@ -46,7 +46,7 @@
       [disabled]="obs.disabled"
       [title]="'inputDatumStatusGezetToggle' | pluginTranslate: obs.pluginId | async"
       [radioValues]="inputTypeOptions$ | async"
-      [defaultValue]="datumStatusGezetSelectedInputOption$ | async"
+      [defaultValue]="obs.datumStatusGezetSelectedInputOption"
       [margin]="true"
     ></v-radio>
 
