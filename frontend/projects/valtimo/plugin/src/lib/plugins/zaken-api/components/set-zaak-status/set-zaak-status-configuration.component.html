@@ -25,6 +25,7 @@
     loading: loading$ | async,
     statusTypeItems: statusTypeSelectItems$ | async,
     context: context$ | async,
+    datePickerInvalid: datePickerInvalid$ | async
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -57,6 +58,8 @@
         placeholder="DD-MM-YYYY"
         [dateFormat]="'d-m-Y'"
         [value]="[selectedDate]"
+        [invalid]="obs.datePickerInvalid"
+        [invalidText]="'datumStatusGezetInvalidText' | pluginTranslate: obs.pluginId | async"
         (valueChange)="onDateSelected($event)"
       ></cds-date-picker>
 
@@ -64,6 +67,7 @@
         class="timepicker"
         [attr.data-carbon-theme]="theme$ | async"
         [value]="selectedTime"
+        [invalid]="obs.datePickerInvalid"
         (valueChange)="onTimeSelected($event)"
       ></cds-timepicker>
     </div>

@@ -160,6 +160,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
       datumStatusGezet: 'Datum status gezet.',
       datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
       statustoelichtingTooltip:
         'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
@@ -370,6 +371,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       statustypeUrlTooltip: 'URL reference to the status type.',
       datumStatusGezet: 'Date status set.',
       datumStatusGezetTooltip: 'Date/time value of the zaakstatus.',
+      datumStatusGezetInvalidText: 'Date and time may not be in the future.',
       statustoelichting: 'Zaakstatus explanation',
       statustoelichtingTooltip:
         'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
@@ -580,6 +582,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
       datumStatusGezet: 'Datumsstatus festgelegt.',
       datumStatusGezetTooltip: 'Datums-/Uhrzeitwert des zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum und Uhrzeit dürfen nicht in der Zukunft liegen.',
       statustoelichting: 'Erklärung des Zaakstatus',
       statustoelichtingTooltip:
         'Eine Erklärung des Status eines zaak, die für den Initiator des Zaak relevant ist.',
