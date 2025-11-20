@@ -1795,7 +1795,15 @@
     "noProcess": "Kein Upload-Prozess",
     "buildingBlock": {
       "name": "Name",
-      "description": "Beschreibung"
+      "description": "Beschreibung",
+      "selectLabel": "Baustein",
+      "emptyState": "Keine Bausteine verfügbar. Erstellen Sie zuerst einen Baustein.",
+      "noRequirements": "Dieser Baustein benötigt keine Plugin-Konfigurationen.",
+      "configurationLabel": "Plugin-Konfiguration",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Wählen Sie eine Konfiguration",
+      "versionLabel": "Bausteinversion wählen",
+      "versionPlaceholder": "Wählen Sie eine Version"
     }
   },
   "processLinkType": {

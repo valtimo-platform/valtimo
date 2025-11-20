@@ -1798,7 +1798,15 @@
     "noProcess": "Geen uploadproces",
     "buildingBlock": {
       "name": "Naam",
-      "description": "Omschrijving"
+      "description": "Omschrijving",
+      "selectLabel": "Bouwblok",
+      "emptyState": "Geen bouwblokken beschikbaar. Maak eerst een bouwblok aan.",
+      "noRequirements": "Dit bouwblok vereist geen pluginconfiguraties.",
+      "configurationLabel": "Pluginconfiguratie",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "versionLabel": "Kies bouwblokversie",
+      "versionPlaceholder": "Selecteer een versie"
     }
   },
   "processLinkType": {
