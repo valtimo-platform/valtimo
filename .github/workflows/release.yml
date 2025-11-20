@@ -13,20 +13,25 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Validate release branch
+      - name: Validate and extract release branch
+        id: version
         run: |
           if [[ "${GITHUB_REF_NAME}" != release/* ]]; then
             echo "::error::This workflow can only run on release/* branches (current: ${GITHUB_REF_NAME})."
             exit 1
           fi
-      - name: Extract version from branch
-        id: version
-        run: |
-          VERSION="${GITHUB_REF_NAME#release/}"
-          if [[ -z "$VERSION" || "$VERSION" == "$GITHUB_REF_NAME" ]]; then
+          if [[ "${GITHUB_REF_NAME}" =~ ^release/(.+)$ ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
             echo "::error::Unable to derive a version from branch '${GITHUB_REF_NAME}'."
             exit 1
           fi
+
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Unable to derive a version from branch '${GITHUB_REF_NAME}'."
+            exit 1
+          fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   backend_release:
