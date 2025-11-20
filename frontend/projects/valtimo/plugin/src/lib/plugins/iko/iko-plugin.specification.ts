@@ -42,15 +42,6 @@ const ikoPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
     },
-    de: {
-      title: 'IKO',
-      url: 'IKO URL',
-      urlTooltip: 'Die URL zur REST API von IKO',
-      description: 'Integraal Klant & Objectbeeld.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-    },
   },
 };
 

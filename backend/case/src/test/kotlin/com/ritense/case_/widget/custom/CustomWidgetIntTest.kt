@@ -103,6 +103,7 @@ class CustomWidgetIntTest @Autowired constructor(
                     CustomCaseWidgetDto(
                         key = widgetKey,
                         title = "Custom test",
+                        icon = "mdi-home",
                         width = 2,
                         highContrast = false,
                         actions = null,

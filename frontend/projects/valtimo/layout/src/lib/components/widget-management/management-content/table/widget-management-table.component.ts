@@ -34,21 +34,14 @@ import {
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  MdiIconSelectorComponent,
   ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
-import {
-  BehaviorSubject,
-  combineLatest,
-  debounceTime,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-} from 'rxjs';
+import {BehaviorSubject, debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
@@ -74,6 +67,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
     InputLabelModule,
     LayerModule,
     ValuePathSelectorComponent,
+    MdiIconSelectorComponent,
   ],
 })
 export class WidgetManagementTableComponent implements OnInit, OnDestroy {
@@ -85,6 +79,7 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
       this.widgetWizardService.$widgetTitle() ?? '',
       Validators.required
     ),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
     collection: this.fb.control<string>(
       (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.collection ?? '',
       Validators.required
@@ -143,6 +138,7 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(500)).subscribe(value => {
         this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
+        this.widgetWizardService.$widgetIcon.set(value?.widgetIcon ?? '');
 
         this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>

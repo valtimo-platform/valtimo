@@ -25,7 +25,9 @@ import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
   styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss']
 })
-export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateNietNatuurlijkPersoonZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

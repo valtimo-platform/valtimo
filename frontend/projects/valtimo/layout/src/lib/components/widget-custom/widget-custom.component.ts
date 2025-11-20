@@ -29,11 +29,11 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, MdiIconViewerComponent} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {PermissionService} from '@valtimo/access-control';
-import {ButtonModule} from 'carbon-components-angular';
+import {ButtonModule, LayerModule} from 'carbon-components-angular';
 import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
@@ -50,6 +50,8 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
+    LayerModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

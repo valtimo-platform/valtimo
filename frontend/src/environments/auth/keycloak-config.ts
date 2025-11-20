@@ -33,7 +33,7 @@ const keycloakAuthenticationProviders: AuthProviders = {
 export const keycloakConfig: KeycloakConfig = {
   url: window['env']['keycloakUrl'] || 'http://keycloak.localhost:8081/auth',
   realm: window['env']['keycloakRealm'] || 'valtimo',
-  clientId: window['env']['keycloakClientId'] || 'valtimo-console'
+  clientId: window['env']['keycloakClientId'] || 'valtimo-console',
 };
 
 const keycloakOnLoad: KeycloakOnLoad = 'login-required';
@@ -43,7 +43,7 @@ const keycloakInitOptions: any = {
   onLoad: keycloakOnLoad,
   checkLoginIframe: false,
   flow: 'standard',
-  redirectUri: window['env']['keycloakRedirectUri'] || 'http://localhost:4200/keycloak/callback'
+  redirectUri: window['env']['keycloakRedirectUri'] || 'http://localhost:4200/keycloak/callback',
 };
 
 const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
@@ -53,7 +53,7 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
     enableBearerInterceptor: true,
     bearerExcludedUrls: ['/assets', '.*?.amazonaws.com/'],
   },
-  logoutRedirectUri: window['env']['keycloakLogoutRedirectUri'] || 'http://localhost:4200'
+  logoutRedirectUri: window['env']['keycloakLogoutRedirectUri'] || 'http://localhost:4200',
 };
 
 export const authenticationKeycloak: Auth = {
