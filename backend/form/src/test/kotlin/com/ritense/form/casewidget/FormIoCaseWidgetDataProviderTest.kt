@@ -21,6 +21,9 @@ import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
+import java.util.Optional
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,16 +35,20 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Pageable
-import java.util.Optional
-import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class FormIoCaseWidgetDataProviderTest(
+    @Mock val valueResolverService: ValueResolverService,
     @Mock val formDefinitionService: FormDefinitionService,
     @Mock val formService: PrefillFormService
 ) {
 
-    private val dataProvider = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
+    private val dataProvider = FormIoCaseWidgetDataProvider(
+        valueResolverService,
+        formDefinitionService,
+        formService,
+        MapperSingleton.get(),
+    )
 
     @Test
     fun `should return a prefilled form definition`() {

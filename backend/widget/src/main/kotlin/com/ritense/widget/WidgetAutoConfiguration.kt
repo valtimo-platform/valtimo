@@ -16,12 +16,14 @@
 
 package com.ritense.widget
 
+import ResolvedPageSerializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.collection.CollectionWidget
 import com.ritense.widget.collection.CollectionWidgetDataProvider
 import com.ritense.widget.custom.CustomWidget
+import com.ritense.widget.custom.CustomWidgetDataProvider
 import com.ritense.widget.divider.DividerWidget
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
@@ -114,5 +116,16 @@ class WidgetAutoConfiguration {
         objectMapper: ObjectMapper,
         valueResolverService: ValueResolverService,
     ) = CollectionWidgetDataProvider(objectMapper, valueResolverService)
+
+    @ConditionalOnMissingBean(CustomWidgetDataProvider::class)
+    @Bean
+    fun customWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = CustomWidgetDataProvider(valueResolverService)
+
+    @ConditionalOnMissingBean(ResolvedPageSerializer::class)
+    @Bean
+    fun resolvedPageSerializer(
+    ) = ResolvedPageSerializer()
 
 }
