@@ -18,6 +18,7 @@
   *ngIf="{
     fields: fields$ | async,
     widgetData: widgetData$ | async,
+    resolvedData: resolvedData$ | async,
   } as obs"
   class="valtimo-widget-table"
 >
@@ -28,6 +29,7 @@
 
     <valtimo-widget-action-button
       [widgetConfiguration]="widgetConfiguration"
+      [resolvedData]="obs.resolvedData"
     ></valtimo-widget-action-button>
   </section>
 

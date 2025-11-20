@@ -15,17 +15,23 @@
   -->
 
 <valtimo-widget-custom
-  *ngIf="widgetConfig$ | async as widgetConfig"
-  [widgetConfiguration]="widgetConfig"
+  *ngIf="{
+    widgetConfiguration: widgetConfig$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
+  [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
   [widgetUuid]="widgetUuid"
 >
-  @if (widgetConfig?.actions?.length === 1) {
-    <button
-      *ngIf="canCreateCamundaExecution$ | async"
-      cdsButton="ghost"
-      (click)="onProcessStartClick(widgetConfig?.actions[0])"
-    >
-      {{ widgetConfig?.actions[0].name }}
-    </button>
+  @if (obs.widgetConfiguration?.actions?.length === 1) {
+    @if (obs.widgetConfiguration.actions[0].processDefinitionKey) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+      >
+        {{ obs.widgetConfiguration.actions[0].name }}
+      </button>
+    }
   }
 </valtimo-widget-custom>

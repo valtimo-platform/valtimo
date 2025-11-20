@@ -63,6 +63,21 @@ SELECT setval(pg_get_serial_sequence('catalogi_roltype', 'id'), 1, true);
 INSERT INTO catalogi_informatieobjecttype(id, datum_begin_geldigheid, datum_einde_geldigheid, concept, uuid, omschrijving, vertrouwelijkheidaanduiding, catalogus_id, _etag, omschrijving_generiek_definitie, omschrijving_generiek_herkomst, omschrijving_generiek_hierarchie, omschrijving_generiek_informatieobjecttype, omschrijving_generiek_opmerking, trefwoord, informatieobjectcategorie) VALUES (1, '2021-10-04', NULL, false, 'efc332f2-be3b-4bad-9e3c-49a6219c92ad', 'test', 'zaakvertrouwelijk', 1, '_etag', '', '', '', '', '', '{"rood","rond","groot"}', '');
 SELECT setval(pg_get_serial_sequence('catalogi_informatieobjecttype', 'id'), 1, true);
 
+INSERT INTO catalogi_besluittype
+(id, datum_begin_geldigheid, datum_einde_geldigheid, concept, uuid, omschrijving, omschrijving_generiek, besluitcategorie, reactietermijn, publicatie_indicatie, publicatietekst, publicatietermijn, toelichting, catalogus_id, _etag)
+VALUES (1, '2025-11-14', NULL, FALSE, '239b9760-cce2-4ae1-a3b7-4337ce51c83a', 'Toekenningsbesluit', 'Toekenningsbesluit', '', INTERVAL '0', FALSE, '', INTERVAL '0', 'Test Toekenningsbesluit', 1, '9fc764a1b81d7797a7ddc90a3b0dc0bb');
+SELECT setval(pg_get_serial_sequence('catalogi_besluittype', 'id'), 1, true);
+
+INSERT INTO catalogi_besluittype_informatieobjecttypen
+(id, besluittype_id, informatieobjecttype_id)
+VALUES(1, 1, 1);
+SELECT setval(pg_get_serial_sequence('catalogi_besluittype_informatieobjecttypen', 'id'), 1, true);
+
+INSERT INTO catalogi_besluittype_zaaktypen
+(id, besluittype_id, zaaktype_id)
+VALUES(1, 1, 1);
+SELECT setval(pg_get_serial_sequence('catalogi_besluittype_zaaktypen', 'id'), 1, true);
+
 INSERT INTO catalogi_zaaktypeinformatieobjecttype(id, uuid, volgnummer, richting, informatieobjecttype_id, statustype_id, zaaktype_id, _etag) VALUES (1, '405da8a9-7296-439c-a2eb-a470b84f17ee', 1, 'inkomend', 1, NULL, 1, '_etag');
 SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 1, true);
 
