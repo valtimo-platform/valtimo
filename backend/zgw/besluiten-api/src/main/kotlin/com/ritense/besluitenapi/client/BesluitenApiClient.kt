@@ -18,7 +18,9 @@ package com.ritense.besluitenapi.client
 
 import com.ritense.besluitenapi.BesluitenApiAuthentication
 import com.ritense.zgw.ClientTools
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.net.URI
@@ -70,5 +72,37 @@ class BesluitenApiClient(
             .body(besluitInformatieObject)
             .retrieve()
             .body<BesluitInformatieObject>()!!
+    }
+
+    fun patchBesluit(
+        authentication: BesluitenApiAuthentication,
+        besluitUrl: URI,
+        request: PatchBesluitRequest,
+    ): Besluit {
+        return restClient(authentication)
+            .patch()
+            .uri ( besluitUrl )
+            .headers(this::defaultHeaders)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body (request)
+            .retrieve()
+            .body<Besluit>()!!
+    }
+
+    private fun defaultHeaders(headers: HttpHeaders) {
+        headers.set("Accept-Crs", "EPSG:4326")
+        headers.set("Content-Crs", "EPSG:4326")
+    }
+
+    private fun restClient(authentication: BesluitenApiAuthentication): RestClient {
+        return restClientBuilder
+            .clone()
+            .apply {
+                authentication.applyAuth(it)
+            }
+            .messageConverters {
+                it + ResourceHttpMessageConverter(true)
+            }
+            .build()
     }
 }

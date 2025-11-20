@@ -21,6 +21,7 @@ import com.ritense.besluitenapi.client.BesluitInformatieObject
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
+import com.ritense.besluitenapi.client.PatchBesluitRequest
 import com.ritense.besluitenapi.client.Vervalreden
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.Rsin
@@ -216,5 +217,70 @@ class BesluitenApiPluginTest {
         assertEquals(besluitInformatieObjectValue.informatieobject, documentUrl)
         assertEquals(besluitenApiAuthenticationValue, besluitenApiPlugin.authenticationPluginConfiguration)
         assertEquals(uriValue, besluitenApiPlugin.url)
+    }
+
+    @Test
+    fun `should patch zaakbesluit`() {
+        val authenticationMock = mock<BesluitenApiAuthentication>()
+        val besluitenApiClient = mock<BesluitenApiClient>()
+        val zaakUrlProvider = mock<ZaakUrlProvider>() // only needed for constructor if required
+
+        val plugin = BesluitenApiPlugin(besluitenApiClient, zaakUrlProvider)
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        val besluitUrl = URI("http://besluiten.api/besluit")
+
+        val beslisdatum = LocalDate.of(2025, 11, 1)
+        val toelichting = "toelichting"
+        val bestuursorgaan = "680572442"
+        val ingangsdatum = LocalDate.of(2025, 11, 2)
+        val vervaldatum = LocalDate.of(2025, 11, 3)
+        val vervalreden = Vervalreden.INGETROKKEN_OVERHEID
+        val publicatiedatum = LocalDate.of(2025, 11, 4)
+        val verzenddatum = LocalDate.of(2025, 11, 5)
+        val uiterlijkeReactieDatum = LocalDate.of(2025, 11, 6)
+
+        val authenticationCaptor = argumentCaptor<BesluitenApiAuthentication>()
+        val uriCaptor = argumentCaptor<URI>()
+        val requestCaptor = argumentCaptor<PatchBesluitRequest>()
+        val besluit = mock<Besluit>()
+
+        whenever(
+            besluitenApiClient.patchBesluit(
+                authenticationCaptor.capture(),
+                uriCaptor.capture(),
+                requestCaptor.capture()
+            )
+        ).thenReturn(besluit)
+
+        val result = plugin.patchBesluit(
+            besluitUrl = besluitUrl,
+            beslisdatum = beslisdatum,
+            toelichting = toelichting,
+            bestuursorgaan = bestuursorgaan,
+            ingangsdatum = ingangsdatum,
+            vervaldatum = vervaldatum,
+            vervalreden = vervalreden,
+            publicatiedatum = publicatiedatum,
+            verzenddatum = verzenddatum,
+            uiterlijkeReactieDatum = uiterlijkeReactieDatum
+        )
+
+        assertEquals(besluit, result)
+
+        assertEquals(authenticationMock, authenticationCaptor.firstValue)
+        assertEquals(besluitUrl, uriCaptor.firstValue)
+
+        val patchBesluitRequest = requestCaptor.firstValue
+
+        assertEquals(beslisdatum, patchBesluitRequest.datum)
+        assertEquals(toelichting, patchBesluitRequest.toelichting)
+        assertEquals(bestuursorgaan, patchBesluitRequest.bestuursorgaan)
+        assertEquals(ingangsdatum, patchBesluitRequest.ingangsdatum)
+        assertEquals(vervaldatum, patchBesluitRequest.vervaldatum)
+        assertEquals(vervalreden, patchBesluitRequest.vervalreden)
+        assertEquals(publicatiedatum, patchBesluitRequest.publicatiedatum)
+        assertEquals(verzenddatum, patchBesluitRequest.verzenddatum)
+        assertEquals(uiterlijkeReactieDatum, patchBesluitRequest.uiterlijkeReactiedatum)
     }
 }
