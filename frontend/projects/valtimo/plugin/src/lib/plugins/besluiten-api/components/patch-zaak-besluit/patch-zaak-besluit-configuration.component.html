@@ -1,0 +1,76 @@
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+  } as obs"
+>
+  <v-paragraph [margin]="true" [italic]="true">
+    {{ 'patchZaakBesluitInformation' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
+
+  <v-form (valueChange)="onFormValueChanged($event)">
+    <v-input
+      name="besluitUrl"
+      [title]="'besluitUrl' | pluginTranslate: pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.besluitUrl"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [trim]="true"
+      [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
+      [widthPx]="350"
+    ></v-input>
+
+    <div class="row">
+      <div class="col-12">
+        <button
+          cdsButton="primary"
+          [size]="'md'"
+          [cdsOverflowMenu]="addPropertyList"
+          [customPane]="true"
+          placement="bottom"
+          class="add-button"
+        >
+          {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @for (property of propertyList; track property) {
+      <div class="row">
+        <div class="col-11">
+          <v-input
+            [name]="property"
+            [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="prefillValueFor(property, obs.prefill)"
+            [disabled]="obs.disabled"
+            [required]="true"
+            [trim]="true"
+            [tooltip]="translationKeyFor(property + 'Tooltip') | pluginTranslate: pluginId | async"
+            [widthPx]="350"
+            (valueChange)="onPropertyChanged(property, $event)"
+          ></v-input>
+        </div>
+
+        <div class="col-1">
+          <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+          </button>
+        </div>
+      </div>
+    }
+  </v-form>
+</ng-container>
+
+<ng-template #addPropertyList>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    <cds-overflow-menu-option
+      *ngIf="!hasPropertyBeenAdded(propertyOption)"
+      (click)="addProperty(propertyOption)"
+    >
+      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+    </cds-overflow-menu-option>
+  }
+</ng-template>
