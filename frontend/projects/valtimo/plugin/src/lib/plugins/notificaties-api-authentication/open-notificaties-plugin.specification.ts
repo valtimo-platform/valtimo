@@ -49,19 +49,6 @@ const openNotificatiesPluginSpecification: PluginSpecification = {
       clientSecret: 'Secret',
       clientSecretTooltip: 'Enter the secret associated with the clientId above',
     },
-    de: {
-      title: 'OpenNotificaties',
-      description:
-        'OpenNotificaties ist eine produktionstaugliche API-Plattform, die den API-Standard für fallorientiertes Arbeiten (die ZGW-APIs) implementiert.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Unter diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      clientId: 'Client ID',
-      clientIdTooltip:
-        'Geben Sie hier die clientId ein, die unter OpenNotificaties-Verwaltung konfiguriert ist (siehe API-Berechtigungen > Anwendungen). Diese clientId muss die richtigen Berechtigungen für die erforderliche Funktionalität haben',
-      clientSecret: 'Secret',
-      clientSecretTooltip: 'Geben Sie das mit der obigen clientId verknüpfte Geheimnis ein',
-    },
   },
 };
 

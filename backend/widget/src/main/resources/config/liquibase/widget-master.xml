@@ -33,5 +33,5 @@
     <include file="changelog/20250704-add-widget-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250923-update-widget-properties.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251016-widget-tab-conditions.xml" relativeToChangelogFile="true"/>
-
+    <include file="changelog/20251117-add-widget-icon-column.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -23,6 +23,12 @@
     justify-content: space-between;
   }
 
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__title {
     color: var(--cds-text-primary);
     font-weight: 600;

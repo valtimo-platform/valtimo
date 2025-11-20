@@ -24,6 +24,7 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
     override fun toDto(entity: TableCaseWidget) = TableCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
         actions = entity.actions,
@@ -34,6 +35,7 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
     override fun toEntity(dto: TableCaseWidgetDto, index: Int) = TableCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
         actions = dto.actions ?: emptyList(),

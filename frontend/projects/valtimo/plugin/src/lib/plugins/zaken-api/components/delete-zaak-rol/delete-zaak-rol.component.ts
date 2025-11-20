@@ -24,9 +24,7 @@ import {DeleteZaakRolConfig} from '../../models';
   selector: 'valtimo-delete-zaak-rol-configuration',
   templateUrl: './delete-zaak-rol.component.html',
 })
-export class DeleteZaakRolComponent
-  implements FunctionConfigurationComponent, OnInit, OnDestroy
-{
+export class DeleteZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -54,9 +52,7 @@ export class DeleteZaakRolComponent
   }
 
   private handleValid(formValue: DeleteZaakRolConfig): void {
-    const valid = !!(
-      formValue.rolUuid
-    );
+    const valid = !!formValue.rolUuid;
 
     this._valid$.next(valid);
     this.valid.emit(valid);

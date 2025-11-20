@@ -27,6 +27,7 @@ class FormIoCaseWidgetMapper : CaseWidgetMapper<FormIoCaseWidget, FormIoCaseWidg
     override fun toDto(entity: FormIoCaseWidget) = FormIoCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
         actions = entity.actions,
@@ -37,6 +38,7 @@ class FormIoCaseWidgetMapper : CaseWidgetMapper<FormIoCaseWidget, FormIoCaseWidg
     override fun toEntity(dto: FormIoCaseWidgetDto, index: Int) = FormIoCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
         actions = dto.actions ?: emptyList(),
