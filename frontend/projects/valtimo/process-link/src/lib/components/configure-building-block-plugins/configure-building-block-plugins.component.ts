@@ -26,12 +26,15 @@ import {PluginConfiguration, PluginManagementService, PluginTranslationService} 
 import {
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
+  PluginConfigurationViewModel,
   ProcessLink,
   ProcessLinkEditMode,
   ProcessLinkType,
 } from '../../models';
 import {combineLatest, Observable, of, shareReplay, Subscription} from 'rxjs';
-import {catchError, take} from 'rxjs/operators';
+import {catchError, map, switchMap, take} from 'rxjs/operators';
+import {ListItem} from 'carbon-components-angular/dropdown';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   standalone: false,
@@ -43,16 +46,73 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
   public readonly pluginKeys$ = this.buildingBlockStateService.requiredPluginKeys$;
   public readonly loading$ = this.buildingBlockStateService.requirementsLoading$;
   public readonly versions$ = this.buildingBlockStateService.versions$;
+  public readonly definitionVersionTag$ = this.buildingBlockStateService.definitionVersionTag$;
+  public readonly versionPlaceholder$ = this.translateService.stream(
+    'processLinkConfiguration.buildingBlock.versionPlaceholder'
+  );
+  public readonly configurationPlaceholder$ = this.translateService.stream(
+    'processLinkConfiguration.buildingBlock.configurationPlaceholder'
+  );
+  public readonly versionItems$: Observable<Array<ListItem>> = combineLatest([
+    this.versions$,
+    this.definitionVersionTag$,
+    this.versionPlaceholder$,
+  ]).pipe(
+    map(([versions, selectedVersion, placeholder]) => {
+      const normalizedSelectedVersion = selectedVersion || '';
+      return [
+        {
+          id: '',
+          content: placeholder,
+          selected: normalizedSelectedVersion === '',
+        },
+        ...(versions || []).map(
+          version =>
+            ({
+              id: version,
+              content: version,
+              selected: normalizedSelectedVersion === version,
+            }) as ListItem
+        ),
+      ];
+    })
+  );
+  public readonly pluginConfigurationViewModels$: Observable<Array<PluginConfigurationViewModel>> =
+    combineLatest([
+      this.pluginKeys$,
+      this.buildingBlockStateService.pluginMappings$,
+      this.configurationPlaceholder$,
+    ]).pipe(
+      switchMap(([pluginKeys, pluginMappings, placeholder]) => {
+        if (!pluginKeys?.length) {
+          return of([]);
+        }
 
-  public selectedMappings: Record<string, string | null> = {};
-  public selectedVersion: string | null = null;
+        return combineLatest(
+          pluginKeys.map(pluginKey =>
+          this.getConfigurationOptions(pluginKey)
+            .pipe(
+              map(options => ({
+                key: pluginKey,
+                label: this.pluginLabel(pluginKey),
+                dropdownItems: this.buildDropdownItems(
+                  options,
+                  pluginMappings?.[pluginKey],
+                  placeholder
+                ),
+                hasOptions: options.length > 0,
+              }))
+            )
+          )
+        );
+      })
+    );
 
-  private readonly subscriptions = new Subscription();
-  private readonly configurationOptionsCache = new Map<
+  private readonly _subscriptions = new Subscription();
+  private readonly _configurationOptionsCache = new Map<
     string,
     Observable<Array<PluginConfiguration>>
   >();
-  private hasSingleProcessLinkType = false;
 
   constructor(
     private readonly stateService: ProcessLinkStateService,
@@ -61,28 +121,17 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     private readonly stepService: ProcessLinkStepService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly pluginTranslationService: PluginTranslationService,
-    private readonly processLinkService: ProcessLinkService
+    private readonly processLinkService: ProcessLinkService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
-    this.subscriptions.add(
-      this.buildingBlockStateService.pluginMappings$.subscribe(mappings => {
-        this.selectedMappings = {...mappings};
-      })
-    );
-
-    this.subscriptions.add(
-      this.buildingBlockStateService.definitionVersionTag$.subscribe(version => {
-        this.selectedVersion = version;
-      })
-    );
-
-    this.subscriptions.add(
+    this._subscriptions.add(
       combineLatest([
         this.buildingBlockStateService.requiredPluginKeys$,
         this.buildingBlockStateService.mappingsComplete$,
         this.buildingBlockStateService.requirementsLoading$,
-        this.buildingBlockStateService.definitionVersionTag$,
+        this.definitionVersionTag$,
       ]).subscribe(([keys, complete, loading, version]) => {
         if (loading || !version) {
           this.buttonService.disableSaveButton();
@@ -97,43 +146,38 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
       })
     );
 
-    this.subscriptions.add(
+    this._subscriptions.add(
       this.buttonService.backButtonClick$.subscribe(() => {
-        if (this.hasSingleProcessLinkType) {
-          this.stepService.setSingleBuildingBlockSteps();
-        } else {
-          this.stepService.setBuildingBlockSteps();
-        }
+        this.stepService.setBuildingBlockSteps();
       })
     );
 
-    this.subscriptions.add(
+    this._subscriptions.add(
       this.buttonService.saveButtonClick$.subscribe(() => {
         this.persistProcessLink();
-      })
-    );
-
-    this.subscriptions.add(
-      this.stateService.availableProcessLinkTypes$.subscribe(types => {
-        this.hasSingleProcessLinkType = this.checkSingleBuildingBlockType(types);
       })
     );
   }
 
   public ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
-  public optionsFor(pluginDefinitionKey: string): Observable<Array<PluginConfiguration>> {
-    if (!this.configurationOptionsCache.has(pluginDefinitionKey)) {
-      this.configurationOptionsCache.set(
+  private getConfigurationOptions(
+    pluginDefinitionKey: string
+  ): Observable<Array<PluginConfiguration>> {
+    if (!this._configurationOptionsCache.has(pluginDefinitionKey)) {
+      this._configurationOptionsCache.set(
         pluginDefinitionKey,
         this.pluginManagementService
           .getPluginConfigurationsByPluginDefinitionKey(pluginDefinitionKey)
-          .pipe(catchError(() => of([])), shareReplay(1))
+          .pipe(
+            catchError(() => of([])),
+            shareReplay(1)
+          )
       );
     }
-    return this.configurationOptionsCache.get(pluginDefinitionKey) ?? of([]);
+    return this._configurationOptionsCache.get(pluginDefinitionKey) ?? of([]);
   }
 
   public onMappingChange(pluginDefinitionKey: string, configurationId: string): void {
@@ -150,26 +194,31 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     );
   }
 
-  public isInvalidSelection(
-    pluginDefinitionKey: string,
-    options: Array<PluginConfiguration> | null | undefined
-  ): boolean {
-    if (!options) return false;
-    if (options.length === 0) return true;
-    return !this.selectedMappings[pluginDefinitionKey];
-  }
-
-  public trackByPluginKey(_: number, pluginKey: string): string {
-    return pluginKey;
+  private buildDropdownItems(
+    options: Array<PluginConfiguration>,
+    selectedId: string | null | undefined,
+    placeholder: string
+  ): Array<ListItem> {
+    return [
+      {
+        id: '',
+        content: placeholder,
+        selected: !selectedId,
+      },
+      ...options.map(
+        option =>
+          ({
+            id: option.id,
+            content: option.title,
+            selected: selectedId === option.id || (options.length === 1 && !selectedId),
+          }) as ListItem
+      ),
+    ];
   }
 
   private checkSingleBuildingBlockType(types: Array<ProcessLinkType>): boolean {
     if (!types?.length) return false;
-    return (
-      types.length === 1 &&
-      types[0]?.processLinkType === 'building-block' &&
-      types[0].enabled
-    );
+    return types.length === 1 && types[0]?.processLinkType === 'building-block' && types[0].enabled;
   }
 
   public onVersionChange(versionTag: string): void {
@@ -260,9 +309,12 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
 
   private getMappingsForPayload(): Record<string, string> {
     const mappings = this.buildingBlockStateService.getPluginConfigurationMappingsSnapshot();
-    return Object.entries(mappings).reduce((acc, [pluginKey, configurationId]) => {
-      if (configurationId) acc[pluginKey] = configurationId;
-      return acc;
-    }, {} as Record<string, string>);
+    return Object.entries(mappings).reduce(
+      (acc, [pluginKey, configurationId]) => {
+        if (configurationId) acc[pluginKey] = configurationId;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   }
 }

@@ -13,23 +13,20 @@
 }
 
 .plugin-row {
-  display: flex;
-  flex-direction: row;
+  display: grid;
   align-items: center;
-  justify-content: space-between;
-  height: 40px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 15px;
 
-
-}
-
-.helper-text {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #8d8d8d;
-
-  &.warning {
-    color: #a2191f;
+  .plugin-label {
+    padding-left: 16px;
+    border-block-end: 1px solid var(--cds-border-strong);
+    height: 100%;
+    margin-right: 15px;
+    display: grid;
+    align-items: center;
   }
+
 }
 
 .plugin-list {
