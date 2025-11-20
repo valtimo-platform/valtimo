@@ -144,7 +144,12 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
     this.$disabled.set(disabled);
   }
 
-  public writeValue(value: string): void {
+  public writeValue(value: string | null): void {
+    if (value === null || value === '') {
+      this.resetInternalState();
+      return;
+    }
+
     this.value = value ?? '';
   }
 
@@ -181,11 +186,18 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
       .replace(/_[-_]+/g, '_')
       .replace(/^[^a-z]+/g, '');
 
-    if (!usedKeys.includes(baseKey)) {
+    if (!usedKeys.includes(baseKey) || this._mode$.getValue() === 'edit') {
       return baseKey;
     }
 
     return this.getUniqueKeyWithNumber(baseKey, usedKeys);
+  }
+
+  private resetInternalState(): void {
+    this.value = '';
+    this.idError$.next(null);
+    this.disableKeyEditing();
+    this.duplicateInitialized = false;
   }
 
   private updateKey(
