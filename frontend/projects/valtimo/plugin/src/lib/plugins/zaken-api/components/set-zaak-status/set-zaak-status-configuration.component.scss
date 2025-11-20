@@ -22,3 +22,18 @@
   width: 100%;
   align-items: center;
 }
+
+.date-time-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.timepicker cds-time-picker {
+  height: 3rem !important;
+}
+
+.date-time-row cds-date-picker,
+.date-time-row cds-timepicker {
+  display: block;
+}
