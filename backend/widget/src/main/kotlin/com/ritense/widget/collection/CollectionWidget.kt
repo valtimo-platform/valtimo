@@ -18,14 +18,14 @@ package com.ritense.widget.collection
 
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
 import java.util.UUID
+import org.hibernate.annotations.Type
 
 @AllOpen
 @Entity
@@ -76,4 +76,6 @@ class CollectionWidget(
         displayConditions = this.displayConditions,
         properties = this.properties,
     )
+
+    override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }

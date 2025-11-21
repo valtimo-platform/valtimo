@@ -146,13 +146,15 @@ class BuildingBlockAutoConfiguration {
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
-        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        authorizationService: AuthorizationService
     ): BuildingBlockManagementService {
         return BuildingBlockManagementService(
             buildingBlockDefinitionRepository,
             buildingBlockDocumentDefinitionService,
             buildingBlockDefinitionProcessDefinitionService,
-            buildingBlockDefinitionChecker
+            buildingBlockDefinitionChecker,
+            authorizationService
         )
     }
 

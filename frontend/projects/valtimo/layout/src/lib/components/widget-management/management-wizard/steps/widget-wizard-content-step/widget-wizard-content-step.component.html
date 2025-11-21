@@ -13,9 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-@if ($widgetContext() === 'case' && !$disableProcessSelector()) {
-  <ng-template #processSelector>
-    <valtimo-widget-management-process-selector></valtimo-widget-management-process-selector>
+@if (!$disableActionButton()) {
+  <ng-template #actionButton>
+    <valtimo-widget-management-action-button></valtimo-widget-management-action-button>
   </ng-template>
 }
 

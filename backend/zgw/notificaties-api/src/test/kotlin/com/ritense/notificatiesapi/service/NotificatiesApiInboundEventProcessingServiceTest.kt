@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.support.SimpleTransactionStatus
 import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
@@ -44,6 +48,7 @@ class NotificatiesApiInboundEventProcessingServiceTest {
     private lateinit var properties: NotificatiesApiProcessingProperties
     private lateinit var objectMapper: ObjectMapper
     private lateinit var service: NotificatiesApiInboundEventProcessingService
+    private lateinit var transactionManager: PlatformTransactionManager
 
     @BeforeEach
     fun setup() {
@@ -59,11 +64,13 @@ class NotificatiesApiInboundEventProcessingServiceTest {
         objectMapper = ObjectMapper()
             .registerKotlinModule()
             .registerModule(JavaTimeModule())
+        transactionManager = NoOpTransactionManager()
         service = NotificatiesApiInboundEventProcessingService(
             repository,
             publisher,
             objectMapper,
-            properties
+            properties,
+            transactionManager
         )
     }
 
@@ -149,4 +156,10 @@ class NotificatiesApiInboundEventProcessingServiceTest {
             kenmerken = mapOf("a" to "1")
         )
     }
+}
+
+private class NoOpTransactionManager : PlatformTransactionManager {
+    override fun getTransaction(definition: TransactionDefinition?): TransactionStatus = SimpleTransactionStatus()
+    override fun commit(status: TransactionStatus) {}
+    override fun rollback(status: TransactionStatus) {}
 }

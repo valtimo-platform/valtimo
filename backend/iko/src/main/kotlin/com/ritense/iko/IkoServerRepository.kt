@@ -102,7 +102,7 @@ class IkoServerRepository(
             connectorTag = config[CONNECTOR_TAG].toString(),
             connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
             endpointOperation = config[ENDPOINT_OPERATION].toString(),
-            filters = filterMap,
+            queryParams = filterMap,
         )
 
         val arrayData = breathFirstSearch(data) { it is ArrayNode } as ArrayNode?
@@ -112,18 +112,21 @@ class IkoServerRepository(
 
     override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
         val aggregatedDataProfileName = config[AGGREGATED_DATA_PROFILE_NAME] as String?
+        val queryParams = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
 
         return if (!aggregatedDataProfileName.isNullOrBlank()) {
             getPlugin(config).getByAggregatedDataProfileId(
                 aggregatedDataProfileName = aggregatedDataProfileName,
-                id = id.toString()
+                id = id.toString(),
+                queryParams = queryParams,
             )
         } else {
             getPlugin(config).getByEndpointId(
                 connectorTag = config[CONNECTOR_TAG].toString(),
                 connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
                 endpointOperation = config[ENDPOINT_OPERATION].toString(),
-                id = id.toString()
+                id = id.toString(),
+                queryParams = queryParams,
             )
         }
     }

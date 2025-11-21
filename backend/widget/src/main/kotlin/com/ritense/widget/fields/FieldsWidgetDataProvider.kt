@@ -26,20 +26,7 @@ class FieldsWidgetDataProvider(
     override fun supportedWidgetType() = FieldsWidget::class.java
 
     override fun getData(widget: FieldsWidget, properties: Map<String, Any>): Any {
-        val unresolvedColumnValues = widget.properties.columns.flatMap { column ->
-            column.map { field -> field.value }
-        }
-
-        val unresolvedValues = unresolvedColumnValues.toSet()
-        val resolvedValues = valueResolverService.resolveValues(properties, unresolvedValues)
-
-        val resolvedFields = widget.properties.columns.flatMap { column ->
-            column.map { field ->
-                field.key to resolvedValues[field.value]
-            }
-        }.toMap()
-
-        return resolvedFields + widget.getExposedValues { path -> resolvedValues[path] }
+        val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
+        return widget.getExposedValues { path -> resolvedValues[path] }
     }
-
 }
