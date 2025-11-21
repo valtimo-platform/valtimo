@@ -46,7 +46,7 @@ public class RequestHelper {
     }
 
     /**
-     * This method retrieves the ZoneOffset from the X-Timezone-Offset header.
+     * This method retrieves the ZoneOffset from the Timezone Offset header.
      * When the header is not present, UTC is returned.
      *
      * @return ZoneOffset
@@ -56,7 +56,7 @@ public class RequestHelper {
     }
 
     /**
-     * This method retrieves the ZoneOffset from the TIMEZONE_OFFSET_HEADER header, if present and valid.
+     * This method retrieves the ZoneOffset from the Timezone Offset header, if present and valid.
      */
     public static Optional<ZoneOffset> getRequestZoneOffset() {
         ZoneOffset zoneOffset = null;
