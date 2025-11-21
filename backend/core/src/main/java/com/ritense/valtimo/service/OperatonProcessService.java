@@ -696,16 +696,8 @@ public class OperatonProcessService {
             CaseDefinitionId existingCaseDefinitionId =
                 CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
 
-
-            // return if the existing version tag already refers to the passed case definition key
-            if (binding != null &&
-                existingCaseDefinitionId != null &&
-                existingCaseDefinitionId.getKey().equals(caseDefinitionId.getKey())) {
-                return;
-            }
-
-            // return if there is already a version tag and it's not a case definition version tag
-            if (existingCaseDefinitionId == null && existingVersionTag != null) {
+            // return if binding is null, or if there is already a version tag and it's not a case definition version tag
+            if (binding != null && (existingCaseDefinitionId == null && existingVersionTag != null)) {
                 return;
             }
 
