@@ -16,13 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  Subscription,
-  take,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {SelectItem} from '@valtimo/components';
 
@@ -32,7 +26,9 @@ import {SelectItem} from '@valtimo/components';
   providers: [PluginTranslatePipe],
   standalone: false,
 })
-export class CreateZaakObjectConfigurationComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateZaakObjectConfigurationComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() set pluginId(value: string) {
@@ -40,42 +36,41 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
   }
   @Input() prefillConfiguration$: Observable<any>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<any> =
-    new EventEmitter<any>();
+  @Output() configuration: EventEmitter<any> = new EventEmitter<any>();
 
   readonly pluginId$ = new BehaviorSubject<string>('');
   public readonly objectTypeOptions: Array<SelectItem> = [
-    { id: 'adres', text: 'adres' },
-    { id: 'besluit', text: 'besluit' },
-    { id: 'buurt', text: 'buurt' },
-    { id: 'enkelvoudig_document', text: 'enkelvoudig_document' },
-    { id: 'gemeente', text: 'gemeente' },
-    { id: 'gemeentelijke_openbare_ruimte', text: 'gemeentelijke_openbare_ruimte' },
-    { id: 'huishouden', text: 'huishouden' },
-    { id: 'inrichtingselement', text: 'inrichtingselement' },
-    { id: 'kadastrale_onroerende_zaak', text: 'kadastrale_onroerende_zaak' },
-    { id: 'kunstwerkdeel', text: 'kunstwerkdeel' },
-    { id: 'maatschappelijke_activiteit', text: 'maatschappelijke_activiteit' },
-    { id: 'medewerker', text: 'medewerker' },
-    { id: 'natuurlijk_persoon', text: 'natuurlijk_persoon' },
-    { id: 'niet_natuurlijk_persoon', text: 'niet_natuurlijk_persoon' },
-    { id: 'openbare_ruimte', text: 'openbare_ruimte' },
-    { id: 'organisatorische_eenheid', text: 'organisatorische_eenheid' },
-    { id: 'pand', text: 'pand' },
-    { id: 'spoorbaandeel', text: 'spoorbaandeel' },
-    { id: 'status', text: 'status' },
-    { id: 'terreindeel', text: 'terreindeel' },
-    { id: 'terrein_gebouwd_object', text: 'terrein_gebouwd_object' },
-    { id: 'vestiging', text: 'vestiging' },
-    { id: 'waterdeel', text: 'waterdeel' },
-    { id: 'wegdeel', text: 'wegdeel' },
-    { id: 'wijk', text: 'wijk' },
-    { id: 'woonplaats', text: 'woonplaats' },
-    { id: 'woz_deelobject', text: 'woz_deelobject' },
-    { id: 'woz_object', text: 'woz_object' },
-    { id: 'woz_waarde', text: 'woz_waarde' },
-    { id: 'zakelijk_recht', text: 'zakelijk_recht' },
-    { id: 'overige', text: 'overige' }
+    {id: 'adres', text: 'adres'},
+    {id: 'besluit', text: 'besluit'},
+    {id: 'buurt', text: 'buurt'},
+    {id: 'enkelvoudig_document', text: 'enkelvoudig_document'},
+    {id: 'gemeente', text: 'gemeente'},
+    {id: 'gemeentelijke_openbare_ruimte', text: 'gemeentelijke_openbare_ruimte'},
+    {id: 'huishouden', text: 'huishouden'},
+    {id: 'inrichtingselement', text: 'inrichtingselement'},
+    {id: 'kadastrale_onroerende_zaak', text: 'kadastrale_onroerende_zaak'},
+    {id: 'kunstwerkdeel', text: 'kunstwerkdeel'},
+    {id: 'maatschappelijke_activiteit', text: 'maatschappelijke_activiteit'},
+    {id: 'medewerker', text: 'medewerker'},
+    {id: 'natuurlijk_persoon', text: 'natuurlijk_persoon'},
+    {id: 'niet_natuurlijk_persoon', text: 'niet_natuurlijk_persoon'},
+    {id: 'openbare_ruimte', text: 'openbare_ruimte'},
+    {id: 'organisatorische_eenheid', text: 'organisatorische_eenheid'},
+    {id: 'pand', text: 'pand'},
+    {id: 'spoorbaandeel', text: 'spoorbaandeel'},
+    {id: 'status', text: 'status'},
+    {id: 'terreindeel', text: 'terreindeel'},
+    {id: 'terrein_gebouwd_object', text: 'terrein_gebouwd_object'},
+    {id: 'vestiging', text: 'vestiging'},
+    {id: 'waterdeel', text: 'waterdeel'},
+    {id: 'wegdeel', text: 'wegdeel'},
+    {id: 'wijk', text: 'wijk'},
+    {id: 'woonplaats', text: 'woonplaats'},
+    {id: 'woz_deelobject', text: 'woz_deelobject'},
+    {id: 'woz_object', text: 'woz_object'},
+    {id: 'woz_waarde', text: 'woz_waarde'},
+    {id: 'zakelijk_recht', text: 'zakelijk_recht'},
+    {id: 'overige', text: 'overige'},
   ];
 
   private saveSubscription!: Subscription;
@@ -99,17 +94,18 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
         object: input.object,
         objectType: input.objectType,
         relatieomschrijving: input.relatieomschrijving,
-      }
+      },
     };
 
     if (input.objectType === 'zakelijk_recht') {
       // Keep track of include flag for template condition
-      formValue.includeZakelijkRechtObjectIdentificatie = !!input.includeZakelijkRechtObjectIdentificatie;
+      formValue.includeZakelijkRechtObjectIdentificatie =
+        !!input.includeZakelijkRechtObjectIdentificatie;
 
       if (formValue.includeZakelijkRechtObjectIdentificatie) {
         formValue.zaakObjectRequest.objectIdentificatie = {
           identificatie: input.zakelijkRechtIdentificatie,
-          avgAard: input.zakelijkRechtAvgAard
+          avgAard: input.zakelijkRechtAvgAard,
         };
       }
     }
@@ -124,7 +120,7 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
         formValue.zaakObjectRequest.objectTypeOverigeDefinitie = {
           url: input.objectTypeOverigeDefinitieUrl,
           schema: input.objectTypeOverigeDefinitieSchema,
-          objectData: input.objectTypeOverigeDefinitieObjectData
+          objectData: input.objectTypeOverigeDefinitieObjectData,
         };
       }
     }
@@ -140,7 +136,7 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
       if (
         formValue.zaakObjectRequest.objectIdentificatie &&
         (!formValue.zaakObjectRequest.objectIdentificatie.identificatie ||
-        !formValue.zaakObjectRequest.objectIdentificatie.avgAard)
+          !formValue.zaakObjectRequest.objectIdentificatie.avgAard)
       ) {
         valid = false;
       }

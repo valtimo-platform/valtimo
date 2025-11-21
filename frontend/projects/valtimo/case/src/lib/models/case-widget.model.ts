@@ -1,4 +1,4 @@
-import { BasicWidget } from "@valtimo/layout";
+import {BasicWidget} from '@valtimo/layout';
 
 export interface CaseWidgetsRes {
   caseDefinitionKey: string;

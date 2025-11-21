@@ -48,6 +48,7 @@ interface WidgetAction {
 interface BasicWidget {
   type: WidgetType;
   title: string;
+  icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;

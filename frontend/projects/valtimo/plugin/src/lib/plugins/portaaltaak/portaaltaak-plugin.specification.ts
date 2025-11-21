@@ -143,61 +143,6 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       destination: 'Destination',
       source: 'Source',
     },
-    de: {
-      title: 'Portalaufgabe',
-      description:
-        'Eine Komponente für den Zugriff auf eine Portal-Aufgabenweiterleitungskomponente.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-      notificatiesApiPluginConfiguration: 'Benachrichtigungs-API plugin',
-      notificatiesApiPluginConfigurationTooltip:
-        'Wählen Sie das Benachrichtigungs-API-Plugin aus. Bleibt das Auswahlfeld leer, muss das Benachrichtigungs-API-Plugin erst erstellt werden.',
-      objectManagementConfiguration: 'Objektverwaltungskonfiguration',
-      objectManagementConfigurationTooltip:
-        'Wählen Sie die Objektverwaltungskonfiguration aus. Bleibt das Auswahlfeld leer, muss zunächst die Objektverwaltungskonfiguration erstellt werden.',
-      'create-portaaltaak': 'Portalaufgabe erstellen',
-      'complete-portaaltaak': 'Portalaufgabe abschließen',
-      formType: 'Formulartyp',
-      formTypeTooltip:
-        'Wählen Sie hier aus, ob das anzuzeigende Formular aus einer Set-Definition oder von einer externen URL stammen soll.',
-      id: 'Formulardefinition',
-      url: 'URL',
-      sendData: 'Auftragsdaten für den Empfänger',
-      sendDataTooltip:
-        "Geben Sie hier Schlüssel und Werte für Daten ein, die an die Objecten API gesendet werden sollen. Der Schlüssel ist hier der Pfad im Objekt, das gefüllt werden soll (z. B. 'firstName'). Der Wert zeigt auf die Daten, mit denen dieses Feld gefüllt werden muss (z. B. 'doc:/customer/firstName').",
-      receiveData: 'Vom Empfänger eingegebene Informationen',
-      receiveDataTooltip:
-        "Geben Sie hier Schlüssel und Werte für Daten ein, die von der Objecten API empfangen werden sollen. Der Schlüssel ist hier der Ort, an dem die Daten gespeichert werden sollen (z. B. 'doc:/customer/signedAgreement'). Der Wert zeigt auf den Pfad im Objekt, aus dem die Daten stammen sollen (z. B. '/signedAgreement').",
-      receiver: 'Empfänger',
-      receiverTooltip:
-        'Bestimmen Sie hier, wer die Daten der abgeschlossenen Aufgabe erhalten soll.',
-      zaakInitiator: 'Initiator des Falles',
-      other: 'Andere',
-      otherReceiver: 'Anderer Empfänger',
-      otherReceiverTooltip:
-        'Sie haben die Option für einen anderen Empfänger gewählt. Wählen Sie hier aus, welcher Typ das sein soll.',
-      kvk: 'KVK-Nummer',
-      bsn: 'Bürgerservicenummer (BSN)',
-      kvkTooltip: 'Die KVK-Nummer des gewünschten Empfängers.',
-      bsnTooltip: 'Die Bürgerservicenummer (BSN) des gewünschten Empfängers.',
-      completeTaakProcess: 'Handhabungsprozess für hochgeladene Dokumente',
-      completeTaakProcessTooltip:
-        'Der Prozess, der die hochgeladenen Dokumente im Portal handhaben soll.',
-      identificationKey: 'Identifikationsschlüssel',
-      identificationKeyTooltip:
-        "Der eingegebene Schlüssel bestimmt, wie der Empfänger identifiziert wird. Gültige Beispiele sind 'bsn' oder 'kvk'.",
-      identificationValue: 'Identifikationswert',
-      identificationValueTooltip:
-        "Der Wert, der den Empfänger identifiziert. Wird beispielsweise im Feld 'Identifikationsschlüssel' der Wert 'bsn' eingetragen, kann in diesem Feld eine Sozialversicherungsnummer eingetragen werden (z. B. 558099476).",
-      verloopDurationInDays: 'Ablaufzeit der Aufgabe in Tagen',
-      verloopDurationInDaysTooltip:
-        'Die Anzahl der Tage vom Erstellungszeitpunkt bis zum Ablauf der Aufgabe. Dies wird nur in der Portalaufgabe verwendet. Das BPMN-Fälligkeitsdatum muss separat konfiguriert werden.',
-      destinationInObject: 'Pfad im Objekt',
-      value: 'Wert',
-      destination: 'Ziel',
-      source: 'Quelle',
-    },
   },
 };
 
