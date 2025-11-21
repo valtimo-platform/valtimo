@@ -272,7 +272,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Resultaat process variable',
       resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
-      rolUuidTooltip: 'De UUID van de rol'
+      rolUuidTooltip: 'De UUID van de rol',
+      createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
     },
     en: {
       title: 'Zaken API',
@@ -687,6 +689,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle'
+      rolUuidTooltip: 'The UUID of the rol',
+      createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
     },
   },
 };

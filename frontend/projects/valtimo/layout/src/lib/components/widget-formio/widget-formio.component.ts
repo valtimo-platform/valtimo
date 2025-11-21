@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, DestroyRef} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   BehaviorSubject,
-  Subscription,
   combineLatest,
   filter,
   map,
   Observable,
   of,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
 import {FormService} from '@valtimo/form';
 import {FormioForm} from '@formio/angular';
-import {FormIoModule} from '@valtimo/components';
+import {FormIoModule, MdiIconViewerComponent} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {FormioWidgetWidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
@@ -41,7 +41,14 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   selector: 'valtimo-widget-formio',
   templateUrl: './widget-formio.component.html',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule, WidgetActionButtonComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormIoModule,
+    ButtonModule,
+    WidgetActionButtonComponent,
+    MdiIconViewerComponent,
+  ],
   styleUrls: ['./widget-formio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -55,6 +62,11 @@ export class WidgetFormioComponent {
     this._widgetConfigurationSubject$.next(value);
   }
 
+  @Input() public set widgetData(value: object) {
+    if (!value) return;
+    this.widgetData$.next(value);
+  }
+
   @Input() public set widgetUuid(value: string) {
     this._widgetUuid = value;
     this._hasSignalledExternalDataReady = false;
@@ -63,6 +75,7 @@ export class WidgetFormioComponent {
   }
 
   private readonly _refreshTrigger$ = new BehaviorSubject<void>(undefined);
+  public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   private _refreshEmitter: EventEmitter<void> | null = null;
   private _refreshSubscription: Subscription | null = null;

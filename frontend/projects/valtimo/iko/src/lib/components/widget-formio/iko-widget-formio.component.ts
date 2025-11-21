@@ -17,7 +17,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, filter, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap, tap} from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {
@@ -25,6 +25,8 @@ import {
   WidgetFormioComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
+import {IkoApiService} from '../../services';
+import {IkoWidgetParams} from '../../models';
 
 // TODO: remove component, document id is required, which makes no sense for iko
 @Component({
@@ -39,6 +41,12 @@ export class IkoWidgetFormioComponent {
     if (!value) return;
     this._widgetConfigurationSubject$.next(value);
   }
+
+  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
+  @Input() public set widgetParams(value: IkoWidgetParams) {
+    this._widgetParams$.next(value);
+  }
+
   @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigurationSubject$ =
@@ -47,5 +55,25 @@ export class IkoWidgetFormioComponent {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
-  constructor(private readonly layoutService: WidgetLayoutService) {}
+  public readonly widgetData$ = combineLatest([
+    this.widgetConfiguration$,
+    this._widgetParams$,
+  ]).pipe(
+    switchMap(([widgetConfiguration, widgetParams]) =>
+      !widgetParams || !widgetConfiguration
+        ? of(null)
+        : this.ikoApiService.getIkoWidgetData(
+            widgetParams.dataAggregateKey,
+            widgetParams.tabKey,
+            widgetConfiguration.key,
+            widgetParams.entryId
+          )
+    ),
+    tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
+  );
+
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 }

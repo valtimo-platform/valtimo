@@ -17,12 +17,10 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   HostBinding,
   Inject,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewEncapsulation,
   WritableSignal,
@@ -41,6 +39,7 @@ import {
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  MdiIconSelectorComponent,
   ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
@@ -69,7 +68,7 @@ import {
 } from '../../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
-import { toObservable } from '@angular/core/rxjs-interop';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   templateUrl: './widget-management-collection.component.html',
@@ -88,6 +87,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
     IconModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    MdiIconSelectorComponent,
   ],
 })
 export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
@@ -95,6 +95,7 @@ export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
 
   public readonly widgetForm = this.fb.group({
     title: this.fb.control(this.widgetWizardService.$widgetTitle() ?? '', Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
     defaultPageSize: this.fb.control(
       (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.defaultPageSize ?? 5,
       Validators.required
@@ -303,6 +304,7 @@ export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.widgetForm.valueChanges.pipe(debounceTime(500)).subscribe(value => {
         this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
+        this.widgetWizardService.$widgetIcon.set(value?.widgetIcon ?? '');
 
         this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>

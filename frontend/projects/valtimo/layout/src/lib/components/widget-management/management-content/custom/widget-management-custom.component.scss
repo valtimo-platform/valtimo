@@ -36,4 +36,13 @@
       margin-top: 8px;
     }
   }
+
+  &__title-container {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__title-input {
+    max-width: 300px;
+  }
 }
