@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {MapWidget, WidgetAction, WidgetMapComponent, WidgetLayoutService} from '@valtimo/layout';
+import {MapWidget, WidgetMapComponent, WidgetLayoutService} from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';

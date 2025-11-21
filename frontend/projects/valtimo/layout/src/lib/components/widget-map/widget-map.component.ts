@@ -41,7 +41,6 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import {FullScreen, defaults} from 'ol/control';
 import {Icon, Fill, Stroke, Style} from 'ol/style';
-import {MapModalComponent} from './map-modal/map-modal.component';
 
 @Component({
   selector: 'valtimo-widget-map',
@@ -58,7 +57,6 @@ import {MapModalComponent} from './map-modal/map-modal.component';
     EllipsisPipe,
     ButtonModule,
     WidgetActionButtonComponent,
-    MapModalComponent,
   ],
 })
 export class WidgetMapComponent implements AfterViewInit, OnDestroy {
@@ -73,7 +71,6 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
 
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleMap$ = new BehaviorSubject<boolean>(true);
-  public readonly showMapModal$ = new BehaviorSubject<boolean>(false);
 
   @Input() public set widgetData(value: object) {
     if (!value) return;
@@ -102,7 +99,7 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private openWidthObserver(): void {
-    this._observer = new ResizeObserver(event => this.fitMap(this.vectorLayer?.getSource()));
+    this._observer = new ResizeObserver(() => this.fitMap(this.vectorLayer?.getSource()));
     this._observer.observe(this._widgetMapRef.nativeElement);
   }
 
@@ -133,9 +130,6 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     fullscreen.on('leavefullscreen', () => {
       console.log('leavefullscreen', this.map.getInteractions());
       this.map.getInteractions().forEach(i => i.setActive(false));
-    });
-    this.map.on('click', () => {
-      this.showMapModal$.next(true);
     });
 
     const featureOptions = {

@@ -16,16 +16,23 @@
 
 package com.ritense.case_.widget.map
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.map.geojson.GeoJson
+import com.ritense.widget.map.geojson.GeoJsonMapper
 import java.util.UUID
 import org.springframework.data.domain.Pageable
 
 class MapCaseWidgetDataProvider(
     private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper,
+    private val geoJsonMappers: List<GeoJsonMapper>,
 ) : CaseWidgetDataProvider {
 
     override fun supports(widget: Any): Boolean = widget is MapCaseWidget
@@ -41,6 +48,15 @@ class MapCaseWidgetDataProvider(
             mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
             widget.getUnresolvedValues()
         )
-        return widget.getExposedValues { path -> resolvedValues[path] }
+        val geoJsonFeatures = widget.properties.geoJsonSources.flatMap { geoJsonSrc ->
+            val geoJsonNode = objectMapper.convertValue<JsonNode>(resolvedValues[geoJsonSrc.key])
+            val mapper = geoJsonMappers.firstOrNull { mapper -> mapper.supports(geoJsonNode) }
+                ?: error("unsupported widget map data: $geoJsonNode")
+            mapper.mapToFeatures(geoJsonNode)
+        }
+
+        return widget.getExposedValues { path -> resolvedValues[path] } + mapOf(
+            "geoJsonFeatureCollection" to GeoJson.FeatureCollection(geoJsonFeatures)
+        )
     }
 }

@@ -60,6 +60,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.map.geojson.GeoJsonMapper
 import jakarta.validation.Validator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -259,7 +260,13 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun mapCaseWidgetDataProvider(
         valueResolverService: ValueResolverService,
-    ) = MapCaseWidgetDataProvider(valueResolverService)
+        objectMapper: ObjectMapper,
+        geoJsonMappers: List<GeoJsonMapper>,
+    ) = MapCaseWidgetDataProvider(
+        valueResolverService,
+        objectMapper,
+        geoJsonMappers,
+    )
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
     @Bean

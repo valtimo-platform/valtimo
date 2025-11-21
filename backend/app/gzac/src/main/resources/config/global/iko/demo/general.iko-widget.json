@@ -382,7 +382,7 @@
             "type": "map",
             "key": "atlas",
             "title": "Atlas",
-            "width": 4,
+            "width": 1,
             "highContrast": false,
             "actions": [],
             "displayConditions": [],

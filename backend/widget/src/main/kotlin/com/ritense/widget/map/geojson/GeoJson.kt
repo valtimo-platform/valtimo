@@ -18,7 +18,6 @@ package com.ritense.widget.map.geojson
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -38,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 )
 sealed interface GeoJson {
 
-    @JsonTypeName("FeatureCollection")
     data class FeatureCollection(val features: List<Feature>) : GeoJson
 
     data class Feature(

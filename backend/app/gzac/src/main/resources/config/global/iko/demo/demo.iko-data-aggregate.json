@@ -1,7 +1,7 @@
 {
     "key": "demo",
     "ikoRepositoryConfigKey": "iko-server",
-    "title": "Klantbeeld v2",
+    "title": "Klant",
     "properties": {
         "connectorTag": "demo",
         "connectorInstanceTag": "demo1",
