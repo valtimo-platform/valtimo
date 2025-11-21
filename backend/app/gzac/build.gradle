@@ -40,7 +40,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
-def includeDevSources = project.findProperty("includeDev") ?: true
+def includeDevSources = project.findProperty("includeDev") ?: false
 
 if (includeDevSources) {
     extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
