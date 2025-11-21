@@ -17,15 +17,16 @@
 package com.ritense.case_.widget.collection
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import jakarta.validation.Valid
 
 @JsonTypeName("collection")
 data class CollectionCaseWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction>? = emptyList(),

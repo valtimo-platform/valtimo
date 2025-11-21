@@ -19,9 +19,9 @@ import {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
-  WidgetTableContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 import {Condition} from '@valtimo/shared';
@@ -50,6 +50,7 @@ interface WidgetAction {
 interface BasicWidget {
   type: WidgetType;
   title: string;
+  icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
