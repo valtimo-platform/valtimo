@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-11-13 16:42:13.
+// Generated using typescript-generator version 3.2.1263 on 2025-11-17 15:13:46.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -17,6 +17,7 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+    imageBase64: string | null;
 }
 
 export interface BuildingBlockProcessDefinitionDto {

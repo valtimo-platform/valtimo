@@ -1798,14 +1798,27 @@
     "selectVersion": "Wählen Sie eine Version aus",
     "activity": "Prozessaktivität",
     "selectActivity": "Wählen Sie eine Prozessaktivität aus",
-    "noProcess": "Kein Upload-Prozess"
+    "noProcess": "Kein Upload-Prozess",
+    "buildingBlock": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "selectLabel": "Baustein",
+      "emptyState": "Keine Bausteine verfügbar. Erstellen Sie zuerst einen Baustein.",
+      "noRequirements": "Dieser Baustein benötigt keine Plugin-Konfigurationen.",
+      "configurationLabel": "Plugin-Konfiguration",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Wählen Sie eine Konfiguration",
+      "versionLabel": "Bausteinversion wählen",
+      "versionPlaceholder": "Wählen Sie eine Version"
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formular",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Building block"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Linktyp wählen",

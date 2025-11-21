@@ -1,0 +1,34 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.empty-state {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f4f4f4;
+  color: #8d8d8d;
+}
+
+.plugin-row {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 15px;
+
+  .plugin-label {
+    padding-left: 16px;
+    border-block-end: 1px solid var(--cds-border-strong);
+    height: 100%;
+    margin-right: 15px;
+    display: grid;
+    align-items: center;
+  }
+
+}
+
+.plugin-list {
+  margin-top: 30px;
+}

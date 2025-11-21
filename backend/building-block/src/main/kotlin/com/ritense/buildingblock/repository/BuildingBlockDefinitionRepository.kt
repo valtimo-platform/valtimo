@@ -23,7 +23,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 
-interface BuildingBlockDefinitionRepository
-    : JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>, JpaSpecificationExecutor<BuildingBlockDefinition> {
+interface BuildingBlockDefinitionRepository :
+    JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>,
+    JpaSpecificationExecutor<BuildingBlockDefinition> {
+
+    fun findAllByIdKeyOrderByIdVersionTag(key: String): List<BuildingBlockDefinition>
     fun findAllByIdKey(key: String, pageable: Pageable): Page<BuildingBlockDefinition>
 }

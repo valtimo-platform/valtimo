@@ -237,6 +237,52 @@ export class ProcessLinkStepService {
       });
   }
 
+  setBuildingBlockSteps(): void {
+    this._hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneType => {
+      this._steps$.next([
+        {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
+        {label: 'selectBuildingBlock'},
+        {label: 'configureBuildingBlockPlugins', disabled: true},
+      ]);
+      this._currentStepIndex$.next(hasOneType ? 0 : 1);
+      this.buttonService.showBackButton();
+      this.buttonService.showNextButton();
+      this.buttonService.hideSaveButton();
+      this.buttonService.disableNextButton();
+    })
+  }
+
+  setConfigureBuildingBlockPluginsStep(selectionLabel?: string): void {
+    this._hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneType => {
+      const steps = hasOneType
+        ? [
+            {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
+            {label: 'configureBuildingBlockPlugins'},
+          ]
+        : [
+            {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
+            {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
+            {label: 'configureBuildingBlockPlugins'},
+          ];
+
+      this._steps$.next(steps);
+      this._currentStepIndex$.next(hasOneType ? 1 : 2);
+      this.buttonService.hideNextButton();
+      this.buttonService.showSaveButton();
+      this.buttonService.disableSaveButton();
+      this.buttonService.showBackButton();
+    });
+  }
+
+  updateBuildingBlockSelectionStepLabel(label: string): void {
+    const steps = this._steps$.getValue();
+    if (!steps?.length) return;
+    const updatedSteps = steps.map(step =>
+      step.label === 'selectBuildingBlock' ? {...step, secondaryLabel: label} : step
+    );
+    this._steps$.next(updatedSteps);
+  }
+
   public setURLSteps(): void {
     this._steps$.next([
       {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.url'},
@@ -295,6 +341,9 @@ export class ProcessLinkStepService {
           this.buttonService.showBackButton();
           this.buttonService.showNextButton();
         }
+        break;
+      case 'building-block':
+        this.setBuildingBlockSteps();
         break;
       case 'url':
         if (hasOneOption) {

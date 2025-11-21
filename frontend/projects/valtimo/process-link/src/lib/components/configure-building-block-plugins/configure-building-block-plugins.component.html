@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="configure-building-block-plugins">
+
+  @if (versionItems$ | async; as versionItems) {
+    @let versionPlaceholder = versionPlaceholder$ | async;
+    <div class="version-select">
+      <cds-dropdown
+        cdsLayer
+        size="lg"
+        [appendInline]="true"
+        [label]="'processLinkConfiguration.buildingBlock.versionLabel' | translate"
+        [placeholder]="versionPlaceholder || ''"
+        (selected)="onVersionChange($event?.item?.id || '')"
+      >
+        <cds-dropdown-list [items]="versionItems"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+  }
+
+  @if (loading$ | async ) {
+    <div class="loading-container">
+      <cds-loading></cds-loading>
+    </div>
+  } @else {
+    <div class="plugin-list">
+      @if (definitionVersionTag$ | async;) {
+        @if (pluginConfigurationViewModels$ | async; as pluginConfigurationViewModels) {
+          @if (pluginConfigurationViewModels.length === 0) {
+
+            <div class="empty-state">
+              {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
+            </div>
+
+          } @else {
+            @let configurationPlaceholder = configurationPlaceholder$ | async;
+
+            <div class="plugin-row">
+              <v-input-label
+                [title]="'processLinkConfiguration.buildingBlock.pluginLabel' | translate"
+              >
+              </v-input-label>
+              <v-input-label
+                [title]="'processLinkConfiguration.buildingBlock.configurationLabel' | translate"
+                required="true"
+              >
+              </v-input-label>
+            </div>
+
+            @for (plugin of pluginConfigurationViewModels; track plugin.key) {
+              <div class="plugin-row">
+                <div class="plugin-label">
+                  {{plugin.label}}
+                </div>
+
+                <cds-dropdown
+                  cdsLayer
+                  size="lg"
+                  [appendInline]="true"
+                  [placeholder]="configurationPlaceholder || ''"
+                  (selected)="onMappingChange(plugin.key, $event?.item?.id || '')"
+                >
+                  <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
+                </cds-dropdown>
+              </div>
+            }
+          }
+        }
+      }
+    </div>
+  }
+</div>

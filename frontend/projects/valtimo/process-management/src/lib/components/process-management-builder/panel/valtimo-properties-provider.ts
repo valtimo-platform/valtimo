@@ -221,6 +221,42 @@ const CustomRootElement = (props: {
     </div>`;
   }
 
+  const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
+  const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
+
+  if (buildingBlockDefinitionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title"
+          >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
+        >
+
+        <cds-tag
+          class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.building-block')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
   const pluginActionTranslation =
     pluginTranslationService.instantByPluginActionKey(pluginActionKey);
