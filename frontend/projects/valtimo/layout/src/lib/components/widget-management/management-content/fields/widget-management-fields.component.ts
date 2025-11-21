@@ -19,19 +19,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  EventEmitter,
   HostBinding,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {InputLabelModule} from '@valtimo/components';
-import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
+import {InputLabelModule, MdiIconSelectorComponent} from '@valtimo/components';
+import {
+  ButtonModule,
+  IconModule,
+  InputModule,
+  LayerModule,
+  Tab,
+  TabsModule,
+} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
@@ -53,6 +58,8 @@ import {WidgetManagementFieldsColumnComponent} from './column/widget-management-
     ButtonModule,
     WidgetManagementFieldsColumnComponent,
     InputLabelModule,
+    MdiIconSelectorComponent,
+    LayerModule,
   ],
 })
 export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, AfterViewInit {
@@ -63,6 +70,7 @@ export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, After
 
   public form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
   });
 
   public readonly $columns = signal<null[]>([null]);
@@ -95,6 +103,7 @@ export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, After
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
         this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
+        this.widgetWizardService.$widgetIcon.set(formValue.widgetIcon ?? '');
         this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._contentValid());
       })
     );

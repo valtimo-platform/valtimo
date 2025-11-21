@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Inject,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  MdiIconSelectorComponent,
+} from '@valtimo/components';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
-import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
+import {
+  DropdownModule,
+  InputModule,
+  LayerModule,
+  ListItem,
+  SelectModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
@@ -46,15 +50,23 @@ import {WidgetFormioContent} from '../../../../models';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
+    InputLabelModule,
+    MdiIconSelectorComponent,
+    LayerModule,
   ],
 })
 export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit {
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon(), Validators.required),
   });
 
   public get widgetTitle(): AbstractControl<string | null> | null {
     return this.form.get('widgetTitle');
+  }
+
+  public get widgetIcon(): AbstractControl<string | null> | null {
+    return this.form.get('widgetIcon');
   }
 
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
@@ -109,6 +121,7 @@ export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit 
   public ngOnInit(): void {
     this.fetchFormDefinition();
     this.openTitleSubscription();
+    this.openIconSubscription();
     this.prefill();
   }
 
@@ -120,6 +133,14 @@ export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit 
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
         this.widgetWizardService.$widgetTitle.set(title);
+      })
+    );
+  }
+
+  private openIconSubscription(): void {
+    this._subscriptions.add(
+      this.widgetIcon?.valueChanges.subscribe(icon => {
+        this.widgetWizardService.$widgetIcon.set(icon);
       })
     );
   }

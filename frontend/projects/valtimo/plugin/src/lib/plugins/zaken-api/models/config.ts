@@ -107,7 +107,7 @@ interface CreateZaakConfig {
   communicationChannel?: string;
   paymentIndication?: string;
   caseGeometryType?: string;
-  caseGeometryCoordinates?: string,
+  caseGeometryCoordinates?: string;
   mainCase?: string;
 }
 

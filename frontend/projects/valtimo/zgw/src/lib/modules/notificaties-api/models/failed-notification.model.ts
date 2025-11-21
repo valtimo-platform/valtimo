@@ -37,8 +37,4 @@ interface FailedNotificationPageRequest {
   sort?: string;
 }
 
-export {
-  FailedNotification,
-  FailedNotificationPageRequest,
-  NotificatiesApiInboundEventStatus,
-};
+export {FailedNotification, FailedNotificationPageRequest, NotificatiesApiInboundEventStatus};

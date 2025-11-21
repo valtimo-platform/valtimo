@@ -22,7 +22,7 @@ import {GetStatustypenConfig} from '../../models';
 @Component({
   standalone: false,
   selector: 'valtimo-get-statustypen-configuration',
-  templateUrl: './get-statustypen-configuration.component.html'
+  templateUrl: './get-statustypen-configuration.component.html',
 })
 export class GetStatustypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -35,8 +35,7 @@ export class GetStatustypenConfigurationComponent
     new EventEmitter<GetStatustypenConfig>();
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  private readonly _formValue$ =
-    new BehaviorSubject<GetStatustypenConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<GetStatustypenConfig | null>(null);
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
@@ -54,9 +53,7 @@ export class GetStatustypenConfigurationComponent
   }
 
   private handleValid(formValue: GetStatustypenConfig): void {
-    const valid = !!(
-      formValue.processVariable
-    );
+    const valid = !!formValue.processVariable;
 
     this._valid$.next(valid);
     this.valid.emit(valid);

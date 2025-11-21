@@ -18,8 +18,8 @@ package com.ritense.widget.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -30,6 +30,7 @@ interface WidgetDto {
     @get:NotBlank
     val key: String
     val title: String
+    val icon: String?
 
     @get:Min(1)
     @get:Max(4)

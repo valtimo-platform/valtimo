@@ -8,6 +8,7 @@ This folder contains:
 ### Starting the Valtimo platform
 
 Starting up the Valtimo platform requires two steps:
+
 1. Starting the Valtimo backend. Instructions can be found
    [here](../backend/README.md#starting-the-valtimo-backend-from-source)
 2. Starting the Valtimo frontend. Instructions can be found
@@ -79,4 +80,3 @@ Run the following command to run the unit tests: `npm run libs:test:libraryName`
 #### Code guidelines
 
 For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES.md).
-

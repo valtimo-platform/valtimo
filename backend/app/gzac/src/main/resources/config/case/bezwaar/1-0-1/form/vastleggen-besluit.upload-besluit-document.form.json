@@ -1,0 +1,47 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv.besluitDocumenten",
+            "type": "documenten-api-file",
+            "input": true,
+            "label": "Upload hieronder de besluit",
+            "tableView": false,
+            "attributes": {
+                "data-testid": "vastleggen-besluit-pv.besluitDocument"
+            },
+            "customOptions": {
+                "title": "",
+                "author": "",
+                "camera": false,
+                "status": "definitief",
+                "filename": "",
+                "language": "nld",
+                "subtitle": "",
+                "hideTitle": false,
+                "description": "Besluit",
+                "maxFileSize": 1,
+                "documentType": "test",
+                "disableAuthor": false,
+                "disableStatus": false,
+                "documentTitle": "Besluit",
+                "disableFilename": false,
+                "disableLanguage": false,
+                "hideMaxFileSize": false,
+                "disableDescription": false,
+                "disableDocumentType": false,
+                "confidentialityLevel": "zaakvertrouwelijk",
+                "disableDocumentTitle": false,
+                "disableConfidentialityLevel": false
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "showValidations": false
+        }
+    ]
+}

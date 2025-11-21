@@ -48,8 +48,6 @@ module.exports = function karmaBaseConfig(config) {
     browsers: ['Chrome'],
     restartOnFileChange: true,
     failOnEmptyTestSuite: false,
-    files: [
-      { pattern: CONFIG_JS, included: true, served: true, watched: false }
-    ]
+    files: [{pattern: CONFIG_JS, included: true, served: true, watched: false}],
   });
 };
