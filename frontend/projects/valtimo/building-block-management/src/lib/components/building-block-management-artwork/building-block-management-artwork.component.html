@@ -40,7 +40,7 @@
     </div>
 
     <div class="building-block-management-artwork__buttons">
-      <button cdsButton="danger" (click)="onDeleteButtonClick()">
+      <button cdsButton="danger" (click)="onDeleteButtonClick()" [disabled]="formGroup.disabled">
         {{ 'interface.delete' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

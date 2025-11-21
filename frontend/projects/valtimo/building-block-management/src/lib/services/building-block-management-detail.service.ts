@@ -94,6 +94,9 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
       distinctUntilChanged((a, b) => isEqual(a, b))
     );
   }
+  public get isFinal$(): Observable<boolean> {
+    return this.buildingBlockDefinition$.pipe(map(definition => definition.final));
+  }
 
   private readonly _reload$ = new BehaviorSubject<null>(null);
 
@@ -144,6 +147,21 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
         tabKey,
       ]);
     });
+  }
+
+  public navigateToVersionTag(versionTag: string): void {
+    const currentUrl = this.router.url.split('?')[0];
+    const parts = currentUrl.split('/');
+
+    const versionIndex = parts.findIndex(segment => segment === 'version');
+    if (versionIndex === -1 || versionIndex + 1 >= parts.length) {
+      return;
+    }
+
+    parts[versionIndex + 1] = versionTag;
+
+    const newUrl = parts.join('/');
+    this.router.navigateByUrl(newUrl);
   }
 
   public reload(): void {

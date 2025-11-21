@@ -49,6 +49,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   @ViewChild('host', {static: true}) public readonly hostEl!: ElementRef<HTMLDivElement>;
 
   @Input() public schemaJson = '{ "type": "object", "properties": {} }';
+  @Input() public disabled = false;
 
   @Output() public changeEvent = new EventEmitter<string>();
   @Output() public saveEvent = new EventEmitter<string>();
@@ -79,6 +80,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
         mode: 'tree',
         mainMenuBar: true,
         navigationBar: true,
+        readOnly: this.disabled,
         onChange: (updated, _prev) => {
           this.zone.run(() => {
             const text =
@@ -111,6 +113,12 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
         content: {text: this.schemaJson},
       });
     }
+
+    if (changes['disabled'] && !changes['disabled'].firstChange) {
+      this._editor.updateProps({
+        readOnly: this.disabled,
+      });
+    }
   }
 
   public ngOnDestroy(): void {
@@ -118,6 +126,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   public onSaveClick(): void {
+    if (this.disabled) return;
     this.showSaveConfirmationModal$.next(true);
   }
 
@@ -126,7 +135,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   public onSaveChanges(): void {
-    if (!this._valid || !this._modifiedValue) return;
+    if (this.disabled || !this._valid || !this._modifiedValue) return;
     this.saveEvent.emit(this._modifiedValue);
   }
 }

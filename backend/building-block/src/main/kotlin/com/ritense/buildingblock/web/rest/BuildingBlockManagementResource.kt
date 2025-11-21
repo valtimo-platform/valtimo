@@ -16,10 +16,12 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
@@ -28,6 +30,10 @@ import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -49,7 +55,7 @@ class BuildingBlockManagementResource(
 ) {
     @GetMapping
     fun getBuildingBlockDefinitions(): ResponseEntity<List<BuildingBlockDefinitionDto>> {
-        val dtoList = buildingBlockManagementService.getLatestPerKey()
+        val dtoList = runWithoutAuthorization { buildingBlockManagementService.getLatestPerKey() }
         return if (dtoList.isEmpty()) {
             ResponseEntity.notFound().build()
         } else {
@@ -61,7 +67,7 @@ class BuildingBlockManagementResource(
     fun createBuildingBlockDefinition(
         @RequestBody dto: CreateBuildingBlockDefinitionDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
-        val savedDto = buildingBlockManagementService.create(dto)
+        val savedDto = runWithoutAuthorization { buildingBlockManagementService.create(dto) }
         return ResponseEntity.ok(savedDto)
     }
 
@@ -82,7 +88,7 @@ class BuildingBlockManagementResource(
         @PathVariable versionTag: String,
         @RequestBody dto: UpdateBuildingBlockDefinitionDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
-        val updated = buildingBlockManagementService.update(key, versionTag, dto)
+        val updated = runWithoutAuthorization { buildingBlockManagementService.update(key, versionTag, dto) }
         return ResponseEntity.ok(updated)
     }
 
@@ -91,7 +97,7 @@ class BuildingBlockManagementResource(
         @PathVariable key: String,
         @PathVariable versionTag: String
     ): ResponseEntity<BuildingBlockDefinitionDto> {
-        val finalized = buildingBlockManagementService.finalize(key, versionTag)
+        val finalized = runWithoutAuthorization { buildingBlockManagementService.finalize(key, versionTag) }
         return ResponseEntity.ok(finalized)
     }
 
@@ -107,5 +113,17 @@ class BuildingBlockManagementResource(
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
+    }
+
+
+
+    @GetMapping("/{key}/version")
+    fun getBuildingBlockDefinitionVersions(
+        @PathVariable key: String,
+        @PageableDefault(size = 5, sort = ["id.versionTag"], direction = Sort.Direction.DESC)
+        pageable: Pageable
+    ): ResponseEntity<Page<BuildingBlockVersionDto>> {
+        val versions = runWithoutAuthorization { buildingBlockManagementService.getVersionsWithFinalFlag(key, pageable) }
+        return ResponseEntity.ok(versions)
     }
 }
