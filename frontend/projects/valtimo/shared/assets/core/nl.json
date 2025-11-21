@@ -1803,14 +1803,27 @@
     "selectVersion": "Selecteer een versie",
     "activity": "Procesactiviteit",
     "selectActivity": "Selecteer een procesactiviteit",
-    "noProcess": "Geen uploadproces"
+    "noProcess": "Geen uploadproces",
+    "buildingBlock": {
+      "name": "Naam",
+      "description": "Omschrijving",
+      "selectLabel": "Bouwblok",
+      "emptyState": "Geen bouwblokken beschikbaar. Maak eerst een bouwblok aan.",
+      "noRequirements": "Dit bouwblok vereist geen pluginconfiguraties.",
+      "configurationLabel": "Pluginconfiguratie",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "versionLabel": "Kies bouwblokversie",
+      "versionPlaceholder": "Selecteer een versie"
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formulier",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Bouwblok"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",

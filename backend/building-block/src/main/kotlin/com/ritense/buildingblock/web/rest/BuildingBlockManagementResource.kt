@@ -54,8 +54,10 @@ class BuildingBlockManagementResource(
     private val importService: ImportService
 ) {
     @GetMapping
-    fun getBuildingBlockDefinitions(): ResponseEntity<List<BuildingBlockDefinitionDto>> {
-        val dtoList = runWithoutAuthorization { buildingBlockManagementService.getLatestPerKey() }
+    fun getBuildingBlockDefinitions(
+        @RequestParam(value = "includeArtwork", required = false) includeArtwork: Boolean = false,
+    ): ResponseEntity<List<BuildingBlockDefinitionDto>> {
+        val dtoList = runWithoutAuthorization { buildingBlockManagementService.getLatestPerKey(includeArtwork) }
         return if (dtoList.isEmpty()) {
             ResponseEntity.notFound().build()
         } else {
@@ -115,15 +117,20 @@ class BuildingBlockManagementResource(
         }
     }
 
-
-
     @GetMapping("/{key}/version")
     fun getBuildingBlockDefinitionVersions(
         @PathVariable key: String,
         @PageableDefault(size = 5, sort = ["id.versionTag"], direction = Sort.Direction.DESC)
-        pageable: Pageable
+        pageable: Pageable,
+        @RequestParam(value = "all", required = false, defaultValue = "false") all: Boolean
     ): ResponseEntity<Page<BuildingBlockVersionDto>> {
-        val versions = runWithoutAuthorization { buildingBlockManagementService.getVersionsWithFinalFlag(key, pageable) }
+        val versions = runWithoutAuthorization {
+            if (all) {
+                buildingBlockManagementService.getAllVersionsWithFinalFlag(key)
+            } else {
+                buildingBlockManagementService.getPagedVersionsWithFinalFlag(key, pageable)
+            }
+        }
         return ResponseEntity.ok(versions)
     }
 }

@@ -15,6 +15,7 @@
  */
 import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
+import {ListItem} from 'carbon-components-angular/dropdown';
 
 interface ProcessLink {
   id: string;
@@ -37,6 +38,9 @@ interface ProcessLink {
   formSize?: FormSize;
   subtitles?: string[];
   componentKey?: string;
+  buildingBlockDefinitionKey?: string;
+  buildingBlockDefinitionVersionTag?: string;
+  pluginConfigurationMappings?: Record<string, string>;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -58,6 +62,8 @@ type ProcessLinkConfigurationStep =
   | 'configurePluginAction'
   | 'selectForm'
   | 'selectFormFlow'
+  | 'selectBuildingBlock'
+  | 'configureBuildingBlockPlugins'
   | 'empty';
 
 type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';
@@ -169,6 +175,25 @@ interface UIComponentProcessLinkUpdateRequestDto {
   componentKey: string;
 }
 
+interface BuildingBlockProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+  pluginConfigurationMappings: Record<string, string>;
+}
+
+interface BuildingBlockProcessLinkUpdateDto {
+  id: string;
+  activityId: string;
+  processLinkType: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+  pluginConfigurationMappings: Record<string, string>;
+}
+
 type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface TaskProcessLinkResult {
@@ -197,7 +222,8 @@ type ProcessLinkUpdateEvent =
   | FormFlowProcessLinkUpdateRequestDto
   | FormProcessLinkUpdateRequestDto
   | URLProcessLinkUpdateRequestDto
-  | UIComponentProcessLinkUpdateRequestDto;
+  | UIComponentProcessLinkUpdateRequestDto
+  | BuildingBlockProcessLinkUpdateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -217,6 +243,7 @@ type ProcessLinkCreateEvent =
   | FormProcessLinkCreateRequestDto
   | FormFlowProcessLinkCreateRequestDto
   | PluginProcessLinkCreateDto
+  | BuildingBlockProcessLinkCreateDto
   | URLProcessLinkCreateDto
   | UIComponentProcessLinkCreateRequestDto;
 
@@ -258,6 +285,13 @@ type PluginListItem = {
   isDefinition: boolean;
 };
 
+interface PluginConfigurationViewModel {
+  key: string;
+  label: string;
+  dropdownItems: Array<ListItem>;
+  hasOptions: boolean;
+}
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -267,8 +301,11 @@ export {
   FormProcessLinkCreateRequestDto,
   FormProcessLinkUpdateRequestDto,
   FormSize,
+  BuildingBlockProcessLinkCreateDto,
+  BuildingBlockProcessLinkUpdateDto,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginConfigurationViewModel,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLink,

@@ -29,8 +29,8 @@ import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.semver4j.Semver
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -45,7 +45,7 @@ class BuildingBlockManagementService(
     private val authorizationService: AuthorizationService,
 ) {
     @Transactional(readOnly = true)
-    fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
+    fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
         val all = buildingBlockDefinitionRepository.findAll()
@@ -54,9 +54,7 @@ class BuildingBlockManagementService(
             .values
             .mapNotNull { defsForKey ->
                 defsForKey.maxWithOrNull { a, b ->
-                    val va = Semver(a.id.versionTag.toString())
-                    val vb = Semver(b.id.versionTag.toString())
-                    va.compareTo(vb)
+                    a.id.versionTag.compareTo(b.id.versionTag)
                 }
             }
         return latestPerKey.map {
@@ -68,7 +66,8 @@ class BuildingBlockManagementService(
                 createdBy = it.createdBy,
                 createdDate = it.createdDate,
                 basedOnVersionTag = it.basedOnVersionTag?.toString(),
-                final = it.final
+                final = it.final,
+                imageBase64 = if (includeArtwork) it.artwork?.imageBase64 else null,
             )
         }
     }
@@ -161,7 +160,7 @@ class BuildingBlockManagementService(
     }
 
     @Transactional(readOnly = true)
-    fun getVersionsWithFinalFlag(key: String, pageable: Pageable): Page<BuildingBlockVersionDto> {
+    fun getPagedVersionsWithFinalFlag(key: String, pageable: Pageable): Page<BuildingBlockVersionDto> {
         denyAuthorization()
 
         val page = buildingBlockDefinitionRepository.findAllByIdKey(key, pageable)
@@ -172,6 +171,22 @@ class BuildingBlockManagementService(
                 final = it.final
             )
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllVersionsWithFinalFlag(key: String): Page<BuildingBlockVersionDto> {
+        denyAuthorization()
+
+        val buildingBlocks = buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(key)
+
+        return PageImpl(
+            buildingBlocks.map {
+                BuildingBlockVersionDto(
+                    versionTag = it.id.versionTag.toString(),
+                    final = it.final
+                )
+            }
+        )
     }
 
     private fun denyAuthorization() {

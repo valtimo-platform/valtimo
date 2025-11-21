@@ -42,9 +42,12 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getBuildingBlockDefinitions(): Observable<BuildingBlockDefinitionDto[]> {
+  public getBuildingBlockDefinitions(options?: {
+    includeArtwork: boolean;
+  }): Observable<BuildingBlockDefinitionDto[]> {
     return this.httpClient
       .get<BuildingBlockDefinitionDto[]>(this.getApiUrl('management/v1/building-block'), {
+        params: options,
         headers: new HttpHeaders().set(InterceptorSkip, '404'),
       })
       .pipe(
@@ -165,10 +168,14 @@ export class BuildingBlockManagementApiService extends BaseApiService {
   public getVersionsForBuildingBlock(
     key: string,
     page: number = 0,
-    size: number = 5
+    size: number = 5,
+    all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
+    const allParam: string = all ? 'all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
-      this.getApiUrl(`management/v1/building-block/${key}/version?page=${page}&size=${size}`)
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
+      )
     );
   }
 }
