@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+
 plugins {
     id 'war'
 }
@@ -36,6 +38,21 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+def includeDevSources = project.findProperty("includeDev") ?: true
+
+if (includeDevSources) {
+    extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
+        kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
+            kotlinSourceSet.kotlin.srcDir("src/dev/kotlin")
+        }
+    }
+    sourceSets {
+        main {
+            resources.srcDir("src/dev/resources")
+        }
+    }
 }
 
 apply from: "gradle/publishing.gradle"
