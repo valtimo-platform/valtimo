@@ -769,7 +769,7 @@
       "colorPlaceholder": "Wähle eine Farbe",
       "columns": {
         "title": "Statusname",
-        "retentionPeriod": "Aufbewahrungsfrist",
+        "retentionPeriod": "Aufbewahrungsdauer in Tagen",
         "key": "Statusschlüssel",
         "visible": "Standardmäßig sichtbar",
         "color": "Farbe"

@@ -762,7 +762,7 @@
       "colorPlaceholder": "Choose a color",
       "columns": {
         "title": "Status name",
-        "retentionPeriod": "Retention period",
+        "retentionPeriod": "Retention period in days",
         "key": "Status key",
         "visible": "Visible by default",
         "color": "Color"
