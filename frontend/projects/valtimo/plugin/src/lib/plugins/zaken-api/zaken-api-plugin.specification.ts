@@ -688,8 +688,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Ergebnis Prozessvariable',
       resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
-      rolUuidTooltip: 'Die UUID der Rolle'
-      rolUuidTooltip: 'The UUID of the rol',
+      rolUuidTooltip: 'Die UUID der Rolle',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
     },
