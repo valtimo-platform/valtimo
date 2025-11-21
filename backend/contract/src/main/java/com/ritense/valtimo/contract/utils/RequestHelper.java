@@ -29,7 +29,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class RequestHelper {
     private static final Logger logger = LoggerFactory.getLogger(RequestHelper.class);
-    public static final String X_TIMEZONE_OFFSET = "X-Timezone-Offset";
+    public static final String TIMEZONE_OFFSET_HEADER = "X-Timezone-Offset";
 
     private RequestHelper() {
     }
@@ -49,16 +49,14 @@ public class RequestHelper {
      * This method retrieves the ZoneOffset from the X-Timezone-Offset header.
      * When the header is not present, UTC is returned.
      *
-     * @deprecated Please use <code>getRequestZoneOffset()</code> instead.
      * @return ZoneOffset
      */
-    @Deprecated(since = "13.6.0", forRemoval = true)
     public static ZoneOffset getZoneOffset() {
         return getRequestZoneOffset().orElse(ZoneOffset.UTC);
     }
 
     /**
-     * This method retrieves the ZoneOffset from the X-Timezone-Offset header, if present.
+     * This method retrieves the ZoneOffset from the TIMEZONE_OFFSET_HEADER header, if present and valid.
      */
     public static Optional<ZoneOffset> getRequestZoneOffset() {
         ZoneOffset zoneOffset = null;
@@ -68,7 +66,7 @@ public class RequestHelper {
 
             if (attribs != null) {
                 HttpServletRequest request = ((ServletRequestAttributes) attribs).getRequest();
-                String zoneOffsetHeader = request.getHeader(X_TIMEZONE_OFFSET);
+                String zoneOffsetHeader = request.getHeader(TIMEZONE_OFFSET_HEADER);
 
                 if (StringUtils.isNotBlank(zoneOffsetHeader)) {
                     zoneOffset = ZoneOffset.of(zoneOffsetHeader);
