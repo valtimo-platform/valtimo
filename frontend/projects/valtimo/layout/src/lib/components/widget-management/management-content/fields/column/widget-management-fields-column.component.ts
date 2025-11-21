@@ -96,7 +96,7 @@ import {IWidgetManagementService} from '../../../../../interfaces';
     InputLabelModule,
     ValuePathSelectorComponent,
     CheckboxModule,
-    LayerModule
+    LayerModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {

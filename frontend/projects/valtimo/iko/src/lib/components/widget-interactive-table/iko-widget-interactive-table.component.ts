@@ -28,6 +28,7 @@ import {CaseDefinition} from '@valtimo/document';
 import {
   InteractiveTableWidget,
   WidgetAction,
+  WidgetFormioComponent,
   WidgetInteractiveTableComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
@@ -58,6 +59,7 @@ import {IkoApiService} from '../../services';
     WidgetInteractiveTableComponent,
     CaseListActionsComponent,
     ModalModule,
+    WidgetFormioComponent,
   ],
   providers: [CaseListService],
 })
@@ -115,8 +117,8 @@ export class IkoWidgetInteractiveTableComponent {
     this.ikoApiService.handleAction(widgetConfiguration.properties.rowClickAction, event.resolved);
   }
 
-  public onActionEvent(action: WidgetAction): void {
-    this.ikoApiService.handleAction(action);
+  public onActionEvent(action: WidgetAction, resolvedData: {[key: string]: any}): void {
+    this.ikoApiService.handleAction(action, resolvedData);
   }
 
   public onCaseStartEvent(caseDefintion: CaseDefinition): void {

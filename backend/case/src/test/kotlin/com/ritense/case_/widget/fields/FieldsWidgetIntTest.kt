@@ -139,6 +139,7 @@ class FieldsWidgetIntTest @Autowired constructor(
                     FieldsCaseWidgetDto(
                         key = widgetKey,
                         title = "My widget",
+                        icon = "mdi-home",
                         width = 1,
                         highContrast = true,
                         actions = null,

@@ -18,14 +18,14 @@ package com.ritense.widget.collection
 
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
 import java.util.UUID
+import org.hibernate.annotations.Type
 
 @AllOpen
 @Entity
@@ -34,6 +34,7 @@ class CollectionWidget(
     id: UUID = UUID.randomUUID(),
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -44,12 +45,13 @@ class CollectionWidget(
     @Column(name = "properties", nullable = false)
     val properties: CollectionWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
@@ -59,6 +61,7 @@ class CollectionWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
@@ -70,10 +73,13 @@ class CollectionWidget(
     override fun toDto() = CollectionWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
         actions = this.actions,
         displayConditions = this.displayConditions,
         properties = this.properties,
     )
+
+    override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }

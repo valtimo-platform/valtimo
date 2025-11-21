@@ -29,11 +29,12 @@ import {GlobalNotificationService} from '@valtimo/shared';
 })
 export class WidgetActionButtonComponent {
   @Input() public widgetConfiguration: BasicWidget;
+  @Input() public resolvedData: object;
 
   constructor(private readonly globalNotificationService: GlobalNotificationService) {}
 
   public onNavigateButtonClick(buttonAction: WidgetAction): void {
-    const {navigateTo} = buttonAction;
+    const navigateTo = this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
     if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
       window.open(navigateTo, '_self');
     } else if (navigateTo?.startsWith('http')) {
@@ -45,5 +46,10 @@ export class WidgetActionButtonComponent {
         type: 'error',
       });
     }
+  }
+
+  private resolveProperty(property: string, data: {[key: string]: any}): string {
+    const resolved = data?.resolved || data;
+    return property ? (resolved ? String(resolved[property]) : property) : null;
   }
 }

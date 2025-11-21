@@ -136,7 +136,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public set pagination(value: Partial<Pagination> | false) {
     if (!value) return;
 
-
     if (!this._pagination) this._pagination = {...DEFAULT_PAGINATION, ...value};
 
     this._pagination = {...this._pagination, ...value};

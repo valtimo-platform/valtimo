@@ -19,6 +19,15 @@
   gap: 16px;
   padding: 16px;
 
+  &__title-container {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__title-input {
+    max-width: 300px;
+  }
+
   ::ng-deep > * {
     padding: 16px;
     background: var(--cds-layer-02);

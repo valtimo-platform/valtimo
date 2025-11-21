@@ -32,6 +32,7 @@ import {
   CarbonListModule,
   CarbonPaginatorConfig,
   ColumnConfig,
+  MdiIconViewerComponent,
   Pagination,
   ViewType,
 } from '@valtimo/components';
@@ -69,6 +70,7 @@ import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../mod
     MenuButtonModule,
     ContextMenuModule,
     IconModule,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetInteractiveTableComponent {

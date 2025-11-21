@@ -27,7 +27,7 @@ export function accountInitializer(
     new Promise<void>((resolve, reject) => {
       try {
         logger.debug('Account initializer');
-        translate.addLangs([Language.EN, Language.NL, Language.DE]);
+        translate.addLangs([Language.EN, Language.NL]);
         let langKey = localStorage.getItem('langKey');
         if (langKey === null) {
           langKey = configService?.config?.langKey || Language.NL;

@@ -58,7 +58,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() heightStyle!: string;
   @Input() jsonSchema?: string;
   @Input() fitPage = false;
-  @Input() fitPageExtraSpace = 0;
+  @Input() fitPageSpaceAdjustment = 0;
 
   @Output() validEvent: EventEmitter<boolean> = new EventEmitter();
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();

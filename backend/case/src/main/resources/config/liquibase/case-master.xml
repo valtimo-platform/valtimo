@@ -55,4 +55,5 @@
     <include file="changelog/20250827-widget-tab-conditions.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250912-update-widget-properties.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250902-add-hidden-case-list-column.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251117-add-widget-icon.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -25,7 +25,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  CarbonListItem,
+  CarbonListModule,
+  ColumnConfig,
+  MdiIconViewerComponent,
+  ViewType,
+} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -52,6 +58,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetTableComponent {
@@ -94,6 +101,7 @@ export class WidgetTableComponent {
   public readonly showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
+  public readonly resolvedData$ = new BehaviorSubject<object | null>(null);
 
   private _paginationInitialized = false;
 
@@ -117,6 +125,7 @@ export class WidgetTableComponent {
     }
 
     this.widgetData$.next(widgetData);
+    this.resolvedData$.next(value?.resolved);
 
     if (!this._paginationInitialized) {
       this.showPagination.set(value.totalElements > value.size);

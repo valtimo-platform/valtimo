@@ -90,7 +90,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   private valueSubscription!: Subscription;
   private clearSubscription!: Subscription;
 
-  constructor(private readonly iconService: IconService) { }
+  constructor(private readonly iconService: IconService) {}
 
   public ngOnInit(): void {
     this.setInputType();

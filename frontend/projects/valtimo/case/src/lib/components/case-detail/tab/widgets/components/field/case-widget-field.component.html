@@ -22,7 +22,7 @@
   [widgetConfiguration]="obs.widgetConfiguration"
   [widgetData]="obs.widgetData"
 >
-  @if (obs.widgetConfiguration.actions?.length === 1) {
+  @if (obs.widgetConfiguration?.actions?.length === 1) {
     @if (obs.widgetConfiguration.actions[0].processDefinitionKey) {
       <button
         *ngIf="canCreateCamundaExecution$ | async"
