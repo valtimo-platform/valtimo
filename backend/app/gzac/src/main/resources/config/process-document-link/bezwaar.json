@@ -3,5 +3,10 @@
         "processDefinitionKey": "bezwaar",
         "canInitializeDocument": true,
         "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "vastleggen-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]
