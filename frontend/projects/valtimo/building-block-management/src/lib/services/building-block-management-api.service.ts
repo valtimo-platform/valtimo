@@ -165,19 +165,17 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     );
   }
 
-  public getAllBuildingBlockVersions(key: string): Observable<BuildingBlockVersionDto[]> {
-    return this.httpClient.get<string[]>(
-      this.getApiUrl(`management/v1/building-block/${key}/version`)
-    );
-  }
-
   public getVersionsForBuildingBlock(
     key: string,
     page: number = 0,
-    size: number = 5
+    size: number = 5,
+    all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
+    const allParam: string = all ? 'all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
-      this.getApiUrl(`management/v1/building-block/${key}/version?page=${page}&size=${size}`)
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
+      )
     );
   }
 }

@@ -27,5 +27,6 @@ interface BuildingBlockDefinitionRepository :
     JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>,
     JpaSpecificationExecutor<BuildingBlockDefinition> {
 
+    fun findAllByIdKeyOrderByIdVersionTag(key: String): List<BuildingBlockDefinition>
     fun findAllByIdKey(key: String, pageable: Pageable): Page<BuildingBlockDefinition>
 }
