@@ -1922,7 +1922,10 @@
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
-    "noCustomComponentDescription": "The custom component configured for this widget is not available."
+    "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "map": {
+      "title": "Map"
+    }
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity"

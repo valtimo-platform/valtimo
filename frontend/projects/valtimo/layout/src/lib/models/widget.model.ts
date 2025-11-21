@@ -70,6 +70,10 @@ interface GeoJsonSource {
   key: string;
 }
 
+interface MapData {
+  geoJsonFeatureCollection: any;
+}
+
 interface FieldsWidget extends BasicWidget {
   type: WidgetType.FIELDS;
   properties: WidgetFieldsContent;
@@ -214,6 +218,7 @@ export {
   FieldsWidget,
   FieldsWidgetValue,
   GeoJsonSource,
+  MapData,
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,

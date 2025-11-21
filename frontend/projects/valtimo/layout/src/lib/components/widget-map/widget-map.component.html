@@ -40,24 +40,12 @@
       [smallPadding]="true"
     ></valtimo-no-results>
   } @else {
-    <div
-      #widgetMap
-      [ngClass]="{
-        'widget-map__render-vertically': renderVertically() === 1,
-        'widget-map__render-two-columns': renderVertically() === 2,
-        'widget-map__render-three-columns': renderVertically() === 3,
-        'widget-map__container': renderVertically() === 4,
-      }"
-    >
-      @if (obs.noVisibleMap) {
-        <valtimo-no-results
-          [collapseVertically]="true"
-          [description]="'widgets.emptyMap' | translate"
-          [smallPadding]="true"
-        ></valtimo-no-results>
-      } @else {
-        asdf
-      }
-    </div>
+      <div class="widget-map__render"
+           #widgetMap></div>
   }
 </ng-container>
+
+<valtimo-map-modal
+  [showModalSubject$]="showMapModal$"
+  [mapData$]="widgetData$"
+></valtimo-map-modal>

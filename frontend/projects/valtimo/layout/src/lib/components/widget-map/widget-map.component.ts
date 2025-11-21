@@ -24,17 +24,24 @@ import {
   Input,
   OnDestroy,
   Output,
-  signal,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
+import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
-import {MapWidget} from '../../models';
-import {WidgetTextDisplayType} from '../../models/widget-display.model';
+import {BehaviorSubject} from 'rxjs';
+import {MapWidget, MapData} from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
+import TileLayer from 'ol/layer/Tile';
+import {OSM} from 'ol/source';
+import {GeoJSON} from 'ol/format';
+import {Map, View} from 'ol';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import {FullScreen, defaults} from 'ol/control';
+import {Icon, Fill, Stroke, Style} from 'ol/style';
+import {MapModalComponent} from './map-modal/map-modal.component';
 
 @Component({
   selector: 'valtimo-widget-map',
@@ -51,6 +58,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     EllipsisPipe,
     ButtonModule,
     WidgetActionButtonComponent,
+    MapModalComponent,
   ],
 })
 export class WidgetMapComponent implements AfterViewInit, OnDestroy {
@@ -62,12 +70,14 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     if (!value) return;
     this.widgetConfiguration$.next(value);
   }
+
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleMap$ = new BehaviorSubject<boolean>(true);
+  public readonly showMapModal$ = new BehaviorSubject<boolean>(false);
 
   @Input() public set widgetData(value: object) {
     if (!value) return;
-    this.widgetData$.next(value);
+    this.widgetData$.next(value as MapData);
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
 
@@ -75,57 +85,113 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
 
   @Output() public readonly noVisibleMapEvent = new EventEmitter<boolean>();
 
-  public readonly renderVertically = signal(0);
   public readonly widgetConfiguration$ = new BehaviorSubject<MapWidget | null>(null);
-  public readonly widgetData$ = new BehaviorSubject<object | null>(null);
+  public readonly widgetData$ = new BehaviorSubject<MapData | null>(null);
 
   private _observer!: ResizeObserver;
-
-  constructor(private readonly viewContentService: ViewContentService) {}
+  private map!: Map;
+  private vectorLayer!: VectorLayer<VectorSource>;
 
   public ngAfterViewInit(): void {
     if (this._widgetMapRef) this.openWidthObserver();
+    this.subscribeMapData();
   }
+
   public ngOnDestroy(): void {
     this._observer?.disconnect();
   }
 
   private openWidthObserver(): void {
-    this._observer = new ResizeObserver(event => {
-      this.observerMutation(event);
-    });
+    this._observer = new ResizeObserver(event => this.fitMap(this.vectorLayer?.getSource()));
     this._observer.observe(this._widgetMapRef.nativeElement);
-  }
-
-  private observerMutation(event: Array<ResizeObserverEntry>): void {
-    const elementWidth = event[0]?.borderBoxSize[0]?.inlineSize;
-
-    if (typeof elementWidth === 'number' && elementWidth !== 0) {
-      if (elementWidth < 640) {
-        this.renderVertically.set(1);
-      } else if (elementWidth > 640 && elementWidth <= 768) {
-        this.renderVertically.set(2);
-      } else if (elementWidth > 768 && elementWidth <= 1080) {
-        this.renderVertically.set(3);
-      } else if (elementWidth > 1080) {
-        this.renderVertically.set(4);
-      }
-    }
   }
 
   private checkEmptyWidgetData(widgetData: Object): boolean {
     return widgetData && Object.keys(widgetData).length === 0;
   }
 
-  private checkEmptyMap(columns: any[][]): void {
-    columns.forEach(column => {
-      column.forEach(map => {
-        if (!map?.hideWhenEmpty || (map?.hideWhenEmpty && map?.value && map?.value !== '-')) {
-          this.noVisibleMap$.next(false);
-        }
-
-        this.noVisibleMapEvent.emit(this.noVisibleMap$.getValue());
-      });
+  private subscribeMapData(): void {
+    const fullscreen = new FullScreen();
+    this.map = new Map({
+      target: this._widgetMapRef.nativeElement,
+      layers: [
+        new TileLayer({
+          source: new OSM(),
+        }),
+      ],
+      view: new View({
+        center: [0, 0],
+        zoom: 2,
+      }),
+      controls: defaults().extend([fullscreen]),
     });
+    this.map.getInteractions().forEach(i => i.setActive(false));
+    fullscreen.on('enterfullscreen', () => {
+      console.log('enterfullscreen', this.map.getInteractions());
+      this.map.getInteractions().forEach(i => i.setActive(true));
+    });
+    fullscreen.on('leavefullscreen', () => {
+      console.log('leavefullscreen', this.map.getInteractions());
+      this.map.getInteractions().forEach(i => i.setActive(false));
+    });
+    this.map.on('click', () => {
+      this.showMapModal$.next(true);
+    });
+
+    const featureOptions = {
+      featureProjection: 'EPSG:3857',
+      dataProjection: 'EPSG:4326',
+    };
+
+    const vectorStyle = new Style({
+      image: new Icon({
+        src: 'valtimo-layout/img/marker.svg',
+        anchor: [0.5, 0.9],
+        scale: 1,
+      }),
+      fill: new Fill({
+        color: 'rgba(255,255,255,0.4)',
+      }),
+      stroke: new Stroke({
+        color: '#3399CC',
+        width: 2,
+      }),
+    });
+
+    this.widgetData$.subscribe(widgetData => {
+      if (!widgetData?.geoJsonFeatureCollection) {
+        return;
+      }
+
+      const featureCollection = {
+        ...widgetData?.geoJsonFeatureCollection,
+        type: 'FeatureCollection',
+      };
+
+      if (this.vectorLayer) {
+        this.map.removeLayer(this.vectorLayer);
+      }
+
+      const vectorSource = new VectorSource({
+        features: new GeoJSON().readFeatures(featureCollection, featureOptions),
+      });
+
+      this.vectorLayer = new VectorLayer({
+        source: vectorSource,
+        style: vectorStyle,
+      });
+
+      this.map.addLayer(this.vectorLayer);
+      this.fitMap(vectorSource);
+    });
+  }
+
+  private fitMap(vectorSource: VectorSource): void {
+    const extent = vectorSource?.getExtent();
+    if (extent) {
+      this.map.getView().fit(extent, {
+        padding: [20, 20, 20, 20],
+      });
+    }
   }
 }

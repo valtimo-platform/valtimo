@@ -95,23 +95,5 @@
 }
 
 .widget-map__render {
-  &-vertically,
-  &-two-columns,
-  &-three-columns {
-    display: grid;
-    align-items: stretch;
-    gap: 24px;
-  }
-
-  &-vertically {
-    grid-template-columns: repeat(1, 1fr);
-  }
-
-  &-two-columns {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  &-three-columns {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  height: 320px;
 }

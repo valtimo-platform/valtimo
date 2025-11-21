@@ -1955,7 +1955,10 @@
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
-    "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
+    "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden.",
+    "map": {
+      "title": "Kaart"
+    }
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"

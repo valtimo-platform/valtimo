@@ -21,6 +21,7 @@ import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.widget.web.rest.dto.WidgetDto
+import java.util.UUID
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import java.util.UUID
 
 @Controller
 @SkipComponentScan
@@ -107,15 +107,25 @@ class IkoWidgetManagementResource(
         @RequestBody request: List<WidgetDto>,
     ): ResponseEntity<List<WidgetDto>> {
         val existingWidgets = service.findAllByTabKey(ikoDataAggregateKey, tabKey)
-        require(request.map { it.key }.toSet() == existingWidgets.map { it.key }.toSet())
         val ikoWidgets = request.mapIndexed { index, updatedWidget ->
-            val existingWidget = existingWidgets.first { it.key == updatedWidget.key }
-            service.update(
-                ikoDataAggregateKey,
-                tabKey = tabKey,
-                widget = updatedWidget.toEntity(existingWidget.id, index),
-            )
+            val existingWidget = existingWidgets.firstOrNull { it.key == updatedWidget.key }
+            if (existingWidget == null) {
+                service.create(
+                    ikoDataAggregateKey,
+                    tabKey = tabKey,
+                    widget = updatedWidget.toEntity(UUID.randomUUID(), index),
+                )
+            } else {
+                service.update(
+                    ikoDataAggregateKey,
+                    tabKey = tabKey,
+                    widget = updatedWidget.toEntity(existingWidget.id, index),
+                )
+            }
         }
+        existingWidgets
+            .filter { existing -> ikoWidgets.none { existing.id == it.id } }
+            .forEach { existing -> service.deleteByKey(ikoDataAggregateKey, tabKey, existing.key) }
         return ResponseEntity.ok(ikoWidgets.map { it.toDto() })
     }
 
