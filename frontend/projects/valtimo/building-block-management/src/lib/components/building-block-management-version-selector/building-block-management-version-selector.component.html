@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{versionListItems: (versionListItems$ | async) || []} as obs">
+  <cds-dropdown
+    class="version-selector"
+    [disabled]="obs.versionListItems.length === 1"
+    [displayValue]="versionTemplate"
+    (selected)="onVersionSelected($event)"
+  >
+    <cds-dropdown-list
+      [items]="obs.versionListItems"
+      [listTpl]="versionTemplate"
+    ></cds-dropdown-list>
+  </cds-dropdown>
+</ng-container>
+
+<ng-template #versionTemplate let-item="item">
+  <div class="version-selector-dropdown-template">
+    <cds-tag
+      class="cds-tag--no-margin"
+      [type]="!item.final ? 'red' : 'green'"
+      [title]="item?.content"
+    >
+      {{ !item?.final ? 'DRAFT: ' + item?.content : item?.content }}
+    </cds-tag>
+  </div>
+</ng-template>

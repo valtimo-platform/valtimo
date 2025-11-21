@@ -54,6 +54,30 @@ class BuildingBlockDefinitionImporter(
         logger.debug { "Building block with id '${buildingBlockDefinition.id}' was saved" }
     }
 
+    override fun afterImport(request: ImportRequest) {
+        val dto = toDefinitionDto(request.content.toString(Charsets.UTF_8))
+
+        if (!dto.final) {
+            return
+        }
+
+        val id = dto.getBuildingBlockDefinitionId()
+        val existing = repository.findById(id).orElse(null) ?: return
+
+        if (existing.final) {
+            return
+        }
+
+        logger.debug { "Finalizing building block with id '$id' after import" }
+
+        buildingBlockDefinitionChecker.assertCanCreateOrUpdateBuildingBlockDefinition(
+            id,
+            true
+        )
+
+        repository.save(existing.copy(final = true))
+    }
+
     override fun partOfCaseDefinition() = false
 
     override fun partOfBuildingBlockDefinition() = true
