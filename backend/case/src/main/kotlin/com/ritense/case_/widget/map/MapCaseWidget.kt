@@ -35,6 +35,7 @@ import org.hibernate.annotations.Type
 class MapCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -45,12 +46,13 @@ class MapCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: MapWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions, displayConditions
+    id, title, icon, order, width, highContrast, actions, displayConditions
 ) {
 
     override fun copy(id: CaseWidgetTabWidgetId) = MapCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,

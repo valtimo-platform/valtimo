@@ -19,7 +19,7 @@ import {
   CARBON_CONSTANTS,
   ValtimoCdsModalDirective,
   AutoKeyInputComponent,
-  runAfterCarbonModalClosed
+  runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {
   ButtonModule,

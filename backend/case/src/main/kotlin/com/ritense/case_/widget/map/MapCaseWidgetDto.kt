@@ -27,6 +27,7 @@ import jakarta.validation.Valid
 data class MapCaseWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction>? = emptyList(),

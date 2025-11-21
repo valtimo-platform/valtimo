@@ -43,8 +43,7 @@
   class="valtimo-widget-management-map-layer"
   [formGroup]="form"
 >
-  <cds-accordion
-    formArrayName="geoJsonSources" align="start" size="sm">
+  <cds-accordion formArrayName="geoJsonSources" align="start" size="sm">
     @for (formGeoJsonSource of formGeoJsonSources.controls; track $index) {
       <cds-accordion-item
         [title]="fieldTitle"
@@ -52,7 +51,10 @@
         [expanded]="$index === 0"
         class="valtimo-widget-management-map-layer__item"
       >
-        <form [formGroup]="formGeoJsonSource" class="valtimo-widget-management-map-layer__container">
+        <form
+          [formGroup]="formGeoJsonSource"
+          class="valtimo-widget-management-map-layer__container"
+        >
           <div class="valtimo-widget-management-map-layer__content">
             <cds-text-label>
               <v-input-label

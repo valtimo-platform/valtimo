@@ -28,6 +28,7 @@ import java.util.UUID
 data class MapWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction> = emptyList(),
@@ -38,6 +39,7 @@ data class MapWidgetDto(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         width = width,
         order = order,
         highContrast = highContrast,
