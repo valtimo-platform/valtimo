@@ -39,7 +39,7 @@ import {GeoJSON} from 'ol/format';
 import {Map, View} from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import {FullScreen, defaults} from 'ol/control';
+import {FullScreen, defaults, Zoom} from 'ol/control';
 import {Icon, Fill, Stroke, Style} from 'ol/style';
 
 @Component({
@@ -109,6 +109,7 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
 
   private subscribeMapData(): void {
     const fullscreen = new FullScreen();
+    const zoomControl = new Zoom({});
     this.map = new Map({
       target: this._widgetMapRef.nativeElement,
       layers: [
@@ -120,16 +121,16 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
         center: [0, 0],
         zoom: 2,
       }),
-      controls: defaults().extend([fullscreen]),
+      controls: defaults({zoom: false}).extend([fullscreen]),
     });
     this.map.getInteractions().forEach(i => i.setActive(false));
     fullscreen.on('enterfullscreen', () => {
-      console.log('enterfullscreen', this.map.getInteractions());
       this.map.getInteractions().forEach(i => i.setActive(true));
+      this.map.addControl(zoomControl);
     });
     fullscreen.on('leavefullscreen', () => {
-      console.log('leavefullscreen', this.map.getInteractions());
       this.map.getInteractions().forEach(i => i.setActive(false));
+      this.map.removeControl(zoomControl);
     });
 
     const featureOptions = {

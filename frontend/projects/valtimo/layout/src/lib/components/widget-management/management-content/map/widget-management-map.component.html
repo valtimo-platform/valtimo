@@ -25,6 +25,7 @@
       [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
     >
     </v-input-label>
+
     <input
       formControlName="widgetTitle"
       cdsText
@@ -37,9 +38,6 @@
 <ng-content></ng-content>
 
 <form
-  *ngIf="{
-    inputTheme: inputTheme$ | async,
-  } as data"
   class="valtimo-widget-management-map-layer"
   [formGroup]="form"
 >
@@ -66,7 +64,7 @@
               <input
                 cdsText
                 cdsLayer="2"
-                [attr.data-carbon-theme]="data.inputTheme"
+                [attr.data-carbon-theme]="inputTheme$ | async"
                 [placeholder]="'widgetTabManagement.content.map.keyPlaceholder' | translate"
                 type="text"
                 formControlName="key"

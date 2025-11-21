@@ -95,8 +95,8 @@ export class WidgetManagementMapComponent implements OnDestroy, OnInit {
   ) {}
 
   public ngOnInit(): void {
-    this.initForm();
     this.widgetWizardService.$widgetContentValid.set(false);
+    this.initForm();
 
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
@@ -105,13 +105,12 @@ export class WidgetManagementMapComponent implements OnDestroy, OnInit {
         this.widgetWizardService.$widgetContent.set({geoJsonSources: formValue.geoJsonSources});
       })
     );
-
-    if (this.widgetWizardService.$disableTitleInput()) this.hideTitleInput();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this.form.reset();
+    this.widgetWizardService.$widgetContentValid.set(false);
   }
 
   private initForm(): void {
@@ -126,6 +125,7 @@ export class WidgetManagementMapComponent implements OnDestroy, OnInit {
     this.$content().geoJsonSources.forEach((geoJsonSource: GeoJsonSource) => {
       sourcesControl.push(this.getGeoJsonSourcesForm(geoJsonSource), {emitEvent: false});
     });
+    this.widgetWizardService.$widgetContentValid.set(this.form.valid);
   }
 
   private getGeoJsonSourcesForm(geoJsonSource: GeoJsonSource): FormGroup {
@@ -149,18 +149,5 @@ export class WidgetManagementMapComponent implements OnDestroy, OnInit {
     if (!formArray) return;
 
     formArray.removeAt(index);
-  }
-
-  private hideTitleInput(): void {
-    this.$showTitleInput.set(false);
-
-    const ctrl: AbstractControl | null = this.form.get('widgetTitle');
-    if (!ctrl) return;
-
-    ctrl.clearValidators();
-
-    ctrl.updateValueAndValidity({emitEvent: false});
-
-    this.widgetWizardService.$widgetContentValid.set(this.form.valid);
   }
 }
