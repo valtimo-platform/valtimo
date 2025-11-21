@@ -992,6 +992,12 @@
       "selectorLabel": "Schaltfläche Neuer Prozess (Optional)",
       "selectorPlaceholder": "Wählen Sie einen Prozess"
     },
+    "actionButtonLabel": "Typ der Aktionsschaltfläche",
+    "externalLink": {
+    "linkLabel": "Schaltfläche für externen Link",
+    "linkPlaceholder": "Externer Link",
+    "buttonTextLabel": "Text der Schaltfläche für externen Link"
+    },
     "saveModalContent": "Sind Sie sicher, dass Sie die Widget-Konfiguration speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Widget-Konfiguration zerstören."
   },
   "zgw": {

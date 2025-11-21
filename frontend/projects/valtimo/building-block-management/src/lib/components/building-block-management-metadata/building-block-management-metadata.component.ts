@@ -23,7 +23,7 @@ import {TranslatePipe} from '@ngx-translate/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ReadOnlyDirective, TooltipIconModule} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
-import {Subscription} from 'rxjs';
+import {combineLatest, Subscription} from 'rxjs';
 
 @Component({
   standalone: true,
@@ -67,7 +67,7 @@ export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestr
 
   public ngOnInit(): void {
     this.openBuildingBlockDefinitionSubscription();
-    this.openLoadingSubscription();
+    this.openLoadingAndFinalSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -102,12 +102,15 @@ export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestr
     );
   }
 
-  private openLoadingSubscription(): void {
+  private openLoadingAndFinalSubscription(): void {
     this._subscriptions.add(
-      this.buildingBlockManagementDetailService.loadingDefinition$.subscribe(loadingDefinition => {
+      combineLatest([
+        this.buildingBlockManagementDetailService.loadingDefinition$,
+        this.buildingBlockManagementDetailService.isFinal$,
+      ]).subscribe(([loadingDefinition, isFinal]) => {
         if (loadingDefinition) {
           this.formGroup.disable();
-        } else {
+        } else if (!isFinal) {
           this.name.enable();
           this.description.enable();
           this.formGroup.markAsPristine();

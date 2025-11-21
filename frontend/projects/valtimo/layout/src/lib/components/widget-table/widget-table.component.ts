@@ -35,6 +35,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {FieldsWidgetValue, TableWidget} from '../../models';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-table',
@@ -50,6 +51,7 @@ import {FieldsWidgetValue, TableWidget} from '../../models';
     TilesModule,
     TranslateModule,
     ButtonModule,
+    WidgetActionButtonComponent,
   ],
 })
 export class WidgetTableComponent {
@@ -92,6 +94,7 @@ export class WidgetTableComponent {
   public readonly showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
+  public readonly resolvedData$ = new BehaviorSubject<object | null>(null);
 
   private _paginationInitialized = false;
 
@@ -115,6 +118,7 @@ export class WidgetTableComponent {
     }
 
     this.widgetData$.next(widgetData);
+    this.resolvedData$.next(value?.resolved);
 
     if (!this._paginationInitialized) {
       this.showPagination.set(value.totalElements > value.size);

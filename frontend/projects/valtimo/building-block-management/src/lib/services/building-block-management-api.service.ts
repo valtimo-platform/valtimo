@@ -21,10 +21,12 @@ import {
   BuildingBlockDefinitionArtworkDto,
   BuildingBlockDefinitionDto,
   BuildingBlockProcessDefinitionDto,
+  BuildingBlockVersionDto,
   ConfigService,
   CreateBuildingBlockDefinitionArtworkDto,
   CreateBuildingBlockDefinitionDto,
   InterceptorSkip,
+  Page,
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
@@ -163,9 +165,19 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     );
   }
 
-  public getBuildingBlockVersions(key: string): Observable<string[]> {
+  public getAllBuildingBlockVersions(key: string): Observable<BuildingBlockVersionDto[]> {
     return this.httpClient.get<string[]>(
       this.getApiUrl(`management/v1/building-block/${key}/version`)
+    );
+  }
+
+  public getVersionsForBuildingBlock(
+    key: string,
+    page: number = 0,
+    size: number = 5
+  ): Observable<Page<BuildingBlockVersionDto>> {
+    return this.httpClient.get<Page<BuildingBlockVersionDto>>(
+      this.getApiUrl(`management/v1/building-block/${key}/version?page=${page}&size=${size}`)
     );
   }
 }

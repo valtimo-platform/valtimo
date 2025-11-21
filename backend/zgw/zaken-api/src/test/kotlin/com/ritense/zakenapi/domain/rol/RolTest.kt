@@ -1,12 +1,12 @@
 package com.ritense.zakenapi.domain.rol
 
 import com.ritense.valtimo.contract.json.MapperSingleton
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
 import java.net.URI
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.test.assertEquals
 
 internal class RolTest {
 
@@ -15,18 +15,18 @@ internal class RolTest {
     @Test
     fun `should serialize natuurlijk persoon`() {
         val rol = Rol(
-            URI("http://rol.uri"),
-            UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
-            URI("http://zaak.uri"),
-            URI("http://betrokkene.uri"),
-            BetrokkeneType.NATUURLIJK_PERSOON,
-            URI("http://role.type"),
-            "omschrijving",
-            ZaakRolOmschrijving.INITIATOR,
-            "role-description",
-            LocalDateTime.of(2023, 2, 15, 10, 23, 43),
-            IndicatieMachtiging.GEMACHTIGDE.key,
-            RolNatuurlijkPersoon(
+            url = URI("http://rol.uri"),
+            uuid = UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
+            zaak = URI("http://zaak.uri"),
+            betrokkene = URI("http://betrokkene.uri"),
+            betrokkeneType = BetrokkeneType.NATUURLIJK_PERSOON,
+            roltype = URI("http://role.type"),
+            omschrijving = "omschrijving",
+            omschrijvingGeneriek = ZaakRolOmschrijving.INITIATOR,
+            roltoelichting = "role-description",
+            registratiedatum = LocalDateTime.of(2023, 2, 15, 10, 23, 43),
+            indicatieMachtigingString = IndicatieMachtiging.GEMACHTIGDE.key,
+            betrokkeneIdentificatie = RolNatuurlijkPersoon(
                 inpBsn = "bsn"
             )
         )
@@ -50,28 +50,30 @@ internal class RolTest {
                     "inpBsn": "bsn"
                 }
             }
-            """.replace("[ \n]".toRegex(), "")
+            """.trimIndent()
 
-        assertEquals(expectation, result)
+        JSONAssert.assertEquals(expectation, result, false)
     }
 
     @Test
     fun `should serialize niet natuurlijk persoon`() {
         val rol = Rol(
-            URI("http://rol.uri"),
-            UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
-            URI("http://zaak.uri"),
-            URI("http://betrokkene.uri"),
-            BetrokkeneType.NATUURLIJK_PERSOON,
-            URI("http://role.type"),
-            "omschrijving",
-            ZaakRolOmschrijving.INITIATOR,
-            "roltoelichting",
-            LocalDateTime.of(2023, 2, 15, 10, 23, 43),
-            IndicatieMachtiging.GEMACHTIGDE.key,
-            RolNietNatuurlijkPersoon(
+            url = URI("http://rol.uri"),
+            uuid = UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
+            zaak = URI("http://zaak.uri"),
+            betrokkene = URI("http://betrokkene.uri"),
+            betrokkeneType = BetrokkeneType.NATUURLIJK_PERSOON,
+            roltype = URI("http://role.type"),
+            omschrijving = "omschrijving",
+            omschrijvingGeneriek = ZaakRolOmschrijving.INITIATOR,
+            roltoelichting = "roltoelichting",
+            registratiedatum = LocalDateTime.of(2023, 2, 15, 10, 23, 43),
+            indicatieMachtigingString = IndicatieMachtiging.GEMACHTIGDE.key,
+            betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                 annIdentificatie = "kvk",
-                innNnpId = "innNnpId"
+                innNnpId = "innNnpId",
+                kvkNummer = "kvkNummer",
+                vestigingsNummer = "vestigingsNummer"
             )
         )
 
@@ -92,11 +94,14 @@ internal class RolTest {
                 "indicatieMachtiging": "gemachtigde",
                 "betrokkeneIdentificatie": {
                     "annIdentificatie": "kvk",
-                    "innNnpId": "innNnpId"
+                    "innNnpId": "innNnpId",
+                    "kvkNummer": "kvkNummer",
+                    "vestigingsNummer": "vestigingsNummer"
                 }
             }
-            """.replace("[ \n]".toRegex(), "")
-        assertEquals(expectation, result)
+            """.trimIndent()
+
+        JSONAssert.assertEquals(expectation, result, false)
     }
 
     @Test
@@ -118,12 +123,14 @@ internal class RolTest {
                     "inpBsn": "bsn"
                 }
             }
-            """.replace("[ \n]".toRegex(), "")
+            """.trimIndent()
 
         val result = mapper.readValue(json, Rol::class.java)
 
-        assertTrue(result.betrokkeneIdentificatie is RolNatuurlijkPersoon)
-        assertEquals("bsn", (result.betrokkeneIdentificatie as RolNatuurlijkPersoon).inpBsn)
+        assertThat(result.betrokkeneIdentificatie).isInstanceOf(RolNatuurlijkPersoon::class.java)
+        with(result.betrokkeneIdentificatie as RolNatuurlijkPersoon) {
+            assertThat(this.inpBsn).isEqualTo("bsn")
+        }
     }
 
     @Test
@@ -142,14 +149,260 @@ internal class RolTest {
                 "registratiedatum": "2023-02-15T10:23:43Z",
                 "indicatieMachtiging": "gemachtigde",
                 "betrokkeneIdentificatie": {
-                    "annIdentificatie": "kvk"
+                    "annIdentificatie": "kvk",
+                    "kvkNummer": "kvkNummer"
                 }
             }
-            """.replace("[ \n]".toRegex(), "")
+            """.trimIndent()
 
         val result = mapper.readValue(json, Rol::class.java)
 
-        assertTrue(result.betrokkeneIdentificatie is RolNietNatuurlijkPersoon)
-        assertEquals("kvk", (result.betrokkeneIdentificatie as RolNietNatuurlijkPersoon).annIdentificatie)
+        assertThat(result.betrokkeneIdentificatie).isInstanceOf(RolNietNatuurlijkPersoon::class.java)
+        with(result.betrokkeneIdentificatie as RolNietNatuurlijkPersoon) {
+            assertThat(this.annIdentificatie).isEqualTo("kvk")
+            assertThat(this.kvkNummer).isEqualTo("kvkNummer")
+        }
+    }
+
+    @Test
+    fun `should serialize vestiging`() {
+        val rol = Rol(
+            url = URI("http://rol.uri"),
+            uuid = UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
+            zaak = URI("http://zaak.uri"),
+            betrokkene = URI("http://betrokkene.uri"),
+            betrokkeneType = BetrokkeneType.VESTIGING,
+            roltype = URI("http://role.type"),
+            omschrijving = "omschrijving",
+            omschrijvingGeneriek = ZaakRolOmschrijving.INITIATOR,
+            roltoelichting = "roltoelichting",
+            registratiedatum = LocalDateTime.of(2023, 2, 15, 10, 23, 43),
+            indicatieMachtigingString = IndicatieMachtiging.GEMACHTIGDE.key,
+            betrokkeneIdentificatie = RolVestiging(
+                vestigingsNummer = "12345678",
+                handelsnaam = listOf("Handelsnaam 1", "Handelsnaam 2"),
+                kvkNummer = "87654321"
+            )
+        )
+
+        val result = mapper.writeValueAsString(rol)
+
+        val expectation = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "vestiging",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43.000Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "vestigingsNummer": "12345678",
+                    "handelsnaam": ["Handelsnaam 1", "Handelsnaam 2"],
+                    "kvkNummer": "87654321"
+                }
+            }
+            """.trimIndent()
+
+        JSONAssert.assertEquals(expectation, result, false)
+    }
+
+    @Test
+    fun `should deserialize vestiging`() {
+        val json = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "vestiging",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "vestigingsNummer": "12345678",
+                    "kvkNummer": "87654321"
+                }
+            }
+            """.trimIndent()
+
+        val result = mapper.readValue(json, Rol::class.java)
+
+        assertThat(result.betrokkeneIdentificatie).isInstanceOf(RolVestiging::class.java)
+        with(result.betrokkeneIdentificatie as RolVestiging) {
+            assertThat(this.vestigingsNummer).isEqualTo("12345678")
+            assertThat(this.kvkNummer).isEqualTo("87654321")
+        }
+    }
+
+    @Test
+    fun `should serialize medewerker`() {
+        val rol = Rol(
+            url = URI("http://rol.uri"),
+            uuid = UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
+            zaak = URI("http://zaak.uri"),
+            betrokkene = URI("http://betrokkene.uri"),
+            betrokkeneType = BetrokkeneType.MEDEWERKER,
+            roltype = URI("http://role.type"),
+            omschrijving = "omschrijving",
+            omschrijvingGeneriek = ZaakRolOmschrijving.INITIATOR,
+            roltoelichting = "roltoelichting",
+            registratiedatum = LocalDateTime.of(2023, 2, 15, 10, 23, 43),
+            indicatieMachtigingString = IndicatieMachtiging.GEMACHTIGDE.key,
+            betrokkeneIdentificatie = RolMedewerker(
+                identificatie = "M123",
+                achternaam = "Jansen",
+                voorletters = "A.",
+                voorvoegselAchternaam = "van"
+            )
+        )
+
+        val result = mapper.writeValueAsString(rol)
+
+        val expectation = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "medewerker",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43.000Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "identificatie": "M123",
+                    "achternaam": "Jansen",
+                    "voorletters": "A.",
+                    "voorvoegselAchternaam": "van"
+                }
+            }
+            """.trimIndent()
+
+        JSONAssert.assertEquals(expectation, result, false)
+    }
+
+    @Test
+    fun `should deserialize medewerker`() {
+        val json = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "medewerker",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "identificatie": "M123",
+                    "achternaam": "Jansen",
+                    "voorletters": "A.",
+                    "voorvoegselAchternaam": "van"
+                }
+            }
+            """.trimIndent()
+
+        val result = mapper.readValue(json, Rol::class.java)
+
+        assertThat(result.betrokkeneIdentificatie).isInstanceOf(RolMedewerker::class.java)
+        with(result.betrokkeneIdentificatie as RolMedewerker) {
+            assertThat(this.identificatie).isEqualTo("M123")
+            assertThat(this.achternaam).isEqualTo("Jansen")
+            assertThat(this.voorletters).isEqualTo("A.")
+            assertThat(this.voorvoegselAchternaam).isEqualTo("van")
+        }
+    }
+
+    @Test
+    fun `should serialize organisatorische eenheid`() {
+        val rol = Rol(
+            url = URI("http://rol.uri"),
+            uuid = UUID.fromString("3dd4ea1f-3419-43ae-aca2-def868083689"),
+            zaak = URI("http://zaak.uri"),
+            betrokkene = URI("http://betrokkene.uri"),
+            betrokkeneType = BetrokkeneType.ORGANISATORISCHE_EENHEID,
+            roltype = URI("http://role.type"),
+            omschrijving = "omschrijving",
+            omschrijvingGeneriek = ZaakRolOmschrijving.INITIATOR,
+            roltoelichting = "roltoelichting",
+            registratiedatum = LocalDateTime.of(2023, 2, 15, 10, 23, 43),
+            indicatieMachtigingString = IndicatieMachtiging.GEMACHTIGDE.key,
+            betrokkeneIdentificatie = RolOrganisatorischeEenheid(
+                identificatie = "OE-001",
+                naam = "Afdeling Vergunningen",
+                isGehuisvestIn = "Huis A"
+            )
+        )
+
+        val result = mapper.writeValueAsString(rol)
+
+        val expectation = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "organisatorische_eenheid",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43.000Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "identificatie": "OE-001",
+                    "naam": "Afdeling Vergunningen",
+                    "isGehuisvestIn": "Huis A"
+                }
+            }
+            """.trimIndent()
+
+        JSONAssert.assertEquals(expectation, result, false)
+    }
+
+    @Test
+    fun `should deserialize organisatorische eenheid`() {
+        val json = """
+            {
+                "url": "http://rol.uri",
+                "uuid": "3dd4ea1f-3419-43ae-aca2-def868083689",
+                "zaak": "http://zaak.uri",
+                "betrokkene": "http://betrokkene.uri",
+                "betrokkeneType": "organisatorische_eenheid",
+                "roltype": "http://role.type",
+                "omschrijving": "omschrijving",
+                "omschrijvingGeneriek": "initiator",
+                "roltoelichting": "roltoelichting",
+                "registratiedatum": "2023-02-15T10:23:43Z",
+                "indicatieMachtiging": "gemachtigde",
+                "betrokkeneIdentificatie": {
+                    "identificatie": "OE-001",
+                    "naam": "Afdeling Vergunningen",
+                    "isGehuisvestIn": "Huis A"
+                }
+            }
+            """.trimIndent()
+
+        val result = mapper.readValue(json, Rol::class.java)
+
+        assertThat(result.betrokkeneIdentificatie).isInstanceOf(RolOrganisatorischeEenheid::class.java)
+        with(result.betrokkeneIdentificatie as RolOrganisatorischeEenheid) {
+            assertThat(this.identificatie).isEqualTo("OE-001")
+            assertThat(this.naam).isEqualTo("Afdeling Vergunningen")
+            assertThat(this.isGehuisvestIn).isEqualTo("Huis A")
+        }
     }
 }

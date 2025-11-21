@@ -76,7 +76,7 @@ import {
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
+import {DocumentenApiTagService} from '../../services';
 import moment from 'moment';
 import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiVersionService} from '../../services';
@@ -606,7 +606,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       return null;
     }
 
-    filename = filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9]+/g, ' ');
+    filename = filename.replace(/\.[^/.]+$/, '').replace(/[._]/g, ' ');
     return filename.charAt(0).toUpperCase() + filename.slice(1);
   }
 

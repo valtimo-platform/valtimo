@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-.valtimo-case-management-widget-process-selector {
-  display: flex;
-  gap: 16px;
+:host ::ng-deep.widgets-container {
+  overflow: hidden;
+}
 
-  > * {
-    max-width: 288px;
-    width: 100%;
-  }
+.iko-widget-container {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }

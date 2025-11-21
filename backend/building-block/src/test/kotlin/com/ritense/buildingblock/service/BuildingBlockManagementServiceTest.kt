@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
@@ -51,6 +52,9 @@ class BuildingBlockManagementServiceTest {
 
     @Mock
     private lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
+
+    @Mock
+    private lateinit var authorizationService: AuthorizationService
 
     @InjectMocks
     private lateinit var buildingBlockManagementService: BuildingBlockManagementService

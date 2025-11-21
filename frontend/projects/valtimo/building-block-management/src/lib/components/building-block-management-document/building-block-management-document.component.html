@@ -18,13 +18,15 @@
   *ngIf="{
     loading: loading$ | async,
     documentDefinition: documentDefinition$ | async,
+    isFinal: isFinal$ | async,
   } as obs"
 >
   @if (!obs.loading) {
     <valtimo-schema-editor
       [fitPage]="true"
-      [extraSpace]="84"
+      [spaceAdjustment]="106"
       [schemaJson]="obs.documentDefinition"
+      [disabled]="obs.isFinal"
       (changeEvent)="onChangeEvent($event)"
       (saveEvent)="onSaveEvent()"
     >
