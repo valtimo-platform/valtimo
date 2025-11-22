@@ -28,11 +28,18 @@ import {
   tap,
 } from 'rxjs';
 import {InputOption, SetZaakStatusConfig} from '../../models';
-import {RadioValue, SelectItem} from '@valtimo/components';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  RadioValue,
+  SelectItem,
+} from '@valtimo/components';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import flatpickr from 'flatpickr';
 
 @Component({
   standalone: false,
@@ -59,10 +66,12 @@ export class SetZaakStatusConfigurationComponent
   readonly clearStatusSelection$ = new Subject<void>();
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly datumStatusGezetSelectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly formValue$ = new BehaviorSubject<SetZaakStatusConfig | null>(null);
   readonly valid$ = new BehaviorSubject<boolean>(false);
   readonly statusTypeSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
+  readonly datePickerInvalid$ = new BehaviorSubject<boolean>(false);
 
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
@@ -78,16 +87,27 @@ export class SetZaakStatusConfigurationComponent
     ])
   );
 
+  public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
+    map((theme: CurrentCarbonTheme) =>
+      theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G100
+    )
+  );
+
   private readonly _subscriptions = new Subscription();
+
+  public selectedDate: string | null = null;
+  public selectedTime: string | null = null;
 
   constructor(
     private readonly zakenApiService: ZakenApiService,
-    private readonly pluginTranslatePipe: PluginTranslatePipe
+    private readonly pluginTranslatePipe: PluginTranslatePipe,
+    private readonly cdsThemeService: CdsThemeService
   ) {}
 
   public ngOnInit(): void {
     this.initContextHandling();
     this.initSaveHandling();
+    this.prefillToday();
   }
 
   public ngOnDestroy(): void {
@@ -95,12 +115,86 @@ export class SetZaakStatusConfigurationComponent
   }
 
   public formValueChange(formValue: SetZaakStatusConfig): void {
-    this.formValue$.next(formValue);
-    this.handleValid(formValue);
+    const currentFormValue = this.formValue$.value ?? ({} as SetZaakStatusConfig);
+    const updatedFormValue: SetZaakStatusConfig = {
+      ...currentFormValue,
+      ...formValue,
+    };
 
-    if (formValue.inputTypeZaakStatusToggle) {
-      this.selectedInputOption$.next(formValue.inputTypeZaakStatusToggle);
+    this.formValue$.next(updatedFormValue);
+    this.handleValid(updatedFormValue);
+    if (updatedFormValue.inputTypeZaakStatusToggle) {
+      this.selectedInputOption$.next(updatedFormValue.inputTypeZaakStatusToggle);
     }
+    if (updatedFormValue.inputDatumStatusGezetToggle) {
+      this.datumStatusGezetSelectedInputOption$.next(updatedFormValue.inputDatumStatusGezetToggle);
+    }
+  }
+
+  public onDateSelected(event: Date[]): void {
+    const date = Array.isArray(event) && event[0];
+    if (!date) return;
+    this.selectedDate = date.toISOString();
+    this.updateDatumStatusGezet();
+  }
+
+  public onTimeSelected(event: string): void {
+    this.selectedTime = event;
+    this.updateDatumStatusGezet();
+  }
+
+  private updateDatumStatusGezet(): void {
+    if (!this.selectedDate || !this.selectedTime) {
+      return;
+    }
+
+    const [hoursStr, minutesStr = '00', secondsStr = '00'] = this.selectedTime.split(':');
+    const date = new Date(this.selectedDate);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hh = hoursStr.padStart(2, '0');
+    const mm = minutesStr.padStart(2, '0');
+    const ss = secondsStr.padStart(2, '0');
+
+    const isoWithoutMs = `${year}-${month}-${day}T${hh}:${mm}:${ss}Z`;
+
+    const currentFormValue = this.formValue$.value ?? ({} as SetZaakStatusConfig);
+    const updatedFormValue: SetZaakStatusConfig = {
+      ...currentFormValue,
+      datumStatusGezet: isoWithoutMs,
+    };
+
+    this.formValueChange(updatedFormValue);
+  }
+
+  private prefillToday(): void {
+    this._subscriptions.add(
+      this.prefillConfiguration$.subscribe(config => {
+        let baseDate;
+
+        try {
+          baseDate = flatpickr.formatDate(
+            !!config?.datumStatusGezet ? new Date(config!.datumStatusGezet) : new Date(),
+            'Z'
+          );
+        } catch (error) {
+          baseDate = config.datumStatusGezet;
+          this.datumStatusGezetSelectedInputOption$.next('text');
+        }
+
+        this.selectedDate = baseDate;
+        this.selectedTime = this.formatTime(baseDate);
+      })
+    );
+
+    this.updateDatumStatusGezet();
+  }
+
+  private formatTime(date: string): string {
+    const [hours, minutes, seconds] = date.split('T')[1].split(':');
+    return `${hours}:${minutes}:${seconds.split('.')[0]}`;
   }
 
   public oneSelectItem(selectItems: Array<SelectItem>): boolean {
@@ -156,6 +250,7 @@ export class SetZaakStatusConfigurationComponent
             this.configuration.emit({
               statustoelichting: formValue.statustoelichting,
               statustypeUrl: formValue.statustypeUrl,
+              datumStatusGezet: formValue.datumStatusGezet,
             });
           }
         });
@@ -164,8 +259,53 @@ export class SetZaakStatusConfigurationComponent
     this._subscriptions.add(saveSub);
   }
 
+  private isValidDatumStatusGezet(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
+      return true;
+    }
+
+    const trimmed = value.trim();
+
+    // Required format: YYYY-MM-DDTHH:mm:ssZ
+    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    if (!regex.test(trimmed)) {
+      return false;
+    }
+
+    const date = new Date(trimmed);
+    return !isNaN(date.getTime());
+  }
+
+  private isDateNotInFuture(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
+      return true;
+    }
+
+    const date = new Date(value);
+    const now = new Date();
+    const isDateNotInFuture = date.getTime() <= now.getTime();
+
+    this.datePickerInvalid$.next(!isDateNotInFuture);
+
+    return isDateNotInFuture;
+  }
+
   private handleValid(formValue: SetZaakStatusConfig): void {
-    const valid = !!formValue.statustypeUrl;
+    const hasStatusType = !!formValue.statustypeUrl;
+    const hasValidDatumStatusGezet = this.isValidDatumStatusGezet(formValue.datumStatusGezet);
+    const dateIsNotInFuture = this.isDateNotInFuture(formValue.datumStatusGezet);
+
+    const valid = hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture;
+
     this.valid$.next(valid);
     this.valid.emit(valid);
   }

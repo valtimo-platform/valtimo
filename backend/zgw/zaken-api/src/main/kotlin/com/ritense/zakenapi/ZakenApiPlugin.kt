@@ -88,6 +88,7 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.data.domain.Pageable
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.ZonedDateTime
 
 @Plugin(
     key = ZakenApiPlugin.PLUGIN_KEY,
@@ -754,6 +755,7 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty statustypeUrl: URI,
         @PluginActionProperty statustoelichting: String?,
+        @PluginActionProperty datumStatusGezet: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.STATUSTYPE to statustypeUrl.toString(),
@@ -761,6 +763,9 @@ class ZakenApiPlugin(
             logger.debug { "Setting zaak status with type URL '$statustypeUrl' for document with id '${execution.businessKey}'" }
             val documentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+            val convertedDatumStatusGezet = datumStatusGezet?.let {
+                ZonedDateTime.parse(datumStatusGezet).toLocalDateTime()
+            }
 
             client.createZaakStatus(
                 authenticationPluginConfiguration,
@@ -768,7 +773,7 @@ class ZakenApiPlugin(
                 CreateZaakStatusRequest(
                     zaak = zaakUrl,
                     statustype = statustypeUrl,
-                    datumStatusGezet = LocalDateTime.now().minusSeconds(5),
+                    datumStatusGezet = convertedDatumStatusGezet ?: LocalDateTime.now().minusSeconds(5),
                     statustoelichting = statustoelichting,
                 )
             )
