@@ -45,6 +45,12 @@
     line-height: 24px;
   }
 
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__container {
     display: grid;
     grid-gap: 24px;

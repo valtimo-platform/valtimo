@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.catalogiapi.CatalogiApiPlugin
 import com.ritense.logging.withLoggingContext
@@ -71,6 +72,7 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
@@ -100,6 +102,7 @@ class ZakenApiPlugin(
     private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
     private val pluginService: PluginService,
     private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
+    private val zaakDocumentService: ZaakDocumentService,
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
@@ -177,6 +180,34 @@ class ZakenApiPlugin(
         )
         client.linkDocument(authenticationPluginConfiguration, url, request)
         logger.info { "Linked uploaded document with URL '$documentUrl' to zaak with URL '$zaakUrl'" }
+    }
+
+    @PluginAction(
+        key = "get-zaak-informatieobjecten",
+        title = "Retrieve informatieobjecten",
+        description = "Retrieve informatieobjecten linked to a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getZaakInformatieobjecten(
+        execution: DelegateExecution,
+        @PluginActionProperty resultProcessVariable: String,
+    ) {
+        logger.debug { "Fetching informatieobjecten for documentId '${execution.businessKey}'" }
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        withLoggingContext(
+            LoggingConstants.ZAKEN_API.ZAAK to zaakUrl.toString()
+        ) {
+            val relatedFiles = zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
+            relatedFiles.let { relatedFile ->
+                execution.setVariable(resultProcessVariable,
+                    objectMapper.convertValue(relatedFile)
+                )
+            }
+
+            logger.info { "Retrieved ${relatedFiles.size} informatieobjecten for zaak '$zaakUrl' and document '${documentId}'" }
+        }
     }
 
     @PluginAction(

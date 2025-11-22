@@ -34,6 +34,7 @@ class InteractiveTableWidget(
     id: UUID,
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -44,12 +45,13 @@ class InteractiveTableWidget(
     @Column(name = "properties", nullable = false)
     val properties: InteractiveTableWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions, displayConditions
+    id, key, title, icon, order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
@@ -59,6 +61,7 @@ class InteractiveTableWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
@@ -70,6 +73,7 @@ class InteractiveTableWidget(
     override fun toDto() = InteractiveTableWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
         actions = this.actions,

@@ -27,6 +27,8 @@
   &__title-form {
     padding: 8px 0 16px 16px;
     background: var(--cds-layer);
+    display: flex;
+    gap: 16px;
   }
 
   &__input {

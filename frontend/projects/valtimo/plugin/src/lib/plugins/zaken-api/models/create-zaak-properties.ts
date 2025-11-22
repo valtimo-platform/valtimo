@@ -23,6 +23,6 @@ export const CreateZaakExtraPropertyOptions = [
   'paymentIndication',
   'caseGeometryType',
   'caseGeometryCoordinates',
-  'mainCase'
+  'mainCase',
 ] as const;
 export type CreateZaakExtraProperties = (typeof CreateZaakExtraPropertyOptions)[number];

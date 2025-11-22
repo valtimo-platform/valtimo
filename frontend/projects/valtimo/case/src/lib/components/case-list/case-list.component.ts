@@ -417,8 +417,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
           allStatuses.length === 1
             ? []
             : selectedStatuses.map((statusKey: string) =>
-              statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
-            );
+                statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
+              );
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
@@ -756,7 +756,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe(() => this._refreshHiddenColumns$.next(null));
-}
+  }
 
   public readonly disableSaveSearch$ = combineLatest([
     this.statusService.selectedCaseStatuses$,

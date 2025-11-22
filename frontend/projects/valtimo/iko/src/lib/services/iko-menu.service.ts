@@ -21,10 +21,14 @@ import {IkoApiService} from './iko-api.service';
 
 @Injectable({providedIn: 'root'})
 export class IkoMenuService {
+  private readonly _IKO_MENU_ITEM_TITLE_TRANSLATION_KEY = 'iko.pageTitle';
+
   constructor(private readonly ikoApiService: IkoApiService) {}
 
   public appendIkoMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
-    const ikoExists = menuItems.some(item => item.title === 'IKO');
+    const ikoExists = menuItems.some(
+      item => item.title === this._IKO_MENU_ITEM_TITLE_TRANSLATION_KEY
+    );
     if (ikoExists) return of(menuItems);
 
     return this.ikoApiService.getIkoDataAggregates().pipe(
@@ -42,7 +46,7 @@ export class IkoMenuService {
           }));
 
           const ikoMenu: MenuItem = {
-            title: 'IKO',
+            title: this._IKO_MENU_ITEM_TITLE_TRANSLATION_KEY,
             iconClass: 'icon mdi mdi-account',
             show: true,
             sequence: this.getIkoSequenceAfterCases(menuItems),

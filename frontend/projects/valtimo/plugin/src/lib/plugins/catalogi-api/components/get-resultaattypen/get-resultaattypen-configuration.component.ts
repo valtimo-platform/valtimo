@@ -22,7 +22,7 @@ import {GetResultaattypenConfig} from '../../models';
 @Component({
   standalone: false,
   selector: 'valtimo-get-resultaattypen-configuration',
-  templateUrl: './get-resultaattypen-configuration.component.html'
+  templateUrl: './get-resultaattypen-configuration.component.html',
 })
 export class GetResultaattypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -35,8 +35,7 @@ export class GetResultaattypenConfigurationComponent
     new EventEmitter<GetResultaattypenConfig>();
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  private readonly _formValue$ =
-    new BehaviorSubject<GetResultaattypenConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<GetResultaattypenConfig | null>(null);
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
@@ -54,9 +53,7 @@ export class GetResultaattypenConfigurationComponent
   }
 
   private handleValid(formValue: GetResultaattypenConfig): void {
-    const valid = !!(
-      formValue.processVariable
-    );
+    const valid = !!formValue.processVariable;
 
     this._valid$.next(valid);
     this.valid.emit(valid);
