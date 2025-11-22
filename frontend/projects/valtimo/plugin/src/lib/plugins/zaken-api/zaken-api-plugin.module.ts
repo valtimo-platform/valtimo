@@ -58,12 +58,14 @@ import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-o
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 
 @NgModule({
   declarations: [
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     DeleteZaakRolComponent,
@@ -109,6 +111,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,

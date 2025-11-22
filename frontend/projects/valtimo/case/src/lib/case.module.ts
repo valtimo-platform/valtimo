@@ -17,7 +17,12 @@ import {CommonModule} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ModuleWithProviders, NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {NgbButtonsModule, NgbModule, NgbPaginationModule, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbButtonsModule,
+  NgbModule,
+  NgbPaginationModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
   BpmnJsDiagramModule,
@@ -90,9 +95,7 @@ import {CaseDetailTabSummaryComponent} from './components/case-detail/tab/summar
 import {CaseListActionsComponent} from './components/case-list-actions/case-list-actions.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {CaseProcessStartModalComponent} from './components/case-process-start-modal/case-process-start-modal.component';
-import {
-  CaseSupportingProcessStartModalComponent,
-} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
+import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
 import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
@@ -103,9 +106,7 @@ import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/w
 import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
-import {
-  CaseDetailHeaderWidgetComponent,
-} from './components/case-detail-header-widget/case-detail-header-widget.component';
+import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
 
 export type TabsFactory = () => Map<string, object>;
 

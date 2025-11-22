@@ -19,8 +19,8 @@ import {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
-  WidgetTableContent,
   WidgetInteractiveTableContent,
+  WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 import {Condition} from '@valtimo/shared';
@@ -44,10 +44,11 @@ interface WidgetAction {
   caseDefinitionKey?: string;
   navigateTo?: string;
 }
- 
+
 interface BasicWidget {
   type: WidgetType;
   title: string;
+  icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
@@ -112,7 +113,7 @@ type Widget =
   | TableWidget
   | InteractiveTableWidget
   | FormioWidget
-  | DividerWidget
+  | DividerWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -212,5 +213,5 @@ export {
   MaxRectsResult,
   WidgetComponentMap,
   WidgetContext,
-  WidgetGroup
+  WidgetGroup,
 };
