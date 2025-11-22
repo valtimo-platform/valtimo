@@ -217,8 +217,8 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                   "geometry":{
                      "type":"Point",
                      "coordinates":[
-                        102.0,
-                        0.5
+                        4.9,
+                        52.37
                      ]
                   },
                   "properties":{
@@ -231,20 +231,20 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                      "type":"LineString",
                      "coordinates":[
                         [
-                           102.0,
-                           0.0
+                           4.9,
+                           51.9
                         ],
                         [
-                           103.0,
-                           1.0
+                           5.9,
+                           52.9
                         ],
                         [
-                           104.0,
-                           0.0
+                           6.9,
+                           51.9
                         ],
                         [
-                           105.0,
-                           1.0
+                           7.9,
+                           52.9
                         ]
                      ]
                   },
@@ -260,24 +260,24 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                      "coordinates":[
                         [
                            [
-                              100.0,
-                              0.0
+                              2.3,
+                              51.9
                            ],
                            [
-                              101.0,
-                              0.0
+                              3.9,
+                              51.9
                            ],
                            [
-                              101.0,
-                              1.0
+                              3.9,
+                              52.9
                            ],
                            [
-                              100.0,
-                              1.0
+                              2.3,
+                              52.9
                            ],
                            [
-                              100.0,
-                              0.0
+                              2.3,
+                              51.9
                            ]
                         ]
                      ]

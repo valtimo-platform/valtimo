@@ -186,6 +186,7 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     if (extent) {
       this.map.getView().fit(extent, {
         padding: [20, 20, 20, 20],
+        maxZoom: 18,
       });
     }
   }
