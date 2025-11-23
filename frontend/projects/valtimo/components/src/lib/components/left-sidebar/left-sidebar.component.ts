@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {MenuItem} from '@valtimo/shared';
+import {MenuItem, ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
@@ -64,6 +64,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
   public readonly overflowMenuSequence$ = new BehaviorSubject<string>('');
+  public readonly disableCaseCount$: Observable<boolean>;
 
   private _breakpointSubscription!: Subscription;
   private _breakpointsInitialized = false;
@@ -75,9 +76,11 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     private readonly menuService: MenuService,
     private readonly shellService: ShellService,
     private readonly breakpointObserver: BreakpointObserver,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly configService: ConfigService
   ) {
     this.includeFunctionObservables = this.menuService.includeFunctionObservables;
+    this.disableCaseCount$ = this.configService.getFeatureToggleObservable('disableCaseCount');
   }
 
   public ngAfterViewInit(): void {

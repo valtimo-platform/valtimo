@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 
 enum IncludeFunction {
   ObjectManagementEnabled,
@@ -30,7 +30,7 @@ interface MenuItem {
   children?: MenuItem[];
   roles?: string[];
   show?: boolean;
-  count$?: Subject<number>;
+  count$?: Observable<number>;
   includeFunction?: IncludeFunction;
 }
 
