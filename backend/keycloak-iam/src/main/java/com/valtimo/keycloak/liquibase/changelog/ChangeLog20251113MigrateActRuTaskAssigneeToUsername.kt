@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateActRuTaskAssigneeToUsername : AbstractMigrateWithK
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateActRuTask(connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateActRuTaskAssigneeToUsername : AbstractMigrateWithK
     }
 
     private fun migrateActRuTask(connection: JdbcConnection) {
-        if (!checkTableExists(connection, "act_ru_task")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery()
+        val result = connection.prepareStatement("SELECT id_,assignee_ FROM $TABLE_NAME").executeQuery()
 
         while (result.next()) {
             val taskId = result.getString("id_")
@@ -66,23 +66,24 @@ class ChangeLog20251113MigrateActRuTaskAssigneeToUsername : AbstractMigrateWithK
                     val assigneeUsername = getKeycloakUser(assignee)?.username
                     if (assignee != assigneeUsername) {
                         executeUpdate(
-                            connection, "UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?",
+                            connection, "UPDATE $TABLE_NAME SET assignee_ = ? WHERE id_ = ?",
                             assigneeUsername, taskId
                         )
                     }
                 } catch (_: KeycloakUserNotFoundException) {
                     logger.error {
-                        "Failed to migrate act_ru_task '$taskId'. Unknown assignee: '$assignee'. Unassigning user from act_ru_task."
+                        "Failed to migrate $TABLE_NAME '$taskId'. Unknown assignee: '$assignee'. Unassigning user from $TABLE_NAME."
                     }
-                    executeUpdate(connection, "UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?", null, taskId)
+                    executeUpdate(connection, "UPDATE $TABLE_NAME SET assignee_ = ? WHERE id_ = ?", null, taskId)
                 } catch (ex: Exception) {
-                    logger.error(ex) { "Failed to migrate act_ru_task '$taskId' for assignee: '$assignee'. Skipping act_ru_task update." }
+                    logger.error(ex) { "Failed to migrate $TABLE_NAME '$taskId' for assignee: '$assignee'. Skipping $TABLE_NAME update." }
                 }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "act_ru_task"
         private val logger = KotlinLogging.logger {}
     }
 }

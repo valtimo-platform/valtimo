@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateNoteCreatedByToUsername : AbstractMigrateWithKeycl
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateNote(database, connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateNoteCreatedByToUsername : AbstractMigrateWithKeycl
     }
 
     private fun migrateNote(database: Database, connection: JdbcConnection) {
-        if (!checkTableExists(connection, "note")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT id,created_by_user_id FROM note").executeQuery()
+        val result = connection.prepareStatement("SELECT id,created_by_user_id FROM $TABLE_NAME").executeQuery()
 
         while (result.next()) {
             val noteId = getIdFromResultSet(database, result, "id")
@@ -66,20 +66,21 @@ class ChangeLog20251113MigrateNoteCreatedByToUsername : AbstractMigrateWithKeycl
                     val creatorUsername = getKeycloakUser(creator)?.username
                     if (creator != creatorUsername) {
                         executeUpdate(
-                            connection, "UPDATE note SET created_by_user_id = ? WHERE id = ?",
+                            connection, "UPDATE $TABLE_NAME SET created_by_user_id = ? WHERE id = ?",
                             creatorUsername, noteId
                         )
                     }
                 } catch (_: KeycloakUserNotFoundException) {
-                    logger.error { "Failed to migrate note '$noteId'. Unknown creator: '$creator'. Skipping note update." }
+                    logger.error { "Failed to migrate $TABLE_NAME '$noteId'. Unknown creator: '$creator'. Skipping $TABLE_NAME update." }
                 } catch (ex: Exception) {
-                    logger.error(ex) { "Failed to migrate note '$noteId' for assignee: '$creator'. Skipping note update." }
+                    logger.error(ex) { "Failed to migrate $TABLE_NAME '$noteId' for assignee: '$creator'. Skipping $TABLE_NAME update." }
                 }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "note"
         private val logger = KotlinLogging.logger {}
     }
 }

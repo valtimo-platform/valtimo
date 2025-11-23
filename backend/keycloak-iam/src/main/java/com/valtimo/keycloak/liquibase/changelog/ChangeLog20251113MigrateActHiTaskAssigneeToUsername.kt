@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateActHiTaskAssigneeToUsername : AbstractMigrateWithK
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateActHiTask(connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateActHiTaskAssigneeToUsername : AbstractMigrateWithK
     }
 
     private fun migrateActHiTask(connection: JdbcConnection) {
-        if (!checkTableExists(connection, "act_hi_taskinst")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT id_,assignee_ FROM act_hi_taskinst").executeQuery()
+        val result = connection.prepareStatement("SELECT id_,assignee_ FROM $TABLE_NAME").executeQuery()
 
         while (result.next()) {
             val taskId = result.getString("id_")
@@ -66,20 +66,21 @@ class ChangeLog20251113MigrateActHiTaskAssigneeToUsername : AbstractMigrateWithK
                     val assigneeUsername = getKeycloakUser(assignee)?.username
                     if (assignee != assigneeUsername) {
                         executeUpdate(
-                            connection, "UPDATE act_hi_taskinst SET assignee_ = ? WHERE id_ = ?",
+                            connection, "UPDATE $TABLE_NAME SET assignee_ = ? WHERE id_ = ?",
                             assigneeUsername, taskId
                         )
                     }
                 } catch (_: KeycloakUserNotFoundException) {
-                    logger.error { "Failed to migrate act_hi_taskinst '$taskId'. Unknown assignee: '$assignee'. Skipping act_hi_taskinst update." }
+                    logger.error { "Failed to migrate $TABLE_NAME '$taskId'. Unknown assignee: '$assignee'. Skipping $TABLE_NAME update." }
                 } catch (ex: Exception) {
-                    logger.error(ex) { "Failed to migrate act_hi_taskinst '$taskId' for assignee: '$assignee'. Skipping act_hi_taskinst update." }
+                    logger.error(ex) { "Failed to migrate $TABLE_NAME '$taskId' for assignee: '$assignee'. Skipping $TABLE_NAME update." }
                 }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "act_hi_taskinst"
         private val logger = KotlinLogging.logger {}
     }
 }

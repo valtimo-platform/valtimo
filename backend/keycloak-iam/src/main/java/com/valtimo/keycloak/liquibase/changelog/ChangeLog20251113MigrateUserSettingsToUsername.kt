@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateUserSettingsToUsername : AbstractMigrateWithKeyclo
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateUserSettings(connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateUserSettingsToUsername : AbstractMigrateWithKeyclo
     }
 
     private fun migrateUserSettings(connection: JdbcConnection) {
-        if (!checkTableExists(connection, "user_settings")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT user_id,settings FROM user_settings").executeQuery()
+        val result = connection.prepareStatement("SELECT user_id,settings FROM $TABLE_NAME").executeQuery()
 
         while (result.next()) {
             val userId = result.getString("user_id")
@@ -66,24 +66,25 @@ class ChangeLog20251113MigrateUserSettingsToUsername : AbstractMigrateWithKeyclo
                 if (userId != username) {
                     executeUpdate(
                         connection, """
-                        INSERT INTO user_settings (user_id, settings)
+                        INSERT INTO $TABLE_NAME (user_id, settings)
                         SELECT ?, ?
                         WHERE NOT EXISTS (
-                            SELECT 1 FROM user_settings WHERE user_id = ?
+                            SELECT 1 FROM $TABLE_NAME WHERE user_id = ?
                         );
                      """.trimIndent(), username, settings, username
                     )
-                    executeUpdate(connection, "DELETE FROM user_settings WHERE user_id = ?", userId)
+                    executeUpdate(connection, "DELETE FROM $TABLE_NAME WHERE user_id = ?", userId)
                 }
             } catch (_: KeycloakUserNotFoundException) {
-                logger.error { "Failed to migrate user_settings. Unknown user: '$userId'. Skipping user_settings update." }
+                logger.error { "Failed to migrate $TABLE_NAME. Unknown user: '$userId'. Skipping $TABLE_NAME update." }
             } catch (ex: Exception) {
-                logger.error(ex) { "Failed to migrate user_settings for user '$userId'. Skipping user_settings update." }
+                logger.error(ex) { "Failed to migrate $TABLE_NAME for user '$userId'. Skipping $TABLE_NAME update." }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "user_settings"
         private val logger = KotlinLogging.logger {}
     }
 }

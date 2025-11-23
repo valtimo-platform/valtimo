@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername 
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateIntermediateSubmission(database, connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername 
     }
 
     private fun migrateIntermediateSubmission(database: Database, connection: JdbcConnection) {
-        if (!checkTableExists(connection, "intermediate_submission")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT id,created_by,edited_by FROM intermediate_submission")
+        val result = connection.prepareStatement("SELECT id,created_by,edited_by FROM $TABLE_NAME")
             .executeQuery()
 
         while (result.next()) {
@@ -67,28 +67,29 @@ class ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername 
                 val creatorUsername = try {
                     getKeycloakUser(creator)?.username
                 } catch (_: KeycloakUserNotFoundException) {
-                    logger.error { "Failed to migrate intermediate_submission '$id'. Unknown creator: '$creator'. Skipping intermediate_submission.created_by update." }
+                    logger.error { "Failed to migrate $TABLE_NAME '$id'. Unknown creator: '$creator'. Skipping $TABLE_NAME.created_by update." }
                     creator
                 }
                 val editorUsername = try {
                     getKeycloakUser(editor)?.username
                 } catch (_: KeycloakUserNotFoundException) {
-                    logger.error { "Failed to migrate intermediate_submission '$id'. Unknown editor: '$editor'. Skipping intermediate_submission.edited_by update." }
+                    logger.error { "Failed to migrate $TABLE_NAME '$id'. Unknown editor: '$editor'. Skipping $TABLE_NAME.edited_by update." }
                     editor
                 }
                 if (creator != creatorUsername || editor != editorUsername) {
                     executeUpdate(
-                        connection, "UPDATE intermediate_submission SET created_by = ?, edited_by = ? WHERE id = ?",
+                        connection, "UPDATE $TABLE_NAME SET created_by = ?, edited_by = ? WHERE id = ?",
                         creatorUsername, editorUsername, id
                     )
                 }
             } catch (ex: Exception) {
-                logger.error(ex) { "Failed to migrate intermediate_submission '$id' for creator '$creator' and editor '$editor'. Skipping intermediate_submission update." }
+                logger.error(ex) { "Failed to migrate $TABLE_NAME '$id' for creator '$creator' and editor '$editor'. Skipping $TABLE_NAME update." }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "intermediate_submission"
         private val logger = KotlinLogging.logger {}
     }
 }

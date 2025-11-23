@@ -29,6 +29,9 @@ class ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId : AbstractMigra
         logger.info { "Starting ${this::class.simpleName}" }
 
         val connection = database.connection as JdbcConnection
+        if (!checkTableIsNotEmpty(connection, TABLE_NAME)) {
+            return
+        }
         pingKeycloak()
         migrateJsonSchemaDocument(database, connection)
         pingKeycloak()
@@ -53,10 +56,7 @@ class ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId : AbstractMigra
     }
 
     private fun migrateJsonSchemaDocument(database: Database, connection: JdbcConnection) {
-        if (!checkTableExists(connection, "json_schema_document")) {
-            return
-        }
-        val result = connection.prepareStatement("SELECT json_schema_document_id,assignee_id FROM json_schema_document")
+        val result = connection.prepareStatement("SELECT json_schema_document_id,assignee_id FROM $TABLE_NAME")
             .executeQuery()
 
         while (result.next()) {
@@ -68,29 +68,30 @@ class ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId : AbstractMigra
                     if (assignee != assigneeUsername) {
                         executeUpdate(
                             connection,
-                            "UPDATE json_schema_document SET assignee_id = ? WHERE json_schema_document_id = ?",
+                            "UPDATE $TABLE_NAME SET assignee_id = ? WHERE json_schema_document_id = ?",
                             assigneeUsername,
                             documentId
                         )
                     }
                 } catch (_: KeycloakUserNotFoundException) {
                     logger.error {
-                        "Failed to migrate json_schema_document '$documentId'. Unknown assignee: '$assignee'. Unassigning user from json_schema_document."
+                        "Failed to migrate $TABLE_NAME '$documentId'. Unknown assignee: '$assignee'. Unassigning user from $TABLE_NAME."
                     }
                     executeUpdate(
                         connection,
-                        "UPDATE json_schema_document SET assignee_id = ? WHERE json_schema_document_id = ?",
+                        "UPDATE $TABLE_NAME SET assignee_id = ? WHERE json_schema_document_id = ?",
                         null,
                         documentId
                     )
                 } catch (ex: Exception) {
-                    logger.error(ex) { "Failed to migrate json_schema_document '$documentId' for assignee: '$assignee'. Skipping json_schema_document update." }
+                    logger.error(ex) { "Failed to migrate $TABLE_NAME '$documentId' for assignee: '$assignee'. Skipping $TABLE_NAME update." }
                 }
             }
         }
     }
 
     companion object {
+        private const val TABLE_NAME = "json_schema_document"
         private val logger = KotlinLogging.logger {}
     }
 }

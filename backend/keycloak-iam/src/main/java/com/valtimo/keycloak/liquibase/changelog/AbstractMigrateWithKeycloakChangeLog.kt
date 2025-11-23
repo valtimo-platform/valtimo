@@ -53,19 +53,39 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
             connection.catalog
         }
 
-        val result = connection.prepareStatement(
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM information_schema.tables
-                WHERE table_schema = '$schemaOrDatabaseName'
-                  AND table_name = '$tableName'
-            );
-        """.trimIndent()
-        ).executeQuery()
-        result.next()
-        return result.getBoolean(1)
+        val sql = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = ?
+              AND table_name = ?
+        );
+    """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setString(1, schemaOrDatabaseName)
+            stmt.setString(2, tableName)
+
+            stmt.executeQuery().use { rs ->
+                return rs.next() && rs.getBoolean(1)
+            }
+        }
     }
+
+    protected fun checkTableIsNotEmpty(connection: JdbcConnection, tableName: String): Boolean {
+        if (!checkTableExists(connection, tableName)) {
+            return false
+        }
+
+        val sql = "SELECT EXISTS (SELECT 1 FROM $tableName LIMIT 1);"
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.executeQuery().use { rs ->
+                return rs.next() && rs.getBoolean(1)
+            }
+        }
+    }
+
 
     protected fun getDatabaseSchema(connection: JdbcConnection): String {
         val result = connection.prepareStatement("SELECT current_schema()").executeQuery()
