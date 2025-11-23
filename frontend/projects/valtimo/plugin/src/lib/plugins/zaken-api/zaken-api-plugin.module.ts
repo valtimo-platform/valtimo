@@ -56,6 +56,7 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 @NgModule({
   declarations: [
@@ -80,25 +81,26 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
-    imports: [
-        CommonModule,
-        PluginTranslatePipeModule,
-        FormModule,
-        InputModule,
-        SelectModule,
-        ParagraphModule,
-        ToggleModule,
-        InputLabelModule,
-        RadioModule,
-        LoadingModule,
-        ButtonModule,
-        DialogModule,
-        IconModule,
-        TranslateModule,
-        DatePickerInputModule,
-        NotificationModule,
-    ],
+  imports: [
+    CommonModule,
+    PluginTranslatePipeModule,
+    FormModule,
+    InputModule,
+    SelectModule,
+    ParagraphModule,
+    ToggleModule,
+    InputLabelModule,
+    RadioModule,
+    LoadingModule,
+    ButtonModule,
+    DialogModule,
+    IconModule,
+    TranslateModule,
+    DatePickerInputModule,
+    NotificationModule,
+  ],
   exports: [
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
@@ -120,6 +122,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}

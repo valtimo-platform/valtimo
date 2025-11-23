@@ -58,6 +58,7 @@ import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
+import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
@@ -953,8 +954,8 @@ class ZakenApiPlugin(
 
     @PluginAction(
         key = "delete-zaakeigenschap",
-        title = "Create zaakeigenschap",
-        description = "Creates a zaakeigenschap",
+        title = "Delete zaakeigenschap",
+        description = "Deletes a zaakeigenschap",
         activityTypes = [SERVICE_TASK_START]
     )
     fun deleteZaakeigenschap(
@@ -1015,6 +1016,33 @@ class ZakenApiPlugin(
                 )
             )
         }
+    }
+
+    @PluginAction(
+        key = "get-zaakbesluiten",
+        title = "Get zaakbesluiten",
+        description = "This retreives all zaakbesluiten from a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getZaakbesluiten(
+        execution: DelegateExecution,
+        @PluginActionProperty resultProcessVariable: String? = null
+    ): List<ZaakbesluitResponse> {
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        logger.debug { "Retrieving zaakbesluiten from zaak '$zaakUrl' for document '${documentId}'" }
+
+        val zaakbesluiten = client.getZaakbesluiten(authenticationPluginConfiguration, url, zaakUrl)
+
+        resultProcessVariable?.let { name ->
+            val besluiten = zaakbesluiten.map { it.besluit }
+            execution.setVariable(name, besluiten)
+        }
+
+        logger.info { "Zaakbesluiten retreived from zaak '$zaakUrl' for document '${documentId}'" }
+
+        return zaakbesluiten;
     }
 
     @PluginAction(

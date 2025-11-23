@@ -37,6 +37,7 @@ import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-z
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -63,6 +64,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'patch-zaak': PatchZaakConfigurationComponent,
+    'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -219,6 +221,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummerTooltip: 'Een uniek nummer toegekend door de Kamer van Koophandel. (Max. 8 tekens)',
       vestigingsNummer: 'Vestigingsnummer',
       vestigingsNummerTooltip: 'Een korte unieke aanduiding van de Vestiging. (Max. 24 tekens)',
+      'get-zaakbesluiten': 'Ophalen zaakbesluiten',
       'patch-zaak': 'Zaak bijwerken',
       patchZaakInformation:
         'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
@@ -267,6 +270,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
       resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat moet worden opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
@@ -425,6 +430,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummerTooltip: 'A unique number assigned by the Chamber of Commerce. (Max. 8 characters)',
       vestigingsNummer: 'Branch number',
       vestigingsNummerTooltip: 'A short unique designation of the branch. (Max. 24 characters)',
+      'get-zaakbesluiten': 'Retrieve zaakbesluiten',
       'patch-zaak': 'Update zaak',
       patchZaakInformation:
         'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
@@ -474,6 +480,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
       resultProcessVariable: 'Result process variable',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result must be stored.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
