@@ -103,6 +103,10 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
+interface GetZaakbesluitenConfig {
+  resultProcessVariable: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -118,4 +122,5 @@ export {
   UpdateZaakeigenschapConfig,
   DeleteZaakeigenschapConfig,
   RelateerZakenConfig,
+  GetZaakbesluitenConfig,
 };

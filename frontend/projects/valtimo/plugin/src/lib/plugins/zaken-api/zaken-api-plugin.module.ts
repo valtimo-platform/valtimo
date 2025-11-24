@@ -50,6 +50,9 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
+import {
+  GetZaakbesluitenConfigurationComponent
+} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
@@ -71,6 +74,7 @@ import {TranslateModule} from '@ngx-translate/core';
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -107,6 +111,7 @@ import {TranslateModule} from '@ngx-translate/core';
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}
