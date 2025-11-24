@@ -696,7 +696,7 @@ public class OperatonProcessService {
             CaseDefinitionId existingCaseDefinitionId =
                 CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
 
-            // return if binding is null, or if there is already a version tag and it's not a case definition version tag
+            // We skip when a binding is already set AND the existing version tag is present but it does not represent a case-definition version tag.
             if (binding != null && (existingCaseDefinitionId == null && existingVersionTag != null)) {
                 return;
             }
