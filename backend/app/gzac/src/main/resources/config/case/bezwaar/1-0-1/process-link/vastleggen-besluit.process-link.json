@@ -51,12 +51,28 @@
         "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
         "pluginActionDefinitionKey": "patch-besluit",
         "actionProperties": {
-            "besluitUrl": "pv:besluitUrl",
+            "besluitUrl": "pv:zaakbesluitUrl",
             "beslisdatum": "pv:beslisdatum",
             "vervaldatum": "pv:vervaldatum",
             "vervalreden": "pv:vervalreden",
             "toelichting": "pv:toelichting"
-
+        }
+    },
+    {
+        "activityId": "PrepareBesluitUrlTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "vastleggen-besluit.prepare-besluit-url"
+    },
+    {
+        "activityId": "GetBesluitByUrlTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
+        "pluginActionDefinitionKey": "get-besluit",
+        "actionProperties": {
+            "besluitUrl": "pv:zaakbesluitUrl",
+            "resultProcessVariable": "besluit"
         }
     }
 ]

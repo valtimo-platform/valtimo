@@ -58,10 +58,16 @@ interface PatchZaakBesluitConfig {
   uiterlijkeReactiedatum?: string;
 }
 
+interface GetBesluitConfig {
+  besluitUrl: string;
+  resultProcessVariable: string
+}
+
 export {
   BesluitenApiConfig,
   CreateZaakBesluitConfig,
   Vervalredenen,
   LinkDocumentToBesluitConfig,
   PatchZaakBesluitConfig,
+  GetBesluitConfig,
 };

@@ -129,6 +129,7 @@ export * from './lib/plugins/besluiten-api/components/besluiten-api-configuratio
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+export * from './lib/plugins/besluiten-api/components/get-besluit/get-besluit-configuration.component';
 /* exact */
 export * from './lib/plugins/exact/exact.plugin.specification';
 export * from './lib/plugins/exact/exact-plugin.module';

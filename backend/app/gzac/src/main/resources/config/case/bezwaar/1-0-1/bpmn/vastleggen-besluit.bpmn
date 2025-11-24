@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:operaton="http://operaton.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.40.1">
   <bpmn:collaboration id="Collaboration_1jayd0m" isClosed="false">
-    <bpmn:participant id="PatchBesluitParticipant" name="Vastleggen besluit" processRef="vastleggen-besluit" />
+    <bpmn:participant id="VastleggenBesluitParticipant" name="Vastleggen besluit" processRef="vastleggen-besluit" />
   </bpmn:collaboration>
   <bpmn:process id="vastleggen-besluit" name="Vastleggen besluit" processType="None" isClosed="false" isExecutable="true" operaton:versionTag="CD:bezwaar:1.0.1">
     <bpmn:startEvent id="startEventPatchBesluit">
       <bpmn:outgoing>Flow_1aqi6ks</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="LinkDocumentAanBesluitTask" name="Link besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
+    <bpmn:serviceTask id="LinkBesluitTask" name="Link besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
       <bpmn:incoming>Flow_0bm9i67</bpmn:incoming>
       <bpmn:outgoing>Flow_0z587ap</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -20,38 +20,54 @@
       <bpmn:incoming>Flow_1aqi6ks</bpmn:incoming>
       <bpmn:outgoing>Flow_1ej4yoc</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="Event_0cpeutm">
-      <bpmn:incoming>Flow_1qap1ym</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:serviceTask id="PatchBesluitTask" name="Patch besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
-      <bpmn:incoming>Flow_0mava74</bpmn:incoming>
-      <bpmn:outgoing>Flow_1qap1ym</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:userTask id="PatchBesluitUserTask" name="Patch besluit" camunda:candidateGroups="ROLE_ADMIN">
-      <bpmn:incoming>Flow_0z587ap</bpmn:incoming>
-      <bpmn:outgoing>Flow_0mava74</bpmn:outgoing>
-    </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1aqi6ks" sourceRef="startEventPatchBesluit" targetRef="GetBesluitDocumentUrlTask" />
     <bpmn:sequenceFlow id="Flow_1ej4yoc" sourceRef="GetBesluitDocumentUrlTask" targetRef="CreateBesluitTask" />
-    <bpmn:sequenceFlow id="Flow_0bm9i67" sourceRef="CreateBesluitTask" targetRef="LinkDocumentAanBesluitTask" />
-    <bpmn:sequenceFlow id="Flow_0z587ap" sourceRef="LinkDocumentAanBesluitTask" targetRef="PatchBesluitUserTask" />
+    <bpmn:sequenceFlow id="Flow_0bm9i67" sourceRef="CreateBesluitTask" targetRef="LinkBesluitTask" />
+    <bpmn:sequenceFlow id="Flow_0z587ap" sourceRef="LinkBesluitTask" targetRef="GetBesluitUrlsTask" />
     <bpmn:sequenceFlow id="Flow_1qap1ym" sourceRef="PatchBesluitTask" targetRef="Event_0cpeutm" />
-    <bpmn:sequenceFlow id="Flow_0mava74" sourceRef="PatchBesluitUserTask" targetRef="PatchBesluitTask" />
     <bpmn:serviceTask id="CreateBesluitTask" name="Create besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
       <bpmn:incoming>Flow_1ej4yoc</bpmn:incoming>
       <bpmn:outgoing>Flow_0bm9i67</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:serviceTask id="GetBesluitUrlsTask" name="Get besluit urls" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}" camunda:resultVariable="besluitDocumentUrl">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0z587ap</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pzd4cx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0pzd4cx" sourceRef="GetBesluitUrlsTask" targetRef="PrepareBesluitUrlTask" />
+    <bpmn:sequenceFlow id="Flow_0nppk7b" sourceRef="PatchBesluitUserTask" targetRef="PatchBesluitTask" />
+    <bpmn:sequenceFlow id="Flow_01wttlt" sourceRef="GetBesluitByUrlTask" targetRef="PatchBesluitUserTask" />
+    <bpmn:userTask id="PatchBesluitUserTask" name="Patch besluit" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_01wttlt</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nppk7b</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="PatchBesluitTask" name="Patch besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0nppk7b</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qap1ym</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0cpeutm">
+      <bpmn:incoming>Flow_1qap1ym</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="GetBesluitByUrlTask" name="Get besluit by url" camunda:asyncAfter="true" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0nqqm8y</bpmn:incoming>
+      <bpmn:outgoing>Flow_01wttlt</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0nqqm8y" sourceRef="PrepareBesluitUrlTask" targetRef="GetBesluitByUrlTask" />
+    <bpmn:userTask id="PrepareBesluitUrlTask" name="Prepare besluit url" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_0pzd4cx</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nqqm8y</bpmn:outgoing>
+    </bpmn:userTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1jayd0m">
-      <bpmndi:BPMNShape id="Participant_0t1hozn_di" bpmnElement="PatchBesluitParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="70" width="990" height="250" />
+      <bpmndi:BPMNShape id="Participant_0t1hozn_di" bpmnElement="VastleggenBesluitParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="70" width="1480" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEventPatchBesluit">
         <dc:Bounds x="210" y="182" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0kvdccs" bpmnElement="LinkDocumentAanBesluitTask">
+      <bpmndi:BPMNShape id="BPMNShape_0kvdccs" bpmnElement="LinkBesluitTask">
         <dc:Bounds x="600" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
@@ -59,19 +75,30 @@
         <dc:Bounds x="280" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0cpeutm_di" bpmnElement="Event_0cpeutm">
-        <dc:Bounds x="1059" y="182" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_02iquzq_di" bpmnElement="CreateBesluitTask">
+        <dc:Bounds x="440" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0tb6jh7" bpmnElement="PatchBesluitTask">
-        <dc:Bounds x="907" y="160" width="100" height="80" />
+      <bpmndi:BPMNShape id="BPMNShape_1d3vt1t" bpmnElement="GetBesluitUrlsTask">
+        <dc:Bounds x="740" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0xjbg3r_di" bpmnElement="PatchBesluitUserTask">
-        <dc:Bounds x="760" y="160" width="100" height="80" />
+        <dc:Bounds x="1200" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_02iquzq_di" bpmnElement="CreateBesluitTask">
-        <dc:Bounds x="440" y="160" width="100" height="80" />
+      <bpmndi:BPMNShape id="BPMNShape_0tb6jh7" bpmnElement="PatchBesluitTask">
+        <dc:Bounds x="1350" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0cpeutm_di" bpmnElement="Event_0cpeutm">
+        <dc:Bounds x="1502" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0wih9x4_di" bpmnElement="GetBesluitByUrlTask">
+        <dc:Bounds x="1050" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0can7g5" bpmnElement="PrepareBesluitUrlTask">
+        <dc:Bounds x="900" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1aqi6ks_di" bpmnElement="Flow_1aqi6ks">
         <di:waypoint x="246" y="200" />
@@ -87,15 +114,27 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0z587ap_di" bpmnElement="Flow_0z587ap">
         <di:waypoint x="700" y="200" />
-        <di:waypoint x="760" y="200" />
+        <di:waypoint x="740" y="200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qap1ym_di" bpmnElement="Flow_1qap1ym">
-        <di:waypoint x="1007" y="200" />
-        <di:waypoint x="1059" y="200" />
+        <di:waypoint x="1450" y="200" />
+        <di:waypoint x="1502" y="200" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0mava74_di" bpmnElement="Flow_0mava74">
-        <di:waypoint x="860" y="200" />
-        <di:waypoint x="907" y="200" />
+      <bpmndi:BPMNEdge id="Flow_0pzd4cx_di" bpmnElement="Flow_0pzd4cx">
+        <di:waypoint x="840" y="200" />
+        <di:waypoint x="900" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nppk7b_di" bpmnElement="Flow_0nppk7b">
+        <di:waypoint x="1300" y="200" />
+        <di:waypoint x="1350" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01wttlt_di" bpmnElement="Flow_01wttlt">
+        <di:waypoint x="1150" y="200" />
+        <di:waypoint x="1200" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nqqm8y_di" bpmnElement="Flow_0nqqm8y">
+        <di:waypoint x="1000" y="200" />
+        <di:waypoint x="1050" y="200" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

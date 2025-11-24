@@ -1,0 +1,21 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv:zaakbesluitUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Zaakbesluit Url",
+            "disabled": false,
+            "tableView": true
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "showValidations": false
+        }
+    ]
+}
