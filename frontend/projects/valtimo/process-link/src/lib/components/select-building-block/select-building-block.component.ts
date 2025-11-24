@@ -17,13 +17,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {
   BuildingBlockStateService,
+  ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {catchError, map, Observable, of, shareReplay, Subscription, tap} from 'rxjs';
-import {BuildingBlockManagementApiService} from '@valtimo/building-block-management';
 
 @Component({
   standalone: false,
@@ -33,17 +33,19 @@ import {BuildingBlockManagementApiService} from '@valtimo/building-block-managem
 })
 export class SelectBuildingBlockComponent implements OnInit, OnDestroy {
   public readonly buildingBlocks$: Observable<Array<BuildingBlockDefinitionDto>> =
-    this.buildingBlockManagementApiService.getBuildingBlockDefinitions({includeArtwork: true}).pipe(
-      map(definitions => [...(definitions ?? [])]),
-      map(definitions =>
-        definitions.sort((a, b) => (a.name || a.key).localeCompare(b.name || b.key))
-      ),
-      catchError(() => of([])),
-      tap(() => {
-        this.loading = false;
-      }),
-      shareReplay(1)
-    );
+    this.processLinkBuildingBlockApiService
+      .getBuildingBlockDefinitions({includeArtwork: true})
+      .pipe(
+        map(definitions => [...(definitions ?? [])]),
+        map(definitions =>
+          definitions.sort((a, b) => (a.name || a.key).localeCompare(b.name || b.key))
+        ),
+        catchError(() => of([])),
+        tap(() => {
+          this.loading = false;
+        }),
+        shareReplay(1)
+      );
 
   public loading = true;
   public selectedKey: string | null = null;
@@ -52,7 +54,7 @@ export class SelectBuildingBlockComponent implements OnInit, OnDestroy {
   private buildingBlocks: Array<BuildingBlockDefinitionDto> = [];
 
   constructor(
-    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
     private readonly stateService: ProcessLinkStateService,
     private readonly buildingBlockStateService: BuildingBlockStateService,
     private readonly buttonService: ProcessLinkButtonService,
