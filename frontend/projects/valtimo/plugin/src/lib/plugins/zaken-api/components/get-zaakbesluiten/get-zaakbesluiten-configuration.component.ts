@@ -39,12 +39,12 @@ export class GetZaakbesluitenConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<GetZaakbesluitenConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.valid.emit(true);
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
@@ -60,7 +60,7 @@ export class GetZaakbesluitenConfigurationComponent
     });
   }
 
-  formValueChange(formValue: GetZaakbesluitenConfig): void {
+  public formValueChange(formValue: GetZaakbesluitenConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
