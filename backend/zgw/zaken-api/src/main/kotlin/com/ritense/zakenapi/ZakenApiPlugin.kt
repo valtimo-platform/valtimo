@@ -1026,7 +1026,7 @@ class ZakenApiPlugin(
     )
     fun getZaakbesluiten(
         execution: DelegateExecution,
-        @PluginActionProperty resultProcessVariable: String? = null
+        @PluginActionProperty resultProcessVariable: String
     ): List<ZaakbesluitResponse> {
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
@@ -1035,14 +1035,14 @@ class ZakenApiPlugin(
 
         val zaakbesluiten = client.getZaakbesluiten(authenticationPluginConfiguration, url, zaakUrl)
 
-        resultProcessVariable?.let { name ->
+        resultProcessVariable.let { name ->
             val besluiten = zaakbesluiten.map { it.besluit }
             execution.setVariable(name, besluiten)
         }
 
         logger.info { "Zaakbesluiten retreived from zaak '$zaakUrl' for document '${documentId}'" }
 
-        return zaakbesluiten;
+        return zaakbesluiten
     }
 
     @PluginAction(

@@ -59,7 +59,7 @@
         }
     },
     {
-        "activityId": "GetBesluitUrlTask",
+        "activityId": "GetBesluitUrlsTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
         "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",

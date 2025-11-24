@@ -23,7 +23,7 @@
     <bpmn:sequenceFlow id="Flow_1aqi6ks" sourceRef="startEventPatchBesluit" targetRef="GetBesluitDocumentUrlTask" />
     <bpmn:sequenceFlow id="Flow_1ej4yoc" sourceRef="GetBesluitDocumentUrlTask" targetRef="CreateBesluitTask" />
     <bpmn:sequenceFlow id="Flow_0bm9i67" sourceRef="CreateBesluitTask" targetRef="LinkBesluitTask" />
-    <bpmn:sequenceFlow id="Flow_0z587ap" sourceRef="LinkBesluitTask" targetRef="GetBesluitUrlTask" />
+    <bpmn:sequenceFlow id="Flow_0z587ap" sourceRef="LinkBesluitTask" targetRef="GetBesluitUrlsTask" />
     <bpmn:sequenceFlow id="Flow_1qap1ym" sourceRef="PatchBesluitTask" targetRef="Event_0cpeutm" />
     <bpmn:serviceTask id="CreateBesluitTask" name="Create besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
       <bpmn:incoming>Flow_1ej4yoc</bpmn:incoming>
@@ -33,7 +33,7 @@
       <bpmn:incoming>Flow_0pzd4cx</bpmn:incoming>
       <bpmn:outgoing>Flow_0nppk7b</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:serviceTask id="GetBesluitUrlTask" name="Get besluit url" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}" camunda:resultVariable="besluitDocumentUrl">
+    <bpmn:serviceTask id="GetBesluitUrlsTask" name="Get besluit urls" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}" camunda:resultVariable="besluitDocumentUrl">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:outputParameter name="zaakbesluitUrl">${zaakbesluiten[0]}</camunda:outputParameter>
@@ -42,7 +42,7 @@
       <bpmn:incoming>Flow_0z587ap</bpmn:incoming>
       <bpmn:outgoing>Flow_0pzd4cx</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0pzd4cx" sourceRef="GetBesluitUrlTask" targetRef="PatchBesluitUserTask" />
+    <bpmn:sequenceFlow id="Flow_0pzd4cx" sourceRef="GetBesluitUrlsTask" targetRef="PatchBesluitUserTask" />
     <bpmn:sequenceFlow id="Flow_0nppk7b" sourceRef="PatchBesluitUserTask" targetRef="PatchBesluitTask" />
     <bpmn:serviceTask id="PatchBesluitTask" name="Patch besluit" camunda:asyncAfter="true" implementation="##WebService" camunda:expression="${true}">
       <bpmn:incoming>Flow_0nppk7b</bpmn:incoming>
@@ -76,7 +76,7 @@
         <dc:Bounds x="880" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1d3vt1t" bpmnElement="GetBesluitUrlTask">
+      <bpmndi:BPMNShape id="BPMNShape_1d3vt1t" bpmnElement="GetBesluitUrlsTask">
         <dc:Bounds x="740" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
