@@ -20,7 +20,7 @@
     {
         "activityId": "in-behandeling",
         "activityType": "bpmn:UserTask:create",
-        "formDefinitionName": "user-task-set-internal-case-status",
+        "formDefinitionName": "empty-form",
         "processLinkType": "form"
     }
 ]

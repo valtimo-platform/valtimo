@@ -79,17 +79,5 @@
         "sortable": true,
         "order": 6,
         "exportable": true
-    },
-    {
-        "key": "retentionDate",
-        "path": "case:retentionDate",
-        "displayType": {
-            "type": "date",
-            "displayTypeParameters": {
-                "dateFormat": null
-            }
-        },
-        "sortable": true,
-        "order": 7
     }
 ]
