@@ -653,6 +653,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       vestigingsNummer: 'Niederlassungsnummer',
       vestigingsNummerTooltip:
         'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)',
+      'get-zaakbesluiten': 'Zaakbesluiten abrufen',
       'patch-zaak': 'Zaak aktualisieren',
       patchZaakInformation:
         'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
