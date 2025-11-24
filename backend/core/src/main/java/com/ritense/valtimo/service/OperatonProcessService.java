@@ -507,9 +507,8 @@ public class OperatonProcessService {
                 throw new ProcessNotDeployableException(fileName);
             }
 
-            if (caseDefinitionId != null) {
-                setProcessesVersionTag(bpmnModel, caseDefinitionId);
-            }
+            updateCaseDefinitionProcessesVersionTags(bpmnModel, caseDefinitionId);
+
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
             setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
@@ -682,7 +681,18 @@ public class OperatonProcessService {
         }
     }
 
-    private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
+    void updateCaseDefinitionProcessesVersionTags(
+        BpmnModelInstance bpmnModel,
+        @Nullable CaseDefinitionId caseDefinitionId
+    ) {
+        if (caseDefinitionId != null) {
+            setCaseDefinitionProcessesVersionTags(bpmnModel, caseDefinitionId);
+        } else {
+            clearCaseDefinitionProcessesVersionTags(bpmnModel);
+        }
+    }
+
+    private void setCaseDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
                 process.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString());
@@ -707,22 +717,57 @@ public class OperatonProcessService {
             );
         });
 
-        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(
-            businessRuleTask -> {
-                var elementBinding = businessRuleTask.getOperatonDecisionRefBinding();
-                if (
-                    elementBinding == null ||
-                        (
-                            businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
-                                businessRuleTask.getOperatonDecisionRefVersionTag()
-                                    .startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
-                        )
-                ) {
-                    businessRuleTask.setOperatonDecisionRefBinding("versionTag");
-                    businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
-                }
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            String binding = callActivity.getOperatonCalledElementBinding();
+            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+
+            CaseDefinitionId existingCaseDefinitionId =
+                CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+            // we skip when a binding is already set and the existing version tag is present, but it does not represent a case definition version tag.
+            if (binding != null && (existingVersionTag != null && existingCaseDefinitionId == null)) {
+                return;
             }
-        );
+
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId
+            );
+        });
+    }
+
+    private void clearCaseDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel) {
+        bpmnModel.getDefinitions().getChildElementsByType(Process.class)
+            .forEach(process -> {
+                String existingVersionTag = process.getOperatonVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    process.setOperatonVersionTag(null);
+                }
+            });
+
+        bpmnModel.getModelElementsByType(CallActivity.class)
+            .forEach(callActivity -> {
+                String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    callActivity.setOperatonCalledElementBinding(null);
+                    callActivity.setOperatonCalledElementVersionTag(null);
+                }
+            });
+
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class)
+            .forEach(businessRuleTask -> {
+                String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    businessRuleTask.setOperatonDecisionRefBinding(null);
+                    businessRuleTask.setOperatonDecisionRefVersionTag(null);
+                }
+            });
     }
 
     private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
