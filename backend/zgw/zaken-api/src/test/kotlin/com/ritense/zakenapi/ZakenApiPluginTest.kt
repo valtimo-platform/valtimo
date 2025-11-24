@@ -16,7 +16,9 @@
 
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -51,6 +53,7 @@ import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import org.assertj.core.api.Assertions.assertThat
@@ -1262,6 +1265,66 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
+    fun `should get zaak informatieobjecten`() {
+        // given
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val zaakDocumentService: ZaakDocumentService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val objectMapper = MapperSingleton.get()
+        val resultProcessVariable = "resultVariable"
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        val relatedFiles = listOf(
+            RelatedFileDto(
+                fileId = UUID.randomUUID(),
+                fileName = "test-file1.pdf",
+                sizeInBytes = 1024L,
+                createdOn = LocalDate.now().atStartOfDay(),
+                createdBy = "Test User 1",
+                pluginConfigurationId = UUID.randomUUID(),
+                title = "Test Document 1",
+                description = "Test Description 1"
+            ),
+            RelatedFileDto(
+                fileId = UUID.randomUUID(),
+                fileName = "test-file2.pdf",
+                sizeInBytes = 2048L,
+                createdOn = LocalDate.now().atStartOfDay(),
+                createdBy = "Test User 2",
+                pluginConfigurationId = UUID.randomUUID(),
+                title = "Test Document 2",
+                description = "Test Description 2"
+            )
+        )
+
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)).thenReturn(relatedFiles)
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zaakDocumentService = zaakDocumentService,
+            objectMapper = objectMapper
+        )
+
+        // when
+        plugin.getZaakInformatieobjecten(executionMock, resultProcessVariable)
+
+        // then
+        verify(zaakUrlProvider).getZaakUrl(documentId)
+        verify(zaakDocumentService).getInformatieObjectenAsRelatedFiles(documentId)
+
+        val captor = argumentCaptor<Any>()
+        verify(executionMock).setVariable(eq(resultProcessVariable), captor.capture())
+
+        val expected: List<Map<String, Any?>> =
+            objectMapper.convertValue(relatedFiles, object : TypeReference<List<Map<String, Any?>>>() {})
+        assertEquals(expected, captor.firstValue)
+    }
+
+    @Test
     fun `should retreive zaakbesluiten`() {
         val client: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1310,6 +1373,7 @@ internal class ZakenApiPluginTest {
         zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock(),
         pluginService: PluginService = mock(),
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock(),
+        zaakDocumentService: ZaakDocumentService = mock(),
         platformTransactionManager: PlatformTransactionManager = mock(),
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
@@ -1322,6 +1386,7 @@ internal class ZakenApiPluginTest {
             zaakInstanceLinkRepository,
             pluginService,
             zaakHersteltermijnRepository,
+            zaakDocumentService,
             platformTransactionManager,
             valueResolverService,
             objectMapper

@@ -16,21 +16,24 @@
 
 import {Injectable, OnDestroy} from '@angular/core';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
-import {MenuItem} from '@valtimo/shared';
-import {from, Observable, of, Subject, Subscription} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {ConfigService, MenuItem} from '@valtimo/shared';
+import {BehaviorSubject, from, Observable, of, Subscription} from 'rxjs';
+import {filter, switchMap} from 'rxjs/operators';
 import {SseService} from '@valtimo/sse';
 import {MenuService} from '@valtimo/components';
 
 @Injectable({providedIn: 'root'})
 export class CaseMenuService implements OnDestroy {
   private readonly _subscriptions = new Subscription();
+  public readonly disableCaseCount$: Observable<boolean>;
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly sseService: SseService,
-    private readonly menuService: MenuService
+    private readonly menuService: MenuService,
+    private readonly configService: ConfigService
   ) {
+    this.disableCaseCount$ = this.configService.getFeatureToggleObservable('disableCaseCount');
     this.menuService.registerAppendMenuItemsFunction(this.appendCaseMenuItems.bind(this));
   }
 
@@ -63,11 +66,11 @@ export class CaseMenuService implements OnDestroy {
     );
   };
 
-  private getCountMap(definitions: CaseDefinition[]): Map<string, Subject<number>> {
-    const map = new Map<string, Subject<number>>();
+  private getCountMap(definitions: CaseDefinition[]): Map<string, BehaviorSubject<number>> {
+    const map = new Map<string, BehaviorSubject<number>>();
 
     definitions.forEach(def => {
-      map.set(def.caseDefinitionKey, new Subject<number>());
+      map.set(def.caseDefinitionKey, new BehaviorSubject<number>(0));
     });
 
     this._subscriptions.add(
@@ -80,14 +83,21 @@ export class CaseMenuService implements OnDestroy {
     return map;
   }
 
-  private updateCounts(map: Map<string, Subject<number>>): void {
-    this.documentService.getOpenDocumentCount().subscribe(counts => {
-      counts.forEach(entry => {
-        const subject = map.get(entry.documentDefinitionName);
-        if (subject) {
-          subject.next(entry.openDocumentCount);
-        }
-      });
-    });
+  private updateCounts(map: Map<string, BehaviorSubject<number>>): void {
+    this._subscriptions.add(
+      this.disableCaseCount$
+        .pipe(
+          filter(disableCaseCount => !disableCaseCount),
+          switchMap(_ => this.documentService.getOpenDocumentCount())
+        )
+        .subscribe(counts => {
+          counts.forEach(entry => {
+            const subject = map.get(entry.documentDefinitionName);
+            if (subject) {
+              subject.next(entry.openDocumentCount);
+            }
+          });
+        })
+    );
   }
 }
