@@ -21,7 +21,14 @@
     caseDefinitions: caseDefinitions$ | async,
   } as obs"
 >
-  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+  <div class="valtimo-widget-interactive-table__title-container">
+    <valtimo-mdi-icon-viewer
+      *ngIf="widgetConfiguration?.icon"
+      [mdiIcon]="widgetConfiguration.icon"
+    ></valtimo-mdi-icon-viewer>
+
+    <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+  </div>
 
   <valtimo-carbon-list
     [header]="false"

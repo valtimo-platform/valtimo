@@ -3,28 +3,28 @@
     "ikoDataRequests": [
         {
             "key": "bsn",
-            "title": "Zoek met BSN",
+            "title": "BSN",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "RaadpleegMetBurgerservicenummer"
+                    "type": "RaadpleegMetBurgerservicenummer"
                 }
             }
         },
         {
             "key": "achternaam-geboortedatum",
-            "title": "Zoek met achternaam en geboortedatum",
+            "title": "Achternaam en geboortedatum",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "ZoekMetGeslachtsnaamEnGeboortedatum"
+                    "type": "ZoekMetGeslachtsnaamEnGeboortedatum"
                 }
             }
         },
         {
             "key": "adres",
-            "title": "Zoek met adres",
+            "title": "Adres",
             "properties": {
                 "endpointQueryParameters": {
-                    "type":  "ZoekMetAdres"
+                    "type": "ZoekMetAdres"
                 }
             }
         }

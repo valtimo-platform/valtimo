@@ -2,8 +2,7 @@
   ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
+  ~ You may not use this file except in compliance with the License.
   ~
   ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
   ~
@@ -18,7 +17,11 @@
   <div class="cds--toolbar-content">
     <ng-content></ng-content>
 
-    <button cdsButton="primary" [disabled]="(valid$ | async) === false" (click)="onSaveClick()">
+    <button
+      cdsButton="primary"
+      [disabled]="disabled || (valid$ | async) === false"
+      (click)="onSaveClick()"
+    >
       {{ 'interface.save' | translate }}
 
       <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>

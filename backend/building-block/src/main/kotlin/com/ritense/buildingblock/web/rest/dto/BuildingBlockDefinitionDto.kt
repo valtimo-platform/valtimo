@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
@@ -30,7 +31,9 @@ data class BuildingBlockDefinitionDto(
     val createdBy: String?,
     val createdDate: LocalDateTime?,
     val basedOnVersionTag: String?,
-    val final: Boolean
+    val final: Boolean,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val imageBase64: String? = null,
 ) {
     @JsonIgnore
     fun getBuildingBlockDefinitionId(): BuildingBlockDefinitionId =

@@ -19,6 +19,7 @@ import {ConfigService} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 
 import {
+  BuildingBlockProcessLinkUpdateDto,
   CompatiblePluginProcessLinks,
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkUpdateRequestDto,
@@ -77,6 +78,7 @@ export class ProcessLinkService {
       | FormProcessLinkUpdateRequestDto
       | URLProcessLinkUpdateRequestDto
       | UIComponentProcessLinkUpdateRequestDto
+      | BuildingBlockProcessLinkUpdateDto
   ): Observable<null> {
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,

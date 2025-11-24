@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-11-12 12:14:43.
+// Generated using typescript-generator version 3.2.1263 on 2025-11-17 15:13:46.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -17,6 +17,7 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+    imageBase64: string | null;
 }
 
 export interface BuildingBlockProcessDefinitionDto {
@@ -31,6 +32,11 @@ export interface BuildingBlockProcessDefinitionWithLinksDto {
     processDefinition: ProcessDefinitionWithPropertiesDto;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+}
+
+export interface BuildingBlockVersionDto {
+    versionTag: string;
+    final: boolean;
 }
 
 export interface CreateBuildingBlockDefinitionArtworkDto {
@@ -63,8 +69,8 @@ export interface CaseDefinitionDraftCreateRequest {
     name: string | null;
     description: string | null;
     basedOnCaseDefinitionVersion: string | null;
-    caseDefinitionId: CaseDefinitionId;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
+    caseDefinitionId: CaseDefinitionId;
 }
 
 export interface CaseDefinitionQuickSearchDto {
@@ -846,10 +852,10 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdOn: DateAsString;
-    fileId: string;
-    sizeInBytes: number;
     createdBy: string;
+    createdOn: DateAsString;
+    sizeInBytes: number;
+    fileId: string;
     fileName: string;
 }
 
@@ -974,24 +980,24 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    processInstanceId: string;
     processDefinitionKey: string;
+    processInstanceId: string;
     rootProcessInstanceId: string;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
     processDefinitionId: string;
     activityType: string;
-    startTime: DateAsString;
     endTime: DateAsString;
+    startTime: DateAsString;
     taskId: string;
-    activityId: string;
     assignee: string;
-    executionId: string;
     tenantId: string;
+    executionId: string;
+    activityId: string;
     canceled: boolean;
     removalTime: DateAsString;
     id: string;

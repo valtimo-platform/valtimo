@@ -16,16 +16,22 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.semver4j.Semver
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -35,19 +41,20 @@ class BuildingBlockManagementService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
     private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
-    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+    private val authorizationService: AuthorizationService,
 ) {
     @Transactional(readOnly = true)
-    fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
+    fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
+        denyAuthorization()
+
         val all = buildingBlockDefinitionRepository.findAll()
         val latestPerKey = all
             .groupBy { it.id.key }
             .values
             .mapNotNull { defsForKey ->
                 defsForKey.maxWithOrNull { a, b ->
-                    val va = Semver(a.id.versionTag.toString())
-                    val vb = Semver(b.id.versionTag.toString())
-                    va.compareTo(vb)
+                    a.id.versionTag.compareTo(b.id.versionTag)
                 }
             }
         return latestPerKey.map {
@@ -59,13 +66,16 @@ class BuildingBlockManagementService(
                 createdBy = it.createdBy,
                 createdDate = it.createdDate,
                 basedOnVersionTag = it.basedOnVersionTag?.toString(),
-                final = it.final
+                final = it.final,
+                imageBase64 = if (includeArtwork) it.artwork?.imageBase64 else null,
             )
         }
     }
 
     @Transactional
     fun create(dto: CreateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto {
+        denyAuthorization()
+
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(dto.key, dto.versionTag),
             name = dto.name,
@@ -101,6 +111,8 @@ class BuildingBlockManagementService(
 
     @Transactional
     fun update(key: String, versionTag: String, dto: UpdateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto? {
+        denyAuthorization()
+
         val id = BuildingBlockDefinitionId(key, versionTag)
         val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
             ?: throw UnknownBuildingBlockDefinitionException(id)
@@ -133,6 +145,8 @@ class BuildingBlockManagementService(
 
     @Transactional
     fun finalize(key: String, versionTag: String): BuildingBlockDefinitionDto {
+        denyAuthorization()
+
         val id = BuildingBlockDefinitionId(key, versionTag)
         val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
             ?: throw UnknownBuildingBlockDefinitionException(id)
@@ -143,5 +157,44 @@ class BuildingBlockManagementService(
 
         val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
         return finalized.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getPagedVersionsWithFinalFlag(key: String, pageable: Pageable): Page<BuildingBlockVersionDto> {
+        denyAuthorization()
+
+        val page = buildingBlockDefinitionRepository.findAllByIdKey(key, pageable)
+
+        return page.map {
+            BuildingBlockVersionDto(
+                versionTag = it.id.versionTag.toString(),
+                final = it.final
+            )
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllVersionsWithFinalFlag(key: String): Page<BuildingBlockVersionDto> {
+        denyAuthorization()
+
+        val buildingBlocks = buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(key)
+
+        return PageImpl(
+            buildingBlocks.map {
+                BuildingBlockVersionDto(
+                    versionTag = it.id.versionTag.toString(),
+                    final = it.final
+                )
+            }
+        )
+    }
+
+    private fun denyAuthorization() {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                BuildingBlockDefinition::class.java,
+                Action.deny()
+            )
+        )
     }
 }

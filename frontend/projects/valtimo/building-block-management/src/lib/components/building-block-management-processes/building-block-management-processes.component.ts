@@ -79,6 +79,8 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     },
   ];
 
+  public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(

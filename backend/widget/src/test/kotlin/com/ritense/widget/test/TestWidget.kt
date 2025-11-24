@@ -34,6 +34,7 @@ class TestWidget(
     id: UUID,
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -44,12 +45,13 @@ class TestWidget(
     @Column(name = "properties", nullable = false)
     val properties: TestWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
@@ -59,6 +61,7 @@ class TestWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
@@ -70,6 +73,7 @@ class TestWidget(
     override fun toDto() = TestWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
         actions = this.actions,

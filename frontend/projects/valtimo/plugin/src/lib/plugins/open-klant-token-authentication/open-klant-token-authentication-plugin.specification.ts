@@ -43,16 +43,6 @@ const openKlantTokenAuthenticationPluginSpecification: PluginSpecification = {
       token: 'Token',
       tokenTooltip: 'The token is a key that grants permissions to access specific open-klant data',
     },
-    de: {
-      title: 'OpenKlant Token-Authentifizierung',
-      description: 'Authentifizierung mit Token zur Verwendung durch OpenKlant.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      token: 'Token',
-      tokenTooltip:
-        'Das Token ist ein Schlüssel, der Berechtigungen zum Anzeigen bestimmter open-klant data erteilt',
-    },
   },
 };
 

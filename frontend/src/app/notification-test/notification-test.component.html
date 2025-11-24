@@ -14,9 +14,7 @@
       </button>
     </div>
 
-    <label for="notification-message" class="notification-test__label">
-      Message
-    </label>
+    <label for="notification-message" class="notification-test__label"> Message </label>
     <textarea
       id="notification-message"
       formControlName="message"
@@ -24,24 +22,19 @@
       rows="12"
       placeholder="Type the notification message..."
     ></textarea>
-    <div class="notification-test__error" *ngIf="form.get('message')?.invalid && form.get('message')?.touched">
+    <div
+      class="notification-test__error"
+      *ngIf="form.get('message')?.invalid && form.get('message')?.touched"
+    >
       Message is required.
     </div>
 
     <div class="notification-test__actions">
-      <button
-        type="submit"
-        cdsButton="primary"
-        [disabled]="(sending$ | async) || form.invalid"
-      >
-        <ng-container *ngIf="!(sending$ | async); else sending">
-          Send
-        </ng-container>
+      <button type="submit" cdsButton="primary" [disabled]="(sending$ | async) || form.invalid">
+        <ng-container *ngIf="!(sending$ | async); else sending"> Send </ng-container>
       </button>
     </div>
   </form>
 </div>
 
-<ng-template #sending>
-  Sending...
-</ng-template>
+<ng-template #sending> Sending... </ng-template>

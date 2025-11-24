@@ -101,6 +101,10 @@
         <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
 
+      <ng-container *ngIf="obs.currentStepId === 'selectBuildingBlock'">
+        <valtimo-select-building-block></valtimo-select-building-block>
+      </ng-container>
+
       <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
@@ -114,6 +118,15 @@
         <valtimo-plugin-action-configuration
           [selectedPluginConfiguration$]="selectedPluginConfiguration$"
         ></valtimo-plugin-action-configuration>
+      </ng-container>
+
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'configureBuildingBlockPlugins' ||
+          obs.typeOfSelectedProgressLink === 'building-block'
+        "
+      >
+        <valtimo-configure-building-block-plugins></valtimo-configure-building-block-plugins>
       </ng-container>
     </ng-container>
 

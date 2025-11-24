@@ -198,6 +198,7 @@ class CaseWidgetTabResourceIntTest @Autowired constructor(
                     TestCaseWidgetTabWidgetDto(
                         key = widgetKey,
                         title = "My widget",
+                        icon = "mdi-home",
                         width = 1,
                         highContrast = true,
                         properties = TestCaseWidgetProperties(
