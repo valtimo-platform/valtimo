@@ -16,8 +16,8 @@
 
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
-import {BuildingBlockManagementApiService} from '@valtimo/building-block-management';
 import {ProcessLink} from '../models';
+import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +34,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private _requirementsSubscription?: Subscription;
 
   constructor(
-    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {}
 
   public get definitionKey$(): Observable<string | null> {
@@ -78,7 +78,7 @@ export class BuildingBlockStateService implements OnDestroy {
     this._versionSubscription?.unsubscribe();
     if (!key) return;
 
-    this._versionSubscription = this.buildingBlockManagementApiService
+    this._versionSubscription = this.processLinkBuildingBlockApiService
       .getVersionsForBuildingBlock(key)
       .subscribe({
         next: versions => {
@@ -175,7 +175,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private loadPluginRequirements(key: string, versionTag: string): void {
     this._loadingRequirements$.next(true);
     this._requirementsSubscription?.unsubscribe();
-    this._requirementsSubscription = this.buildingBlockManagementApiService
+    this._requirementsSubscription = this.processLinkBuildingBlockApiService
       .getPluginDefinitionsForBuildingBlock(key, versionTag)
       .subscribe({
         next: pluginKeys => {
