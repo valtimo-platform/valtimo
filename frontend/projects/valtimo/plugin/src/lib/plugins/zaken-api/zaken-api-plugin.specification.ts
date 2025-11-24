@@ -36,6 +36,7 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
@@ -45,6 +46,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
+    'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
     'delete-zaak-rol': DeleteZaakRolComponent,
@@ -158,6 +160,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
+      datumStatusGezet: 'Datum status gezet.',
+      datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
       statustoelichtingTooltip:
         'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
@@ -176,6 +181,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Invoertype datum status gezet',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
       addZaakProperty: 'Voeg nieuwe parameter toe',
       'relateer-zaken': 'Relateer zaken',
@@ -266,7 +272,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
+      'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
@@ -365,6 +373,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
+      datumStatusGezet: 'Date status set.',
+      datumStatusGezetTooltip: 'Date/time value of the zaakstatus.',
+      datumStatusGezetInvalidText: 'Date and time may not be in the future.',
       statustoelichting: 'Zaakstatus explanation',
       statustoelichtingTooltip:
         'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
@@ -383,6 +394,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Select the resultaat type.',
       inputTypeZaakStatusToggle: 'Input type Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Input type datum status gezet',
       inputTypeZaakResultaatToggle: 'Input type Zaakresultaat-URL',
       addZaakProperty: 'Add new case property',
       'relateer-zaken': 'Add relation between two Zaken',
@@ -476,8 +488,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
-      createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
+      'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
+      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
     },
     de: {
       title: 'Zaken API',
@@ -529,7 +541,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol erstellen – Mitarbeiter',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol erstellen – Organisationseinheit',
       'create-vestiging-zaak-rol': 'Zaakrol erstellen – Niederlassung',
-      'delete-zaak-rol': 'Zum Löschen Zaakrol',
       'set-zaakopschorting': 'Einen Fall aussetzen',
       'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
       startHersteltermijnInformation:
@@ -572,6 +583,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
+      datumStatusGezet: 'Datumsstatus festgelegt.',
+      datumStatusGezetTooltip: 'Datums-/Uhrzeitwert des zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum und Uhrzeit dürfen nicht in der Zukunft liegen.',
       statustoelichting: 'Erklärung des Zaakstatus',
       statustoelichtingTooltip:
         'Eine Erklärung des Status eines zaak, die für den Initiator des Zaak relevant ist.',
@@ -590,6 +604,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Wählen Sie den Resultaattype aus.',
       inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Eingabetyp datum status gezet',
       inputTypeZaakResultaatToggle: 'Eingabetyp Zaakresultaat-URL',
       addZaakProperty: 'Neue Case-Eigenschaft hinzufügen',
       'relateer-zaken': 'Beziehung zwischen Zaken herstellen',
@@ -681,11 +696,13 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
       objectIdentificatie: 'Objektidentifikation',
-      resultProcessVariable: 'Ergebnis process variable',
+      'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
+      resultProcessVariable: 'Ergebnis Prozessvariable',
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
-        'Mindestens eines der folgenden Felder muss ausgefüllt werden, um die juristische Person zu identifizieren:<br/>- Keine natürliche Personennummer<br/>- Andere Identifizierung keine natürlicher Personen<br/>- Handelskammernummer<br/>- Niederlassungsnummer',
+        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
     },
   },
 };

@@ -76,15 +76,9 @@ export class WidgetManagementDividerModalComponent {
     return this._modalMode;
   }
 
-  public showAutoKey = true;
-
   private _open = false;
   @Input() public set open(value: boolean) {
     this._open = value;
-
-    if (value) {
-      this.showAutoKey = true;
-    }
   }
 
   public get open(): boolean {
@@ -149,7 +143,6 @@ export class WidgetManagementDividerModalComponent {
     if (!dividerCreated) {
       this.closeEvent.emit(null);
       runAfterCarbonModalClosed(() => {
-        this.showAutoKey = false;
         this.resetForm();
       });
       return;
@@ -167,7 +160,6 @@ export class WidgetManagementDividerModalComponent {
       widget: this.divider,
     });
     runAfterCarbonModalClosed(() => {
-      this.showAutoKey = false;
       this.resetForm();
     });
   }
