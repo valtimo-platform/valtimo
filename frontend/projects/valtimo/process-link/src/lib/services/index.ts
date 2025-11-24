@@ -24,3 +24,4 @@ export * from './process-link-button.service';
 export * from './form-flow-component.service';
 export * from './url-resolver.service';
 export * from './url-validator.service';
+export * from './process-link-building-block-api.service';
