@@ -78,8 +78,6 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
 
-  @Input() public compact = false;
-
   @Output() public readonly noVisibleMapEvent = new EventEmitter<boolean>();
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MapWidget | null>(null);
