@@ -17,5 +17,12 @@ export const endpoints = {
       `/api/management/v1/case-definition/case/${key}`,
   },
 
+  plugins: {
+    create: '/api/management/v1/plugin/configuration',
+    delete: (id: string) => `/api/management/v1/plugin/configuration/${id}`,
+    getAll: '/api/management/v1/plugin/configuration',
+    getByKey: (id: string) => `/api/management/v1/plugin/configuration/${id}`,
+  }
+
   // 🔜 Add more domains here (e.g. dashboards, plugins, etc.)
 };
