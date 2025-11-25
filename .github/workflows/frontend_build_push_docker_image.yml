@@ -58,7 +58,7 @@ jobs:
 
           PROJECTS_DIR="projects/valtimo"
           SCOPE="@valtimo"
-          LOCAL_ROOT="dist/valtimo"
+          LOCAL_ROOT="node_modules/@valtimo"
           PKG_JSON="package.json"
 
           if [ ! -f "$PKG_JSON" ]; then
