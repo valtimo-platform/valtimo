@@ -17,17 +17,27 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Inject,
   OnDestroy,
   OnInit,
   Optional,
-  Output,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  MdiIconSelectorComponent,
+} from '@valtimo/components';
+import {
+  DropdownModule,
+  InputModule,
+  LayerModule,
+  ListItem,
+  SelectModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {CustomWidgetConfig, WidgetCustomContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
@@ -45,15 +55,23 @@ import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
+    LayerModule,
+    MdiIconSelectorComponent,
+    InputLabelModule,
   ],
 })
 export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
   });
 
   public get widgetTitle(): AbstractControl<string | null, string | null> | null {
     return this.form.get('widgetTitle');
+  }
+
+  public get widgetIcon(): AbstractControl<string | null, string | null> | null {
+    return this.form.get('widgetIcon');
   }
 
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
@@ -106,6 +124,7 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
 
   public ngOnInit(): void {
     this.openTitleSubscription();
+    this.openIconSubscription();
     this.prefill();
   }
 
@@ -117,6 +136,14 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
         this.widgetWizardService.$widgetTitle.set(title);
+      })
+    );
+  }
+
+  private openIconSubscription(): void {
+    this._subscriptions.add(
+      this.widgetIcon?.valueChanges.subscribe(icon => {
+        this.widgetWizardService.$widgetIcon.set(icon);
       })
     );
   }

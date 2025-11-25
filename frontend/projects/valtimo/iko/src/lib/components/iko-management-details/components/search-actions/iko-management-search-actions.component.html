@@ -37,6 +37,8 @@
   </valtimo-carbon-list>
 
   <valtimo-iko-management-search-action-modal
+    [usedKeys]="usedKeys$ | async"
+    [modalMode]="$modalMode()"
     [repositoryKey]="repositoryKey$ | async"
     [aggregateKey]="aggregateKey"
     [open]="actionModalOpen$ | async"

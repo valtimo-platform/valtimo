@@ -16,8 +16,8 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, CaseManagementParams} from '@valtimo/shared';
-import {BehaviorSubject, Observable, map, of, switchMap, tap} from 'rxjs';
+import {CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
 import {CaseWidgetsRes} from '@valtimo/case';
 

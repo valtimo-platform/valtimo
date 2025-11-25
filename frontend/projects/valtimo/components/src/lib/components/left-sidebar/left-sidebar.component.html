@@ -61,6 +61,7 @@
           <ng-container *ngFor="let childMenuItem of menuItem.children">
             <ng-container
               *ngIf="{
+                disableCaseCount: disableCaseCount$ | async,
                 count: childMenuItem?.count$ && (childMenuItem?.count$ | async),
                 sequence: '' + menuItem.sequence + childMenuItem.sequence,
               } as vars"
@@ -89,7 +90,7 @@
                 ></valtimo-menu-item-text>
 
                 <ng-container
-                  *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
+                  *ngTemplateOutlet="countTemplate; context: {count: vars.count, disableCaseCount: vars.disableCaseCount}"
                 ></ng-container>
               </cds-sidenav-item>
             </ng-container>
@@ -136,8 +137,8 @@
   </ng-container>
 </ng-template>
 
-<ng-template #countTemplate let-count="count">
-  <ng-container *ngIf="count">
+<ng-template #countTemplate let-count="count" let-disableCaseCount="disableCaseCount">
+  <ng-container *ngIf="count && !disableCaseCount">
     <span class="case-count">
       {{ count | caseCount }}
     </span>

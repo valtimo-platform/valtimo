@@ -19,7 +19,7 @@ import {BaseApiService, ConfigService, InterceptorSkip, Page} from '@valtimo/sha
 import {Observable, map} from 'rxjs';
 import {CarbonListItem} from '@valtimo/components';
 import {BasicWidget} from '@valtimo/layout';
-import { CaseWidgetsRes } from '../models';
+import {CaseWidgetsRes} from '../models';
 
 @Injectable({
   providedIn: 'root',

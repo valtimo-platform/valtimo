@@ -28,10 +28,16 @@ interface LinkDocumentToZaakConfig {
   beschrijving: string;
 }
 
+interface GetZaakInformatieobjectenConfig {
+  resultProcessVariable: string;
+}
+
 interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
   inputTypeZaakStatusToggle?: InputOption;
+  inputDatumStatusGezetToggle?: InputOption;
+  datumStatusGezet?: string;
 }
 
 interface CreateZaakResultaatConfig {
@@ -107,7 +113,7 @@ interface CreateZaakConfig {
   communicationChannel?: string;
   paymentIndication?: string;
   caseGeometryType?: string;
-  caseGeometryCoordinates?: string,
+  caseGeometryCoordinates?: string;
   mainCase?: string;
 }
 
@@ -160,9 +166,14 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
+interface GetZaakbesluitenConfig {
+  resultProcessVariable: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
+  GetZaakInformatieobjectenConfig,
   SetZaakStatusConfig,
   CreateZaakResultaatConfig,
   CreateZaakConfig,
@@ -179,4 +190,5 @@ export {
   DeleteZaakeigenschapConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
+  GetZaakbesluitenConfig,
 };

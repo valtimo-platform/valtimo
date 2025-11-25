@@ -19,15 +19,24 @@
   *ngIf="{
     prefilledFormDefinition: prefilledFormDefinition$ | async,
     widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
   } as obs"
 >
   <section class="formio-widget__header">
-    <h4 class="formio-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+    <div class="formio-widget__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <h4 class="formio-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+    </div>
 
     <ng-content></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
     ></valtimo-widget-action-button>
   </section>
 

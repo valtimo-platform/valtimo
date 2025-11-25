@@ -18,8 +18,8 @@ package com.ritense.widget.interactivetable
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.validation.Valid
 import java.util.UUID
@@ -28,6 +28,7 @@ import java.util.UUID
 data class InteractiveTableWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction> = emptyList(),
@@ -38,6 +39,7 @@ data class InteractiveTableWidgetDto(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         width = width,
         order = order,
         highContrast = highContrast,
