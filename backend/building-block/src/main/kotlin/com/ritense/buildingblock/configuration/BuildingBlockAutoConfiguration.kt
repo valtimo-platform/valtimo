@@ -35,6 +35,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
@@ -100,6 +101,12 @@ class BuildingBlockAutoConfiguration {
         checker: BuildingBlockDefinitionChecker
     ): BuildingBlockDocumentDefinitionService {
         return BuildingBlockDocumentDefinitionService(repository, checker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFieldService::class)
+    fun buildingBlockFieldService(): BuildingBlockFieldService {
+        return BuildingBlockFieldService()
     }
 
     @Bean

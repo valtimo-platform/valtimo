@@ -24,6 +24,7 @@ import {
   InterceptorSkip,
   Page,
 } from '@valtimo/shared';
+import {BuildingBlockField} from '../models';
 import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
@@ -57,6 +58,15 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
   ): Observable<string[]> {
     return this.httpClient.get<string[]>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/plugin`)
+    );
+  }
+
+  public getFieldsForBuildingBlock(
+    key: string,
+    versionTag: string
+  ): Observable<Array<BuildingBlockField>> {
+    return this.httpClient.get<Array<BuildingBlockField>>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/fields`)
     );
   }
 
