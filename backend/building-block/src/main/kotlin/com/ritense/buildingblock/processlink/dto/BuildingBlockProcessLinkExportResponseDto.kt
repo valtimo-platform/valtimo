@@ -29,5 +29,7 @@ data class BuildingBlockProcessLinkExportResponseDto(
     val buildingBlockDefinitionKey: String,
     val buildingBlockDefinitionVersionTag: String,
     val pluginConfigurationMappings: Map<String, UUID>,
+    val inputMappings: List<BuildingBlockInputMappingDto> = emptyList(),
+    val outputMappings: List<BuildingBlockOutputMappingDto> = emptyList(),
     override val processLinkType: String = BuildingBlockProcessLink.PROCESS_LINK_TYPE
 ) : ProcessLinkExportResponseDto

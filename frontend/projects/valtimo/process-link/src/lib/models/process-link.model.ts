@@ -41,6 +41,8 @@ interface ProcessLink {
   buildingBlockDefinitionKey?: string;
   buildingBlockDefinitionVersionTag?: string;
   pluginConfigurationMappings?: Record<string, string>;
+  inputMappings?: Array<BuildingBlockInputMapping>;
+  outputMappings?: Array<BuildingBlockOutputMapping>;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -183,6 +185,8 @@ interface BuildingBlockProcessLinkCreateDto {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
   pluginConfigurationMappings: Record<string, string>;
+  inputMappings: Array<BuildingBlockInputMapping>;
+  outputMappings: Array<BuildingBlockOutputMapping>;
 }
 
 interface BuildingBlockProcessLinkUpdateDto {
@@ -192,6 +196,21 @@ interface BuildingBlockProcessLinkUpdateDto {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
   pluginConfigurationMappings: Record<string, string>;
+  inputMappings: Array<BuildingBlockInputMapping>;
+  outputMappings: Array<BuildingBlockOutputMapping>;
+}
+
+type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
+
+interface BuildingBlockInputMapping {
+  source: string;
+  target: string;
+}
+
+interface BuildingBlockOutputMapping {
+  source: string;
+  target: string;
+  syncTiming: BuildingBlockSyncTiming;
 }
 
 type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
