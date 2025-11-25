@@ -19,6 +19,8 @@ package com.ritense.valtimo.contract.utils;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.time.ZoneOffset;
+import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -29,9 +31,14 @@ class RequestHelperTest {
     MockHttpServletRequest mockRequest;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mockRequest = new MockHttpServletRequest();
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockRequest));
+    }
+
+    @AfterEach
+    void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -57,5 +64,119 @@ class RequestHelperTest {
         ZoneOffset zoneOffset = RequestHelper.getZoneOffset();
 
         assertThat(zoneOffset).isSameAs(ZoneOffset.of("+01:00"));
+    }
+
+    // Tests for getRequestZoneOffset method
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenNoRequestContext() {
+        RequestContextHolder.resetRequestAttributes();
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenHeaderNotPresent() {
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenHeaderIsBlank() {
+        mockRequest.addHeader("X-Timezone-Offset", "");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenHeaderIsWhitespace() {
+        mockRequest.addHeader("X-Timezone-Offset", "   ");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidPositiveOffset() {
+        mockRequest.addHeader("X-Timezone-Offset", "+01:00");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.of("+01:00"));
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidNegativeOffset() {
+        mockRequest.addHeader("X-Timezone-Offset", "-05:00");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.of("-05:00"));
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidUtcOffset() {
+        mockRequest.addHeader("X-Timezone-Offset", "Z");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.UTC);
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidOffsetWithSeconds() {
+        mockRequest.addHeader("X-Timezone-Offset", "+05:30:00");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.of("+05:30:00"));
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenInvalidOffset() {
+        mockRequest.addHeader("X-Timezone-Offset", "invalid-offset");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnEmptyWhenOffsetOutOfRange() {
+        mockRequest.addHeader("X-Timezone-Offset", "+25:00");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isEmpty();
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidShortFormat() {
+        mockRequest.addHeader("X-Timezone-Offset", "+01");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.of("+01"));
+    }
+
+    @Test
+    void getRequestZoneOffsetShouldReturnZoneOffsetWhenValidMinuteOnlyOffset() {
+        mockRequest.addHeader("X-Timezone-Offset", "+00:30");
+
+        Optional<ZoneOffset> zoneOffset = RequestHelper.getRequestZoneOffset();
+
+        assertThat(zoneOffset).isPresent();
+        assertThat(zoneOffset.orElseThrow()).isEqualTo(ZoneOffset.of("+00:30"));
     }
 }
