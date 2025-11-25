@@ -1,0 +1,71 @@
+[
+    {
+        "activityId": "startEventPatchBesluit",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "vastleggen-besluit.upload-besluit-document"
+    },
+    {
+        "activityId": "CreateBesluitTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
+        "pluginActionDefinitionKey": "create-besluit",
+        "actionProperties": {
+            "besluittypeUrl": "http://localhost:8001/catalogi/api/v1/besluittypen/239b9760-cce2-4ae1-a3b7-4337ce51c83a",
+            "toelichting": "Besluit",
+            "bestuursorgaan": "Bestuursorgaan",
+            "ingangsdatum": "2025-11-11",
+            "createdBesluitUrl": "besluitUrl",
+            "vervalreden": "tijdelijk",
+            "vervaldatum": null,
+            "publicatiedatum": null,
+            "verzenddatum": null,
+            "uiterlijkeReactieDatum": null,
+            "inputTypeBesluitToggle": "text",
+            "inputTypeStartingDateToggle": "text",
+            "inputTypeExpirationDateToggle": "selection"
+        }
+    },
+    {
+        "activityId": "LinkDocumentAanBesluitTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
+        "pluginActionDefinitionKey": "link-document-to-besluit",
+        "actionProperties": {
+            "besluitUrl": "pv:besluitUrl",
+            "documentUrl": "pv:besluitDocumentUrl"
+        }
+    },
+    {
+        "activityId": "PatchBesluitUserTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "vastleggen-besluit.patch-besluit"
+    },
+    {
+        "activityId": "PatchBesluitTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
+        "pluginActionDefinitionKey": "patch-besluit",
+        "actionProperties": {
+            "besluitUrl": "pv:zaakbesluitUrl",
+            "beslisdatum": "pv:beslisdatum",
+            "vervaldatum": "pv:vervaldatum",
+            "vervalreden": "pv:vervalreden",
+            "toelichting": "pv:toelichting"
+        }
+    },
+    {
+        "activityId": "GetBesluitUrlsTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "get-zaakbesluiten",
+        "actionProperties": {
+            "resultProcessVariable": "zaakbesluiten"
+        }
+    }
+]

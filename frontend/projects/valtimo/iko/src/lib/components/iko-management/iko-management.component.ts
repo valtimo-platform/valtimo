@@ -34,6 +34,7 @@ import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-
 import {TranslateModule} from '@ngx-translate/core';
 import {Upload16} from '@carbon/icons';
 import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-upload-modal.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -52,6 +53,7 @@ import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-u
 })
 export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly apiKey$ = this.route.params.pipe(
     map(params => params?.apiKey as string),
     filter(key => !!key)
@@ -64,10 +66,16 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
         .getManagementIkoDataAggregates(undefined, undefined, apiKey)
         .pipe(
           map(dataAggregatePage => dataAggregatePage.content),
-          tap(() => this.$loading.set(false))
+          tap(content => {
+            const keys = content?.map(item => item.key) ?? [];
+            this.usedKeys$.next(keys);
+            this.$loading.set(false);
+          })
         )
     )
   );
+
+  public readonly $modalMode = signal<ModalMode>('add');
   public readonly $viewModalOpen = signal<boolean>(false);
   public readonly $uploadModalOpen = signal<boolean>(false);
   public readonly $prefillData = signal<any | null>(null);
@@ -119,6 +127,8 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
+    this.$prefillData.set(null);
     this.$viewModalOpen.set(true);
   }
 
@@ -127,6 +137,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public onEditClick(item: IkoDataAggregateResponse): void {
+    this.$modalMode.set('edit');
     this.$prefillData.set(item);
     this.$viewModalOpen.set(true);
   }
@@ -145,11 +156,10 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
 
   public onViewModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
     this.$viewModalOpen.set(false);
-    const prefillData: IkoDataAggregateResponse | null = this.$prefillData();
     this.$prefillData.set(null);
     if (!item) return;
 
-    if (prefillData !== null) {
+    if (this.$modalMode() === 'edit') {
       this.ikoManagementApiService
         .updateIkoDataAggregate(item.key, {
           ...item,

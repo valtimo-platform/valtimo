@@ -29,11 +29,18 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
-import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {
+  CarbonListModule,
+  EllipsisPipe,
+  MdiIconViewerComponent,
+  ViewContentService,
+  ViewType,
+} from '@valtimo/components';
+import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -49,6 +56,9 @@ import {WidgetTextDisplayType} from '../../models/widget-display.model';
     CarbonListModule,
     EllipsisPipe,
     ButtonModule,
+    WidgetActionButtonComponent,
+    MdiIconViewerComponent,
+    LayerModule,
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {

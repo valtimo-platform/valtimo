@@ -47,19 +47,6 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
     },
-    de: {
-      title: 'Notificaties API',
-      url: 'Notificaties API URL',
-      urlTooltip: 'Die URL zur REST API von Notificaties',
-      callbackUrl: 'Callback URL',
-      callbackUrlTooltip:
-        'Der GZAC-API-endpoint, an den Benachrichtigungen gesendet werden sollen.',
-      description: 'Eine API für den Zugriff auf eine Komponente für das Benachrichtigungsrouting.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
-    },
   },
 };
 

@@ -16,16 +16,17 @@
 
 package com.ritense.widget.fields
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
 import java.util.UUID
+import org.hibernate.annotations.Type
 
 @AllOpen
 @Entity
@@ -34,6 +35,7 @@ class FieldsWidget(
     id: UUID = UUID.randomUUID(),
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
@@ -44,12 +46,13 @@ class FieldsWidget(
     @Column(name = "properties", nullable = false)
     val properties: FieldsWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
@@ -59,6 +62,7 @@ class FieldsWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
@@ -70,10 +74,27 @@ class FieldsWidget(
     override fun toDto() = FieldsWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
         actions = this.actions,
         displayConditions = this.displayConditions,
         properties = this.properties,
     )
+
+    @JsonIgnore
+    override fun getUnresolvedValues(): List<String> {
+        return (actions.flatMap { it.getUnresolvedValues() } +
+            properties.columns.flatMap { column -> column.map { field -> field.value } }).distinct()
+    }
+
+    @JsonIgnore
+    override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> {
+        return properties.columns.flatMap { column ->
+            column.map { field ->
+                field.key to resolveValue(field.value)
+            }
+        }.toMap() + actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+    }
 }

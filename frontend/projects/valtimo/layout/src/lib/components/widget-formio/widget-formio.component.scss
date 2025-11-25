@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-.loading-container {
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  justify-content: center;
-}
+.formio-widget {
+  padding: 16px;
 
-.error-message {
-  text-align: center;
+  &__header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+  }
 }
 
 .formio-widget {

@@ -46,17 +46,6 @@ const objecttypenApiPluginSpecification: PluginSpecification = {
         'With this name the plugin will be recognizable in the rest of the application',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
     },
-    de: {
-      title: 'Objecttypen API',
-      url: 'Objecttypen API URL',
-      urlTooltip: 'Dieses Feld muss die URL zur REST API von Objecttypen enthalten',
-      description:
-        'Mit den Spezifikationen der Other Objects Registration API (Objekttypen) können Kommunen Objekte eindeutig registrieren, speichern und darauf zugreifen.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
-    },
   },
 };
 

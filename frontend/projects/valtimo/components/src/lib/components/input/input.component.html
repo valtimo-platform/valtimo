@@ -184,11 +184,14 @@
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin,
     }"
-    class="v-input--preset-options">
+    class="v-input--preset-options"
+  >
     <span>{{ presetsTitle }}:</span>
 
     @for (preset of presetOptions; track $index) {
-      @if (!$first) { | }
+      @if (!$first) {
+        |
+      }
       <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
     }
   </div>

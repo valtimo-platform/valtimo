@@ -47,6 +47,8 @@ export class WidgetWizardService {
 
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 
+  public readonly $widgetIcon: WritableSignal<string | null> = signal(null);
+
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
@@ -59,7 +61,7 @@ export class WidgetWizardService {
 
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
-  public readonly $disableProcessSelector: WritableSignal<boolean> = signal(false);
+  public readonly $disableActionButton: WritableSignal<boolean> = signal(false);
 
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
     WidgetWizardStep.TYPE,
@@ -111,6 +113,7 @@ export class WidgetWizardService {
   public readonly $widgetsConfig: Signal<BasicWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
+    icon: this.$widgetIcon() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
     width: this.$widgetWidth() || this._defaultWidth || 4,
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
@@ -131,10 +134,12 @@ export class WidgetWizardService {
       this.$widgetStyle.set(null);
       this.$widgetContent.set(null);
       this.$widgetTitle.set(null);
+      this.$widgetIcon.set(null);
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
       this.$widgetDisplayConditions.set(null);
       this.$editMode.set(false);
+      this.$disableActionButton.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 

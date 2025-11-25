@@ -70,7 +70,7 @@ export class CaseManagementHeaderComponent
       this._params$.subscribe(params => {
         this.widgetManagementService.initParams(params);
         this.setContext('case');
-        this.widgetWizardService.$disableProcessSelector.set(true);
+        this.widgetWizardService.$disableActionButton.set(true);
         this.setTitleDisabled(true);
       })
     );

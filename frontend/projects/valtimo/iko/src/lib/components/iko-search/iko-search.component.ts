@@ -21,6 +21,15 @@ import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule, ParagraphModule} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {CarbonListModule, PageTitleService} from '@valtimo/components';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LayerModule,
+  TabsModule,
+} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
@@ -42,6 +51,8 @@ import {validateBsn} from '@valtimo/shared';
     TranslateModule,
     IkoListComponent,
     CarbonListModule,
+    TabsModule,
+    LayerModule,
     NgTemplateOutlet,
     AsyncPipe,
     InputModule,
@@ -134,7 +145,6 @@ export class IkoSearchComponent implements OnDestroy {
     }
 
     const queryParams: Record<string, string> = {};
-
     for (const param of params) {
       if (param.dataType === 'number' && param.fieldType === 'range') {
         const start = this.formValues[param.key + '_start'];

@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-.valtimo-case-management-widget-process-selector {
-  display: flex;
-  gap: 16px;
+package com.ritense.widget.custom
 
-  > * {
-    max-width: 288px;
-    width: 100%;
-  }
+import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.WidgetDataProvider
+
+class CustomWidgetDataProvider(
+    private val valueResolverService: ValueResolverService,
+) : WidgetDataProvider<CustomWidget> {
+
+    override fun supportedWidgetType() = CustomWidget::class.java
+
+    override fun getData(widget: CustomWidget, properties: Map<String, Any>): Any {
+        val resolvedValues = valueResolverService.resolveValues(properties, widget.getUnresolvedValues())
+        return widget.getExposedValues { path -> resolvedValues[path] }
+    }
 }

@@ -85,34 +85,6 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       key: 'Key',
       value: 'Value',
     },
-    de: {
-      title: 'SmartDocuments',
-      description: 'Automatisieren Sie Dokumente mit intelligenten Templates.',
-      'generate-document': 'Dokument generieren',
-      'get-template-names': 'Get Template Names',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      url: 'SmartDocuments URL',
-      username: 'Nutzername',
-      password: 'Passwort',
-      templateGroup: 'Template gruppe',
-      templateName: 'Template name',
-      templateGroupName: 'Template gruppe name',
-      resultingTemplateNameListProcessVariableName:
-        'Name der Prozessvariable, um die Liste zu speichern',
-      format: 'Dokumentformat',
-      templateData: 'Templatedaten',
-      templateDataTooltip:
-        'Die rechte Wertespalte unterstützt auch die Verwendung von Prozessvariablen wie pv: und doc:',
-      resultingDocumentProcessVariableName: 'Prozessvariablenname zum Speichern des Dokuments',
-      resultingDocumentProcessVariableNameTooltip:
-        'Der Ort des generierten Dokuments wird in einer Prozessvariablen gespeichert. Diese Prozessvariable wird verwendet, um in einer anderen BPMN-Aufgabe auf das Dokument zuzugreifen.',
-      generateDocumentWarning:
-        'Diese Aktion erzeugt eine temporäre Datei. Die Verarbeitung muss durch eine andere Aktion erfolgen.',
-      key: 'Schlüssel',
-      value: 'Wert',
-    },
   },
 };
 

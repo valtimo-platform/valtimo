@@ -18,19 +18,22 @@
   @if (dataRequests.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
   } @else {
-    @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
-      <div class="query-group">
-        <span class="query-group__label">{{ param.title }}</span>
+    <h4>{{ 'iko.searchVia' | translate }}</h4>
 
-        <div class="query-group__row">
-          @for (field of param.searchFields; track field.key) {
-            <div class="query-group__field">
-              <ng-container
+    <cds-tabs type="contained">
+      @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
+        <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
+          <div class="query-group__row">
+            @for (field of param.searchFields; track field.key) {
+              <div class="query-group__field">
+                <ng-container
                   class="query-group__field"
                   *ngTemplateOutlet="searchFieldTemplate; context: {searchField: field}"
-              ></ng-container>
-            </div>
-          }
+                ></ng-container>
+              </div>
+            }
+          </div>
+
           <button
             cdsButton="primary"
             class="query-group__search-button"
@@ -40,9 +43,9 @@
             {{ 'searchFields.searchButtonText' | translate }}
             <svg cdsIcon="search" size="16"></svg>
           </button>
-        </div>
-      </div>
-    }
+        </cds-tab>
+      }
+    </cds-tabs>
   }
 }
 

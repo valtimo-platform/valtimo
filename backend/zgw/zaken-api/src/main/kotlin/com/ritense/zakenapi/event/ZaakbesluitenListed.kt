@@ -14,4 +14,14 @@
  * limitations under the License.
  */
 
-export * from './process-selector/case-management-widget-process-selector.component';
+package com.ritense.zakenapi.event
+
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.ritense.outbox.domain.BaseEvent
+
+class ZaakbesluitenListed (zaakbesluiten: ArrayNode) : BaseEvent(
+    type = "com.ritense.gzac.zrc.zaakbesluiten.listed",
+    resultType = "List<com.ritense.zakenapi.domain.ZaakbesluitResponse>",
+    resultId = null,
+    result = zaakbesluiten
+)

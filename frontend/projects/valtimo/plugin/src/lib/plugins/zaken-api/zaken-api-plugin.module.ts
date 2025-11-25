@@ -27,10 +27,12 @@ import {
 } from '@valtimo/components';
 import {
   ButtonModule,
-  DatePickerInputModule,
+  DatePickerInputModule, DatePickerModule,
   DialogModule,
   IconModule,
   LoadingModule,
+  NotificationModule,
+  TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
@@ -55,12 +57,16 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 @NgModule({
   declarations: [
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     DeleteZaakRolComponent,
@@ -79,6 +85,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -96,11 +103,17 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    DatePickerModule,
+    FormsModule,
+    NotificationModule,
+    ReactiveFormsModule,
+    TimePickerModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
@@ -118,6 +131,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}
