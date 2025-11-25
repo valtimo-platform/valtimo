@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class RequestHelper {
     private static final Logger logger = LoggerFactory.getLogger(RequestHelper.class);
+    public static final String TIMEZONE_OFFSET_HEADER = "X-Timezone-Offset";
 
     private RequestHelper() {
     }
@@ -43,15 +45,28 @@ public class RequestHelper {
         return ipList.toString();
     }
 
+    /**
+     * This method retrieves the ZoneOffset from the Timezone Offset header.
+     * When the header is not present, UTC is returned.
+     *
+     * @return ZoneOffset
+     */
     public static ZoneOffset getZoneOffset() {
-        ZoneOffset zoneOffset = ZoneOffset.UTC;
+        return getRequestZoneOffset().orElse(ZoneOffset.UTC);
+    }
+
+    /**
+     * This method retrieves the ZoneOffset from the Timezone Offset header, if present and valid.
+     */
+    public static Optional<ZoneOffset> getRequestZoneOffset() {
+        ZoneOffset zoneOffset = null;
 
         try {
             RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
 
             if (attribs != null) {
                 HttpServletRequest request = ((ServletRequestAttributes) attribs).getRequest();
-                String zoneOffsetHeader = request.getHeader("X-Timezone-Offset");
+                String zoneOffsetHeader = request.getHeader(TIMEZONE_OFFSET_HEADER);
 
                 if (StringUtils.isNotBlank(zoneOffsetHeader)) {
                     zoneOffset = ZoneOffset.of(zoneOffsetHeader);
@@ -62,6 +77,6 @@ public class RequestHelper {
             logger.error(e.getMessage(), e);
         }
 
-        return zoneOffset;
+        return Optional.ofNullable(zoneOffset);
     }
 }
