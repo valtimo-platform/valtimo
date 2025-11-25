@@ -62,7 +62,7 @@ export class IkoManagementRepositoryModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    if(!value) this.resetForm();
+    if (!value) this.resetForm();
   }
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();

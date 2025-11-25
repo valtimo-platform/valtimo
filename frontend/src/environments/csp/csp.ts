@@ -21,7 +21,7 @@ import {authenticationKeycloak} from '../auth/keycloak-config';
 export const cspHeaderParamsDev: CSPHeaderParams = {
   directives: {
     'default-src': [SELF],
-    'img-src': [SELF, DATA],
+    'img-src': [SELF, DATA, 'https://tile.openstreetmap.org/'],
     'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
     'worker-src': [SELF, BLOB],
     'font-src': [

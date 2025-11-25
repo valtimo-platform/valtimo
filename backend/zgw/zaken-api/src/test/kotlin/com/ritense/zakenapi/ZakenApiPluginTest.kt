@@ -16,7 +16,9 @@
 
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -39,6 +41,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.Rol
@@ -50,6 +53,7 @@ import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import org.assertj.core.api.Assertions.assertThat
@@ -730,12 +734,14 @@ internal class ZakenApiPluginTest {
         whenever(zaakResponse.url)
             .thenReturn(zaakUrl)
 
-        whenever(zakenApiClient.patchZaak(
-            authentication = eq(authenticationMock),
-            baseUrl = eq(zakenApiUri()),
-            zaakUrl = eq(zaakUrl),
-            request = any<PatchZaakRequest>()
-        ))
+        whenever(
+            zakenApiClient.patchZaak(
+                authentication = eq(authenticationMock),
+                baseUrl = eq(zakenApiUri()),
+                zaakUrl = eq(zaakUrl),
+                request = any<PatchZaakRequest>()
+            )
+        )
             .thenReturn(zaakResponse)
 
         val plugin = zakenApiPlugin(
@@ -760,7 +766,7 @@ internal class ZakenApiPluginTest {
             caseGeometryCoordinates = caseGeometryCoordinates,
             mainCase = mainCase,
             archiveActionDate = archiveActionDate,
-            startDateRetentionPeriod  = startDateRetentionPeriod
+            startDateRetentionPeriod = startDateRetentionPeriod
         )
 
         val captor = argumentCaptor<PatchZaakRequest>()
@@ -1012,12 +1018,14 @@ internal class ZakenApiPluginTest {
                     uiterlijkeEinddatumAfdoening = LocalDate.now().plusDays(50)
                 )
             )
-        whenever(zaakHersteltermijnRepository.findByZaakUrlAndEndDateIsNull(zaakUrl)).thenReturn(ZaakHersteltermijn(
-            zaakUrl = zaakUrl,
-            startDate = LocalDate.now().minusDays(8),
-            endDate =  null,
-            maxDurationInDays = 17
-        ))
+        whenever(zaakHersteltermijnRepository.findByZaakUrlAndEndDateIsNull(zaakUrl)).thenReturn(
+            ZaakHersteltermijn(
+                zaakUrl = zaakUrl,
+                startDate = LocalDate.now().minusDays(8),
+                endDate = null,
+                maxDurationInDays = 17
+            )
+        )
 
         val plugin = zakenApiPlugin(
             zaakUrlProvider = zaakUrlProvider,
@@ -1059,7 +1067,7 @@ internal class ZakenApiPluginTest {
         whenever(zakenApiClient.createZaakeigenschap(any(), any(), any()))
             .thenReturn(
                 ZaakeigenschapResponse(
-                    url =  URI("${zaakUrl()}/zaakeigenschappen/5678"),
+                    url = URI("${zaakUrl()}/zaakeigenschappen/5678"),
                     zaak = zaakUrl,
                     eigenschap = eigenschapUrl,
                     waarde = "test-value"
@@ -1222,7 +1230,8 @@ internal class ZakenApiPluginTest {
             eq(authenticationMock),
             eq(plugin.url),
             eq(zaakUrl),
-            captor.capture())
+            captor.capture()
+        )
 
         val relevanteAndereZaken = captor.firstValue.relevanteAndereZaken
         assertThat(relevanteAndereZaken).hasSize(1)
@@ -1255,6 +1264,121 @@ internal class ZakenApiPluginTest {
         assertEquals(objectUrl(), request.objectUrl.toString())
     }
 
+    @Test
+    fun `should get zaak informatieobjecten`() {
+        // given
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val zaakDocumentService: ZaakDocumentService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val objectMapper = MapperSingleton.get()
+        val resultProcessVariable = "resultVariable"
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        val relatedFiles = listOf(
+            RelatedFileDto(
+                fileId = UUID.randomUUID(),
+                fileName = "test-file1.pdf",
+                sizeInBytes = 1024L,
+                createdOn = LocalDate.now().atStartOfDay(),
+                createdBy = "Test User 1",
+                pluginConfigurationId = UUID.randomUUID(),
+                title = "Test Document 1",
+                description = "Test Description 1"
+            ),
+            RelatedFileDto(
+                fileId = UUID.randomUUID(),
+                fileName = "test-file2.pdf",
+                sizeInBytes = 2048L,
+                createdOn = LocalDate.now().atStartOfDay(),
+                createdBy = "Test User 2",
+                pluginConfigurationId = UUID.randomUUID(),
+                title = "Test Document 2",
+                description = "Test Description 2"
+            )
+        )
+
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)).thenReturn(relatedFiles)
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zaakDocumentService = zaakDocumentService,
+            objectMapper = objectMapper
+        )
+
+        // when
+        plugin.getZaakInformatieobjecten(executionMock, resultProcessVariable)
+
+        // then
+        verify(zaakUrlProvider).getZaakUrl(documentId)
+        verify(zaakDocumentService).getInformatieObjectenAsRelatedFiles(documentId)
+
+        val captor = argumentCaptor<Any>()
+        verify(executionMock).setVariable(eq(resultProcessVariable), captor.capture())
+
+        val expected: List<Map<String, Any?>> =
+            objectMapper.convertValue(relatedFiles, object : TypeReference<List<Map<String, Any?>>>() {})
+        assertEquals(expected, captor.firstValue)
+    }
+
+    @Test
+    fun `should retreive zaakbesluiten`() {
+        val client: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val execution = mock<DelegateExecution>()
+        val documentId = UUID.randomUUID()
+        val resultProcessVariable = "zaakbesluiten"
+
+        whenever(execution.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUri())
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = client,
+            authenticationMock = authenticationMock
+        )
+
+        val zaakbesluiten = listOf(
+            ZaakbesluitResponse(
+                url = zaakbesluitUri1(),
+                uuid = zaakbesluitUuid1(),
+                besluit = besluitUri1()
+            ),
+            ZaakbesluitResponse(
+                url = zaakbesluitUri2(),
+                uuid = zaakbesluitUuid2(),
+                besluit = besluitUri2()
+            )
+        )
+
+        whenever(
+            client.getZaakbesluiten(authenticationMock, zakenApiUri(), zaakUri())
+        ).thenReturn(zaakbesluiten)
+
+        val result = plugin.getZaakbesluiten(execution, resultProcessVariable)
+
+        assertEquals(2, result.size)
+        val first = result[0]
+        assertEquals(zaakbesluitUri1(), first.url)
+        assertEquals(zaakbesluitUuid1(), first.uuid)
+        assertEquals(besluitUri1(), first.besluit)
+
+        val second = result[1]
+        assertEquals(zaakbesluitUri2(), second.url)
+        assertEquals(zaakbesluitUuid2(), second.uuid)
+        assertEquals(besluitUri2(), second.besluit)
+
+        val expectedBesluitenList = zaakbesluiten.map { it.besluit }
+        verify(execution).setVariable(resultProcessVariable, expectedBesluitenList)
+
+        verify(client).getZaakbesluiten(authenticationMock, zakenApiUri(), zaakUri())
+    }
+
     private fun zakenApiPlugin(
         url: URI = zakenApiUri(),
         zaakUrlProvider: ZaakUrlProvider = mock(),
@@ -1263,6 +1387,7 @@ internal class ZakenApiPluginTest {
         zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock(),
         pluginService: PluginService = mock(),
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock(),
+        zaakDocumentService: ZaakDocumentService = mock(),
         platformTransactionManager: PlatformTransactionManager = mock(),
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
@@ -1275,6 +1400,7 @@ internal class ZakenApiPluginTest {
             zaakInstanceLinkRepository,
             pluginService,
             zaakHersteltermijnRepository,
+            zaakDocumentService,
             platformTransactionManager,
             valueResolverService,
             objectMapper
@@ -1285,7 +1411,7 @@ internal class ZakenApiPluginTest {
     }
 
     private fun pluginServiceMock(): PluginService = mock {
-        on { this.getObjectMapper()  } doReturn MapperSingleton.get()
+        on { this.getObjectMapper() } doReturn MapperSingleton.get()
     }
 
     private fun zakenApiUrl() = "https://zaken.plugin.url"
@@ -1300,18 +1426,51 @@ internal class ZakenApiPluginTest {
     private fun statustypeUrl(id: String = "94cbae11-df23-41f0-9e6a-d122dd9a7a50") = "${zakenApiUrl()}/statustypen/$id"
     private fun statustypeUri(id: String = "94cbae11-df23-41f0-9e6a-d122dd9a7a50") = URI(statustypeUrl(id))
 
-    private fun eigenschapUrl(id: String = "626d6b83-1aeb-478f-87b1-898370342c07") = "${zakenApiUrl()}/eigenschappen/$id"
+    private fun eigenschapUrl(id: String = "626d6b83-1aeb-478f-87b1-898370342c07") =
+        "${zakenApiUrl()}/eigenschappen/$id"
+
     private fun eigenschapUri(id: String = "626d6b83-1aeb-478f-87b1-898370342c07") = URI(eigenschapUrl(id))
 
     private fun roltypeUrl(id: String = "a860b0ab-47ca-4471-bff6-6fb53c760f07") = "${zakenApiUrl()}/roltypen/$id"
     private fun roltypeUri(id: String = "a860b0ab-47ca-4471-bff6-6fb53c760f07") = URI(roltypeUrl(id))
 
-    private fun resultaatTypeUrl(id: String = "e85ae64e-4083-44a0-b512-e21c6114bd58") = "${zakenApiUrl()}/resultaattypen/$id"
+    private fun resultaatTypeUrl(id: String = "e85ae64e-4083-44a0-b512-e21c6114bd58") =
+        "${zakenApiUrl()}/resultaattypen/$id"
+
     private fun resultaatTypeUri(id: String = "e85ae64e-4083-44a0-b512-e21c6114bd58") = URI(resultaatTypeUrl(id))
 
     private fun objectUrl() = "https://object.url"
     private fun objectUri() = URI(objectUrl())
 
+    private fun zaakbesluitId1() = "cccb4dd3-f4da-4812-b3a3-c05cd35722b0"
+    private fun zaakbesluitUuid1() =
+        UUID.fromString("cccb4dd3-f4da-4812-b3a3-c05cd35722b0")
+
+    private fun zaakbesluitId2() = "38f55c4a-370d-4530-9909-b486500d7d17"
+    private fun zaakbesluitUuid2() =
+        UUID.fromString("38f55c4a-370d-4530-9909-b486500d7d17")
+
+    private fun zaakbesluitUrl1(
+        zaakId: String = "15e83392-a68f-4c1a-8b93-932b54b2d83e"
+    ) = "${zakenApiUrl()}/zaken/$zaakId/besluiten/${zaakbesluitId1()}"
+
+    private fun zaakbesluitUrl2(
+        zaakId: String = "15e83392-a68f-4c1a-8b93-932b54b2d83e"
+    ) = "${zakenApiUrl()}/zaken/$zaakId/besluiten/${zaakbesluitId2()}"
+
+    private fun zaakbesluitUri1() = URI(zaakbesluitUrl1())
+    private fun zaakbesluitUri2() = URI(zaakbesluitUrl2())
+
+    private fun besluitUrl1(
+        besluitId: String = zaakbesluitId1()
+    ) = "${zakenApiUrl()}/besluiten/$besluitId"
+
+    private fun besluitUrl2(
+        besluitId: String = zaakbesluitId2()
+    ) = "${zakenApiUrl()}/besluiten/$besluitId"
+
+    private fun besluitUri1() = URI(besluitUrl1())
+    private fun besluitUri2() = URI(besluitUrl2())
     private fun documentUrl() = "https://document.url"
 
     private fun communicationChannel() = "https://example.com/comminicatiekanaal/example"

@@ -39,23 +39,13 @@
         }
     },
     {
-        "activityId": "PatchBesluitUserTask",
-        "activityType": "bpmn:UserTask:create",
-        "processLinkType": "form",
-        "formDefinitionName": "vastleggen-besluit.patch-besluit"
-    },
-    {
-        "activityId": "PatchBesluitTask",
+        "activityId": "GetBesluitUrlsTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
-        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
-        "pluginActionDefinitionKey": "patch-besluit",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "get-zaakbesluiten",
         "actionProperties": {
-            "besluitUrl": "pv:zaakbesluitUrl",
-            "beslisdatum": "pv:beslisdatum",
-            "vervaldatum": "pv:vervaldatum",
-            "vervalreden": "pv:vervalreden",
-            "toelichting": "pv:toelichting"
+            "resultProcessVariable": "zaakbesluiten"
         }
     },
     {
@@ -73,6 +63,26 @@
         "actionProperties": {
             "besluitUrl": "pv:zaakbesluitUrl",
             "resultProcessVariable": "besluit"
+        }
+    },
+    {
+        "activityId": "PatchBesluitUserTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "vastleggen-besluit.patch-besluit"
+    },
+    {
+        "activityId": "PatchBesluitTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "857d4312-c420-4a22-979b-625818d97ed5",
+        "pluginActionDefinitionKey": "patch-besluit",
+        "actionProperties": {
+            "besluitUrl": "pv:zaakbesluitUrl",
+            "beslisdatum": "pv:beslisdatum",
+            "vervaldatum": "pv:vervaldatum",
+            "vervalreden": "pv:vervalreden",
+            "toelichting": "pv:toelichting"
         }
     }
 ]
