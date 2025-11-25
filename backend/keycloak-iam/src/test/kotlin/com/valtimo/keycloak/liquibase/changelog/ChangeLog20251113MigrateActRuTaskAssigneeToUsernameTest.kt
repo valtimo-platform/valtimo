@@ -74,7 +74,7 @@ internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
         whenever(database.connection).thenReturn(connection)
         whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
             .thenReturn(resultSet)
-        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false)
         whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
         whenever(resultSet.getString("assignee_")).thenReturn("user@ritense.com")
         whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
@@ -86,12 +86,14 @@ internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
             SELECT EXISTS (
                 SELECT 1
                 FROM information_schema.tables
-                WHERE table_schema = 'null'
-                  AND table_name = 'act_ru_task'
+                WHERE table_schema = ?
+                  AND table_name = ?
             );
         """.trimIndent()
             ).executeQuery()
         ).thenReturn(resultSet)
+        whenever(connection.prepareStatement("SELECT EXISTS (SELECT 1 FROM act_ru_task LIMIT 1);").executeQuery())
+            .thenReturn(resultSet)
 
         changeLog.execute(database)
 
@@ -108,7 +110,7 @@ internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
         whenever(database.connection).thenReturn(connection)
         whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
             .thenReturn(resultSet)
-        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false)
         whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
         whenever(resultSet.getString("assignee_")).thenReturn("notfound@ritense.com")
         whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
@@ -120,12 +122,14 @@ internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
             SELECT EXISTS (
                 SELECT 1
                 FROM information_schema.tables
-                WHERE table_schema = 'null'
-                  AND table_name = 'act_ru_task'
+                WHERE table_schema = ?
+                  AND table_name = ?
             );
         """.trimIndent()
             ).executeQuery()
         ).thenReturn(resultSet)
+        whenever(connection.prepareStatement("SELECT EXISTS (SELECT 1 FROM act_ru_task LIMIT 1);").executeQuery())
+            .thenReturn(resultSet)
 
         changeLog.execute(database)
 
