@@ -49,12 +49,6 @@
         }
     },
     {
-        "activityId": "PrepareBesluitUrlTask",
-        "activityType": "bpmn:UserTask:create",
-        "processLinkType": "form",
-        "formDefinitionName": "vastleggen-besluit.prepare-besluit-url"
-    },
-    {
         "activityId": "GetBesluitByUrlTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",

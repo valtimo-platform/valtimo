@@ -40,12 +40,12 @@ export class GetBesluitConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<GetBesluitConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.valid.emit(false);
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
@@ -61,7 +61,7 @@ export class GetBesluitConfigurationComponent
     });
   }
 
-  formValueChange(formValue: GetBesluitConfig): void {
+  public formValueChange(formValue: GetBesluitConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
