@@ -93,7 +93,7 @@ export default async () => {
   );
 
   // Wait for app landing page after successful login
-  await page.waitForLoadState('networkidle');
+  // await page.waitForLoadState('networkidle');
   await setLanguage(page, 'en');
   const uiStatePath = 'playwright/.auth/uiState.json';
   writeFileSync(uiStatePath, JSON.stringify(await context.storageState(), null, 2));
