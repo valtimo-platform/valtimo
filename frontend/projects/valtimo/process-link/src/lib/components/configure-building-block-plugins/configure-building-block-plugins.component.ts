@@ -262,6 +262,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         buildingBlockDefinitionKey: key,
         buildingBlockDefinitionVersionTag: versionTag,
         pluginConfigurationMappings: this.getMappingsForPayload(),
+        inputMappings: [],
+        outputMappings: [],
       };
 
       if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
@@ -293,6 +295,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         buildingBlockDefinitionKey: key,
         buildingBlockDefinitionVersionTag: versionTag,
         pluginConfigurationMappings: this.getMappingsForPayload(),
+        inputMappings: [],
+        outputMappings: [],
       };
 
       if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {

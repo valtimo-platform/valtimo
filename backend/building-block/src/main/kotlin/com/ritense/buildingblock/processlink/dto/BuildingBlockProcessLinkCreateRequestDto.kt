@@ -29,7 +29,9 @@ data class BuildingBlockProcessLinkCreateRequestDto(
     override val activityType: ActivityTypeWithEventName,
     val buildingBlockDefinitionKey: String,
     val buildingBlockDefinitionVersionTag: String,
-    val pluginConfigurationMappings: Map<String, UUID>
+    val pluginConfigurationMappings: Map<String, UUID>,
+    val inputMappings: List<BuildingBlockInputMappingDto> = emptyList(),
+    val outputMappings: List<BuildingBlockOutputMappingDto> = emptyList()
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = BuildingBlockProcessLink.PROCESS_LINK_TYPE

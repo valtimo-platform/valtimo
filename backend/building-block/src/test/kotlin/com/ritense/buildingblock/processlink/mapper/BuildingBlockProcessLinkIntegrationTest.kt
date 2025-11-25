@@ -20,8 +20,15 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
+import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
+import com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateRequestDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkResponseDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkUpdateRequestDto
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -94,6 +101,119 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
         assertEquals(mapOf("zaken" to mappingId), result.pluginConfigurationMappings)
         assertEquals("bb", result.buildingBlockDefinitionId.key)
+    }
+
+    @Test
+    fun `should map input and output mappings through create and response`() {
+        val buildingBlockDefinitionId = buildingBlock.id
+        val mainProcessDefinitionId = "bb-process"
+        stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
+        doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
+
+        val inputMappings = listOf(
+            BuildingBlockInputMappingDto(source = "doc:firstName", target = "firstName"),
+            BuildingBlockInputMappingDto(source = "doc:Smith", target = "lastName")
+        )
+        val outputMappings = listOf(
+            BuildingBlockOutputMappingDto(
+                source = "result",
+                target = "doc:result",
+                syncTiming = BuildingBlockSyncTiming.END
+            )
+        )
+
+        val dto = BuildingBlockProcessLinkCreateRequestDto(
+            processDefinitionId = "case-process",
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = inputMappings,
+            outputMappings = outputMappings
+        )
+
+        val processLink = mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0")) as BuildingBlockProcessLink
+        assertEquals(
+            listOf(
+                BuildingBlockInputMapping(target = "firstName", source = "doc:firstName"),
+                BuildingBlockInputMapping(target = "lastName", source = "manual:Smith")
+            ),
+            processLink.inputMappings
+        )
+        assertEquals(
+            listOf(
+                BuildingBlockOutputMapping(
+                    source = "result",
+                    target = "doc:result",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            ),
+            processLink.outputMappings
+        )
+
+        val response = mapper.toProcessLinkResponseDto(processLink) as BuildingBlockProcessLinkResponseDto
+        val export = mapper.toProcessLinkExportResponseDto(processLink) as BuildingBlockProcessLinkExportResponseDto
+        assertEquals(inputMappings, response.inputMappings)
+        assertEquals(outputMappings, response.outputMappings)
+        assertEquals(outputMappings, export.outputMappings)
+    }
+
+    @Test
+    fun `should map input and output mappings through update`() {
+        val buildingBlockDefinitionId = buildingBlock.id
+        val mainProcessDefinitionId = "bb-process"
+        stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
+        doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
+
+        val existing = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(BuildingBlockInputMapping(source = "doc:firstName", target = "firstName")),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "result",
+                    target = "doc:result",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+
+        val dto = BuildingBlockProcessLinkUpdateRequestDto(
+            id = existing.id,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(BuildingBlockInputMappingDto(source = "doc:lastName", target = "lastName")),
+            outputMappings = listOf(
+                BuildingBlockOutputMappingDto(
+                    source = "result",
+                    target = "pv:result",
+                    syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                )
+            )
+        )
+
+        val updated = mapper.toUpdatedProcessLink(existing, dto, CaseDefinitionId("case", "1.0.0")) as BuildingBlockProcessLink
+
+        assertEquals(
+            listOf(BuildingBlockInputMapping(target = "lastName", source = "doc:lastName")),
+            updated.inputMappings
+        )
+        assertEquals(
+            listOf(
+                BuildingBlockOutputMapping(
+                    source = "result",
+                    target = "pv:result",
+                    syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                )
+            ),
+            updated.outputMappings
+        )
     }
 
     @Test
