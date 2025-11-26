@@ -55,7 +55,7 @@ import kotlin.random.Random
  *
  * The value of the requestedValue should be in the format doc:some.json.path
  */
-class DocumentJsonValueResolverFactory(
+class CaseDocumentJsonValueResolverFactory(
     private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
@@ -233,7 +233,7 @@ class DocumentJsonValueResolverFactory(
     }
 
     override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
-        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).orElseThrow()
+        val documentDefinition = documentDefinitionService.findBySolutionModuleId(caseDefinitionId).orElseThrow()
         val schemaAsNode = documentDefinition.schema
             .asJson() as ObjectNode
         return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")

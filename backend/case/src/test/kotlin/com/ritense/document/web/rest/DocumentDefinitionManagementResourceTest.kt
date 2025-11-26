@@ -80,7 +80,7 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
     @Test
     fun shouldReturnSingleDefinitionRecordByNameAndVersion() {
         val caseDefinitionId = definition.getId().caseDefinitionId()
-        whenever(documentDefinitionService.findByCaseDefinitionId(caseDefinitionId))
+        whenever(documentDefinitionService.findBySolutionModuleId(caseDefinitionId))
             .thenReturn(Optional.of(definition))
         mockMvc.perform(
             MockMvcRequestBuilders.get(
@@ -98,7 +98,7 @@ class DocumentDefinitionManagementResourceTest : BaseTest() {
     @Test
     fun shouldReturnNoDefinitionRecordByNameAndVersion() {
         val caseDefinitionId = definition.getId().caseDefinitionId()
-        whenever(documentDefinitionService.findByCaseDefinitionId(caseDefinitionId))
+        whenever(documentDefinitionService.findBySolutionModuleId(caseDefinitionId))
             .thenReturn(Optional.empty<JsonSchemaDocumentDefinition>())
         mockMvc.perform(
             MockMvcRequestBuilders.get(

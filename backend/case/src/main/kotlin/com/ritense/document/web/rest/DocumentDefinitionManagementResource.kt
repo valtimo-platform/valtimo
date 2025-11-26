@@ -48,7 +48,7 @@ class DocumentDefinitionManagementResource(
     ): ResponseEntity<out DocumentDefinition> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, versionTag)
         val documentDefinition = runWithoutAuthorization {
-            documentDefinitionService.findByCaseDefinitionId(caseDefinitionId)
+            documentDefinitionService.findBySolutionModuleId(caseDefinitionId)
         }
         return ResponseEntity.of(documentDefinition)
     }

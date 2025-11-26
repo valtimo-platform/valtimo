@@ -33,13 +33,13 @@ import java.util.function.Function
  *
  * The value of the requestedValue should be in the format case:assigneeFullName
  */
-class DocumentTableValueResolver(
+class BuildingBlockDocumentTableValueResolver(
     private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
-        return "case"
+        return "bb"
     }
 
     override fun createResolver(
@@ -79,17 +79,12 @@ class DocumentTableValueResolver(
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
             when (requestedValue) {
-                "assigneeFullName" -> document.assigneeFullName()
-                "assigneeId" -> document.assigneeId()
-                "createdBy" -> document.createdBy()
                 "createdOn" -> document.createdOn()
                 "documentDefinitionId" -> document.definitionId()
                 "documentDefinitionId.name" -> document.definitionId().name()
                 "definitionId.key" -> document.definitionId().caseDefinitionId().key
                 "definitionId.versionTag" -> document.definitionId().caseDefinitionId().versionTag.version
                 "id" -> document.id().id
-                "internalStatus" -> document.internalStatus()
-                "caseTags" -> document.caseTags()
                 "modifiedOn" -> document.modifiedOn().orElse(null)
                 "sequence" -> document.sequence()
                 "version" -> document.version()
@@ -100,17 +95,12 @@ class DocumentTableValueResolver(
 
     companion object {
         val TABLE_COLUMN_LIST = listOf(
-            "assigneeFullName",
-            "assigneeId",
-            "createdBy",
             "createdOn",
             "definitionId.name",
             "definitionId.version",
             "documentDefinitionId",
             "documentDefinitionId.name",
             "id",
-            "internalStatus",
-            "caseTags",
             "modifiedOn",
             "sequence",
             "version",
