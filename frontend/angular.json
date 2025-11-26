@@ -67,13 +67,13 @@
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
-              "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
               "dist/valtimo/components/assets/css/carbon.scss",
               "dist/valtimo/components/assets/css/color.scss",
               "dist/valtimo/components/assets/css/compatibility.scss",
               "dist/valtimo/components/assets/css/design-tokens.css",
-              "dist/valtimo/components/assets/css/formio-carbon.scss"
+              "dist/valtimo/components/assets/css/formio-carbon.scss",
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
