@@ -32,7 +32,7 @@
     overflow: hidden;
 
     &--compact {
-      gap: 0;
+      gap: 8px;
       border-left: 1px solid var(--cds-border-subtle-01);
       padding-left: 16px;
     }
@@ -59,8 +59,8 @@
 
   &__field {
     display: flex;
-    width: 100%;
     flex-direction: column;
+    width: 100%;
     gap: 8px;
 
     &--compact {
@@ -101,6 +101,11 @@
 }
 
 .widget-field__render {
+  &--compact > * {
+    padding-left: 16px;
+    border-left: 1px solid var(--cds-border-subtle-01);
+  }
+
   &-vertically,
   &-two-columns,
   &-three-columns {

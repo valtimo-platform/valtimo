@@ -833,6 +833,7 @@
         "style": "Choose widget style",
         "type": "Choose widget type",
         "width": "Choose widget width",
+        "density": "Choose widget density",
         "displayConditions": "Set display conditions"
       }
     },
@@ -867,6 +868,11 @@
       "description": "Select the desired style for the widget",
       "default": {"title": "Default", "description": "For regular content"},
       "highContrast": {"title": "High contrast", "description": "For higher priority content"}
+    },
+    "density": {
+      "description": "Select the desired density for the widget",
+      "default": {"title": "Default", "description": "For regular content"},
+      "compact": {"title": "Compact", "description": "For higher density data overview"}
     },
     "content": {
       "description": "Enter the content for each column. Keep in mind that not all fields are the same height. For the best result make sure items are properly distributed.",

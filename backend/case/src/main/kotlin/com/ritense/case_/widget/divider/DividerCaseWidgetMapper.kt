@@ -26,6 +26,7 @@ class DividerCaseWidgetMapper : CaseWidgetMapper<DividerCaseWidget, DividerCaseW
         icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
+        isCompact = entity.isCompact,
         displayConditions = entity.displayConditions,
     )
 
@@ -35,6 +36,7 @@ class DividerCaseWidgetMapper : CaseWidgetMapper<DividerCaseWidget, DividerCaseW
         icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
+        isCompact = dto.isCompact,
         displayConditions = dto.displayConditions,
         order = index
     )

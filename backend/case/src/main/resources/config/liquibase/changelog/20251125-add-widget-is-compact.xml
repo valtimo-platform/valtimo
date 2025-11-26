@@ -14,13 +14,19 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-management
-  [availableWidgetTypes]="AVAILABLE_WIDGET_TYPES"
-  [disableDuplicate]="true"
-  [enableWidgetDivider]="false"
-  [singleWidget]="true"
-  [disableJsonEditor]="true"
-  [defaultWidth]="4"
-  [widgetWizardSteps]="WIDGET_WIZARD_STEPS"
-  [isCompact]="true"
-></valtimo-widget-management>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="7" author="Ritense">
+        <addColumn tableName="case_widget_tab_widget">
+            <column name="isCompact" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
