@@ -17,16 +17,20 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.service.BuildingBlockInstanceService
+import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
+    private val buidingBlockInstanceService: BuildingBlockInstanceService,
 ) {
 
     @EventListener(
@@ -39,6 +43,21 @@ class BuildingBlockCallActivityListener(
         val links = processLinkService.getProcessLinks(execution.processDefinitionId, activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
 
-        //TODO: start building block instance here
+        val buildingBlockProcessLink = links.getOrNull(0)
+
+        // TODO: Add content here
+        buildingBlockProcessLink?.let {
+            buidingBlockInstanceService.create(
+                NewDocumentRequest(
+                    null,
+                    null,
+                    null,
+                    it.buildingBlockDefinitionId.key,
+                    it.buildingBlockDefinitionId.versionTag.toString(),
+                    null,
+                ),
+                UUID.fromString(execution.businessKey)
+            )
+        }
     }
 }

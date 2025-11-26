@@ -24,7 +24,9 @@ import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProce
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.service.DocumentService
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
@@ -35,6 +37,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
@@ -74,7 +77,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
-        BuildingBlockDefinitionArtworkRepository::class
+        BuildingBlockDefinitionArtworkRepository::class,
+        BuildingBlockInstanceRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
@@ -137,6 +141,20 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             buildingBlockDefinitionArtworkRepository,
             authroizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockInstanceService::class)
+    fun buildingBlockInstanceService(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        documentService: DocumentService
+    ): BuildingBlockInstanceService {
+        return BuildingBlockInstanceService(
+            buildingBlockInstanceRepository,
+            buildingBlockDefinitionRepository,
+            documentService
         )
     }
 
