@@ -20,20 +20,17 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule, ParagraphModule} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {CarbonListModule, PageTitleService} from '@valtimo/components';
 import {
-  ButtonModule,
+  ButtonModule as CarbonButtonModule,
   IconModule,
   IconService,
-  InputModule,
+  InputModule as CarbonInputModule,
   LayerModule,
   TabsModule,
 } from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
-import {IkoListComponent} from '../iko-list/iko-list.component';
 import {validateBsn} from '@valtimo/shared';
 
 @Component({
@@ -44,12 +41,12 @@ import {validateBsn} from '@valtimo/shared';
   imports: [
     CommonModule,
     InputModule,
-    ButtonModule,
+    CarbonButtonModule,
+    CarbonInputModule,
     IconModule,
     FormsModule,
     ReactiveFormsModule,
     TranslateModule,
-    IkoListComponent,
     CarbonListModule,
     TabsModule,
     LayerModule,

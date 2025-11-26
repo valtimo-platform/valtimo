@@ -46,7 +46,6 @@ import {
 } from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchFieldModalComponent} from './search-field-modal/search-field-modal.component';
-import {IkoManagementSearchActionModalComponent} from '../search-actions/search-action-modal/search-action-modal.component';
 import {ModalMode} from '@valtimo/shared';
 
 @Component({

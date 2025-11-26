@@ -61,13 +61,11 @@ import {
   of,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 import {
   IkoSearchField,
   SearchDropdownDataProvider,
   SearchDropdownValue,
-  SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
