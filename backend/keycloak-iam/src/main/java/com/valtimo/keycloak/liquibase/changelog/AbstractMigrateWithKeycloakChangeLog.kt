@@ -18,10 +18,8 @@ package com.valtimo.keycloak.liquibase.changelog
 
 import com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT
 import com.ritense.valtimo.contract.annotation.AllOpen
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.ws.rs.NotFoundException
-import java.nio.ByteBuffer
-import java.sql.ResultSet
-import java.util.UUID
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl
@@ -37,13 +35,17 @@ import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.Environment
 import org.springframework.util.ConcurrentLruCache
+import java.nio.ByteBuffer
+import java.sql.ResultSet
+import java.util.UUID
 
 @AllOpen
 abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
 
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
         Companion.environment = environment
-        Companion.userCache = ConcurrentLruCache<String?, AbstractUserRepresentation?>(DEFAULT_BUFFER_SIZE, ::getKeycloakUserFromKeycloak)
+        Companion.userCache =
+            ConcurrentLruCache<String?, AbstractUserRepresentation?>(DEFAULT_BUFFER_SIZE, ::getKeycloakUserFromKeycloak)
     }
 
     protected fun checkTableExists(connection: JdbcConnection, tableName: String): Boolean {
@@ -125,11 +127,15 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
 
         keycloak().use { keycloak ->
             val keycloakRealmUsers = keycloak.realm(properties.realm).users()
-            if (EmailValidationUtil.isValidEmail(emailOrUsernameOrUserId)) {
-                return keycloakRealmUsers
-                    .searchByEmail(emailOrUsernameOrUserId, true)
-                    .maxByOrNull { it.isEnabled || it.isEmailVerified }
-                    ?: throw KeycloakUserNotFoundException()
+            try {
+                if (EmailValidationUtil.isValidEmail(emailOrUsernameOrUserId)) {
+                    return keycloakRealmUsers
+                        .searchByEmail(emailOrUsernameOrUserId, true)
+                        .maxByOrNull { it.isEnabled || it.isEmailVerified }
+                        ?: throw KeycloakUserNotFoundException()
+                }
+            } catch (_: KeycloakUserNotFoundException) {
+                logger.debug { "Unable to find user with email $emailOrUsernameOrUserId, trying username instead." }
             }
 
             return keycloakRealmUsers
@@ -138,6 +144,7 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
                 ?: try {
                     keycloakRealmUsers[emailOrUsernameOrUserId].toRepresentation()
                 } catch (_: NotFoundException) {
+                    logger.info { "Unable to find user with username $emailOrUsernameOrUserId. Check if this user still exists. " }
                     throw KeycloakUserNotFoundException()
                 }
         }
@@ -215,5 +222,6 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
         protected lateinit var environment: Environment
 
         protected lateinit var userCache: ConcurrentLruCache<String?, AbstractUserRepresentation?>
+        private val logger = KotlinLogging.logger {}
     }
 }
