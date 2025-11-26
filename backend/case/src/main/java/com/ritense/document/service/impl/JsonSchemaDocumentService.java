@@ -261,7 +261,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             "documentDefinitionName", newDocumentRequest.documentDefinitionName(), () -> {
                 final JsonSchemaDocumentDefinition definition = runWithoutAuthorization(
                     () -> documentDefinitionService
-                        .findByCaseDefinitionId(CaseDefinitionId.of(
+                        .findBySolutionModuleId(CaseDefinitionId.of(
                             newDocumentRequest.caseDefinitionKey(),
                             newDocumentRequest.caseDefinitionVersionTag()
                         ))

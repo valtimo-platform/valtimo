@@ -18,10 +18,12 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.buildingblock.domain.impl.BuildingBlockJsonSchemaDocumentDefinitionId
-import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
-import com.ritense.document.domain.impl.BuildingBlockJsonSchemaDocumentDefinition
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -33,12 +35,14 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import kotlin.jvm.optionals.getOrElse
 
 @RestController
 @SkipComponentScan
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockDocumentDefinitionResource(
-    private val repository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+    private val repository: JsonSchemaDocumentDefinitionRepository,
+    private val service: JsonSchemaDocumentDefinitionService,
     private val mapper: ObjectMapper
 ) {
 
@@ -48,8 +52,11 @@ class BuildingBlockDocumentDefinitionResource(
         @PathVariable versionTag: String
     ): ResponseEntity<JsonNode> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
-        val definition = repository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
+        val definition = runWithoutAuthorization {
+            service
+                .findBySolutionModuleId(buildingBlockId)
+        }
+            .getOrElse { return ResponseEntity.notFound().build() }
         return ResponseEntity.ok(definition.schema())
     }
 
@@ -61,12 +68,12 @@ class BuildingBlockDocumentDefinitionResource(
         @RequestBody schemaJson: JsonNode
     ): ResponseEntity<JsonNode> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
 
         val schemaString: String = mapper.writeValueAsString(schemaJson)
         val newSchema = JsonSchema.fromString(schemaString)
 
-        val updated = BuildingBlockJsonSchemaDocumentDefinition(id, newSchema)
+        val updated = JsonSchemaDocumentDefinition(id, newSchema)
         val saved = repository.save(updated)
 
         return ResponseEntity.ok(saved.schema())

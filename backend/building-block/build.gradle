@@ -95,7 +95,6 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':core')
     testImplementation project(':test-utils-common')
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

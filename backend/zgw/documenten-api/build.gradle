@@ -58,6 +58,7 @@ dependencies {
     testImplementation project(':case')
     testImplementation project(':resource')
     testImplementation project(':test-utils-common')
+    testImplementation(project(':building-block'))
 
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"
