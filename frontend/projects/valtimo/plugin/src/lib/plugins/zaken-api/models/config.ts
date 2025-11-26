@@ -32,6 +32,8 @@ interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
   inputTypeZaakStatusToggle?: InputOption;
+  inputDatumStatusGezetToggle?: InputOption;
+  datumStatusGezet?: string;
 }
 
 interface CreateZaakResultaatConfig {

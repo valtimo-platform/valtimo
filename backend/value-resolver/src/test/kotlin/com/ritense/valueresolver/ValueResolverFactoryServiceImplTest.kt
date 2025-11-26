@@ -145,4 +145,23 @@ internal class ValueResolverFactoryServiceImplTest {
             "active" to true,
         ))
     }
+
+    @Test
+    fun `Should not treat date-time value as prefixed value`() {
+        val dateTimeValue = "2024-11-18T10:15:30"
+
+        val resolvedValues = resolverService.resolveValues(
+            processInstanceId = UUID.randomUUID().toString(),
+            variableScope = mockTaskWithVariables(emptyMap()),
+            listOf(
+                dateTimeValue
+            )
+        )
+
+        assertThat(resolvedValues).containsExactlyEntriesOf(
+            mapOf(
+                dateTimeValue to dateTimeValue
+            )
+        )
+    }
 }

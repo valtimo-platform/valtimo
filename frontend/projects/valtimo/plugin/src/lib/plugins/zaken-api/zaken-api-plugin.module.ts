@@ -37,10 +37,10 @@ import {CreateZaakConfigurationComponent} from './components/create-zaak/create-
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {
   ButtonModule,
-  DatePickerInputModule,
+  DatePickerInputModule, DatePickerModule,
   DialogModule,
   IconModule,
-  LoadingModule,
+  LoadingModule, TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
@@ -88,6 +88,8 @@ import {TranslateModule} from '@ngx-translate/core';
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    DatePickerModule,
+    TimePickerModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
