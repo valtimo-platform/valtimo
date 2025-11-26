@@ -23,6 +23,19 @@
     width: 100%;
   }
 
+  &--compact {
+    .cds--label {
+      margin: 0;
+    }
+
+    .valtimo-widget-collection__label .cds--text-input-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 32px;
+    }
+  }
+
   &__header {
     display: flex;
     align-items: center;
@@ -64,22 +77,43 @@
     width: 100%;
     gap: 16px;
 
+    &-title {
+      color: var(--cds-text-primary);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 22px;
+      font-style: italic;
+      width: 100%;
+    }
+
+    &-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      &--compact {
+        padding-left: 16px;
+        gap: 12px;
+        border-left: 1px solid var(--cds-border-subtle-01);
+      }
+    }
+
+    &-input {
+      background: transparent;
+
+      &--compact {
+        border: none;
+      }
+    }
+
+    &--compact {
+      gap: 12px;
+    }
+
     &--hidden {
       visibility: hidden;
     }
-  }
-
-  &__card-title {
-    color: var(--cds-text-primary);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 22px;
-    font-style: italic;
-    width: 100%;
-  }
-
-  &__card-input {
-    background: transparent;
   }
 
   &__full-width-input {

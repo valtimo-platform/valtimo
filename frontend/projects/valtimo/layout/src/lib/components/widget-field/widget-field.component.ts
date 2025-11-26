@@ -79,8 +79,6 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
 
-  @Input() public compact = false;
-
   @Output() public readonly noVisibleFieldsEvent = new EventEmitter<boolean>();
 
   public readonly renderVertically = signal(0);
