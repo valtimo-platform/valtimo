@@ -48,6 +48,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
 
     testImplementation project(":contract")
+    testImplementation(project(':building-block'))
     testImplementation project(":test-utils-common")
     testImplementation project(":resource")
     testImplementation project(":zgw:catalogi-api")

@@ -53,6 +53,7 @@ dependencies {
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     testImplementation project(":form")
+    testImplementation(project(':building-block'))
     testImplementation project(":process-document")
     testImplementation project(":plugin-valtimo")
     testImplementation project(":resource")

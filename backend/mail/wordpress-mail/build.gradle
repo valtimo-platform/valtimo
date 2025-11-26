@@ -62,6 +62,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
     testImplementation project(":core")
+    testImplementation(project(':building-block'))
     testImplementation project(":mail")
     testImplementation project(":test-utils-common")
     testImplementation project(":resource:local-resource")

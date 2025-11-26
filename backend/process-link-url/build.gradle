@@ -54,6 +54,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
 
     testImplementation project(":test-utils-common")
+    testImplementation(project(':building-block'))
 
     jar {
         enabled = true

@@ -44,3 +44,5 @@ spring-actuator:
 valtimo:
     wordpressmail:
         url: https://example.com/
+    plugin:
+        encryption-secret: "abcdefghijklmnop"

@@ -138,7 +138,7 @@ public class SearchFieldService {
         searchFields.forEach(searchField -> {
             assert searchField.getId() != null;
             Optional<? extends DocumentDefinition> optionalDocumentDefinition =
-                documentDefinitionService.findByCaseDefinitionId(caseDefinitionId);
+                documentDefinitionService.findBySolutionModuleId(caseDefinitionId);
             documentDefinitionService.validateJsonPath(
                 optionalDocumentDefinition.get().id().name(),
                 searchField.getPath()
