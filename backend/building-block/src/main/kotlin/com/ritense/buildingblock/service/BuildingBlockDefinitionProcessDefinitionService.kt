@@ -242,6 +242,31 @@ class BuildingBlockDefinitionProcessDefinitionService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getMainProcessDefinitionKey(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String
+    ): String? {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        val links = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+
+        val mainLink = links.firstOrNull { it.main } ?: return null
+
+        val processDefinition = repositoryService.createProcessDefinitionQuery()
+            .processDefinitionId(mainLink.id.processDefinitionId.id)
+            .singleResult()
+            ?: return null
+
+        return processDefinition.key
+    }
+
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         currentProcessDefinitionId: String
