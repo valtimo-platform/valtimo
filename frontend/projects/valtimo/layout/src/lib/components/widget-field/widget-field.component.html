@@ -50,6 +50,8 @@
   } @else {
     <div
       #widgetField
+      class="widget-field__render"
+      [class.widget-field__render--compact]="obs.widgetConfiguration.isCompact"
       [ngClass]="{
         'widget-field__render-vertically': renderVertically() === 1,
         'widget-field__render-two-columns': renderVertically() === 2,
@@ -65,7 +67,10 @@
         ></valtimo-no-results>
       } @else {
         @for (column of obs?.widgetPropertyValue; track column.key) {
-          <div class="widget-field__column" [ngClass]="{'widget-field__column--compact': compact}">
+          <div
+            class="widget-field__column"
+            [class.widget-field__column--compact]="obs.widgetConfiguration.isCompact"
+          >
             @for (property of column; track property) {
               <div
                 *ngIf="
@@ -75,12 +80,12 @@
                   !property?.hideWhenEmpty
                 "
                 class="widget-field__field"
-                [ngClass]="{'widget-field__field--compact': compact}"
+                [class.widget-field__field--compact]="obs.widgetConfiguration.isCompact"
               >
                 <label
                   class="widget-field__field-label"
-                  [ngClass]="{'widget-field__field-label--compact': compact}"
                   [attr.title]="property?.title"
+                  [class.widget-field__field-label--compact]="obs.widgetConfiguration.isCompact"
                 >
                   {{ property?.title }}</label
                 >
@@ -88,7 +93,7 @@
                 <div
                   [attr.title]="property?.value"
                   class="widget-field__field-value"
-                  [ngClass]="{'widget-field__field-value--compact': compact}"
+                  [class.widget-field__field-value--compact]="obs.widgetConfiguration.isCompact"
                 >
                   @if (property?.isRawValue) {
                     <div [innerHTML]="property?.value"></div>

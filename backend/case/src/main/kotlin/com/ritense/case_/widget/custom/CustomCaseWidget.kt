@@ -37,6 +37,7 @@ class CustomCaseWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -44,7 +45,7 @@ class CustomCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: CustomWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, icon,order, width, highContrast, actions, displayConditions
+    id, title, icon,order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = CustomCaseWidget(
         id = id,
@@ -53,6 +54,7 @@ class CustomCaseWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties

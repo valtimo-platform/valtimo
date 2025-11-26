@@ -25,7 +25,6 @@ import {
   OnDestroy,
   Output,
   Signal,
-  signal,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
@@ -114,19 +113,44 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   public readonly steps$: Observable<Step[]> = combineLatest([
     toObservable(this.widgetWizardService.$widgetWizardSteps),
     toObservable(this.widgetWizardService.$widgetWizardStepProperties),
+    toObservable(this.widgetWizardService.$widgetWizardStepEnableCondition),
     this.secondaryLabels$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([steps, stepProperties, secondaryLabels]) =>
-      steps.map((step: WidgetWizardStep) => ({
-        label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
-        ...(!!secondaryLabels[step] && {
-          secondaryLabel: this.translateService.instant(secondaryLabels[step]),
-        }),
-        disabled: stepProperties[step]?.disabled,
-        complete: stepProperties[step]?.complete,
-      }))
-    )
+    map(([steps, stepProperties, stepEnableConditions, secondaryLabels]) => {
+      return steps.reduce<Step[] & {__blocked?: boolean}>(
+        (acc, step) => {
+          if (acc.__blocked) return acc;
+
+          const enableMeta = stepEnableConditions[step];
+
+          if (enableMeta) {
+            const {dependingStep, condition} = enableMeta;
+            const dependingComplete = !!stepProperties[dependingStep]?.complete;
+
+            if (!dependingComplete) {
+              acc.push({label: '', disabled: true, complete: false});
+              acc.__blocked = true;
+              return acc;
+            }
+            if (!condition()) return acc;
+          }
+
+          const stepConfig: Step = {
+            label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
+            disabled: stepProperties[step]?.disabled,
+            complete: stepProperties[step]?.complete,
+            ...(!!secondaryLabels[step] && {
+              secondaryLabel: this.translateService.instant(secondaryLabels[step]),
+            }),
+          };
+
+          acc.push(stepConfig);
+          return acc;
+        },
+        [] as Step[] & {__blocked?: boolean}
+      );
+    })
   );
 
   public readonly $currentStepIndex = this.widgetWizardService.$currentStepIndex;

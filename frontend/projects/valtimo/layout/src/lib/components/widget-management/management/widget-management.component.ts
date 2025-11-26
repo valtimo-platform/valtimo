@@ -31,6 +31,7 @@ import {
 } from '../../../models';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {WidgetWizardService} from '../../../services';
+import {WidgetDensity} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-widget-management',
@@ -57,6 +58,11 @@ export class WidgetManagementComponent {
   @Input() public singleWidget = false;
   @Input() public disableJsonEditor = false;
   @Input() public defaultWidth!: WidgetWidth;
+  @Input() public set isCompact(value: boolean) {
+    this.widgetWizardService.$widgetDensity.set(
+      value ? WidgetDensity.COMPACT : WidgetDensity.DEFAULT
+    );
+  }
 
   @Input() public set widgetWizardSteps(value: WidgetWizardStep[]) {
     if (!value?.length) return;

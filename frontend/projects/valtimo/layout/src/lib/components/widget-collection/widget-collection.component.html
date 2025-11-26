@@ -53,33 +53,49 @@
       <div
         *ngIf="!obs.noVisibleFields"
         class="valtimo-widget-collection__card"
-        [ngClass]="{'valtimo-widget-collection__card--hidden': card.hidden}"
+        [ngClass]="{
+          'valtimo-widget-collection__card--hidden': card.hidden,
+          'valtimo-widget-collection__card--compact': obs.widgetConfiguration.isCompact,
+        }"
       >
         <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
 
-        @for (field of card.fields; track field.key) {
-          <div
-            *ngIf="
-              (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
-              !field?.hideWhenEmpty
-            "
-            [ngClass]="{
-              'valtimo-widget-collection__full-width-input': field?.width === 'full',
-              'valtimo-widget-collection__half-width-input': field?.width === 'half',
-            }"
-          >
-            <cds-label class="valtimo-widget-collection__label" [attr.title]="field?.title">
-              {{ field?.title }}
+        <section
+          class="valtimo-widget-collection__card-content"
+          [class.valtimo-widget-collection__card-content--compact]="
+            obs.widgetConfiguration.isCompact
+          "
+        >
+          @for (field of card.fields; track field.key) {
+            <div
+              *ngIf="
+                (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
+                !field?.hideWhenEmpty
+              "
+              [ngClass]="{
+                'valtimo-widget-collection__full-width-input': field?.width === 'full',
+                'valtimo-widget-collection__half-width-input': field?.width === 'half',
+              }"
+            >
+              <cds-label
+                class="valtimo-widget-collection__label"
+                [attr.title]="field?.value ?? field?.title"
+              >
+                {{ field?.title }}
 
-              <input
-                [value]="field?.value"
-                [readonly]="true"
-                class="valtimo-widget-collection__card-input"
-                cdsText
-              />
-            </cds-label>
-          </div>
-        }
+                <input
+                  [value]="field?.value"
+                  [readonly]="true"
+                  class="valtimo-widget-collection__card-input"
+                  [class.valtimo-widget-collection__card-input--compact]="
+                    obs.widgetConfiguration.isCompact
+                  "
+                  cdsText
+                />
+              </cds-label>
+            </div>
+          }
+        </section>
       </div>
     }
   </div>
