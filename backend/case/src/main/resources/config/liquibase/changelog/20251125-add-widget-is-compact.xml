@@ -23,7 +23,7 @@
 
     <changeSet id="7" author="Ritense">
         <addColumn tableName="case_widget_tab_widget">
-            <column name="isCompact" type="BOOLEAN">
+            <column name="is_compact" type="BOOLEAN">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
