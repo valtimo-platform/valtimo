@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
+import {map, Observable, take} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
-import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
-import {map, Observable, take} from 'rxjs';
 import {
   BasicWidget,
-  WidgetDensity,
   WidgetManagementTab,
   WidgetType,
   WidgetWidth,
   WidgetWizardStep,
 } from '../../../models';
-import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {WidgetWizardService} from '../../../services';
+import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
 
 @Component({
   selector: 'valtimo-widget-management',
@@ -58,11 +56,6 @@ export class WidgetManagementComponent {
   @Input() public singleWidget = false;
   @Input() public disableJsonEditor = false;
   @Input() public defaultWidth!: WidgetWidth;
-  // @Input() public set isCompact(value: boolean) {
-  //   this.widgetWizardService.$widgetDensity.set(
-  //     value ? WidgetDensity.COMPACT : WidgetDensity.DEFAULT
-  //   );
-  // }
 
   @Input() public set widgetWizardSteps(value: WidgetWizardStep[]) {
     if (!value?.length) return;
@@ -89,7 +82,6 @@ export class WidgetManagementComponent {
   ) {}
 
   public onSaveEvent(widgets: BasicWidget[]): void {
-    console.log({widgets});
     this.widgetManagementService.updateWidgetConfiguration(widgets).pipe(take(1)).subscribe();
   }
 
