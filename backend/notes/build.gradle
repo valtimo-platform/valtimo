@@ -49,6 +49,7 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
     testImplementation project(":core")
+    testImplementation(project(':building-block'))
     testImplementation project(":resource:local-resource")
     testImplementation project(":test-utils-common")
 

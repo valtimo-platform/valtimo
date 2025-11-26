@@ -71,6 +71,7 @@ dependencies {
     testImplementation project(':resource')
     testImplementation project(':process-document')
     testImplementation project(':test-utils-common')
+    testImplementation(project(':building-block'))
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

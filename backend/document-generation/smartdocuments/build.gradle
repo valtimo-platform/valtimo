@@ -80,6 +80,7 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation project(':test-utils-common')
     testImplementation project(':plugin-valtimo')
+    testImplementation(project(':building-block'))
 }
 
 apply from: "gradle/publishing.gradle"
