@@ -144,8 +144,14 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
   [WidgetStyle.HIGH_CONTRAST]: 'widgetTabManagement.style.highContrast.title',
 };
 
+const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
+  [WidgetDensity.DEFAULT]: 'widgetTabManagement.density.default.title',
+  [WidgetDensity.COMPACT]: 'widgetTabManagement.density.compact.title',
+};
+
 export {
   AVAILABLE_WIDGETS,
+  WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetDensity,

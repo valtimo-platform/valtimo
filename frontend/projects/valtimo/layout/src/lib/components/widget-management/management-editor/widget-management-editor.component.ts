@@ -37,6 +37,7 @@ import {
   AVAILABLE_WIDGETS,
   BasicWidget,
   Widget,
+  WidgetDensity,
   WidgetStyle,
   WidgetType,
   WidgetTypeTags,
@@ -233,6 +234,9 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     );
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === widget.type) ?? null
+    );
+    this.widgetWizardService.$widgetDensity.set(
+      !!widget.isCompact ? WidgetDensity.COMPACT : WidgetDensity.DEFAULT
     );
     this.widgetWizardService.$widgetContent.set(widget.properties ?? null);
     this.widgetWizardService.$widgetDisplayConditions.set(widget.displayConditions);

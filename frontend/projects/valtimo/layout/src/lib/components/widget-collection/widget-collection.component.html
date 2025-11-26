@@ -55,16 +55,12 @@
         class="valtimo-widget-collection__card"
         [ngClass]="{
           'valtimo-widget-collection__card--hidden': card.hidden,
-          'valtimo-widget-collection__card--compact': obs.widgetConfiguration.isCompact,
         }"
       >
         <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
 
         <section
           class="valtimo-widget-collection__card-content"
-          [class.valtimo-widget-collection__card-content--compact]="
-            obs.widgetConfiguration.isCompact
-          "
         >
           @for (field of card.fields; track field.key) {
             <div
@@ -87,9 +83,6 @@
                   [value]="field?.value"
                   [readonly]="true"
                   class="valtimo-widget-collection__card-input"
-                  [class.valtimo-widget-collection__card-input--compact]="
-                    obs.widgetConfiguration.isCompact
-                  "
                   cdsText
                 />
               </cds-label>

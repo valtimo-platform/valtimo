@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-.widget-field {
+.valtimo-widget-field {
   padding: 24px;
 
   &__header {
@@ -30,12 +30,6 @@
     gap: 16px;
     width: 100%;
     overflow: hidden;
-
-    &--compact {
-      gap: 8px;
-      border-left: 1px solid var(--cds-border-subtle-01);
-      padding-left: 16px;
-    }
   }
 
   &__title {
@@ -63,20 +57,9 @@
     width: 100%;
     gap: 8px;
 
-    &--compact {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-
     &-label {
       font-size: 12px;
       color: var(--cds-text-secondary);
-
-      &--compact {
-        margin: auto 0 !important;
-        display: flex;
-        height: min-content;
-      }
     }
 
     &-value {
@@ -84,11 +67,6 @@
       padding: 8px 16px;
       border-bottom: 1px solid var(--cds-border-subtle-01);
       font-size: 14px;
-
-      &--compact {
-        padding: 0;
-        border: none;
-      }
     }
   }
 
@@ -98,31 +76,57 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
 
-.widget-field__render {
-  &--compact > * {
-    padding-left: 16px;
-    border-left: 1px solid var(--cds-border-subtle-01);
+  &__render {
+    &-vertically,
+    &-two-columns,
+    &-three-columns {
+      display: grid;
+      align-items: stretch;
+      gap: 24px;
+    }
+
+    &-vertically {
+      grid-template-columns: repeat(1, 1fr);
+    }
+
+    &-two-columns {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &-three-columns {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
-  &-vertically,
-  &-two-columns,
-  &-three-columns {
-    display: grid;
-    align-items: stretch;
-    gap: 24px;
-  }
+  &--compact {
+    .valtimo-widget-field {
+      &__column {
+        gap: 8px;
+        border-left: 1px solid var(--cds-border-subtle-01);
+        padding-left: 16px;
+      }
 
-  &-vertically {
-    grid-template-columns: repeat(1, 1fr);
-  }
+      &__field {
+        flex-direction: row;
+        justify-content: space-between;
 
-  &-two-columns {
-    grid-template-columns: repeat(2, 1fr);
-  }
+        &-value {
+          padding: 0;
+          border: none;
+        }
+      }
 
-  &-three-columns {
-    grid-template-columns: repeat(3, 1fr);
+      &-label {
+        margin: auto 0 !important;
+        display: flex;
+        height: min-content;
+      }
+
+      &__render > * {
+        padding-left: 16px;
+        border-left: 1px solid var(--cds-border-subtle-01);
+      }
+    }
   }
 }

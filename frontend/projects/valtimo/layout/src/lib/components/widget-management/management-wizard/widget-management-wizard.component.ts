@@ -41,6 +41,7 @@ import {
 } from 'carbon-components-angular';
 import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
 import {
+  WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
@@ -96,16 +97,16 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     toObservable(this.widgetWizardService.$selectedWidget),
     toObservable(this.widgetWizardService.$widgetWidth),
     toObservable(this.widgetWizardService.$widgetStyle),
+    toObservable(this.widgetWizardService.$widgetDensity),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedStyle]) => {
+    map(([selectedWidget, selectedWidth, selectedStyle, selectedDensity]) => {
       const type = selectedWidget?.type ?? '';
-      const width = selectedWidth ?? '';
-      const style = selectedStyle ?? '';
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
-        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[width] ?? '',
-        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[style] ?? '',
+        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
+        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle ?? ''] ?? '',
+        [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
       };
     })
   );

@@ -62,13 +62,14 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
-  @HostBinding('class') public readonly class = 'widget-field';
+  @HostBinding('class') public hostClasses = 'valtimo-widget-field';
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
 
   @Input() public set widgetConfiguration(value: FieldsWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.hostClasses = `valtimo-widget-field ${value.isCompact ? 'valtimo-widget-field--compact' : ''}`;
   }
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
