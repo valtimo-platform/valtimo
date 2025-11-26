@@ -16,6 +16,8 @@
 
 package com.valtimo.keycloak.liquibase.changelog
 
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import okhttp3.mockwebserver.Dispatcher
@@ -31,14 +33,12 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.mock.env.MockEnvironment
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
-internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
+internal class ChangeLog20251113MigrateActRuTaskAssigneeToUsernameTest {
 
     lateinit var server: MockWebServer
 
-    lateinit var changeLog: ChangeLog20250506MigrateToKeycloakUsername
+    lateinit var changeLog: ChangeLog20251113MigrateActRuTaskAssigneeToUsername
     lateinit var environment: MockEnvironment
 
 
@@ -55,9 +55,9 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             this.setProperty("keycloak.credentials.secret", "example-secret")
         }
 
-        ChangeLog20250506MigrateToKeycloakUsername().postProcessEnvironment(environment, mock())
+        ChangeLog20251113MigrateActRuTaskAssigneeToUsername().postProcessEnvironment(environment, mock())
 
-        changeLog = ChangeLog20250506MigrateToKeycloakUsername()
+        changeLog = ChangeLog20251113MigrateActRuTaskAssigneeToUsername()
     }
 
     @AfterEach
@@ -74,7 +74,7 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
         whenever(database.connection).thenReturn(connection)
         whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
             .thenReturn(resultSet)
-        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false)
         whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
         whenever(resultSet.getString("assignee_")).thenReturn("user@ritense.com")
         whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
@@ -86,12 +86,14 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             SELECT EXISTS (
                 SELECT 1
                 FROM information_schema.tables
-                WHERE table_schema = 'null'
-                  AND table_name = 'act_ru_task'
+                WHERE table_schema = ?
+                  AND table_name = ?
             );
         """.trimIndent()
             ).executeQuery()
         ).thenReturn(resultSet)
+        whenever(connection.prepareStatement("SELECT EXISTS (SELECT 1 FROM act_ru_task LIMIT 1);").executeQuery())
+            .thenReturn(resultSet)
 
         changeLog.execute(database)
 
@@ -108,7 +110,7 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
         whenever(database.connection).thenReturn(connection)
         whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
             .thenReturn(resultSet)
-        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false)
         whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
         whenever(resultSet.getString("assignee_")).thenReturn("notfound@ritense.com")
         whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
@@ -120,12 +122,14 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             SELECT EXISTS (
                 SELECT 1
                 FROM information_schema.tables
-                WHERE table_schema = 'null'
-                  AND table_name = 'act_ru_task'
+                WHERE table_schema = ?
+                  AND table_name = ?
             );
         """.trimIndent()
             ).executeQuery()
         ).thenReturn(resultSet)
+        whenever(connection.prepareStatement("SELECT EXISTS (SELECT 1 FROM act_ru_task LIMIT 1);").executeQuery())
+            .thenReturn(resultSet)
 
         changeLog.execute(database)
 
@@ -158,6 +162,7 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
                     "POST /realms/example-realm/protocol/openid-connect/token HTTP/1.1" -> handleTokenRequest()
                     "GET /admin/realms/example-realm/users?email=user%40ritense.com&exact=true HTTP/1.1" -> handleUserSearchRequest()
                     "GET /admin/realms/example-realm/users?email=notfound%40ritense.com&exact=true HTTP/1.1" -> handleUserSearchRequestEmpty()
+                    "GET /admin/realms/example-realm/users?username=notfound%40ritense.com&exact=true HTTP/1.1" -> handleUserSearchRequestEmpty()
                     "GET /admin/serverinfo HTTP/1.1" -> mockResponse(readFileAsString("/data/get-server-info.json"))
                     else -> MockResponse().setResponseCode(404)
                 }
@@ -203,6 +208,7 @@ internal class ChangeLog20250506MigrateToKeycloakUsernameTest {
             .addHeader("Content-Type", "application/json")
             .setBody(body)
     }
+
     fun readFileAsString(fileName: String): String = this::class.java.getResource(fileName).readText(Charsets.UTF_8)
 
 }
