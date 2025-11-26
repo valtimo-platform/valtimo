@@ -126,4 +126,19 @@ class BuildingBlockProcessResource(
         }
         return ResponseEntity.ok(pluginKeys.toList().sorted())
     }
+
+    @GetMapping("/{key}/version/{versionTag}/process-definition/main/key")
+    fun getMainProcessDefinitionKeyForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String
+    ): ResponseEntity<String> {
+        val mainKey = runWithoutAuthorization {
+            buildingBlockDefinitionProcessDefinitionService.getMainProcessDefinitionKey(
+                key,
+                versionTag
+            )
+        }
+
+        return mainKey?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
+    }
 }

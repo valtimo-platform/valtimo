@@ -48,6 +48,8 @@ import {
 } from '@valtimo/shared';
 import {ProcessService} from '@valtimo/process';
 import {
+  BuildingBlockProcessLinkCreateDto,
+  ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
   ProcessLinkEditMode,
@@ -107,6 +109,7 @@ import {ProcessManagementEditorService, ProcessManagementService} from '../../se
 import {getContextObservable} from '../../utils';
 import {ValtimoPropertiesProviderModule} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
+import {is} from 'bpmn-js/lib/util/ModelUtil';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -281,7 +284,8 @@ export class ProcessManagementBuilderComponent
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly editPermissionsService: EditPermissionsService,
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {
     super();
     this.setProcessManagementWindow();
@@ -652,6 +656,20 @@ export class ProcessManagementBuilderComponent
         this.processManagementEditorService.createProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        const buildingBlockProcessLinkCreateDto = event as BuildingBlockProcessLinkCreateDto;
+
+        if (
+          buildingBlockProcessLinkCreateDto.buildingBlockDefinitionKey &&
+          buildingBlockProcessLinkCreateDto.buildingBlockDefinitionVersionTag
+        ) {
+          this.setCalledElementForBuildingBlockProcessLink(
+            buildingBlockProcessLinkCreateDto.activityId,
+            buildingBlockProcessLinkCreateDto.processDefinitionId,
+            buildingBlockProcessLinkCreateDto.buildingBlockDefinitionKey,
+            buildingBlockProcessLinkCreateDto.buildingBlockDefinitionVersionTag
+          );
+        }
       })
     );
   }
@@ -875,5 +893,42 @@ export class ProcessManagementBuilderComponent
         })
       )
       .subscribe();
+  }
+
+  private setCalledElementForBuildingBlockProcessLink(
+    activityId: string,
+    calledElementKey: string,
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string
+  ): void {
+    if (!this._bpmnModeler) {
+      return;
+    }
+
+    const elementRegistry = this._bpmnModeler.get('elementRegistry') as any;
+    const modeling = this._bpmnModeler.get('modeling') as any;
+
+    const element = elementRegistry.get(activityId);
+
+    if (!element || !is(element, 'bpmn:CallActivity')) {
+      return;
+    }
+
+    this.processLinkBuildingBlockApiService
+      .getMainProcessDefinitionKeyForBuildingBlock(
+        buildingBlockDefinitionKey,
+        buildingBlockDefinitionVersionTag
+      )
+      .subscribe(mainProcessDefinitionKey => {
+        const businessObject = element.businessObject;
+
+        const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
+
+        modeling.updateModdleProperties(element, businessObject, {
+          'camunda:calledElement': mainProcessDefinitionKey,
+          'camunda:calledElementBinding': 'versionTag',
+          'camunda:calledElementVersionTag': versionTag,
+        });
+      });
   }
 }
