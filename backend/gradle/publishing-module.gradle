@@ -16,6 +16,15 @@
 
 def publishToS3 = project.hasProperty('publishToS3') && project.property('publishToS3') == 'true'
 def sonatypeCentralStagingDir = uri("build/staging-deploy")
+def githubPackagesUsername = (findProperty('githubPackagesUsername')
+    ?: System.getenv('GITHUB_ACTOR')
+    ?: System.getenv('GITHUB_USERNAME'))?.toString()
+def githubPackagesToken = (findProperty('githubPackagesToken')
+    ?: System.getenv('GITHUB_TOKEN')
+    ?: System.getenv('GITHUB_PACKAGES_TOKEN'))?.toString()
+def githubPackagesRepository = (findProperty('githubPackagesRepository')
+    ?: System.getenv('GITHUB_REPOSITORY')
+    ?: 'valtimo-platform/valtimo').toString()
 def signingConfigSet = false
 if(System.getenv('SIGNING_KEY_BASE64') &&
     System.getenv('SIGNING_KEY_PASSWORD')
@@ -47,6 +56,16 @@ publishing {
                     secretKey System.getenv('AWS_SECRET_ACCESS_KEY')
                 }
                 url = 's3://valtimo-snapshots'
+            }
+        }
+        if (githubPackagesUsername && githubPackagesToken) {
+            maven {
+                name "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/${githubPackagesRepository}")
+                credentials {
+                    username = githubPackagesUsername
+                    password = githubPackagesToken
+                }
             }
         }
     }
