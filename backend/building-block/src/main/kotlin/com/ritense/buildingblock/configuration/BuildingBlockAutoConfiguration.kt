@@ -24,7 +24,7 @@ import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProce
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
@@ -43,6 +43,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -72,7 +73,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
-        BuildingBlockJsonSchemaDocumentDefinitionRepository::class,
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
         BuildingBlockDefinitionArtworkRepository::class
     ]
@@ -96,7 +96,7 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionService::class)
     fun buildingBlockDocumentDefinitionService(
-        repository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        repository: JsonSchemaDocumentDefinitionRepository,
         checker: BuildingBlockDefinitionChecker
     ): BuildingBlockDocumentDefinitionService {
         return BuildingBlockDocumentDefinitionService(repository, checker)
@@ -175,11 +175,13 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionResource::class)
     fun buildingBlockDocumentDefinitionResource(
-        buildingBlockJsonSchemaDocumentDefinitionRepository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        buildingBlockJsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
+        service: JsonSchemaDocumentDefinitionService,
         objectMapper: ObjectMapper
     ): BuildingBlockDocumentDefinitionResource {
         return BuildingBlockDocumentDefinitionResource(
             buildingBlockJsonSchemaDocumentDefinitionRepository,
+            service,
             objectMapper
         )
     }
