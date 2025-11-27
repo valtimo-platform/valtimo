@@ -21,6 +21,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.json.MapperSingleton
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -54,7 +55,7 @@ class BuildingBlockCallActivityListener(
                     null,
                     it.buildingBlockDefinitionId.key,
                     it.buildingBlockDefinitionId.versionTag.toString(),
-                    null,
+                    MapperSingleton.get().createObjectNode(),
                 ),
                 UUID.fromString(execution.businessKey)
             )
