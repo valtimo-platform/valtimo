@@ -39,7 +39,7 @@ import jakarta.validation.Valid
 import jakarta.validation.ValidationException
 import org.semver4j.Semver
 import kotlin.jvm.optionals.getOrNull
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
 @Plugin(
@@ -89,7 +89,7 @@ class VerzoekPlugin(
                                 caseDefinitionVersionTag = property.caseDefinitionVersionTag,
                             )
                                 ?: error("No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'.")
-                            documentDefinitionService.findByCaseDefinitionId(caseDefinition.id).getOrNull()
+                            documentDefinitionService.findBySolutionModuleId(caseDefinition.id).getOrNull()
                                 ?: error("No Document Definition found for Case Definition: ${caseDefinition.id}")
                         }
                         val documentPath = it.target.substringAfter(delimiter = ":")

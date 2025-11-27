@@ -17,3 +17,8 @@
 :host:empty {
   display: none;
 }
+
+.action-button {
+  --cds-layout-size-height-local: 0;
+  --cds-layout-density-padding-inline-local: 0;
+}

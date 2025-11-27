@@ -24,8 +24,10 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionSequenceRepository;
 import java.util.Optional;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.semver4j.Semver;
 
 public class JsonSchemaDocumentDefinitionSequenceGeneratorServiceTest {
 
@@ -35,12 +37,16 @@ public class JsonSchemaDocumentDefinitionSequenceGeneratorServiceTest {
     @BeforeEach
     public void setUp() {
         documentDefinitionSequenceRepository = mock(JsonSchemaDocumentDefinitionSequenceRepository.class);
-        sequenceGeneratorService = new JsonSchemaDocumentDefinitionSequenceGeneratorService(documentDefinitionSequenceRepository);
+        sequenceGeneratorService = new JsonSchemaDocumentDefinitionSequenceGeneratorService(
+            documentDefinitionSequenceRepository);
     }
 
     @Test
     public void shouldGetNewSequenceWithInitialValueOf1() {
-        final var id = JsonSchemaDocumentDefinitionId.of("Some-Name", mock());
+        final var id = JsonSchemaDocumentDefinitionId.of(
+            "Some-Name",
+            new CaseDefinitionId("test", Semver.of(1, 0, 0))
+        );
 
         when(documentDefinitionSequenceRepository.findByDefinitionName(id.name())).thenReturn(Optional.empty());
 
@@ -51,7 +57,10 @@ public class JsonSchemaDocumentDefinitionSequenceGeneratorServiceTest {
 
     @Test
     public void shouldGetUpdatedSequenceWithValueOf2() {
-        final var id = JsonSchemaDocumentDefinitionId.existingId("Some-Name", mock());
+        final var id = JsonSchemaDocumentDefinitionId.existingId(
+            "Some-Name",
+            new CaseDefinitionId("test", Semver.of(1, 0, 0))
+        );
 
         when(documentDefinitionSequenceRepository.findByDefinitionName(id.name()))
             .thenReturn(Optional.empty())

@@ -16,7 +16,7 @@
                 },
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.key",
+                    "field": "documentDefinitionId.solutionModuleId.solutionModuleKey",
                     "operator": "in",
                     "value": [
                         "leningen",
@@ -25,7 +25,7 @@
                 },
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.versionTag",
+                    "field": "documentDefinitionId.solutionModuleId.solutionModuleVersionTag",
                     "operator": "==",
                     "value": "${ACTIVE}"
                 }

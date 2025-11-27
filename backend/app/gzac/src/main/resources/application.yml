@@ -173,7 +173,6 @@ valtimo:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
-        identifier-field: username
 
     notificaties-api:
         processing:

@@ -2,6 +2,12 @@
     "display": "form",
     "components": [
         {
+            "key": "pv.zaakbesluitUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "ZaakbesluitUrl"
+        },
+        {
             "label": "Beslisdatum",
             "format": "yyyy-MM-dd hh:mm",
             "tableView": false,
