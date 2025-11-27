@@ -49,8 +49,6 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
 
   public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);
 
-  private readonly _subscriptions = new Subscription();
-  private readonly _triggerInitLayout$ = new Subject<null>();
   @Input() public set widgets(value: Widget[]) {
     if (!value) return;
     const widgetsWithUuids = value.map(widget => ({...widget, uuid: uuid()}));
@@ -58,7 +56,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
     this.widgetLayoutService.setWidgets(widgetsWithUuids);
     this.widgetsWithUuids$.next(widgetsWithUuids);
     this.loadingWidgetConfiguration$.next(false);
-    this._triggerInitLayout$.next(null);
+    this.initLayout();
   }
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(
@@ -101,22 +99,17 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   }
 
   public initLayout(): void {
-    this._subscriptions.add(
-      this._triggerInitLayout$.subscribe(() => {
-        if (!this._widgetsContainerRef) return;
-        this._observer = new ResizeObserver(event => {
-          this.observerMutation(event);
-        });
-        this._observer.observe(this._widgetsContainerRef?.nativeElement);
+    if (!this._widgetsContainerRef) return;
+    this._observer = new ResizeObserver(event => {
+      this.observerMutation(event);
+    });
+    this._observer.observe(this._widgetsContainerRef?.nativeElement);
 
-        this.initMuuri();
-      })
-    );
+    this.initMuuri();
   }
 
   public ngOnDestroy(): void {
     this.destroyLayout();
-    this._subscriptions.unsubscribe();
   }
 
   private observerMutation(event: Array<ResizeObserverEntry>): void {
