@@ -3,11 +3,13 @@
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
-            "key": "klant",
             "type": "fields",
+            "key": "klant",
             "title": "Klant",
             "width": 1,
             "highContrast": true,
+            "actions": [],
+            "displayConditions": [],
             "properties": {
                 "columns": [
                     [
@@ -22,7 +24,8 @@
                             "value": "iko:/geboorte/datum/datum",
                             "displayProperties": {
                                 "type": "date",
-                                "format": "DD-MM-YYYY"
+                                "format": "DD-MM-YYYY",
+                                "hideWhenEmpty": false
                             }
                         },
                         {
@@ -35,11 +38,13 @@
             }
         },
         {
-            "key": "nationaliteiten",
             "type": "collection",
+            "key": "nationaliteiten",
             "title": "Nationaliteiten",
             "width": 1,
             "highContrast": false,
+            "actions": [],
+            "displayConditions": [],
             "properties": {
                 "collection": "iko:/nationaliteiten",
                 "defaultPageSize": 4,
@@ -50,22 +55,26 @@
                     {
                         "key": "nationaliteit",
                         "title": "Nationaliteit",
-                        "value": "/nationaliteit/omschrijving"
+                        "value": "/nationaliteit/omschrijving",
+                        "width": "full"
                     },
                     {
                         "key": "datumIngangGeldigheid",
                         "title": "Ingangsdatum",
-                        "value": "/datumIngangGeldigheid/langFormaat"
+                        "value": "/datumIngangGeldigheid/langFormaat",
+                        "width": "full"
                     }
                 ]
             }
         },
         {
-            "key": "verblijfplaats",
             "type": "fields",
+            "key": "verblijfplaats",
             "title": "Verblijfplaats",
             "width": 1,
             "highContrast": true,
+            "actions": [],
+            "displayConditions": [],
             "properties": {
                 "columns": [
                     [
@@ -94,11 +103,13 @@
             }
         },
         {
-            "key": "partners",
             "type": "collection",
+            "key": "partners",
             "title": "Partners",
             "width": 1,
             "highContrast": false,
+            "actions": [],
+            "displayConditions": [],
             "properties": {
                 "collection": "iko:/partners",
                 "defaultPageSize": 4,
@@ -109,40 +120,39 @@
                     {
                         "key": "burgerservicenummer",
                         "title": "Burgerservicenummer",
-                        "value": "/burgerservicenummer"
+                        "value": "/burgerservicenummer",
+                        "width": "full"
                     },
                     {
                         "key": "voornamen",
                         "title": "Voornamen",
-                        "value": "/naam/voornamen"
+                        "value": "/naam/voornamen",
+                        "width": "full"
                     },
                     {
                         "key": "geslachtsnaam",
                         "title": "Geslachtsnaam",
-                        "value": "/naam/geslachtsnaam"
+                        "value": "/naam/geslachtsnaam",
+                        "width": "full"
                     }
                 ]
             }
         },
         {
-            "key": "personen",
             "type": "interactive-table",
+            "key": "personen",
             "title": "Personen",
             "width": 4,
             "highContrast": false,
-            "canStartCase": true,
             "actions": [
                 {
                     "name": "Create new Verzoek",
                     "navigateTo": "http://localhost:8003/leningaanvragen/startpagina"
                 }
             ],
+            "displayConditions": [],
             "properties": {
                 "collection": "iko:?ikoDataAggregateKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
-                "rowClickAction": {
-                    "navigateTo": "http://www.ritense.nl/persoon/${/burgerservicenummer}"
-                },
-                "canStartCase": true,
                 "defaultPageSize": 4,
                 "columns": [
                     {
@@ -155,7 +165,13 @@
                         "title": "BSN",
                         "value": "/burgerservicenummer"
                     }
-                ]
+                ],
+                "firstColumnAsTitle": false,
+                "rowClickAction": {
+                    "name": null,
+                    "navigateTo": "http://www.ritense.nl/persoon/${/burgerservicenummer}"
+                },
+                "canStartCase": true
             }
         }
     ]
