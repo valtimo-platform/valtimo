@@ -9,6 +9,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -45,6 +46,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -76,6 +78,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -112,6 +115,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -149,6 +153,7 @@
             "icon": "mdi-home",
             "width": 4,
             "highContrast": false,
+            "isCompact": null,
             "actions": [
                 {
                     "name": "Create new Verzoek",
@@ -196,6 +201,7 @@
             "icon": "mdi-home",
             "width": 4,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
