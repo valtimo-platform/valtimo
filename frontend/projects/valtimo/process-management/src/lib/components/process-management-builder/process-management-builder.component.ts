@@ -665,7 +665,6 @@ export class ProcessManagementBuilderComponent
         ) {
           this.setCalledElementForBuildingBlockProcessLink(
             buildingBlockProcessLinkCreateDto.activityId,
-            buildingBlockProcessLinkCreateDto.processDefinitionId,
             buildingBlockProcessLinkCreateDto.buildingBlockDefinitionKey,
             buildingBlockProcessLinkCreateDto.buildingBlockDefinitionVersionTag
           );
@@ -897,7 +896,6 @@ export class ProcessManagementBuilderComponent
 
   private setCalledElementForBuildingBlockProcessLink(
     activityId: string,
-    calledElementKey: string,
     buildingBlockDefinitionKey: string,
     buildingBlockDefinitionVersionTag: string
   ): void {
@@ -919,16 +917,17 @@ export class ProcessManagementBuilderComponent
         buildingBlockDefinitionKey,
         buildingBlockDefinitionVersionTag
       )
-      .subscribe(mainProcessDefinitionKey => {
-        const businessObject = element.businessObject;
+      .subscribe({
+        next: (mainProcessDefinitionKey: string) => {
+          const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
 
-        const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
-
-        modeling.updateModdleProperties(element, businessObject, {
-          'camunda:calledElement': mainProcessDefinitionKey,
-          'camunda:calledElementBinding': 'versionTag',
-          'camunda:calledElementVersionTag': versionTag,
-        });
+          modeling.updateProperties(element, {
+            calledElement: mainProcessDefinitionKey,
+            'camunda:calledElementBinding': 'versionTag',
+            'camunda:calledElementVersionTag': versionTag,
+            'camunda:calledElementType': 'BPMN',
+          });
+        },
       });
   }
 }

@@ -259,12 +259,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
 
         val mainLink = links.firstOrNull { it.main } ?: return null
 
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionId(mainLink.id.processDefinitionId.id)
-            .singleResult()
-            ?: return null
-
-        return processDefinition.key
+        return mainLink.processDefinitionKey
     }
 
     private fun findExistingLink(
