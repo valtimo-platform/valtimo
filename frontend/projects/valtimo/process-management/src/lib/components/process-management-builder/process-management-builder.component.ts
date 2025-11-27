@@ -49,6 +49,7 @@ import {
 import {ProcessService} from '@valtimo/process';
 import {
   BuildingBlockProcessLinkCreateDto,
+  BuildingBlockProcessLinkUpdateDto,
   ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
@@ -646,6 +647,19 @@ export class ProcessManagementBuilderComponent
         this.processManagementEditorService.updateProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        const buildingBlockProcessLinkUpdateDto = event as BuildingBlockProcessLinkUpdateDto;
+
+        if (
+          buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionKey &&
+          buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionVersionTag
+        ) {
+          this.setCalledElementForBuildingBlockProcessLink(
+            buildingBlockProcessLinkUpdateDto.activityId,
+            buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionKey,
+            buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionVersionTag
+          );
+        }
       })
     );
   }
