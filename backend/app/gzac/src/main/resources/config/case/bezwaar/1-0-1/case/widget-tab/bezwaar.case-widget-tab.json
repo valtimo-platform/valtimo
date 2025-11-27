@@ -8,6 +8,7 @@
                 "title": "Aanvrager",
                 "width": 1,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
@@ -49,6 +50,7 @@
                 "title": "Klanten",
                 "width": 4,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
                     "collection": "iko:?ikoDataAggregateKey=klant&bsn=999990755",
                     "defaultPageSize": 4,
