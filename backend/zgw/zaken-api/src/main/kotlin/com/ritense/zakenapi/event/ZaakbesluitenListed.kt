@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.domain
+package com.ritense.zakenapi.event
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.ritense.outbox.domain.BaseEvent
 
-@Entity
-@Table(name = "valtimo_application_property")
-data class ValtimoApplicationProperty(
-    @Id
-    @Column(name = "property_key", nullable = false, updatable = false)
-    val propertyKey: String,
-    @Column(name = "property_value", nullable = false, updatable = false)
-    val propertyValue: String
+class ZaakbesluitenListed (zaakbesluiten: ArrayNode) : BaseEvent(
+    type = "com.ritense.gzac.zrc.zaakbesluiten.listed",
+    resultType = "List<com.ritense.zakenapi.domain.ZaakbesluitResponse>",
+    resultId = null,
+    result = zaakbesluiten
 )

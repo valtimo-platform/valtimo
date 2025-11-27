@@ -20,6 +20,7 @@ import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementMapComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -113,6 +114,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
     type: WidgetType.COLLECTION,
     component: WidgetManagementCollectionComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.map.title',
+    descriptionKey: 'widgetTabManagement.type.map.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
+    type: WidgetType.MAP,
+    component: WidgetManagementMapComponent,
   },
 ];
 

@@ -324,10 +324,9 @@ class BuildingBlockDefinitionProcessDefinitionService(
         val bpmnModelInstance =
             operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(deployedProcessDefinitionId)
 
-        operatonProcessService.setProcessesVersionTag(
+        operatonProcessService.setBuildingBlockDefinitionProcessesVersionTags(
             bpmnModelInstance,
-            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId,
-            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.key
+            buildingBlockDefinitionId
         )
     }
 

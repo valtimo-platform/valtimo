@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.repository
+package com.ritense.widget.map
 
-import com.ritense.valtimo.domain.ValtimoApplicationProperty
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 
-interface ValtimoApplicationPropertyRepository
-    : JpaRepository<ValtimoApplicationProperty, String>, JpaSpecificationExecutor<ValtimoApplicationProperty>
+data class MapWidgetProperties(
+    @field:NotEmpty val geoJsonSources: List<@Valid GeoJsonSource>,
+) {
+    @JsonInclude(Include.NON_NULL)
+    data class GeoJsonSource(
+        @field:NotBlank val key: String,
+    )
+}
