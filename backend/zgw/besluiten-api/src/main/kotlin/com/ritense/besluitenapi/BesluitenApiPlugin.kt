@@ -16,7 +16,9 @@
 
 package com.ritense.besluitenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.Besluit
+import com.ritense.besluitenapi.client.BesluitNotFoundException
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
@@ -27,7 +29,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
-import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.LoggingConstants.BESLUITEN_API
@@ -48,6 +50,7 @@ import java.util.UUID
 class BesluitenApiPlugin(
     private val besluitenApiClient: BesluitenApiClient,
     private val zaakUrlProvider: ZaakUrlProvider,
+    private val objectMapper: ObjectMapper
 ) {
     @Url
     @PluginProperty(key = "url", secret = false)
@@ -63,7 +66,7 @@ class BesluitenApiPlugin(
         key = "link-document-to-besluit",
         title = "Link Document to besluit",
         description = "Links a document to a besluit",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun linkDocumentToBesluit(
         @PluginActionProperty documentUrl: String,
@@ -89,7 +92,7 @@ class BesluitenApiPlugin(
         key = "create-besluit",
         title = "Create besluit",
         description = "Creates a besluit in the Besluiten API",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun createBesluit(
         execution: DelegateExecution,
@@ -132,7 +135,7 @@ class BesluitenApiPlugin(
         key = "patch-besluit",
         title = "Patch besluit",
         description = "Patches a besluit in the Besluiten API",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun patchBesluit(
         execution: DelegateExecution,
@@ -164,6 +167,40 @@ class BesluitenApiPlugin(
                 uiterlijkeReactieDatum = uiterlijkeReactieDatum?.let { toLocalDate(it) }
             )
         }
+    }
+
+    @PluginAction(
+        key = "get-besluit",
+        title = "Get besluit",
+        description = "This retreives a besluit from Besluiten API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getBesluit(
+        execution: DelegateExecution,
+        @PluginActionProperty besluitUrl: String,
+        @PluginActionProperty resultProcessVariable: String
+    ): Besluit {
+        val documentId = UUID.fromString(execution.businessKey)
+
+        logger.debug { "Retrieving besluit with besluitUrl '$besluitUrl' for document '$documentId'" }
+
+        val besluit = try {
+            besluitenApiClient.getBesluit(
+                authenticationPluginConfiguration,
+                url,
+                getUuid(besluitUrl)
+            )
+        } catch (ex: Exception) {
+            throw BesluitNotFoundException(besluitUrl)
+        }
+
+        resultProcessVariable.let { name ->
+            execution.setVariable(name, objectMapper.valueToTree(besluit))
+        }
+
+        logger.info { "Besluit retrieved with besluitUrl '$besluitUrl' for document '$documentId'" }
+
+        return besluit
     }
 
     fun patchBesluit(
@@ -234,6 +271,11 @@ class BesluitenApiPlugin(
 
     private fun toLocalDate(date: String): LocalDate {
         return LocalDate.parse(date.take(10))
+    }
+
+    private fun getUuid(url: String): String {
+        return url.trimEnd('/')
+            .substringAfterLast('/')
     }
 
     companion object {
