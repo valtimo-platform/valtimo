@@ -107,15 +107,25 @@ class IkoWidgetManagementResource(
         @RequestBody request: List<WidgetDto>,
     ): ResponseEntity<List<WidgetDto>> {
         val existingWidgets = service.findAllByTabKey(ikoDataAggregateKey, tabKey)
-        require(request.map { it.key }.toSet() == existingWidgets.map { it.key }.toSet())
         val ikoWidgets = request.mapIndexed { index, updatedWidget ->
-            val existingWidget = existingWidgets.first { it.key == updatedWidget.key }
-            service.update(
-                ikoDataAggregateKey,
-                tabKey = tabKey,
-                widget = updatedWidget.toEntity(existingWidget.id, index),
-            )
+            val existingWidget = existingWidgets.firstOrNull { it.key == updatedWidget.key }
+            if (existingWidget == null) {
+                service.create(
+                    ikoDataAggregateKey,
+                    tabKey = tabKey,
+                    widget = updatedWidget.toEntity(UUID.randomUUID(), index),
+                )
+            } else {
+                service.update(
+                    ikoDataAggregateKey,
+                    tabKey = tabKey,
+                    widget = updatedWidget.toEntity(existingWidget.id, index),
+                )
+            }
         }
+        existingWidgets
+            .filter { existing -> ikoWidgets.none { existing.id == it.id } }
+            .forEach { existing -> service.deleteByKey(ikoDataAggregateKey, tabKey, existing.key) }
         return ResponseEntity.ok(ikoWidgets.map { it.toDto() })
     }
 
