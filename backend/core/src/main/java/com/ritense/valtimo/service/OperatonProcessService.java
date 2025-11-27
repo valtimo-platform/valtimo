@@ -36,6 +36,15 @@ import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.contract.config.ValtimoProperties;
+import com.ritense.valtimo.event.ProcessDefinitionDeleted;
+import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
+import com.ritense.valtimo.exception.NoFileExtensionFoundException;
+import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
+import com.ritense.valtimo.exception.ProcessNotDeployableException;
+import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider;
 import com.ritense.valtimo.operaton.domain.OperatonDeploymentSource;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
@@ -46,14 +55,6 @@ import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
-import com.ritense.valtimo.contract.config.ValtimoProperties;
-import com.ritense.valtimo.event.ProcessDefinitionDeleted;
-import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
-import com.ritense.valtimo.exception.NoFileExtensionFoundException;
-import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
-import com.ritense.valtimo.exception.ProcessNotDeployableException;
-import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import com.ritense.valtimo.service.util.FormUtils;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -106,7 +107,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class OperatonProcessService {
     private static final String UNDEFINED_BUSINESS_KEY = "UNDEFINED_BUSINESS_KEY";
-    private static final String SYSTEM_PROCESS_PROPERTY = "systemProcess";
     private static final Logger logger = LoggerFactory.getLogger(OperatonProcessService.class);
 
     private final RuntimeService runtimeService;
@@ -686,12 +686,33 @@ public class OperatonProcessService {
         }
     }
 
+     public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
+        bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
+            process -> {
+                process.setOperatonVersionTag(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString());
+            }
+        );
+
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
+            );
+        });
+
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()            );
+        });
+    }
+
     void updateCaseDefinitionProcessesVersionTags(
         BpmnModelInstance bpmnModel,
         @Nullable SolutionModuleId solutionModuleId
     ) {
-        if (solutionModuleId != null) {
-            setCaseDefinitionProcessesVersionTags(bpmnModel, caseDefinitionId);
+        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
+            setCaseDefinitionProcessesVersionTags(bpmnModel, (CaseDefinitionId) solutionModuleId);
         } else {
             clearCaseDefinitionProcessesVersionTags(bpmnModel);
         }
