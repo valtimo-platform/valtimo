@@ -65,6 +65,7 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
               "node_modules/flatpickr/dist/flatpickr.css",

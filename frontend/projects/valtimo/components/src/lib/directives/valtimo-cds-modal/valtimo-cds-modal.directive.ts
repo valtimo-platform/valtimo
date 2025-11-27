@@ -64,7 +64,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._mutationObserver.disconnect();
+    this._mutationObserver?.disconnect();
   }
 
   private handleMutations(mutations: MutationRecord[]): void {

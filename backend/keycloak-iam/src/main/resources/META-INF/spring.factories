@@ -1,2 +1,7 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-  com.valtimo.keycloak.liquibase.changelog.ChangeLog20250506MigrateToKeycloakUsername
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername,\
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername,\
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername,\
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId,\
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateNoteCreatedByToUsername,\
+  com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateUserSettingsToUsername
