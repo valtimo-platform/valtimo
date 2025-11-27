@@ -15,30 +15,30 @@
   -->
 
 <v-form
-        (valueChange)="formValueChange($event)"
-        *ngIf="{
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
   <v-input
-          name="besluitUrl"
-          [title]="'besluitUrl' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.besluitUrl"
-          [disabled]="obs.disabled"
-          [required]="true"
-          [trim]="true"
-          [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
+    name="besluitUrl"
+    [title]="'besluitUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.besluitUrl"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
   <v-input
-          name="resultProcessVariable"
-          [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.resultProcessVariable"
-          [disabled]="obs.disabled"
-          [required]="true"
-          [trim]="true"
-          [tooltip]="'resultProcessVariableTooltip' | pluginTranslate: pluginId | async"
+    name="resultProcessVariable"
+    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.resultProcessVariable"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'resultProcessVariableTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
 </v-form>

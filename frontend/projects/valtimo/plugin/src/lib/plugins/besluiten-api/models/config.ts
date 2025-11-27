@@ -60,7 +60,7 @@ interface PatchZaakBesluitConfig {
 
 interface GetBesluitConfig {
   besluitUrl: string;
-  resultProcessVariable: string
+  resultProcessVariable: string;
 }
 
 export {

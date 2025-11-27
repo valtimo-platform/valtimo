@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FunctionConfigurationComponent } from '../../../../models';
-import { BehaviorSubject, combineLatest, Observable, Subscription, take } from 'rxjs';
-import { GetBesluitConfig } from '../../models';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {FunctionConfigurationComponent} from '../../../../models';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {GetBesluitConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-get-besluit-configuration',
@@ -33,8 +33,7 @@ export class GetBesluitConfigurationComponent
   @Input() prefillConfiguration$: Observable<GetBesluitConfig>;
 
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<GetBesluitConfig> =
-    new EventEmitter<GetBesluitConfig>();
+  @Output() configuration: EventEmitter<GetBesluitConfig> = new EventEmitter<GetBesluitConfig>();
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<GetBesluitConfig | null>(null);
@@ -67,8 +66,7 @@ export class GetBesluitConfigurationComponent
   }
 
   private handleValid(formValue: GetBesluitConfig): void {
-    const valid = !!formValue?.besluitUrl &&
-      !!formValue?.resultProcessVariable;
+    const valid = !!formValue?.besluitUrl && !!formValue?.resultProcessVariable;
 
     this.valid$.next(valid);
     this.valid.emit(valid);

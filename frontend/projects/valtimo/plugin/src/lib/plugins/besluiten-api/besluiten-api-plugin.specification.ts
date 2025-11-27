@@ -30,7 +30,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
     'create-besluit': CreateZaakBesluitConfigurationComponent,
     'patch-besluit': PatchZaakBesluitConfigurationComponent,
     'link-document-to-besluit': LinkDocumentToBesluitConfigurationComponent,
-    'get-besluit': GetBesluitConfigurationComponent
+    'get-besluit': GetBesluitConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
