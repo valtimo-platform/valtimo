@@ -29,6 +29,18 @@ import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDataProvider
 import com.ritense.widget.interactivetable.InteractiveTableWidget
+import com.ritense.widget.map.MapWidget
+import com.ritense.widget.map.MapWidgetDataProvider
+import com.ritense.widget.map.geojson.GeoJsonFeatureCollectionMapper
+import com.ritense.widget.map.geojson.GeoJsonFeatureMapper
+import com.ritense.widget.map.geojson.GeoJsonGeometryCollectionMapper
+import com.ritense.widget.map.geojson.GeoJsonGeometryMapper
+import com.ritense.widget.map.geojson.GeoJsonLineStringMapper
+import com.ritense.widget.map.geojson.GeoJsonMapper
+import com.ritense.widget.map.geojson.GeoJsonMultiPolygonMapper
+import com.ritense.widget.map.geojson.GeoJsonNullMapper
+import com.ritense.widget.map.geojson.GeoJsonPointMapper
+import com.ritense.widget.map.geojson.GeoJsonPolygonMapper
 import com.ritense.widget.repository.WidgetRepository
 import com.ritense.widget.service.WidgetService
 import com.ritense.widget.table.TableWidget
@@ -57,6 +69,7 @@ import javax.sql.DataSource
         DividerWidget::class,
         FieldsWidget::class,
         InteractiveTableWidget::class,
+        MapWidget::class,
         TableWidget::class,
         Widget::class,
     ]
@@ -127,5 +140,93 @@ class WidgetAutoConfiguration {
     @Bean
     fun resolvedPageSerializer(
     ) = ResolvedPageSerializer()
+
+    @ConditionalOnMissingBean(GeoJsonGeometryMapper::class)
+    @Bean
+    fun geoJsonGeometryMapper(
+        objectMapper: ObjectMapper,
+    ) = GeoJsonGeometryMapper(
+        objectMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonNullMapper::class)
+    @Bean
+    fun geoJsonNullMapper() = GeoJsonNullMapper()
+
+    @ConditionalOnMissingBean(GeoJsonPointMapper::class)
+    @Bean
+    fun geoJsonPointMapper(
+        objectMapper: ObjectMapper,
+        geometryMapper: GeoJsonGeometryMapper,
+    ) = GeoJsonPointMapper(
+        objectMapper,
+        geometryMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonPolygonMapper::class)
+    @Bean
+    fun geoJsonPolygonMapper(
+        objectMapper: ObjectMapper,
+        geometryMapper: GeoJsonGeometryMapper,
+    ) = GeoJsonPolygonMapper(
+        objectMapper,
+        geometryMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonGeometryCollectionMapper::class)
+    @Bean
+    fun geoJsonGeometryCollectionMapper(
+        geometryMapper: GeoJsonGeometryMapper,
+    ) = GeoJsonGeometryCollectionMapper(
+        geometryMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonFeatureMapper::class)
+    @Bean
+    fun geoJsonFeatureMapper(
+        objectMapper: ObjectMapper,
+    ) = GeoJsonFeatureMapper(
+        objectMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonMultiPolygonMapper::class)
+    @Bean
+    fun geoJsonMultiPolygonMapper(
+        objectMapper: ObjectMapper,
+        geometryMapper: GeoJsonGeometryMapper,
+    ) = GeoJsonMultiPolygonMapper(
+        objectMapper,
+        geometryMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonFeatureCollectionMapper::class)
+    @Bean
+    fun geoJsonFeatureCollectionMapper(
+        objectMapper: ObjectMapper,
+    ) = GeoJsonFeatureCollectionMapper(
+        objectMapper,
+    )
+
+    @ConditionalOnMissingBean(GeoJsonLineStringMapper::class)
+    @Bean
+    fun geoJsonLineStringMapper(
+        objectMapper: ObjectMapper,
+        geometryMapper: GeoJsonGeometryMapper,
+    ) = GeoJsonLineStringMapper(
+        objectMapper,
+        geometryMapper,
+    )
+
+    @ConditionalOnMissingBean(MapWidgetDataProvider::class)
+    @Bean
+    fun mapWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+        geoJsonMappers: List<GeoJsonMapper>,
+    ) = MapWidgetDataProvider(
+        valueResolverService,
+        objectMapper,
+        geoJsonMappers,
+    )
 
 }
