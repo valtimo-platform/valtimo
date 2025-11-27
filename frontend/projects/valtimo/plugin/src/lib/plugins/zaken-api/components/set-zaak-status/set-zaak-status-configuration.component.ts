@@ -173,12 +173,12 @@ export class SetZaakStatusConfigurationComponent
     private readonly cdsThemeService: CdsThemeService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.prefillToday();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
     this._subscriptions.unsubscribe();
   }
