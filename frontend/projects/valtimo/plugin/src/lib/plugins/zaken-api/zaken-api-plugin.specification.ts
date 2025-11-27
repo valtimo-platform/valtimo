@@ -33,6 +33,7 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -55,6 +56,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
+    'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -207,6 +209,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Resultaat process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
+      'get-zaakbesluiten': 'Ophalen zaakbesluiten',
     },
     en: {
       title: 'Zaken API',
@@ -357,6 +361,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
+      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      'get-zaakbesluiten': 'Retrieve zaakbesluiten',
     },
     de: {
       title: 'Zaken API',
@@ -506,6 +512,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Ergebnis process variable',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
+      'get-zaakbesluiten': 'Zaakbesluiten abrufen',
     },
   },
 };

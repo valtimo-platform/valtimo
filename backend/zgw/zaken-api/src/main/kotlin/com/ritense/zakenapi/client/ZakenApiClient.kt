@@ -36,6 +36,7 @@ import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
+import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.ZaakopschortingResponse
@@ -62,6 +63,7 @@ import com.ritense.zakenapi.event.ZaakRollenListed
 import com.ritense.zakenapi.event.ZaakStatusCreated
 import com.ritense.zakenapi.event.ZaakStatusViewed
 import com.ritense.zakenapi.event.ZaakViewed
+import com.ritense.zakenapi.event.ZaakbesluitenListed
 import com.ritense.zakenapi.event.ZaakeigenschapCreated
 import com.ritense.zakenapi.event.ZaakeigenschapDeleted
 import com.ritense.zakenapi.event.ZaakeigenschapListed
@@ -531,6 +533,28 @@ class ZakenApiClient(
 
         outboxService.send {
             ZaakeigenschapListed(objectMapper.valueToTree(result))
+        }
+        return result
+    }
+
+    fun getZaakbesluiten(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakUrl: URI,
+    ): List<ZaakbesluitResponse> {
+        validateUrlHost(baseUrl, zaakUrl)
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, zaakUrl)
+                    .pathSegment("besluiten")
+                    .build()
+            }
+            .retrieve()
+            .body<List<ZaakbesluitResponse>>()!!
+
+        outboxService.send {
+            ZaakbesluitenListed(objectMapper.valueToTree(result))
         }
         return result
     }
