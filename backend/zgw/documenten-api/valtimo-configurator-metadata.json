@@ -1,0 +1,21 @@
+{
+  "name": "documentenapi",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:documenten-api"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "documentenApiPluginSpecification",
+        "module": "DocumentenApiPluginModule"
+      }
+    ]
+  },
+  "editions": [
+    "gzac"
+  ]
+}
