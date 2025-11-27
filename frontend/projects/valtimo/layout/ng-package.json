@@ -46,6 +46,7 @@
     "tinycolor2",
     "tslib",
     "csp-header",
-    "lodash"
+    "lodash",
+    "ol"
   ]
 }

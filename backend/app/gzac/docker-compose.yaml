@@ -567,9 +567,11 @@ services:
             - POSTGRES_USER=iko
             - POSTGRES_PASSWORD=iko
             - POSTGRES_DB=iko
+        volumes:
+            - ./imports/iko:/docker-entrypoint-initdb.d
 
     iko:
-        image: nielserkamp4ritense/test:0.3.1
+        image: ghcr.io/integraal-klant-en-objectbeeld/iko:0.5.1
         container_name: gzac-docker-compose-iko
         platform: linux/amd64
         profiles:
@@ -581,19 +583,7 @@ services:
             SPRING_DATASOURCE_URL: jdbc:postgresql://iko-postgres:5432/iko
             SPRING_DATASOURCE_USERNAME: iko
             SPRING_DATASOURCE_PASSWORD: iko
-            IKO_CONNECTORS_BRP_HOST: http://iko-haalcentraal-personen:5010
-            IKO_CONNECTORS_OPENZAAK_HOST: http://openzaak:8000
-            IKO_CONNECTORS_OPENZAAK_SPECIFICATIONURI: http://openzaak:8000/zaken/api/v1/schema/openapi.yaml
-            IKO_CONNECTORS_OPENZAAK_CLIENTID: valtimo_client
-            IKO_CONNECTORS_OPENZAAK_SECRET: e09b8bc5-5831-4618-ab28-41411304309d
-            IKO_CONNECTORS_BAG_HOST: https://api.bag.kadaster.nl
-            IKO_CONNECTORS_BAG_APIKEY: asd
-            IKO_CONNECTORS_OBJECTENAPI_HOST: http://objecten-api:8000
-            IKO_CONNECTORS_OBJECTENAPI_SPECIFICATIONURI: http://objecten-api:8000/api/v2/schema/openapi.yaml
-            IKO_CONNECTORS_OBJECTENAPI_TOKEN: 182c13e2209161852c53cef53a879f7a2f923430
-            IKO_CONNECTORS_OPENKLANT_HOST: http://open-klant:8000
-            IKO_CONNECTORS_OPENKLANT_SPECIFICATIONURI: http://open-klant:8000/api/v2/schema/openapi.yaml
-            IKO_CONNECTORS_OPENKLANT_TOKEN: 5bf819967d9fdd00d326ce20774768b4182285e5
+            IKO_CRYPTO_KEY: MTIzNDU2Nzg5MDEyMzQ1Ng==
             SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID: iko
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET: ThisIsNotASecret

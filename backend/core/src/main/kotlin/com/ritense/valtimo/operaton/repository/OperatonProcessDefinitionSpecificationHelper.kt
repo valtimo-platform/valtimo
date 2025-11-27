@@ -16,7 +16,8 @@
 
 package com.ritense.valtimo.operaton.repository
 
-import com.ritense.valtimo.contract.process.ProcessConstants
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
@@ -115,7 +116,7 @@ class OperatonProcessDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+                        OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )
@@ -133,7 +134,7 @@ class OperatonProcessDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+                        OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )
