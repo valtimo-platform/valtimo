@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.service;
 
+import static com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -40,6 +41,8 @@ import org.operaton.bpm.engine.repository.DecisionDefinition;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import org.operaton.bpm.model.bpmn.instance.CallActivity;
+import org.operaton.bpm.model.bpmn.instance.Definitions;
 import org.operaton.bpm.model.bpmn.instance.Process;
 import org.operaton.bpm.model.bpmn.instance.ServiceTask;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -328,6 +331,107 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
         Assertions.assertEquals(3, decisionDefinitions.size());
     }
 
+    @Test
+    void shouldUpdateCaseDefinitionVersionTagsWhenDifferentCaseDefinitionIsProvided() {
+        BpmnModelInstance model = createBpmnModelWithTwoCallActivities();
+
+        Process process = model.getModelElementsByType(Process.class)
+            .stream()
+            .findFirst()
+            .orElseThrow();
+
+        CallActivity caseLinkedCallActivity = model.getModelElementsByType(CallActivity.class)
+            .stream()
+            .filter(ca -> "caseLinkedCallActivity".equals(ca.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CallActivity customCallActivity = model.getModelElementsByType(CallActivity.class)
+            .stream()
+            .filter(ca -> "customCallActivity".equals(ca.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CaseDefinitionId originalCaseDefinitionId = CaseDefinitionId.of("original-case", "1.0.0");
+        CaseDefinitionId newCaseDefinitionId = CaseDefinitionId.of("new-case", "2.0.0");
+
+        String originalTag =
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + originalCaseDefinitionId;
+        String customNonCaseTag = "SOME_OTHER_TAG";
+
+        process.setOperatonVersionTag(originalTag);
+
+        caseLinkedCallActivity.setOperatonCalledElementBinding("versionTag");
+        caseLinkedCallActivity.setOperatonCalledElementVersionTag(originalTag);
+
+        customCallActivity.setOperatonCalledElementBinding("versionTag");
+        customCallActivity.setOperatonCalledElementVersionTag(customNonCaseTag);
+
+        assertThat(CaseDefinitionId.fromProcessVersionTag(originalTag)).isNotNull();
+        assertThat(CaseDefinitionId.fromProcessVersionTag(customNonCaseTag)).isNull();
+
+        operatonProcessService.updateCaseDefinitionProcessesVersionTags(model, newCaseDefinitionId);
+
+        String expectedNewTag =
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + newCaseDefinitionId;
+
+        assertThat(process.getOperatonVersionTag()).isEqualTo(expectedNewTag);
+
+        assertThat(caseLinkedCallActivity.getOperatonCalledElementBinding()).isEqualTo("versionTag");
+        assertThat(caseLinkedCallActivity.getOperatonCalledElementVersionTag()).isEqualTo(expectedNewTag);
+
+        assertThat(customCallActivity.getOperatonCalledElementBinding()).isEqualTo("versionTag");
+        assertThat(customCallActivity.getOperatonCalledElementVersionTag()).isEqualTo(customNonCaseTag);
+    }
+
+    @Test
+    void shouldClearCaseDefinitionVersionTagsWhenNoCaseDefinitionIsProvided() {
+        BpmnModelInstance model = createBpmnModelWithTwoCallActivities();
+
+        Process process = model.getModelElementsByType(Process.class)
+            .stream()
+            .findFirst()
+            .orElseThrow();
+
+        CallActivity caseLinkedCallActivity = model.getModelElementsByType(CallActivity.class)
+            .stream()
+            .filter(ca -> "caseLinkedCallActivity".equals(ca.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CallActivity customCallActivity = model.getModelElementsByType(CallActivity.class)
+            .stream()
+            .filter(ca -> "customCallActivity".equals(ca.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("some-case", "1.0.0");
+        String caseTag =
+            OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
+        String customNonCaseTag = "SOME_OTHER_TAG";
+
+        process.setOperatonVersionTag(caseTag);
+
+        caseLinkedCallActivity.setOperatonCalledElementBinding("versionTag");
+        caseLinkedCallActivity.setOperatonCalledElementVersionTag(caseTag);
+
+        customCallActivity.setOperatonCalledElementBinding("versionTag");
+        customCallActivity.setOperatonCalledElementVersionTag(customNonCaseTag);
+
+        assertThat(CaseDefinitionId.fromProcessVersionTag(caseTag)).isNotNull();
+        assertThat(CaseDefinitionId.fromProcessVersionTag(customNonCaseTag)).isNull();
+
+        operatonProcessService.updateCaseDefinitionProcessesVersionTags(model, null);
+
+        assertThat(process.getOperatonVersionTag()).isNull();
+
+        assertThat(caseLinkedCallActivity.getOperatonCalledElementBinding()).isNull();
+        assertThat(caseLinkedCallActivity.getOperatonCalledElementVersionTag()).isNull();
+
+        assertThat(customCallActivity.getOperatonCalledElementBinding()).isEqualTo("versionTag");
+        assertThat(customCallActivity.getOperatonCalledElementVersionTag()).isEqualTo(customNonCaseTag);
+    }
+
     private ByteArrayInputStream getFileStream(String filename, List<Resource> source) throws IOException {
         return new ByteArrayInputStream(source.stream()
             .filter(resource -> Objects.equals(resource.getFilename(), filename))
@@ -335,5 +439,28 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
             .orElseGet(() -> new ByteArrayResource(new byte[]{}))
             .getInputStream()
             .readAllBytes());
+    }
+
+    private BpmnModelInstance createBpmnModelWithTwoCallActivities() {
+        BpmnModelInstance model = Bpmn.createEmptyModel();
+
+        Definitions definitions = model.newInstance(Definitions.class);
+        definitions.setTargetNamespace("http://operaton.org/schema/bpmn");
+        model.setDefinitions(definitions);
+
+        Process process = model.newInstance(Process.class);
+        process.setId("testProcess");
+        process.setExecutable(true);
+        definitions.addChildElement(process);
+
+        CallActivity caseLinkedCallActivity = model.newInstance(CallActivity.class);
+        caseLinkedCallActivity.setId("caseLinkedCallActivity");
+        process.addChildElement(caseLinkedCallActivity);
+
+        CallActivity customCallActivity = model.newInstance(CallActivity.class);
+        customCallActivity.setId("customCallActivity");
+        process.addChildElement(customCallActivity);
+
+        return model;
     }
 }

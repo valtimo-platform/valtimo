@@ -20,8 +20,58 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <changeSet id="1" author="Ritense">
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20250506MigrateToKeycloakUsername"/>
+    <changeSet id="2" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername"/>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername"/>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername"/>
+    </changeSet>
+
+    <changeSet id="5" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId"/>
+    </changeSet>
+
+    <changeSet id="6" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateNoteCreatedByToUsername"/>
+    </changeSet>
+
+    <changeSet id="7" author="Ritense">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+            </not>
+        </preConditions>
+        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateUserSettingsToUsername"/>
     </changeSet>
 
 </databaseChangeLog>
