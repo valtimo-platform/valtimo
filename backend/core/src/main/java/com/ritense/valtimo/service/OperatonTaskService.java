@@ -651,20 +651,6 @@ public class OperatonTaskService {
         );
     }
 
-    public Specification<OperatonTask> filterTaskFilterSpecification(Specification<OperatonTask> filterSpec, TaskFilter taskFilter) {
-
-        if (taskFilter == TaskFilter.MINE) {
-            String currentUsername = userManagementService.getCurrentUser().getUsername();
-            return filterSpec.and(byAssignee(currentUsername));
-        } else if (taskFilter == TaskFilter.ALL) {
-            return filterSpec;
-        } else if (taskFilter == TaskFilter.OPEN) {
-            return filterSpec.and(byUnassigned());
-        }
-
-        return filterSpec;
-    }
-
     private Specification<OperatonTask> buildTaskFilterSpecification(TaskFilter taskFilter) {
         var filterSpec = all();
 

@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.document.dashboard
-//package com.ritense.valtimo.dashboard
+package com.ritense.valtimo.dashboard
 
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.repository.ExpressionOperator
-import com.ritense.valtimo.dashboard.TaskCountDataSourceProperties
-import com.ritense.valtimo.dashboard.TaskWidgetDataSource
 import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.task.Task
 import org.junit.jupiter.api.BeforeEach
