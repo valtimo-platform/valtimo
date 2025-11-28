@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
@@ -105,10 +106,17 @@ import {
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
 import {ProcessManagementEditorService, ProcessManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {
+  applyBuildingBlockCalledElement,
+  clearBuildingBlockCalledElement,
+  DisableBpmnWriteModule,
+  disableCommands,
+  getContextObservable,
+  getLatestProcessDefinition,
+  initBreadcrumbsForContext,
+} from '../../utils';
 import {ValtimoPropertiesProviderModule} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
-import {is} from 'bpmn-js/lib/util/ModelUtil';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -489,11 +497,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private setSelectedProcessDefinitionToLatest(
     processDefinitions: ProcessDefinitionWithPropertiesDto[]
   ): void {
-    if ((processDefinitions || []).length === 0) return;
+    const latest = getLatestProcessDefinition(processDefinitions);
 
-    const latest = processDefinitions.reduce((acc, version) =>
-      version.version > acc.version ? version : acc
-    );
+    if (!latest) return;
 
     this.processManagementEditorService.setSelectedProcessDefinition(latest);
   }
@@ -521,7 +527,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       const idMap: Record<string, string> = {};
       const elementRegistry = this._bpmnModeler.get('elementRegistry') as any;
 
-      elementRegistry.forEach(element => {
+      elementRegistry.forEach((element: any) => {
         const activityId = element?.di?.id;
         const businessId = element?.id;
 
@@ -536,41 +542,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private initViewer(): void {
-    const disableCommands = () => {
-      const commandStack = this._bpmnViewer.get('commandStack') as any;
-      const originalExecute = commandStack?.execute?.bind(commandStack);
-
-      if (commandStack?.execute) {
-        commandStack.execute = (command: string, context: any) => {
-          if (
-            command === 'elements.delete' ||
-            command === 'elements.copy' ||
-            command === 'elements.paste' ||
-            command === 'elements.create'
-          ) {
-            return;
-          }
-          originalExecute(command, context);
-        };
-      }
-    };
-
-    const DisableBpmnWriteModule = {
-      paletteProvider: ['value', {}],
-      contextPadProvider: ['value', {}],
-      directEditing: [
-        'value',
-        {
-          registerProvider: () => {},
-          activate: () => {},
-          deactivate: () => {},
-          isActive: () => false,
-        },
-      ],
-      move: ['value', null],
-      resizeHandles: ['value', {addResizer: () => {}, removeResizers: () => {}}],
-    };
-
     this._bpmnViewer = new Modeler({
       additionalModules: [
         DisableBpmnWriteModule,
@@ -588,7 +559,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     });
 
     this._bpmnViewer.on('import.done', () => {
-      disableCommands();
+      disableCommands(this._bpmnViewer);
     });
   }
 
@@ -792,60 +763,19 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           );
         }
 
-        this.initBreadcrumbs(caseManagementParams || buildingBlockManagementParams, context);
+        initBreadcrumbsForContext(
+          this.breadcrumbService,
+          this.translateService,
+          caseManagementParams || buildingBlockManagementParams,
+          context as ManagementContext
+        );
+
         this.processManagementEditorService.setManagementRouteParams(
           context,
           caseManagementParams || buildingBlockManagementParams
         );
       })
     );
-  }
-
-  private initBreadcrumbs(
-    params: CaseManagementParams | BuildingBlockManagementParams,
-    context: ManagementContext
-  ): void {
-    if (context === 'case') this.initCaseManagementBreadcrumbs(params as CaseManagementParams);
-    if (context === 'buildingBlock')
-      this.initBuildingBlockBreadcrumbs(params as BuildingBlockManagementParams);
-  }
-
-  private initCaseManagementBreadcrumbs(params: CaseManagementParams): void {
-    const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
-
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
-      content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-      href: route,
-    });
-
-    const routeWithForms = `${route}/processes`;
-
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [routeWithForms],
-      content: this.translateService.instant('caseManagement.tabs.processes'),
-      href: routeWithForms,
-    });
-  }
-
-  private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
-    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
-
-    const generalRoute = `${route}/general`;
-
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [generalRoute],
-      content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
-      href: generalRoute,
-    });
-
-    const processRoute = `${route}/process-definition`;
-
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [processRoute],
-      content: this.translateService.instant('buildingBlockManagement.tabs.processes'),
-      href: processRoute,
-    });
   }
 
   private initEditing(): void {
@@ -908,15 +838,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       return;
     }
 
-    const elementRegistry = editor.get('elementRegistry') as any;
-    const modeling = editor.get('modeling') as any;
-
-    const element = elementRegistry.get(activityId);
-
-    if (!element || !is(element, 'bpmn:CallActivity')) {
-      return;
-    }
-
     this.processLinkBuildingBlockApiService
       .getMainProcessDefinitionKeyForBuildingBlock(
         buildingBlockDefinitionKey,
@@ -926,54 +847,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         next: (mainProcessDefinitionKey: string) => {
           const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
 
-          modeling.updateProperties(element, {
-            calledElement: mainProcessDefinitionKey,
-            'camunda:calledElementBinding': 'versionTag',
-            'camunda:calledElementVersionTag': versionTag,
-            'camunda:calledElementType': 'BPMN',
-          });
+          applyBuildingBlockCalledElement(editor, activityId, mainProcessDefinitionKey, versionTag);
         },
       });
   }
 
   private unsetCalledElementForBuildingBlockProcessLink(activityId: string): void {
-    console.log('unset');
-
     const editor = this._bpmnModeler || this._bpmnViewer;
 
     if (!editor) {
       return;
     }
 
-    const elementRegistry = editor.get('elementRegistry') as any;
-    const modeling = editor.get('modeling') as any;
-
-    const element = elementRegistry.get(activityId);
-
-    if (!element || !is(element, 'bpmn:CallActivity')) return;
-
-    const bo = element.businessObject;
-
-    const versionTag = bo.get('camunda:calledElementVersionTag');
-
-    if (!versionTag || !versionTag.startsWith('BB:')) {
-      return;
-    }
-
-    console.log('unset 2');
-
-    modeling.updateProperties(element, {
-      calledElement: undefined,
-      'camunda:calledElementBinding': undefined,
-      'camunda:calledElementVersionTag': undefined,
-      'camunda:calledElementType': undefined,
-    });
-
-    const attrs = bo.$attrs || {};
-
-    Object.keys(attrs).forEach(key => {
-      if (key.startsWith('camunda:calledElement')) delete attrs[key];
-      if (key === 'calledElement') delete attrs[key];
-    });
+    clearBuildingBlockCalledElement(editor, activityId);
   }
 }
