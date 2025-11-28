@@ -307,12 +307,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
             ),
             id: SearchDropdownDataProvider.DATABASE,
           },
-          {
-            content: this.translateService.instant(
-              'searchFieldsOverview.dropdownJsonFileDataProvider'
-            ),
-            id: SearchDropdownDataProvider.JSON,
-          },
         ].map(item => ({...item, selected: item.id === dataProviderValue?.id}))
       )
     );

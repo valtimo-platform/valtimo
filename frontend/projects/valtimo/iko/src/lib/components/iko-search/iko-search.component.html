@@ -157,7 +157,6 @@
     [name]="searchField.key"
     [placeholder]="searchField.title"
     [fullWidth]="true"
-    [disabled]="inputDisabled"
     [(ngModel)]="formValues[searchField.key]"
     ngDefaultControl
   >
@@ -182,21 +181,44 @@
 </ng-template>
 
 <ng-template
+  #searchFieldTemplateTextRange
+  let-searchField="searchField"
+>
+  <ng-container *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'range'">
+    <v-form
+      class="multiple-search-fields"
+    >
+      <v-input
+        name="start"
+        [placeholder]="searchField.title"
+        [dataTestId]="'search-field-' + searchField.key"
+        [fullWidth]="true"
+      >
+      </v-input>
+      <ng-container *ngTemplateOutlet="toText"></ng-container>
+      <v-input
+        name="end"
+        [placeholder]="searchField.title"
+        [dataTestId]="'search-field-' + searchField.key"
+        [fullWidth]="true"
+      >
+      </v-input>
+    </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template
   #searchFieldTemplateNumberRange
   let-searchField="searchField"
 >
   <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
-    <v-input-label
-      [title]="searchField.title"
-      [small]="true"
-    ></v-input-label>
-
     <v-form class="multiple-search-fields">
       <v-input
         name="start"
         type="number"
         [hideNumberSpinBox]="true"
         [fullWidth]="true"
+        [placeholder]="searchField.title"
         [(ngModel)]="formValues[searchField.key + '_start']"
         ngDefaultControl
       ></v-input>
@@ -210,6 +232,7 @@
         type="number"
         [hideNumberSpinBox]="true"
         [fullWidth]="true"
+        [placeholder]="searchField.title"
         [(ngModel)]="formValues[searchField.key + '_end']"
         ngDefaultControl
       ></v-input>
@@ -242,20 +265,55 @@
 </ng-template>
 
 <ng-template
-    #searchFieldTemplateBoolean
-    let-searchField="searchField"
+  #searchFieldTemplateBoolean
+  let-searchField="searchField"
 >
   <ng-container *ngIf="searchField.dataType === 'boolean'">
-    <v-input-label
-      [title]="searchField.title"
-      [(ngModel)]="formValues[searchField.key]"
-    ></v-input-label>
     <v-select
       [placeholder]="searchField.title"
       [items]="searchField.dropdownList"
       [name]="searchField.key"
       [(ngModel)]="formValues[searchField.key]"
       ngDefaultControl
+    ></v-select>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateSingleSelectDropdown
+  let-searchField="searchField"
+>
+  <ng-container
+    *ngIf="
+      searchField.dataType === 'text' &&
+      (searchField.fieldType === 'single-select-dropdown' ||
+        searchField.fieldType === 'single_select_dropdown')
+    "
+  >
+    <v-select
+      [items]="searchFieldSelectItems"
+      [placeholder]="searchField.key"
+    ></v-select>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateMultiSelectDropdown
+  let-searchField="searchField"
+  let-title="title"
+>
+  <ng-container
+    *ngIf="
+      searchField.dataType === 'text' &&
+      (searchField.fieldType === 'multi-select-dropdown' ||
+        searchField.fieldType === 'multi_select_dropdown')
+    "
+  >
+    <v-select
+      [items]="searchFieldSelectItems"
+      [margin]="false"
+      [multiple]="true"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -268,7 +326,7 @@
     *ngIf="searchField.dataType === 'bsn' && searchField.fieldType === 'single'"
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
-    [title]="searchField.title"
+    [placeholder]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
     [errorKey]="bsnErrorKey"
     ngDefaultControl
@@ -281,6 +339,3 @@
     <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
   </div>
 </ng-template>
-
-
-

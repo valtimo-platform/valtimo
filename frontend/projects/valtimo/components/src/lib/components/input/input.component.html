@@ -136,6 +136,7 @@
     [ngModel]="inputValue$ | async"
     [step]="step"
     (ngModelChange)="onValueChange($event)"
+    [placeholder]="placeholder"
     [style.width.px]="widthPx"
     type="number"
   />
