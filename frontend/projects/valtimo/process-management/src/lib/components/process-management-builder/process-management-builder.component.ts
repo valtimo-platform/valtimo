@@ -88,6 +88,7 @@ import {
   filter,
   from,
   map,
+  merge,
   Observable,
   of,
   startWith,
@@ -647,7 +648,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   private subscribeToProcessLinkDeleteEvents(): void {
     this._subscriptions.add(
-      this.processLinkStateService.processLinkDeleteEvents$.subscribe(event => {
+      merge(
+        this.processManagementEditorService.deleteProcessLinkEvents$,
+        this.processLinkStateService.processLinkDeleteEvents$
+      ).subscribe(event => {
         this.processManagementEditorService.deleteProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
