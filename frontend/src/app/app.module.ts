@@ -127,15 +127,14 @@ import {IkoModule} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 
 export function tabsFactory() {
-  let tabs: [string, object][] = [
+  return new Map<string, object>([
     [DefaultTabs.summary, CaseDetailTabSummaryComponent],
     [DefaultTabs.progress, CaseDetailTabProgressComponent],
     [DefaultTabs.audit, CaseDetailTabAuditComponent],
     [DefaultTabs.documents, CaseDetailTabDocumentsComponent],
     [DefaultTabs.notes, CaseDetailTabNotesComponent],
-  ];
-  if (!environment.production) tabs = [...tabs, ...devTabs];
-  return new Map<string, object>(tabs);
+    ...(environment.production ? [] : devTabs),
+  ]);
 }
 
 @NgModule({
