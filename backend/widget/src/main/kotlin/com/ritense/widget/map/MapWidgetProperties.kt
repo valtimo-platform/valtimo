@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.domain
+package com.ritense.widget.map
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 
-@Entity
-@Table(name = "valtimo_application_property")
-data class ValtimoApplicationProperty(
-    @Id
-    @Column(name = "property_key", nullable = false, updatable = false)
-    val propertyKey: String,
-    @Column(name = "property_value", nullable = false, updatable = false)
-    val propertyValue: String
-)
+data class MapWidgetProperties(
+    @field:NotEmpty val geoJsonSources: List<@Valid GeoJsonSource>,
+) {
+    @JsonInclude(Include.NON_NULL)
+    data class GeoJsonSource(
+        @field:NotBlank val key: String,
+    )
+}
