@@ -693,6 +693,8 @@ export class ProcessManagementBuilderComponent
         this.processManagementEditorService.deleteProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        this.unsetCalledElementForBuildingBlockProcessLink(event.activityId);
       })
     );
   }
@@ -913,12 +915,14 @@ export class ProcessManagementBuilderComponent
     buildingBlockDefinitionKey: string,
     buildingBlockDefinitionVersionTag: string
   ): void {
-    if (!this._bpmnModeler) {
+    const editor = this._bpmnModeler || this._bpmnViewer;
+
+    if (!editor) {
       return;
     }
 
-    const elementRegistry = this._bpmnModeler.get('elementRegistry') as any;
-    const modeling = this._bpmnModeler.get('modeling') as any;
+    const elementRegistry = editor.get('elementRegistry') as any;
+    const modeling = editor.get('modeling') as any;
 
     const element = elementRegistry.get(activityId);
 
@@ -943,5 +947,46 @@ export class ProcessManagementBuilderComponent
           });
         },
       });
+  }
+
+  private unsetCalledElementForBuildingBlockProcessLink(activityId: string): void {
+    console.log('unset');
+
+    const editor = this._bpmnModeler || this._bpmnViewer;
+
+    if (!editor) {
+      return;
+    }
+
+    const elementRegistry = editor.get('elementRegistry') as any;
+    const modeling = editor.get('modeling') as any;
+
+    const element = elementRegistry.get(activityId);
+
+    if (!element || !is(element, 'bpmn:CallActivity')) return;
+
+    const bo = element.businessObject;
+
+    const versionTag = bo.get('camunda:calledElementVersionTag');
+
+    if (!versionTag || !versionTag.startsWith('BB:')) {
+      return;
+    }
+
+    console.log('unset 2');
+
+    modeling.updateProperties(element, {
+      calledElement: undefined,
+      'camunda:calledElementBinding': undefined,
+      'camunda:calledElementVersionTag': undefined,
+      'camunda:calledElementType': undefined,
+    });
+
+    const attrs = bo.$attrs || {};
+
+    Object.keys(attrs).forEach(key => {
+      if (key.startsWith('camunda:calledElement')) delete attrs[key];
+      if (key === 'calledElement') delete attrs[key];
+    });
   }
 }
