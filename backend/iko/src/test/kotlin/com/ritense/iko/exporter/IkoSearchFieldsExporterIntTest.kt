@@ -35,12 +35,12 @@ class IkoSearchFieldsExporterIntTest @Autowired constructor(
 
     @Test
     fun `should export ikoSearchFields`(): Unit = runWithoutAuthorization {
-        val ikoDataAggregateKey = "klant"
-        val ikoDataRequestKey = "bsn"
-        val request = IkoSearchFieldsExportRequest(ikoDataAggregateKey, ikoDataRequestKey)
+        val ikoViewKey = "klant"
+        val ikoSeachActionKey = "bsn"
+        val request = IkoSearchFieldsExportRequest(ikoViewKey, ikoSeachActionKey)
 
         val exportFiles = ikoSearchFieldsExporter.export(request).exportFiles
-        val expectedPath = IkoSearchFieldsExporter.PATH.format(ikoDataAggregateKey, ikoDataRequestKey)
+        val expectedPath = IkoSearchFieldsExporter.PATH.format(ikoViewKey, ikoSeachActionKey)
         val exportedFile = exportFiles.singleOrNull { it.path == expectedPath }
             ?: error("Exported file not found for path: $expectedPath")
 

@@ -38,16 +38,16 @@ class IkoSearchFieldsExporter(
     override fun supports() = IkoSearchFieldsExportRequest::class.java
 
     override fun export(request: IkoSearchFieldsExportRequest): ExportResult {
-        val ikoSearchFields = ikoSearchFieldService.findAllSearchFieldsByIkoDataRequest(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
-            ikoDataRequestKey = request.ikoDataRequestKey,
+        val ikoSearchFields = ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(
+            ikoViewKey = request.ikoViewKey,
+            ikoSeachActionKey = request.ikoSeachActionKey,
         )
         if (ikoSearchFields.isEmpty()) {
             return ExportResult()
         }
         val ikoSearchFieldsDto = IkoSearchFieldsDto(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
-            ikoDataRequestKey = request.ikoDataRequestKey,
+            ikoViewKey = request.ikoViewKey,
+            ikoSeachActionKey = request.ikoSeachActionKey,
             ikoSearchFields = ikoSearchFields.map { ikoSearchField ->
                 IkoSearchFieldDto(
                     key = ikoSearchField.key,
@@ -64,7 +64,7 @@ class IkoSearchFieldsExporter(
 
         return ExportResult(
             ExportFile(
-                PATH.format(request.ikoDataAggregateKey, request.ikoDataRequestKey),
+                PATH.format(request.ikoViewKey, request.ikoSeachActionKey),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoSearchFieldsDto)
             )
         )

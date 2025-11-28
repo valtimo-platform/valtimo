@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "demo",
+    "ikoViewKey": "demo",
     "ikoListColumns": [
         {
             "key": "naam",

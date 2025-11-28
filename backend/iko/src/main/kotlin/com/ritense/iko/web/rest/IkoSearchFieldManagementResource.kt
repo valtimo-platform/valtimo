@@ -41,67 +41,67 @@ class IkoSearchFieldManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field")
     fun getIkoSearchFieldsForManagement(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
     ): ResponseEntity<List<IkoSearchFieldResponse>> {
-        val ikoSearchFields = service.findAllSearchFieldsByIkoDataRequest(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+        val ikoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+            ikoViewKey = ikoViewKey,
+            ikoSeachActionKey = ikoSeachActionKey,
         )
         return ResponseEntity.ok(ikoSearchFields.map { IkoSearchFieldResponse.from(it) })
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field/{key}")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
     fun getIkoSearchField(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
         @PathVariable key: String,
     ): ResponseEntity<IkoSearchFieldResponse> {
-        val ikoSearchField = service.getByKey(ikoDataAggregateKey, ikoDataRequestKey, key)
+        val ikoSearchField = service.getByKey(ikoViewKey, ikoSeachActionKey, key)
         return ResponseEntity.ok(IkoSearchFieldResponse.from(ikoSearchField))
     }
 
     @RunWithoutAuthorization
-    @PostMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field/{key}")
+    @PostMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
     fun createIkoSearchField(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoSearchFieldCreateRequest
     ): ResponseEntity<IkoSearchFieldResponse> {
-        val existingIkoSearchFields = service.findAllSearchFieldsByIkoDataRequest(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+            ikoViewKey = ikoViewKey,
+            ikoSeachActionKey = ikoSeachActionKey,
         )
         val ikoSearchField = service.create(
-            ikoDataAggregateKey,
-            ikoDataRequestKey,
-            request.toEntity(ikoDataAggregateKey, ikoDataRequestKey, existingIkoSearchFields.maxOfOrNull { it.order + 1 } ?: 0)
+            ikoViewKey,
+            ikoSeachActionKey,
+            request.toEntity(ikoViewKey, ikoSeachActionKey, existingIkoSearchFields.maxOfOrNull { it.order + 1 } ?: 0)
         )
         return ResponseEntity.ok(IkoSearchFieldResponse.from(ikoSearchField))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field/{key}")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
     fun updateIkoSearchField(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoSearchFieldUpdateRequest,
     ): ResponseEntity<IkoSearchFieldResponse> {
         require(request.key == key)
-        val existingIkoSearchField = service.findByKey(ikoDataAggregateKey, ikoDataRequestKey, key)
+        val existingIkoSearchField = service.findByKey(ikoViewKey, ikoSeachActionKey, key)
         requireNotNull(existingIkoSearchField)
         val ikoSearchField = service.update(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+            ikoViewKey = ikoViewKey,
+            ikoSeachActionKey = ikoSeachActionKey,
             searchField = request.toEntity(
                 existingIkoSearchField.id,
-                ikoDataAggregateKey,
-                ikoDataRequestKey,
+                ikoViewKey,
+                ikoSeachActionKey,
                 existingIkoSearchField.order
             )
         )
@@ -109,22 +109,22 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field")
     fun updateIkoSearchFieldsOrder(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
         @RequestBody request: List<IkoSearchFieldUpdateRequest>,
     ): ResponseEntity<List<IkoSearchFieldResponse>> {
-        val existingIkoSearchFields = service.findAllSearchFieldsByIkoDataRequest(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+            ikoViewKey = ikoViewKey,
+            ikoSeachActionKey = ikoSeachActionKey,
         )
         require(request.map { it.key }.toSet() == existingIkoSearchFields.map { it.key }.toSet())
         val ikoSearchFields = request.mapIndexed { index, updatedSearchField ->
             val existingSearchField = existingIkoSearchFields.first { it.key == updatedSearchField.key }
             service.update(
-                ikoDataAggregateKey = ikoDataAggregateKey,
-                ikoDataRequestKey = ikoDataRequestKey,
+                ikoViewKey = ikoViewKey,
+                ikoSeachActionKey = ikoSeachActionKey,
                 searchField = existingSearchField.copy(order = index)
             )
         }
@@ -132,13 +132,13 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
-    @DeleteMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/data-request/{ikoDataRequestKey}/search-field/{key}")
+    @DeleteMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
     fun deleteIkoSearchField(
-        @PathVariable ikoDataAggregateKey: String,
-        @PathVariable ikoDataRequestKey: String,
+        @PathVariable ikoViewKey: String,
+        @PathVariable ikoSeachActionKey: String,
         @PathVariable key: String,
     ): ResponseEntity<IkoSearchFieldResponse> {
-        service.deleteByKey(ikoDataAggregateKey, ikoDataRequestKey, key)
+        service.deleteByKey(ikoViewKey, ikoSeachActionKey, key)
         return ResponseEntity.noContent().build()
     }
 }

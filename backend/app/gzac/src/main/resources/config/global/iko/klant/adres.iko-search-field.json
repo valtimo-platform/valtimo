@@ -1,6 +1,6 @@
 {
-    "ikoDataAggregateKey": "klant",
-    "ikoDataRequestKey": "adres",
+    "ikoViewKey": "klant",
+    "ikoSeachActionKey": "adres",
     "ikoSearchFields": [
         {
             "key": "postcode",

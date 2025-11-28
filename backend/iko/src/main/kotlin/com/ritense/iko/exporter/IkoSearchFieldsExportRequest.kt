@@ -19,7 +19,7 @@ package com.ritense.iko.exporter
 import com.ritense.exporter.request.ExportRequest
 
 data class IkoSearchFieldsExportRequest(
-    val ikoDataAggregateKey: String,
-    val ikoDataRequestKey: String,
+    val ikoViewKey: String,
+    val ikoSeachActionKey: String,
     override val required: Boolean = true,
 ) : ExportRequest(required)

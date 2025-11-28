@@ -38,9 +38,9 @@ import {
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   PropertyField,
-  IkoDataRequestResponse,
+  IkoSeachActionResponse,
   IkoRepositoryConfigResponse,
-  IkoDataAggregateResponse,
+  IkoViewResponse,
 } from '../../../../../models';
 import {filter, map, Observable, switchMap, take} from 'rxjs';
 import {IkoManagementApiService} from '../../../../../services';
@@ -88,8 +88,8 @@ export class IkoManagementSearchActionModalComponent {
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
-  public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
-  @Input() public set prefillData(value: IkoDataRequestResponse | null) {
+  public readonly $prefillData = signal<IkoViewResponse | null>(null);
+  @Input() public set prefillData(value: IkoSeachActionResponse | null) {
     if (!value) {
       this.$prefillData.set(null);
       return;
@@ -104,7 +104,7 @@ export class IkoManagementSearchActionModalComponent {
   @Input() repositoryKey: string;
   @Input() aggregateKey: string;
 
-  @Output() public readonly modalClose = new EventEmitter<IkoDataRequestResponse | null>();
+  @Output() public readonly modalClose = new EventEmitter<IkoSeachActionResponse | null>();
 
   public get title(): AbstractControl<string> {
     return this.formGroup.get('title') as AbstractControl<string>;
@@ -117,14 +117,14 @@ export class IkoManagementSearchActionModalComponent {
       this.ikoManagementApiService.getIkoRepositoryConfig(repositoryKey ?? '')
     ),
     switchMap((repository: IkoRepositoryConfigResponse) =>
-      this.ikoManagementApiService.getIkoDataRequestPropertyFields(repository.type)
+      this.ikoManagementApiService.getIkoSeachActionPropertyFields(repository.type)
     )
   );
 
   public readonly formGroup = this.fb.group({
     key: this.fb.control<string>('', Validators.required),
     title: this.fb.control<string>('', Validators.required),
-    ikoDataAggregateKey: this.fb.control<string>(''),
+    ikoViewKey: this.fb.control<string>(''),
     properties: this.fb.group({}),
   });
 

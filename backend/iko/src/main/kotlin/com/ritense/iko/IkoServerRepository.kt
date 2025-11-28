@@ -46,7 +46,7 @@ class IkoServerRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             key = CONNECTOR_TAG,
             title = "Connector Reference",
@@ -76,7 +76,7 @@ class IkoServerRepository(
         ),
     )
 
-    override fun getDataRequestPropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoSeachActionPropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             ENDPOINT_QUERY_PARAMETERS,
             PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,

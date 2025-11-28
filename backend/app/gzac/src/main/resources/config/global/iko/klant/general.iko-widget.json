@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoViewKey": "klant",
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
@@ -152,7 +152,7 @@
             ],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
+                "collection": "iko:?ikoViewKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
                 "defaultPageSize": 4,
                 "columns": [
                     {

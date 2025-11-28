@@ -34,7 +34,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
-import {IkoDataRequestResponse} from '../../../../models';
+import {IkoSeachActionResponse} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
 import {GlobalNotificationService, ModalMode} from '@valtimo/shared';
@@ -86,7 +86,7 @@ export class IkoManagementSearchActionsComponent {
   ];
 
   public readonly deleteSearchActionKey$ = new BehaviorSubject<string | null>(null);
-  public readonly prefillData$ = new BehaviorSubject<IkoDataRequestResponse | null>(null);
+  public readonly prefillData$ = new BehaviorSubject<IkoSeachActionResponse | null>(null);
   public readonly actionModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
@@ -101,11 +101,11 @@ export class IkoManagementSearchActionsComponent {
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  public readonly searchActions$: Observable<IkoDataRequestResponse[]> = combineLatest([
+  public readonly searchActions$: Observable<IkoSeachActionResponse[]> = combineLatest([
     this.aggregateKey$,
     this._refresh$,
   ]).pipe(
-    switchMap(([key]) => this.ikoManagementApiService.getManagementIkoDataRequests(key)),
+    switchMap(([key]) => this.ikoManagementApiService.getManagementIkoSeachActions(key)),
     tap(content => {
       const keys = content?.map(item => item.key) ?? [];
       this.usedKeys$.next(keys);
@@ -124,11 +124,11 @@ export class IkoManagementSearchActionsComponent {
     private readonly translateService: TranslateService
   ) {}
 
-  public onSearchActionClick(action: IkoDataRequestResponse): void {
+  public onSearchActionClick(action: IkoSeachActionResponse): void {
     this.router.navigate([`search-action/${action.key}`], {relativeTo: this.route});
   }
 
-  public deleteSearchAction(action: IkoDataRequestResponse): void {
+  public deleteSearchAction(action: IkoSeachActionResponse): void {
     this.deleteSearchActionKey$.next(action.key);
     this.deleteModalOpen$.next(true);
   }
@@ -137,26 +137,26 @@ export class IkoManagementSearchActionsComponent {
     this.aggregateKey$
       .pipe(
         switchMap((aggregateKey: string) =>
-          this.ikoManagementApiService.deleteIkoDataRequest(aggregateKey, key)
+          this.ikoManagementApiService.deleteIkoSeachAction(aggregateKey, key)
         )
       )
       .subscribe(() => this._refresh$.next(null));
   }
 
-  public editSearchAction(action: IkoDataRequestResponse): void {
+  public editSearchAction(action: IkoSeachActionResponse): void {
     this.$modalMode.set('edit');
     this.prefillData$.next(action);
     this.actionModalOpen$.next(true);
   }
 
-  public onItemsReordered(searchActions: IkoDataRequestResponse[], aggregateKey: string): void {
+  public onItemsReordered(searchActions: IkoSeachActionResponse[], aggregateKey: string): void {
     this.ikoManagementApiService
-      .updateIkoDataRequests(aggregateKey, searchActions)
+      .updateIkoSeachActions(aggregateKey, searchActions)
       .pipe(take(1))
       .subscribe();
   }
 
-  public onModalClose(action: IkoDataRequestResponse | null): void {
+  public onModalClose(action: IkoSeachActionResponse | null): void {
     this.actionModalOpen$.next(false);
     this.prefillData$.next(null);
 
@@ -165,8 +165,8 @@ export class IkoManagementSearchActionsComponent {
       .pipe(
         switchMap((aggregateKey: string) =>
           this.$modalMode() === 'add'
-            ? this.ikoManagementApiService.createIkoDataRequest(aggregateKey, action.key, action)
-            : this.ikoManagementApiService.updateIkoDataRequest(aggregateKey, action.key, action)
+            ? this.ikoManagementApiService.createIkoSeachAction(aggregateKey, action.key, action)
+            : this.ikoManagementApiService.updateIkoSeachAction(aggregateKey, action.key, action)
         )
       )
       .subscribe(() => {

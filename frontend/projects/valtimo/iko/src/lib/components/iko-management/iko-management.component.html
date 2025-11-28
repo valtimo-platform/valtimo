@@ -17,7 +17,7 @@
 <valtimo-carbon-list
   [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
-  [items]="ikoDataAggregates$ | async"
+  [items]="ikoViews$ | async"
   [loading]="$loading()"
   (rowClicked)="onRowClicked($event)"
 >

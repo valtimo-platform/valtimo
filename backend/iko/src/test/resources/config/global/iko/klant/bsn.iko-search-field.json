@@ -1,6 +1,6 @@
 {
-  "ikoDataAggregateKey" : "klant",
-  "ikoDataRequestKey" : "bsn",
+  "ikoViewKey" : "klant",
+  "ikoSeachActionKey" : "bsn",
   "ikoSearchFields" : [
     {
       "key" : "bsn",

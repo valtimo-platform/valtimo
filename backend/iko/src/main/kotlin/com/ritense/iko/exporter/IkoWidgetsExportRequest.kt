@@ -19,7 +19,7 @@ package com.ritense.iko.exporter
 import com.ritense.exporter.request.ExportRequest
 
 data class IkoWidgetsExportRequest(
-    val ikoDataAggregateKey: String,
+    val ikoViewKey: String,
     val tabKey: String,
     override val required: Boolean = true,
 ) : ExportRequest(required)

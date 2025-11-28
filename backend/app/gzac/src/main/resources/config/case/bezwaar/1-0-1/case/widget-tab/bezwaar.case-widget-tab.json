@@ -14,7 +14,7 @@
                             {
                                 "key": "naam",
                                 "title": "Naam",
-                                "value": "iko:/persoon/naam/volledigeNaam?ikoDataAggregateKey=klant&id=doc:bsn",
+                                "value": "iko:/persoon/naam/volledigeNaam?ikoViewKey=klant&id=doc:bsn",
                                 "displayProperties": {
                                     "type": "text",
                                     "hideWhenEmpty": false
@@ -23,7 +23,7 @@
                             {
                                 "key": "geboortedatum",
                                 "title": "Geboortedatum",
-                                "value": "iko:/persoon/geboorte/datum/datum?ikoDataAggregateKey=klant&id=doc:bsn",
+                                "value": "iko:/persoon/geboorte/datum/datum?ikoViewKey=klant&id=doc:bsn",
                                 "displayProperties": {
                                     "type": "date",
                                     "format": "DD-MM-YYYY",
@@ -50,7 +50,7 @@
                 "width": 4,
                 "highContrast": false,
                 "properties": {
-                    "collection": "iko:?ikoDataAggregateKey=klant&bsn=999990755",
+                    "collection": "iko:?ikoViewKey=klant&bsn=999990755",
                     "defaultPageSize": 4,
                     "columns": [
                         {

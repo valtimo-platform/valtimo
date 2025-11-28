@@ -20,15 +20,15 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.ritense.iko.service.IkoDataAggregateService
-import com.ritense.iko.service.IkoDataRequestService
+import com.ritense.iko.service.IkoViewService
+import com.ritense.iko.service.IkoSeachActionService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_REQUEST_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_SEARCH_ACTION_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
@@ -37,8 +37,8 @@ import org.springframework.data.domain.Pageable
 import java.util.function.Function
 
 class IkoValueResolverFactory(
-    private val ikoDataAggregateService: IkoDataAggregateService,
-    private val ikoDataRequestService: IkoDataRequestService,
+    private val ikoViewService: IkoViewService,
+    private val ikoSeachActionService: IkoSeachActionService,
     private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
 ) : ValueResolverFactory {
@@ -56,42 +56,42 @@ class IkoValueResolverFactory(
     }
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
-        val ikoDataAggregateKey = properties[IKO_DATA_AGGREGATE_KEY]?.toString()
-        return getIkoDataAggregateDataById(ikoDataAggregateKey, properties)
-            ?: searchIkoDataAggregateData(ikoDataAggregateKey, properties)
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
+        return getIkoViewDataById(ikoViewKey, properties)
+            ?: searchIkoViewData(ikoViewKey, properties)
             ?: Function { null }
     }
 
-    private fun getIkoDataAggregateDataById(ikoDataAggregateKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
+    private fun getIkoViewDataById(ikoViewKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
         val id = properties[ID]?.toString()
-        if (ikoDataAggregateKey != null && id != null) {
-            val data = ikoDataAggregateService.getDataById(ikoDataAggregateKey, id)
+        if (ikoViewKey != null && id != null) {
+            val data = ikoViewService.getDataById(ikoViewKey, id)
             return toValueFunction(data)
         }
         return null
     }
 
-    private fun searchIkoDataAggregateData(ikoDataAggregateKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
-        val ikoDataRequestKey = properties[IKO_DATA_REQUEST_KEY]?.toString()
-        require(ikoDataAggregateKey != null || ikoDataRequestKey != null) { "Missing ValueResolver context." }
-        val (dataRequest, searchFields) = ikoDataRequestService.findAll(
-            key = ikoDataRequestKey,
-            ikoDataAggregateKey = ikoDataAggregateKey,
-        ).map { dataRequest ->
-            dataRequest to ikoSearchFieldService.findAllSearchFieldsByIkoDataRequest(
-                ikoDataAggregateKey = dataRequest.id.ikoDataAggregate.key,
-                ikoDataRequestKey = dataRequest.id.key
+    private fun searchIkoViewData(ikoViewKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
+        val ikoSeachActionKey = properties[IKO_SEARCH_ACTION_KEY]?.toString()
+        require(ikoViewKey != null || ikoSeachActionKey != null) { "Missing ValueResolver context." }
+        val (ikoSeachAction, searchFields) = ikoSeachActionService.findAll(
+            key = ikoSeachActionKey,
+            ikoViewKey = ikoViewKey,
+        ).map { ikoSeachAction ->
+            ikoSeachAction to ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(
+                ikoViewKey = ikoSeachAction.id.ikoView.key,
+                ikoSeachActionKey = ikoSeachAction.id.key
             )
         }
             .filter { (_, searchFields) -> searchFields.all { properties.contains(it.key) || !it.required } }
-            .map { (dataRequest, searchFields) -> dataRequest to searchFields.filter { properties.contains(it.key) } }
+            .map { (ikoSeachAction, searchFields) -> ikoSeachAction to searchFields.filter { properties.contains(it.key) } }
             .firstOrNull() ?: return null
 
         val filters = searchFields.map { searchField -> DataFilter(searchField.path, properties[searchField.key]) }
         val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.unpaged()
-        val dataPaged = ikoDataRequestService.searchData(
-            key = dataRequest.id.key,
-            ikoDataAggregateKey = dataRequest.id.ikoDataAggregate.key,
+        val dataPaged = ikoSeachActionService.searchData(
+            key = ikoSeachAction.id.key,
+            ikoViewKey = ikoSeachAction.id.ikoView.key,
             filters = filters,
             pageable = pageable
         )

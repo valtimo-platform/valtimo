@@ -17,7 +17,7 @@
 package com.ritense.iko.importer
 
 data class IkoSearchFieldsDto(
-    val ikoDataAggregateKey: String,
-    val ikoDataRequestKey: String,
+    val ikoViewKey: String,
+    val ikoSeachActionKey: String,
     val ikoSearchFields: List<IkoSearchFieldDto>,
 )

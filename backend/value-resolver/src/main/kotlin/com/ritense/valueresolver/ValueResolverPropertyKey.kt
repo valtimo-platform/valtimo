@@ -24,8 +24,8 @@ class ValueResolverPropertyKey {
         const val VARIABLE_SCOPE = "variableScope"
 
         // IKO
-        const val IKO_DATA_AGGREGATE_KEY = "ikoDataAggregateKey"
-        const val IKO_DATA_REQUEST_KEY = "ikoDataRequestKey"
+        const val IKO_VIEW_KEY = "ikoViewKey"
+        const val IKO_SEARCH_ACTION_KEY = "ikoSeachActionKey"
 
         // Other
         const val ID = "id"

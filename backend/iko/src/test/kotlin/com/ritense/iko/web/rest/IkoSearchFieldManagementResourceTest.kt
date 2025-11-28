@@ -65,13 +65,13 @@ internal class IkoSearchFieldManagementResourceTest {
 
     @Test
     fun `should get iko searchFields`() {
-        whenever(service.findAllSearchFieldsByIkoDataRequest("klant", "bsn")).thenReturn(
+        whenever(service.findAllSearchFieldsByIkoSeachAction("klant", "bsn")).thenReturn(
             listOf(searchField())
         )
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field",
                 "klant",
                 "bsn"
             )
@@ -95,7 +95,7 @@ internal class IkoSearchFieldManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -130,7 +130,7 @@ internal class IkoSearchFieldManagementResourceTest {
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -169,7 +169,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .thenReturn(searchField)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -204,14 +204,14 @@ internal class IkoSearchFieldManagementResourceTest {
                 required = searchField.required,
             )
         )
-        whenever(service.findAllSearchFieldsByIkoDataRequest("klant", "bsn")).thenReturn(
+        whenever(service.findAllSearchFieldsByIkoSeachAction("klant", "bsn")).thenReturn(
             listOf(searchField)
         )
         whenever(service.update(eq("klant"), eq("bsn"), any()))
             .thenReturn(searchField)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field",
                 "klant",
                 "bsn"
             )
@@ -234,7 +234,7 @@ internal class IkoSearchFieldManagementResourceTest {
     fun `should delete iko searchField`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"

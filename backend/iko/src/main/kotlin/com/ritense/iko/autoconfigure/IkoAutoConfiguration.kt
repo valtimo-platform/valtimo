@@ -21,45 +21,45 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
-import com.ritense.iko.authorization.IkoDataAggregateSpecificationFactory
+import com.ritense.iko.authorization.IkoViewSpecificationFactory
 import com.ritense.iko.client.IkoClient
-import com.ritense.iko.event.IkoDataAggregateEventListener
-import com.ritense.iko.event.IkoDataAggregateTabEventListener
-import com.ritense.iko.event.IkoDataRequestEventListener
+import com.ritense.iko.event.IkoViewEventListener
+import com.ritense.iko.event.IkoViewTabEventListener
+import com.ritense.iko.event.IkoSeachActionEventListener
 import com.ritense.iko.event.IkoRepositoryConfigEventListener
-import com.ritense.iko.exporter.IkoDataAggregateExporter
-import com.ritense.iko.exporter.IkoDataRequestsExporter
+import com.ritense.iko.exporter.IkoViewExporter
+import com.ritense.iko.exporter.IkoSeachActionsExporter
 import com.ritense.iko.exporter.IkoListColumnsExporter
 import com.ritense.iko.exporter.IkoSearchFieldsExporter
 import com.ritense.iko.exporter.IkoTabsExporter
 import com.ritense.iko.exporter.IkoWidgetsExporter
-import com.ritense.iko.importer.IkoDataAggregateImporter
-import com.ritense.iko.importer.IkoDataRequestImporter
+import com.ritense.iko.importer.IkoViewImporter
+import com.ritense.iko.importer.IkoSeachActionImporter
 import com.ritense.iko.importer.IkoListColumnImporter
 import com.ritense.iko.importer.IkoRepositoryConfigImporter
 import com.ritense.iko.importer.IkoSearchFieldImporter
 import com.ritense.iko.importer.IkoTabImporter
 import com.ritense.iko.importer.IkoWidgetImporter
 import com.ritense.iko.plugin.IkoPluginFactory
-import com.ritense.iko.repository.IkoDataAggregateListColumnRepository
-import com.ritense.iko.repository.IkoDataAggregateRepository
-import com.ritense.iko.repository.IkoDataAggregateTabRepository
-import com.ritense.iko.repository.IkoDataRequestRepository
-import com.ritense.iko.repository.IkoDataRequestSearchFieldRepository
+import com.ritense.iko.repository.IkoViewListColumnRepository
+import com.ritense.iko.repository.IkoViewRepository
+import com.ritense.iko.repository.IkoViewTabRepository
+import com.ritense.iko.repository.IkoSeachActionRepository
+import com.ritense.iko.repository.IkoSeachActionSearchFieldRepository
 import com.ritense.iko.repository.IkoRepositoryConfigRepository
 import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.iko.security.config.IkoHttpSecurityConfigurer
-import com.ritense.iko.service.IkoDataAggregateService
-import com.ritense.iko.service.IkoDataRequestService
+import com.ritense.iko.service.IkoViewService
+import com.ritense.iko.service.IkoSeachActionService
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.iko.service.IkoRepositoryService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.service.IkoWidgetService
-import com.ritense.iko.web.rest.IkoDataAggregateManagementResource
-import com.ritense.iko.web.rest.IkoDataAggregateResource
-import com.ritense.iko.web.rest.IkoDataRequestManagementResource
-import com.ritense.iko.web.rest.IkoDataRequestResource
+import com.ritense.iko.web.rest.IkoViewManagementResource
+import com.ritense.iko.web.rest.IkoViewResource
+import com.ritense.iko.web.rest.IkoSeachActionManagementResource
+import com.ritense.iko.web.rest.IkoSeachActionResource
 import com.ritense.iko.web.rest.IkoListColumnManagementResource
 import com.ritense.iko.web.rest.IkoRepositoryManagementResource
 import com.ritense.iko.web.rest.IkoSearchFieldManagementResource
@@ -106,15 +106,15 @@ class IkoAutoConfiguration {
     )
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateService::class)
-    fun ikoDataAggregateService(
-        ikoDataAggregateRepository: IkoDataAggregateRepository,
+    @ConditionalOnMissingBean(IkoViewService::class)
+    fun ikoViewService(
+        ikoViewRepository: IkoViewRepository,
         ikoRepositoryService: IkoRepositoryService,
         authorizationService: AuthorizationService,
         ikoRepositories: List<IkoRepository>,
         applicationEventPublisher: ApplicationEventPublisher,
-    ) = IkoDataAggregateService(
-        ikoDataAggregateRepository,
+    ) = IkoViewService(
+        ikoViewRepository,
         ikoRepositoryService,
         authorizationService,
         ikoRepositories,
@@ -122,15 +122,15 @@ class IkoAutoConfiguration {
     )
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestService::class)
-    fun ikoDataRequestService(
-        ikoDataRequestRepository: IkoDataRequestRepository,
-        ikoDataAggregateService: IkoDataAggregateService,
+    @ConditionalOnMissingBean(IkoSeachActionService::class)
+    fun ikoSeachActionService(
+        ikoSeachActionRepository: IkoSeachActionRepository,
+        ikoViewService: IkoViewService,
         ikoRepositories: List<IkoRepository>,
         applicationEventPublisher: ApplicationEventPublisher,
-    ) = IkoDataRequestService(
-        ikoDataRequestRepository,
-        ikoDataAggregateService,
+    ) = IkoSeachActionService(
+        ikoSeachActionRepository,
+        ikoViewService,
         ikoRepositories,
         applicationEventPublisher,
     )
@@ -143,13 +143,13 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateSpecificationFactory::class)
-    fun ikoDataAggregateSpecificationFactory(
-        ikoDataAggregateRepository: IkoDataAggregateRepository,
+    @ConditionalOnMissingBean(IkoViewSpecificationFactory::class)
+    fun ikoViewSpecificationFactory(
+        ikoViewRepository: IkoViewRepository,
         queryDialectHelper: QueryDialectHelper,
-    ): IkoDataAggregateSpecificationFactory {
-        return IkoDataAggregateSpecificationFactory(
-            ikoDataAggregateRepository,
+    ): IkoViewSpecificationFactory {
+        return IkoViewSpecificationFactory(
+            ikoViewRepository,
             queryDialectHelper,
         )
     }
@@ -162,11 +162,11 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateResource::class)
-    fun ikoDataAggregateResource(
-        service: IkoDataAggregateService,
-    ): IkoDataAggregateResource {
-        return IkoDataAggregateResource(
+    @ConditionalOnMissingBean(IkoViewResource::class)
+    fun ikoViewResource(
+        service: IkoViewService,
+    ): IkoViewResource {
+        return IkoViewResource(
             service,
         )
     }
@@ -182,13 +182,13 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateManagementResource::class)
-    fun ikoDataAggregateManagementResource(
-        service: IkoDataAggregateService,
+    @ConditionalOnMissingBean(IkoViewManagementResource::class)
+    fun ikoViewManagementResource(
+        service: IkoViewService,
         exportService: ExportService,
         importService: ImportService,
-    ): IkoDataAggregateManagementResource {
-        return IkoDataAggregateManagementResource(
+    ): IkoViewManagementResource {
+        return IkoViewManagementResource(
             service,
             exportService,
             importService,
@@ -196,26 +196,26 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestManagementResource::class)
-    fun ikoDataRequestManagementResource(
-        service: IkoDataRequestService,
-        ikoDataAggregateService: IkoDataAggregateService,
-    ): IkoDataRequestManagementResource {
-        return IkoDataRequestManagementResource(
+    @ConditionalOnMissingBean(IkoSeachActionManagementResource::class)
+    fun ikoSeachActionManagementResource(
+        service: IkoSeachActionService,
+        ikoViewService: IkoViewService,
+    ): IkoSeachActionManagementResource {
+        return IkoSeachActionManagementResource(
             service,
-            ikoDataAggregateService,
+            ikoViewService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestResource::class)
-    fun ikoDataRequestResource(
-        dataRequestService: IkoDataRequestService,
+    @ConditionalOnMissingBean(IkoSeachActionResource::class)
+    fun ikoSeachActionResource(
+        ikoSeachActionService: IkoSeachActionService,
         listColumnService: IkoListColumnService,
         searchFieldService: IkoSearchFieldService,
-    ): IkoDataRequestResource {
-        return IkoDataRequestResource(
-            dataRequestService,
+    ): IkoSeachActionResource {
+        return IkoSeachActionResource(
+            ikoSeachActionService,
             listColumnService,
             searchFieldService,
         )
@@ -294,14 +294,14 @@ class IkoAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
-        ikoDataAggregateService: IkoDataAggregateService,
-        ikoDataRequestService: IkoDataRequestService,
+        ikoViewService: IkoViewService,
+        ikoSeachActionService: IkoSeachActionService,
         searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
-            ikoDataAggregateService,
-            ikoDataRequestService,
+            ikoViewService,
+            ikoSeachActionService,
             searchFieldService,
             objectMapper,
         )
@@ -330,28 +330,28 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateImporter::class)
-    fun ikoDataAggregateImporter(
+    @ConditionalOnMissingBean(IkoViewImporter::class)
+    fun ikoViewImporter(
         objectMapper: ObjectMapper,
-        ikoDataAggregateService: IkoDataAggregateService,
-    ): IkoDataAggregateImporter {
-        return IkoDataAggregateImporter(
+        ikoViewService: IkoViewService,
+    ): IkoViewImporter {
+        return IkoViewImporter(
             objectMapper,
-            ikoDataAggregateService,
+            ikoViewService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestImporter::class)
-    fun ikoDataRequestImporter(
+    @ConditionalOnMissingBean(IkoSeachActionImporter::class)
+    fun ikoSeachActionImporter(
         objectMapper: ObjectMapper,
-        ikoDataRequestService: IkoDataRequestService,
-        ikoDataAggregateService: IkoDataAggregateService,
-    ): IkoDataRequestImporter {
-        return IkoDataRequestImporter(
+        ikoSeachActionService: IkoSeachActionService,
+        ikoViewService: IkoViewService,
+    ): IkoSeachActionImporter {
+        return IkoSeachActionImporter(
             objectMapper,
-            ikoDataRequestService,
-            ikoDataAggregateService,
+            ikoSeachActionService,
+            ikoViewService,
         )
     }
 
@@ -404,26 +404,26 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateExporter::class)
-    fun ikoDataAggregateExporter(
+    @ConditionalOnMissingBean(IkoViewExporter::class)
+    fun ikoViewExporter(
         objectMapper: ObjectMapper,
-        ikoDataAggregateService: IkoDataAggregateService,
-    ): IkoDataAggregateExporter {
-        return IkoDataAggregateExporter(
+        ikoViewService: IkoViewService,
+    ): IkoViewExporter {
+        return IkoViewExporter(
             objectMapper,
-            ikoDataAggregateService,
+            ikoViewService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestsExporter::class)
-    fun ikoDataRequestExporter(
+    @ConditionalOnMissingBean(IkoSeachActionsExporter::class)
+    fun ikoSeachActionExporter(
         objectMapper: ObjectMapper,
-        ikoDataRequestService: IkoDataRequestService,
-    ): IkoDataRequestsExporter {
-        return IkoDataRequestsExporter(
+        ikoSeachActionService: IkoSeachActionService,
+    ): IkoSeachActionsExporter {
+        return IkoSeachActionsExporter(
             objectMapper,
-            ikoDataRequestService,
+            ikoSeachActionService,
         )
     }
 
@@ -481,13 +481,13 @@ class IkoAutoConfiguration {
         ikoTabService: IkoTabService,
         ikoTabWidgetRepository: IkoTabWidgetRepository,
         widgetService: WidgetService,
-        ikoDataAggregateService: IkoDataAggregateService,
+        ikoViewService: IkoViewService,
     ): IkoWidgetService {
         return IkoWidgetService(
             ikoTabService,
             ikoTabWidgetRepository,
             widgetService,
-            ikoDataAggregateService,
+            ikoViewService,
         )
     }
 
@@ -495,14 +495,14 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoTabService::class)
     fun ikoTabService(
         tabService: TabService,
-        ikoDataAggregateTabRepository: IkoDataAggregateTabRepository,
-        ikoDataAggregateService: IkoDataAggregateService,
+        ikoViewTabRepository: IkoViewTabRepository,
+        ikoViewService: IkoViewService,
         applicationEventPublisher: ApplicationEventPublisher,
     ): IkoTabService {
         return IkoTabService(
             tabService,
-            ikoDataAggregateTabRepository,
-            ikoDataAggregateService,
+            ikoViewTabRepository,
+            ikoViewService,
             applicationEventPublisher,
         )
     }
@@ -511,13 +511,13 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoListColumnService::class)
     fun ikoListColumnService(
         listColumnService: SearchListColumnService,
-        ikoDataAggregateListColumnRepository: IkoDataAggregateListColumnRepository,
-        ikoDataAggregateService: IkoDataAggregateService,
+        ikoViewListColumnRepository: IkoViewListColumnRepository,
+        ikoViewService: IkoViewService,
     ): IkoListColumnService {
         return IkoListColumnService(
             listColumnService,
-            ikoDataAggregateListColumnRepository,
-            ikoDataAggregateService,
+            ikoViewListColumnRepository,
+            ikoViewService,
         )
     }
 
@@ -525,13 +525,13 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoSearchFieldService::class)
     fun ikoSearchFieldService(
         searchFieldService: SearchFieldV2Service,
-        ikoDataRequestSearchFieldRepository: IkoDataRequestSearchFieldRepository,
-        ikoDataAggregateService: IkoDataAggregateService,
+        ikoSeachActionSearchFieldRepository: IkoSeachActionSearchFieldRepository,
+        ikoViewService: IkoViewService,
     ): IkoSearchFieldService {
         return IkoSearchFieldService(
             searchFieldService,
-            ikoDataRequestSearchFieldRepository,
-            ikoDataAggregateService,
+            ikoSeachActionSearchFieldRepository,
+            ikoViewService,
         )
     }
 
@@ -550,43 +550,43 @@ class IkoAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IkoRepositoryConfigEventListener::class)
     fun ikoRepositoryConfigEventListener(
-        ikoDataAggregateService: IkoDataAggregateService,
+        ikoViewService: IkoViewService,
     ): IkoRepositoryConfigEventListener {
         return IkoRepositoryConfigEventListener(
-            ikoDataAggregateService,
+            ikoViewService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateEventListener::class)
-    fun ikoDataAggregateEventListener(
-        ikoDataRequestService: IkoDataRequestService,
+    @ConditionalOnMissingBean(IkoViewEventListener::class)
+    fun ikoViewEventListener(
+        ikoSeachActionService: IkoSeachActionService,
         ikoListColumnService: IkoListColumnService,
         ikoTabService: IkoTabService,
-    ): IkoDataAggregateEventListener {
-        return IkoDataAggregateEventListener(
-            ikoDataRequestService,
+    ): IkoViewEventListener {
+        return IkoViewEventListener(
+            ikoSeachActionService,
             ikoListColumnService,
             ikoTabService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataRequestEventListener::class)
-    fun ikoDataRequestEventListener(
+    @ConditionalOnMissingBean(IkoSeachActionEventListener::class)
+    fun ikoSeachActionEventListener(
         ikoSearchFieldService: IkoSearchFieldService,
-    ): IkoDataRequestEventListener {
-        return IkoDataRequestEventListener(
+    ): IkoSeachActionEventListener {
+        return IkoSeachActionEventListener(
             ikoSearchFieldService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoDataAggregateTabEventListener::class)
-    fun ikoDataAggregateTabEventListener(
+    @ConditionalOnMissingBean(IkoViewTabEventListener::class)
+    fun ikoViewTabEventListener(
         ikoWidgetService: IkoWidgetService,
-    ): IkoDataAggregateTabEventListener {
-        return IkoDataAggregateTabEventListener(
+    ): IkoViewTabEventListener {
+        return IkoViewTabEventListener(
             ikoWidgetService,
         )
     }

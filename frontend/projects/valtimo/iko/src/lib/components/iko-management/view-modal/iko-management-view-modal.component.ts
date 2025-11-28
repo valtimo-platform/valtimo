@@ -29,11 +29,7 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
-import {
-  PropertyField,
-  IkoDataAggregateResponse,
-  IkoRepositoryConfigResponse,
-} from '../../../models';
+import {PropertyField, IkoViewResponse, IkoRepositoryConfigResponse} from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
 import {ModalMode} from '@valtimo/shared';
@@ -86,8 +82,8 @@ export class IkoManagementViewModalComponent {
     this._apiKey$.next(value);
   }
 
-  public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
-  @Input() public set prefillData(value: IkoDataAggregateResponse | null) {
+  public readonly $prefillData = signal<IkoViewResponse | null>(null);
+  @Input() public set prefillData(value: IkoViewResponse | null) {
     if (!value) {
       this.$prefillData.set(null);
       return;
@@ -109,10 +105,10 @@ export class IkoManagementViewModalComponent {
     filter((open: boolean) => !!open),
     switchMap(() => this._apiKey$),
     switchMap((repositoryKey: string | null) =>
-      this.ikoManagementApiService.getIkoDataAggregateType(repositoryKey ?? '')
+      this.ikoManagementApiService.getIkoViewType(repositoryKey ?? '')
     ),
     switchMap((repository: IkoRepositoryConfigResponse) =>
-      this.ikoManagementApiService.getIkoDataAggregatePropertyFields(repository.type)
+      this.ikoManagementApiService.getIkoViewPropertyFields(repository.type)
     )
   );
   public formGroup = this.fb.group({

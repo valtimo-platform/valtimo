@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoViewKey": "klant",
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
@@ -157,7 +157,7 @@
             ],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
+                "collection": "iko:?ikoViewKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
                 "defaultPageSize": 4,
                 "columns": [
                     {
@@ -199,7 +199,7 @@
             "actions": [],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
+                "collection": "iko:?ikoViewKey=boom&boombeeld=Aanvaard boombeeld&id=",
                 "defaultPageSize": 4,
                 "columns": [
                     {

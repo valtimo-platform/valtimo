@@ -1,6 +1,6 @@
 {
-    "ikoDataAggregateKey": "demo",
-    "ikoDataRequestKey": "bsn",
+    "ikoViewKey": "demo",
+    "ikoSeachActionKey": "bsn",
     "ikoSearchFields": [
         {
             "key": "bsn",

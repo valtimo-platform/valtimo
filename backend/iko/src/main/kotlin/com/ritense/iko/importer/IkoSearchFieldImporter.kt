@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_REQUEST
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_ACTION
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_FIELD
 
 class IkoSearchFieldImporter(
@@ -31,16 +31,16 @@ class IkoSearchFieldImporter(
 
     override fun type(): String = IKO_SEARCH_FIELD
 
-    override fun dependsOn(): Set<String> = setOf(IKO_DATA_REQUEST)
+    override fun dependsOn(): Set<String> = setOf(IKO_SEARCH_ACTION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
         val ikoSearchFieldsDto = objectMapper.readValue<IkoSearchFieldsDto>(request.content.toString(Charsets.UTF_8))
 
-        val existingSearchFields = service.findAllSearchFieldsByIkoDataRequest(
-            ikoSearchFieldsDto.ikoDataAggregateKey,
-            ikoSearchFieldsDto.ikoDataRequestKey,
+        val existingSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+            ikoSearchFieldsDto.ikoViewKey,
+            ikoSearchFieldsDto.ikoSeachActionKey,
         )
 
         ikoSearchFieldsDto.ikoSearchFields.forEachIndexed { index, searchFieldDto ->
@@ -48,21 +48,21 @@ class IkoSearchFieldImporter(
                 existingSearchFields.firstOrNull { existingSearchField -> existingSearchField.key == searchFieldDto.key }?.id
             if (existingSearchFieldId != null) {
                 service.update(
-                    ikoSearchFieldsDto.ikoDataAggregateKey,
-                    ikoSearchFieldsDto.ikoDataRequestKey,
+                    ikoSearchFieldsDto.ikoViewKey,
+                    ikoSearchFieldsDto.ikoSeachActionKey,
                     searchFieldDto.toEntity(
-                        ikoSearchFieldsDto.ikoDataAggregateKey,
-                        ikoSearchFieldsDto.ikoDataRequestKey,
+                        ikoSearchFieldsDto.ikoViewKey,
+                        ikoSearchFieldsDto.ikoSeachActionKey,
                         index
                     )
                 )
             } else {
                 service.create(
-                    ikoSearchFieldsDto.ikoDataAggregateKey,
-                    ikoSearchFieldsDto.ikoDataRequestKey,
+                    ikoSearchFieldsDto.ikoViewKey,
+                    ikoSearchFieldsDto.ikoSeachActionKey,
                     searchFieldDto.toEntity(
-                        ikoSearchFieldsDto.ikoDataAggregateKey,
-                        ikoSearchFieldsDto.ikoDataRequestKey,
+                        ikoSearchFieldsDto.ikoViewKey,
+                        ikoSearchFieldsDto.ikoSeachActionKey,
                         index
                     )
                 )
@@ -73,8 +73,8 @@ class IkoSearchFieldImporter(
             .filter { existingSearchField -> ikoSearchFieldsDto.ikoSearchFields.none { searchFieldDto -> searchFieldDto.key == existingSearchField.key } }
             .forEach { existingSearchField ->
                 service.deleteByKey(
-                    ikoSearchFieldsDto.ikoDataAggregateKey,
-                    ikoSearchFieldsDto.ikoDataRequestKey,
+                    ikoSearchFieldsDto.ikoViewKey,
+                    ikoSearchFieldsDto.ikoSeachActionKey,
                     existingSearchField.key
                 )
             }

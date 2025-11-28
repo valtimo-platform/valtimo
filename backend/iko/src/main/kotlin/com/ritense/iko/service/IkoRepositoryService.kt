@@ -20,8 +20,8 @@ import com.ritense.authorization.Action.Companion.deny
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.domain.IkoRepositoryConfig
-import com.ritense.iko.domain.IkoDataAggregate
-import com.ritense.iko.event.IkoDataRequestPreDeleteEvent
+import com.ritense.iko.domain.IkoView
+import com.ritense.iko.event.IkoSeachActionPreDeleteEvent
 import com.ritense.iko.event.IkoRepositoryConfigPreDeleteEvent
 import com.ritense.iko.repository.IkoRepositoryConfigRepository
 import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.byKey
@@ -146,7 +146,7 @@ class IkoRepositoryService(
     private fun denyAuthorization() {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                IkoDataAggregate::class.java,
+                IkoView::class.java,
                 deny()
             )
         )
