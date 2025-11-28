@@ -32,7 +32,6 @@ import {
   ModalService,
   PageHeaderService,
   PageTitleService,
-  PendingChangesComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
@@ -53,7 +52,6 @@ import {
   ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
-  ProcessLinkEditMode,
   ProcessLinkModule,
   ProcessLinkService,
   ProcessLinkStateService,
@@ -142,10 +140,7 @@ import {is} from 'bpmn-js/lib/util/ModelUtil';
     ProcessLinkButtonService,
   ],
 })
-export class ProcessManagementBuilderComponent
-  extends PendingChangesComponent
-  implements AfterViewInit, OnDestroy
-{
+export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modeler', {static: false}) modelerElementRef!: ElementRef;
   @ViewChild('modelerPanel', {static: false}) modelerPanelElementRef!: ElementRef;
   @ViewChild('viewer', {static: false}) viewerElementRef!: ElementRef;
@@ -234,7 +229,6 @@ export class ProcessManagementBuilderComponent
       map(result => result.map(resultItem => resultItem.processDefinition)),
       tap(processDefinitions => {
         this.changesPending$.next(false);
-        this.pendingChanges = false;
         this.setSelectedProcessDefinitionToLatest(processDefinitions);
       })
     );
@@ -288,7 +282,6 @@ export class ProcessManagementBuilderComponent
     private readonly editPermissionsService: EditPermissionsService,
     private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {
-    super();
     this.setProcessManagementWindow();
   }
 
@@ -301,7 +294,6 @@ export class ProcessManagementBuilderComponent
     this.subscribeToProcessLinkUpdateEvents();
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
-    this.processLinkStateService.setEditMode(ProcessLinkEditMode.EMIT_EVENTS);
     this.initEditing();
   }
 
@@ -377,11 +369,9 @@ export class ProcessManagementBuilderComponent
       .subscribe({
         next: context => {
           if (context === 'independent') {
-            this.pendingChanges = false;
             this.reload();
             this.showNotification('success');
           } else {
-            this.pendingChanges = false;
             this.navigateBack('success');
           }
         },
@@ -438,7 +428,6 @@ export class ProcessManagementBuilderComponent
       )
       .subscribe({
         next: () => {
-          this.pendingChanges = false;
           this.navigateBack('success');
         },
         error: () => {
@@ -526,7 +515,6 @@ export class ProcessManagementBuilderComponent
 
     this._bpmnModeler.on('commandStack.changed', () => {
       this.changesPending$.next(true);
-      this.pendingChanges = true;
     });
 
     this._bpmnModeler.on('import.done', () => {
@@ -597,7 +585,6 @@ export class ProcessManagementBuilderComponent
 
     this._bpmnViewer.on('commandStack.changed', () => {
       this.changesPending$.next(true);
-      this.pendingChanges = true;
     });
 
     this._bpmnViewer.on('import.done', () => {
