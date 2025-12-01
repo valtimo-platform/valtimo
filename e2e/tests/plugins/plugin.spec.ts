@@ -1,65 +1,38 @@
-import { expect, test } from "@playwright/test";
-import {PluginPage} from "./page";
+import { test, expect } from "@playwright/test";
+import { PluginPage } from "./page"
+import { pluginTypes } from "./plugin-config";
 
 test.use({ storageState: undefined });
 
-test.only("Plugin management", async ({ page }) => {
-  // Login
+test("Plugin management", async ({ page }) => {
+
+  const pluginPage = new PluginPage(page);
+
+  // Log in
   console.log("Log in as admin...")
   const username = "admin";
   const password = "admin"
-  const baseUrl = "http://localhost:4200/";
-  await page.goto(baseUrl);
+  await page.goto("http://localhost:4200/");
   await page.locator("#username").fill(username);
   await page.locator("#password").fill(password);
   await page.getByRole('button', { name: 'Sign In' }).click();
   await page.waitForTimeout(1500);
 
-  // Go to Plugin management
-  console.log("Navigating to Plugin management...");
-  await page.getByRole('button', { name: 'Admin' }).click();
-  await page.getByRole('link', { name: 'Plugins' }).click();
+  // Navigate
+  await pluginPage.goToPluginManagement();
 
-  await page.waitForSelector("valtimo-carbon-list");
+  // Create all plugins
+  for (const type of pluginTypes) {
+    await pluginPage.openWizard();
+    await pluginPage.selectPluginType(type);
+    await pluginPage.fillPluginForm(type);
+    await pluginPage.saveConfiguration();
+  }
 
-  // Get all table rows
-  const rows = await page.locator('tbody cds-table-row, tbody tr').all();
-  expect(rows.length).toBeGreaterThan(0);
+  // Duplicate example
+  await pluginPage.duplicateConfigurationName();
 
-  console.log(`Found ${rows.length} plugin configurations.`);
-
-  const firstRow = rows[0];
-  const firstRowText = await firstRow.innerText();
-  console.log("First row text:", firstRowText);
-
-  // Intercept DELETE call
-  const deleteRequestPromise = page.waitForRequest(request =>
-      request.method() === 'DELETE' &&
-      request.url().includes('/v1/plugin/configuration')
-  );
-
-  const deleteResponsePromise = page.waitForResponse(response =>
-      response.request().method() === 'DELETE' &&
-      response.url().includes('/v1/plugin/configuration')
-  );
-
-  console.log("Deleting plugin...");
-  await firstRow.getByRole('button', { name: 'Options' }).click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-
-  // Wait for DELETE request + response
-  const deleteRequest = await deleteRequestPromise;
-  const deleteResponse = await deleteResponsePromise;
-
-  console.log("DELETE endpoint called:", deleteRequest.url());
-  expect(deleteResponse.status()).toBe(200);
-
-  // Wait for list to refresh
-  await page.waitForTimeout(1500);
-
-  // Re-fetch rows
-  const rowsAfter = await page.locator('tbody cds-table-row, tbody tr').all();
-  expect(rowsAfter.length).toBe(rows.length - 1);
-
-  console.log("Plugin deleted successfully.");
+  // Delete example
+  const rows = await page.locator("tbody tr").all();
+  await pluginPage.deletePlugin(rows[0]);
 });
