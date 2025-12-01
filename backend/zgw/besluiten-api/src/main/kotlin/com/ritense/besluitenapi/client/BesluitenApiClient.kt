@@ -81,10 +81,26 @@ class BesluitenApiClient(
     ): Besluit {
         return restClient(authentication)
             .patch()
-            .uri ( besluitUrl )
+            .uri(besluitUrl)
             .headers(this::defaultHeaders)
             .contentType(MediaType.APPLICATION_JSON)
-            .body (request)
+            .body(request)
+            .retrieve()
+            .body<Besluit>()!!
+    }
+
+    fun getBesluit(
+        authentication: BesluitenApiAuthentication,
+        baseUrl: URI,
+        besluitUuid: String
+    ): Besluit {
+        return restClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .pathSegment("besluiten", besluitUuid)
+                    .build()
+            }
             .retrieve()
             .body<Besluit>()!!
     }
