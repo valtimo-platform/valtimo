@@ -56,7 +56,7 @@ internal class IkoViewResourceTest {
     }
 
     @Test
-    fun `should get iko ikoViews`() {
+    fun `should get ikoViews`() {
         val pageable = PageRequest.of(0, 10)
         whenever(service.findAll(eq("klant"), eq("Klant"), isNull(), any())).thenReturn(
             PageImpl(

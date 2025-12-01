@@ -74,7 +74,7 @@ internal class IkoSearchActionResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSearchActions`() {
+    fun `should get ikoSearchActions`() {
         val ikoSearchAction = IkoSearchAction(
             id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",

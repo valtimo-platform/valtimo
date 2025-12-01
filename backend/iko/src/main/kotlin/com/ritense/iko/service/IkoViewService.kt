@@ -91,7 +91,7 @@ class IkoViewService(
         properties: Map<String, Any?>,
     ): IkoView {
         denyAuthorization()
-        require(!existsByKey(key)) { "IKO iko view '$key' already exists" }
+        require(!existsByKey(key)) { "IKO view '$key' already exists" }
         return ikoViewRepository.save(
             IkoView(
                 key = key,

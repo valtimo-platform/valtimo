@@ -71,7 +71,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSearchAction property fields`() {
+    fun `should get ikoSearchAction property fields`() {
         whenever(service.getIkoSearchActionPropertyFields("iko")).thenReturn(
             listOf(
                 PropertyField(
@@ -91,7 +91,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSearchActions`() {
+    fun `should get ikoSearchActions`() {
         whenever(service.findAll(isNull(), eq("klant"), isNull())).thenReturn(
             listOf(
                 IkoSearchAction(
@@ -111,7 +111,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSearchAction by key`() {
+    fun `should get ikoSearchAction by key`() {
         whenever(service.getByKey("bsn", "klant")).thenReturn(
             IkoSearchAction(
                 id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
@@ -136,7 +136,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should create iko ikoSearchAction`() {
+    fun `should create ikoSearchAction`() {
         val ikoView = IkoView("klant", "Klant", emptyMap(), mock())
         val ikoSearchAction = IkoSearchAction(
             id = IkoSearchActionId("bsn", ikoView),
@@ -168,7 +168,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should update iko ikoSearchAction`() {
+    fun `should update ikoSearchAction`() {
         val ikoSearchAction = IkoSearchAction(
             id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",
@@ -201,7 +201,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should update iko ikoSearchActions`() {
+    fun `should update ikoSearchActions`() {
         val ikoSearchAction = IkoSearchAction(
             id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",
@@ -235,7 +235,7 @@ internal class IkoSearchActionManagementResourceTest {
     }
 
     @Test
-    fun `should delete iko ikoSearchAction`() {
+    fun `should delete ikoSearchAction`() {
         mockMvc.perform(
             delete(
                 "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}",

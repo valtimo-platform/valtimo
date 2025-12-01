@@ -51,7 +51,7 @@ export class IkoTabService {
 
   public setIkoViewKey(key: string): void {
     this._ikoViewKey$.next(key);
-    this.logger.debug(`Active IKO iko view key set to ${key}`);
+    this.logger.debug(`Active IKO view key set to ${key}`);
   }
 
   public setEntryId(id: string): void {

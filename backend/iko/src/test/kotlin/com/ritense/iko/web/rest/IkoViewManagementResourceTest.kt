@@ -77,7 +77,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoView property fields`() {
+    fun `should get ikoView property fields`() {
         whenever(service.getIkoViewPropertyFields("iko")).thenReturn(
             listOf(
                 PropertyField(
@@ -114,7 +114,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoViews`() {
+    fun `should get ikoViews`() {
         val pageable = PageRequest.of(0, 10)
         whenever(service.findAll(eq("klant"), eq("Klant"), isNull(), any())).thenReturn(
             PageImpl(
@@ -132,7 +132,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoView by key`() {
+    fun `should get ikoView by key`() {
         whenever(service.getByKey("klant")).thenReturn(
             IkoView(
                 key = "klant",
@@ -157,7 +157,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should create iko ikoView`() {
+    fun `should create ikoView`() {
         val ikoView = IkoView(
             key = "klant",
             title = "Klant",
@@ -198,7 +198,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should update iko ikoView`() {
+    fun `should update ikoView`() {
         val ikoView = IkoView(
             key = "klant",
             title = "Klant",
@@ -238,7 +238,7 @@ internal class IkoViewManagementResourceTest {
     }
 
     @Test
-    fun `should delete iko ikoView`() {
+    fun `should delete ikoView`() {
         mockMvc.perform(delete("/api/management/v1/iko-view/{ikoViewKey}", "klant"))
             .andDo(print())
             .andExpect(status().isNoContent())

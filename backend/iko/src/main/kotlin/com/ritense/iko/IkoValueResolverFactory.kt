@@ -20,16 +20,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.ritense.iko.plugin.IkoPlugin
 import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.service.IkoViewService
-import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP_NAME
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_SEARCH_ACTION_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
@@ -44,7 +41,6 @@ class IkoValueResolverFactory(
     private val ikoSearchActionService: IkoSearchActionService,
     private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
-    private val pluginService: PluginService,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -61,7 +57,6 @@ class IkoValueResolverFactory(
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
         return getIkoViewDataById(properties)
-            ?: getIkoAdpDataByName(properties)
             ?: searchIkoViewData(properties)
             ?: Function { null }
     }
@@ -105,22 +100,6 @@ class IkoValueResolverFactory(
         )
         val data = objectMapper.valueToTree<ArrayNode>(dataPaged.content)
         return toValueFunction(data)
-    }
-
-    private fun getIkoAdpDataByName(properties: Map<String, Any>): Function<String, Any?>? {
-        val adpName = properties[IKO_ADP_NAME]?.toString()
-        val id = properties[ID]?.toString()
-        if (adpName != null && id != null) {
-            val queryParams = properties.map { it.key to it.value.toString() }.toMap()
-            val data = getIkoPlugin().getByAggregatedDataProfileId(adpName, id, queryParams)
-            return toValueFunction(data)
-        }
-        return null
-    }
-
-    private fun getIkoPlugin(): IkoPlugin {
-        return pluginService.createInstance(IkoPlugin::class.java) { true }
-            ?: throw IllegalStateException("Missing plugin configuration of type 'iko'")
     }
 
     private fun toValueFunction(data: JsonNode): Function<String, Any?> {
