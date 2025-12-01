@@ -54,4 +54,17 @@
       color: var(--cds-white) !important;
     }
   }
+
+  .required-panel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-right: 16px;
+
+    .req-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
 }

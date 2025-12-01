@@ -17,13 +17,24 @@
   <div class="cds--toolbar-content">
     <ng-content></ng-content>
 
+    <div class="required-panel">
+      <span>Required:</span>
+      <div class="req-row" *ngFor="let p of getProperties()">
+        <label>{{ p }}</label>
+        <input
+          type="checkbox"
+          [checked]="isRequired(p)"
+          (change)="toggleRequired(p, $event.target.checked)"
+        />
+      </div>
+    </div>
+
     <button
       cdsButton="primary"
       [disabled]="disabled || (valid$ | async) === false"
       (click)="onSaveClick()"
     >
       {{ 'interface.save' | translate }}
-
       <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
@@ -39,4 +50,5 @@
   titleTranslationKey="interface.save"
   (cancelEvent)="hideConfirmationModal()"
   (confirmEvent)="onSaveChanges()"
-></valtimo-confirmation-modal>
+>
+</valtimo-confirmation-modal>
