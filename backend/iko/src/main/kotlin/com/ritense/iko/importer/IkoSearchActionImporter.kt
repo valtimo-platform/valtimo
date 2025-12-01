@@ -19,7 +19,7 @@ package com.ritense.iko.importer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_VIEW
@@ -27,9 +27,9 @@ import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_ACTION
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class IkoSeachActionImporter(
+class IkoSearchActionImporter(
     private val objectMapper: ObjectMapper,
-    private val service: IkoSeachActionService,
+    private val service: IkoSearchActionService,
     private val ikoViewService: IkoViewService,
 ) : Importer {
     override fun type() = IKO_SEARCH_ACTION
@@ -40,28 +40,28 @@ class IkoSeachActionImporter(
 
     override fun import(request: ImportRequest) {
         val fileContent = request.content.toString(Charsets.UTF_8)
-        val ikoSeachActionsDto = objectMapper.readValue<IkoSeachActionsDto>(fileContent)
+        val ikoSearchActionsDto = objectMapper.readValue<IkoSearchActionsDto>(fileContent)
 
-        val ikoView = ikoViewService.getByKey(ikoSeachActionsDto.ikoViewKey)
-        val existingIkoSeachActions = service.findAll(ikoViewKey = ikoSeachActionsDto.ikoViewKey)
+        val ikoView = ikoViewService.getByKey(ikoSearchActionsDto.ikoViewKey)
+        val existingIkoSearchActions = service.findAll(ikoViewKey = ikoSearchActionsDto.ikoViewKey)
 
-        ikoSeachActionsDto.ikoSeachActions.forEachIndexed { index, ikoSeachActionDto ->
-            val ikoSeachActionExists = existingIkoSeachActions
-                .any { existingIkoSeachAction -> existingIkoSeachAction.id.key == ikoSeachActionDto.key }
-            val ikoSeachAction = ikoSeachActionDto.toEntity(ikoView, index)
-            if (ikoSeachActionExists) {
-                service.update(ikoSeachAction)
+        ikoSearchActionsDto.ikoSearchActions.forEachIndexed { index, ikoSearchActionDto ->
+            val ikoSearchActionExists = existingIkoSearchActions
+                .any { existingIkoSearchAction -> existingIkoSearchAction.id.key == ikoSearchActionDto.key }
+            val ikoSearchAction = ikoSearchActionDto.toEntity(ikoView, index)
+            if (ikoSearchActionExists) {
+                service.update(ikoSearchAction)
             } else {
-                service.create(ikoSeachAction)
+                service.create(ikoSearchAction)
             }
         }
 
-        existingIkoSeachActions
-            .filter { existingIkoSeachAction -> ikoSeachActionsDto.ikoSeachActions.none { ikoSeachActionDto -> ikoSeachActionDto.key == existingIkoSeachAction.id.key } }
-            .forEach { existingIkoSeachAction ->
+        existingIkoSearchActions
+            .filter { existingIkoSearchAction -> ikoSearchActionsDto.ikoSearchActions.none { ikoSearchActionDto -> ikoSearchActionDto.key == existingIkoSearchAction.id.key } }
+            .forEach { existingIkoSearchAction ->
                 service.delete(
-                    ikoViewKey = ikoSeachActionsDto.ikoViewKey,
-                    key = existingIkoSeachAction.id.key
+                    ikoViewKey = ikoSearchActionsDto.ikoViewKey,
+                    key = existingIkoSearchAction.id.key
                 )
             }
     }

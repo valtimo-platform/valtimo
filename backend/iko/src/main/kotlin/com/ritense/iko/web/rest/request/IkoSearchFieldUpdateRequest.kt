@@ -33,10 +33,10 @@ data class IkoSearchFieldUpdateRequest(
     val dropdownDataProvider: String?,
     val required: Boolean,
 ) {
-    fun toEntity(id: UUID, ikoViewKey: String, ikoSeachActionKey: String, order: Int) = SearchFieldV2(
+    fun toEntity(id: UUID, ikoViewKey: String, ikoSearchActionKey: String, order: Int) = SearchFieldV2(
         id = id,
         ownerType = IKO_SEARCH_FIELD_OWNER_TYPE,
-        ownerId = "$ikoViewKey:$ikoSeachActionKey",
+        ownerId = "$ikoViewKey:$ikoSearchActionKey",
         key = key,
         title = title,
         path = path,

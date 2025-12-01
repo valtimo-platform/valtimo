@@ -33,9 +33,9 @@ data class IkoSearchFieldDto(
     val dropdownDataProvider: String? = null,
     val required: Boolean = false,
 ) {
-    fun toEntity(ikoViewKey: String, ikoSeachActionKey: String, order: Int) = SearchFieldV2(
+    fun toEntity(ikoViewKey: String, ikoSearchActionKey: String, order: Int) = SearchFieldV2(
         ownerType = IKO_SEARCH_FIELD_OWNER_TYPE,
-        ownerId = "$ikoViewKey:$ikoSeachActionKey",
+        ownerId = "$ikoViewKey:$ikoSearchActionKey",
         key = this.key,
         title = this.title,
         path = this.path,
@@ -48,7 +48,7 @@ data class IkoSearchFieldDto(
     )
 
     companion object {
-        const val IKO_SEARCH_FIELD_OWNER_TYPE = "IkoSeachAction"
+        const val IKO_SEARCH_FIELD_OWNER_TYPE = "IkoSearchAction"
 
         fun of(entity: SearchFieldV2): IkoSearchFieldDto {
             require(entity.ownerType == IKO_SEARCH_FIELD_OWNER_TYPE)

@@ -76,7 +76,7 @@ class IkoServerRepository(
         ),
     )
 
-    override fun getIkoSeachActionPropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoSearchActionPropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             ENDPOINT_QUERY_PARAMETERS,
             PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,

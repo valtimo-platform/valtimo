@@ -16,11 +16,11 @@
 
 package com.ritense.iko.web.rest
 
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.web.rest.request.IkoSearchRequest
-import com.ritense.iko.web.rest.response.IkoSeachActionUserListResponse
+import com.ritense.iko.web.rest.response.IkoSearchActionUserListResponse
 import com.ritense.iko.web.rest.response.IkoSearchResponse
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
@@ -43,42 +43,42 @@ import org.springframework.web.bind.annotation.RequestMapping
 @Controller
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
-class IkoSeachActionResource(
-    private val ikoSeachActionService: IkoSeachActionService,
+class IkoSearchActionResource(
+    private val ikoSearchActionService: IkoSearchActionService,
     private val ikoListColumnService: IkoListColumnService,
     private val ikoSearchFieldService: IkoSearchFieldService,
 ) {
 
     @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
-    fun getIkoSeachActions(
+    fun getIkoSearchActions(
         @PathVariable ikoViewKey: String,
-    ): ResponseEntity<List<IkoSeachActionUserListResponse>> {
-        val ikoSeachActions = ikoSeachActionService.findAll(
+    ): ResponseEntity<List<IkoSearchActionUserListResponse>> {
+        val ikoSearchActions = ikoSearchActionService.findAll(
             ikoViewKey = ikoViewKey,
         )
-        val response = ikoSeachActions.map { ikoSeachAction ->
+        val response = ikoSearchActions.map { ikoSearchAction ->
             val searchFields =
-                ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(ikoViewKey, ikoSeachAction.id.key)
-            IkoSeachActionUserListResponse.from(ikoSeachAction, searchFields)
+                ikoSearchFieldService.findAllSearchFieldsByIkoSearchAction(ikoViewKey, ikoSearchAction.id.key)
+            IkoSearchActionUserListResponse.from(ikoSearchAction, searchFields)
         }
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search")
+    @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search")
     fun search(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @RequestBody request: IkoSearchRequest,
         pageable: Pageable,
     ): ResponseEntity<IkoSearchResponse> {
         val headers = ikoListColumnService.findAllColumnsByIkoViewKey(ikoViewKey)
         val searchFields =
-            ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(ikoViewKey, ikoSeachActionKey)
+            ikoSearchFieldService.findAllSearchFieldsByIkoSearchAction(ikoViewKey, ikoSearchActionKey)
         require(searchFields.filter { it.required }.all { request.filters.containsKey(it.key) }) {
-            "Missing required SearchField for IkoSeachAction '$ikoViewKey:$ikoSeachActionKey'"
+            "Missing required SearchField for IkoSearchAction '$ikoViewKey:$ikoSearchActionKey'"
         }
-        val data = ikoSeachActionService.searchData(
-            key = ikoSeachActionKey,
+        val data = ikoSearchActionService.searchData(
+            key = ikoSearchActionKey,
             ikoViewKey = ikoViewKey,
             filters = toDataFilers(request.filters, searchFields),
             pageable = toPageableByPath(headers, pageable),

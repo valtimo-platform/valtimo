@@ -16,17 +16,17 @@
 
 package com.ritense.iko.web.rest.response
 
-import com.ritense.iko.domain.IkoSeachAction
+import com.ritense.iko.domain.IkoSearchAction
 import com.ritense.iko.importer.IkoSearchFieldDto
 import com.ritense.search.domain.SearchFieldV2
 
-data class IkoSeachActionUserListResponse(
+data class IkoSearchActionUserListResponse(
     val key: String,
     val title: String,
     val searchFields: List<IkoSearchFieldDto>,
 ) {
     companion object {
-        fun from(entity: IkoSeachAction, searchFields: List<SearchFieldV2>) = IkoSeachActionUserListResponse(
+        fun from(entity: IkoSearchAction, searchFields: List<SearchFieldV2>) = IkoSearchActionUserListResponse(
             key = entity.id.key,
             title = entity.title,
             searchFields = searchFields.map { IkoSearchFieldDto.of(it) }

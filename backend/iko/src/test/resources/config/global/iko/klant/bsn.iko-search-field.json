@@ -1,6 +1,6 @@
 {
   "ikoViewKey" : "klant",
-  "ikoSeachActionKey" : "bsn",
+  "ikoSearchActionKey" : "bsn",
   "ikoSearchFields" : [
     {
       "key" : "bsn",

@@ -16,16 +16,16 @@
 
 package com.ritense.iko.web.rest.response
 
-import com.ritense.iko.domain.IkoSeachAction
+import com.ritense.iko.domain.IkoSearchAction
 
-data class IkoSeachActionResponse(
+data class IkoSearchActionResponse(
     val key: String,
     val ikoViewKey: String,
     val title: String,
     val properties: Map<String, Any?>
 ) {
     companion object {
-        fun from(entity: IkoSeachAction) = IkoSeachActionResponse(
+        fun from(entity: IkoSearchAction) = IkoSearchActionResponse(
             key = entity.id.key,
             ikoViewKey = entity.id.ikoView.key,
             title = entity.title,

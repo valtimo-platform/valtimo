@@ -21,7 +21,7 @@ interface IkoView {
   title: string;
 }
 
-interface IkoSeachActionUser {
+interface IkoSearchActionUser {
   key: string;
   title: string;
   searchFields: SearchFieldV2[];
@@ -72,7 +72,7 @@ interface IkoTab {
 
 export {
   IkoView,
-  IkoSeachActionUser,
+  IkoSearchActionUser,
   SearchFieldV2,
   IkoListHeader,
   IkoListItem,

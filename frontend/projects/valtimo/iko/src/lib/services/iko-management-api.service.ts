@@ -22,9 +22,9 @@ import {
   IkoViewListResponse,
   IkoViewResponse,
   IkoViewUpdateRequest,
-  IkoSeachActionCreateRequest,
-  IkoSeachActionResponse,
-  IkoSeachActionUpdateRequest,
+  IkoSearchActionCreateRequest,
+  IkoSearchActionResponse,
+  IkoSearchActionUpdateRequest,
   IkoListColumnRequest,
   IkoRepositoryConfigCreateRequest,
   IkoRepositoryConfigListResponse,
@@ -138,57 +138,62 @@ export class IkoManagementApiService extends BaseApiService {
     });
   }
 
-  public getManagementIkoSeachActions(aggregateKey: string): Observable<IkoSeachActionResponse[]> {
-    return this.httpClient.get<IkoSeachActionResponse[]>(
+  public getManagementIkoSearchActions(
+    aggregateKey: string
+  ): Observable<IkoSearchActionResponse[]> {
+    return this.httpClient.get<IkoSearchActionResponse[]>(
       this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action`)
     );
   }
 
-  public getIkoSeachAction(aggregateKey: string, key: string): Observable<IkoSeachActionResponse> {
-    return this.httpClient.get<IkoSeachActionResponse>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action/${key}`)
+  public getIkoSearchAction(
+    aggregateKey: string,
+    key: string
+  ): Observable<IkoSearchActionResponse> {
+    return this.httpClient.get<IkoSearchActionResponse>(
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action/${key}`)
     );
   }
 
-  public createIkoSeachAction(
+  public createIkoSearchAction(
     aggregateKey: string,
     key: string,
-    body: IkoSeachActionCreateRequest
-  ): Observable<IkoSeachActionResponse> {
-    return this.httpClient.post<IkoSeachActionResponse>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action/${key}`),
+    body: IkoSearchActionCreateRequest
+  ): Observable<IkoSearchActionResponse> {
+    return this.httpClient.post<IkoSearchActionResponse>(
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action/${key}`),
       body
     );
   }
 
-  public updateIkoSeachActions(
+  public updateIkoSearchActions(
     aggregateKey: string,
-    body: IkoSeachActionUpdateRequest[]
-  ): Observable<IkoSeachActionResponse[]> {
-    return this.httpClient.put<IkoSeachActionResponse[]>(
+    body: IkoSearchActionUpdateRequest[]
+  ): Observable<IkoSearchActionResponse[]> {
+    return this.httpClient.put<IkoSearchActionResponse[]>(
       this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action`),
       body
     );
   }
 
-  public updateIkoSeachAction(
+  public updateIkoSearchAction(
     aggregateKey: string,
     actionKey: string,
-    body: IkoSeachActionUpdateRequest
-  ): Observable<IkoSeachActionResponse> {
-    return this.httpClient.put<IkoSeachActionResponse>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action/${actionKey}`),
+    body: IkoSearchActionUpdateRequest
+  ): Observable<IkoSearchActionResponse> {
+    return this.httpClient.put<IkoSearchActionResponse>(
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action/${actionKey}`),
       body
     );
   }
 
-  public deleteIkoSeachAction(aggregateKey: string, key: string): Observable<void> {
+  public deleteIkoSearchAction(aggregateKey: string, key: string): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action/${key}`)
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action/${key}`)
     );
   }
 
-  public getIkoSeachActionPropertyFields(type: string): Observable<PropertyField[]> {
+  public getIkoSearchActionPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
       this.getApiUrl(`management/v1/iko-property-fields/${type}/iko-search-action`)
     );
@@ -297,7 +302,7 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<IkoSearchField[]> {
     return this.httpClient.get<IkoSearchField[]>(
       this.getApiUrl(
-        `management/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field`
+        `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field`
       )
     );
   }
@@ -308,9 +313,7 @@ export class IkoManagementApiService extends BaseApiService {
     key: string
   ): Observable<IkoSearchField> {
     return this.httpClient.get<IkoSearchField>(
-      this.getApiUrl(
-        `/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field/${key}`
-      )
+      this.getApiUrl(`/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field/${key}`)
     );
   }
 
@@ -322,7 +325,7 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<IkoSearchField> {
     return this.httpClient.post<IkoSearchField>(
       this.getApiUrl(
-        `management/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field/${key}`
+        `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field/${key}`
       ),
       body
     );
@@ -335,7 +338,7 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<IkoSearchField[]> {
     return this.httpClient.put<IkoSearchField[]>(
       this.getApiUrl(
-        `management/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field`
+        `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field`
       ),
       body
     );
@@ -349,7 +352,7 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<IkoSearchField[]> {
     return this.httpClient.put<IkoSearchField[]>(
       this.getApiUrl(
-        `management/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field/${fieldKey}`
+        `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field/${fieldKey}`
       ),
       body
     );
@@ -362,7 +365,7 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `management/v1/iko-view/${aggregateKey}/iko-search-action/${requestKey}/search-field/${key}`
+        `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field/${key}`
       )
     );
   }

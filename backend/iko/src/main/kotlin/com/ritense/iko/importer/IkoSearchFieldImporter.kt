@@ -38,9 +38,9 @@ class IkoSearchFieldImporter(
     override fun import(request: ImportRequest) {
         val ikoSearchFieldsDto = objectMapper.readValue<IkoSearchFieldsDto>(request.content.toString(Charsets.UTF_8))
 
-        val existingSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+        val existingSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoSearchFieldsDto.ikoViewKey,
-            ikoSearchFieldsDto.ikoSeachActionKey,
+            ikoSearchFieldsDto.ikoSearchActionKey,
         )
 
         ikoSearchFieldsDto.ikoSearchFields.forEachIndexed { index, searchFieldDto ->
@@ -49,20 +49,20 @@ class IkoSearchFieldImporter(
             if (existingSearchFieldId != null) {
                 service.update(
                     ikoSearchFieldsDto.ikoViewKey,
-                    ikoSearchFieldsDto.ikoSeachActionKey,
+                    ikoSearchFieldsDto.ikoSearchActionKey,
                     searchFieldDto.toEntity(
                         ikoSearchFieldsDto.ikoViewKey,
-                        ikoSearchFieldsDto.ikoSeachActionKey,
+                        ikoSearchFieldsDto.ikoSearchActionKey,
                         index
                     )
                 )
             } else {
                 service.create(
                     ikoSearchFieldsDto.ikoViewKey,
-                    ikoSearchFieldsDto.ikoSeachActionKey,
+                    ikoSearchFieldsDto.ikoSearchActionKey,
                     searchFieldDto.toEntity(
                         ikoSearchFieldsDto.ikoViewKey,
-                        ikoSearchFieldsDto.ikoSeachActionKey,
+                        ikoSearchFieldsDto.ikoSearchActionKey,
                         index
                     )
                 )
@@ -74,7 +74,7 @@ class IkoSearchFieldImporter(
             .forEach { existingSearchField ->
                 service.deleteByKey(
                     ikoSearchFieldsDto.ikoViewKey,
-                    ikoSearchFieldsDto.ikoSeachActionKey,
+                    ikoSearchFieldsDto.ikoSearchActionKey,
                     existingSearchField.key
                 )
             }

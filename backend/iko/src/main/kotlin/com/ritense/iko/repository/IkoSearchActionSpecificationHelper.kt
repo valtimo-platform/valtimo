@@ -16,11 +16,11 @@
 
 package com.ritense.iko.repository
 
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
 import org.springframework.data.jpa.domain.Specification
 
-class IkoSeachActionSpecificationHelper {
+class IkoSearchActionSpecificationHelper {
 
     companion object {
 
@@ -30,25 +30,25 @@ class IkoSeachActionSpecificationHelper {
         const val TITLE: String = "title"
 
         @JvmStatic
-        fun query() = Specification<IkoSeachAction> { _, _, cb ->
+        fun query() = Specification<IkoSearchAction> { _, _, cb ->
             cb.conjunction()
         }
 
         @JvmStatic
-        fun byKey(key: String) = Specification<IkoSeachAction> { root, _, cb ->
-            cb.equal(root.get<IkoSeachActionId>(ID).get<String>(KEY), key)
+        fun byKey(key: String) = Specification<IkoSearchAction> { root, _, cb ->
+            cb.equal(root.get<IkoSearchActionId>(ID).get<String>(KEY), key)
         }
 
         @JvmStatic
-        fun byIkoViewKey(ikoViewKey: String) = Specification<IkoSeachAction> { root, _, cb ->
+        fun byIkoViewKey(ikoViewKey: String) = Specification<IkoSearchAction> { root, _, cb ->
             cb.equal(
-                root.get<IkoSeachActionId>(ID).get<String>(IKO_VIEW).get<String>(KEY),
+                root.get<IkoSearchActionId>(ID).get<String>(IKO_VIEW).get<String>(KEY),
                 ikoViewKey
             )
         }
 
         @JvmStatic
-        fun byTitleContains(titlePart: String) = Specification<IkoSeachAction> { root, _, cb ->
+        fun byTitleContains(titlePart: String) = Specification<IkoSearchAction> { root, _, cb ->
             cb.like(root[TITLE], "%$titlePart%")
         }
     }

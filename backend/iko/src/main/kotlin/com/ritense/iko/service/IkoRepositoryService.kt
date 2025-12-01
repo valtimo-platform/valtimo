@@ -21,7 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.domain.IkoRepositoryConfig
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.event.IkoSeachActionPreDeleteEvent
+import com.ritense.iko.event.IkoSearchActionPreDeleteEvent
 import com.ritense.iko.event.IkoRepositoryConfigPreDeleteEvent
 import com.ritense.iko.repository.IkoRepositoryConfigRepository
 import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.byKey

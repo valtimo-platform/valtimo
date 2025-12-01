@@ -47,7 +47,7 @@ class ValtimoImportTypes {
 
         // IKO
         const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"
-        const val IKO_VIEW = "ikodataaggregate"
+        const val IKO_VIEW = "ikoview"
         const val IKO_SEARCH_ACTION = "ikodatarequest"
         const val IKO_SEARCH_FIELD = "ikosearchfield"
         const val IKO_LIST_COLUMN = "ikolistcolumn"

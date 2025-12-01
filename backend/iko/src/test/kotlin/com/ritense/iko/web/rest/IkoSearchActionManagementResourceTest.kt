@@ -18,12 +18,12 @@ package com.ritense.iko.web.rest
 
 import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_QUERY_PARAMETERS
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
 import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
-import com.ritense.iko.web.rest.request.IkoSeachActionCreateRequest
-import com.ritense.iko.web.rest.request.IkoSeachActionUpdateRequest
+import com.ritense.iko.service.IkoSearchActionService
+import com.ritense.iko.web.rest.request.IkoSearchActionCreateRequest
+import com.ritense.iko.web.rest.request.IkoSearchActionUpdateRequest
 import com.ritense.valtimo.contract.iko.PropertyField
 import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_TEXT
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -50,11 +50,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-internal class IkoSeachActionManagementResourceTest {
+internal class IkoSearchActionManagementResourceTest {
 
     private lateinit var mockMvc: MockMvc
-    private lateinit var resource: IkoSeachActionManagementResource
-    private lateinit var service: IkoSeachActionService
+    private lateinit var resource: IkoSearchActionManagementResource
+    private lateinit var service: IkoSearchActionService
     private lateinit var ikoViewService: IkoViewService
 
     private val objectMapper = MapperSingleton.get()
@@ -63,7 +63,7 @@ internal class IkoSeachActionManagementResourceTest {
     fun init() {
         service = mock()
         ikoViewService = mock()
-        resource = IkoSeachActionManagementResource(service, ikoViewService)
+        resource = IkoSearchActionManagementResource(service, ikoViewService)
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
@@ -71,8 +71,8 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSeachAction property fields`() {
-        whenever(service.getIkoSeachActionPropertyFields("iko")).thenReturn(
+    fun `should get iko ikoSearchAction property fields`() {
+        whenever(service.getIkoSearchActionPropertyFields("iko")).thenReturn(
             listOf(
                 PropertyField(
                     key = ENDPOINT_QUERY_PARAMETERS,
@@ -91,11 +91,11 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSeachActions`() {
+    fun `should get iko ikoSearchActions`() {
         whenever(service.findAll(isNull(), eq("klant"), isNull())).thenReturn(
             listOf(
-                IkoSeachAction(
-                    id = IkoSeachActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
+                IkoSearchAction(
+                    id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
                     title = "BSN",
                     order = 0,
                     properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
@@ -111,10 +111,10 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSeachAction by key`() {
+    fun `should get iko ikoSearchAction by key`() {
         whenever(service.getByKey("bsn", "klant")).thenReturn(
-            IkoSeachAction(
-                id = IkoSeachActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
+            IkoSearchAction(
+                id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
                 title = "BSN",
                 order = 0,
                 properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer"))
@@ -123,7 +123,7 @@ internal class IkoSeachActionManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}",
                 "klant",
                 "bsn"
             )
@@ -136,24 +136,24 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should create iko ikoSeachAction`() {
+    fun `should create iko ikoSearchAction`() {
         val ikoView = IkoView("klant", "Klant", emptyMap(), mock())
-        val ikoSeachAction = IkoSeachAction(
-            id = IkoSeachActionId("bsn", ikoView),
+        val ikoSearchAction = IkoSearchAction(
+            id = IkoSearchActionId("bsn", ikoView),
             title = "BSN",
             order = 0,
             properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
         )
-        val request = IkoSeachActionCreateRequest(
-            ikoSeachAction.title,
-            ikoSeachAction.properties
+        val request = IkoSearchActionCreateRequest(
+            ikoSearchAction.title,
+            ikoSearchAction.properties
         )
         whenever(ikoViewService.getByKey("klant")).thenReturn(ikoView)
-        whenever(service.create(any())).thenReturn(ikoSeachAction)
+        whenever(service.create(any())).thenReturn(ikoSearchAction)
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}",
                 "klant",
                 "bsn"
             )
@@ -168,24 +168,24 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should update iko ikoSeachAction`() {
-        val ikoSeachAction = IkoSeachAction(
-            id = IkoSeachActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
+    fun `should update iko ikoSearchAction`() {
+        val ikoSearchAction = IkoSearchAction(
+            id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",
             order = 0,
             properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
         )
-        val request = IkoSeachActionUpdateRequest(
-            ikoSeachAction.id.key,
-            ikoSeachAction.id.ikoView.key,
-            ikoSeachAction.title,
-            ikoSeachAction.properties
+        val request = IkoSearchActionUpdateRequest(
+            ikoSearchAction.id.key,
+            ikoSearchAction.id.ikoView.key,
+            ikoSearchAction.title,
+            ikoSearchAction.properties
         )
-        whenever(service.getByKey("bsn", "klant")).thenReturn(ikoSeachAction)
-        whenever(service.update(any())).thenReturn(ikoSeachAction)
+        whenever(service.getByKey("bsn", "klant")).thenReturn(ikoSearchAction)
+        whenever(service.update(any())).thenReturn(ikoSearchAction)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{key}",
                 "klant",
                 "bsn",
             )
@@ -201,23 +201,23 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should update iko ikoSeachActions`() {
-        val ikoSeachAction = IkoSeachAction(
-            id = IkoSeachActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
+    fun `should update iko ikoSearchActions`() {
+        val ikoSearchAction = IkoSearchAction(
+            id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",
             order = 0,
             properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
         )
         val request = listOf(
-            IkoSeachActionUpdateRequest(
-                ikoSeachAction.id.key,
-                ikoSeachAction.id.ikoView.key,
-                ikoSeachAction.title,
-                ikoSeachAction.properties
+            IkoSearchActionUpdateRequest(
+                ikoSearchAction.id.key,
+                ikoSearchAction.id.ikoView.key,
+                ikoSearchAction.title,
+                ikoSearchAction.properties
             )
         )
-        whenever(service.findAll(ikoViewKey = "klant")).thenReturn(listOf(ikoSeachAction))
-        whenever(service.update(any())).thenReturn(ikoSeachAction)
+        whenever(service.findAll(ikoViewKey = "klant")).thenReturn(listOf(ikoSearchAction))
+        whenever(service.update(any())).thenReturn(ikoSearchAction)
         mockMvc.perform(
             put(
                 "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action",
@@ -235,10 +235,10 @@ internal class IkoSeachActionManagementResourceTest {
     }
 
     @Test
-    fun `should delete iko ikoSeachAction`() {
+    fun `should delete iko ikoSearchAction`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}",
                 "klant",
                 "bsn"
             )

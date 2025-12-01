@@ -21,9 +21,9 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
-import com.ritense.iko.importer.IkoSeachActionDto
-import com.ritense.iko.importer.IkoSeachActionsDto
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.importer.IkoSearchActionDto
+import com.ritense.iko.importer.IkoSearchActionsDto
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -31,37 +31,37 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 @SkipComponentScan
 @Transactional(readOnly = true)
-class IkoSeachActionsExporter(
+class IkoSearchActionsExporter(
     private val objectMapper: ObjectMapper,
-    private val ikoSeachActionService: IkoSeachActionService,
-) : Exporter<IkoSeachActionsExportRequest> {
-    override fun supports() = IkoSeachActionsExportRequest::class.java
+    private val ikoSearchActionService: IkoSearchActionService,
+) : Exporter<IkoSearchActionsExportRequest> {
+    override fun supports() = IkoSearchActionsExportRequest::class.java
 
-    override fun export(request: IkoSeachActionsExportRequest): ExportResult {
-        val ikoSeachActions = ikoSeachActionService.findAll(
+    override fun export(request: IkoSearchActionsExportRequest): ExportResult {
+        val ikoSearchActions = ikoSearchActionService.findAll(
             ikoViewKey = request.ikoViewKey
         )
-        if (ikoSeachActions.isEmpty()) {
+        if (ikoSearchActions.isEmpty()) {
             return ExportResult()
         }
-        val ikoSeachActionsDto = IkoSeachActionsDto(
+        val ikoSearchActionsDto = IkoSearchActionsDto(
             ikoViewKey = request.ikoViewKey,
-            ikoSeachActions = ikoSeachActions.map { ikoSeachAction ->
-                IkoSeachActionDto(
-                    key = ikoSeachAction.id.key,
-                    title = ikoSeachAction.title,
-                    properties = ikoSeachAction.properties,
+            ikoSearchActions = ikoSearchActions.map { ikoSearchAction ->
+                IkoSearchActionDto(
+                    key = ikoSearchAction.id.key,
+                    title = ikoSearchAction.title,
+                    properties = ikoSearchAction.properties,
                 )
             }
         )
 
-        val ikoSeachActionsExport = ExportFile(
+        val ikoSearchActionsExport = ExportFile(
             PATH.format(request.ikoViewKey, request.ikoViewKey),
-            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoSeachActionsDto)
+            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoSearchActionsDto)
         )
         return ExportResult(
-            ikoSeachActionsExport, ikoSeachActions.map { ikoSeachAction ->
-                IkoSearchFieldsExportRequest(request.ikoViewKey, ikoSeachAction.id.key)
+            ikoSearchActionsExport, ikoSearchActions.map { ikoSearchAction ->
+                IkoSearchFieldsExportRequest(request.ikoViewKey, ikoSearchAction.id.key)
             }.toSet()
         )
     }

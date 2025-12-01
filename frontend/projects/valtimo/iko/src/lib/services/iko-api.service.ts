@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {BaseApiService, ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {IkoView, IkoSeachActionUser, IkoListResponse, IkoTab} from '../models';
+import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
 import {WidgetAction} from '@valtimo/layout';
 
 @Injectable({
@@ -66,8 +66,8 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get<IkoTab[]>(this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab`));
   }
 
-  public getIkoSeachActions(ikoViewKey: string): Observable<IkoSeachActionUser[]> {
-    return this.httpClient.get<IkoSeachActionUser[]>(
+  public getIkoSearchActions(ikoViewKey: string): Observable<IkoSearchActionUser[]> {
+    return this.httpClient.get<IkoSearchActionUser[]>(
       this.getApiUrl(`/v1/iko-view/${ikoViewKey}/iko-search-action`)
     );
   }
@@ -82,13 +82,13 @@ export class IkoApiService extends BaseApiService {
     );
   }
 
-  public searchIkoSeachAction(
+  public searchIkoSearchAction(
     ikoKey: string,
     paramKey: string,
     filters: {filters: {[key: string]: string}}
   ): Observable<IkoListResponse> {
     return this.httpClient.post<IkoListResponse>(
-      this.getApiUrl(`/v1/iko-view/${ikoKey}/iko-search-action/${paramKey}/search`),
+      this.getApiUrl(`/v1/iko-view/${ikoKey}/search-action/${paramKey}/search`),
       filters
     );
   }

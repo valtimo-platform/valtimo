@@ -19,15 +19,15 @@ package com.ritense.iko.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
-import com.ritense.iko.event.IkoSeachActionPreDeleteEvent
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
+import com.ritense.iko.event.IkoSearchActionPreDeleteEvent
 import com.ritense.iko.helper.MergeHelper.deepMerge
-import com.ritense.iko.repository.IkoSeachActionRepository
-import com.ritense.iko.repository.IkoSeachActionSpecificationHelper.Companion.byIkoViewKey
-import com.ritense.iko.repository.IkoSeachActionSpecificationHelper.Companion.byKey
-import com.ritense.iko.repository.IkoSeachActionSpecificationHelper.Companion.byTitleContains
-import com.ritense.iko.repository.IkoSeachActionSpecificationHelper.Companion.query
+import com.ritense.iko.repository.IkoSearchActionRepository
+import com.ritense.iko.repository.IkoSearchActionSpecificationHelper.Companion.byIkoViewKey
+import com.ritense.iko.repository.IkoSearchActionSpecificationHelper.Companion.byKey
+import com.ritense.iko.repository.IkoSearchActionSpecificationHelper.Companion.byTitleContains
+import com.ritense.iko.repository.IkoSearchActionSpecificationHelper.Companion.query
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.valtimo.contract.iko.PropertyField
@@ -40,8 +40,8 @@ import org.springframework.data.jpa.domain.Specification
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class IkoSeachActionService(
-    private val ikoSeachActionRepository: IkoSeachActionRepository,
+class IkoSearchActionService(
+    private val ikoSearchActionRepository: IkoSearchActionRepository,
     private val ikoViewService: IkoViewService,
     private val ikoRepositories: List<IkoRepository>,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -54,14 +54,14 @@ class IkoSeachActionService(
         pageable: Pageable
     ): Page<JsonNode> {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
-        val ikoSeachAction = getByKey(key, ikoViewKey)
+        val ikoSearchAction = getByKey(key, ikoViewKey)
         val ikoRepository = ikoRepositories.first {
-            it.getType() == ikoSeachAction.id.ikoView.ikoRepositoryConfig.type
+            it.getType() == ikoSearchAction.id.ikoView.ikoRepositoryConfig.type
         }
         return ikoRepository.findAll(
-            ikoSeachAction.id.ikoView.ikoRepositoryConfig.properties
-                .deepMerge(ikoSeachAction.id.ikoView.properties)
-                .deepMerge(ikoSeachAction.properties),
+            ikoSearchAction.id.ikoView.ikoRepositoryConfig.properties
+                .deepMerge(ikoSearchAction.id.ikoView.properties)
+                .deepMerge(ikoSearchAction.properties),
             filters,
             pageable
         )
@@ -71,7 +71,7 @@ class IkoSeachActionService(
         key: String? = null,
         ikoViewKey: String? = null,
         title: String? = null,
-    ): List<IkoSeachAction> {
+    ): List<IkoSearchAction> {
         if (ikoViewKey != null) {
             ikoViewService.requirePermission(ikoViewKey, VIEW)
         } else {
@@ -82,32 +82,32 @@ class IkoSeachActionService(
             ikoViewKey = ikoViewKey,
             titlePart = title,
         )
-        return ikoSeachActionRepository.findAll(spec, Sort.by(ASC, "order"))
+        return ikoSearchActionRepository.findAll(spec, Sort.by(ASC, "order"))
     }
 
-    fun getIkoSeachActionPropertyFields(type: Any): List<PropertyField> {
+    fun getIkoSearchActionPropertyFields(type: Any): List<PropertyField> {
         ikoViewService.denyAuthorization()
-        return ikoRepositories.single { it.getType() == type }.getIkoSeachActionPropertyFields()
+        return ikoRepositories.single { it.getType() == type }.getIkoSearchActionPropertyFields()
     }
 
-    fun getByKey(key: String, ikoViewKey: String): IkoSeachAction {
+    fun getByKey(key: String, ikoViewKey: String): IkoSearchAction {
         val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
         ikoViewService.requirePermission(ikoView, VIEW)
-        val id = IkoSeachActionId(key, ikoView)
-        val ikoSeachAction = ikoSeachActionRepository.findById(id).orElseThrow()
-        return ikoSeachAction
+        val id = IkoSearchActionId(key, ikoView)
+        val ikoSearchAction = ikoSearchActionRepository.findById(id).orElseThrow()
+        return ikoSearchAction
     }
 
-    fun create(ikoSeachAction: IkoSeachAction): IkoSeachAction {
+    fun create(ikoSearchAction: IkoSearchAction): IkoSearchAction {
         ikoViewService.denyAuthorization()
-        require(!existsByKey(key = ikoSeachAction.id.key, ikoViewKey = ikoSeachAction.id.ikoView.key))
-        return ikoSeachActionRepository.save(ikoSeachAction)
+        require(!existsByKey(key = ikoSearchAction.id.key, ikoViewKey = ikoSearchAction.id.ikoView.key))
+        return ikoSearchActionRepository.save(ikoSearchAction)
     }
 
-    fun update(ikoSeachAction: IkoSeachAction): IkoSeachAction {
+    fun update(ikoSearchAction: IkoSearchAction): IkoSearchAction {
         ikoViewService.denyAuthorization()
-        require(existsByKey(key = ikoSeachAction.id.key, ikoViewKey = ikoSeachAction.id.ikoView.key))
-        return ikoSeachActionRepository.save(ikoSeachAction)
+        require(existsByKey(key = ikoSearchAction.id.key, ikoViewKey = ikoSearchAction.id.ikoView.key))
+        return ikoSearchActionRepository.save(ikoSearchAction)
     }
 
     fun delete(
@@ -116,9 +116,9 @@ class IkoSeachActionService(
     ) {
         ikoViewService.denyAuthorization()
         applicationEventPublisher.publishEvent(
-            IkoSeachActionPreDeleteEvent(ikoViewKey, key)
+            IkoSearchActionPreDeleteEvent(ikoViewKey, key)
         )
-        ikoSeachActionRepository.delete(
+        ikoSearchActionRepository.delete(
             getSpecification(
                 key = key,
                 ikoViewKey = ikoViewKey,
@@ -130,7 +130,7 @@ class IkoSeachActionService(
         key: String? = null,
         ikoViewKey: String? = null,
         titlePart: String? = null,
-    ): Specification<IkoSeachAction> {
+    ): Specification<IkoSearchAction> {
         var spec = query()
         if (key != null) {
             spec = spec.and(byKey(key))
@@ -146,7 +146,7 @@ class IkoSeachActionService(
 
     private fun existsByKey(key: String, ikoViewKey: String): Boolean {
         val ikoView = ikoViewService.getByKey(ikoViewKey)
-        val id = IkoSeachActionId(key, ikoView)
-        return ikoSeachActionRepository.existsById(id)
+        val id = IkoSearchActionId(key, ikoView)
+        return ikoSearchActionRepository.existsById(id)
     }
 }

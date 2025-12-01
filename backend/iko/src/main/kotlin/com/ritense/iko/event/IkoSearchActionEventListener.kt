@@ -26,16 +26,16 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 @Component
 @SkipComponentScan
-class IkoSeachActionEventListener(
+class IkoSearchActionEventListener(
     private val ikoSearchFieldService: IkoSearchFieldService,
 ) {
 
     @RunWithoutAuthorization
-    @EventListener(IkoSeachActionPreDeleteEvent::class)
-    fun deleteIkoSearchFields(event: IkoSeachActionPreDeleteEvent) {
-        ikoSearchFieldService.deleteByIkoSeachActionKey(
+    @EventListener(IkoSearchActionPreDeleteEvent::class)
+    fun deleteIkoSearchFields(event: IkoSearchActionPreDeleteEvent) {
+        ikoSearchFieldService.deleteByIkoSearchActionKey(
             ikoViewKey = event.ikoViewKey,
-            ikoSeachActionKey = event.ikoSeachActionKey,
+            ikoSearchActionKey = event.ikoSearchActionKey,
         )
     }
 }

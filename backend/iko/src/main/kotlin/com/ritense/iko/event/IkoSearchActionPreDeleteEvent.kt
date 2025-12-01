@@ -16,7 +16,7 @@
 
 package com.ritense.iko.event
 
-data class IkoSeachActionPreDeleteEvent(
+data class IkoSearchActionPreDeleteEvent(
     val ikoViewKey: String,
-    val ikoSeachActionKey: String,
+    val ikoSearchActionKey: String,
 )

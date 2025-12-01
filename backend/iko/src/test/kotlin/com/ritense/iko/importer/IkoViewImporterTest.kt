@@ -39,8 +39,8 @@ class IkoViewImporterTest(
     }
 
     @Test
-    fun `should be of type 'ikodataaggregate'`() {
-        assertThat(importer.type()).isEqualTo("ikodataaggregate")
+    fun `should be of type 'ikoview'`() {
+        assertThat(importer.type()).isEqualTo("ikoview")
     }
 
     @Test

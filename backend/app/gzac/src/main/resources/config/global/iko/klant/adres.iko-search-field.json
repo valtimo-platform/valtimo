@@ -1,6 +1,6 @@
 {
     "ikoViewKey": "klant",
-    "ikoSeachActionKey": "adres",
+    "ikoSearchActionKey": "adres",
     "ikoSearchFields": [
         {
             "key": "postcode",

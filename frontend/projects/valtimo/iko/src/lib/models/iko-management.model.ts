@@ -40,12 +40,12 @@ interface IkoViewResponse {
   properties: Record<string, any | null>;
 }
 
-interface IkoSeachActionCreateRequest {
+interface IkoSearchActionCreateRequest {
   title: string;
   properties: Record<string, any | null>;
 }
 
-interface IkoSeachActionUpdateRequest {
+interface IkoSearchActionUpdateRequest {
   key: string;
   ikoViewKey: string;
   title: string;
@@ -60,7 +60,7 @@ interface IkoManagementParams {
   widgetTabKey?: string;
 }
 
-interface IkoSeachActionResponse {
+interface IkoSearchActionResponse {
   key: string;
   ikoViewKey: string;
   title: string;
@@ -159,7 +159,7 @@ interface IkoSearchField {
   fieldType: string;
   order: number;
   ikoViewKey: string;
-  ikoSeachActionKey: string;
+  ikoSearchActionKey: string;
   dropdownList?: [string, string][];
   required?: boolean;
   visible?: boolean;
@@ -183,9 +183,9 @@ export {
   IkoViewListResponse,
   IkoViewResponse,
   IkoViewUpdateRequest,
-  IkoSeachActionCreateRequest,
-  IkoSeachActionResponse,
-  IkoSeachActionUpdateRequest,
+  IkoSearchActionCreateRequest,
+  IkoSearchActionResponse,
+  IkoSearchActionUpdateRequest,
   IkoManagementParams,
   IkoManagementTab,
   IkoManagementTabType,

@@ -44,7 +44,7 @@ export class IkoListComponent implements OnDestroy {
         href: `/iko/${params.key}`,
       });
 
-      return this.ikoApiService.searchIkoSeachAction(params.key, params.searchKey, {
+      return this.ikoApiService.searchIkoSearchAction(params.key, params.searchKey, {
         filters: queryParams,
       });
     }),

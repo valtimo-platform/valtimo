@@ -16,32 +16,32 @@
 
 package com.ritense.iko.repository
 
-import com.ritense.iko.domain.IkoSeachActionSearchField
-import com.ritense.iko.domain.IkoSeachActionSearchFieldId
+import com.ritense.iko.domain.IkoSearchActionSearchField
+import com.ritense.iko.domain.IkoSearchActionSearchFieldId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 
 @Repository
-interface IkoSeachActionSearchFieldRepository :
-    JpaRepository<IkoSeachActionSearchField, IkoSeachActionSearchFieldId>,
-    JpaSpecificationExecutor<IkoSeachActionSearchField> {
-    fun findAllByIdIkoViewKeyAndIdIkoSeachActionKeyOrderBySearchFieldOrder(
+interface IkoSearchActionSearchFieldRepository :
+    JpaRepository<IkoSearchActionSearchField, IkoSearchActionSearchFieldId>,
+    JpaSpecificationExecutor<IkoSearchActionSearchField> {
+    fun findAllByIdIkoViewKeyAndIdIkoSearchActionKeyOrderBySearchFieldOrder(
         ikoViewKey: String,
-        ikoSeachActionKey: String
-    ): List<IkoSeachActionSearchField>
+        ikoSearchActionKey: String
+    ): List<IkoSearchActionSearchField>
 
-    fun findByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+    fun findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
         ikoViewKey: String,
-        ikoSeachActionKey: String,
+        ikoSearchActionKey: String,
         searchFieldKey: String
-    ): IkoSeachActionSearchField?
+    ): IkoSearchActionSearchField?
 
-    fun deleteByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+    fun deleteByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
         ikoViewKey: String,
-        ikoSeachActionKey: String,
+        ikoSearchActionKey: String,
         searchFieldKey: String
     )
 
-    fun deleteByIdIkoViewKeyAndIdIkoSeachActionKey(ikoViewKey: String, ikoSeachActionKey: String)
+    fun deleteByIdIkoViewKeyAndIdIkoSearchActionKey(ikoViewKey: String, ikoSearchActionKey: String)
 }

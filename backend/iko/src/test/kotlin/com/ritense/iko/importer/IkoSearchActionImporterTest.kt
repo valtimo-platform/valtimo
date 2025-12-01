@@ -18,7 +18,7 @@ package com.ritense.iko.importer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_VIEW
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -28,25 +28,25 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
-class IkoSeachActionImporterTest(
+class IkoSearchActionImporterTest(
     @Mock private val objectMapper: ObjectMapper,
-    @Mock private val ikoSeachActionService: IkoSeachActionService,
+    @Mock private val ikoSearchActionService: IkoSearchActionService,
     @Mock private val ikoViewService: IkoViewService,
 ) {
-    private lateinit var importer: IkoSeachActionImporter
+    private lateinit var importer: IkoSearchActionImporter
 
     @BeforeEach
     fun before() {
-        importer = IkoSeachActionImporter(objectMapper, ikoSeachActionService, ikoViewService)
+        importer = IkoSearchActionImporter(objectMapper, ikoSearchActionService, ikoViewService)
     }
 
     @Test
-    fun `should be of type 'ikodatarequest'`() {
-        assertThat(importer.type()).isEqualTo("ikodatarequest")
+    fun `should be of type 'ikosearchaction'`() {
+        assertThat(importer.type()).isEqualTo("ikosearchaction")
     }
 
     @Test
-    fun `should depend on 'ikodataaggregate' type`() {
+    fun `should depend on 'ikoview' type`() {
         assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_VIEW))
     }
 

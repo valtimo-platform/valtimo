@@ -137,42 +137,6 @@
                     }
                 ]
             }
-        },
-        {
-            "type": "interactive-table",
-            "key": "personen",
-            "title": "Personen",
-            "width": 4,
-            "highContrast": false,
-            "actions": [
-                {
-                    "name": "Create new Verzoek",
-                    "navigateTo": "http://localhost:8003/leningaanvragen/startpagina"
-                }
-            ],
-            "displayConditions": [],
-            "properties": {
-                "collection": "iko:?ikoViewKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
-                "defaultPageSize": 4,
-                "columns": [
-                    {
-                        "key": "naam",
-                        "title": "Naam",
-                        "value": "/naam/volledigeNaam"
-                    },
-                    {
-                        "key": "bsn",
-                        "title": "BSN",
-                        "value": "/burgerservicenummer"
-                    }
-                ],
-                "firstColumnAsTitle": false,
-                "rowClickAction": {
-                    "name": null,
-                    "navigateTo": "http://www.ritense.nl/persoon/${/burgerservicenummer}"
-                },
-                "canStartCase": true
-            }
         }
     ]
 }

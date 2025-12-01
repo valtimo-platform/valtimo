@@ -18,6 +18,6 @@ package com.ritense.iko.importer
 
 data class IkoSearchFieldsDto(
     val ikoViewKey: String,
-    val ikoSeachActionKey: String,
+    val ikoSearchActionKey: String,
     val ikoSearchFields: List<IkoSearchFieldDto>,
 )

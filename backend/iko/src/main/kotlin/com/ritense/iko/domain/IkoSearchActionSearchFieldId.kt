@@ -22,10 +22,10 @@ import java.io.Serializable
 import java.util.UUID
 
 @Embeddable
-data class IkoSeachActionSearchFieldId(
+data class IkoSearchActionSearchFieldId(
 
     @Column(name = "iko_search_action_key", updatable = false, nullable = false)
-    val ikoSeachActionKey: String,
+    val ikoSearchActionKey: String,
 
     @Column(name = "iko_view_key", updatable = false, nullable = false)
     val ikoViewKey: String,

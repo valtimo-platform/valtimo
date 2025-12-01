@@ -27,10 +27,10 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "iko_search_field")
-data class IkoSeachActionSearchField(
+data class IkoSearchActionSearchField(
 
     @EmbeddedId
-    val id: IkoSeachActionSearchFieldId,
+    val id: IkoSearchActionSearchFieldId,
 
     @OneToOne(cascade = [ALL])
     @MapsId("searchFieldId")

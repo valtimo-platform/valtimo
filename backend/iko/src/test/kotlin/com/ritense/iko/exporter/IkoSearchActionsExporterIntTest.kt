@@ -27,19 +27,19 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional(readOnly = true)
-class IkoSeachActionsExporterIntTest @Autowired constructor(
+class IkoSearchActionsExporterIntTest @Autowired constructor(
     private val objectMapper: ObjectMapper,
     private val resourceLoader: ResourceLoader,
-    private val ikoSeachActionsExporter: IkoSeachActionsExporter
+    private val ikoSearchActionsExporter: IkoSearchActionsExporter
 ) : BaseIntegrationTest() {
 
     @Test
-    fun `should export ikoSeachAction`(): Unit = runWithoutAuthorization {
+    fun `should export ikoSearchAction`(): Unit = runWithoutAuthorization {
         val ikoViewKey = "klant"
-        val request = IkoSeachActionsExportRequest(ikoViewKey)
+        val request = IkoSearchActionsExportRequest(ikoViewKey)
 
-        val exportFiles = ikoSeachActionsExporter.export(request).exportFiles
-        val expectedPath = IkoSeachActionsExporter.PATH.format(ikoViewKey, ikoViewKey)
+        val exportFiles = ikoSearchActionsExporter.export(request).exportFiles
+        val expectedPath = IkoSearchActionsExporter.PATH.format(ikoViewKey, ikoViewKey)
         val exportedFile = exportFiles.singleOrNull { it.path == expectedPath }
             ?: error("Exported file not found for path: $expectedPath")
 

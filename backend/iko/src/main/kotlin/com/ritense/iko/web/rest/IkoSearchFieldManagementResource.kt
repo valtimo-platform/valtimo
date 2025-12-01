@@ -41,67 +41,67 @@ class IkoSearchFieldManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")
     fun getIkoSearchFieldsForManagement(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
     ): ResponseEntity<List<IkoSearchFieldResponse>> {
-        val ikoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+        val ikoSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
         )
         return ResponseEntity.ok(ikoSearchFields.map { IkoSearchFieldResponse.from(it) })
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun getIkoSearchField(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
     ): ResponseEntity<IkoSearchFieldResponse> {
-        val ikoSearchField = service.getByKey(ikoViewKey, ikoSeachActionKey, key)
+        val ikoSearchField = service.getByKey(ikoViewKey, ikoSearchActionKey, key)
         return ResponseEntity.ok(IkoSearchFieldResponse.from(ikoSearchField))
     }
 
     @RunWithoutAuthorization
-    @PostMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
+    @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun createIkoSearchField(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoSearchFieldCreateRequest
     ): ResponseEntity<IkoSearchFieldResponse> {
-        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
         )
         val ikoSearchField = service.create(
             ikoViewKey,
-            ikoSeachActionKey,
-            request.toEntity(ikoViewKey, ikoSeachActionKey, existingIkoSearchFields.maxOfOrNull { it.order + 1 } ?: 0)
+            ikoSearchActionKey,
+            request.toEntity(ikoViewKey, ikoSearchActionKey, existingIkoSearchFields.maxOfOrNull { it.order + 1 } ?: 0)
         )
         return ResponseEntity.ok(IkoSearchFieldResponse.from(ikoSearchField))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun updateIkoSearchField(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoSearchFieldUpdateRequest,
     ): ResponseEntity<IkoSearchFieldResponse> {
         require(request.key == key)
-        val existingIkoSearchField = service.findByKey(ikoViewKey, ikoSeachActionKey, key)
+        val existingIkoSearchField = service.findByKey(ikoViewKey, ikoSearchActionKey, key)
         requireNotNull(existingIkoSearchField)
         val ikoSearchField = service.update(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
             searchField = request.toEntity(
                 existingIkoSearchField.id,
                 ikoViewKey,
-                ikoSeachActionKey,
+                ikoSearchActionKey,
                 existingIkoSearchField.order
             )
         )
@@ -109,22 +109,22 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")
     fun updateIkoSearchFieldsOrder(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @RequestBody request: List<IkoSearchFieldUpdateRequest>,
     ): ResponseEntity<List<IkoSearchFieldResponse>> {
-        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSeachAction(
+        val existingIkoSearchFields = service.findAllSearchFieldsByIkoSearchAction(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
         )
         require(request.map { it.key }.toSet() == existingIkoSearchFields.map { it.key }.toSet())
         val ikoSearchFields = request.mapIndexed { index, updatedSearchField ->
             val existingSearchField = existingIkoSearchFields.first { it.key == updatedSearchField.key }
             service.update(
                 ikoViewKey = ikoViewKey,
-                ikoSeachActionKey = ikoSeachActionKey,
+                ikoSearchActionKey = ikoSearchActionKey,
                 searchField = existingSearchField.copy(order = index)
             )
         }
@@ -132,13 +132,13 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
-    @DeleteMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search-field/{key}")
+    @DeleteMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun deleteIkoSearchField(
         @PathVariable ikoViewKey: String,
-        @PathVariable ikoSeachActionKey: String,
+        @PathVariable ikoSearchActionKey: String,
         @PathVariable key: String,
     ): ResponseEntity<IkoSearchFieldResponse> {
-        service.deleteByKey(ikoViewKey, ikoSeachActionKey, key)
+        service.deleteByKey(ikoViewKey, ikoSearchActionKey, key)
         return ResponseEntity.noContent().build()
     }
 }

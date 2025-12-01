@@ -17,16 +17,16 @@
 package com.ritense.iko.web.rest.request
 
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
 
-data class IkoSeachActionCreateRequest(
+data class IkoSearchActionCreateRequest(
     val title: String,
     val properties: Map<String, Any?>
 ) {
-    fun toEntity(ikoSeachActionKey: String, ikoView: IkoView, order: Int): IkoSeachAction {
-        return IkoSeachAction(
-            id = IkoSeachActionId(ikoSeachActionKey, ikoView),
+    fun toEntity(ikoSearchActionKey: String, ikoView: IkoView, order: Int): IkoSearchAction {
+        return IkoSearchAction(
+            id = IkoSearchActionId(ikoSearchActionKey, ikoView),
             title = title,
             order = order,
             properties = properties

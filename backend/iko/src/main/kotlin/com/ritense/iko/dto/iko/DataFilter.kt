@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.ritense.iko.repository
+package com.ritense.iko.dto.iko
 
-import com.ritense.iko.domain.IkoSearchAction
-import com.ritense.iko.domain.IkoSearchActionId
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
-import org.springframework.stereotype.Repository
+data class DataFilter(
+    val property: String,
+    val comparator: Comparator,
+    val value: Any?,
+) {
+    constructor(property: String, value: Any?) : this(property, Comparator.EQUAL_TO, value)
+}
 
-@Repository
-interface IkoSearchActionRepository : JpaRepository<IkoSearchAction, IkoSearchActionId>,
-    JpaSpecificationExecutor<IkoSearchAction>
+enum class Comparator() {
+    EQUAL_TO,
+    STRING_CONTAINS,
+}

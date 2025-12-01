@@ -25,10 +25,10 @@ import org.hibernate.annotations.Type
 
 @Entity
 @Table(name = "iko_search_action")
-data class IkoSeachAction(
+data class IkoSearchAction(
 
     @EmbeddedId
-    val id: IkoSeachActionId,
+    val id: IkoSearchActionId,
 
     @Column(name = "title", nullable = false)
     val title: String,

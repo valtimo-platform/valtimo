@@ -17,22 +17,22 @@
 package com.ritense.iko.importer
 
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
 
-data class IkoSeachActionsDto(
+data class IkoSearchActionsDto(
     val ikoViewKey: String,
-    val ikoSeachActions: List<IkoSeachActionDto>,
+    val ikoSearchActions: List<IkoSearchActionDto>,
 )
 
-data class IkoSeachActionDto(
+data class IkoSearchActionDto(
     val key: String,
     val title: String,
     val properties: Map<String, Any?>?
 ) {
-    fun toEntity(ikoView: IkoView, order: Int): IkoSeachAction {
-        return IkoSeachAction(
-            id = IkoSeachActionId(key, ikoView),
+    fun toEntity(ikoView: IkoView, order: Int): IkoSearchAction {
+        return IkoSearchAction(
+            id = IkoSearchActionId(key, ikoView),
             title = title,
             order = order,
             properties = properties ?: emptyMap(),

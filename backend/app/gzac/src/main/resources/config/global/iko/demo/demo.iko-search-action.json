@@ -1,6 +1,6 @@
 {
     "ikoViewKey": "demo",
-    "ikoSeachActions": [
+    "ikoSearchActions": [
         {
             "key": "bsn",
             "title": "Zoek op BSN",

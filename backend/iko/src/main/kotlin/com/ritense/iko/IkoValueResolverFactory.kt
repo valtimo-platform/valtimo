@@ -18,29 +18,24 @@ package com.ritense.iko
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.ritense.iko.plugin.IkoPlugin
 import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
-import com.ritense.iko.service.IkoSearchFieldService
-import com.ritense.valtimo.contract.iko.DataFilter
+import com.ritense.plugin.service.PluginService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP_NAME
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_SEARCH_ACTION_KEY
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
-import org.operaton.bpm.engine.delegate.VariableScope
-import org.springframework.data.domain.Pageable
 import java.util.function.Function
+import org.operaton.bpm.engine.delegate.VariableScope
 
 class IkoValueResolverFactory(
     private val ikoViewService: IkoViewService,
-    private val ikoSeachActionService: IkoSeachActionService,
-    private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
+    private val pluginService: PluginService,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -56,13 +51,13 @@ class IkoValueResolverFactory(
     }
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
-        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
-        return getIkoViewDataById(ikoViewKey, properties)
-            ?: searchIkoViewData(ikoViewKey, properties)
+        return getIkoViewDataById(properties)
+            ?: getIkoAdpDataByName(properties)
             ?: Function { null }
     }
 
-    private fun getIkoViewDataById(ikoViewKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
+    private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
         val id = properties[ID]?.toString()
         if (ikoViewKey != null && id != null) {
             val data = ikoViewService.getDataById(ikoViewKey, id)
@@ -71,32 +66,20 @@ class IkoValueResolverFactory(
         return null
     }
 
-    private fun searchIkoViewData(ikoViewKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
-        val ikoSeachActionKey = properties[IKO_SEARCH_ACTION_KEY]?.toString()
-        require(ikoViewKey != null || ikoSeachActionKey != null) { "Missing ValueResolver context." }
-        val (ikoSeachAction, searchFields) = ikoSeachActionService.findAll(
-            key = ikoSeachActionKey,
-            ikoViewKey = ikoViewKey,
-        ).map { ikoSeachAction ->
-            ikoSeachAction to ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(
-                ikoViewKey = ikoSeachAction.id.ikoView.key,
-                ikoSeachActionKey = ikoSeachAction.id.key
-            )
+    private fun getIkoAdpDataByName(properties: Map<String, Any>): Function<String, Any?>? {
+        val adpName = properties[IKO_ADP_NAME]?.toString()
+        val id = properties[ID]?.toString()
+        if (adpName != null && id != null) {
+            val queryParams = properties.map { it.key to it.value.toString() }.toMap()
+            val data = getIkoPlugin().getByAggregatedDataProfileId(adpName, id, queryParams)
+            return toValueFunction(data)
         }
-            .filter { (_, searchFields) -> searchFields.all { properties.contains(it.key) || !it.required } }
-            .map { (ikoSeachAction, searchFields) -> ikoSeachAction to searchFields.filter { properties.contains(it.key) } }
-            .firstOrNull() ?: return null
+        return null
+    }
 
-        val filters = searchFields.map { searchField -> DataFilter(searchField.path, properties[searchField.key]) }
-        val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.unpaged()
-        val dataPaged = ikoSeachActionService.searchData(
-            key = ikoSeachAction.id.key,
-            ikoViewKey = ikoSeachAction.id.ikoView.key,
-            filters = filters,
-            pageable = pageable
-        )
-        val data = objectMapper.valueToTree<ArrayNode>(dataPaged.content)
-        return toValueFunction(data)
+    private fun getIkoPlugin(): IkoPlugin {
+        return pluginService.createInstance(IkoPlugin::class.java) { true }
+            ?: throw IllegalStateException("Missing plugin configuration of type 'iko'")
     }
 
     private fun toValueFunction(data: JsonNode): Function<String, Any?> {

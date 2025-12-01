@@ -18,9 +18,9 @@ package com.ritense.iko.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoSeachActionSearchField
-import com.ritense.iko.domain.IkoSeachActionSearchFieldId
-import com.ritense.iko.repository.IkoSeachActionSearchFieldRepository
+import com.ritense.iko.domain.IkoSearchActionSearchField
+import com.ritense.iko.domain.IkoSearchActionSearchFieldId
+import com.ritense.iko.repository.IkoSearchActionSearchFieldRepository
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.web.rest.dto.SearchFieldV2Dto
@@ -33,70 +33,70 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class IkoSearchFieldService(
     private val searchFieldService: SearchFieldV2Service,
-    private val ikoSeachActionSearchFieldRepository: IkoSeachActionSearchFieldRepository,
+    private val ikoSearchActionSearchFieldRepository: IkoSearchActionSearchFieldRepository,
     private val ikoViewService: IkoViewService,
 ) {
 
-    fun findByKey(ikoViewKey: String, ikoSeachActionKey: String, searchFieldKey: String): SearchFieldV2? {
+    fun findByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String): SearchFieldV2? {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
-        return ikoSeachActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+        return ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
             ikoViewKey,
-            ikoSeachActionKey,
+            ikoSearchActionKey,
             searchFieldKey
         )?.searchField
     }
 
-    fun getByKey(ikoViewKey: String, ikoSeachActionKey: String, searchFieldKey: String): SearchFieldV2 {
+    fun getByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String): SearchFieldV2 {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
-        return findByKey(ikoViewKey, ikoSeachActionKey, searchFieldKey)
+        return findByKey(ikoViewKey, ikoSearchActionKey, searchFieldKey)
             ?: error("Unknown searchField key: $searchFieldKey")
     }
 
-    fun findAllSearchFieldsByIkoSeachAction(
+    fun findAllSearchFieldsByIkoSearchAction(
         ikoViewKey: String,
-        ikoSeachActionKey: String
+        ikoSearchActionKey: String
     ): List<SearchFieldV2> {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
-        return ikoSeachActionSearchFieldRepository.findAllByIdIkoViewKeyAndIdIkoSeachActionKeyOrderBySearchFieldOrder(
+        return ikoSearchActionSearchFieldRepository.findAllByIdIkoViewKeyAndIdIkoSearchActionKeyOrderBySearchFieldOrder(
             ikoViewKey,
-            ikoSeachActionKey
+            ikoSearchActionKey
         ).map { it.searchField }
     }
 
-    fun deleteByKey(ikoViewKey: String, ikoSeachActionKey: String, searchFieldKey: String) {
+    fun deleteByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String) {
         ikoViewService.denyAuthorization()
-        ikoSeachActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+        ikoSearchActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
             searchFieldKey = searchFieldKey
         )
     }
 
-    fun deleteByIkoSeachActionKey(ikoViewKey: String, ikoSeachActionKey: String) {
+    fun deleteByIkoSearchActionKey(ikoViewKey: String, ikoSearchActionKey: String) {
         ikoViewService.denyAuthorization()
-        ikoSeachActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSeachActionKey(
+        ikoSearchActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSearchActionKey(
             ikoViewKey = ikoViewKey,
-            ikoSeachActionKey = ikoSeachActionKey,
+            ikoSearchActionKey = ikoSearchActionKey,
         )
-        ikoSeachActionSearchFieldRepository.flush()
+        ikoSearchActionSearchFieldRepository.flush()
     }
 
-    fun create(ikoViewKey: String, ikoSeachActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+    fun create(ikoViewKey: String, ikoSearchActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
         ikoViewService.denyAuthorization()
         require(
-            ikoSeachActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+            ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
                 ikoViewKey,
-                ikoSeachActionKey,
+                ikoSearchActionKey,
                 searchField.key
             ) == null
         )
         val createdSearchField = runWithoutAuthorization {
             searchFieldService.create(SearchFieldV2Dto.of(searchField))
         }
-        ikoSeachActionSearchFieldRepository.save(
-            IkoSeachActionSearchField(
-                id = IkoSeachActionSearchFieldId(
-                    ikoSeachActionKey = ikoSeachActionKey,
+        ikoSearchActionSearchFieldRepository.save(
+            IkoSearchActionSearchField(
+                id = IkoSearchActionSearchFieldId(
+                    ikoSearchActionKey = ikoSearchActionKey,
                     ikoViewKey = ikoViewKey,
                     searchFieldId = searchField.id
                 ),
@@ -106,20 +106,20 @@ class IkoSearchFieldService(
         return createdSearchField
     }
 
-    fun update(ikoViewKey: String, ikoSeachActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+    fun update(ikoViewKey: String, ikoSearchActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
         ikoViewService.denyAuthorization()
-        val ikoSeachActionSearchField =
-            ikoSeachActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSeachActionKeyAndSearchFieldKey(
+        val ikoSearchActionSearchField =
+            ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
                 ikoViewKey,
-                ikoSeachActionKey,
+                ikoSearchActionKey,
                 searchField.key
             )
-        requireNotNull(ikoSeachActionSearchField)
+        requireNotNull(ikoSearchActionSearchField)
         val updatedSearchField = runWithoutAuthorization {
-            searchFieldService.update(SearchFieldV2Dto.of(searchField.copy(id = ikoSeachActionSearchField.id.searchFieldId)))
+            searchFieldService.update(SearchFieldV2Dto.of(searchField.copy(id = ikoSearchActionSearchField.id.searchFieldId)))
         }
-        ikoSeachActionSearchFieldRepository.save(
-            ikoSeachActionSearchField.copy(
+        ikoSearchActionSearchFieldRepository.save(
+            ikoSearchActionSearchField.copy(
                 searchField = updatedSearchField,
             )
         )

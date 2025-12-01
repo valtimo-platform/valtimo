@@ -29,7 +29,6 @@
     </changeSet>
 
     <changeSet id="2" author="Ritense">
-        <dropColumn tableName="iko_data_aggregate" columnName="iko_repository_config_key"/>
         <renameColumn tableName="iko_view_list_column"
                       oldColumnName="iko_data_aggregate_key"
                       newColumnName="iko_view_key"
@@ -46,18 +45,14 @@
                       oldColumnName="iko_data_request_order"
                       newColumnName="iko_search_action_order"
                       columnDataType="${intType}"/>
-        <renameColumn tableName="iko_data_request_search_field"
+        <renameColumn tableName="iko_search_field"
                       oldColumnName="iko_data_aggregate_key"
                       newColumnName="iko_view_key"
                       columnDataType="varchar(255)"/>
-        <renameColumn tableName="iko_data_request_search_field"
+        <renameColumn tableName="iko_search_field"
                       oldColumnName="iko_data_request_key"
                       newColumnName="iko_search_action_key"
                       columnDataType="varchar(255)"/>
-    </changeSet>
-
-    <changeSet id="3" author="Ritense">
-        <dropTable tableName="iko_repository_config"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -17,7 +17,7 @@
 package com.ritense.iko.event
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.iko.service.IkoTabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -29,20 +29,20 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 @SkipComponentScan
 class IkoViewEventListener(
-    private val ikoSeachActionService: IkoSeachActionService,
+    private val ikoSearchActionService: IkoSearchActionService,
     private val ikoListColumnService: IkoListColumnService,
     private val ikoTabService: IkoTabService,
 ) {
 
     @RunWithoutAuthorization
     @EventListener(IkoViewPreDeleteEvent::class)
-    fun deleteIkoSeachActions(event: IkoViewPreDeleteEvent) {
-        ikoSeachActionService.findAll(
+    fun deleteIkoSearchActions(event: IkoViewPreDeleteEvent) {
+        ikoSearchActionService.findAll(
             ikoViewKey = event.ikoViewKey,
-        ).forEach { ikoSeachAction ->
-            ikoSeachActionService.delete(
+        ).forEach { ikoSearchAction ->
+            ikoSearchActionService.delete(
                 ikoViewKey = event.ikoViewKey,
-                key = ikoSeachAction.id.key,
+                key = ikoSearchAction.id.key,
             )
         }
     }

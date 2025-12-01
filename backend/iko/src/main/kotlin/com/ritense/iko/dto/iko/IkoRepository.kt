@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.iko
+package com.ritense.iko.dto.iko
 
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.data.domain.Page

@@ -17,19 +17,19 @@
 package com.ritense.iko.web.rest.request
 
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
 
-data class IkoSeachActionUpdateRequest(
+data class IkoSearchActionUpdateRequest(
     val key: String,
     val ikoViewKey: String,
     val title: String,
     val properties: Map<String, Any?>,
 ) {
-    fun toEntity(ikoView: IkoView, order: Int): IkoSeachAction {
+    fun toEntity(ikoView: IkoView, order: Int): IkoSearchAction {
         require(ikoViewKey == ikoView.key)
-        return IkoSeachAction(
-            id = IkoSeachActionId(key, ikoView),
+        return IkoSearchAction(
+            id = IkoSearchActionId(key, ikoView),
             title = title,
             order = order,
             properties = properties,

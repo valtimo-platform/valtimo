@@ -44,7 +44,7 @@ class IkoListColumnImporterTest(
     }
 
     @Test
-    fun `should depend on 'ikodataaggregate' type`() {
+    fun `should depend on 'ikoview' type`() {
         assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_VIEW))
     }
 

@@ -17,9 +17,9 @@
 package com.ritense.iko.web.rest
 
 import com.ritense.iko.domain.IkoView
-import com.ritense.iko.domain.IkoSeachAction
-import com.ritense.iko.domain.IkoSeachActionId
-import com.ritense.iko.service.IkoSeachActionService
+import com.ritense.iko.domain.IkoSearchAction
+import com.ritense.iko.domain.IkoSearchActionId
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.web.rest.request.IkoSearchRequest
@@ -51,11 +51,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-internal class IkoSeachActionResourceTest {
+internal class IkoSearchActionResourceTest {
 
     private lateinit var mockMvc: MockMvc
-    private lateinit var resource: IkoSeachActionResource
-    private lateinit var ikoSeachActionService: IkoSeachActionService
+    private lateinit var resource: IkoSearchActionResource
+    private lateinit var ikoSearchActionService: IkoSearchActionService
     private lateinit var ikoListColumnService: IkoListColumnService
     private lateinit var ikoSearchFieldService: IkoSearchFieldService
 
@@ -63,10 +63,10 @@ internal class IkoSeachActionResourceTest {
 
     @BeforeEach
     fun init() {
-        ikoSeachActionService = mock()
+        ikoSearchActionService = mock()
         ikoListColumnService = mock()
         ikoSearchFieldService = mock()
-        resource = IkoSeachActionResource(ikoSeachActionService, ikoListColumnService, ikoSearchFieldService)
+        resource = IkoSearchActionResource(ikoSearchActionService, ikoListColumnService, ikoSearchFieldService)
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
@@ -74,21 +74,21 @@ internal class IkoSeachActionResourceTest {
     }
 
     @Test
-    fun `should get iko ikoSeachActions`() {
-        val ikoSeachAction = IkoSeachAction(
-            id = IkoSeachActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
+    fun `should get iko ikoSearchActions`() {
+        val ikoSearchAction = IkoSearchAction(
+            id = IkoSearchActionId("bsn", IkoView("klant", "Klant", emptyMap(), mock())),
             title = "BSN",
             order = 0,
             properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
         )
-        whenever(ikoSeachActionService.findAll(isNull(), eq("klant"), isNull()))
-            .thenReturn(listOf(ikoSeachAction))
-        whenever(ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction("klant", ikoSeachAction.id.key))
+        whenever(ikoSearchActionService.findAll(isNull(), eq("klant"), isNull()))
+            .thenReturn(listOf(ikoSearchAction))
+        whenever(ikoSearchFieldService.findAllSearchFieldsByIkoSearchAction("klant", ikoSearchAction.id.key))
             .thenReturn(
                 listOf(
                     SearchFieldV2(
                         ownerId = "klant:bsn",
-                        ownerType = "IkoSeachAction",
+                        ownerType = "IkoSearchAction",
                         key = "bsn",
                         title = "BSN",
                         path = "/burgerservicenummer",
@@ -111,8 +111,8 @@ internal class IkoSeachActionResourceTest {
     @Test
     fun `should search iko`() {
         val ikoView = IkoView("klant", "Klant", emptyMap(), mock())
-        val ikoSeachAction = IkoSeachAction(
-            id = IkoSeachActionId("bsn", ikoView),
+        val ikoSearchAction = IkoSearchAction(
+            id = IkoSearchActionId("bsn", ikoView),
             title = "BSN",
             order = 0,
             properties = mapOf("endpointQueryParameters" to mapOf("type" to "RaadpleegMetBurgerservicenummer")),
@@ -121,7 +121,7 @@ internal class IkoSeachActionResourceTest {
         whenever(ikoListColumnService.findAllColumnsByIkoViewKey(ikoView.key)).thenReturn(
             listOf(
                 SearchListColumn(
-                    ownerId = "IkoSeachAction:klant:bsn",
+                    ownerId = "IkoSearchAction:klant:bsn",
                     key = "bsn",
                     title = "BSN",
                     path = "/burgerservicenummer",
@@ -131,12 +131,12 @@ internal class IkoSeachActionResourceTest {
                 )
             )
         )
-        whenever(ikoSearchFieldService.findAllSearchFieldsByIkoSeachAction(ikoView.key, ikoSeachAction.id.key))
+        whenever(ikoSearchFieldService.findAllSearchFieldsByIkoSearchAction(ikoView.key, ikoSearchAction.id.key))
             .thenReturn(
                 listOf(
                     SearchFieldV2(
                         ownerId = "klant:bsn",
-                        ownerType = "IkoSeachAction",
+                        ownerType = "IkoSearchAction",
                         key = "bsn",
                         title = "BSN",
                         path = "/burgerservicenummer",
@@ -146,13 +146,13 @@ internal class IkoSeachActionResourceTest {
                     )
                 )
             )
-        whenever(ikoSeachActionService.searchData(eq(ikoSeachAction.id.key), eq(ikoView.key), any(), any()))
+        whenever(ikoSearchActionService.searchData(eq(ikoSearchAction.id.key), eq(ikoView.key), any(), any()))
             .thenReturn(PageImpl(listOf(objectMapper.readTree("""{"burgerservicenummer":"000000000","naam":{"voornamen":"John","geslachtsnaam":"Doe","voorletters":"J.","volledigeNaam":"John Doe"}}"""))))
 
 
         mockMvc.perform(
             post(
-                "/api/v1/iko-view/{ikoViewKey}/iko-search-action/{ikoSeachActionKey}/search",
+                "/api/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search",
                 "klant",
                 "bsn"
             )

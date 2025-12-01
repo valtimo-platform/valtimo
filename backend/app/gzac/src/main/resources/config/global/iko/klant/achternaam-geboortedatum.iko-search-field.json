@@ -1,6 +1,6 @@
 {
     "ikoViewKey": "klant",
-    "ikoSeachActionKey": "achternaam-geboortedatum",
+    "ikoSearchActionKey": "achternaam-geboortedatum",
     "ikoSearchFields": [
         {
             "key": "achternaam",

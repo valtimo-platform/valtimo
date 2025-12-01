@@ -38,7 +38,7 @@ import {
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   PropertyField,
-  IkoSeachActionResponse,
+  IkoSearchActionResponse,
   IkoRepositoryConfigResponse,
   IkoViewResponse,
 } from '../../../../../models';
@@ -89,7 +89,7 @@ export class IkoManagementSearchActionModalComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
   public readonly $prefillData = signal<IkoViewResponse | null>(null);
-  @Input() public set prefillData(value: IkoSeachActionResponse | null) {
+  @Input() public set prefillData(value: IkoSearchActionResponse | null) {
     if (!value) {
       this.$prefillData.set(null);
       return;
@@ -104,7 +104,7 @@ export class IkoManagementSearchActionModalComponent {
   @Input() repositoryKey: string;
   @Input() aggregateKey: string;
 
-  @Output() public readonly modalClose = new EventEmitter<IkoSeachActionResponse | null>();
+  @Output() public readonly modalClose = new EventEmitter<IkoSearchActionResponse | null>();
 
   public get title(): AbstractControl<string> {
     return this.formGroup.get('title') as AbstractControl<string>;
@@ -117,7 +117,7 @@ export class IkoManagementSearchActionModalComponent {
       this.ikoManagementApiService.getIkoRepositoryConfig(repositoryKey ?? '')
     ),
     switchMap((repository: IkoRepositoryConfigResponse) =>
-      this.ikoManagementApiService.getIkoSeachActionPropertyFields(repository.type)
+      this.ikoManagementApiService.getIkoSearchActionPropertyFields(repository.type)
     )
   );
 

@@ -51,7 +51,7 @@ class IkoViewExporter(
         )
         return ExportResult(
             ikoViewExport, setOf(
-                IkoSeachActionsExportRequest(request.ikoViewKey),
+                IkoSearchActionsExportRequest(request.ikoViewKey),
                 IkoListColumnsExportRequest(request.ikoViewKey),
                 IkoTabsExportRequest(request.ikoViewKey),
             )

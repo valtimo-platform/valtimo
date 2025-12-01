@@ -18,7 +18,7 @@ package com.ritense.iko.exporter
 
 import com.ritense.exporter.request.ExportRequest
 
-data class IkoSeachActionsExportRequest(
+data class IkoSearchActionsExportRequest(
     val ikoViewKey: String,
     override val required: Boolean = true,
 ) : ExportRequest(required)

@@ -29,7 +29,7 @@ import {
   TabsModule,
 } from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
-import {IkoSeachActionUser} from '../../models';
+import {IkoSearchActionUser} from '../../models';
 import {IkoApiService} from '../../services';
 
 @Component({
@@ -58,21 +58,21 @@ export class IkoSearchComponent implements OnDestroy {
     filter(key => !!key)
   );
 
-  public readonly ikoSeachActions$: Observable<IkoSeachActionUser[]> = this._key$.pipe(
+  public readonly ikoSearchActions$: Observable<IkoSearchActionUser[]> = this._key$.pipe(
     switchMap(key =>
       combineLatest([
         of(key),
         this.ikoApiService.cachedMenuItems$,
-        this.ikoApiService.getIkoSeachActions(key),
+        this.ikoApiService.getIkoSearchActions(key),
       ])
     ),
-    map(([key, menuItems, ikoSeachActions]) => {
+    map(([key, menuItems, ikoSearchActions]) => {
       const currentMenuItem = menuItems.find(item => item.key === key);
 
       if (currentMenuItem && currentMenuItem?.title)
         this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
 
-      return ikoSeachActions;
+      return ikoSearchActions;
     })
   );
 

@@ -44,7 +44,7 @@ class IkoTabImporterTest(
     }
 
     @Test
-    fun `should depend on 'ikodatarequest' type`() {
+    fun `should depend on 'ikosearchaction' type`() {
         assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_SEARCH_ACTION))
     }
 

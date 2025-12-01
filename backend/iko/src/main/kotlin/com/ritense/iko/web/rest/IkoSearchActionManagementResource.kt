@@ -18,10 +18,10 @@ package com.ritense.iko.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
-import com.ritense.iko.web.rest.request.IkoSeachActionCreateRequest
-import com.ritense.iko.web.rest.request.IkoSeachActionUpdateRequest
-import com.ritense.iko.web.rest.response.IkoSeachActionResponse
+import com.ritense.iko.service.IkoSearchActionService
+import com.ritense.iko.web.rest.request.IkoSearchActionCreateRequest
+import com.ritense.iko.web.rest.request.IkoSearchActionUpdateRequest
+import com.ritense.iko.web.rest.response.IkoSearchActionResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
@@ -38,8 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 @Controller
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
-class IkoSeachActionManagementResource(
-    private val service: IkoSeachActionService,
+class IkoSearchActionManagementResource(
+    private val service: IkoSearchActionService,
     private val ikoViewService: IkoViewService,
 ) {
 
@@ -48,91 +48,91 @@ class IkoSeachActionManagementResource(
     fun getIkoRepositoryConfigPropertyFields(
         @PathVariable type: String,
     ): ResponseEntity<List<PropertyField>> {
-        return ResponseEntity.ok(service.getIkoSeachActionPropertyFields(type))
+        return ResponseEntity.ok(service.getIkoSearchActionPropertyFields(type))
     }
 
     @RunWithoutAuthorization
     @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
-    fun getIkoSeachActionsForManagement(
+    fun getIkoSearchActionsForManagement(
         @PathVariable ikoViewKey: String,
-    ): ResponseEntity<List<IkoSeachActionResponse>> {
-        val ikoSeachActions = service.findAll(
+    ): ResponseEntity<List<IkoSearchActionResponse>> {
+        val ikoSearchActions = service.findAll(
             ikoViewKey = ikoViewKey,
         )
-        return ResponseEntity.ok(ikoSeachActions.map { IkoSeachActionResponse.from(it) })
+        return ResponseEntity.ok(ikoSearchActions.map { IkoSearchActionResponse.from(it) })
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{key}")
-    fun getIkoSeachAction(
+    @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
+    fun getIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-    ): ResponseEntity<IkoSeachActionResponse> {
-        val ikoSeachAction = service.getByKey(key, ikoViewKey)
-        return ResponseEntity.ok(IkoSeachActionResponse.from(ikoSeachAction))
+    ): ResponseEntity<IkoSearchActionResponse> {
+        val ikoSearchAction = service.getByKey(key, ikoViewKey)
+        return ResponseEntity.ok(IkoSearchActionResponse.from(ikoSearchAction))
     }
 
 
     @RunWithoutAuthorization
-    @PostMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{key}")
-    fun createIkoSeachAction(
+    @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
+    fun createIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSeachActionCreateRequest
-    ): ResponseEntity<IkoSeachActionResponse> {
+        @RequestBody request: IkoSearchActionCreateRequest
+    ): ResponseEntity<IkoSearchActionResponse> {
         val ikoView = ikoViewService.getByKey(ikoViewKey)
-        val existingIkoSeachActions = service.findAll(
+        val existingIkoSearchActions = service.findAll(
             ikoViewKey = ikoViewKey,
         )
-        val ikoSeachAction = service.create(
-            ikoSeachAction = request.toEntity(key, ikoView, existingIkoSeachActions.maxOfOrNull { it.order + 1 } ?: 0)
+        val ikoSearchAction = service.create(
+            ikoSearchAction = request.toEntity(key, ikoView, existingIkoSearchActions.maxOfOrNull { it.order + 1 } ?: 0)
         )
-        return ResponseEntity.ok(IkoSeachActionResponse.from(ikoSeachAction))
+        return ResponseEntity.ok(IkoSearchActionResponse.from(ikoSearchAction))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{key}")
-    fun updateIkoSeachAction(
+    @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
+    fun updateIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSeachActionUpdateRequest,
-    ): ResponseEntity<IkoSeachActionResponse> {
+        @RequestBody request: IkoSearchActionUpdateRequest,
+    ): ResponseEntity<IkoSearchActionResponse> {
         require(request.key == key)
-        val existingIkoSeachAction = service.getByKey(ikoViewKey = ikoViewKey, key = key)
-        val ikoSeachAction = service.update(
-            ikoSeachAction = request.toEntity(
-                existingIkoSeachAction.id.ikoView,
-                existingIkoSeachAction.order,
+        val existingIkoSearchAction = service.getByKey(ikoViewKey = ikoViewKey, key = key)
+        val ikoSearchAction = service.update(
+            ikoSearchAction = request.toEntity(
+                existingIkoSearchAction.id.ikoView,
+                existingIkoSearchAction.order,
             ),
         )
-        return ResponseEntity.ok(IkoSeachActionResponse.from(ikoSeachAction))
+        return ResponseEntity.ok(IkoSearchActionResponse.from(ikoSearchAction))
     }
 
     @RunWithoutAuthorization
     @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
-    fun updateIkoSeachActionsOrder(
+    fun updateIkoSearchActionsOrder(
         @PathVariable ikoViewKey: String,
-        @RequestBody request: List<IkoSeachActionUpdateRequest>,
-    ): ResponseEntity<List<IkoSeachActionResponse>> {
-        val existingIkoSeachActions = service.findAll(
+        @RequestBody request: List<IkoSearchActionUpdateRequest>,
+    ): ResponseEntity<List<IkoSearchActionResponse>> {
+        val existingIkoSearchActions = service.findAll(
             ikoViewKey = ikoViewKey,
         )
-        require(request.map { it.key }.toSet() == existingIkoSeachActions.map { it.id.key }.toSet())
-        val ikoSeachActions = request.mapIndexed { index, updatedIkoSeachAction ->
-            val existingIkoSeachAction = existingIkoSeachActions.first { it.id.key == updatedIkoSeachAction.key }
+        require(request.map { it.key }.toSet() == existingIkoSearchActions.map { it.id.key }.toSet())
+        val ikoSearchActions = request.mapIndexed { index, updatedIkoSearchAction ->
+            val existingIkoSearchAction = existingIkoSearchActions.first { it.id.key == updatedIkoSearchAction.key }
             service.update(
-                ikoSeachAction = existingIkoSeachAction.copy(order = index),
+                ikoSearchAction = existingIkoSearchAction.copy(order = index),
             )
         }
-        return ResponseEntity.ok(ikoSeachActions.map { IkoSeachActionResponse.from(it) })
+        return ResponseEntity.ok(ikoSearchActions.map { IkoSearchActionResponse.from(it) })
     }
 
     @RunWithoutAuthorization
-    @DeleteMapping("/v1/iko-view/{ikoViewKey}/iko-search-action/{key}")
-    fun deleteIkoSeachAction(
+    @DeleteMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
+    fun deleteIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-    ): ResponseEntity<IkoSeachActionResponse> {
+    ): ResponseEntity<IkoSearchActionResponse> {
         service.delete(key, ikoViewKey)
         return ResponseEntity.noContent().build()
     }

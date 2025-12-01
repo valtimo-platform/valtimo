@@ -23,48 +23,48 @@ import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
 import com.ritense.iko.authorization.IkoViewSpecificationFactory
 import com.ritense.iko.client.IkoClient
+import com.ritense.iko.event.IkoRepositoryConfigEventListener
+import com.ritense.iko.event.IkoSearchActionEventListener
 import com.ritense.iko.event.IkoViewEventListener
 import com.ritense.iko.event.IkoViewTabEventListener
-import com.ritense.iko.event.IkoSeachActionEventListener
-import com.ritense.iko.event.IkoRepositoryConfigEventListener
-import com.ritense.iko.exporter.IkoViewExporter
-import com.ritense.iko.exporter.IkoSeachActionsExporter
 import com.ritense.iko.exporter.IkoListColumnsExporter
+import com.ritense.iko.exporter.IkoSearchActionsExporter
 import com.ritense.iko.exporter.IkoSearchFieldsExporter
 import com.ritense.iko.exporter.IkoTabsExporter
+import com.ritense.iko.exporter.IkoViewExporter
 import com.ritense.iko.exporter.IkoWidgetsExporter
-import com.ritense.iko.importer.IkoViewImporter
-import com.ritense.iko.importer.IkoSeachActionImporter
 import com.ritense.iko.importer.IkoListColumnImporter
 import com.ritense.iko.importer.IkoRepositoryConfigImporter
+import com.ritense.iko.importer.IkoSearchActionImporter
 import com.ritense.iko.importer.IkoSearchFieldImporter
 import com.ritense.iko.importer.IkoTabImporter
+import com.ritense.iko.importer.IkoViewImporter
 import com.ritense.iko.importer.IkoWidgetImporter
 import com.ritense.iko.plugin.IkoPluginFactory
+import com.ritense.iko.repository.IkoRepositoryConfigRepository
+import com.ritense.iko.repository.IkoSearchActionRepository
+import com.ritense.iko.repository.IkoSearchActionSearchFieldRepository
+import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.iko.repository.IkoViewListColumnRepository
 import com.ritense.iko.repository.IkoViewRepository
 import com.ritense.iko.repository.IkoViewTabRepository
-import com.ritense.iko.repository.IkoSeachActionRepository
-import com.ritense.iko.repository.IkoSeachActionSearchFieldRepository
-import com.ritense.iko.repository.IkoRepositoryConfigRepository
-import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.iko.security.config.IkoHttpSecurityConfigurer
-import com.ritense.iko.service.IkoViewService
-import com.ritense.iko.service.IkoSeachActionService
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.iko.service.IkoRepositoryService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.service.IkoTabService
+import com.ritense.iko.service.IkoViewService
 import com.ritense.iko.service.IkoWidgetService
-import com.ritense.iko.web.rest.IkoViewManagementResource
-import com.ritense.iko.web.rest.IkoViewResource
-import com.ritense.iko.web.rest.IkoSeachActionManagementResource
-import com.ritense.iko.web.rest.IkoSeachActionResource
 import com.ritense.iko.web.rest.IkoListColumnManagementResource
 import com.ritense.iko.web.rest.IkoRepositoryManagementResource
+import com.ritense.iko.web.rest.IkoSearchActionManagementResource
+import com.ritense.iko.web.rest.IkoSearchActionResource
 import com.ritense.iko.web.rest.IkoSearchFieldManagementResource
 import com.ritense.iko.web.rest.IkoTabManagementResource
 import com.ritense.iko.web.rest.IkoTabResource
+import com.ritense.iko.web.rest.IkoViewManagementResource
+import com.ritense.iko.web.rest.IkoViewResource
 import com.ritense.iko.web.rest.IkoWidgetManagementResource
 import com.ritense.iko.web.rest.IkoWidgetResource
 import com.ritense.importer.ImportService
@@ -122,14 +122,14 @@ class IkoAutoConfiguration {
     )
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionService::class)
-    fun ikoSeachActionService(
-        ikoSeachActionRepository: IkoSeachActionRepository,
+    @ConditionalOnMissingBean(IkoSearchActionService::class)
+    fun ikoSearchActionService(
+        ikoSearchActionRepository: IkoSearchActionRepository,
         ikoViewService: IkoViewService,
         ikoRepositories: List<IkoRepository>,
         applicationEventPublisher: ApplicationEventPublisher,
-    ) = IkoSeachActionService(
-        ikoSeachActionRepository,
+    ) = IkoSearchActionService(
+        ikoSearchActionRepository,
         ikoViewService,
         ikoRepositories,
         applicationEventPublisher,
@@ -196,26 +196,26 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionManagementResource::class)
-    fun ikoSeachActionManagementResource(
-        service: IkoSeachActionService,
+    @ConditionalOnMissingBean(IkoSearchActionManagementResource::class)
+    fun ikoSearchActionManagementResource(
+        service: IkoSearchActionService,
         ikoViewService: IkoViewService,
-    ): IkoSeachActionManagementResource {
-        return IkoSeachActionManagementResource(
+    ): IkoSearchActionManagementResource {
+        return IkoSearchActionManagementResource(
             service,
             ikoViewService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionResource::class)
-    fun ikoSeachActionResource(
-        ikoSeachActionService: IkoSeachActionService,
+    @ConditionalOnMissingBean(IkoSearchActionResource::class)
+    fun ikoSearchActionResource(
+        ikoSearchActionService: IkoSearchActionService,
         listColumnService: IkoListColumnService,
         searchFieldService: IkoSearchFieldService,
-    ): IkoSeachActionResource {
-        return IkoSeachActionResource(
-            ikoSeachActionService,
+    ): IkoSearchActionResource {
+        return IkoSearchActionResource(
+            ikoSearchActionService,
             listColumnService,
             searchFieldService,
         )
@@ -295,15 +295,13 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
         ikoViewService: IkoViewService,
-        ikoSeachActionService: IkoSeachActionService,
-        searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
+        pluginService: PluginService,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoViewService,
-            ikoSeachActionService,
-            searchFieldService,
             objectMapper,
+            pluginService,
         )
     }
 
@@ -342,15 +340,15 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionImporter::class)
-    fun ikoSeachActionImporter(
+    @ConditionalOnMissingBean(IkoSearchActionImporter::class)
+    fun ikoSearchActionImporter(
         objectMapper: ObjectMapper,
-        ikoSeachActionService: IkoSeachActionService,
+        ikoSearchActionService: IkoSearchActionService,
         ikoViewService: IkoViewService,
-    ): IkoSeachActionImporter {
-        return IkoSeachActionImporter(
+    ): IkoSearchActionImporter {
+        return IkoSearchActionImporter(
             objectMapper,
-            ikoSeachActionService,
+            ikoSearchActionService,
             ikoViewService,
         )
     }
@@ -416,14 +414,14 @@ class IkoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionsExporter::class)
-    fun ikoSeachActionExporter(
+    @ConditionalOnMissingBean(IkoSearchActionsExporter::class)
+    fun ikoSearchActionExporter(
         objectMapper: ObjectMapper,
-        ikoSeachActionService: IkoSeachActionService,
-    ): IkoSeachActionsExporter {
-        return IkoSeachActionsExporter(
+        ikoSearchActionService: IkoSearchActionService,
+    ): IkoSearchActionsExporter {
+        return IkoSearchActionsExporter(
             objectMapper,
-            ikoSeachActionService,
+            ikoSearchActionService,
         )
     }
 
@@ -525,12 +523,12 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoSearchFieldService::class)
     fun ikoSearchFieldService(
         searchFieldService: SearchFieldV2Service,
-        ikoSeachActionSearchFieldRepository: IkoSeachActionSearchFieldRepository,
+        ikoSearchActionSearchFieldRepository: IkoSearchActionSearchFieldRepository,
         ikoViewService: IkoViewService,
     ): IkoSearchFieldService {
         return IkoSearchFieldService(
             searchFieldService,
-            ikoSeachActionSearchFieldRepository,
+            ikoSearchActionSearchFieldRepository,
             ikoViewService,
         )
     }
@@ -560,23 +558,23 @@ class IkoAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IkoViewEventListener::class)
     fun ikoViewEventListener(
-        ikoSeachActionService: IkoSeachActionService,
+        ikoSearchActionService: IkoSearchActionService,
         ikoListColumnService: IkoListColumnService,
         ikoTabService: IkoTabService,
     ): IkoViewEventListener {
         return IkoViewEventListener(
-            ikoSeachActionService,
+            ikoSearchActionService,
             ikoListColumnService,
             ikoTabService,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(IkoSeachActionEventListener::class)
-    fun ikoSeachActionEventListener(
+    @ConditionalOnMissingBean(IkoSearchActionEventListener::class)
+    fun ikoSearchActionEventListener(
         ikoSearchFieldService: IkoSearchFieldService,
-    ): IkoSeachActionEventListener {
-        return IkoSeachActionEventListener(
+    ): IkoSearchActionEventListener {
+        return IkoSearchActionEventListener(
             ikoSearchFieldService,
         )
     }
