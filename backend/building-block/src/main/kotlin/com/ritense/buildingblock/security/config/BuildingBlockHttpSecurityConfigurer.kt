@@ -34,13 +34,24 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/plugin")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/plugin"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            GET,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition"
+                        )
+                    ).hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
                             GET,
@@ -54,9 +65,18 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/import")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            GET,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/main/key"
+                        )
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -19,13 +19,10 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
-import {
-  BuildingBlockManagementListComponent,
-} from './components/building-block-management-list/building-block-management-list.component';
-import {
-  BuildingBlockManagementDetailComponent,
-} from './components/building-block-management-detail/building-block-management-detail.component';
+import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
+import {BuildingBlockManagementDetailComponent} from './components/building-block-management-detail/building-block-management-detail.component';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from './constants';
+import {ProcessManagementBuilderComponent} from '@valtimo/process-management';
 
 const routes: Routes = [
   {
@@ -46,10 +43,7 @@ const routes: Routes = [
   },
   {
     path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/:processDefinitionKey`,
-    loadComponent: () =>
-      import('@valtimo/process-management').then(
-        module => module.ProcessManagementBuilderComponent
-      ),
+    component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
     data: {
       title: 'Process details',
