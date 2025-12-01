@@ -295,11 +295,15 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
         ikoViewService: IkoViewService,
+        ikoSearchActionService: IkoSearchActionService,
+        searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
         pluginService: PluginService,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoViewService,
+            ikoSearchActionService,
+            searchFieldService,
             objectMapper,
             pluginService,
         )
