@@ -818,7 +818,12 @@
       "save": "Opslaan",
       "form": {"tabName": "Tab naam"}
     },
-    "columns": {"highContrast": "Hoog contrast", "type": "Type", "width": "Breedte"},
+    "columns": {
+      "highContrast": "Hoog contrast",
+      "type": "Type",
+      "width": "Breedte",
+      "density": "Dichtheid"
+    },
     "list": {
       "dividerModal": {
         "addDividerTitle": "Nieuwe widget-scheiding toevoegen",

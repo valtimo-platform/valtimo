@@ -129,7 +129,15 @@ export class WidgetManagementEditorComponent implements OnDestroy {
             },
           ]
         : []),
-
+      ...(!singleWidget
+        ? [
+            {
+              key: 'densityTranslation',
+              label: 'widgetTabManagement.columns.density',
+              ViewType: ViewType.BOOLEAN,
+            },
+          ]
+        : []),
       {
         key: 'highContrast',
         label: 'widgetTabManagement.columns.highContrast',
@@ -179,6 +187,9 @@ export class WidgetManagementEditorComponent implements OnDestroy {
       widgets.map(item => ({
         ...item,
         widthTranslation: this.translateService.instant(this.getWidthTranslationKey(item.width)),
+        densityTranslation: this.translateService.instant(
+          `widgetTabManagement.density.${item.isCompact ? 'compact' : 'default'}.title`
+        ),
         tags: [
           {
             content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
@@ -225,7 +236,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
       return;
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
-    this.widgetWizardService.$widgetIcon.set(widget.icon);
+    this.widgetWizardService.$widgetIcon.set(widget.icon ?? null);
     this.widgetWizardService.$widgetStyle.set(
       widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
