@@ -70,10 +70,7 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
-  logoPngBase64: LOGO_BASE_64_PNG,
-  darkModeLogoPngBase64: DARK_MODE_LOGO_BASE_64_PNG,
-  applicationTitle: '',
-  production: true,
+  production: false,
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -92,7 +89,7 @@ export const environment: ValtimoConfig = {
         children: [],
       },
       {
-        roles: [ROLE_ADMIN],
+        roles: [ROLE_USER],
         title: 'Objects',
         iconClass: 'icon mdi mdi-archive',
         sequence: 2,
@@ -135,7 +132,7 @@ export const environment: ValtimoConfig = {
           {link: ['/form-management'], title: 'Forms', sequence: 10},
           {
             link: ['/notifications-api/notifications/failed'],
-            title: 'Notifications',
+            title: 'Failed notifications',
             sequence: 11,
           },
 
@@ -156,7 +153,7 @@ export const environment: ValtimoConfig = {
       {
         roles: [ROLE_DEVELOPER],
         title: 'Development',
-        iconClass: 'icon mdi mdi-xml',
+        iconClass: 'icon mdi mdi-code',
         sequence: 6,
         children: [
           {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
@@ -165,103 +162,39 @@ export const environment: ValtimoConfig = {
     ],
   },
   whitelistedDomains: ['localhost:4200'],
-  langKey: Language.NL,
   mockApi: {
-    endpointUri: '/mock-api/',
+    endpointUri: window['env']['mockApiUri'] || '/mock-api/',
   },
   valtimoApi: {
-    endpointUri: '/api/',
-  },
-  changePasswordUrl: {
-    endpointUri: '/placeholder',
+    endpointUri: window['env']['apiUri'] || '/api/',
   },
   swagger: {
-    endpointUri: '/v3/api-docs',
+    endpointUri: window['env']['swaggerUri'] || '/v3/api-docs',
   },
   logger: {
     level: NgxLoggerLevel.TRACE,
   },
-  definitions: {
-    cases: [],
-  },
+  definitions: {cases: []},
   openZaak: {
-    catalogus: '8225508a-6840-413e-acc9-6422af120db1',
+    catalogus: window['env']['openZaakCatalogusId'] || '8225508a-6840-413e-acc9-6422af120db1',
   },
   uploadProvider: UploadProvider.DOCUMENTEN_API,
-  caseFileSizeUploadLimitMB: 100,
-  supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
   defaultDefinitionTable: defaultDefinitionColumns,
-  caseFileUploadAcceptedFiles:
-    'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
   visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
-  customTaskList: {
-    fields: [
-      {
-        propertyName: 'due',
-        translationKey: 'due',
-        sortable: true,
-      },
-      {
-        propertyName: 'created',
-        translationKey: 'created',
-        sortable: true,
-      },
-      {
-        propertyName: 'name',
-        translationKey: 'name',
-        sortable: true,
-      },
-      {
-        propertyName: 'valtimoAssignee.fullName',
-        translationKey: 'valtimoAssignee.fullName',
-      },
-    ],
-    defaultSortedColumn: {
-      isSorting: true,
-      state: {
-        name: 'created',
-        direction: 'ASC',
-      },
-    },
-  },
-  customLeftSidebar: {
-    defaultMenuWidth: 256,
-    maxMenuWidth: 550,
-    minMenuWidth: 150,
-  },
-  caseObjectTypes: {
-    leningen: ['Boom', 'Straatverlichting'],
-  },
   featureToggles: {
-    enableHackathonCasesPage: false,
-    showUserNameInTopBar: true,
-    showPlantATreeButton: false,
+    allowUserThemeSwitching: true,
+    disableCaseCount: false,
+    enableCompactModeToggle: true,
+    enableFormFlowBreadcrumbs: true,
+    enableIntermediateSave: true,
+    enableTabManagement: true,
+    enableUserNameInTopBarToggle: true,
     experimentalDmnEditing: true,
     largeLogoMargin: true,
-    sortFilesByDate: true,
-    disableCaseCount: false,
     returnToLastUrlAfterTokenExpiration: true,
-    useStartEventNameAsStartFormTitle: true,
-    allowUserThemeSwitching: true,
-    enableUserNameInTopBarToggle: true,
-    enableTabManagement: true,
-    enableObjectManagement: true,
-    enableFormViewModel: true,
-    enableIntermediateSave: true,
-    enableFormFlowBreadcrumbs: true,
-    enableTaskPanel: true,
-    enablePbacDocumentenApiDocuments: true,
-    enableSuppressDocumentError: false,
+    showPlantATreeButton: false,
+    showUserNameInTopBar: true,
+    sortFilesByDate: true,
   },
-  csp: cspHeaderParamsDev,
-  formioOptions: {
-    languageOverride: {
-      'en-US': {
-        decimalSeparator: ':',
-        delimiter: ':',
-      },
-    },
-  },
-  translationResources: ['./assets/i18n/'],
 };
