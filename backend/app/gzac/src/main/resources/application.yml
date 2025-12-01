@@ -243,6 +243,19 @@ valtimo:
         whitelistedPaths: "VALTIMO_.*"
     includeDocumentContentInResponse: true
 
+
+    config:
+        virusscan:
+            clamav:
+                enabled: true
+                properties:
+                    hostName: localhost
+                    port: 3310
+                DocumentenApiPlugin:
+                    enabled: true
+                TemporaryResourceStorageService:
+                    enabled: true
+
 spring-actuator:
     username: ${SPRING_ACTUATOR_USERNAME:admin}
     password: ${SPRING_ACTUATOR_PASSWORD}

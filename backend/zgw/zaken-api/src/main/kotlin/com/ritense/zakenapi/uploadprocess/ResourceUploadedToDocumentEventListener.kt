@@ -29,7 +29,7 @@ import org.springframework.context.event.EventListener
 class ResourceUploadedToDocumentEventListener(
     private val resourceService: TemporaryResourceStorageService,
     private val uploadProcessService: UploadProcessService,
-    private val authorizationService: AuthorizationService,
+    private val authorizationService: AuthorizationService
 ) {
 
     @EventListener(TemporaryResourceUploadedEvent::class)
@@ -47,7 +47,6 @@ class ResourceUploadedToDocumentEventListener(
                     ResourcePermission()
                 )
             )
-
             logger.debug { "Uploading resource to document: ${event.resourceId}" }
             uploadProcessService.startUploadResourceProcess(caseId, event.resourceId)
         }

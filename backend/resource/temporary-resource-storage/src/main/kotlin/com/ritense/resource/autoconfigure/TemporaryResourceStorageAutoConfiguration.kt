@@ -21,6 +21,7 @@ import com.ritense.resource.security.config.TemporaryResourceStorageHttpSecurity
 import com.ritense.resource.service.ResourceStorageDelegate
 import com.ritense.resource.service.TemporaryResourceStorageDeletionService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.resource.web.rest.TemporaryResourceStorageResource
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.ProcessBean
@@ -51,13 +52,15 @@ class TemporaryResourceStorageAutoConfiguration {
         @Value("\${valtimo.resource.temp.directory:}") valtimoResourceTempDirectory: String,
         uploadProperties: ValtimoUploadProperties,
         objectMapper: ObjectMapper,
-        repository: ResourceStorageMetadataRepository
+        repository: ResourceStorageMetadataRepository,
+        virusScanService: VirusScanService?
     ): TemporaryResourceStorageService {
         return TemporaryResourceStorageService(
             valtimoResourceTempDirectory = valtimoResourceTempDirectory,
             uploadProperties = uploadProperties,
             objectMapper = objectMapper,
-            repository = repository
+            repository = repository,
+            virusScanService = virusScanService
         )
     }
 
@@ -77,7 +80,7 @@ class TemporaryResourceStorageAutoConfiguration {
     @ConditionalOnMissingBean(TemporaryResourceStorageResource::class)
     fun temporaryResourceStorageResource(
         temporaryResourceStorageService: TemporaryResourceStorageService,
-        applicationEventPublisher: ApplicationEventPublisher,
+        applicationEventPublisher: ApplicationEventPublisher
     ): TemporaryResourceStorageResource {
         return TemporaryResourceStorageResource(
             temporaryResourceStorageService,

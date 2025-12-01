@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.resource.domain
+package com.ritense.valtimo.contract.upload
 
-enum class MetadataType(val key: String) {
-    CONTENT_TYPE("contentType"),
-    DOCUMENT_ID("documentId"),
-    FILE_NAME("filename"),
-    FILE_PATH("filePath"),
-    FILE_SIZE("fileSize"),
-    USER("user"),
-    VIRUS_SCANNED_RESULT("virusScanResult"),
-}
+class VirusDetectedException(
+    message: String
+): RuntimeException(
+    message
+)

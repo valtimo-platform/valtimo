@@ -22,8 +22,8 @@ import com.ritense.documentenapi.service.DocumentDeleteHandler
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.springframework.context.ApplicationEventPublisher
 
@@ -36,6 +36,7 @@ class DocumentenApiPluginFactory(
     private val documentDeleteHandlers: List<DocumentDeleteHandler>,
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val runtimeService: OperatonRuntimeService,
+    private val virusScanService: VirusScanService?
 ) : PluginFactory<DocumentenApiPlugin>(pluginService) {
 
     override fun create(): DocumentenApiPlugin {
@@ -48,6 +49,7 @@ class DocumentenApiPluginFactory(
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService
         )
     }
 }

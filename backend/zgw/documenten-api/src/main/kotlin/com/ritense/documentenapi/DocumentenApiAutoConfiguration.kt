@@ -43,6 +43,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -92,8 +93,8 @@ class DocumentenApiAutoConfiguration {
         objectMapper: ObjectMapper,
         documentDeleteHandlers: List<DocumentDeleteHandler>,
         documentenApiVersionService: DocumentenApiVersionService,
-        processDocumentAssociationService: ProcessDocumentAssociationService,
         runtimeService: OperatonRuntimeService,
+        virusScanService: VirusScanService?
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -103,7 +104,8 @@ class DocumentenApiAutoConfiguration {
             objectMapper,
             documentDeleteHandlers,
             documentenApiVersionService,
-            runtimeService
+            runtimeService,
+            virusScanService
         )
     }
 
