@@ -19,19 +19,13 @@ import {ConfigService} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 
 import {
-  BuildingBlockProcessLinkUpdateDto,
   CompatiblePluginProcessLinks,
-  FormFlowProcessLinkUpdateRequestDto,
-  FormProcessLinkUpdateRequestDto,
   FormSubmissionResult,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
-  PluginProcessLinkUpdateDto,
   ProcessLinkCreateEvent,
   ProcessLinkType,
   TaskWithProcessLink,
-  UIComponentProcessLinkUpdateRequestDto,
-  URLProcessLinkUpdateRequestDto,
 } from '../models';
 import {URLVariables} from '../models/process-link-url.model';
 
@@ -69,32 +63,6 @@ export class ProcessLinkService {
     return this.http.get<GetProcessLinkResponse>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link`, {
       params,
     });
-  }
-
-  public updateProcessLink(
-    updateProcessLinkRequest:
-      | PluginProcessLinkUpdateDto
-      | FormFlowProcessLinkUpdateRequestDto
-      | FormProcessLinkUpdateRequestDto
-      | URLProcessLinkUpdateRequestDto
-      | UIComponentProcessLinkUpdateRequestDto
-      | BuildingBlockProcessLinkUpdateDto
-  ): Observable<null> {
-    return this.http.put<null>(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      this.emptyStringToNull(updateProcessLinkRequest)
-    );
-  }
-
-  public saveProcessLink(saveProcessLinkRequest: ProcessLinkCreateEvent): Observable<null> {
-    return this.http.post<null>(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      this.emptyStringToNull(saveProcessLinkRequest)
-    );
-  }
-
-  public deleteProcessLink(id: string): Observable<null> {
-    return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
   }
 
   public getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {

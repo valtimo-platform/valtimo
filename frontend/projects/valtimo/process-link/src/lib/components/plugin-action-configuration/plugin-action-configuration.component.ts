@@ -30,7 +30,6 @@ import {
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLink,
-  ProcessLinkEditMode,
 } from '../../models';
 
 @Component({
@@ -125,19 +124,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         pluginDefinitionKey: selectedProcessLink.pluginDefinitionKey,
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
-        () => {
-          this.stateService.closeModal();
-        },
-        () => {
-          this.stateService.stopSaving();
-        }
-      );
+      this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
     });
   }
 
@@ -188,19 +175,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             pluginDefinitionKey,
           };
 
-          if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-            this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
-            return;
-          }
-
-          this.processLinkService.saveProcessLink(processLinkRequest).subscribe(
-            () => {
-              this.stateService.closeModal();
-            },
-            () => {
-              this.stateService.stopSaving();
-            }
-          );
+          this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
         }
       );
   }

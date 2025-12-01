@@ -25,7 +25,7 @@ import {
   ProcessLinkService,
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
-import {OpenProcessLinkModalEvent} from '../models';
+import {DeleteProcessLinkEvent, OpenProcessLinkModalEvent} from '../models';
 import {
   BuildingBlockManagementParams,
   CaseManagementParams,
@@ -60,14 +60,16 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._processLinksForSelectedDefinition$.getValue();
   }
 
-  private readonly _processLinksFetchedForSelectedDefinition$ = new BehaviorSubject<boolean>(false);
-
-  private readonly _subscriptions = new Subscription();
-
   private readonly _openProcessLinkModalEvents$ = new Subject<OpenProcessLinkModalEvent>();
 
   public get openProcessLinkModalEvents$(): Observable<OpenProcessLinkModalEvent> {
     return this._openProcessLinkModalEvents$.asObservable();
+  }
+
+  private readonly _deleteProcessLinkEvents$ = new Subject<DeleteProcessLinkEvent>();
+
+  public get deleteProcessLinkEvents$(): Observable<DeleteProcessLinkEvent> {
+    return this._deleteProcessLinkEvents$.asObservable();
   }
 
   public setSelectedProcessDefinition(definition: ProcessDefinitionWithPropertiesDto): void {
@@ -89,6 +91,8 @@ export class ProcessManagementEditorService implements OnDestroy {
   private _updatingBpmnView = false;
 
   private _activityIdBusinessIdMap: Record<string, string> = {};
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly processLinkService: ProcessLinkService,
@@ -115,6 +119,14 @@ export class ProcessManagementEditorService implements OnDestroy {
   ): void {
     this._updateBpmnViewFunction = updateBpmnViewFunction;
     this._openProcessLinkModalEvents$.next(event);
+  }
+
+  public sendDeleteProcessLinkEvent(
+    event: DeleteProcessLinkEvent,
+    updateBpmnViewFunction: () => void
+  ): void {
+    this._updateBpmnViewFunction = updateBpmnViewFunction;
+    this._deleteProcessLinkEvents$.next(event);
   }
 
   public updateProcessLink(event: ProcessLinkUpdateEvent): void {
