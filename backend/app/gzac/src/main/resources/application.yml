@@ -254,7 +254,7 @@ valtimo:
                 DocumentenApiPlugin:
                     enabled: true
                 TemporaryResourceStorageService:
-                    enabled: true
+                    enabled: false
 
 spring-actuator:
     username: ${SPRING_ACTUATOR_USERNAME:admin}

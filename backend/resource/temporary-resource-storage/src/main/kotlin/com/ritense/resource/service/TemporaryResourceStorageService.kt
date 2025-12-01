@@ -33,6 +33,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.tika.Tika
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.beans.factory.annotation.Value
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -57,7 +58,9 @@ class TemporaryResourceStorageService(
     private val uploadProperties: ValtimoUploadProperties,
     private val objectMapper: ObjectMapper,
     private val repository: ResourceStorageMetadataRepository,
-    private val virusScanService: VirusScanService? = null
+    private val virusScanService: VirusScanService? = null,
+    @Value("\${valtimo.config.virusscan.clamav.TemporaryResourceStorageService.enabled:false}")
+    private val virusScanEnabledForTemporaryStorage: Boolean = true,
 ) {
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
@@ -71,9 +74,9 @@ class TemporaryResourceStorageService(
 
     fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
 
-        val (inputStream, virusScanResult) = virusScanService?.let {
+        val (inputStream, virusScanResult) = virusScanService?.takeIf { virusScanEnabledForTemporaryStorage }?.let { svc ->
             val bytes: ByteArray = inputStream.readBytes()
-            val virusScanResult = virusScanService.scan(bytes)
+            val virusScanResult = svc.scan(bytes)
 
             if (VirusScanStatus.VIRUS_FOUND == virusScanResult.status) {
                 throw VirusDetectedException(
