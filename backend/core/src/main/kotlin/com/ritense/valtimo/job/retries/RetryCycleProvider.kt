@@ -20,11 +20,8 @@ package com.ritense.valtimo.job.retries
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
-import org.springframework.stereotype.Component
 import java.util.regex.Pattern
 
-
-@Component
 class RetryCycleProvider(val config: RetryConfiguration) {
 
     val standardRetryCycles = mutableMapOf<String, String>()
