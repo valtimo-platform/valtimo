@@ -16,26 +16,25 @@
 
 package com.ritense.buildingblock.service
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.ritense.authorization.AuthorizationContext
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
-import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentService
-import com.ritense.document.service.result.CreateDocumentResult
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.UUID
+import java.util.concurrent.Callable
 
 class BuildingBlockInstanceServiceIT : BaseIntegrationTest() {
 
@@ -49,33 +48,76 @@ class BuildingBlockInstanceServiceIT : BaseIntegrationTest() {
     lateinit var buildingBlockInstanceRepository: BuildingBlockInstanceRepository
 
     @Autowired
+    lateinit var documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository
+
+    @Autowired
     lateinit var documentService: DocumentService
 
     @Test
     fun `create should store instance with document id`() {
-        val definitionId = BuildingBlockDefinitionId.of("bezwaar", "1.0.0")
+        val buildingBlockKey = "bezwaar-${UUID.randomUUID().toString().take(8)}"
+        val definitionId = BuildingBlockDefinitionId.of(buildingBlockKey, "1.0.0")
+        val definition = BuildingBlockDefinition(
+            id = definitionId,
+            name = "Bezwaar block",
+            description = "description",
+            createdBy = "tester",
+            createdDate = LocalDateTime.now(),
+            basedOnVersionTag = null,
+            final = false
+        )
+        buildingBlockDefinitionRepository.saveAndFlush(definition)
 
+        val documentDefinitionName = "$buildingBlockKey-document"
+        val documentDefinitionId = JsonSchemaDocumentDefinitionId.forBuildingBlock(documentDefinitionName, definitionId)
+        val schema = """
+            {
+              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+              "${'$'}id": "$documentDefinitionName.schema",
+              "type": "object",
+              "properties": {}
+            }
+        """.trimIndent()
+        documentDefinitionRepository.saveAndFlush(
+            JsonSchemaDocumentDefinition(
+                documentDefinitionId,
+                JsonSchema.fromString(schema)
+            )
+        )
 
+        val caseDocumentRequest = NewDocumentRequest(
+            documentDefinitionName,
+            null,
+            null,
+            definitionId.key,
+            definitionId.versionTag.toString(),
+            JsonNodeFactory.instance.objectNode().put("type", "case")
+        )
+        val caseDocumentId = AuthorizationContext.runWithoutAuthorization(Callable {
+            val result = documentService.createDocument(caseDocumentRequest)
+            val document = result.resultingDocument().orElseThrow { IllegalStateException("Case document not created") }
+            document.id().getId()
+        })
 
-//        val documentId = UUID.randomUUID()
-//        val document = mock<Document>()
-//        val documentInternalId = mock<Document.Id>()
-//        whenever(documentInternalId.getId()).thenReturn(documentId)
-//        whenever(document.id()).thenReturn(documentInternalId)
-//        val createDocumentResult = mock<CreateDocumentResult>()
-//        whenever(createDocumentResult.resultingDocument()).thenReturn(Optional.of(document))
-//        whenever(createDocumentResult.errors()).thenReturn(emptyList())
-//        whenever(documentService.createDocument(any())).thenReturn(createDocumentResult)
+        val buildingBlockDocumentRequest = NewDocumentRequest(
+            documentDefinitionName,
+            null,
+            null,
+            definitionId.key,
+            definitionId.versionTag.toString(),
+            JsonNodeFactory.instance.objectNode().put("type", "building-block")
+        )
 
-        val instance = buildingBlockInstanceService.create(NewDocumentRequest(
+        val instance = AuthorizationContext.runWithoutAuthorization(Callable {
+            buildingBlockInstanceService.create(buildingBlockDocumentRequest, caseDocumentId)
+        })
 
-        ))
-
-        assertThat(instance.documentId).isEqualTo(documentId)
+        assertThat(instance.documentId).isNotNull
+        assertThat(instance.caseDocumentId).isEqualTo(caseDocumentId)
         assertThat(instance.definition.id).isEqualTo(definitionId)
 
         val stored = buildingBlockInstanceRepository.findById(instance.id)
         assertThat(stored).isPresent
-        assertThat(stored.get().documentId).isEqualTo(documentId)
+        assertThat(stored.get().documentId).isEqualTo(instance.documentId)
     }
 }
