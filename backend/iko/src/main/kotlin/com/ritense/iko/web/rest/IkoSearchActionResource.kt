@@ -49,7 +49,7 @@ class IkoSearchActionResource(
     private val ikoSearchFieldService: IkoSearchFieldService,
 ) {
 
-    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun getIkoSearchActions(
         @PathVariable ikoViewKey: String,
     ): ResponseEntity<List<IkoSearchActionUserListResponse>> {

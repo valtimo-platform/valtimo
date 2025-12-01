@@ -110,7 +110,7 @@ export class IkoManagementApiService extends BaseApiService {
 
   public getIkoViewPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`management/v1/iko-property-fields/${type}/iko-view`)
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/view`)
     );
   }
 
@@ -142,7 +142,7 @@ export class IkoManagementApiService extends BaseApiService {
     aggregateKey: string
   ): Observable<IkoSearchActionResponse[]> {
     return this.httpClient.get<IkoSearchActionResponse[]>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action`)
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action`)
     );
   }
 
@@ -171,7 +171,7 @@ export class IkoManagementApiService extends BaseApiService {
     body: IkoSearchActionUpdateRequest[]
   ): Observable<IkoSearchActionResponse[]> {
     return this.httpClient.put<IkoSearchActionResponse[]>(
-      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/iko-search-action`),
+      this.getApiUrl(`management/v1/iko-view/${aggregateKey}/search-action`),
       body
     );
   }
@@ -195,7 +195,7 @@ export class IkoManagementApiService extends BaseApiService {
 
   public getIkoSearchActionPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`management/v1/iko-property-fields/${type}/iko-search-action`)
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/search-action`)
     );
   }
 

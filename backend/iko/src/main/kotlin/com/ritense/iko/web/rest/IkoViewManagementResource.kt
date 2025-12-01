@@ -58,7 +58,7 @@ class IkoViewManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-property-fields/{type}/iko-view")
+    @GetMapping("/v1/iko-property-fields/{type}/view")
     fun getIkoViewPropertyFields(
         @PathVariable type: String,
     ): ResponseEntity<List<PropertyField>> {

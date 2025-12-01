@@ -68,7 +68,7 @@ export class IkoApiService extends BaseApiService {
 
   public getIkoSearchActions(ikoViewKey: string): Observable<IkoSearchActionUser[]> {
     return this.httpClient.get<IkoSearchActionUser[]>(
-      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/iko-search-action`)
+      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/search-action`)
     );
   }
 

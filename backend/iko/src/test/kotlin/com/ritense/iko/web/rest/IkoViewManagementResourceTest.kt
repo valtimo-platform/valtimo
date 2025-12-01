@@ -98,7 +98,7 @@ internal class IkoViewManagementResourceTest {
             )
         )
 
-        mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/iko-view", "iko"))
+        mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/view", "iko"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.*", hasSize<Int>(3)))

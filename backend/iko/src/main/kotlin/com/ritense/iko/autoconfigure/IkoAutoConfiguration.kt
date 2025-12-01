@@ -298,14 +298,12 @@ class IkoAutoConfiguration {
         ikoSearchActionService: IkoSearchActionService,
         searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
-        pluginService: PluginService,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoViewService,
             ikoSearchActionService,
             searchFieldService,
             objectMapper,
-            pluginService,
         )
     }
 

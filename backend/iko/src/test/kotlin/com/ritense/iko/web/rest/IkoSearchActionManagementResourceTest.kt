@@ -81,7 +81,7 @@ internal class IkoSearchActionManagementResourceTest {
             )
         )
 
-        mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/iko-search-action", "iko"))
+        mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/search-action", "iko"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.*", hasSize<Int>(1)))
@@ -103,7 +103,7 @@ internal class IkoSearchActionManagementResourceTest {
             ),
         )
 
-        mockMvc.perform(get("/api/management/v1/iko-view/{ikoViewKey}/iko-search-action", "klant"))
+        mockMvc.perform(get("/api/management/v1/iko-view/{ikoViewKey}/search-action", "klant"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].key").value("bsn"))
@@ -220,7 +220,7 @@ internal class IkoSearchActionManagementResourceTest {
         whenever(service.update(any())).thenReturn(ikoSearchAction)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-view/{ikoViewKey}/iko-search-action",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action",
                 "klant"
             )
                 .content(objectMapper.writeValueAsString(request))

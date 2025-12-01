@@ -44,7 +44,7 @@ class IkoSearchActionManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-property-fields/{type}/iko-search-action")
+    @GetMapping("/v1/iko-property-fields/{type}/search-action")
     fun getIkoRepositoryConfigPropertyFields(
         @PathVariable type: String,
     ): ResponseEntity<List<PropertyField>> {
@@ -52,7 +52,7 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun getIkoSearchActionsForManagement(
         @PathVariable ikoViewKey: String,
     ): ResponseEntity<List<IkoSearchActionResponse>> {
@@ -109,7 +109,7 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-view/{ikoViewKey}/iko-search-action")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun updateIkoSearchActionsOrder(
         @PathVariable ikoViewKey: String,
         @RequestBody request: List<IkoSearchActionUpdateRequest>,

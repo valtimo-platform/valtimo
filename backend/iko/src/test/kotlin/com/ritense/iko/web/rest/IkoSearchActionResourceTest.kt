@@ -99,7 +99,7 @@ internal class IkoSearchActionResourceTest {
                 )
             )
 
-        mockMvc.perform(get("/api/v1/iko-view/{ikoViewKey}/iko-search-action", "klant"))
+        mockMvc.perform(get("/api/v1/iko-view/{ikoViewKey}/search-action", "klant"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].key").value("bsn"))
