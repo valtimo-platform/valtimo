@@ -138,4 +138,37 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
     if (this.disabled || !this._valid || !this._modifiedValue) return;
     this.saveEvent.emit(this._modifiedValue);
   }
+
+  private toggleRequired(property: string, makeRequired: boolean): void {
+    let schema = JSON.parse(this._modifiedValue || this.schemaJson);
+
+    if (!schema.required) schema.required = [];
+
+    const idx = schema.required.indexOf(property);
+
+    if (makeRequired && idx === -1) schema.required.push(property);
+    if (!makeRequired && idx !== -1) schema.required.splice(idx, 1);
+
+    this._modifiedValue = JSON.stringify(schema, null, 2);
+    this._editor.updateProps({content: {text: this._modifiedValue}});
+    this.changeEvent.emit(this._modifiedValue);
+  }
+
+  public isRequired(property: string): boolean {
+    try {
+      const schema = JSON.parse(this._modifiedValue || this.schemaJson);
+      return Array.isArray(schema.required) && schema.required.includes(property);
+    } catch {
+      return false;
+    }
+  }
+
+  public getProperties(): string[] {
+    try {
+      const schema = JSON.parse(this._modifiedValue || this.schemaJson);
+      return schema?.properties ? Object.keys(schema.properties) : [];
+    } catch {
+      return [];
+    }
+  }
 }
