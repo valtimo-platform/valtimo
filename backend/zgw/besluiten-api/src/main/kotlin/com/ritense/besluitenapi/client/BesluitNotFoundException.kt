@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.dashboard
+package com.ritense.besluitenapi.client
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.ritense.valtimo.contract.conditions.Condition
-
-data class TaskCountDataSourceProperties(
-    @JsonAlias("queryConditions")
-    val conditions: List<Condition<*>>? = listOf()
-)
+class BesluitNotFoundException(besluitUrl: String) : RuntimeException("No besluit found for url '$besluitUrl'")

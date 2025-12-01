@@ -20,6 +20,7 @@ import {BESLUITEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+import {GetBesluitConfigurationComponent} from './components/get-besluit/get-besluit-configuration.component';
 
 const besluitenApiPluginSpecification: PluginSpecification = {
   pluginId: 'besluitenapi',
@@ -29,6 +30,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
     'create-besluit': CreateZaakBesluitConfigurationComponent,
     'patch-besluit': PatchZaakBesluitConfigurationComponent,
     'link-document-to-besluit': LinkDocumentToBesluitConfigurationComponent,
+    'get-besluit': GetBesluitConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -95,6 +97,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       beslisdatumTooltip:
         'De beslisdatum (AWB) van het besluit. Ondersteunt value resolver. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
       addPatchBesluitProperty: 'Voeg nieuwe parameter toe',
+      'get-besluit': 'Besluit ophalen',
+      resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat moet worden opgeslagen.',
     },
     en: {
       title: 'Besluiten API',
@@ -161,6 +167,10 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       beslisdatumTooltip:
         'The decision date (AWB) of the decision. Supports value resolver. Supported date examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
       addPatchBesluitProperty: 'Add besluit property',
+      'get-besluit': 'Retrieve besluit',
+      resultProcessVariable: 'Result process variable',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result must be stored.',
     },
   },
 };
