@@ -1,0 +1,21 @@
+{
+  "name": "objectenapi",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:objecten-api"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "objectenApiPluginSpecification",
+        "module": "ObjectenApiPluginModule"
+      }
+    ]
+  },
+  "editions": [
+    "gzac"
+  ]
+}

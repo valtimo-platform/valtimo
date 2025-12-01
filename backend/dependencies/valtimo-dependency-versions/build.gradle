@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,31 @@ dependencies {
         api(project(":authorization"))
         api(project(":case"))
         api(project(":changelog"))
+        api(project(":command-handling"))
         api(project(":contract"))
         api(project(":core"))
         api(project(":dashboard"))
         api(project(":data-provider"))
+        api(project(":dependencies:valtimo-dependencies"))
         api(project(":document-generation"))
+        api(project(":document-generation:local-document-generation"))
+        api(project(":document-generation:smartdocuments"))
+        api(project(":exact-plugin"))
         api(project(":exporter"))
-        api(project(":mail:flowmailer"))
         api(project(":form"))
         api(project(":form-flow"))
         api(project(":form-view-model"))
-        api(project(":command-handling"))
+        api(project(":iko"))
         api(project(":importer"))
         api(project(":inbox"))
         api(project(":keycloak-iam"))
-        api(project(":document-generation:local-document-generation"))
-        api(project(":mail:local-mail"))
-        api(project(":resource:local-resource"))
         api(project(":localization"))
+        api(project(":logging"))
         api(project(":mail"))
+        api(project(":mail:flowmailer"))
+        api(project(":mail:local-mail"))
         api(project(":mail:mandrill"))
+        api(project(":mail:wordpress-mail"))
         api(project(":milestones"))
         api(project(":notes"))
         api(project(":outbox"))
@@ -58,29 +63,30 @@ dependencies {
         api(project(":process-link"))
         api(project(":process-link-url"))
         api(project(":resource"))
-        api(project(":search"))
-        api(project(":document-generation::smartdocuments"))
+        api(project(":resource:local-resource"))
         api(project(":resource:temporary-resource-storage"))
+        api(project(":search"))
         api(project(":test-utils-common"))
         api(project(":value-resolver"))
-        api(project(":dependencies:valtimo-dependencies"))
         api(project(":web"))
-        api(project(":mail:wordpress-mail"))
+        api(project(":widget"))
 
         //GZAC
         api(project(":plugin-authentication:notificaties-api-authentication"))
         api(project(":plugin-authentication:objecten-api-authentication"))
+        api(project(":plugin-authentication:openklant-authentication"))
         api(project(":plugin-authentication:openzaak-plugin-authentication"))
 
         api(project(":zgw"))
-        api(project(":zgw:portaaltaak"))
         api(project(":zgw:besluiten-api"))
         api(project(":zgw:catalogi-api"))
         api(project(":zgw:documenten-api"))
+        api(project(":zgw:klantinteracties-api"))
         api(project(":zgw:notificaties-api"))
         api(project(":zgw:object-management"))
         api(project(":zgw:objecten-api"))
         api(project(":zgw:objecttypen-api"))
+        api(project(":zgw:portaaltaak"))
         api(project(":zgw:verzoek"))
         api(project(":zgw:zaakdetails"))
         api(project(":zgw:zaken-api"))
@@ -96,6 +102,8 @@ dependencies {
         //ShedLock
         api("net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}")
         api("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}")
+
+        api("org.apache.commons:commons-lang3:${commonsLangVersion}")
 
         api("de.codecentric:spring-boot-admin-starter-client:${springBootAdminStarterClientVersion}")
         api "org.json:json:${orgJsonJsonVersion}"

@@ -33,9 +33,9 @@ import {
   BreadcrumbService,
   CdsThemeService,
   CurrentCarbonTheme,
+  ObserveSizeDirective,
   PageHeaderService,
   PageTitleService,
-  PendingChangesComponent,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
@@ -90,12 +90,9 @@ import {WidgetsService} from './tab/widgets/widgets.service';
   standalone: false,
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
-  providers: [CaseTabService, CaseDetailLayoutService],
+  providers: [CaseTabService, CaseDetailLayoutService, ObserveSizeDirective],
 })
-export class CaseDetailComponent
-  extends PendingChangesComponent
-  implements AfterViewInit, OnDestroy
-{
+export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: CaseSupportingProcessStartModalComponent;
 
@@ -207,7 +204,8 @@ export class CaseDetailComponent
   );
 
   public readonly hasCaseTags$: Observable<boolean> = this._caseTags$.pipe(
-    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
+    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0),
+    tap((hasCaseTags: boolean) => this.caseDetailLayoutService.setHasCaseTags(hasCaseTags))
   );
 
   public readonly userId$: Observable<string | undefined> = of(
@@ -295,6 +293,9 @@ export class CaseDetailComponent
     map(currentTheme => currentTheme === CurrentCarbonTheme.G90)
   );
 
+  public readonly tabContentContainerMaxHeight$ =
+    this.caseDetailLayoutService.tabContentContainerMaxHeight$;
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
   private _activeChange = false;
@@ -329,7 +330,6 @@ export class CaseDetailComponent
     private readonly userProviderService: UserProviderService,
     @Inject(DOCUMENT) private readonly htmlDocument: Document
   ) {
-    super();
     this._snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this._snapshot.get('caseDefinitionKey') || '';
     this.documentId = this._snapshot.get('documentId') || '';
@@ -500,13 +500,15 @@ export class CaseDetailComponent
     this._oldTabName = activeTab.name;
     this._pendingTab = tab;
     this._activeTabName$.next(tab.name);
-    this.pendingChanges =
-      tab.contentKey === 'summary' ? false : !tab.showTasks && this._activeChange;
 
-    if (this.pendingChanges) {
-      this.tabLoader.replaceUrlState(tab);
-      return;
-    }
+    // to do: re-introduce when pending changes is implemented again
+    // this.pendingChanges =
+    //   tab.contentKey === 'summary' ? false : !tab.showTasks && this._activeChange;
+    //
+    // if (this.pendingChanges) {
+    //   this.tabLoader.replaceUrlState(tab);
+    //   return;
+    // }
 
     if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
     this.tabLoader.load(tab);
@@ -517,6 +519,10 @@ export class CaseDetailComponent
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
     this.caseDetailLayoutService.refreshTasks();
     this.tabLoader?.refreshView();
+  }
+
+  public onMainContentHeaderHeightChange(height: number): void {
+    this.caseDetailLayoutService.setMainContentHeaderHeight(height);
   }
 
   protected onConfirmRedirect(): void {

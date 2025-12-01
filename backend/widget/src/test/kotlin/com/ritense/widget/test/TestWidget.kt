@@ -1,0 +1,82 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.widget.test
+
+import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
+import io.hypersistence.utils.hibernate.type.json.JsonType
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import org.hibernate.annotations.Type
+import java.util.UUID
+
+@AllOpen
+@Entity
+@DiscriminatorValue("test")
+class TestWidget(
+    id: UUID,
+    key: String,
+    title: String,
+    icon: String? = null,
+    order: Int,
+    width: Int,
+    highContrast: Boolean,
+    actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
+
+    @Type(value = JsonType::class)
+    @Column(name = "properties", nullable = false)
+    val properties: TestWidgetProperties
+) : Widget(
+    id, key, title, icon,order, width, highContrast, actions, displayConditions
+) {
+    override fun copy(
+        id: UUID,
+        key: String,
+        title: String,
+        icon: String?,
+        order: Int,
+        width: Int,
+        highContrast: Boolean,
+        actions: List<WidgetAction>,
+        displayConditions: List<Condition<*>>,
+    ): Widget = TestWidget(
+        id = id,
+        key = key,
+        title = title,
+        icon = icon,
+        order = order,
+        width = width,
+        highContrast = highContrast,
+        actions = actions,
+        displayConditions = displayConditions,
+        properties = properties
+    )
+
+    override fun toDto() = TestWidgetDto(
+        key = this.key,
+        title = this.title,
+        icon = this.icon,
+        width = this.width,
+        highContrast = this.highContrast,
+        actions = this.actions,
+        properties = this.properties,
+    )
+}

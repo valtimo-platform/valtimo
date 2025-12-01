@@ -1,0 +1,186 @@
+name: Frontend - build libraries, lint and test
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "The determined project version. Required for release-candidate and releases, not for snapshot"
+        required: false
+        type: string
+        default: ""
+    outputs:
+      build_artifact_name:
+        description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
+        value: frontend-build-output
+      project_version:
+        description: Project version, equal to the inputs.project_version if supplied, otherwise computed from branch name
+        value: ${{ jobs.determine_project_version.outputs.project_version }}
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  check_cache:
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.restore_cache.outputs.cache-hit  }}
+      cache-key: frontend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Compute frontend contents hash
+        id: compute_contents_hash
+        run: |
+          echo "contents_hash=$(git rev-parse HEAD:frontend)" >> $GITHUB_OUTPUT
+      - name: Restore frontend libraries from build cache
+        id: restore_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: frontend/dist
+          key: frontend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+
+      # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
+      # the artifact registry to be available to subsequent jobs
+      - name: "Retain build artifact: dist"
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-output
+          path: frontend/dist
+          retention-days: 1
+
+  install_packages:
+    runs-on: ubuntu-latest
+    needs:
+      - check_cache
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
+    outputs:
+      npm_package_cachekey: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check whether NPM packages are already cached
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          lookup-only: true
+          path: frontend/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Cache NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+
+  determine_project_version:
+    runs-on: ubuntu-latest
+    outputs:
+      project_version: ${{ steps.determine_project_version.outputs.project_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Determine project version
+        id: determine_project_version
+        env:
+          INPUT_PROJECT_VERSION: ${{ inputs.project_version }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          if [[ "$INPUT_PROJECT_VERSION" != '' ]]; then
+            echo "Version is ${INPUT_PROJECT_VERSION}"
+            echo "project_version=${INPUT_PROJECT_VERSION}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # replace special characters with -
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+
+          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+
+          echo "Version is ${PROJECT_VERSION}"
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+  build_and_test:
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') && needs.install_packages.result != 'failure' }}
+    runs-on: ubuntu-latest
+    needs:
+      - install_packages
+      - check_cache
+      - determine_project_version
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: frontend/node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build all libraries
+        run: npm run libs-build-all
+
+      - name: Test all libraries
+        run: npm run libs-test-all-cicd
+
+      - name: Set project version on all libraries
+        env:
+          PROJECT_VERSION: ${{ needs.determine_project_version.outputs.project_version }}
+        run: |
+          npm run libs-increment-all -- ${PROJECT_VERSION}
+          npm run copy-frontend-version
+          npx ng build @valtimo/shared
+
+      - name: Cache built frontend libraries
+        uses: actions/cache/save@v4
+        with:
+          path: frontend/dist
+          key: ${{ needs.check_cache.outputs.cache-key }}
+
+      - name: "Retain build artifact: dist"
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-output
+          path: frontend/dist
+          retention-days: 1
+
+  # 'lint' can run in parallel with 'build_and_test'
+  lint:
+    needs:
+      - install_packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: frontend/node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Lint all libraries
+        run: npm run libs-lint-all-cicd

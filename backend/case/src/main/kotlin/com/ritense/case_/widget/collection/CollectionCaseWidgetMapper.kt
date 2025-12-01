@@ -27,8 +27,10 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
     override fun toDto(entity: CollectionCaseWidget) = CollectionCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         actions = entity.actions,
+        displayConditions = entity.displayConditions,
         highContrast = entity.highContrast,
         properties = entity.properties
     )
@@ -36,9 +38,11 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
     override fun toEntity(dto: CollectionCaseWidgetDto, index: Int) = CollectionCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
         actions = dto.actions ?: emptyList(),
+        displayConditions = dto.displayConditions ?: emptyList(),
         properties = dto.properties,
         order = index
     )

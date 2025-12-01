@@ -86,7 +86,12 @@ export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-herstel
 export * from './lib/plugins/zaken-api/components/create-zaakeigenschap/create-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
+export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component'
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component';
+export * from './lib/plugins/zaken-api/components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
@@ -97,7 +102,9 @@ export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
 export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-besluittype/get-besluittype-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-resultaattypen/get-resultaattypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-resultaattype/get-resultaattype-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-statustypen/get-statustypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
 /* notificaties api plugin */
@@ -123,7 +130,9 @@ export * from './lib/plugins/besluiten-api/besluiten-api-plugin.module';
 export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
 export * from './lib/plugins/besluiten-api/components/besluiten-api-configuration/besluiten-api-configuration.component';
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+export * from './lib/plugins/besluiten-api/components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+export * from './lib/plugins/besluiten-api/components/get-besluit/get-besluit-configuration.component';
 /* exact */
 export * from './lib/plugins/exact/exact.plugin.specification';
 export * from './lib/plugins/exact/exact-plugin.module';

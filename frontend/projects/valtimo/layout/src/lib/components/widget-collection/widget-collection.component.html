@@ -19,12 +19,25 @@
     widgetConfiguration: widgetConfiguration$ | async,
     collectionWidgetCards: collectionWidgetCards$ | async,
     noVisibleFields: noVisibleFields$ | async,
+    widgetData: widgetData$ | async,
   } as obs"
 >
   <section class="valtimo-widget-collection__header">
-    <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+    <div class="valtimo-widget-collection__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <span class="valtimo-widget-collection__title">{{ $widgetTitle() }}</span>
+    </div>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
+    ></valtimo-widget-action-button>
   </section>
 
   <div
@@ -74,9 +87,7 @@
   @if (obs.noVisibleFields || !obs?.collectionWidgetCards?.length) {
     <valtimo-no-results
       [collapseVertically]="true"
-      [description]="
-        (obs.noVisibleFields ? 'case.widgets.emptyFields' : 'case.widgets.noData') | translate
-      "
+      [description]="(obs.noVisibleFields ? 'widgets.emptyFields' : 'widgets.noData') | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
   }

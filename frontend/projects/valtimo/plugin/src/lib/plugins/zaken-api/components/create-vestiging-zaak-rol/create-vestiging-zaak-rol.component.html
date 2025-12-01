@@ -24,12 +24,12 @@
   <v-input
     name="roltypeUrl"
     [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.roltypeUrl"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -37,11 +37,11 @@
   <v-input
     name="rolToelichting"
     [title]="'rolToelichting' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.rolToelichting"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
+    [margin]="true"
     [fullWidth]="true"
   >
   </v-input>
@@ -49,12 +49,12 @@
   <v-input
     name="vestigingsNummer"
     [title]="'vestigingsNummer' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.vestigingsNummer"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -62,12 +62,12 @@
   <v-input
     name="handelsnaam"
     [title]="'handelsnaam' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'handelsnaamTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.handelsnaam"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'handelsnaamTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -75,12 +75,25 @@
   <v-input
     name="kvkNummer"
     [title]="'kvkNummer' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.kvkNummer"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+
+  <v-input
+    name="resultProcessVariable"
+    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [defaultValue]="obs.prefill?.resultProcessVariable"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [margin]="true"
+    [trim]="true"
     [fullWidth]="true"
   >
   </v-input>

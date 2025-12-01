@@ -38,7 +38,7 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {CarbonListModule, ViewContentService} from '@valtimo/components';
+import {CarbonListModule, MdiIconViewerComponent, ViewContentService} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/shared';
 import {
@@ -49,6 +49,7 @@ import {
   CollectionWidgetTitle,
   WidgetDisplayTypeKey,
 } from '../../models';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-collection',
@@ -65,6 +66,8 @@ import {
     CarbonListModule,
     TranslateModule,
     ButtonModule,
+    WidgetActionButtonComponent,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
@@ -134,7 +137,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   @Output() public readonly paginationEvent = new EventEmitter<PaginationModel>();
 
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
-  public readonly widgetTitle = signal('-');
+  public readonly $widgetTitle = signal('-');
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
@@ -145,7 +148,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     filter(([widgetConfig, widgetData]) => !!widgetConfig && !!widgetData),
     tap(([widgetConfig]) => {
-      this.widgetTitle.set(widgetConfig.title);
+      this.$widgetTitle.set(widgetConfig.title);
     }),
     map(([widgetConfig, widgetData]) =>
       widgetData.content.map((cardData, index) => ({

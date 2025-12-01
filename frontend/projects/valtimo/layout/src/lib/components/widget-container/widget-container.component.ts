@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -23,18 +23,17 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {v4 as uuid} from 'uuid';
-import {BehaviorSubject, delay, Observable, take} from 'rxjs';
-import Muuri from 'muuri';
-import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
-import {WidgetBlockComponent} from '../widget-block';
-import {filter} from 'rxjs/operators';
-import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
-import {LoadingModule} from 'carbon-components-angular';
-import {CarbonListModule} from '@valtimo/components';
 import {TranslatePipe} from '@ngx-translate/core';
+import {CarbonListModule} from '@valtimo/components';
+import {LoadingModule} from 'carbon-components-angular';
+import Muuri from 'muuri';
+import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
+import {filter} from 'rxjs/operators';
+import {v4 as uuid} from 'uuid';
+import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
+import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
+import {WidgetBlockComponent} from '../widget-block';
 
 @Component({
   selector: 'valtimo-widget-container',
@@ -43,6 +42,7 @@ import {TranslatePipe} from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, WidgetBlockComponent, LoadingModule, CarbonListModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetLayoutService],
 })
 export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
@@ -52,9 +52,11 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @Input() public set widgets(value: Widget[]) {
     if (!value) return;
     const widgetsWithUuids = value.map(widget => ({...widget, uuid: uuid()}));
+    this.resetLayout();
     this.widgetLayoutService.setWidgets(widgetsWithUuids);
     this.widgetsWithUuids$.next(widgetsWithUuids);
     this.loadingWidgetConfiguration$.next(false);
+    this.initLayout();
   }
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(
@@ -73,24 +75,41 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
 
   public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
 
-  public readonly loaded$ = this.widgetLayoutService.loaded$.pipe(delay(400));
+  public readonly reload$ = new BehaviorSubject<boolean>(false);
+  public readonly loaded$ = merge(this.reload$, this.widgetLayoutService.loaded$.pipe(delay(400)));
 
   private _observer!: ResizeObserver;
 
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
   public ngAfterViewInit(): void {
+    this.initLayout();
+  }
+
+  private resetLayout(): void {
+    if (!this._observer) return;
+
+    this.reload$.next(false);
+    this.destroyLayout();
+  }
+
+  private destroyLayout(): void {
+    this.widgetLayoutService.reset();
+    this._observer?.disconnect();
+  }
+
+  public initLayout(): void {
+    if (!this._widgetsContainerRef) return;
     this._observer = new ResizeObserver(event => {
       this.observerMutation(event);
     });
-    this._observer.observe(this._widgetsContainerRef.nativeElement);
+    this._observer.observe(this._widgetsContainerRef?.nativeElement);
 
     this.initMuuri();
   }
 
   public ngOnDestroy(): void {
-    this._observer?.disconnect();
-    this.widgetLayoutService.reset();
+    this.destroyLayout();
   }
 
   private observerMutation(event: Array<ResizeObserverEntry>): void {

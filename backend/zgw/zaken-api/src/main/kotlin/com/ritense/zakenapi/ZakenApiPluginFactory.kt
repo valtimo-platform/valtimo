@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package com.ritense.zakenapi
 
-import com.ritense.document.service.DocumentService
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.service.ZaakDocumentService
 import org.springframework.transaction.PlatformTransactionManager
 
 class ZakenApiPluginFactory(
@@ -33,9 +34,10 @@ class ZakenApiPluginFactory(
     private val storageService: TemporaryResourceStorageService,
     private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
     private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
+    private val zaakDocumentService: ZaakDocumentService,
     private val platformTransactionManager: PlatformTransactionManager,
-    private val documentService: DocumentService,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService,
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper,
 ) : PluginFactory<ZakenApiPlugin>(pluginService) {
 
     override fun create(): ZakenApiPlugin {
@@ -46,9 +48,10 @@ class ZakenApiPluginFactory(
             zaakInstanceLinkRepository,
             pluginService,
             zaakHersteltermijnRepository,
+            zaakDocumentService,
             platformTransactionManager,
-            documentService,
-            processDocumentAssociationService,
+            valueResolverService,
+            objectMapper
         )
     }
 }

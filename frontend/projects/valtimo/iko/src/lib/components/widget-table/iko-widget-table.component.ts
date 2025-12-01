@@ -26,6 +26,7 @@ import {
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {
   TableWidget,
+  WidgetAction,
   WidgetLayoutService,
   WidgetTableComponent,
   WidgetTableContent,

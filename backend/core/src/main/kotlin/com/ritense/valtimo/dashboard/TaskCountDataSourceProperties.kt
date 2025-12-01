@@ -16,8 +16,10 @@
 
 package com.ritense.valtimo.dashboard
 
-import com.ritense.valtimo.contract.dashboard.QueryCondition
+import com.fasterxml.jackson.annotation.JsonAlias
+import com.ritense.valtimo.contract.conditions.Condition
 
 data class TaskCountDataSourceProperties(
-    val queryConditions: List<QueryCondition<*>>? = listOf()
+    @JsonAlias("queryConditions")
+    val conditions: List<Condition<*>>? = listOf()
 )

@@ -14,7 +14,11 @@
   ~ limitations under the License.
   -->
 <form
-  *ngIf="inputTheme$ | async as inputTheme"
+  *ngIf="{
+    inputTheme: inputTheme$ | async,
+    params: params$ | async,
+    widgetType: $widgetType() === 'interactive-table' ? 'table' : $widgetType(),
+  } as data"
   class="valtimo-widget-management-field-column"
   [formGroup]="formGroup"
 >
@@ -37,14 +41,15 @@
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.title' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + $widgetType() + '.titleTooltip' | translate
+                  'widgetTabManagement.content.' + data.widgetType + '.titleTooltip' | translate
                 "
               >
               </v-input-label>
 
               <input
                 cdsText
-                [attr.data-carbon-theme]="inputTheme"
+                cdsLayer="2"
+                [attr.data-carbon-theme]="data.inputTheme"
                 [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
                 type="text"
                 formControlName="title"
@@ -52,7 +57,7 @@
             </cds-text-label>
 
             <cds-dropdown
-              [attr.data-carbon-theme]="inputTheme"
+              [attr.data-carbon-theme]="data.inputTheme"
               [label]="'widgetTabManagement.content.fields.type' | translate"
               [dropUp]="false"
               [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
@@ -66,30 +71,32 @@
               *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
             ></ng-container>
 
-            <div class="valtimo-widget-management-field-column__path-selector">
+            <cds-text-label class="valtimo-widget-management-field-column__value-field">
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.value' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + $widgetType() + '.valueTooltip' | translate
+                  'widgetTabManagement.content.' + data.widgetType + '.valueTooltip' | translate
                 "
               >
               </v-input-label>
 
-              <input
-                cdsText
-                [attr.data-carbon-theme]="inputTheme"
-                [placeholder]="'widgetTabManagement.content.fields.value' | translate"
-                type="text"
-                formControlName="content"
-              />
-              <!-- TODO: Implement when selector is up and parameterise -->
-              <!-- <valtimo-value-path-selector
-                formControlName="content"
-                [caseDefinitionKey]="params?.caseDefinitionKey"
-                [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
-                [parentItem]="selectedCollection"
-              ></valtimo-value-path-selector> -->
-            </div>
+              @if ($widgetContext() === 'case') {
+                <valtimo-value-path-selector
+                  formControlName="content"
+                  [caseDefinitionKey]="data.params?.caseDefinitionKey ?? 'bezwaar'"
+                  [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag ?? '1.0.1'"
+                  [parentItem]="selectedCollection"
+                ></valtimo-value-path-selector>
+              } @else {
+                <input
+                  cdsText
+                  [attr.data-carbon-theme]="data.inputTheme"
+                  [placeholder]="'widgetTabManagement.content.fields.value' | translate"
+                  type="text"
+                  formControlName="content"
+                />
+              }
+            </cds-text-label>
           </div>
 
           <div class="valtimo-widget-management-field-column__options">
@@ -104,7 +111,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.currencyCodePlaceholder' | translate
                     "
@@ -122,7 +129,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.displayPlaceholder' | translate
                     "
@@ -143,7 +150,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.digitsInfoPlaceholder' | translate
                     "
@@ -161,7 +168,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.formatPlaceholder' | translate
                     "
@@ -181,7 +188,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.formatPlaceholder' | translate
                     "
@@ -207,7 +214,7 @@
                         ></v-input-label>
 
                         <input
-                          [attr.data-carbon-theme]="inputTheme"
+                          [attr.data-carbon-theme]="data.inputTheme"
                           cdsText
                           [placeholder]="'widgetTabManagement.content.fields.enumValue' | translate"
                           type="text"
@@ -226,7 +233,7 @@
 
                         <input
                           cdsText
-                          [attr.data-carbon-theme]="inputTheme"
+                          [attr.data-carbon-theme]="data.inputTheme"
                           [placeholder]="
                             'widgetTabManagement.content.fields.enumDisplay' | translate
                           "
@@ -275,7 +282,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
@@ -299,7 +306,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
@@ -316,7 +323,7 @@
 
                   <input
                     cdsText
-                    [attr.data-carbon-theme]="inputTheme"
+                    [attr.data-carbon-theme]="data.inputTheme"
                     [placeholder]="
                       'widgetTabManagement.content.fields.linkTextPlaceholder' | translate
                     "
@@ -340,7 +347,7 @@
 
               <input
                 cdsText
-                [attr.data-carbon-theme]="inputTheme"
+                [attr.data-carbon-theme]="data.inputTheme"
                 [placeholder]="
                   'widgetTabManagement.content.fields.ellipsisCharacterLimitPlaceholder' | translate
                 "

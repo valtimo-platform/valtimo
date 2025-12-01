@@ -16,23 +16,25 @@
 
 package com.ritense.valtimo.dashboard
 
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.all
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
+import com.ritense.valtimo.service.OperatonTaskService
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Root
 
 class TaskWidgetDataSource(
-    private val taskRepository: OperatonTaskRepository
+    private val taskRepository: OperatonTaskRepository,
+    private val operatonTaskService: OperatonTaskService,
 ) {
     @WidgetDataSource("task-count", "Task count")
     fun getTaskCount(taskCountDataSourceProperties: TaskCountDataSourceProperties): TaskCountDataResult {
-        val taskSpec = all()
+        val taskSpec = getAuthorizationSpecification()
+
         val spec = taskSpec.and { root, _, criteriaBuilder ->
             criteriaBuilder.and(
-                *taskCountDataSourceProperties.queryConditions?.map {
+                *taskCountDataSourceProperties.conditions?.map {
                     it.toPredicate(root, criteriaBuilder, this::getPathExpression)
                 }?.toTypedArray() ?: arrayOf()
             )
@@ -43,11 +45,14 @@ class TaskWidgetDataSource(
         return TaskCountDataResult(count, total)
     }
 
+    private fun getAuthorizationSpecification() =
+        operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.ALL)
+
     private fun <T> getPathExpression(
         valueClass: Class<T>,
         path: String,
         root: Root<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Expression<T> {
         var expr = root as Path<*>
         path.substringAfter(TASK_PREFIX).split('.').forEach {

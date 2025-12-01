@@ -16,10 +16,12 @@
 
 package com.ritense.case_.domain.tab
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -48,6 +50,9 @@ abstract class CaseWidgetTabWidget(
     @Column(name = "title", nullable = false)
     val title: String,
 
+    @Column(name = "icon", nullable = true)
+    val icon: String?,
+
     @Column(name = "sort_order", nullable = false)
     val order: Int,
 
@@ -59,8 +64,22 @@ abstract class CaseWidgetTabWidget(
 
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
-    val actions: List<CaseWidgetAction> = emptyList(),
+    val actions: List<WidgetAction> = emptyList(),
+
+    @Type(value = JsonType::class)
+    @Column(name = "display_conditions", nullable = false)
+    val displayConditions: List<Condition<*>> = listOf()
 ) {
+    @JsonIgnore
+    fun getUnresolvedValues(): List<String> {
+        return actions.flatMap { it.getUnresolvedValues() }.distinct()
+    }
+
+    fun getExposedValues(resolveValue: (String) -> Any? = { null }): Map<String, Any?> =
+        actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+            .toMap()
+
     abstract fun copy(id: CaseWidgetTabWidgetId = this.id): CaseWidgetTabWidget
 
     override fun equals(other: Any?): Boolean {
@@ -69,10 +88,12 @@ abstract class CaseWidgetTabWidget(
 
         if (id != other.id) return false
         if (title != other.title) return false
+        if (icon != other.icon) return false
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
         if (actions != other.actions) return false
+        if (displayConditions != other.displayConditions) return false
 
         return true
     }
@@ -80,14 +101,16 @@ abstract class CaseWidgetTabWidget(
     override fun hashCode(): Int {
         return Objects.hashCode(
             title,
+            icon,
             order,
             width,
             highContrast,
             actions,
+            displayConditions
         )
     }
 
     override fun toString(): String {
-        return "CaseWidgetTabWidget(id='$id', title='$title', order=$order, width=$width, highContrast=$highContrast)"
+        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast)"
     }
 }

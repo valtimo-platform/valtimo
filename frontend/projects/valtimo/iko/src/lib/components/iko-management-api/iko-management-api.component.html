@@ -15,83 +15,42 @@
   -->
 
 <valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [items]="apiConfigs$ | async"
   [loading]="loading$ | async"
   (rowClicked)="onRowClicked($event)"
 >
-  <div carbonToolbarContent>
-    <button cdsButton="primary" (click)="openModal()">
-      {{ 'ikoManagement.addApiConfig' | translate }}
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
 
-      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
+  <valtimo-no-results
+    [action]="addViewButton"
+    [description]="'ikoManagement.views.noResultsDescription' | translate"
+    [title]="'ikoManagement.views.noResultsTitle' | translate"
+  ></valtimo-no-results>
 </valtimo-carbon-list>
 
-<cds-modal
-  valtimoCdsModal
-  [open]="openModal$ | async"
-  showFooter="true"
-  title="{{ 'ikoManagement.addApiConfig' | translate }}"
-  (close)="closeModal()"
->
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>
-      {{ 'ikoManagement.addApiConfig' | translate }}
-    </h3>
-  </cds-modal-header>
+<ng-template #addViewButton>
+  <button cdsButton="primary" (click)="openModal()">
+    {{ 'ikoManagement.addApiConfig' | translate }}
 
-  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-api-form">
-    <cds-label [invalid]="getControlInvalid('title')">
-      {{ 'ikoManagement.titleTitle' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
 
-      <input
-        [invalid]="getControlInvalid('title')"
-        formControlName="title"
-        cdsText
-        placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
-      />
-    </cds-label>
+<valtimo-iko-management-repository-modal
+  [open]="$modalOpen()"
+  [prefillData]="$prefillData()"
+  [modalMode]="$modalMode()"
+  (modalClose)="closeModal($event)"
+></valtimo-iko-management-repository-modal>
 
-    <cds-label [invalid]="getControlInvalid('key')">
-      {{ 'ikoManagement.keyTitle' | translate }}
-
-      <input
-        [invalid]="getControlInvalid('key')"
-        formControlName="key"
-        cdsText
-        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
-      />
-    </cds-label>
-
-    @if (false) {
-      <!-- TODO: Discuss with Thomas-->
-      <v-select
-        [invalid]="getControlInvalid('type')"
-        formControlName="type"
-        [items]="ikoRepositoryTypeSelectItems$ | async"
-        [title]="'ikoManagement.typeTitle' | translate"
-        [appendInline]="false"
-      ></v-select>
-    }
-
-    <v-select
-      [invalid]="getControlInvalid('pluginId')"
-      formControlName="pluginId"
-      [items]="pluginSelectItems$ | async"
-      [title]="'ikoManagement.pluginIdTitle' | translate"
-      [appendInline]="false"
-    ></v-select>
-  </form>
-
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
-      {{ 'interface.cancel' | translate }}
-    </button>
-
-    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createApiConfig()">
-      {{ 'interface.save' | translate }}
-    </button>
-  </cds-modal-footer>
-</cds-modal>
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="ikoManagement.views.deleteContent"
+  [outputOnConfirm]="$keyToDelete()"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

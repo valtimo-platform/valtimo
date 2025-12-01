@@ -23,6 +23,8 @@
     gap: 16px;
     grid-template-columns: repeat(3, 1fr);
     align-items: flex-end;
+    padding: 16px;
+    background-color: var(--cds-layer-01);
   }
 
   &__subtitle {
@@ -40,5 +42,10 @@
   &__path-selector {
     display: flex;
     flex-direction: column;
+  }
+
+  .cds--text-input,
+  .cds--list-box {
+    background: var(--cds-layer-02);
   }
 }

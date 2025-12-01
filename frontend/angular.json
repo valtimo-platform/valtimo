@@ -31,12 +31,12 @@
               "src/assets",
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/layout/assets/img",
+                "input": "projects/valtimo/layout/assets/img",
                 "output": "./valtimo-layout/img/"
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/shared/assets/core",
+                "input": "projects/valtimo/shared/assets/core",
                 "output": "./valtimo-translation/core/"
               },
               {
@@ -65,6 +65,7 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
               "src/styles.scss",

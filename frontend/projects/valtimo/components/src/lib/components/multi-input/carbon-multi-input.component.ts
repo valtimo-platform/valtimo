@@ -39,7 +39,7 @@ import {
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
-import {NG_VALUE_ACCESSOR} from '@angular/forms';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
@@ -55,8 +55,9 @@ import {NG_VALUE_ACCESSOR} from '@angular/forms';
     },
   ],
 })
-export class CarbonMultiInputComponent implements OnInit, OnDestroy {
+export class CarbonMultiInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @Input() public addRowText = '';
+  @Input() public addButtonType = 'primary';
   @Input() public addRowTranslationKey = '';
   @Input() public arbitraryAmountTitles!: ArbitraryInputTitles;
   @Input() public set arbitraryValueAmount(value: number) {

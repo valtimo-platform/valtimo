@@ -15,53 +15,45 @@
  */
 import {CommonModule} from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
+  AfterViewInit,
   Component,
-  EventEmitter,
-  OnInit,
-  Output,
+  effect,
+  TemplateRef,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
-import {WidgetWizardService} from '../../../../../services';
+import {WidgetWizardService} from '../../../../../services/widget-wizard.service';
+import {WidgetManagementActionButtonComponent} from '../../../management-action-button/widget-management-action-button.component';
 
 @Component({
-  selector: 'valtimo-widget-wizard-content-step',
   templateUrl: './widget-wizard-content-step.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WidgetManagementActionButtonComponent],
 })
-export class WidgetWizardContentStepComponent implements OnInit {
-  @ViewChild('contentRenderer', {static: true, read: ViewContainerRef})
-  private readonly _vcr: ViewContainerRef;
+export class WidgetWizardContentStepComponent implements AfterViewInit {
+  @ViewChild('actionButton', {read: TemplateRef}) actionButton!: TemplateRef<any>;
+  @ViewChild('contentRenderer', {read: ViewContainerRef})
+  public projectedNodes: Node[][];
 
-  @Output() public contentValidEvent = new EventEmitter<boolean>();
+  public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
+  public readonly $disableActionButton = this.widgetWizardService.$disableActionButton;
 
   constructor(
-    private readonly cdr: ChangeDetectorRef,
+    private readonly vcr: ViewContainerRef,
     private readonly widgetWizardService: WidgetWizardService
-  ) {}
-
-  public ngOnInit(): void {
-    this.renderComponent();
+  ) {
+    effect(() => {
+      if (this.widgetWizardService.$editMode())
+        this.widgetWizardService.$widgetContentValid.set(true);
+    });
   }
 
-  private renderComponent(): void {
-    this._vcr.clear();
-    const $widget = this.widgetWizardService.$selectedWidget();
-    if (!$widget) return;
+  public ngAfterViewInit(): void {
+    if (!this.actionButton) return;
+    const processSelectorNodes = this.vcr.createEmbeddedView(this.actionButton).rootNodes;
 
-    const componentInstance = this._vcr.createComponent($widget.component).instance;
-    if (!componentInstance) return;
-
-    componentInstance.changeValidEvent.subscribe((valid: boolean) =>
-      this.contentValidEvent.emit(valid)
-    );
-
-    this.cdr.detectChanges();
+    this.projectedNodes = [processSelectorNodes];
   }
 }

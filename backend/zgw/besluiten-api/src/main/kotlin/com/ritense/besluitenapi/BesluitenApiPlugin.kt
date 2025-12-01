@@ -16,18 +16,20 @@
 
 package com.ritense.besluitenapi
 
-import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.Besluit
+import com.ritense.besluitenapi.client.BesluitNotFoundException
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
+import com.ritense.besluitenapi.client.PatchBesluitRequest
 import com.ritense.besluitenapi.client.Vervalreden
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
-import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.LoggingConstants.BESLUITEN_API
@@ -47,6 +49,7 @@ import java.util.UUID
 class BesluitenApiPlugin(
     private val besluitenApiClient: BesluitenApiClient,
     private val zaakUrlProvider: ZaakUrlProvider,
+    private val objectMapper: ObjectMapper
 ) {
     @Url
     @PluginProperty(key = "url", secret = false)
@@ -62,7 +65,7 @@ class BesluitenApiPlugin(
         key = "link-document-to-besluit",
         title = "Link Document to besluit",
         description = "Links a document to a besluit",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun linkDocumentToBesluit(
         @PluginActionProperty documentUrl: String,
@@ -88,7 +91,7 @@ class BesluitenApiPlugin(
         key = "create-besluit",
         title = "Create besluit",
         description = "Creates a besluit in the Besluiten API",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun createBesluit(
         execution: DelegateExecution,
@@ -127,6 +130,109 @@ class BesluitenApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "patch-besluit",
+        title = "Patch besluit",
+        description = "Patches a besluit in the Besluiten API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun patchBesluit(
+        execution: DelegateExecution,
+        @PluginActionProperty besluitUrl: String,
+        @PluginActionProperty beslisdatum: String? = null,
+        @PluginActionProperty toelichting: String? = null,
+        @PluginActionProperty bestuursorgaan: String? = null,
+        @PluginActionProperty ingangsdatum: String? = null,
+        @PluginActionProperty vervaldatum: String? = null,
+        @PluginActionProperty vervalreden: Vervalreden? = null,
+        @PluginActionProperty publicatiedatum: String? = null,
+        @PluginActionProperty verzenddatum: String? = null,
+        @PluginActionProperty uiterlijkeReactieDatum: String? = null
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        withLoggingContext(
+            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString()
+        ) {
+            patchBesluit(
+                besluitUrl = URI(besluitUrl),
+                beslisdatum = beslisdatum?.let { toLocalDate(it) },
+                toelichting = toelichting,
+                bestuursorgaan = bestuursorgaan,
+                ingangsdatum = ingangsdatum?.let { toLocalDate(it) },
+                vervaldatum = vervaldatum?.let { toLocalDate(it) },
+                vervalreden = vervalreden,
+                publicatiedatum = publicatiedatum?.let { toLocalDate(it) },
+                verzenddatum = verzenddatum?.let { toLocalDate(it) },
+                uiterlijkeReactieDatum = uiterlijkeReactieDatum?.let { toLocalDate(it) }
+            )
+        }
+    }
+
+    @PluginAction(
+        key = "get-besluit",
+        title = "Get besluit",
+        description = "This retreives a besluit from Besluiten API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getBesluit(
+        execution: DelegateExecution,
+        @PluginActionProperty besluitUrl: String,
+        @PluginActionProperty resultProcessVariable: String
+    ): Besluit {
+        val documentId = UUID.fromString(execution.businessKey)
+
+        logger.debug { "Retrieving besluit with besluitUrl '$besluitUrl' for document '$documentId'" }
+
+        val besluit = try {
+            besluitenApiClient.getBesluit(
+                authenticationPluginConfiguration,
+                url,
+                getUuid(besluitUrl)
+            )
+        } catch (ex: Exception) {
+            throw BesluitNotFoundException(besluitUrl)
+        }
+
+        resultProcessVariable.let { name ->
+            execution.setVariable(name, objectMapper.valueToTree(besluit))
+        }
+
+        logger.info { "Besluit retrieved with besluitUrl '$besluitUrl' for document '$documentId'" }
+
+        return besluit
+    }
+
+    fun patchBesluit(
+        besluitUrl: URI,
+        beslisdatum: LocalDate? = null,
+        toelichting: String? = null,
+        bestuursorgaan: String? = null,
+        ingangsdatum: LocalDate? = null,
+        vervaldatum: LocalDate? = null,
+        vervalreden: Vervalreden? = null,
+        publicatiedatum: LocalDate? = null,
+        verzenddatum: LocalDate? = null,
+        uiterlijkeReactieDatum: LocalDate? = null,
+    ): Besluit {
+        val request = PatchBesluitRequest(
+            datum = beslisdatum,
+            toelichting = toelichting,
+            bestuursorgaan = bestuursorgaan,
+            ingangsdatum = ingangsdatum,
+            vervaldatum = vervaldatum,
+            vervalreden = vervalreden,
+            publicatiedatum = publicatiedatum,
+            verzenddatum = verzenddatum,
+            uiterlijkeReactiedatum = uiterlijkeReactieDatum
+        )
+
+        return besluitenApiClient.patchBesluit(
+            authenticationPluginConfiguration,
+            besluitUrl,
+            request
+        )
+    }
+
     fun createBesluit(
         zaakUrl: URI,
         besluittypeUrl: URI,
@@ -162,13 +268,17 @@ class BesluitenApiPlugin(
         }
     }
 
+    private fun toLocalDate(date: String): LocalDate {
+        return LocalDate.parse(date.take(10))
+    }
+
+    private fun getUuid(url: String): String {
+        return url.trimEnd('/')
+            .substringAfterLast('/')
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
         const val PLUGIN_KEY = "besluitenapi"
-        const val URL_PROPERTY = "url"
-
-        fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
-            url.toString().startsWith(properties[URL_PROPERTY].textValue())
-        }
     }
 }

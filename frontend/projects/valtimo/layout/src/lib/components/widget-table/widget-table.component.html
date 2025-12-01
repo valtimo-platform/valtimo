@@ -18,13 +18,26 @@
   *ngIf="{
     fields: fields$ | async,
     widgetData: widgetData$ | async,
+    resolvedData: resolvedData$ | async,
   } as obs"
   class="valtimo-widget-table"
 >
   <section class="valtimo-widget-table__header">
-    <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+    <div class="valtimo-widget-table__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="widgetConfiguration?.icon"
+        [mdiIcon]="widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+    </div>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="widgetConfiguration"
+      [resolvedData]="obs.resolvedData"
+    ></valtimo-widget-action-button>
   </section>
 
   @if (obs.widgetData && obs.fields && obs.widgetData.length) {
@@ -48,7 +61,7 @@
   } @else {
     <valtimo-no-results
       [collapseVertically]="true"
-      [description]="'case.widgets.noData' | translate"
+      [description]="'widgets.noData' | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
   }

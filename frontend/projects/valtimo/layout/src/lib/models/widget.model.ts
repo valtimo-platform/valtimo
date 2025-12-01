@@ -19,16 +19,22 @@ import {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
+  WidgetInteractiveTableContent,
+  WidgetMapContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
+import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
+  INTERACTIVE_TABLE = 'interactive-table',
   TABLE = 'table',
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider',
+  MAP = 'map',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -36,17 +42,21 @@ type CollectionFieldWidth = 'half' | 'full';
 
 interface WidgetAction {
   name?: string;
-  processDefinitionKey: string;
+  processDefinitionKey?: string;
+  caseDefinitionKey?: string;
+  navigateTo?: string;
 }
 
 interface BasicWidget {
   type: WidgetType;
   title: string;
+  icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: WidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsWidgetValue {
@@ -55,6 +65,14 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+}
+
+interface GeoJsonSource {
+  key: string;
+}
+
+interface MapData {
+  geoJsonFeatureCollection: any;
 }
 
 interface FieldsWidget extends BasicWidget {
@@ -72,6 +90,16 @@ interface TableWidget extends BasicWidget {
   properties: WidgetTableContent;
 }
 
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
 interface CustomWidget extends BasicWidget {
   type: WidgetType.CUSTOM;
   properties: WidgetCustomContent;
@@ -84,7 +112,24 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
-type Widget = FieldsWidget | CollectionWidget | CustomWidget | TableWidget | FormioWidget;
+interface DividerWidget extends BasicWidget {
+  type: WidgetType.DIVIDER;
+}
+
+interface MapWidget extends BasicWidget {
+  type: WidgetType.MAP;
+  properties: WidgetMapContent;
+}
+
+type Widget =
+  | FieldsWidget
+  | CollectionWidget
+  | CustomWidget
+  | TableWidget
+  | InteractiveTableWidget
+  | FormioWidget
+  | DividerWidget
+  | MapWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -147,7 +192,14 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
-type WidgetComponentMap = Record<WidgetType, Type<any>>;
+interface WidgetGroup {
+  divider: DividerWidget | null;
+  widgets: Widget[];
+}
+
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+
+type WidgetContext = 'case' | 'iko';
 
 export {
   BasicWidget,
@@ -157,22 +209,28 @@ export {
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
   WidgetPackResult,
-  // WidgetsRes,
   WidgetType,
   WidgetWidth,
   WidgetWidthsPx,
   WidgetWithUuid,
   WidgetXY,
   CollectionFieldWidth,
+  DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
+  GeoJsonSource,
+  MapData,
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,
   TableWidget,
+  InteractiveTableWidget,
+  MapWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
+  WidgetContext,
+  WidgetGroup,
 };

@@ -16,37 +16,33 @@
 
 package com.ritense.case_.widget.fields
 
-import com.ritense.case_.domain.tab.CaseWidgetTab
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.widget.CaseWidgetDataProvider
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.data.domain.Pageable
 import java.util.UUID
+import org.springframework.data.domain.Pageable
 
 class FieldsCaseWidgetDataProvider(
-    private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<FieldsCaseWidget> {
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = FieldsCaseWidget::class.java
+    override fun supports(widget: Any): Boolean = widget is FieldsCaseWidget
 
     override fun getData(
         documentId: UUID,
-        widgetTab: CaseWidgetTab,
-        widget: FieldsCaseWidget,
-        pageable: Pageable
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
     ): Any {
-        val valueKeyMap = widget.properties.columns.flatMap { column ->
-            column.map { field ->
-                field.value to field.key
-            }
-        }.toMap()
-
-        val resolvedValues = valueResolverService.resolveValues(documentId.toString(), valueKeyMap.keys)
-
-        return widget.properties.columns.flatMap { column ->
-            column.map { field ->
-                field.key to (resolvedValues[field.value] ?: null)
-            }
-        }.toMap()
+        widget as FieldsCaseWidget
+        val resolvedValues = valueResolverService.resolveValues(
+            mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
+            widget.getUnresolvedValues()
+        )
+        return widget.getExposedValues { path -> resolvedValues[path] }
     }
-
 }

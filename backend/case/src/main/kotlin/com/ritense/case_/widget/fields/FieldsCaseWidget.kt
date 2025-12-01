@@ -16,10 +16,12 @@
 
 package com.ritense.case_.widget.fields
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -32,24 +34,44 @@ import org.hibernate.annotations.Type
 class FieldsCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
-    actions: List<CaseWidgetAction>,
+    actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: FieldsWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions
+    id, title, icon,order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = FieldsCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions,
         properties = properties
     )
+
+    @JsonIgnore
+    override fun getUnresolvedValues(): List<String> {
+        return (actions.flatMap { it.getUnresolvedValues() } +
+            properties.columns.flatMap { column -> column.map { field -> field.value } }).distinct()
+    }
+
+    @JsonIgnore
+    override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> {
+        return properties.columns.flatMap { column ->
+            column.map { field ->
+                field.key to resolveValue(field.value)
+            }
+        }.toMap() + actions
+            .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }
+    }
 }

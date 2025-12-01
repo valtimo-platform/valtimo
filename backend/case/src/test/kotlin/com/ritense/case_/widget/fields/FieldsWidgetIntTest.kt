@@ -22,12 +22,12 @@ import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.service.CaseWidgetTabService
-import com.ritense.case_.widget.displayproperties.BooleanFieldDisplayProperties
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.widget.displayproperties.BooleanFieldDisplayProperties
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,7 +46,7 @@ import org.springframework.web.context.WebApplicationContext
 class FieldsWidgetIntTest @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
     private val tabService: CaseTabService,
-    private val widgetTabService: CaseWidgetTabService,
+    private val widgetTabService: CaseWidgetService,
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -137,7 +137,14 @@ class FieldsWidgetIntTest @Autowired constructor(
                 key = tabKey,
                 widgets = listOf(
                     FieldsCaseWidgetDto(
-                        widgetKey, "My widget", 1, true, null, FieldsWidgetProperties(
+                        key = widgetKey,
+                        title = "My widget",
+                        icon = "mdi-home",
+                        width = 1,
+                        highContrast = true,
+                        actions = null,
+                        displayConditions = emptyList(),
+                        properties = FieldsWidgetProperties(
                             columns = listOf(
                                 listOf(
                                     FieldsWidgetProperties.Field(

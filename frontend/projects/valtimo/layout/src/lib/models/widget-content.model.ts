@@ -15,7 +15,7 @@
  */
 
 import {WidgetDisplayType} from './widget-display.model';
-import {FieldsWidgetValue} from './widget.model';
+import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
 
 interface WidgetFieldsContent {
   columns: FieldsWidgetValue[][];
@@ -64,6 +64,11 @@ interface WidgetTableContent {
   defaultPageSize: number;
 }
 
+interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
+  canStartCase: boolean;
+  rowClickAction: WidgetAction;
+}
+
 interface WidgetCustomContent {
   componentKey: string;
 }
@@ -72,12 +77,18 @@ interface WidgetFormioContent {
   formDefinitionName: string;
 }
 
+interface WidgetMapContent {
+  geoJsonSources: GeoJsonSource[];
+}
+
 type WidgetContentProperties =
   | WidgetFieldsContent
   | WidgetTableContent
+  | WidgetInteractiveTableContent
   | WidgetCustomContent
   | WidgetFormioContent
-  | WidgetCollectionContent;
+  | WidgetCollectionContent
+  | WidgetMapContent;
 
 export {
   WidgetContentProperties,
@@ -85,7 +96,9 @@ export {
   WidgetFieldsContent,
   WidgetFormioContent,
   WidgetTableContent,
+  WidgetInteractiveTableContent,
   WidgetCollectionContent,
+  WidgetMapContent,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,
   CollectionWidgetResolvedField,

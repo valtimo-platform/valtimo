@@ -15,12 +15,12 @@
  */
 
 export * from './candidate-user.model';
-export * from './case-widget-content.model';
-export * from './case-widget-display.model';
-export * from './case-widget.model';
 export * from './case-detail-tab.model';
 export * from './case-parameters.model';
 export * from './search.model';
 export * from './tab-api.model';
 export * from './tabs.model';
 export * from './case-detail-layout.model';
+export * from './case-sse-event.model';
+export * from './case-list-quick-search.model';
+export * from './case-widget.model';

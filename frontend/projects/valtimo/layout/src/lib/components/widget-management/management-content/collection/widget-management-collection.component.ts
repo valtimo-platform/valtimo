@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   HostBinding,
+  Inject,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewEncapsulation,
   WritableSignal,
@@ -35,14 +33,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  MdiIconSelectorComponent,
   ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
@@ -55,10 +52,9 @@ import {
   InputModule,
   ListItem,
 } from 'carbon-components-angular';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
-import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
-import {IWidgetContentComponent} from '../../../../interfaces';
-import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
+import {BehaviorSubject, debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
+import {IWidgetManagementService} from '../../../../interfaces';
 import {
   CollectionFieldWidth,
   FieldsWidgetValue,
@@ -70,6 +66,9 @@ import {
   WidgetDisplayTypeKey,
   WidgetEnumDisplayType,
 } from '../../../../models';
+import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
+import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   templateUrl: './widget-management-collection.component.html',
@@ -88,16 +87,15 @@ import {
     IconModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    MdiIconSelectorComponent,
   ],
 })
-export class WidgetManagementCollectionComponent
-  implements IWidgetContentComponent, OnInit, OnDestroy
-{
+export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-collection';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly widgetForm = this.fb.group({
     title: this.fb.control(this.widgetWizardService.$widgetTitle() ?? '', Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
     defaultPageSize: this.fb.control(
       (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.defaultPageSize ?? 5,
       Validators.required
@@ -134,6 +132,19 @@ export class WidgetManagementCollectionComponent
       theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
+  public readonly params$ = this.widgetManagementService.params$;
+
+  public readonly collectionDataTooltip$ = toObservable(
+    this.widgetWizardService.$widgetContext
+  ).pipe(
+    switchMap((context: 'case' | 'iko' | null) =>
+      this.translateService.stream(
+        context === 'iko'
+          ? 'ikoManagement.collectionPathTooltip'
+          : 'widgetTabManagement.content.table.collectionTooltip'
+      )
+    )
+  );
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
@@ -157,6 +168,8 @@ export class WidgetManagementCollectionComponent
     },
   ];
 
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
+
   private readonly _subscriptions = new Subscription();
   private readonly _$contentValid = signal<boolean>(false);
 
@@ -165,8 +178,9 @@ export class WidgetManagementCollectionComponent
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly widgetFieldsService: WidgetFieldsService,
-    private readonly route: ActivatedRoute,
-    private readonly widgetWizardService: WidgetWizardService
+    private readonly widgetWizardService: WidgetWizardService,
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private widgetManagementService: IWidgetManagementService<any>
   ) {}
 
   public ngOnInit(): void {
@@ -218,7 +232,7 @@ export class WidgetManagementCollectionComponent
       } as WidgetCollectionContent;
     });
     this._$contentValid.set(valid);
-    this.changeValidEvent.emit(valid && this.widgetForm.valid);
+    this.widgetWizardService.$widgetContentValid.set(valid && this.widgetForm.valid);
   }
 
   public onDeleteRowClick(formArray: FormArray, index: number): void {
@@ -290,6 +304,7 @@ export class WidgetManagementCollectionComponent
     this._subscriptions.add(
       this.widgetForm.valueChanges.pipe(debounceTime(500)).subscribe(value => {
         this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
+        this.widgetWizardService.$widgetIcon.set(value?.widgetIcon ?? '');
 
         this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>
@@ -300,7 +315,7 @@ export class WidgetManagementCollectionComponent
             }) as WidgetCollectionContent
         );
 
-        this.changeValidEvent.emit(
+        this.widgetWizardService.$widgetContentValid.set(
           this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })
@@ -337,7 +352,7 @@ export class WidgetManagementCollectionComponent
             }) as any
         );
 
-        this.changeValidEvent.emit(
+        this.widgetWizardService.$widgetContentValid.set(
           this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })

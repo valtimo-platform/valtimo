@@ -19,19 +19,31 @@
   [formGroup]="form"
   [attr.data-carbon-theme]="theme$ | async"
 >
-  <cds-text-label class="valtimo-widget-management-field__input">
-    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+  <div class="valtimo-widget-management-custom__title-container">
+    <cds-text-label
+      class="valtimo-widget-management-fields__input valtimo-widget-management-custom__title-input"
+    >
+      <v-input-label
+        [title]="'widgetTabManagement.content.widgetTitle' | translate"
+        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+      >
+      </v-input-label>
 
-    <input
-      formControlName="widgetTitle"
-      cdsText
-      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
-      type="text"
-    />
-  </cds-text-label>
+      <input
+        formControlName="widgetTitle"
+        cdsText
+        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
 
-  <!-- For injecting things such as process selector in case management -->
-  <ng-container></ng-container>
+    <valtimo-mdi-icon-selector
+      [cdsLayer]="0"
+      formControlName="widgetIcon"
+    ></valtimo-mdi-icon-selector>
+  </div>
+
+  <ng-content></ng-content>
 
   <cds-label class="dropdown-label">
     {{ 'widgetTabManagement.content.custom.selectComponent' | translate }}

@@ -1,0 +1,275 @@
+logging:
+    file:
+        name: /tmp/spring.log
+
+management:
+    endpoints:
+        web:
+            base-path: /management
+            exposure:
+                include: ["configprops", "env", "health", "info", "logfile", "loggers", "mappings" ]
+    endpoint:
+        health:
+            show-details: when_authorized
+            roles:
+                - ROLE_ACTUATOR
+
+spring:
+    profiles:
+        active: ${SPRING_PROFILES_ACTIVE}
+    application:
+        name: GZAC backend
+    jackson:
+        date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+        time-zone: UTC
+    devtools:
+        restart:
+            enabled: false
+        livereload:
+            enabled: false
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+        url: ${SPRING_DATASOURCE_URL}
+        name: ${SPRING_DATASOURCE_NAME}
+        username: ${SPRING_DATASOURCE_USERNAME}
+        password: ${SPRING_DATASOURCE_PASSWORD}
+        hikari:
+            auto-commit: false
+            maximum-pool-size: 25
+            leak-detection-threshold: 20000
+            connection-timeout: 10000
+            data-source-properties:
+                cachePrepStmts: true
+                prepStmtCacheSize: 500
+                prepStmtCacheSqlLimit: 2048
+                useServerPrepStmts: true
+                characterEncoding: utf8
+                useUnicode: true
+                useLegacyDatetimeCode: false
+                useSSL: false
+                useLocalSessionState: true
+                rewriteBatchedStatements: true
+                cacheResultSetMetadata: true
+                cacheServerConfiguration: true
+                elideSetAutoCommits: true
+                maintainTimeStats: false
+                serverTimezone: UTC
+                allowPublicKeyRetrieval: true
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI}
+            client:
+                provider:
+                    keycloakjwt:
+                        issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI}
+                    keycloakapi:
+                        issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI}
+                registration:
+                    keycloakjwt:
+                        client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID}
+                    keycloakapi:
+                        client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID}
+                        client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET}
+                        authorization-grant-type: authorization_code
+                        scope: openid
+
+    groovy:
+        template:
+            check-template-location: false
+    liquibase:
+        enabled: false
+    jpa:
+        database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}
+        database: ${SPRING_JPA_DATABASE:postgresql}
+        show_sql: false
+        open-in-view: false
+        properties:
+            hibernate:
+                hbm2ddl.auto: none
+                generate_statistics: false
+                naming-strategy: org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
+                cache:
+                    use_second_level_cache: false
+                    use_query_cache: false
+                    region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+                format_sql: true
+                jdbc:
+                    time_zone: UTC
+                connection:
+                    provider_disables_autocommit: true
+        hibernate:
+            ddl-auto: none
+    messages:
+        basename: i18n/messages
+    main.allow-bean-definition-overriding: true
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
+    jersey:
+        application-path: /api/operaton-rest
+    autoconfigure:
+        exclude:
+            - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
+    cloud:
+        function:
+            definition: kotlinInboxCloudEventConsumer
+        stream:
+            bindings:
+                kotlinInboxCloudEventConsumer-in-0:
+                    destination: valtimo-events
+                    group: valtimo-inbox
+                    binder: rabbit
+            rabbit:
+                bindings:
+                    kotlinInboxCloudEventConsumer-in-0:
+                        consumer:
+                            bindQueue: false
+                            declareExchange: false
+                            queueNameGroupOnly: true
+            binders:
+                rabbit:
+                    type: rabbit
+                    environment:
+                        spring:
+                            rabbitmq:
+                                host: localhost
+                                port: 5672
+                                username: guest
+                                password: guest
+                                virtual-host: /
+    rabbitmq:
+        ssl.enabled: ${SPRING_RABBITMQ_SSL_ENABLED:true}
+        host: ${SPRING_RABBITMQ_HOST}
+        port: ${SPRING_RABBITMQ_PORT}
+        username: ${SPRING_RABBITMQ_USERNAME}
+        password: ${SPRING_RABBITMQ_PASSWORD}
+        publisher-confirm-type: correlated
+        publisher-returns: true
+
+server:
+    port: 8080
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    forward-headers-strategy: NATIVE
+mailing:
+    onlyAllowWhitelistedRecipients: true
+    redirectAllMails: false
+    whitelistedEmailAddresses:
+    whitelistedDomains:
+    sendRedirectedMailsTo:
+
+valtimo:
+    app:
+        scheme: http
+        hostname: ${VALTIMO_APP_HOSTNAME}
+    database: ${VALTIMO_DATABASE:postgres}
+    oauth:
+        tokenValidityInSeconds: 3600 # Token is valid 1 hour
+    plugin:
+        encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
+
+    notificaties-api:
+        processing:
+            batch-size: 50
+            initial-retries: 5
+            retry-delay: 5s
+            retry-backoff-multiplier: 3
+            retention-period: 5m
+            poll-interval: PT1S
+
+    hardening:
+        allowStacktraceOnIps:
+            - 127.0.0.1
+            - 0:0:0:0:0:0:0:1
+    security:
+        whitelist:
+            hosts:
+                - localhost
+    openapi:
+        enabled: false
+        title: Valtimo Implementation API
+        description: Valtimo Implementation API documentation
+        version: 1.0.0
+        termsOfServiceUrl:
+        contactName:
+        contactUrl:
+        contactEmail:
+        license:
+        licenseUrl:
+    web:
+        cors:
+            corsConfiguration:
+                allowedOrigins: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDORIGINS}
+                allowedMethods: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDMETHODS}
+                allowedHeaders: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDHEADERS}
+            paths: ${VALTIMO_WEB_CORS_PATHS}
+
+    genericTemplateName: "template-name"
+    besluitDocumentRequired: true
+
+    upload:
+        acceptedMimeTypes:
+            - text/plain
+            - application/pdf
+            - application/xml
+            - image/jpeg
+            - image/png
+
+    outbox:
+        enabled: true
+        publisher:
+            cloudevent-source: "com.ritense.gzac"
+            rabbitmq:
+                exchange: valtimo-events
+                delivery-timeout: "PT0.5S"
+            polling.rate: "PT3S"
+
+    logging:
+        retentionInMinutes: 1440
+    docker:
+        filter:
+            enabled: true
+    zgw:
+        zaakdetails:
+            linktozaak:
+                enabled: ${VALTIMO_ZGW_ZAAKDETAILS_LINKTOZAAK_ENABLED:false}
+    import:
+        whitelistedPaths: "VALTIMO_.*"
+    includeDocumentContentInResponse: true
+
+spring-actuator:
+    username: ${SPRING_ACTUATOR_USERNAME:admin}
+    password: ${SPRING_ACTUATOR_PASSWORD}
+
+audit:
+    record:
+        retention: 365 # days
+
+# ==================
+# CRON job settings
+# ==================
+scheduling:
+    enabled: true
+    job:
+        cron:
+            cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
+            taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
+operaton:
+    bpm:
+        database:
+            type: ${OPERATON_BPM_DATABASE_TYPE:postgres}
+        history-level: AUDIT
+        history-level-default: AUDIT
+        generic-properties:
+            properties:
+                enforceHistoryTimeToLive: false
+        admin-user:
+            id: ${OPERATON_BPM_ADMINUSER_ID:Admin}
+            password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
+            first-name: Admin account

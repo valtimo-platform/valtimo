@@ -24,12 +24,6 @@ export const taskCountSpecification: DataSourceSpecification = {
   translations: {
     de: {
       title: 'Aufgabenanzahl',
-      '!=': 'Nicht gleichzusetzen mit',
-      '==': 'Gleich',
-      '>': 'Größer als',
-      '>=': 'Größer als oder gleich wie',
-      '<': 'Weniger als',
-      '<=': 'Gleich oder kleiner als',
       path: 'Pfad',
       operator: 'Operator',
       value: 'Wert',
@@ -39,12 +33,6 @@ export const taskCountSpecification: DataSourceSpecification = {
     },
     en: {
       title: 'Task count',
-      '!=': 'Not equal to',
-      '==': 'Equal to',
-      '>': 'Greater than',
-      '>=': 'Greater than or equal to',
-      '<': 'Less than',
-      '<=': 'Less than or equal to',
       path: 'Path (required)',
       operator: 'Operator',
       value: 'Value',
@@ -54,12 +42,6 @@ export const taskCountSpecification: DataSourceSpecification = {
     },
     nl: {
       title: 'Aantal taken',
-      '!=': 'Niet gelijk aan',
-      '==': 'Gelijk aan',
-      '>': 'Groter dan',
-      '>=': 'Groter dan of gelijk aan',
-      '<': 'Minder dan',
-      '<=': 'Minder dan of gelijk aan',
       path: 'Pad',
       operator: 'Operator',
       value: 'Waarde',

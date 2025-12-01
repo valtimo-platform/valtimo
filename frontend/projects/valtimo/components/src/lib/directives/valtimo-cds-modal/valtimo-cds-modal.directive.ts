@@ -64,7 +64,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._mutationObserver.disconnect();
+    this._mutationObserver?.disconnect();
   }
 
   private handleMutations(mutations: MutationRecord[]): void {
@@ -103,7 +103,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   private applyStyleToModalElements(): void {
     if (this.minContentHeight <= 0) return;
 
-    const contentElements = Array.from(this.document.querySelectorAll('.cds--modal-content'));
+    const contentElements = this.elementRef.nativeElement.querySelectorAll('.cds--modal-content');
 
     for (const element of contentElements) {
       this.renderer.setStyle(

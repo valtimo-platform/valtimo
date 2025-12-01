@@ -14,11 +14,26 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="{widgetConfig: widgetConfig$ | async} as obs" class="custom-widget">
+<div
+  *ngIf="{widgetConfiguration: widgetConfig$ | async, widgetData: widgetData$ | async} as obs"
+  class="custom-widget"
+>
   <section class="custom-widget__header">
-    <h4 class="custom-widget__title">{{ obs.widgetConfig$?.title || '-' }}</h4>
+    <div class="custom-widget__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration?.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <h4 class="custom-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+    </div>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
+    ></valtimo-widget-action-button>
   </section>
 
   <div class="custom-widget__content">
@@ -27,7 +42,7 @@
     @if (noCustomComponentAvailable()) {
       <valtimo-no-results
         [collapseVertically]="true"
-        [description]="'case.widgets.noCustomComponentDescription' | translate"
+        [description]="'widgets.noCustomComponentDescription' | translate"
         [smallPadding]="true"
       ></valtimo-no-results>
     }

@@ -15,37 +15,67 @@
   -->
 
 <valtimo-carbon-list
-  [actionItems]="ACTION_ITEMS"
-  [fields]="FIELDS"
+  [actionItems]="actionItems$ | async"
+  [fields]="fields$ | async"
   [header]="false"
   [items]="widgets$ | async"
-  [dragAndDrop]="true"
+  [dragAndDrop]="!(singleWidget$ | async)"
   [dragAndDropDisabled]="$dragAndDropDisabled()"
+  [loading]="loading$ | async"
   (itemsReordered)="onItemsReordered($event)"
   (rowClicked)="editWidget($event)"
 >
   <ng-container carbonToolbarContent>
+    <button *ngIf="enableWidgetDivider" cdsButton="ghost" (click)="openAddDividerModal()">
+      {{ 'widgetTabManagement.list.addDivider' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="drag--vertical" size="16"></svg>
+    </button>
+
     <ng-container *ngTemplateOutlet="addWidgetButton"></ng-container>
   </ng-container>
 
   <valtimo-no-results
     [action]="addWidgetButton"
-    [description]="'widgetTabManagement.list.noResults.description' | translate"
-    [title]="'widgetTabManagement.list.noResults.title' | translate"
+    [description]="
+      ((singleWidget$ | async)
+        ? 'widgetTabManagement.list.noResultsSingle.description'
+        : 'widgetTabManagement.list.noResults.description'
+      ) | translate
+    "
+    [title]="
+      ((singleWidget$ | async)
+        ? 'widgetTabManagement.list.noResultsSingle.title'
+        : 'widgetTabManagement.list.noResults.title'
+      ) | translate
+    "
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button
+    cdsButton="primary"
+    (click)="openAddModal()"
+    [disabled]="(singleWidget$ | async) && ((widgets$ | async) || []).length === 1"
+  >
     {{ 'widgetTabManagement.list.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </ng-template>
 
+<valtimo-widget-management-divider-modal
+  [open]="$isDividerModalOpen()"
+  [modalMode]="$dividerModalMode()"
+  [prefillData]="dividerDefinition$ | async"
+  [usedKeys]="usedKeys$ | async"
+  (closeEvent)="onCloseEvent($event)"
+></valtimo-widget-management-divider-modal>
+
 <valtimo-widget-management-wizard
   [editMode]="$isEditMode()"
   [open]="$isWizardOpen()"
+  [disableDuplicate]="disableDuplicate$ | async"
   (closeEvent)="onCloseEvent($event)"
 ></valtimo-widget-management-wizard>
 

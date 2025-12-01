@@ -17,7 +17,12 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {CollectionWidget, WidgetCollectionComponent, WidgetLayoutService} from '@valtimo/layout';
+import {
+  CollectionWidget,
+  WidgetAction,
+  WidgetCollectionComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {
   ButtonModule,
   InputModule,

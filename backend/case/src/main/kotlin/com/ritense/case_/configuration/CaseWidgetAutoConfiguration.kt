@@ -21,32 +21,46 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.case_.listener.CaseHeaderWidgetCaseEventListener
 import com.ritense.case_.listener.CaseTabCaseEventListener
+import com.ritense.case_.listener.CaseTagCaseEventListener
+import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
+import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
+import com.ritense.case_.rest.CaseHeaderWidgetResource
 import com.ritense.case_.rest.CaseWidgetTabManagementResource
 import com.ritense.case_.rest.CaseWidgetTabResource
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.CaseHeaderWidgetExporter
+import com.ritense.case_.service.CaseHeaderWidgetImporter
+import com.ritense.case_.service.CaseHeaderWidgetService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.service.CaseWidgetTabExporter
 import com.ritense.case_.service.CaseWidgetTabImporter
-import com.ritense.case_.service.CaseWidgetTabService
 import com.ritense.case_.widget.CaseWidgetAnnotatedClassResolver
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.CaseWidgetJacksonModule
 import com.ritense.case_.widget.CaseWidgetMapper
 import com.ritense.case_.widget.collection.CollectionCaseWidgetDataProvider
 import com.ritense.case_.widget.collection.CollectionCaseWidgetMapper
+import com.ritense.case_.widget.custom.CustomCaseWidgetDataProvider
 import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
+import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
+import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
+import com.ritense.case_.widget.map.MapCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.map.geojson.GeoJsonMapper
 import jakarta.validation.Validator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -58,7 +72,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @AutoConfiguration
 @EnableJpaRepositories(
     basePackageClasses = [
-        CaseWidgetTabRepository::class
+        CaseWidgetTabRepository::class,
+        CaseHeaderWidgetRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case_.domain", "com.ritense.case_.widget"])
@@ -66,23 +81,25 @@ class CaseWidgetAutoConfiguration {
 
     @Suppress("UNCHECKED_CAST")
     @Bean
-    @ConditionalOnMissingBean(CaseWidgetTabService::class)
-    fun caseWidgetTabService(
+    @ConditionalOnMissingBean(CaseWidgetService::class)
+    fun caseWidgetService(
         caseWidgetTabRepository: CaseWidgetTabRepository,
         caseTabRepository: CaseTabRepository,
         authorizationService: AuthorizationService,
         caseWidgetMappers: List<CaseWidgetMapper<*, *>>,
-        caseWidgetDataProviders: List<CaseWidgetDataProvider<*>>,
+        caseWidgetDataProviders: List<CaseWidgetDataProvider>,
         documentService: DocumentService,
         caseDefinitionChecker: CaseDefinitionChecker,
-    ) = CaseWidgetTabService(
+        valueResolverService: ValueResolverService
+    ) = CaseWidgetService(
         documentService,
         caseWidgetTabRepository,
         caseTabRepository,
         authorizationService,
         caseWidgetMappers as List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
-        caseWidgetDataProviders as List<CaseWidgetDataProvider<CaseWidgetTabWidget>>,
+        caseWidgetDataProviders as List<CaseWidgetDataProvider>,
         caseDefinitionChecker,
+        valueResolverService
     )
 
     @ConditionalOnMissingBean(CaseWidgetTabWidgetSpecificationFactory::class)
@@ -96,8 +113,8 @@ class CaseWidgetAutoConfiguration {
     fun caseWidgetTabExporter(
         objectMapper: ObjectMapper,
         caseTabService: CaseTabService,
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabExporter(objectMapper, caseTabService, caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabExporter(objectMapper, caseTabService, caseWidgetService)
 
     @Bean
     @ConditionalOnMissingBean(CaseWidgetTabImporter::class)
@@ -113,17 +130,36 @@ class CaseWidgetAutoConfiguration {
         caseWidgetMappers as List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>
     )
 
+    @Bean
+    @ConditionalOnMissingBean(CaseHeaderWidgetExporter::class)
+    fun caseHeaderWidgetExporter(
+        objectMapper: ObjectMapper,
+        caseHeaderWidgetRepository: CaseHeaderWidgetRepository
+    ) = CaseHeaderWidgetExporter(objectMapper, caseHeaderWidgetRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseHeaderWidgetImporter::class)
+    fun caseHeaderWidgetImporter(
+        objectMapper: ObjectMapper,
+        validator: Validator,
+        caseHeaderWidgetRepository: CaseHeaderWidgetRepository,
+    ) = CaseHeaderWidgetImporter(
+        objectMapper,
+        validator,
+        caseHeaderWidgetRepository,
+    )
+
     @ConditionalOnMissingBean(CaseWidgetTabResource::class)
     @Bean
     fun caseWidgetTabResource(
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabResource(caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabResource(caseWidgetService)
 
     @ConditionalOnMissingBean(CaseWidgetTabManagementResource::class)
     @Bean
     fun caseWidgetTabManagementResource(
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabManagementResource(caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabManagementResource(caseWidgetService)
 
     @ConditionalOnMissingBean(CaseWidgetAnnotatedClassResolver::class)
     @Bean
@@ -144,8 +180,9 @@ class CaseWidgetAutoConfiguration {
     @ConditionalOnMissingBean(FieldsCaseWidgetDataProvider::class)
     @Bean
     fun fieldsCaseWidgetDataProvider(
-        valueResolverService: ValueResolverService
-    ) = FieldsCaseWidgetDataProvider(valueResolverService)
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = FieldsCaseWidgetDataProvider(valueResolverService, objectMapper)
 
     @ConditionalOnMissingBean(TableCaseWidgetMapper::class)
     @Bean
@@ -173,6 +210,12 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun customCaseWidgetMapper() = CustomCaseWidgetMapper()
 
+    @ConditionalOnMissingBean(CustomCaseWidgetDataProvider::class)
+    @Bean
+    fun customCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+    ) = CustomCaseWidgetDataProvider(valueResolverService)
+
     @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
     @Bean
     fun dividerCaseWidgetMapper() = DividerCaseWidgetMapper()
@@ -193,4 +236,63 @@ class CaseWidgetAutoConfiguration {
         caseTabService,
         caseWidgetTabRepository,
     )
+
+    @ConditionalOnMissingBean(CaseTagCaseEventListener::class)
+    @Bean
+    fun caseTagCaseEventListener(
+        caseTagService: CaseTagService,
+    ) = CaseTagCaseEventListener(
+        caseTagService,
+    )
+
+    @ConditionalOnMissingBean(FieldsCaseHeaderWidgetDataProvider::class)
+    @Bean
+    fun fieldsCaseHeaderWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
+
+    @ConditionalOnMissingBean(MapCaseWidgetMapper::class)
+    @Bean
+    fun mapCaseWidgetMapper() = MapCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(MapCaseWidgetDataProvider::class)
+    @Bean
+    fun mapCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+        geoJsonMappers: List<GeoJsonMapper>,
+    ) = MapCaseWidgetDataProvider(
+        valueResolverService,
+        objectMapper,
+        geoJsonMappers,
+    )
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
+    @Bean
+    fun caseHeaderWidgetCaseEventListener(
+        caseHeaderWidgetService: CaseHeaderWidgetService,
+    ) = CaseHeaderWidgetCaseEventListener(
+        caseHeaderWidgetService,
+    )
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetService::class)
+    @Bean
+    fun caseHeaderWidgetService(
+        caseHeaderWidgetRepository: CaseHeaderWidgetRepository
+    ) = CaseHeaderWidgetService(caseHeaderWidgetRepository)
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetManagementResource::class)
+    @Bean
+    fun caseHeaderWidgetManagementResource(
+        caseHeaderWidgetService: CaseHeaderWidgetService
+    ) = CaseHeaderWidgetManagementResource(caseHeaderWidgetService)
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetResource::class)
+    @Bean
+    fun caseHeaderWidgetResource(
+        caseHeaderWidgetService: CaseHeaderWidgetService,
+        documentService: DocumentService,
+        caseWidgetService: CaseWidgetService
+    ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService, caseWidgetService)
 }

@@ -17,19 +17,28 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Inject,
   OnDestroy,
   OnInit,
   Optional,
-  Output,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  MdiIconSelectorComponent,
+} from '@valtimo/components';
+import {
+  DropdownModule,
+  InputModule,
+  LayerModule,
+  ListItem,
+  SelectModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {IWidgetContentComponent} from '../../../../interfaces';
 import {CustomWidgetConfig, WidgetCustomContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
@@ -46,17 +55,23 @@ import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
+    LayerModule,
+    MdiIconSelectorComponent,
+    InputLabelModule,
   ],
 })
-export class WidgetManagementCustomComponent implements IWidgetContentComponent, OnDestroy, OnInit {
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
-
+export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
   });
 
   public get widgetTitle(): AbstractControl<string | null, string | null> | null {
     return this.form.get('widgetTitle');
+  }
+
+  public get widgetIcon(): AbstractControl<string | null, string | null> | null {
+    return this.form.get('widgetIcon');
   }
 
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
@@ -104,11 +119,12 @@ export class WidgetManagementCustomComponent implements IWidgetContentComponent,
 
     this._selectedCustomComponentKey$.next(componentKey);
     this.widgetWizardService.$widgetContent.set({componentKey});
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 
   public ngOnInit(): void {
     this.openTitleSubscription();
+    this.openIconSubscription();
     this.prefill();
   }
 
@@ -124,6 +140,14 @@ export class WidgetManagementCustomComponent implements IWidgetContentComponent,
     );
   }
 
+  private openIconSubscription(): void {
+    this._subscriptions.add(
+      this.widgetIcon?.valueChanges.subscribe(icon => {
+        this.widgetWizardService.$widgetIcon.set(icon);
+      })
+    );
+  }
+
   private prefill(): void {
     const componentKey = (this.widgetWizardService.$widgetContent() as WidgetCustomContent)
       ?.componentKey;
@@ -131,6 +155,6 @@ export class WidgetManagementCustomComponent implements IWidgetContentComponent,
     if (!componentKey || Object.keys(this.customWidgetConfig || {}).length === 0) return;
 
     this._selectedCustomComponentKey$.next(componentKey);
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 }

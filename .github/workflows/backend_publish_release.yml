@@ -1,0 +1,86 @@
+name: Backend - Publish release
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  build_run_tests:
+    uses: ./.github/workflows/backend_build_test_libraries.yml
+
+  publish:
+    needs: [build_run_tests]
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref_name, 'release/') }}
+    env:
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+          path: .
+
+      - name: Compute version from branch
+        id: version
+        shell: bash
+        run: |
+          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
+          VERSION_RELEASE="${SEMVER_VERSION}.RELEASE"
+          echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Check license compliance
+        run: ./gradlew checkLicense
+
+      - name: Fail if disallowed licenses found
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          FILE="build/reports/dependency-license/dependencies-without-allowed-license.json"
+          if [[ -f "$FILE" ]]; then
+            COUNT=$(jq '.dependenciesWithoutAllowedLicenses | length' "$FILE" 2>/dev/null || echo 0)
+            if [[ "$COUNT" -gt 0 ]]; then
+              echo "::warning::Disallowed licenses found. See dependencies-without-allowed-license.json (count=$COUNT)."
+            fi
+          else
+            echo "Error: dependency license report not found."
+            exit 1
+          fi
+
+      - name: Publish to Sonatype staging
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
+        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_release }}"
+
+      - name: Deploy with JReleaser to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
+        run: ./gradlew jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+
+      - name: Archive Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: backend/build/reports

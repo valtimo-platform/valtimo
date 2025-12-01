@@ -28,10 +28,16 @@ interface LinkDocumentToZaakConfig {
   beschrijving: string;
 }
 
+interface GetZaakInformatieobjectenConfig {
+  resultProcessVariable: string;
+}
+
 interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
   inputTypeZaakStatusToggle?: InputOption;
+  inputDatumStatusGezetToggle?: InputOption;
+  datumStatusGezet?: string;
 }
 
 interface CreateZaakResultaatConfig {
@@ -46,6 +52,7 @@ interface CreateNatuurlijkePersoonZaakRolConfig {
   inpBsn: string;
   anpIdentificatie: string;
   inpA_nummer: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateNietNatuurlijkePersoonZaakRolConfig {
@@ -55,6 +62,7 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
   annIdentificatie: string;
   kvkNummer?: string;
   vestigingsNummer?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateMedewerkerZaakRolConfig {
@@ -66,6 +74,7 @@ interface CreateMedewerkerZaakRolConfig {
   voorvoegselAchternaam?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateOrganisatorischeEenheidZaakRolConfig {
@@ -76,6 +85,7 @@ interface CreateOrganisatorischeEenheidZaakRolConfig {
   isGehuisvestIn: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateVestigingZaakRolConfig {
@@ -84,6 +94,11 @@ interface CreateVestigingZaakRolConfig {
   handelsnaam?: string;
   kvkNummer: string;
   vestigingsNummer: string;
+  resultProcessVariable?: string;
+}
+
+interface DeleteZaakRolConfig {
+  rolUuid: string;
 }
 
 interface CreateZaakConfig {
@@ -92,8 +107,14 @@ interface CreateZaakConfig {
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
   description?: string;
+  explanation?: string;
   plannedEndDate?: string;
   finalDeliveryDate?: string;
+  communicationChannel?: string;
+  paymentIndication?: string;
+  caseGeometryType?: string;
+  caseGeometryCoordinates?: string;
+  mainCase?: string;
 }
 
 interface SetZaakopschortingConfig {
@@ -134,7 +155,7 @@ interface PatchZaakConfig {
   paymentIndication?: string;
   lastPaymentDate?: string;
   caseGeometryType?: string;
-  caseGeometryCoordinates?: string,
+  caseGeometryCoordinates?: string;
   mainCase?: string;
   archiveActionDate?: string;
   startDateRetentionPeriod?: string;
@@ -145,9 +166,14 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
+interface GetZaakbesluitenConfig {
+  resultProcessVariable: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
+  GetZaakInformatieobjectenConfig,
   SetZaakStatusConfig,
   CreateZaakResultaatConfig,
   CreateZaakConfig,
@@ -156,6 +182,7 @@ export {
   CreateMedewerkerZaakRolConfig,
   CreateOrganisatorischeEenheidZaakRolConfig,
   CreateVestigingZaakRolConfig,
+  DeleteZaakRolConfig,
   SetZaakopschortingConfig,
   StartHersteltermijnConfig,
   CreateZaakeigenschapConfig,
@@ -163,4 +190,5 @@ export {
   DeleteZaakeigenschapConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
+  GetZaakbesluitenConfig,
 };

@@ -29,6 +29,7 @@ import {GlobalNotificationComponent} from '@valtimo/shared';
 import {LayoutInternalComponent} from './components/layout-internal/layout-internal.component';
 import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
 import {LayoutComponent} from './components/layout/layout.component';
+import {PlaceholderModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [LayoutComponent, LayoutPublicComponent, LayoutInternalComponent],
@@ -43,6 +44,7 @@ import {LayoutComponent} from './components/layout/layout.component';
     CommonModule,
     PromptModule,
     GlobalNotificationComponent,
+    PlaceholderModule,
   ],
   exports: [LayoutComponent],
 })

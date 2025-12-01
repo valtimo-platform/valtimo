@@ -13,5 +13,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+@if (!$disableActionButton()) {
+  <ng-template #actionButton>
+    <valtimo-widget-management-action-button></valtimo-widget-management-action-button>
+  </ng-template>
+}
 
-<ng-template #contentRenderer></ng-template>
+@if ($selectedWidget(); as selectedWidget) {
+  <ng-container *ngComponentOutlet="selectedWidget.component; content: projectedNodes">
+  </ng-container>
+}

@@ -15,7 +15,7 @@
   -->
 
 <form
-  *ngIf="theme$ | async as theme"
+  *ngIf="{theme: theme$ | async, params: params$ | async} as obs"
   [formGroup]="form"
   class="valtimo-widget-management-table__form"
 >
@@ -34,6 +34,11 @@
     />
   </cds-text-label>
 
+  <valtimo-mdi-icon-selector
+    [cdsLayer]="1"
+    formControlName="widgetIcon"
+  ></valtimo-mdi-icon-selector>
+
   <cds-text-label [attr.data-carbon-theme]="theme">
     <v-input-label
       [title]="'widgetTabManagement.content.table.defaultPageSize' | translate"
@@ -49,35 +54,34 @@
     />
   </cds-text-label>
 
-  <div class="valtimo-widget-management-table__path-selector">
+  <cds-text-label [attr.data-carbon-theme]="theme">
     <v-input-label
       [title]="'widgetTabManagement.content.table.collection' | translate"
-      [tooltip]="'widgetTabManagement.content.table.collectionTooltip' | translate"
+      [tooltip]="collectionDataTooltip$ | async"
     >
     </v-input-label>
 
-    <input
-      formControlName="collection"
-      cdsText
-      [attr.data-carbon-theme]="theme"
-      [placeholder]="'widgetTabManagement.content.table.collection' | translate"
-      type="text"
-    />
-
-    <!-- TODO: Implement to work for case as well -->
-
-    <!-- <valtimo-value-path-selector
-      formControlName="collection"
-      [attr.data-carbon-theme]="obs.theme"
-      [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-      [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
-      [type]="ValuePathType.COLLECTION"
-      (collectionSelected)="onCollectionSelected($event)"
-    ></valtimo-value-path-selector> -->
-  </div>
+    @if ($widgetContext() === 'case') {
+      <valtimo-value-path-selector
+        formControlName="collection"
+        [attr.data-carbon-theme]="obs.theme"
+        [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+        [type]="ValuePathType.COLLECTION"
+        (collectionSelected)="onCollectionSelected($event)"
+      ></valtimo-value-path-selector>
+    } @else {
+      <input
+        formControlName="collection"
+        cdsText
+        [attr.data-carbon-theme]="theme"
+        [placeholder]="'widgetTabManagement.content.table.collection' | translate"
+        type="text"
+      />
+    }
+  </cds-text-label>
 </form>
 
-<!-- For projecting elements such as process selector in case widgets -->
 <ng-content></ng-content>
 
 <span class="valtimo-widget-management-table__subtitle">
@@ -88,11 +92,10 @@
   [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
+  [selectedCollection]="selectedCollection$ | async"
 ></valtimo-widget-management-fields-column>
-<!-- TODO: Implement to work for case as well -->
-<!-- [selectedCollection]="selectedCollection$ | async" -->
 
-<section class="valtimo-widget-management-table__toggle">
+<section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">
   <span class="valtimo-widget-management-table__subtitle">
     {{ 'widgetTabManagement.content.table.options' | translate }}
   </span>

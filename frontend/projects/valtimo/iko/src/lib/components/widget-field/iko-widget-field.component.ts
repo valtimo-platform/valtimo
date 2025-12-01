@@ -16,10 +16,15 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
-import {FieldsWidget, WidgetFieldComponent, WidgetLayoutService} from '@valtimo/layout';
+import {CarbonListModule} from '@valtimo/components';
+import {
+  FieldsWidget,
+  WidgetAction,
+  WidgetFieldComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
@@ -33,7 +38,6 @@ import {IkoApiService} from '../../services';
     InputModule,
     TranslateModule,
     CarbonListModule,
-    EllipsisPipe,
     ButtonModule,
     WidgetFieldComponent,
   ],

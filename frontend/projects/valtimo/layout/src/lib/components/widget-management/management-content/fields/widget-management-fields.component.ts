@@ -19,30 +19,28 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  EventEmitter,
   HostBinding,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {InputLabelModule, MdiIconSelectorComponent} from '@valtimo/components';
 import {
-  CARBON_THEME,
-  CdsThemeService,
-  CurrentCarbonTheme,
-  InputLabelModule,
-} from '@valtimo/components';
-import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
-import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
-import {IWidgetContentComponent} from '../../../../interfaces';
-import {WidgetWizardService} from '../../../../services';
+  ButtonModule,
+  IconModule,
+  InputModule,
+  LayerModule,
+  Tab,
+  TabsModule,
+} from 'carbon-components-angular';
+import {debounceTime, Subscription} from 'rxjs';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
+import {WidgetWizardService} from '../../../../services';
+import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
 
 @Component({
   templateUrl: './widget-management-fields.component.html',
@@ -59,29 +57,26 @@ import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
     ReactiveFormsModule,
     ButtonModule,
     WidgetManagementFieldsColumnComponent,
-    // CaseManagementWidgetProcessSelectorComponent,
     InputLabelModule,
+    MdiIconSelectorComponent,
+    LayerModule,
   ],
 })
-export class WidgetManagementFieldsComponent
-  implements IWidgetContentComponent, OnDestroy, OnInit, AfterViewInit
-{
+export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, AfterViewInit {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
   @ViewChild(Tab) private readonly _tab: Tab;
+
+  public readonly $showTitleInput = signal<boolean>(true);
 
   public form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetIcon: this.fb.control(this.widgetWizardService.$widgetIcon()),
   });
 
   public readonly $columns = signal<null[]>([null]);
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly $widgetWidth = this.widgetWizardService.$widgetWidth();
   public readonly selectedTabIndex = -1;
-  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
-    map((theme: CurrentCarbonTheme) =>
-      theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
-    )
-  );
   public readonly $selectedWidgetContent = computed(() =>
     (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)?.columns.reduce(
       (acc, curr, index) => ({
@@ -97,21 +92,26 @@ export class WidgetManagementFieldsComponent
   private readonly _contentValid = signal<boolean>(false);
 
   constructor(
-    private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 
   public ngOnInit(): void {
+    this.widgetWizardService.$widgetContentValid.set(false);
+    this._contentValid.set(false);
+
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
         this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
-        this.changeValidEvent.emit(this.form.valid && this._contentValid());
+        this.widgetWizardService.$widgetIcon.set(formValue.widgetIcon ?? '');
+        this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._contentValid());
       })
     );
     const widgetContent = (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)
       ?.columns;
+
+    if (this.widgetWizardService.$disableTitleInput()) this.hideTitleInput();
+
     if (!widgetContent) return;
 
     this.$columns.set(Object.keys(widgetContent).map(() => null));
@@ -123,15 +123,13 @@ export class WidgetManagementFieldsComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.changeValidEvent.emit(false);
     this.form.reset();
-    this._contentValid.set(false);
   }
 
   public onAddColumnClick(): void {
     this.$columns.update(value => [...value, null]);
     this.activeTab.set(this.$columns().length - 1);
-    this.changeValidEvent.emit(false);
+    this.widgetWizardService.$widgetContentValid.set(false);
   }
 
   public onTabSelected(index: number): void {
@@ -185,6 +183,19 @@ export class WidgetManagementFieldsComponent
       };
     });
     this._contentValid.set(event.valid);
-    this.changeValidEvent.emit(event.valid && this.form.valid);
+    this.widgetWizardService.$widgetContentValid.set(event.valid && this.form.valid);
+  }
+
+  private hideTitleInput(): void {
+    this.$showTitleInput.set(false);
+
+    const ctrl: AbstractControl | null = this.form.get('widgetTitle');
+    if (!ctrl) return;
+
+    ctrl.clearValidators();
+
+    ctrl.updateValueAndValidity({emitEvent: false});
+
+    this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._contentValid());
   }
 }

@@ -15,9 +15,58 @@
   -->
 
 <valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [items]="ikoDataAggregates$ | async"
-  [loading]="loading$ | async"
-  [hideToolbar]="true"
+  [loading]="$loading()"
   (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+>
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="uploadButton"></ng-container>
+
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
+
+  <valtimo-no-results
+    [action]="addViewButton"
+    [description]="'ikoManagement.views.noResultsDescription' | translate"
+    [title]="'ikoManagement.views.noResultsTitle' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
+
+<ng-template #uploadButton>
+  <button [iconOnly]="true" cdsButton="ghost" (click)="openUploadModal()">
+    <svg cdsIcon="upload" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #addViewButton>
+  <button cdsButton="primary" (click)="openAddModal()">
+    {{ 'ikoManagement.views.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<valtimo-iko-management-view-modal
+  *ngIf="apiKey$ | async as apiKey"
+  [apiKey]="apiKey"
+  [open]="$viewModalOpen()"
+  [prefillData]="$prefillData()"
+  [usedKeys]="usedKeys$ | async"
+  [modalMode]="$modalMode()"
+  (modalClose)="onViewModalClose($event, apiKey)"
+></valtimo-iko-management-view-modal>
+
+<valtimo-iko-management-upload-modal
+  [open]="$uploadModalOpen()"
+  (modalClose)="onUploadModalClose($event)"
+></valtimo-iko-management-upload-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="ikoManagement.views.deleteContent"
+  [outputOnConfirm]="$keyToDelete()"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

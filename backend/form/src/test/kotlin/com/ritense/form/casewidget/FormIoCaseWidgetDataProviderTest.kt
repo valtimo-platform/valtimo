@@ -16,12 +16,12 @@
 
 package com.ritense.form.casewidget
 
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -38,11 +38,17 @@ import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class FormIoCaseWidgetDataProviderTest(
+    @Mock val valueResolverService: ValueResolverService,
     @Mock val formDefinitionService: FormDefinitionService,
     @Mock val formService: PrefillFormService
 ) {
 
-    private val dataProvider = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
+    private val dataProvider = FormIoCaseWidgetDataProvider(
+        valueResolverService,
+        formDefinitionService,
+        formService,
+        MapperSingleton.get(),
+    )
 
     @Test
     fun `should return a prefilled form definition`() {
@@ -53,22 +59,28 @@ class FormIoCaseWidgetDataProviderTest(
         val formDefinitionId = UUID.randomUUID()
         whenever(formDefinition.id).thenReturn(formDefinitionId)
 
-        whenever(formDefinitionService.getFormDefinitionByName(eq(formDefinitionName), any())).thenReturn(Optional.of(formDefinition))
+        whenever(formDefinitionService.getFormDefinitionByName(eq(formDefinitionName), any())).thenReturn(
+            Optional.of(
+                formDefinition
+            )
+        )
         whenever(formService.getPrefilledFormDefinition(formDefinitionId, documentId)).thenReturn(formDefinition)
 
-        whenever(formDefinition.asJson()).thenReturn("""
+        whenever(formDefinition.asJson()).thenReturn(
+            """
             {
                 "x": true,
                 "y": false
             }
-            """.trimIndent().toJsonNode())
+            """.trimIndent().toJsonNode()
+        )
 
         val data = dataProvider.getData(
-            documentId, mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS), FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), FormIoWidgetProperties(
+            documentId, FormIoCaseWidget(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
-            ), Pageable.unpaged()
+            ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         )!!
         assertThat(data.at("/x").booleanValue()).isEqualTo(true)
         assertThat(data.at("/y").booleanValue()).isEqualTo(false)
@@ -82,11 +94,11 @@ class FormIoCaseWidgetDataProviderTest(
         whenever(formDefinitionService.getFormDefinitionByName(formDefinitionName)).thenReturn(Optional.empty())
 
         val data = dataProvider.getData(
-            documentId, mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS), FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), FormIoWidgetProperties(
+            documentId, FormIoCaseWidget(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
-            ), Pageable.unpaged()
+            ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         )
         assertThat(data).isNull()
     }

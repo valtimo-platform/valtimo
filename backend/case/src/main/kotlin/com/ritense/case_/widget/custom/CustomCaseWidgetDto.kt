@@ -17,16 +17,19 @@
 package com.ritense.case_.widget.custom
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import jakarta.validation.Valid
 
 @JsonTypeName("custom")
 data class CustomCaseWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
-    override val actions: List<CaseWidgetAction>? = emptyList(),
+    override val actions: List<WidgetAction>? = emptyList(),
+    override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: CustomWidgetProperties
 ) : CaseWidgetTabWidgetDto

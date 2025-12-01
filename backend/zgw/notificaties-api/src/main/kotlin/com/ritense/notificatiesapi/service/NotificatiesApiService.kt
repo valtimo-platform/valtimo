@@ -22,21 +22,47 @@ import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
+import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import java.util.UUID
+import java.util.concurrent.RejectedExecutionException
 
 @Service
 @SkipComponentScan
 class NotificatiesApiService(
-    private val applicationEventPublisher: ApplicationEventPublisher,
-    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
+    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
+    private val inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
+    private val inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
+    private val taskExecutor: TaskExecutor
 ) {
 
-    fun handle(notification: NotificatiesApiNotificationReceivedEvent) {
+    fun registerNotification(notification: NotificatiesApiNotificationReceivedEvent): Boolean {
         logger.debug { "Notification received: $notification" }
-        applicationEventPublisher.publishEvent(
-            notification
-        )
+        val eventId = inboundEventIntakeService.registerInboundNotification(notification)
+        if (eventId != null) {
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        submitForProcessing(eventId)
+                    }
+                })
+            } else {
+                submitForProcessing(eventId)
+            }
+        }
+        return eventId != null
+    }
+
+    private fun submitForProcessing(eventId: UUID) {
+        try {
+            taskExecutor.execute {
+                inboundEventProcessingService.processEvent(eventId)
+            }
+        } catch (ex: RejectedExecutionException) {
+            logger.warn(ex) { "Processing queue full, deferring inbound event $eventId to scheduled worker" }
+        }
     }
 
     fun findAbonnementSubscription(authHeader: String): NotificatiesApiAbonnementLink {

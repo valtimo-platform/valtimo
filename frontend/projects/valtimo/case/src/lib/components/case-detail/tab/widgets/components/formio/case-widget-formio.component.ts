@@ -14,22 +14,42 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  DestroyRef,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, filter, Observable} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {ButtonModule} from 'carbon-components-angular';
 import {WidgetsService} from '../../widgets.service';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   FormioWidgetWidgetWithUuid,
   WidgetAction,
   WidgetFormioComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
+import {HttpErrorResponse} from '@angular/common/http';
+import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 
 @Component({
   selector: 'valtimo-case-widget-formio',
@@ -38,14 +58,13 @@ import {
   imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule, WidgetFormioComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseWidgetFormioComponent extends WidgetProcess {
+export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
     this.baseDocumentId = value;
   }
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
-    this.layoutService.setWidgetWithExternalData(value.uuid);
     this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
@@ -57,19 +76,51 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
+  public readonly refreshForm = new EventEmitter<void>();
+
   private readonly _documentIdSubject$ = new BehaviorSubject<string>('');
+  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   public get documentId$(): Observable<string> {
     return this._documentIdSubject$.pipe(filter(id => !!id));
   }
 
+  public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
+    this._widgetConfigurationSubject$,
+    this._tabKey$,
+    this._documentIdSubject$,
+    this._refresh$,
+  ]).pipe(
+    switchMap(([widget, tabKey, documentId]) =>
+      this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget.key, undefined)
+    ),
+    tap(() => {
+      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+    }),
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+
+      return of(null);
+    })
+  );
+
   constructor(
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService,
-    private readonly layoutService: WidgetLayoutService,
-    private readonly widgetsService: WidgetsService
+    private readonly widgetsService: WidgetsService,
+    private readonly destroyRef: DestroyRef,
+    private readonly caseTabService: CaseTabService,
+    private readonly caseWidgetApiService: CaseWidgetsApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
   ) {
     super(documentService, permissionService);
+  }
+
+  public ngOnInit(): void {
+    this.widgetsService.refreshWidgets$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshForm.emit());
   }
 
   public onProcessStartClick(process: WidgetAction): void {

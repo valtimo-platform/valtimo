@@ -1,0 +1,21 @@
+{
+  "name": "openzaak",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:openzaak-plugin-authentication"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "openZaakPluginSpecification",
+        "module": "OpenZaakPluginModule"
+      }
+    ]
+  },
+  "editions": [
+    "gzac"
+  ]
+}

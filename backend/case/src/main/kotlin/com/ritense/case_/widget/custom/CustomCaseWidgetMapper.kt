@@ -24,18 +24,22 @@ class CustomCaseWidgetMapper : CaseWidgetMapper<CustomCaseWidget, CustomCaseWidg
     override fun toDto(entity: CustomCaseWidget) = CustomCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
         actions = entity.actions,
+        displayConditions = entity.displayConditions,
         properties = entity.properties
     )
 
     override fun toEntity(dto: CustomCaseWidgetDto, index: Int) = CustomCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
         actions = dto.actions ?: emptyList(),
+        displayConditions = dto.displayConditions,
         properties = dto.properties,
         order = index
     )

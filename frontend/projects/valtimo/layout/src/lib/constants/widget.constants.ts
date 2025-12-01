@@ -20,8 +20,10 @@ import {
   WidgetCustomComponent,
   WidgetFieldComponent,
   WidgetFormioComponent,
+  WidgetMapComponent,
   WidgetTableComponent,
 } from '../components';
+import {WidgetInteractiveTableComponent} from '../components/widget-interactive-table';
 
 const WIDGET_WIDTH_1X = 320;
 const WIDGET_HEIGHT_1X = 200;
@@ -31,7 +33,9 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.CUSTOM]: WidgetCustomComponent,
   [WidgetType.COLLECTION]: WidgetCollectionComponent,
   [WidgetType.TABLE]: WidgetTableComponent,
+  [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
+  [WidgetType.MAP]: WidgetMapComponent,
 };
 
 export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};

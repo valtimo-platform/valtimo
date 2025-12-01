@@ -19,6 +19,7 @@ package com.ritense.case_.widget.divider
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 
@@ -28,17 +29,21 @@ import jakarta.persistence.Entity
 class DividerCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    displayConditions: List<Condition<*>>,
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, emptyList()
+    id, title, icon,order, width, highContrast, emptyList(), displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = DividerCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        displayConditions = displayConditions,
     )
 }

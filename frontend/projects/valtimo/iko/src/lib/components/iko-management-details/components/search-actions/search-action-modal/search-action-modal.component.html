@@ -19,12 +19,12 @@
   [open]="$isOpen()"
   size="sm"
   showFooter="true"
-  [title]="'ikoManagement.searchActions.' + $modalType() + 'ActionTitle' | translate"
+  [title]="'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate"
   (close)="onCancel()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 cdsModalHeaderHeading>
-      {{ 'ikoManagement.searchActions.' + $modalType() + 'ActionTitle' | translate }}
+      {{ 'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate }}
     </h3>
   </cds-modal-header>
 
@@ -41,17 +41,21 @@
       />
     </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      labelTranslationKey="ikoManagement.keyTitle"
+      placeholderTranslationKey="interface.key"
+    >
+    </valtimo-auto-key-input>
 
-      <input
-        formControlName="key"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="$prefillData()?.properties"
+    />
   </form>
 
   <cds-modal-footer>

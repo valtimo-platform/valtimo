@@ -1,0 +1,180 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.iko.service
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.Action
+import com.ritense.authorization.Action.Companion.deny
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.iko.authorization.IkoDataAggregateActionProvider
+import com.ritense.iko.domain.IkoDataAggregate
+import com.ritense.iko.event.IkoDataAggregatePreDeleteEvent
+import com.ritense.iko.helper.MergeHelper.deepMerge
+import com.ritense.iko.repository.IkoDataAggregateRepository
+import com.ritense.iko.repository.IkoDataAggregateSpecificationHelper.Companion.byIkoRepositoryConfigKey
+import com.ritense.iko.repository.IkoDataAggregateSpecificationHelper.Companion.byKey
+import com.ritense.iko.repository.IkoDataAggregateSpecificationHelper.Companion.byTitleContains
+import com.ritense.valtimo.contract.iko.IkoRepository
+import com.ritense.valtimo.contract.iko.PropertyField
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
+import org.springframework.transaction.annotation.Transactional
+
+@Transactional
+class IkoDataAggregateService(
+    private val ikoDataAggregateRepository: IkoDataAggregateRepository,
+    private val ikoRepositoryService: IkoRepositoryService,
+    private val authorizationService: AuthorizationService,
+    private val ikoRepositories: List<IkoRepository>,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+) {
+
+    fun getDataById(key: String, id: String): JsonNode {
+        val dataAggregate = runWithoutAuthorization { getByKey(key) }
+        requirePermission(dataAggregate, IkoDataAggregateActionProvider.VIEW)
+        val ikoRepository = ikoRepositories.first {
+            it.getType() == dataAggregate.ikoRepositoryConfig.type
+        }
+        return ikoRepository.findById(
+            config = dataAggregate.ikoRepositoryConfig.properties.deepMerge(dataAggregate.properties),
+            id = id
+        )
+    }
+
+    fun getIkoDataAggregatePropertyFields(type: Any): List<PropertyField> {
+        denyAuthorization()
+        return ikoRepositories.single { it.getType() == type }.getDataAggregatePropertyFields()
+    }
+
+    fun findAll(
+        key: String? = null,
+        title: String? = null,
+        ikoRepositoryConfigKey: String? = null,
+        pageable: Pageable = Pageable.unpaged()
+    ): Page<IkoDataAggregate> {
+        val spec = getSpecification(
+            key = key,
+            titlePart = title,
+            ikoRepositoryConfigKey = ikoRepositoryConfigKey,
+        )
+        return ikoDataAggregateRepository.findAll(spec, pageable)
+    }
+
+    fun getByKey(key: String): IkoDataAggregate {
+        val ikoDataAggregate = ikoDataAggregateRepository.findById(key).orElseThrow()
+        requirePermission(ikoDataAggregate, IkoDataAggregateActionProvider.VIEW)
+        return ikoDataAggregate
+    }
+
+    fun createIkoDataAggregate(
+        key: String,
+        ikoRepositoryConfigKey: String,
+        title: String,
+        properties: Map<String, Any?>,
+    ): IkoDataAggregate {
+        denyAuthorization()
+        require(!existsByKey(key)) { "IKO data aggregate '$key' already exists" }
+        return ikoDataAggregateRepository.save(
+            IkoDataAggregate(
+                key = key,
+                title = title,
+                properties = properties,
+                ikoRepositoryConfig = ikoRepositoryService.getByKey(ikoRepositoryConfigKey),
+            )
+        )
+    }
+
+    fun saveIkoDataAggregate(
+        key: String,
+        ikoRepositoryConfigKey: String,
+        title: String,
+        properties: Map<String, Any?> = emptyMap(),
+    ): IkoDataAggregate {
+        denyAuthorization()
+        return ikoDataAggregateRepository.save(
+            IkoDataAggregate(
+                key = key,
+                title = title,
+                properties = properties,
+                ikoRepositoryConfig = ikoRepositoryService.getByKey(ikoRepositoryConfigKey),
+            )
+        )
+    }
+
+    fun deleteIkoDataAggregate(key: String) {
+        denyAuthorization()
+        applicationEventPublisher.publishEvent(
+            IkoDataAggregatePreDeleteEvent(key)
+        )
+        ikoDataAggregateRepository.deleteById(key)
+    }
+
+    fun requirePermission(key: String, action: Action<IkoDataAggregate>) {
+        requirePermission(ikoDataAggregateRepository.findById(key).orElseThrow(), action)
+    }
+
+    fun requirePermission(ikoDataAggregate: IkoDataAggregate, action: Action<IkoDataAggregate>) {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                IkoDataAggregate::class.java,
+                action,
+                ikoDataAggregate,
+            )
+        )
+    }
+
+    fun denyAuthorization() {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                IkoDataAggregate::class.java,
+                deny()
+            )
+        )
+    }
+
+    private fun getSpecification(
+        key: String? = null,
+        ikoRepositoryConfigKey: String? = null,
+        titlePart: String? = null,
+    ): Specification<IkoDataAggregate> {
+        var spec: Specification<IkoDataAggregate> = authorizationService.getAuthorizationSpecification(
+            EntityAuthorizationRequest(
+                IkoDataAggregate::class.java,
+                IkoDataAggregateActionProvider.VIEW_LIST
+            )
+        )
+        if (key != null) {
+            spec = spec.and(byKey(key))
+        }
+        if (ikoRepositoryConfigKey != null) {
+            spec = spec.and(byIkoRepositoryConfigKey(ikoRepositoryConfigKey))
+        }
+        if (titlePart != null) {
+            spec = spec.and(byTitleContains(titlePart))
+        }
+        return spec
+    }
+
+    private fun existsByKey(key: String): Boolean {
+        return ikoDataAggregateRepository.existsById(key)
+    }
+
+}

@@ -22,7 +22,7 @@ import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.web.rest.dto.TestCaseWidgetTabWidgetDto
 import com.ritense.case_.widget.TestCaseWidgetProperties
 import com.ritense.document.domain.impl.JsonDocumentContent
@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
     private val caseTabService: CaseTabService,
-    private val caseWidgetTabService: CaseWidgetTabService,
+    private val caseWidgetService: CaseWidgetService,
 ) : BaseIntegrationTest() {
 
     val caseDefinitionId = CaseDefinitionId.of("widgets", "1.0.0")
@@ -52,14 +52,28 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
         runWithoutAuthorization {
             caseTabService.createCaseTab(caseDefinitionId, CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-"))
 
-            caseWidgetTabService.updateWidgetTab(
+            caseWidgetService.updateWidgetTab(
                 CaseWidgetTabDto(
                     caseDefinitionId.key,
                     caseDefinitionId.versionTag.version,
                     tabKey,
                     widgets = listOf(
-                        TestCaseWidgetTabWidgetDto("test", "Widget 1", 1, false, TestCaseWidgetProperties("test123")),
-                        TestCaseWidgetTabWidgetDto("other-widget", "Widget 2", 2, true, TestCaseWidgetProperties("test123")),
+                        TestCaseWidgetTabWidgetDto(
+                            key = "test",
+                            title = "Widget 1",
+                            icon = "mdi-home",
+                            width = 1,
+                            highContrast = false,
+                            properties = TestCaseWidgetProperties("test123")
+                        ),
+                        TestCaseWidgetTabWidgetDto(
+                            key = "other-widget",
+                            title = "Widget 2",
+                            icon = "mdi-home",
+                            width = 2,
+                            highContrast = true,
+                            properties = TestCaseWidgetProperties("test123")
+                        ),
                     )
                 )
             )
@@ -70,7 +84,7 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_ALL_WIDGETS"])
     fun `should get tab with all widgets`() {
-        val tab = caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+        val tab = caseWidgetService.getWidgetTab(caseDefinitionId, tabKey)
 
         assertEquals(2, tab?.widgets?.size)
         assertEquals("test", tab?.widgets?.get(0)?.key)
@@ -80,7 +94,7 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS"])
     fun `should get tab with only permitted widgets`() {
-        val tab = caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+        val tab = caseWidgetService.getWidgetTab(caseDefinitionId, tabKey)
 
         assertEquals(1, tab?.widgets?.size)
         assertEquals("test", tab?.widgets?.get(0)?.key)
@@ -90,14 +104,14 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
     @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS_FOR_CONTEXT"])
     fun `should not get tab without context with only permitted widgets for context`() {
         createDocument(caseDefinitionId, "{\"key\": \"CONTEXT\"}")
-        assertThrows<AccessDeniedException> { caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey) }
+        assertThrows<AccessDeniedException> { caseWidgetService.getWidgetTab(caseDefinitionId, tabKey) }
     }
 
     @Test
     @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS_FOR_CONTEXT"])
     fun `should get tab with context with only permitted widgets for context`() {
         val document = createDocument(caseDefinitionId, "{\"key\": \"CONTEXT\"}")
-        val tab = caseWidgetTabService.getWidgetTab(document.id(), tabKey)
+        val tab = caseWidgetService.getWidgetTab(document.id(), tabKey)
 
         assertEquals(1, tab?.widgets?.size)
         assertEquals("test", tab?.widgets?.get(0)?.key)
@@ -107,14 +121,14 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
     @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS_FOR_CONTEXT"])
     fun `should not get tab with only permitted widgets for the context`() {
         val document = createDocument(caseDefinitionId)
-        assertThrows<AccessDeniedException> { caseWidgetTabService.getWidgetTab(document.id(), tabKey) }
+        assertThrows<AccessDeniedException> { caseWidgetService.getWidgetTab(document.id(), tabKey) }
     }
 
     @Test
     @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS_FOR_CONTEXT"])
     fun `should get tab without widgets for the context`() {
         val document = createDocument(caseDefinitionId, "{\"key\": \"CONTEXTWITHOUTWIDGETS\"}")
-        val tab = caseWidgetTabService.getWidgetTab(document.id(), tabKey)
+        val tab = caseWidgetService.getWidgetTab(document.id(), tabKey)
 
         assertEquals(0, tab?.widgets?.size)
     }

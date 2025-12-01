@@ -14,23 +14,34 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
-import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, catchError, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
-import {WidgetsService} from '../../widgets.service';
 import {PermissionService} from '@valtimo/access-control';
-import {WidgetProcess} from '../widget-process/widget-process';
+import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
   FieldsWidget,
   WidgetAction,
+  WidgetActionButtonComponent,
   WidgetFieldComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
+import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
+
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
-import {HttpErrorResponse} from '@angular/common/http';
+import {WidgetsService} from '../../widgets.service';
+import {WidgetProcess} from '../widget-process/widget-process';
 
 @Component({
   selector: 'valtimo-case-widget-field',
@@ -45,6 +56,7 @@ import {HttpErrorResponse} from '@angular/common/http';
     EllipsisPipe,
     ButtonModule,
     WidgetFieldComponent,
+    WidgetActionButtonComponent,
   ],
 })
 export class CaseWidgetFieldComponent extends WidgetProcess {
@@ -65,11 +77,13 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
   public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
     this.widgetConfiguration$,
     this.tabKey$,
     this._documentId$,
+    this._refresh$,
   ]).pipe(
     switchMap(([widget, tabkey, documentId]) =>
       this.caseWidgetApiService.getWidgetData(documentId, tabkey, widget.key, undefined)
@@ -96,6 +110,7 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
   }
 
   public onProcessStartClick(process: WidgetAction): void {
+    if (!process.processDefinitionKey) return;
     this.widgetsService.startProcess(process.processDefinitionKey);
   }
 }

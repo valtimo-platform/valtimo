@@ -22,41 +22,50 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.exception.InvalidCollectionException
 import com.ritense.case_.widget.exception.InvalidCollectionNodeTypeException
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import com.ritense.widget.page.ResolvedPage
 import java.util.UUID
+import org.springframework.data.domain.Pageable
 
 class TableCaseWidgetDataProvider(
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<TableCaseWidget> {
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = TableCaseWidget::class.java
+    override fun supports(widget: Any): Boolean =
+        widget is TableCaseWidget
 
-    override fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: TableCaseWidget, pageable: Pageable): Page<Map<String, Any?>> {
-        val resolvedCollection =
-            valueResolverService.resolveValues(documentId.toString(), listOf(widget.properties.collection))[widget.properties.collection]
-        val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)
+    override fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): ResolvedPage<Map<String, Any?>> {
+        widget as TableCaseWidget
+        val resolvedValues = valueResolverService.resolveValues(
+            mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
+            widget.getUnresolvedValues()
+        )
+        val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedValues[widget.properties.collection])
+        val exposedValues = widget.getExposedValues { path -> resolvedValues[path] }
 
-        if(collectionNode.isNull) {
-            return PageImpl(emptyList(), pageable, 0)
+        if (collectionNode.isNull) {
+            return ResolvedPage(emptyList(), pageable, 0, exposedValues)
         }
 
         if (!collectionNode.isArray) {
             throw InvalidCollectionException()
         }
 
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
+        val pagedCollection = collectionNode.chunked(pageable.pageSize)
 
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+        val result = pagedCollection.getOrElse(pageable.pageNumber) { listOf() }
             .onEachIndexed { index, node ->
                 if (!node.isContainerNode) {
                     throw InvalidCollectionNodeTypeException(index)
@@ -80,12 +89,12 @@ class TableCaseWidgetDataProvider(
                 }
             }
 
-        return PageImpl(result, pageable, collectionNode.size().toLong())
+        return ResolvedPage(result, pageable, collectionNode.size().toLong(), exposedValues)
     }
 
 
     private companion object {
-        val JSONPATH_CONTEXT = JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+        val JSONPATH_CONTEXT =
+            JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
     }
 }
-

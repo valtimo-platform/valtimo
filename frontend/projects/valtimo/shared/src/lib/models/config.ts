@@ -90,6 +90,7 @@ interface ValtimoConfigFeatureToggles {
   enableFormFlowBreadcrumbs?: boolean;
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
+  enableIkoType?: boolean;
 }
 
 interface ValtimoConfig {
@@ -170,7 +171,6 @@ enum CaseListTab {
 enum Language {
   NL = 'nl',
   EN = 'en',
-  DE = 'de',
 }
 
 export {

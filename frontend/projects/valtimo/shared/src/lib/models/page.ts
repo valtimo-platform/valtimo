@@ -39,6 +39,7 @@ interface Page<T> {
   numberOfElements: number;
   size: number;
   number: number;
+  [key: string]: any;
 }
 
 export {SortResult, Pageable, Page};

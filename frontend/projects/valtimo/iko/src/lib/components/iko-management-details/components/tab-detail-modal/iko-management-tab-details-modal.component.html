@@ -15,13 +15,13 @@
   -->
 
 <cds-modal
-  valtimoCdsModal
+  (close)="closeModal()"
   *ngIf="{
     title: (modalMode === 'add' ? 'ikoManagement.addTab' : 'ikoManagement.editTab') | translate,
   } as state"
   [open]="$openModal()"
   [title]="state.title"
-  (close)="closeModal()"
+  valtimoCdsModal
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>
@@ -46,13 +46,14 @@
       labelTranslationKey="ikoManagement.keyTitle"
       placeholderTranslationKey="ikoManagement.tabKeyPlaceholder"
       [usedKeys]="usedKeys"
-      [sourceText]="title.value"
+      [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
     >
     </valtimo-auto-key-input>
 
     <v-select
       [invalid]="type.dirty && type.invalid"
+      [dropUp]="false"
       formControlName="type"
       [items]="tabTypeSelectItems"
       titleTranslationKey="ikoManagement.tabTypeTitle"
