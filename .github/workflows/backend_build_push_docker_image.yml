@@ -38,7 +38,7 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew app:gzac:assemble
+      - run: ./gradlew -PincludeDev=false app:gzac:assemble
 
       - name: Prepare deployment folder
         run: |
