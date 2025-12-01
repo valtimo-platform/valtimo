@@ -55,4 +55,30 @@
                       columnDataType="varchar(255)"/>
     </changeSet>
 
+    <changeSet author="Ritense" id="3">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type = replace(resource_type, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                conditions = replace(conditions, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                context_resource_type = replace(context_resource_type, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                context_conditions = replace(context_conditions, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView')
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type = replace(resource_type, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                conditions = replace(conditions::text, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView')::json,
+                context_resource_type = replace(context_resource_type, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                context_conditions = replace(context_conditions::text, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView')::json
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
