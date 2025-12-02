@@ -41,13 +41,9 @@ dependencies {
 }
 
 // Note: -PincludeDev=false comes in as a String; coerce to real boolean
-def bootRunTasks = ["bootRun", "bootRunWithDocker"]
-def isBootRunInvocation = gradle.startParameter.taskNames.any { taskName ->
-    bootRunTasks.any { task -> taskName == task || taskName.endsWith(":${task}") }
-}
-def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: isBootRunInvocation
+def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: false
 
-println "includeDev $includeDevSources"
+println "includeDevSources: $includeDevSources"
 
 if (includeDevSources) {
     extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
