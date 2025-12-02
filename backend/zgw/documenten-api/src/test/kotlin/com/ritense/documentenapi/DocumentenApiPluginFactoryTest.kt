@@ -95,7 +95,8 @@ internal class DocumentenApiPluginFactoryTest {
             documentDeleteHandlers,
             documentenApiVersionService,
             runtimeService,
-            virusScanService
+            virusScanService,
+            false
         )
 
         val plugin = factory.create(configuration)
