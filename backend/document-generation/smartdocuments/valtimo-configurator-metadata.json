@@ -1,0 +1,19 @@
+{
+  "name": "smartdocuments",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:smartdocuments"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "smartDocumentsPluginSpecification",
+        "module": "SmartDocumentsPluginModule"
+      }
+    ]
+  },
+  "editions": []
+}
