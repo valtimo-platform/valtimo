@@ -17,17 +17,16 @@
   <div class="cds--toolbar-content">
     <ng-content></ng-content>
 
-    <div class="required-panel">
-      <span>Required:</span>
-      <div class="req-row" *ngFor="let p of getProperties()">
-        <label>{{ p }}</label>
-        <input
-          type="checkbox"
-          [checked]="isRequired(p)"
-          (change)="toggleRequired(p, $event.target.checked)"
-        />
-      </div>
-    </div>
+    <cds-overflow-menu
+      [customTrigger]="customTrigger"
+      [cdsOverflowMenu]="requiredPropertiesPanel"
+      [customPane]="true"
+      [flip]="true"
+      [description]="'listViewColumns.tooltip' | translate"
+      [offset]="{x: 2, y: 64}"
+      placement="bottom"
+    >
+    </cds-overflow-menu>
 
     <button
       cdsButton="primary"
@@ -52,3 +51,28 @@
   (confirmEvent)="onSaveChanges()"
 >
 </valtimo-confirmation-modal>
+
+<ng-template #customTrigger>
+  <button iconOnly="true" cdsButton="ghost">
+    <svg cdsIcon="view--off" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #requiredPropertiesPanel>
+  <div class="schema-editor__required-panel" *ngIf="!disabled">
+    <div class="schema-editor__required-title">
+      {{ 'interface.jsonEditor.requiredFields' | translate }}
+    </div>
+
+    <div class="schema-editor__required-list">
+      <label class="schema-editor__required-item" *ngFor="let prop of requiredProperties$ | async">
+        <input
+          type="checkbox"
+          [checked]="prop.required"
+          (change)="onRequiredToggle(prop, $event.target.checked)"
+        />
+        <span>{{ prop.label }}</span>
+      </label>
+    </div>
+  </div>
+</ng-template>
