@@ -10,6 +10,9 @@ defaults:
   run:
     working-directory: backend
 
+env:
+  ORG_GRADLE_PROJECT_includeDev: false
+
 jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
@@ -50,7 +53,7 @@ jobs:
 
       - name: Check license compliance (non-blocking)
         continue-on-error: true
-        run: ./gradlew checkLicense
+        run: ./gradlew -PincludeDev=false checkLicense
 
       - name: Warn if disallowed licenses found
         run: |
@@ -67,13 +70,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Archive Reports
         if: always()
