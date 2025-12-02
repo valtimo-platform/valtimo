@@ -1,0 +1,21 @@
+{
+  "name": "portaaltaak",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:portaaltaak"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "portaaltaakPluginSpecification",
+        "module": "PortaaltaakPluginModule"
+      }
+    ]
+  },
+  "editions": [
+    "gzac"
+  ]
+}

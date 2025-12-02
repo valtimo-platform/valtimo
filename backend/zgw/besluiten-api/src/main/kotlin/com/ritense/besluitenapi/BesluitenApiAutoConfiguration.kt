@@ -16,6 +16,7 @@
 
 package com.ritense.besluitenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.plugin.service.PluginService
 import com.ritense.zakenapi.ZaakUrlProvider
@@ -34,11 +35,13 @@ class BesluitenApiAutoConfiguration {
         pluginService: PluginService,
         besluitenApiClient: BesluitenApiClient,
         urlProvider: ZaakUrlProvider,
+        objectMapper: ObjectMapper
     ): BesluitenApiPluginFactory {
         return BesluitenApiPluginFactory(
             pluginService,
             besluitenApiClient,
-            urlProvider
+            urlProvider,
+            objectMapper
         )
     }
 }
