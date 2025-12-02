@@ -38,6 +38,7 @@ class FieldsCaseWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -45,7 +46,7 @@ class FieldsCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: FieldsWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, icon,order, width, highContrast, actions, displayConditions
+    id, title, icon,order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = FieldsCaseWidget(
         id = id,
@@ -54,6 +55,7 @@ class FieldsCaseWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties
