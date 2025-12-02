@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { PluginSpecification, PluginSpecification } from '../../models';
-import { ZAKEN_API_PLUGIN_LOGO_BASE64, ZAKEN_API_PLUGIN_LOGO_BASE64 } from './assets';
+import { PluginSpecification } from '../../models';
+import { ZAKEN_API_PLUGIN_LOGO_BASE64 } from './assets';
 import {
   CreateMedewerkerZaakRolComponent,
 } from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
