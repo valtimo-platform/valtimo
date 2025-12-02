@@ -1,7 +1,3 @@
-import cz.habarta.typescript.generator.DateMapping
-import cz.habarta.typescript.generator.JsonLibrary
-import cz.habarta.typescript.generator.TypeScriptOutputKind
-
 plugins {
     id 'war'
     id 'cz.habarta.typescript-generator' version '3.2.1263'
@@ -41,6 +37,28 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+// Note: -PincludeDev=false comes in as a String; coerce to real boolean
+def bootRunTasks = ["bootRun", "bootRunWithDocker"]
+def isBootRunInvocation = gradle.startParameter.taskNames.any { taskName ->
+    bootRunTasks.any { task -> taskName == task || taskName.endsWith(":${task}") }
+}
+def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: isBootRunInvocation
+
+println "includeDev $includeDevSources"
+
+if (includeDevSources) {
+    extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
+        kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
+            kotlinSourceSet.kotlin.srcDir("src/dev/kotlin")
+        }
+    }
+    sourceSets {
+        main {
+            resources.srcDir("src/dev/resources")
+        }
+    }
 }
 
 apply from: "gradle/publishing.gradle"

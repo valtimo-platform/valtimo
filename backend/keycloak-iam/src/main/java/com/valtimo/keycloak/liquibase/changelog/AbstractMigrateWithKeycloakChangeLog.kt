@@ -109,7 +109,11 @@ abstract class AbstractMigrateWithKeycloakChangeLog : EnvironmentPostProcessor {
     }
 
     protected fun getKeycloakUser(emailOrUsernameOrUserId: String?): AbstractUserRepresentation? {
-        return userCache[emailOrUsernameOrUserId]
+        return if (emailOrUsernameOrUserId == null) {
+            null
+        } else {
+            userCache[emailOrUsernameOrUserId]
+        }
     }
 
     protected fun getKeycloakUserFromKeycloak(emailOrUsernameOrUserId: String?): AbstractUserRepresentation? {
