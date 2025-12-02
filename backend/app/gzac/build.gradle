@@ -48,7 +48,7 @@ dependencies {
 def includeDevSources = project.findProperty("includeDev")?.toString()?.toBoolean() ?: false
 
 println "includeDevSources: $includeDevSources"
-return 0
+
 if (includeDevSources) {
     extensions.configure(KotlinJvmProjectExtension) { kotlinExt ->
         kotlinExt.sourceSets.named("main") { kotlinSourceSet ->
