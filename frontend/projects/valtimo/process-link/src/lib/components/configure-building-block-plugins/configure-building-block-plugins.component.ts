@@ -22,7 +22,11 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BuildingBlockStateService} from '../../services/building-block-state.service';
-import {PluginConfiguration, PluginManagementService, PluginTranslationService} from '@valtimo/plugin';
+import {
+  PluginConfiguration,
+  PluginManagementService,
+  PluginTranslationService,
+} from '@valtimo/plugin';
 import {
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
@@ -90,8 +94,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
 
         return combineLatest(
           pluginKeys.map(pluginKey =>
-          this.getConfigurationOptions(pluginKey)
-            .pipe(
+            this.getConfigurationOptions(pluginKey).pipe(
               map(options => ({
                 key: pluginKey,
                 label: this.pluginLabel(pluginKey),
@@ -134,14 +137,14 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         this.definitionVersionTag$,
       ]).subscribe(([keys, complete, loading, version]) => {
         if (loading || !version) {
-          this.buttonService.disableSaveButton();
+          this.buttonService.disableNextButton();
           return;
         }
 
         if (keys.length === 0 || complete) {
-          this.buttonService.enableSaveButton();
+          this.buttonService.enableNextButton();
         } else {
-          this.buttonService.disableSaveButton();
+          this.buttonService.disableNextButton();
         }
       })
     );
@@ -153,8 +156,10 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     );
 
     this._subscriptions.add(
-      this.buttonService.saveButtonClick$.subscribe(() => {
-        this.persistProcessLink();
+      this.buttonService.nextButtonClick$.subscribe(() => {
+        this.stepService.setConfigureBuildingBlockMappingsStep(
+          this.buildingBlockStateService.getDefinitionSnapshot().key ?? undefined
+        );
       })
     );
   }
@@ -225,17 +230,6 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     const normalizedValue = versionTag || null;
     this.buildingBlockStateService.setPluginConfigurationMappings(undefined);
     this.buildingBlockStateService.setDefinitionVersionTag(normalizedValue);
-  }
-
-  private persistProcessLink(): void {
-    this.stateService.startSaving();
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (selectedProcessLink && selectedProcessLink.processLinkType === 'building-block') {
-        this.updateProcessLink(selectedProcessLink);
-      } else {
-        this.createProcessLink();
-      }
-    });
   }
 
   private createProcessLink(): void {

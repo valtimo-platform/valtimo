@@ -66,6 +66,7 @@ type ProcessLinkConfigurationStep =
   | 'selectFormFlow'
   | 'selectBuildingBlock'
   | 'configureBuildingBlockPlugins'
+  | 'configureBuildingBlockMappings'
   | 'empty';
 
 type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';
@@ -322,6 +323,9 @@ export {
   FormSize,
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
+  BuildingBlockInputMapping,
+  BuildingBlockOutputMapping,
+  BuildingBlockSyncTiming,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
   PluginConfigurationViewModel,
