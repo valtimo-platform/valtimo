@@ -251,11 +251,6 @@ interface ProcessLinkDeleteEvent {
   activityId: string;
 }
 
-enum ProcessLinkEditMode {
-  SAVE_TO_BACKEND,
-  EMIT_EVENTS,
-}
-
 interface CompatibleProcessVersion {
   version: string;
   processLinks: ProcessLink[];
@@ -312,7 +307,6 @@ export {
   ProcessLinkConfigurationStep,
   ProcessLinkCreateEvent,
   ProcessLinkDeleteEvent,
-  ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
   PluginConfigurationReferenceType,
