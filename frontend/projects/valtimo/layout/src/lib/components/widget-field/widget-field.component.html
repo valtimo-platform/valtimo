@@ -23,14 +23,14 @@
     noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-field__header">
-    <div class="widget-field__title-container">
+  <section *ngIf="obs?.widgetConfiguration?.title" class="valtimo-widget-field__header">
+    <div class="valtimo-widget-field__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
+      <h4 class="valtimo-widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
     </div>
 
     <ng-content></ng-content>
@@ -50,11 +50,12 @@
   } @else {
     <div
       #widgetField
+      class="valtimo-widget-field__render"
       [ngClass]="{
-        'widget-field__render-vertically': renderVertically() === 1,
-        'widget-field__render-two-columns': renderVertically() === 2,
-        'widget-field__render-three-columns': renderVertically() === 3,
-        'widget-field__container': renderVertically() === 4,
+        'valtimo-widget-field__render-vertically': renderVertically() === 1,
+        'valtimo-widget-field__render-two-columns': renderVertically() === 2,
+        'valtimo-widget-field__render-three-columns': renderVertically() === 3,
+        'valtimo-widget-field__container': renderVertically() === 4,
       }"
     >
       @if (obs.noVisibleFields) {
@@ -65,7 +66,7 @@
         ></valtimo-no-results>
       } @else {
         @for (column of obs?.widgetPropertyValue; track column.key) {
-          <div class="widget-field__column" [ngClass]="{'widget-field__column--compact': compact}">
+          <div class="valtimo-widget-field__column">
             @for (property of column; track property) {
               <div
                 *ngIf="
@@ -74,22 +75,13 @@
                     property?.hideWhenEmpty) ||
                   !property?.hideWhenEmpty
                 "
-                class="widget-field__field"
-                [ngClass]="{'widget-field__field--compact': compact}"
+                class="valtimo-widget-field__field"
               >
-                <label
-                  class="widget-field__field-label"
-                  [ngClass]="{'widget-field__field-label--compact': compact}"
-                  [attr.title]="property?.title"
-                >
+                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title">
                   {{ property?.title }}</label
                 >
 
-                <div
-                  [attr.title]="property?.value"
-                  class="widget-field__field-value"
-                  [ngClass]="{'widget-field__field-value--compact': compact}"
-                >
+                <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
                   @if (property?.isRawValue) {
                     <div [innerHTML]="property?.value"></div>
                   } @else {

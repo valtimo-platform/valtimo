@@ -39,6 +39,7 @@ class MapCaseWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -46,7 +47,7 @@ class MapCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: MapWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, icon, order, width, highContrast, actions, displayConditions
+    id, title, icon, order, width, highContrast, isCompact, actions, displayConditions
 ) {
 
     override fun copy(id: CaseWidgetTabWidgetId) = MapCaseWidget(
@@ -56,6 +57,7 @@ class MapCaseWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties,

@@ -62,6 +62,9 @@ abstract class CaseWidgetTabWidget(
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean,
 
+    @Column(name = "is_compact", nullable = true)
+    val isCompact: Boolean?,
+
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
     val actions: List<WidgetAction> = emptyList(),
@@ -89,6 +92,7 @@ abstract class CaseWidgetTabWidget(
         if (id != other.id) return false
         if (title != other.title) return false
         if (icon != other.icon) return false
+        if (isCompact != other.isCompact) return false
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
@@ -105,12 +109,13 @@ abstract class CaseWidgetTabWidget(
             order,
             width,
             highContrast,
+            isCompact,
             actions,
             displayConditions
         )
     }
 
     override fun toString(): String {
-        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast)"
+        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
     }
 }

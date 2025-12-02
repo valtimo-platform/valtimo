@@ -103,6 +103,11 @@
     }
   }
 
+  cds-checkbox {
+    display: flex;
+    align-items: flex-end;
+  }
+
   .cds--text-input,
   .cds--list-box {
     background: var(--cds-layer-02);

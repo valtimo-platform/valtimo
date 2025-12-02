@@ -106,6 +106,7 @@ class CustomWidgetIntTest @Autowired constructor(
                         icon = "mdi-home",
                         width = 2,
                         highContrast = false,
+                        isCompact = false,
                         actions = null,
                         displayConditions = emptyList(),
                         properties = CustomWidgetProperties("test-component-key")
