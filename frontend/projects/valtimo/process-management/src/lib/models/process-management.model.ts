@@ -22,6 +22,10 @@ interface OpenProcessLinkModalEvent {
   processLink?: ProcessLink;
 }
 
+interface DeleteProcessLinkEvent {
+  activityId: string;
+}
+
 const PROCESS_MANAGEMENT_ENDPOINTS = {
   case: '/management/v1/case-definition',
   independent: '/management/v1/process-definition',
@@ -41,4 +45,5 @@ export {
   PROCESS_MANAGEMENT_ENDPOINTS,
   ProcessManagementRouteData,
   UpdateProcessDefinitionCaseDefinitionRequest,
+  DeleteProcessLinkEvent,
 };
