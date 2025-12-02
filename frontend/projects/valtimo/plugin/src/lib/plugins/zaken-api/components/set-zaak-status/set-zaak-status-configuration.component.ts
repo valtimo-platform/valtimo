@@ -131,7 +131,7 @@ export class SetZaakStatusConfigurationComponent
     );
 
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
-  readonly datumStatusGezetSelectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly datumStatusGezetSelectedInputOption$ = new BehaviorSubject<string>('now');
   readonly datePickerInvalid$ = new BehaviorSubject<boolean>(false);
 
   readonly pluginId$ = new BehaviorSubject<string>('');
@@ -146,6 +146,22 @@ export class SetZaakStatusConfigurationComponent
       ])
     ),
     map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
+  readonly datePickerInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('now', pluginId),
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([nowTranslation, selectionTranslation, textTranslation]) => [
+      {value: 'now', title: nowTranslation},
       {value: 'selection', title: selectionTranslation},
       {value: 'text', title: textTranslation},
     ])
@@ -198,6 +214,10 @@ export class SetZaakStatusConfigurationComponent
     if (updatedFormValue.inputDatumStatusGezetToggle) {
       this.datumStatusGezetSelectedInputOption$.next(updatedFormValue.inputDatumStatusGezetToggle);
     }
+    if (updatedFormValue.inputDatumStatusGezetToggle === 'now') {
+      this.selectedDate = null;
+      this.selectedTime = null;
+    }
   }
 
   selectCaseDefinition(caseDefinitionId: string): void {
@@ -217,8 +237,9 @@ export class SetZaakStatusConfigurationComponent
     const hasStatusType = !!formValue.statustypeUrl;
     const hasValidDatumStatusGezet = this.isValidDatumStatusGezet(formValue.datumStatusGezet);
     const dateIsNotInFuture = this.isDateNotInFuture(formValue.datumStatusGezet);
+    const hasEnteredDateText = this.hasEnteredDateText(formValue.datumStatusGezet);
 
-    const valid = hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture;
+    const valid = hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture && hasEnteredDateText;
 
     this.valid$.next(valid);
     this.valid.emit(valid);
@@ -230,6 +251,9 @@ export class SetZaakStatusConfigurationComponent
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
+            if (formValue.inputDatumStatusGezetToggle == 'now') {
+              formValue.datumStatusGezet = null;
+            }
             this.configuration.emit({
               statustoelichting: formValue.statustoelichting,
               statustypeUrl: formValue.statustypeUrl,
@@ -253,11 +277,18 @@ export class SetZaakStatusConfigurationComponent
   }
 
   private updateDatumStatusGezet(): void {
-    if (!this.selectedDate || !this.selectedTime) {
+    if (!this.selectedDate && !this.selectedTime) {
       return;
     }
 
-    const [hoursStr, minutesStr = '00', secondsStr = '00'] = this.selectedTime.split(':');
+    let hoursStr;
+    let minutesStr;
+    let secondsStr;
+    try {
+      [hoursStr, minutesStr = '00', secondsStr = '00'] = this.selectedTime.split(':');
+    } catch (error) {
+      [hoursStr, minutesStr = '00', secondsStr = '00'] = ['00', '00'];
+    }
     const date = new Date(this.selectedDate);
 
     const year = date.getFullYear();
@@ -281,16 +312,23 @@ export class SetZaakStatusConfigurationComponent
   private prefillToday(): void {
     this._subscriptions.add(
       this.prefillConfiguration$.subscribe(config => {
+        console.log('Prefilling configuration', config?.datumStatusGezet);
         let baseDate;
 
-        try {
-          baseDate = flatpickr.formatDate(
-            !!config?.datumStatusGezet ? new Date(config!.datumStatusGezet) : new Date(),
-            'Z'
-          );
-        } catch (error) {
-          baseDate = config.datumStatusGezet;
-          this.datumStatusGezetSelectedInputOption$.next('text');
+        if (config?.datumStatusGezet) {
+          try {
+            baseDate = flatpickr.formatDate(
+              !!config?.datumStatusGezet ? new Date(config!.datumStatusGezet) : new Date(),
+              'Z'
+            );
+            this.datumStatusGezetSelectedInputOption$.next('selection');
+          } catch (error) {
+            baseDate = config.datumStatusGezet;
+            this.datumStatusGezetSelectedInputOption$.next('text');
+          }
+        } else {
+          baseDate = null;
+          this.datumStatusGezetSelectedInputOption$.next('now');
         }
 
         this.selectedDate = baseDate;
@@ -307,12 +345,12 @@ export class SetZaakStatusConfigurationComponent
   }
 
   private isValidDatumStatusGezet(value: string | null | undefined): boolean {
-    if (!value) {
-      return false;
+    if (['text', 'now'].includes(this.datumStatusGezetSelectedInputOption$.getValue())) {
+      return true;
     }
 
-    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
-      return true;
+    if (!value) {
+      return false;
     }
 
     const trimmed = value.trim();
@@ -329,12 +367,12 @@ export class SetZaakStatusConfigurationComponent
   }
 
   private isDateNotInFuture(value: string | null | undefined): boolean {
-    if (!value) {
-      return false;
+    if (['text', 'now'].includes(this.datumStatusGezetSelectedInputOption$.getValue())) {
+      return true;
     }
 
-    if (this.datumStatusGezetSelectedInputOption$.getValue() === 'text') {
-      return true;
+    if (!value) {
+      return false;
     }
 
     const date = new Date(value);
@@ -344,5 +382,13 @@ export class SetZaakStatusConfigurationComponent
     this.datePickerInvalid$.next(!isDateNotInFuture);
 
     return isDateNotInFuture;
+  }
+
+  private hasEnteredDateText(value: string | null | undefined): boolean {
+    if (this.datumStatusGezetSelectedInputOption$.getValue() !== 'text') {
+      return true;
+    }
+
+    return !value === false;
   }
 }
