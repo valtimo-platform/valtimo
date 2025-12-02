@@ -86,7 +86,6 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
-    GetZaakbesluitenConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -132,7 +131,6 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
-    GetZaakbesluitenConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}
