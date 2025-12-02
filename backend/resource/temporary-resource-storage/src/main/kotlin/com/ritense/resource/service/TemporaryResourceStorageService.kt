@@ -61,8 +61,6 @@ class TemporaryResourceStorageService(
     private val virusScanService: VirusScanService,
     private val virusScanEnabledForTemporaryStorage: Boolean = true
 ) {
-
-
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
     } else {

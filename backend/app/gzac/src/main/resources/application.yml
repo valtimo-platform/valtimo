@@ -247,7 +247,6 @@ valtimo:
     config:
         virusscan:
             clamav:
-                enabled: true
                 properties:
                     hostName: localhost
                     port: 3310
