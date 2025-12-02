@@ -251,9 +251,9 @@ valtimo:
                     hostName: localhost
                     port: 3310
                 DocumentenApiPlugin:
-                    enabled: true
+                    enabled: false
                 TemporaryResourceStorageService:
-                    enabled: true
+                    enabled: false
 
 spring-actuator:
     username: ${SPRING_ACTUATOR_USERNAME:admin}
