@@ -107,7 +107,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'patch-zaak': PatchZaakConfigurationComponent,
-    'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
   },
   pluginTranslations: {
     nl: {

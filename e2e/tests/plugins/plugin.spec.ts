@@ -1,38 +1,49 @@
-import { test, expect } from "@playwright/test";
-import { PluginPage } from "./page"
-import { pluginTypes } from "./plugin-config";
+import {test, expect} from '@playwright/test';
+import {PluginPage} from './page';
+import {beforeEach} from 'node:test';
+import {pluginTypes} from './plugin-config';
 
-test.use({ storageState: undefined });
+test.use({storageState: undefined});
 
-test("Plugin management", async ({ page }) => {
+test.describe('Plugin management', () => {
+  let context;
+  let page;
+  let pluginPage;
 
-  const pluginPage = new PluginPage(page);
+  // Arrange
+  test.beforeAll(async ({browser}) => {
+    // Create shared context & page
+    context = await browser.newContext();
+    page = await context.newPage();
 
-  // Log in
-  console.log("Log in as admin...")
-  const username = "admin";
-  const password = "admin"
-  await page.goto("http://localhost:4200/");
-  await page.locator("#username").fill(username);
-  await page.locator("#password").fill(password);
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await page.waitForTimeout(1500);
+    pluginPage = new PluginPage(page);
 
-  // Navigate
-  await pluginPage.goToPluginManagement();
+    await page.goto('http://localhost:4200/');
+    await pluginPage.goToPluginManagement();
+  });
 
-  // Create all plugins
-  for (const type of pluginTypes) {
-    await pluginPage.openWizard();
-    await pluginPage.selectPluginType(type);
-    await pluginPage.fillPluginForm(type);
-    await pluginPage.saveConfiguration();
-  }
+  test.afterAll(async () => {
+    await context.close();
+  });
 
-  // Duplicate example
-  await pluginPage.duplicateConfigurationName();
+  test('Add all plugins', async () => {
+    for (const type of pluginTypes) {
+      // Act
+      await pluginPage.openWizard();
+      await pluginPage.selectPluginType(type);
+      await pluginPage.fillPluginForm(type);
+      await pluginPage.saveConfiguration();
 
-  // Delete example
-  const rows = await page.locator("tbody tr").all();
-  await pluginPage.deletePlugin(rows[0]);
+      // Assert
+      await pluginPage.assertPluginCreated(type);
+    }
+  });
+
+  test('Delete Besluiten API plugin', async () => {
+    // Act
+    await pluginPage.deletePlugin('Besluiten API');
+
+    // Assert
+    await pluginPage.assertPluginDeleted('Besluiten API');
+  });
 });
