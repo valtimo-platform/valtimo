@@ -104,5 +104,6 @@
             "type": "string",
             "description": "Portal taak informatie"
         }
-    }
+    },
+    "required": ["voornaam", "straatnaam"]
 }

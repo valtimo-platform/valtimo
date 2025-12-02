@@ -19,9 +19,13 @@ package com.ritense.buildingblock.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.buildingblock.processlink.dto.BuildingBlockFieldDto
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 
-class BuildingBlockFieldService {
+class BuildingBlockFieldService(
+    private val jsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository
+) {
 
     fun getFields(
         buildingBlockDefinitionId: BuildingBlockDefinitionId
@@ -40,8 +44,9 @@ class BuildingBlockFieldService {
     private fun resolveDocumentDefinition(
         buildingBlockDefinitionId: BuildingBlockDefinitionId
     ): JsonSchemaDocumentDefinition? {
-        // TODO: resolve the JsonSchemaDocumentDefinition for the given building block definition
-        return null
+        val documentDefinitionId =
+            JsonSchemaDocumentDefinitionId.forBuildingBlock(buildingBlockDefinitionId.key, buildingBlockDefinitionId)
+        return jsonSchemaDocumentDefinitionRepository.findById(documentDefinitionId).orElse(null)
     }
 
     private fun requiredPropertyNames(schema: JsonNode): Set<String> {

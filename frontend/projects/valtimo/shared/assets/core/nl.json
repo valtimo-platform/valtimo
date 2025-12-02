@@ -1814,7 +1814,20 @@
       "pluginLabel": "Plugin",
       "configurationPlaceholder": "Selecteer een configuratie",
       "versionLabel": "Kies bouwblokversie",
-      "versionPlaceholder": "Selecteer een versie"
+      "versionPlaceholder": "Selecteer een versie",
+      "inputTitle": "Input",
+      "outputTitle": "Sync",
+      "addInput": "Input toevoegen",
+      "addOutput": "Sync toevoegen",
+      "case": "Dossier",
+      "buildingBlock": "Bouwblok",
+      "targetPlaceholder": "Selecteer doel",
+      "outputSource": "Bouwblok-output",
+      "syncTiming": "Sync-moment",
+      "sync": {
+        "continuous": "Continu",
+        "end": "Aan het einde"
+      }
     }
   },
   "processLinkType": {
@@ -1852,7 +1865,10 @@
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
     "addSubtitle": "Ondertitel toevoegen",
-    "uiComponent": "Selecteer UI component"
+    "uiComponent": "Selecteer UI component",
+    "selectBuildingBlock": "Selecteer bouwblok",
+    "configureBuildingBlockPlugins": "Configureer plugin mappings",
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",

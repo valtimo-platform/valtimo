@@ -73,13 +73,13 @@ class BuildingBlockProcessLinkMapper(
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-                buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
-                buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
-                pluginConfigurationMappings = processLink.pluginConfigurationMappings,
-                inputMappings = processLink.inputMappings.toDto(),
-                outputMappings = processLink.outputMappings.toDto()
-            )
-        }
+            buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
+            buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
+            pluginConfigurationMappings = processLink.pluginConfigurationMappings,
+            inputMappings = processLink.inputMappings.toInputDto(),
+            outputMappings = processLink.outputMappings.toOutputDto()
+        )
+    }
     }
 
     override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
@@ -120,8 +120,8 @@ class BuildingBlockProcessLinkMapper(
                 buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
                 buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
                 pluginConfigurationMappings = processLink.pluginConfigurationMappings,
-                inputMappings = processLink.inputMappings.toDto(),
-                outputMappings = processLink.outputMappings.toDto()
+                inputMappings = processLink.inputMappings.toInputDto(),
+                outputMappings = processLink.outputMappings.toOutputDto()
             )
         }
     }
@@ -148,8 +148,8 @@ class BuildingBlockProcessLinkMapper(
                 createRequestDto.pluginConfigurationMappings,
                 buildingBlockDefinitionId
             ),
-            inputMappings = createRequestDto.inputMappings.toDomain(),
-            outputMappings = createRequestDto.outputMappings.toDomain()
+            inputMappings = createRequestDto.inputMappings.toInputDomain(),
+            outputMappings = createRequestDto.outputMappings.toOutputDomain()
         )
     }
 
@@ -178,8 +178,8 @@ class BuildingBlockProcessLinkMapper(
                     updateRequestDto.pluginConfigurationMappings,
                     buildingBlockDefinitionId
                 ),
-                inputMappings = updateRequestDto.inputMappings.toDomain(),
-                outputMappings = updateRequestDto.outputMappings.toDomain()
+                inputMappings = updateRequestDto.inputMappings.toInputDomain(),
+                outputMappings = updateRequestDto.outputMappings.toOutputDomain()
             )
         }
     }
@@ -222,10 +222,10 @@ class BuildingBlockProcessLinkMapper(
         return BuildingBlockDefinitionId.of(key, versionTag)
     }
 
-    private fun List<com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto>.toDomain(): List<BuildingBlockInputMapping> =
+    private fun List<com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto>.toInputDomain(): List<BuildingBlockInputMapping> =
         this.map { BuildingBlockInputMapping(source = it.source, target = it.target) }
 
-    private fun List<com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto>.toDomain(): List<BuildingBlockOutputMapping> =
+    private fun List<com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto>.toOutputDomain(): List<BuildingBlockOutputMapping> =
         this.map {
             BuildingBlockOutputMapping(
                 source = it.source,
@@ -234,10 +234,10 @@ class BuildingBlockProcessLinkMapper(
             )
         }
 
-    private fun List<BuildingBlockInputMapping>.toDto(): List<com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto> =
+    private fun List<BuildingBlockInputMapping>.toInputDto(): List<com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto> =
         this.map { com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto(source = it.source, target = it.target) }
 
-    private fun List<BuildingBlockOutputMapping>.toDto(): List<com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto> =
+    private fun List<BuildingBlockOutputMapping>.toOutputDto(): List<com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto> =
         this.map {
             com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto(
                 source = it.source,

@@ -15,9 +15,7 @@
  */
 
 import {NgModule} from '@angular/core';
-import {
-  FormLinkProcessDiagramComponent,
-} from './components/form-link-process-diagram/form-link-process-diagram.component';
+import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -34,17 +32,14 @@ import {
   TooltipIconModule,
   TooltipModule,
   ValtimoCdsModalDirective,
+  ValuePathSelectorComponent,
   VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  SelectPluginConfigurationComponent,
-} from './components/select-plugin-configuration/select-plugin-configuration.component';
+import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
-import {
-  PluginActionConfigurationComponent,
-} from './components/plugin-action-configuration/plugin-action-configuration.component';
+import {PluginActionConfigurationComponent} from './components/plugin-action-configuration/plugin-action-configuration.component';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
 import {
@@ -56,6 +51,7 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
+  RadioModule as CarbonRadioModule,
   SelectModule,
   StructuredListModule,
   TilesModule,
@@ -69,15 +65,12 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
 import {UrlValidatorService} from './services/url-validator.service';
 import {UrlResolverService} from './services/url-resolver.service';
-import {
-  FormDisplayConfigurationComponent,
-} from './components/form-display-configuration/form-display-configuration.component';
-import {
-  ImportPluginConfigurationComponent,
-} from './components/import-plugin-configuration/import-plugin-configuration.component';
+import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
+import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
 import {SelectUIComponentComponent} from './components/select-ui-component/select-ui-component.component';
 import {SelectBuildingBlockComponent} from './components/select-building-block';
 import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
+import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
 
 @NgModule({
   declarations: [
@@ -137,6 +130,9 @@ import {ConfigureBuildingBlockPluginsComponent} from './components/configure-bui
     RemoveClassnamesDirective,
     ReactiveFormsModule,
     InputLabelModule,
+    CarbonRadioModule,
+    ValuePathSelectorComponent,
+    ConfigureBuildingBlockMappingsComponent,
   ],
   exports: [
     ProcessLinkComponent,

@@ -1,0 +1,96 @@
+.section-header h4 {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.mapping-section {
+  margin-bottom: 16px;
+}
+
+.mapping-header {
+  display: grid;
+  align-items: center;
+}
+
+.mapping-row.input,
+.mapping-header.input {
+  grid-template-columns: 1fr 1fr;
+}
+
+.mapping-row.output,
+.mapping-header.output {
+  grid-template-columns: 5fr 6fr 5fr;
+}
+
+.mapping-row {
+  display: grid;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: var(--cds-layer);
+
+  .mapping-part {
+    display: flex;
+
+    ::ng-deep {
+      .cds--dropdown,
+      input {
+        background-color: var(--cds-layer-01);
+      }
+    }
+  }
+
+  .arrow {
+    text-align: center;
+    width: 40px;
+    line-height: 40px;
+    font-size: large;
+  }
+
+  .mapping-cell {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mapping-cell-actions {
+    display: flex;
+    align-self: flex-end;
+    text-transform: capitalize;
+    margin-left: 10px;
+
+    .required-indicator {
+      margin: 0 5px;
+      color: red;
+    }
+
+    button {
+      margin-bottom: 5px;
+    }
+  }
+
+  .sync-radio-group {
+    padding-left: 10px;
+    margin-top: 8px;
+
+    .sync-radio:first-child {
+      width: 80px;
+      margin-right: 0;
+    }
+
+    ::ng-deep {
+      .cds--radio-button__label {
+        justify-content: normal;
+      }
+    }
+  }
+}
+
+.mapping-header.output .sync-options {
+  padding-left: 10px;
+  display: flex;
+
+  v-input-label:first-child {
+    width: 80px;
+  }
+}
