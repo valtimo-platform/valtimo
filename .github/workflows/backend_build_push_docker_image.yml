@@ -15,6 +15,9 @@ on:
         description: "Tag of the Docker image that was built"
         value: ${{ jobs.build_image.outputs.image_tag }}
 
+env:
+  ORG_GRADLE_PROJECT_includeDev: false
+
 defaults:
   run:
     working-directory: backend
