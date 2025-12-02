@@ -95,9 +95,9 @@ class DocumentenApiAutoConfiguration {
         documentDeleteHandlers: List<DocumentDeleteHandler>,
         documentenApiVersionService: DocumentenApiVersionService,
         runtimeService: OperatonRuntimeService,
-        virusScanService: VirusScanService?,
-        @Value("\${valtimo.config.virusscan.DocumentenApiPlugin.enabled:false}")
-        documentenApiPluginVirusScanEnabled: Boolean,
+        virusScanService: VirusScanService,
+        @Value("\${valtimo.config.virusscan.clamav.DocumentenApiPlugin.enabled:true}")
+        virusScanEnabledForDocumentenApiPlugin: Boolean
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -108,8 +108,8 @@ class DocumentenApiAutoConfiguration {
             documentDeleteHandlers,
             documentenApiVersionService,
             runtimeService,
-            virusScanService?.takeIf { documentenApiPluginVirusScanEnabled },
-            documentenApiPluginVirusScanEnabled
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
     }
 

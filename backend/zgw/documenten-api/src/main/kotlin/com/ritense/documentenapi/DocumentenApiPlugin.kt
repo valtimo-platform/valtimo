@@ -55,11 +55,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ValidationException
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.hibernate.validator.constraints.Length
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.util.UriComponentsBuilder
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -81,8 +79,8 @@ class DocumentenApiPlugin(
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
-    private val virusScanService: VirusScanService? = null,
-    private val virusScanEnabledForDocumentenApiPlugin: Boolean = true,
+    private val virusScanService: VirusScanService,
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -321,7 +319,7 @@ class DocumentenApiPlugin(
     ): CreateDocumentResult {
         // Optional virus scan of the incoming content stream. Since InputStream is one-shot, buffer to bytes
         // when scanning and rebuild an InputStream for the actual upload.
-        val (contentInputStream, augmentedMetadata) = virusScanService?.takeIf { virusScanEnabledForDocumentenApiPlugin }?.let { svc ->
+        val (contentInputStream, augmentedMetadata) = virusScanService.takeIf { virusScanEnabledForDocumentenApiPlugin }?.let { svc ->
             val existingScanFlag = metadata[MetadataType.VIRUS_SCANNED_RESULT.key]?.toString()
             if (existingScanFlag == VirusScanStatus.OK.toString()) {
                 // Already scanned and marked OK in metadata; skip scanning

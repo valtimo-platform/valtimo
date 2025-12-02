@@ -58,11 +58,10 @@ class TemporaryResourceStorageService(
     private val uploadProperties: ValtimoUploadProperties,
     private val objectMapper: ObjectMapper,
     private val repository: ResourceStorageMetadataRepository,
-    private val virusScanService: VirusScanService? = null
+    private val virusScanService: VirusScanService,
+    private val virusScanEnabledForTemporaryStorage: Boolean = true
 ) {
 
-    @Value("\${valtimo.config.virusscan.clamav.TemporaryResourceStorageService.enabled:true}")
-    private val virusScanEnabledForTemporaryStorage: Boolean = true
 
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
@@ -76,7 +75,7 @@ class TemporaryResourceStorageService(
 
     fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
 
-        val (inputStream, virusScanResult) = virusScanService?.takeIf { virusScanEnabledForTemporaryStorage }?.let { svc ->
+        val (inputStream, virusScanResult) = virusScanService.takeIf { virusScanEnabledForTemporaryStorage }?.let { svc ->
             val bytes: ByteArray = inputStream.readBytes()
             val virusScanResult = svc.scan(bytes)
 

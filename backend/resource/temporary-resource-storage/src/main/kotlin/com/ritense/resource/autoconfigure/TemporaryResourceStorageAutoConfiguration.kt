@@ -53,14 +53,17 @@ class TemporaryResourceStorageAutoConfiguration {
         uploadProperties: ValtimoUploadProperties,
         objectMapper: ObjectMapper,
         repository: ResourceStorageMetadataRepository,
-        virusScanService: VirusScanService?
+        @Value("\${valtimo.config.virusscan.clamav.TemporaryResourceStorageService.enabled:true}")
+        virusScanEnabledForTemporaryStorage: Boolean,
+        virusScanService: VirusScanService
     ): TemporaryResourceStorageService {
         return TemporaryResourceStorageService(
             valtimoResourceTempDirectory = valtimoResourceTempDirectory,
             uploadProperties = uploadProperties,
             objectMapper = objectMapper,
             repository = repository,
-            virusScanService = virusScanService
+            virusScanService = virusScanService,
+            virusScanEnabledForTemporaryStorage = virusScanEnabledForTemporaryStorage
         )
     }
 
