@@ -32,15 +32,43 @@ import {CommonModule} from '@angular/common';
 import type {Content} from 'vanilla-jsoneditor';
 import {createJSONEditor} from 'vanilla-jsoneditor';
 import Ajv from 'ajv';
-import {ButtonModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  CheckboxModule,
+  DialogModule,
+  IconModule,
+  InputModule,
+  TagModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 
+interface SchemaPropertyEntry {
+  path: string; // e.g. "contactmomenten[].kanaal"
+  label: string; // e.g. "contactmomenten → kanaal"
+  required: boolean; // whether it's currently required
+}
+
+interface ParentSchemaResult {
+  parent: any;
+  key: string;
+}
+
 @Component({
   selector: 'valtimo-schema-editor',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TranslatePipe, ConfirmationModalModule],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    TranslatePipe,
+    ConfirmationModalModule,
+    DialogModule,
+    CheckboxModule,
+    IconModule,
+    InputModule,
+    TagModule,
+  ],
   templateUrl: './schema-editor.component.html',
   styleUrl: './schema-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,6 +95,8 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   private _modifiedValue: string = '';
+
+  public readonly requiredProperties$ = new BehaviorSubject<SchemaPropertyEntry[]>([]);
 
   constructor(private readonly zone: NgZone) {}
 
@@ -99,6 +129,8 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
             this.changeEvent.emit(text);
             this._modifiedValue = text;
+
+            this.rebuildRequiredList(text);
           });
         },
       },
@@ -139,19 +171,130 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.saveEvent.emit(this._modifiedValue);
   }
 
-  private toggleRequired(property: string, makeRequired: boolean): void {
-    let schema = JSON.parse(this._modifiedValue || this.schemaJson);
+  public onRequiredToggle(entry: SchemaPropertyEntry, checked: boolean): void {
+    if (this.disabled) return;
 
-    if (!schema.required) schema.required = [];
+    let schema: any;
+    try {
+      schema = JSON.parse(this._modifiedValue || this.schemaJson);
+    } catch {
+      return;
+    }
 
-    const idx = schema.required.indexOf(property);
+    this.updateRequiredForPath(schema, entry.path, checked);
 
-    if (makeRequired && idx === -1) schema.required.push(property);
-    if (!makeRequired && idx !== -1) schema.required.splice(idx, 1);
+    const text = JSON.stringify(schema, null, 2);
 
-    this._modifiedValue = JSON.stringify(schema, null, 2);
-    this._editor.updateProps({content: {text: this._modifiedValue}});
-    this.changeEvent.emit(this._modifiedValue);
+    // Push back into the editor
+    this._editor.updateProps({content: {text}});
+    this._modifiedValue = text;
+    this.changeEvent.emit(text);
+
+    const valid = Boolean(this._ajv.validateSchema(schema));
+    this.valid$.next(valid);
+    this.validEvent.emit(valid);
+
+    this.rebuildRequiredList(text);
+  }
+
+  public collectSchemaProperties(schema: any, basePath = ''): SchemaPropertyEntry[] {
+    const result: SchemaPropertyEntry[] = [];
+
+    if (!schema || typeof schema !== 'object') return result;
+
+    const isObject = schema.type === 'object' || schema.properties;
+    if (!isObject || !schema.properties) return result;
+
+    const requiredSet = new Set<string>(schema.required || []);
+
+    Object.entries<any>(schema.properties).forEach(([key, propSchema]) => {
+      const currentPath = basePath ? `${basePath}.${key}` : key;
+      const label = currentPath.replace(/\.\[\]/g, '[]').replace(/\./g, ' → ');
+      const isRequired = requiredSet.has(key);
+
+      result.push({
+        path: currentPath,
+        label,
+        required: isRequired,
+      });
+
+      // Nested object
+      if (propSchema && typeof propSchema === 'object') {
+        if (propSchema.type === 'object' || propSchema.properties) {
+          result.push(...this.collectSchemaProperties(propSchema, currentPath));
+        }
+
+        // Array of objects
+        if (propSchema.type === 'array' && propSchema.items) {
+          const itemsBasePath = `${currentPath}[]`;
+          result.push(...this.collectSchemaProperties(propSchema.items, itemsBasePath));
+        }
+      }
+    });
+
+    return result;
+  }
+
+  public findParentSchemaForPath(rootSchema: any, path: string): ParentSchemaResult | null {
+    if (!rootSchema || typeof rootSchema !== 'object') return null;
+
+    const segments = path.split('.');
+    if (segments.length === 0) return null;
+
+    // Last segment is the property name (may be something like "field" or "field[]")
+    const lastSegment = segments[segments.length - 1];
+    const key = lastSegment.endsWith('[]') ? lastSegment.slice(0, -2) : lastSegment;
+
+    let parent: any = rootSchema;
+
+    // Walk all but last segment to find the parent schema node
+    for (let i = 0; i < segments.length - 1; i++) {
+      const seg = segments[i];
+      const isArraySeg = seg.endsWith('[]');
+      const name = isArraySeg ? seg.slice(0, -2) : seg;
+
+      if (!parent.properties || !parent.properties[name]) {
+        return null;
+      }
+
+      const next = parent.properties[name];
+
+      if (isArraySeg) {
+        parent = next.items ?? next;
+      } else {
+        parent = next;
+      }
+
+      if (!parent || typeof parent !== 'object') {
+        return null;
+      }
+    }
+
+    return {parent, key};
+  }
+
+  public updateRequiredForPath(rootSchema: any, path: string, makeRequired: boolean): any {
+    const result = this.findParentSchemaForPath(rootSchema, path);
+    if (!result) return rootSchema;
+
+    const {parent, key} = result;
+
+    const existing = Array.isArray(parent.required) ? [...parent.required] : [];
+    const idx = existing.indexOf(key);
+
+    if (makeRequired && idx === -1) {
+      existing.push(key);
+    } else if (!makeRequired && idx !== -1) {
+      existing.splice(idx, 1);
+    }
+
+    if (existing.length > 0) {
+      parent.required = existing;
+    } else {
+      delete parent.required;
+    }
+
+    return rootSchema;
   }
 
   public isRequired(property: string): boolean {
@@ -169,6 +312,16 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
       return schema?.properties ? Object.keys(schema.properties) : [];
     } catch {
       return [];
+    }
+  }
+
+  private rebuildRequiredList(schemaText: string): void {
+    try {
+      const schema = JSON.parse(schemaText);
+      const props = this.collectSchemaProperties(schema);
+      this.requiredProperties$.next(props);
+    } catch {
+      this.requiredProperties$.next([]);
     }
   }
 }
