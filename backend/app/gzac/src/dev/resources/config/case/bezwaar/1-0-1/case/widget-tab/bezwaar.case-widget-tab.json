@@ -8,6 +8,7 @@
                 "title": "Aanvrager",
                 "width": 1,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
@@ -49,6 +50,7 @@
                 "title": "Zaken",
                 "width": 4,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
                     "collection": "iko:/lopende_zaken?ikoViewKey=demo&id=999990755",
                     "defaultPageSize": 4,

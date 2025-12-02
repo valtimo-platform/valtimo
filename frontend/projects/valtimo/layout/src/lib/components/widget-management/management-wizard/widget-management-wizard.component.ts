@@ -25,7 +25,6 @@ import {
   OnDestroy,
   Output,
   Signal,
-  signal,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
@@ -42,6 +41,7 @@ import {
 } from 'carbon-components-angular';
 import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
 import {
+  WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
@@ -97,16 +97,16 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     toObservable(this.widgetWizardService.$selectedWidget),
     toObservable(this.widgetWizardService.$widgetWidth),
     toObservable(this.widgetWizardService.$widgetStyle),
+    toObservable(this.widgetWizardService.$widgetDensity),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedStyle]) => {
+    map(([selectedWidget, selectedWidth, selectedStyle, selectedDensity]) => {
       const type = selectedWidget?.type ?? '';
-      const width = selectedWidth ?? '';
-      const style = selectedStyle ?? '';
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
-        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[width] ?? '',
-        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[style] ?? '',
+        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
+        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle ?? ''] ?? '',
+        [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
       };
     })
   );
@@ -114,19 +114,44 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   public readonly steps$: Observable<Step[]> = combineLatest([
     toObservable(this.widgetWizardService.$widgetWizardSteps),
     toObservable(this.widgetWizardService.$widgetWizardStepProperties),
+    toObservable(this.widgetWizardService.$widgetWizardStepEnableCondition),
     this.secondaryLabels$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([steps, stepProperties, secondaryLabels]) =>
-      steps.map((step: WidgetWizardStep) => ({
-        label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
-        ...(!!secondaryLabels[step] && {
-          secondaryLabel: this.translateService.instant(secondaryLabels[step]),
-        }),
-        disabled: stepProperties[step]?.disabled,
-        complete: stepProperties[step]?.complete,
-      }))
-    )
+    map(([steps, stepProperties, stepEnableConditions, secondaryLabels]) => {
+      return steps.reduce<Step[] & {__blocked?: boolean}>(
+        (acc, step) => {
+          if (acc.__blocked) return acc;
+
+          const enableMeta = stepEnableConditions[step];
+
+          if (enableMeta) {
+            const {dependingStep, condition} = enableMeta;
+            const dependingComplete = !!stepProperties[dependingStep]?.complete;
+
+            if (!dependingComplete) {
+              acc.push({label: '', disabled: true, complete: false});
+              acc.__blocked = true;
+              return acc;
+            }
+            if (!condition()) return acc;
+          }
+
+          const stepConfig: Step = {
+            label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
+            disabled: stepProperties[step]?.disabled,
+            complete: stepProperties[step]?.complete,
+            ...(!!secondaryLabels[step] && {
+              secondaryLabel: this.translateService.instant(secondaryLabels[step]),
+            }),
+          };
+
+          acc.push(stepConfig);
+          return acc;
+        },
+        [] as Step[] & {__blocked?: boolean}
+      );
+    })
   );
 
   public readonly $currentStepIndex = this.widgetWizardService.$currentStepIndex;
