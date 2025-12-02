@@ -36,7 +36,8 @@ class DocumentenApiPluginFactory(
     private val documentDeleteHandlers: List<DocumentDeleteHandler>,
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val runtimeService: OperatonRuntimeService,
-    private val virusScanService: VirusScanService?
+    private val virusScanService: VirusScanService?,
+    private val documentenApiPluginVirusScanEnabled: Boolean,
 ) : PluginFactory<DocumentenApiPlugin>(pluginService) {
 
     override fun create(): DocumentenApiPlugin {
@@ -49,7 +50,8 @@ class DocumentenApiPluginFactory(
             documentenApiVersionService,
             pluginService,
             runtimeService,
-            virusScanService
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin = documentenApiPluginVirusScanEnabled
         )
     }
 }

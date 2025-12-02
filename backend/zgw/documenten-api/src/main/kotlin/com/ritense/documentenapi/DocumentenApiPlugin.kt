@@ -82,8 +82,7 @@ class DocumentenApiPlugin(
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
     private val virusScanService: VirusScanService? = null,
-    @Value("\${valtimo.config.virusscan.clamav.DocumentenApiPlugin.enabled:true}")
-    private val virusScanEnabledForDocumentenApiPlugin: Boolean = true
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean = true,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
