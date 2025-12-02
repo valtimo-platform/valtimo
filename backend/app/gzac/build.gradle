@@ -1,6 +1,7 @@
 import cz.habarta.typescript.generator.DateMapping
 import cz.habarta.typescript.generator.JsonLibrary
 import cz.habarta.typescript.generator.TypeScriptOutputKind
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 plugins {
     id 'war'
