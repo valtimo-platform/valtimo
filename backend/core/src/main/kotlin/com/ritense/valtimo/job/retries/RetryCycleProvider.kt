@@ -30,10 +30,6 @@ class RetryCycleProvider(val config: RetryConfiguration) {
         standardRetryCycles[DEFAULT] = "R3/PT1M,PT30M,PT2H"
         standardRetryCycles[QUICK] = "R3/PT30S,PT2M,PT10M"
         standardRetryCycles[CRITICAL] = "R5/PT1M,PT15M,PT4H,PT24H,PT48H"
-        standardRetryCycles[DATABASE] = "R4/PT10S,PT1M,PT5M,PT15M" // For connection/lock issues
-        standardRetryCycles[EMAIL] = "R3/PT5M,PT20M,PT1H" // For SMTP delivery issues
-        standardRetryCycles[WEB_SERVICE] = "R4/PT30S,PT3M,PT8M,PT10M" // For HTTP timeouts/5xx errors
-        standardRetryCycles[FILE_TRANSFER] = "R3/PT1M,PT15M,PT1H" // For upload/download issues
 
         logger.info { "Standard retry cycles: $standardRetryCycles"}
     }
@@ -60,22 +56,6 @@ class RetryCycleProvider(val config: RetryConfiguration) {
         return getCycle(CRITICAL)
     }
 
-    fun database(): String {
-        return getCycle(DATABASE)
-    }
-
-    fun email(): String {
-        return getCycle(EMAIL)
-    }
-
-    fun webService(): String {
-        return getCycle(WEB_SERVICE)
-    }
-
-    fun fileTransfer(): String {
-        return getCycle(FILE_TRANSFER)
-    }
-
     fun custom(name: String): String? {
        return  config.getCycle(name)
     }
@@ -95,9 +75,5 @@ class RetryCycleProvider(val config: RetryConfiguration) {
         const val DEFAULT = "default"
         const val QUICK = "quick"
         const val CRITICAL = "critical"
-        const val DATABASE = "database"
-        const val EMAIL = "email"
-        const val WEB_SERVICE = "web-service"
-        const val FILE_TRANSFER = "file-transfer"
     }
 }
