@@ -41,7 +41,6 @@ import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService

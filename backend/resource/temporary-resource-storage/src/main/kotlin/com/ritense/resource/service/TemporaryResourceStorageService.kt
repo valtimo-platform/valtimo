@@ -33,7 +33,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.tika.Tika
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.beans.factory.annotation.Value
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -111,7 +110,6 @@ class TemporaryResourceStorageService(
                 put(MetadataType.VIRUS_SCANNED_RESULT.key, it.status.toString())
             }
         }.toMap()
-1
         writeMetaDataFile(metaDataFile, metaDataContent)
 
         return metaDataFile.nameWithoutExtension

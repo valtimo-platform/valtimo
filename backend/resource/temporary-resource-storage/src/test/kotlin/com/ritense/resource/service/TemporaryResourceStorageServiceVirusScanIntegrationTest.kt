@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import com.ritense.resource.BaseIntegrationTest
 import com.ritense.resource.domain.VirusScanResult
-import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.TestInstance
