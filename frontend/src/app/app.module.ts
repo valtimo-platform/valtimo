@@ -17,10 +17,15 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpBackend, HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
@@ -39,7 +44,6 @@ import {
   WidgetModule,
 } from '@valtimo/components';
 import {
-  CASE_TAB_TOKEN,
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
   CaseDetailTabNotesComponent,
@@ -50,27 +54,20 @@ import {
 } from '@valtimo/case';
 import {ProcessModule} from '@valtimo/process';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
-import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
 import {DashboardModule} from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {DocumentModule} from '@valtimo/document';
 import {AccountModule} from '@valtimo/account';
 import {ChoiceFieldModule} from '@valtimo/choice-field';
 import {ResourceModule} from '@valtimo/resource';
-import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
-import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
-import {CustomCaseTabComponent} from './custom-case-tab/custom-case-tab.component';
-import {NotificationTestComponent} from './notification-test/notification-test.component';
-import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
 import {AnalyseModule} from '@valtimo/analyse';
 import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {FORM_CUSTOM_COMPONENT_TOKEN, FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule} from '@valtimo/process-link';
+import {ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {
@@ -120,15 +117,14 @@ import {ObjectManagementModule} from '@valtimo/object-management';
 import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
-import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {CaseDetailTabZaakobjectenComponent, registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
 import {IkoModule} from '@valtimo/iko';
+import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -137,22 +133,12 @@ export function tabsFactory() {
     [DefaultTabs.audit, CaseDetailTabAuditComponent],
     [DefaultTabs.documents, CaseDetailTabDocumentsComponent],
     [DefaultTabs.notes, CaseDetailTabNotesComponent],
-    ['custom-maps', CustomMapsTabComponent],
-    ['custom-dossier', CustomCaseTabComponent],
+    ...(environment.production ? [] : devTabs),
   ]);
 }
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    CustomFormExampleComponent,
-    StartProcessCustomFormComponent,
-    FormioComponent,
-    UploadShowcaseComponent,
-    CustomCaseTabComponent,
-    CustomMapsTabComponent,
-    NotificationTestComponent,
-  ],
+  declarations: [AppComponent, ...(environment.production ? [] : devDeclarations)],
   bootstrap: [AppComponent],
   imports: [
     CommonModule,
@@ -215,7 +201,6 @@ export function tabsFactory() {
     ObjectManagementModule,
     AccessControlManagementModule,
     TranslationManagementModule,
-    CustomFormFlowComponent,
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
@@ -225,11 +210,11 @@ export function tabsFactory() {
     WidgetModule,
     IkoPluginModule,
     IkoModule,
-    BuildingBlockManagementModule
+    BuildingBlockManagementModule,
+    ...(environment.production ? [] : devImports),
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
-    FormioComponent,
     {
       provide: PLUGINS_TOKEN,
       useValue: [
@@ -250,34 +235,7 @@ export function tabsFactory() {
         verzoekPluginSpecification,
       ],
     },
-    {
-      provide: CASE_TAB_TOKEN,
-      useValue: {
-        'custom-dossier-tab': CustomCaseTabComponent,
-        zaakobjecten: CaseDetailTabZaakobjectenComponent,
-      },
-    },
-    {
-      provide: FORM_FLOW_COMPONENT_TOKEN,
-      useValue: [
-        {
-          id: 'test-component',
-          component: CustomFormFlowComponent,
-        },
-      ],
-    },
-    {
-      provide: CUSTOM_WIDGET_TOKEN,
-      useValue: {
-        caseWidgetComponent: CustomCaseTabComponent,
-      },
-    },
-    {
-      provide: FORM_CUSTOM_COMPONENT_TOKEN,
-      useValue: {
-        dummy: CustomFormComponent,
-      },
-    },
+    ...(environment.production ? [] : devProviders),
   ],
 })
 export class AppModule {

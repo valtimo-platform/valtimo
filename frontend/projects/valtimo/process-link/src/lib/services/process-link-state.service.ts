@@ -21,7 +21,6 @@ import {
   ProcessLink,
   ProcessLinkCreateEvent,
   ProcessLinkDeleteEvent,
-  ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
 } from '../models';
@@ -45,9 +44,6 @@ export class ProcessLinkStateService implements OnDestroy {
   private readonly _saving$ = new BehaviorSubject<boolean>(false);
   private readonly _modalParams$ = new BehaviorSubject<ModalParams>(undefined);
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
-  private readonly _processLinkEditMode$ = new BehaviorSubject<ProcessLinkEditMode>(
-    ProcessLinkEditMode.SAVE_TO_BACKEND
-  );
   private readonly _processLinkUpdateEvents$ = new Subject<ProcessLinkUpdateEvent>();
   private readonly _processLinkCreateEvents$ = new Subject<ProcessLinkCreateEvent>();
   private readonly _processLinkDeleteEvents$ = new Subject<ProcessLinkDeleteEvent>();
@@ -110,9 +106,6 @@ export class ProcessLinkStateService implements OnDestroy {
   }
   public get typeOfSelectedProcessLink$(): Observable<string> {
     return this.selectedProcessLink$.pipe(map(processLink => processLink?.processLinkType || ''));
-  }
-  public get processLinkEditMode(): ProcessLinkEditMode {
-    return this._processLinkEditMode$.getValue();
   }
   public get viewModelEnabled$(): Observable<boolean> {
     return this._viewModelEnabled$.asObservable();
@@ -219,10 +212,6 @@ export class ProcessLinkStateService implements OnDestroy {
     this._selectedProcessLink$.next(undefined);
     this.pluginStateService.deselectProcessLink();
     this.resetBuildingBlockState();
-  }
-
-  public setEditMode(editMode: ProcessLinkEditMode): void {
-    this._processLinkEditMode$.next(editMode);
   }
 
   public sendProcessLinkUpdateEvent(event: ProcessLinkUpdateEvent): void {

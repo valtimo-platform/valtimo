@@ -62,9 +62,9 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     map(([processDefinitions]) =>
       processDefinitions.map(definition => ({
         ...definition,
-        mainText: this.translateService.instant(
-          'buildingBlockManagement.processDefinition.mainText'
-        ),
+        mainText:
+          definition.main &&
+          this.translateService.instant('buildingBlockManagement.processDefinition.mainText'),
       }))
     )
   );

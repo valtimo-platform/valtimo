@@ -55,9 +55,18 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                         )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/import")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/artwork"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            GET,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/main/key"
+                        )
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -242,6 +242,26 @@ class BuildingBlockDefinitionProcessDefinitionService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getMainProcessDefinitionKey(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String
+    ): String? {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        val links = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+
+        val mainLink = links.firstOrNull { it.main } ?: return null
+
+        return mainLink.processDefinitionKey
+    }
+
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         currentProcessDefinitionId: String
@@ -324,10 +344,9 @@ class BuildingBlockDefinitionProcessDefinitionService(
         val bpmnModelInstance =
             operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(deployedProcessDefinitionId)
 
-        operatonProcessService.setProcessesVersionTag(
+        operatonProcessService.setBuildingBlockDefinitionProcessesVersionTags(
             bpmnModelInstance,
-            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId,
-            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.key
+            buildingBlockDefinitionId
         )
     }
 

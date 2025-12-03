@@ -19,7 +19,6 @@ package com.ritense.valtimo.autoconfiguration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.valtimo.ValtimoApplicationPropertyService
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionProcessDefinitionMapper
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionSpecificationFactory
 import com.ritense.valtimo.operaton.authorization.OperatonIdentityLinkSpecificationFactory
@@ -45,7 +44,6 @@ import com.ritense.valtimo.contract.config.ValtimoProperties
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper
-import com.ritense.valtimo.repository.ValtimoApplicationPropertyRepository
 import com.ritense.valtimo.security.DecisionHttpSecurityConfigurer
 import com.ritense.valtimo.service.OperatonByteArrayService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -190,12 +188,6 @@ class ValtimoOperatonAutoConfiguration {
     fun operatonTaskIdentityLinkMapper(): OperatonTaskIdentityLinkMapper {
         return OperatonTaskIdentityLinkMapper()
     }
-
-    @Bean
-    fun valtimoApplicationPropertyService(
-        repository: ValtimoApplicationPropertyRepository,
-        valtimoProperties: ValtimoProperties
-    ): ValtimoApplicationPropertyService = ValtimoApplicationPropertyService(repository, valtimoProperties)
 
     @Bean
     @Order(350)

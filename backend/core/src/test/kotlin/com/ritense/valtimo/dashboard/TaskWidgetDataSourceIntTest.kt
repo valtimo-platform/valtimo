@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.document.dashboard
+package com.ritense.valtimo.dashboard
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.repository.ExpressionOperator
-import com.ritense.valtimo.dashboard.TaskCountDataSourceProperties
-import com.ritense.valtimo.dashboard.TaskWidgetDataSource
 import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.task.Task
 import org.junit.jupiter.api.BeforeEach
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -51,6 +51,7 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should count amount of tasks`() {
         val expectedCount = 3
 
@@ -67,6 +68,7 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should count amount of tasks with criteria`() {
         val defaultTasks = 2
 
@@ -88,8 +90,25 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
         assertThat(result.total).isEqualTo(3.toLong())
     }
 
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.USER])
+    fun `as user should count amount of tasks with criteria`() {
+        val defaultTasks = 2
+
+        repeat(defaultTasks) {
+            createTask()
+        }
+
+        val dataSourceProperties: TaskCountDataSourceProperties = mock()
+
+        val result = taskWidgetDataSource.getTaskCount(dataSourceProperties)
+
+        assertThat(result.value).isEqualTo(0.toLong())
+        assertThat(result.total).isEqualTo(0.toLong())
+    }
 
     @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should filter out null values`() {
         val defaultTasks = 2
 
@@ -112,6 +131,7 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should handle local date time now filter`() {
         createTask()
 
@@ -136,6 +156,7 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should support current user criteria`() {
         createTask(mockedUserId)
         createTask(mockedUserEmail)
@@ -182,14 +203,13 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
         assertThat(result3.total).isEqualTo(3)
     }
 
-
     private fun createTask(
         name: String? = "Test",
         assignee: String = defaultAssignee,
     ) {
         val task: Task = operatonTaskService.newTask()
-        task.setName(name)
-        task.setAssignee(assignee)
+        task.name = name
+        task.assignee = assignee
 
         operatonTaskService.saveTask(task)
     }

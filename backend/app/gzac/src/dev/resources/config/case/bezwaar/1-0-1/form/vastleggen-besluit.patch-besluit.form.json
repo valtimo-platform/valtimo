@@ -1,0 +1,176 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "retrievedBesluitData",
+            "tag": "div",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Retrieved besluit data",
+            "content": "<h4>Retrieved besluit data</h4>",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "pv:besluit",
+            "type": "container",
+            "input": true,
+            "label": "Besluit data",
+            "tableView": false,
+            "attributes": {
+                "data-testid": "vastleggen-besluit.patch-besluit-pv:besluit"
+            },
+            "components": [
+                {
+                    "key": "url",
+                    "type": "textfield",
+                    "input": true,
+                    "label": "URL",
+                    "disabled": true,
+                    "tableView": true,
+                    "attributes": {
+                        "data-testid": "vastleggen-besluit.patch-besluit-url"
+                    }
+                },
+                {
+                    "key": "datum",
+                    "type": "textfield",
+                    "input": true,
+                    "label": "Beslisdatum",
+                    "disabled": true,
+                    "tableView": true,
+                    "attributes": {
+                        "data-testid": "vastleggen-besluit.patch-besluit-datum"
+                    },
+                    "enableDate": true,
+                    "enableTime": false
+                },
+                {
+                    "key": "toelichting",
+                    "type": "textfield",
+                    "input": true,
+                    "label": "Toelichting",
+                    "disabled": true,
+                    "tableView": true,
+                    "attributes": {
+                        "data-testid": "vastleggen-besluit.patch-besluit-toelichting"
+                    }
+                },
+                {
+                    "key": "vervaldatum",
+                    "type": "textfield",
+                    "input": true,
+                    "label": "Vervaldatum",
+                    "disabled": true,
+                    "tableView": true,
+                    "attributes": {
+                        "data-testid": "vastleggen-besluit.patch-besluit-vervaldatum"
+                    }
+                },
+                {
+                    "key": "vervalreden",
+                    "type": "textfield",
+                    "input": true,
+                    "label": "Vervalreden",
+                    "disabled": true,
+                    "tableView": true,
+                    "attributes": {
+                        "data-testid": "vastleggen-besluit.patch-besluit-vervalreden"
+                    }
+                }
+            ]
+        },
+        {
+            "key": "patchData",
+            "tag": "div",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Patch data",
+            "content": "<h4>Besluit properties to patch</h4>",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "pv.beslisdatum",
+            "type": "datetime",
+            "input": true,
+            "label": "Beslisdatum",
+            "format": "yyyy-MM-dd",
+            "widget": {
+                "mode": "single",
+                "type": "calendar",
+                "format": "yyyy-MM-dd",
+                "locale": "en",
+                "maxDate": null,
+                "minDate": null,
+                "time_24hr": true,
+                "allowInput": true,
+                "enableTime": false,
+                "noCalendar": false,
+                "hourIncrement": 1,
+                "disableWeekdays": false,
+                "disableWeekends": false,
+                "minuteIncrement": 1,
+                "displayInTimezone": "viewer",
+                "useLocaleSettings": false
+            },
+            "tableView": false,
+            "attributes": {
+                "data-testid": "vastleggen-besluit.patch-besluit-pv.beslisdatum"
+            },
+            "datePicker": {
+                "disableWeekdays": false,
+                "disableWeekends": false
+            },
+            "enableTime": false,
+            "timePicker": {
+                "showMeridian": false
+            },
+            "defaultDate": "moment()",
+            "enableMaxDateInput": false,
+            "enableMinDateInput": false,
+            "validateWhenHidden": false
+        },
+        {
+            "key": "pv.toelichting",
+            "type": "textfield",
+            "input": true,
+            "label": "Toelichting",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "vastleggen-besluit.patch-besluit-pv.toelichting"
+            },
+            "defaultValue": "Toelichting-2"
+        },
+        {
+            "key": "pv.vervaldatum",
+            "type": "textfield",
+            "input": true,
+            "label": "Vervaldatum",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "vastleggen-besluit.patch-besluit-pv.vervaldatum"
+            },
+            "defaultValue": "2025-11-14"
+        },
+        {
+            "key": "pv.vervalreden",
+            "type": "textfield",
+            "input": true,
+            "label": "Vervalreden",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "vastleggen-besluit.patch-besluit-pv.vervalreden"
+            },
+            "defaultValue": "ingetrokken_overheid"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "showValidations": false
+        }
+    ]
+}

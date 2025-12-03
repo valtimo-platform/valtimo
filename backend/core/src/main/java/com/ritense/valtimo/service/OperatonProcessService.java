@@ -36,6 +36,7 @@ import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.event.ProcessDefinitionDeleted;
@@ -106,7 +107,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class OperatonProcessService {
     private static final String UNDEFINED_BUSINESS_KEY = "UNDEFINED_BUSINESS_KEY";
-    private static final String SYSTEM_PROCESS_PROPERTY = "systemProcess";
     private static final Logger logger = LoggerFactory.getLogger(OperatonProcessService.class);
 
     private final RuntimeService runtimeService;
@@ -510,13 +510,9 @@ public class OperatonProcessService {
                 throw new ProcessNotDeployableException(fileName);
             }
 
-            if (solutionModuleId != null) {
-                setProcessesVersionTag(
-                    bpmnModel,
-                    solutionModuleId.getTagPrefix() + solutionModuleId,
-                    solutionModuleId.getTagPrefix() + solutionModuleId.getIdKey()
-                );
-            }
+            updateCaseDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
+            updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
+
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
             setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
@@ -691,53 +687,123 @@ public class OperatonProcessService {
         }
     }
 
-    public void setProcessesVersionTag(
-        BpmnModelInstance bpmnModel,
-        String versionTagWithKeyAndVersion,
-        String versionTagWithKeyOnly
-    ) {
-        denyAuthorization();
-
+     public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
-                process.setOperatonVersionTag(versionTagWithKeyAndVersion);
+                process.setOperatonVersionTag(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString());
             }
         );
 
-        bpmnModel.getModelElementsByType(CallActivity.class).forEach(
-            callActivity -> {
-                var elementBinding = callActivity.getOperatonCalledElementBinding();
-                if (
-                    elementBinding == null ||
-                        (
-                            callActivity.getOperatonCalledElementVersionTag() != null &&
-                                callActivity.getOperatonCalledElementVersionTag()
-                                    .startsWith(versionTagWithKeyOnly)
-                        )
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
+            );
+        });
 
-                ) {
-                    callActivity.setOperatonCalledElementBinding("versionTag");
-                    callActivity.setOperatonCalledElementVersionTag(versionTagWithKeyAndVersion);
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()            );
+        });
+    }
+
+    void updateCaseDefinitionProcessesVersionTags(
+        BpmnModelInstance bpmnModel,
+        @Nullable SolutionModuleId solutionModuleId
+    ) {
+        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
+            setCaseDefinitionProcessesVersionTags(bpmnModel, (CaseDefinitionId) solutionModuleId);
+        } else {
+            clearCaseDefinitionProcessesVersionTags(bpmnModel);
+        }
+    }
+
+    void updateBuildingBlockDefinitionProcessesVersionTags(
+        BpmnModelInstance bpmnModel,
+        @Nullable SolutionModuleId solutionModuleId
+    ) {
+        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) {
+            setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, (BuildingBlockDefinitionId) solutionModuleId);
+        }
+    }
+
+    private void setCaseDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
+        bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
+            process -> {
+                process.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString());
+            }
+        );
+
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            String binding = callActivity.getOperatonCalledElementBinding();
+            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+
+            CaseDefinitionId existingCaseDefinitionId =
+                CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+            // we skip when a binding is already set and the existing version tag is present, but it does not represent a case definition version tag.
+            if (binding != null && (existingVersionTag != null && existingCaseDefinitionId == null)) {
+                return;
+            }
+
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId
+            );
+        });
+
+        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            String binding = callActivity.getOperatonCalledElementBinding();
+            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+
+            CaseDefinitionId existingCaseDefinitionId =
+                CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+            // we skip when a binding is already set and the existing version tag is present, but it does not represent a case definition version tag.
+            if (binding != null && (existingVersionTag != null && existingCaseDefinitionId == null)) {
+                return;
+            }
+
+            callActivity.setOperatonCalledElementBinding("versionTag");
+            callActivity.setOperatonCalledElementVersionTag(
+                OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId
+            );
+        });
+    }
+
+    private void clearCaseDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel) {
+        bpmnModel.getDefinitions().getChildElementsByType(Process.class)
+            .forEach(process -> {
+                String existingVersionTag = process.getOperatonVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    process.setOperatonVersionTag(null);
                 }
-            }
-        );
+            });
 
-        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(
-            businessRuleTask -> {
-                var elementBinding = businessRuleTask.getOperatonDecisionRefBinding();
-                if (
-                    elementBinding == null ||
-                        (
-                            businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
-                                businessRuleTask.getOperatonDecisionRefVersionTag()
-                                    .startsWith(versionTagWithKeyOnly)
-                        )
-                ) {
-                    businessRuleTask.setOperatonDecisionRefBinding("versionTag");
-                    businessRuleTask.setOperatonDecisionRefVersionTag(versionTagWithKeyAndVersion);
+        bpmnModel.getModelElementsByType(CallActivity.class)
+            .forEach(callActivity -> {
+                String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    callActivity.setOperatonCalledElementBinding(null);
+                    callActivity.setOperatonCalledElementVersionTag(null);
                 }
-            }
-        );
+            });
+
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class)
+            .forEach(businessRuleTask -> {
+                String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
+                CaseDefinitionId id = CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
+
+                if (id != null) {
+                    businessRuleTask.setOperatonDecisionRefBinding(null);
+                    businessRuleTask.setOperatonDecisionRefVersionTag(null);
+                }
+            });
     }
 
     public BpmnModelInstance getBpmnModelInstanceByProcessDefinitionId(String processDefinitionId) {

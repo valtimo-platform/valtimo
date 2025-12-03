@@ -1,0 +1,18 @@
+{
+  "name": "exact",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:exact-plugin"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "exactPluginSpecification",
+        "module": "ExactPluginModule"
+      }
+    ]
+  }
+}

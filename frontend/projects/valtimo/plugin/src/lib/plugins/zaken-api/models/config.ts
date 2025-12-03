@@ -36,7 +36,7 @@ interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
   inputTypeZaakStatusToggle?: InputOption;
-  inputDatumStatusGezetToggle?: InputOption;
+  inputDatumStatusGezetToggle?: string;
   datumStatusGezet?: string;
 }
 
@@ -166,6 +166,10 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
+interface GetZaakbesluitenConfig {
+  resultProcessVariable: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -186,4 +190,5 @@ export {
   DeleteZaakeigenschapConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
+  GetZaakbesluitenConfig,
 };
