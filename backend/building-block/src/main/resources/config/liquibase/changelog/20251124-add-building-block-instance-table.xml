@@ -70,7 +70,6 @@
                 baseColumnNames="case_document_id"
                 referencedTableName="json_schema_document"
                 referencedColumnNames="json_schema_document_id"
-                onDelete="CASCADE"
                 constraintName="fk_bbinst_case_document"/>
 
         <createIndex indexName="idx_bbinst_definition" tableName="building_block_instance">
