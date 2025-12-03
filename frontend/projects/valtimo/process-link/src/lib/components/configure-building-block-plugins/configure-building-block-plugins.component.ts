@@ -32,7 +32,6 @@ import {
   BuildingBlockProcessLinkUpdateDto,
   PluginConfigurationViewModel,
   ProcessLink,
-  ProcessLinkEditMode,
   ProcessLinkType,
 } from '../../models';
 import {combineLatest, Observable, of, shareReplay, Subscription} from 'rxjs';
@@ -260,15 +259,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         outputMappings: [],
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkCreateEvent(request);
-        return;
-      }
-
-      this.processLinkService.saveProcessLink(request).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
-      });
+      this.stateService.sendProcessLinkCreateEvent(request);
     });
   }
 
@@ -293,15 +284,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         outputMappings: [],
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(request);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(request).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
-      });
+      this.stateService.sendProcessLinkUpdateEvent(request);
     });
   }
 

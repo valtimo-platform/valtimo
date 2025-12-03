@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
@@ -32,7 +33,6 @@ import {
   ModalService,
   PageHeaderService,
   PageTitleService,
-  PendingChangesComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
@@ -48,9 +48,11 @@ import {
 } from '@valtimo/shared';
 import {ProcessService} from '@valtimo/process';
 import {
+  BuildingBlockProcessLinkCreateDto,
+  BuildingBlockProcessLinkUpdateDto,
+  ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
-  ProcessLinkEditMode,
   ProcessLinkModule,
   ProcessLinkService,
   ProcessLinkStateService,
@@ -86,6 +88,7 @@ import {
   filter,
   from,
   map,
+  merge,
   Observable,
   of,
   startWith,
@@ -104,7 +107,15 @@ import {
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
 import {ProcessManagementEditorService, ProcessManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {
+  applyBuildingBlockCalledElement,
+  clearBuildingBlockCalledElement,
+  DisableBpmnWriteModule,
+  disableCommands,
+  getContextObservable,
+  getLatestProcessDefinition,
+  initBreadcrumbsForContext,
+} from '../../utils';
 import {ValtimoPropertiesProviderModule} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
 
@@ -138,10 +149,7 @@ import {PluginTranslationService} from '@valtimo/plugin';
     ProcessLinkButtonService,
   ],
 })
-export class ProcessManagementBuilderComponent
-  extends PendingChangesComponent
-  implements AfterViewInit, OnDestroy
-{
+export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modeler', {static: false}) modelerElementRef!: ElementRef;
   @ViewChild('modelerPanel', {static: false}) modelerPanelElementRef!: ElementRef;
   @ViewChild('viewer', {static: false}) viewerElementRef!: ElementRef;
@@ -230,7 +238,6 @@ export class ProcessManagementBuilderComponent
       map(result => result.map(resultItem => resultItem.processDefinition)),
       tap(processDefinitions => {
         this.changesPending$.next(false);
-        this.pendingChanges = false;
         this.setSelectedProcessDefinitionToLatest(processDefinitions);
       })
     );
@@ -281,9 +288,9 @@ export class ProcessManagementBuilderComponent
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly editPermissionsService: EditPermissionsService,
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {
-    super();
     this.setProcessManagementWindow();
   }
 
@@ -296,7 +303,6 @@ export class ProcessManagementBuilderComponent
     this.subscribeToProcessLinkUpdateEvents();
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
-    this.processLinkStateService.setEditMode(ProcessLinkEditMode.EMIT_EVENTS);
     this.initEditing();
   }
 
@@ -372,11 +378,9 @@ export class ProcessManagementBuilderComponent
       .subscribe({
         next: context => {
           if (context === 'independent') {
-            this.pendingChanges = false;
             this.reload();
             this.showNotification('success');
           } else {
-            this.pendingChanges = false;
             this.navigateBack('success');
           }
         },
@@ -433,7 +437,6 @@ export class ProcessManagementBuilderComponent
       )
       .subscribe({
         next: () => {
-          this.pendingChanges = false;
           this.navigateBack('success');
         },
         error: () => {
@@ -495,11 +498,9 @@ export class ProcessManagementBuilderComponent
   private setSelectedProcessDefinitionToLatest(
     processDefinitions: ProcessDefinitionWithPropertiesDto[]
   ): void {
-    if ((processDefinitions || []).length === 0) return;
+    const latest = getLatestProcessDefinition(processDefinitions);
 
-    const latest = processDefinitions.reduce((acc, version) =>
-      version.version > acc.version ? version : acc
-    );
+    if (!latest) return;
 
     this.processManagementEditorService.setSelectedProcessDefinition(latest);
   }
@@ -521,14 +522,13 @@ export class ProcessManagementBuilderComponent
 
     this._bpmnModeler.on('commandStack.changed', () => {
       this.changesPending$.next(true);
-      this.pendingChanges = true;
     });
 
     this._bpmnModeler.on('import.done', () => {
       const idMap: Record<string, string> = {};
       const elementRegistry = this._bpmnModeler.get('elementRegistry') as any;
 
-      elementRegistry.forEach(element => {
+      elementRegistry.forEach((element: any) => {
         const activityId = element?.di?.id;
         const businessId = element?.id;
 
@@ -543,41 +543,6 @@ export class ProcessManagementBuilderComponent
   }
 
   private initViewer(): void {
-    const disableCommands = () => {
-      const commandStack = this._bpmnViewer.get('commandStack') as any;
-      const originalExecute = commandStack?.execute?.bind(commandStack);
-
-      if (commandStack?.execute) {
-        commandStack.execute = (command: string, context: any) => {
-          if (
-            command === 'elements.delete' ||
-            command === 'elements.copy' ||
-            command === 'elements.paste' ||
-            command === 'elements.create'
-          ) {
-            return;
-          }
-          originalExecute(command, context);
-        };
-      }
-    };
-
-    const DisableBpmnWriteModule = {
-      paletteProvider: ['value', {}],
-      contextPadProvider: ['value', {}],
-      directEditing: [
-        'value',
-        {
-          registerProvider: () => {},
-          activate: () => {},
-          deactivate: () => {},
-          isActive: () => false,
-        },
-      ],
-      move: ['value', null],
-      resizeHandles: ['value', {addResizer: () => {}, removeResizers: () => {}}],
-    };
-
     this._bpmnViewer = new Modeler({
       additionalModules: [
         DisableBpmnWriteModule,
@@ -592,11 +557,10 @@ export class ProcessManagementBuilderComponent
 
     this._bpmnViewer.on('commandStack.changed', () => {
       this.changesPending$.next(true);
-      this.pendingChanges = true;
     });
 
     this._bpmnViewer.on('import.done', () => {
-      disableCommands();
+      disableCommands(this._bpmnViewer);
     });
   }
 
@@ -642,6 +606,19 @@ export class ProcessManagementBuilderComponent
         this.processManagementEditorService.updateProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        const buildingBlockProcessLinkUpdateDto = event as BuildingBlockProcessLinkUpdateDto;
+
+        if (
+          buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionKey &&
+          buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionVersionTag
+        ) {
+          this.setCalledElementForBuildingBlockProcessLink(
+            buildingBlockProcessLinkUpdateDto.activityId,
+            buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionKey,
+            buildingBlockProcessLinkUpdateDto.buildingBlockDefinitionVersionTag
+          );
+        }
       })
     );
   }
@@ -652,16 +629,34 @@ export class ProcessManagementBuilderComponent
         this.processManagementEditorService.createProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        const buildingBlockProcessLinkCreateDto = event as BuildingBlockProcessLinkCreateDto;
+
+        if (
+          buildingBlockProcessLinkCreateDto.buildingBlockDefinitionKey &&
+          buildingBlockProcessLinkCreateDto.buildingBlockDefinitionVersionTag
+        ) {
+          this.setCalledElementForBuildingBlockProcessLink(
+            buildingBlockProcessLinkCreateDto.activityId,
+            buildingBlockProcessLinkCreateDto.buildingBlockDefinitionKey,
+            buildingBlockProcessLinkCreateDto.buildingBlockDefinitionVersionTag
+          );
+        }
       })
     );
   }
 
   private subscribeToProcessLinkDeleteEvents(): void {
     this._subscriptions.add(
-      this.processLinkStateService.processLinkDeleteEvents$.subscribe(event => {
+      merge(
+        this.processManagementEditorService.deleteProcessLinkEvents$,
+        this.processLinkStateService.processLinkDeleteEvents$
+      ).subscribe(event => {
         this.processManagementEditorService.deleteProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+
+        this.unsetCalledElementForBuildingBlockProcessLink(event.activityId);
       })
     );
   }
@@ -772,60 +767,19 @@ export class ProcessManagementBuilderComponent
           );
         }
 
-        this.initBreadcrumbs(caseManagementParams || buildingBlockManagementParams, context);
+        initBreadcrumbsForContext(
+          this.breadcrumbService,
+          this.translateService,
+          caseManagementParams || buildingBlockManagementParams,
+          context as ManagementContext
+        );
+
         this.processManagementEditorService.setManagementRouteParams(
           context,
           caseManagementParams || buildingBlockManagementParams
         );
       })
     );
-  }
-
-  private initBreadcrumbs(
-    params: CaseManagementParams | BuildingBlockManagementParams,
-    context: ManagementContext
-  ): void {
-    if (context === 'case') this.initCaseManagementBreadcrumbs(params as CaseManagementParams);
-    if (context === 'buildingBlock')
-      this.initBuildingBlockBreadcrumbs(params as BuildingBlockManagementParams);
-  }
-
-  private initCaseManagementBreadcrumbs(params: CaseManagementParams): void {
-    const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
-
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
-      content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-      href: route,
-    });
-
-    const routeWithForms = `${route}/processes`;
-
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [routeWithForms],
-      content: this.translateService.instant('caseManagement.tabs.processes'),
-      href: routeWithForms,
-    });
-  }
-
-  private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
-    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
-
-    const generalRoute = `${route}/general`;
-
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [generalRoute],
-      content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
-      href: generalRoute,
-    });
-
-    const processRoute = `${route}/process-definition`;
-
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [processRoute],
-      content: this.translateService.instant('buildingBlockManagement.tabs.processes'),
-      href: processRoute,
-    });
   }
 
   private initEditing(): void {
@@ -875,5 +829,40 @@ export class ProcessManagementBuilderComponent
         })
       )
       .subscribe();
+  }
+
+  private setCalledElementForBuildingBlockProcessLink(
+    activityId: string,
+    buildingBlockDefinitionKey: string,
+    buildingBlockDefinitionVersionTag: string
+  ): void {
+    const editor = this._bpmnModeler || this._bpmnViewer;
+
+    if (!editor) {
+      return;
+    }
+
+    this.processLinkBuildingBlockApiService
+      .getMainProcessDefinitionKeyForBuildingBlock(
+        buildingBlockDefinitionKey,
+        buildingBlockDefinitionVersionTag
+      )
+      .subscribe({
+        next: (mainProcessDefinitionKey: string) => {
+          const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
+
+          applyBuildingBlockCalledElement(editor, activityId, mainProcessDefinitionKey, versionTag);
+        },
+      });
+  }
+
+  private unsetCalledElementForBuildingBlockProcessLink(activityId: string): void {
+    const editor = this._bpmnModeler || this._bpmnViewer;
+
+    if (!editor) {
+      return;
+    }
+
+    clearBuildingBlockCalledElement(editor, activityId);
   }
 }

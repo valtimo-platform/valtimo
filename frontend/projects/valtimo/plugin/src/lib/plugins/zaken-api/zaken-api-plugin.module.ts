@@ -59,6 +59,7 @@ import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 @NgModule({
   declarations: [
@@ -84,6 +85,7 @@ import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informat
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -129,6 +131,7 @@ import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informat
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}

@@ -65,6 +65,7 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css",
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
+              "node_modules/ol/ol.css",
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
               "src/styles.scss",
@@ -106,6 +107,16 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/dev-tools.ts",
+                  "with": "src/app/no-dev-tools.ts"
+                }
+              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -115,11 +126,6 @@
               "vendorChunk": false,
               "buildOptimizer": true,
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
-                },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
@@ -171,15 +177,23 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss"
+            ],
             "scripts": [],
-            "assets": ["src/favicon.ico", "src/assets"]
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         }
       }
@@ -1560,7 +1574,10 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["projects/valtimo/sse/**/*.ts", "projects/valtimo/sse/**/*.html"]
+            "lintFilePatterns": [
+              "projects/valtimo/sse/**/*.ts",
+              "projects/valtimo/sse/**/*.html"
+            ]
           }
         }
       }
@@ -1718,7 +1735,9 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@angular-eslint/schematics"],
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ],
     "analytics": false
   }
 }

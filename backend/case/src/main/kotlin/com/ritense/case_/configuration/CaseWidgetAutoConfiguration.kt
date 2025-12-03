@@ -51,6 +51,8 @@ import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
+import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
+import com.ritense.case_.widget.map.MapCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.CaseTagService
@@ -58,6 +60,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.map.geojson.GeoJsonMapper
 import jakarta.validation.Validator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -248,6 +251,22 @@ class CaseWidgetAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper
     ) = FieldsCaseHeaderWidgetDataProvider(valueResolverService, objectMapper)
+
+    @ConditionalOnMissingBean(MapCaseWidgetMapper::class)
+    @Bean
+    fun mapCaseWidgetMapper() = MapCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(MapCaseWidgetDataProvider::class)
+    @Bean
+    fun mapCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+        geoJsonMappers: List<GeoJsonMapper>,
+    ) = MapCaseWidgetDataProvider(
+        valueResolverService,
+        objectMapper,
+        geoJsonMappers,
+    )
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
     @Bean

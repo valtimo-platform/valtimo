@@ -38,6 +38,7 @@ import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaa
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -65,6 +66,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'patch-zaak': PatchZaakConfigurationComponent,
+    'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -110,6 +112,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In dit veld moet de verwijzing komen naar de type zaak. Als er slechts één zaaktype beschikbaar is, wordt deze standaard geselecteerd.',
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
+      now: 'Gebruik huidige datum/tijd',
       text: 'Tekst',
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - Natuurlijk persoon',
@@ -225,6 +228,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummerTooltip: 'Een uniek nummer toegekend door de Kamer van Koophandel. (Max. 8 tekens)',
       vestigingsNummer: 'Vestigingsnummer',
       vestigingsNummerTooltip: 'Een korte unieke aanduiding van de Vestiging. (Max. 24 tekens)',
+      'get-zaakbesluiten': 'Ophalen zaakbesluiten',
       'patch-zaak': 'Zaak bijwerken',
       patchZaakInformation:
         'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
@@ -323,6 +327,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In this field the reference must be made to the type of the zaak. If only one zaaktype is available, it will be selected by default.',
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
+      now: 'Use current date/time',
       text: 'Text',
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
@@ -437,6 +442,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummerTooltip: 'A unique number assigned by the Chamber of Commerce. (Max. 8 characters)',
       vestigingsNummer: 'Branch number',
       vestigingsNummerTooltip: 'A short unique designation of the branch. (Max. 24 characters)',
+      'get-zaakbesluiten': 'Retrieve zaakbesluiten',
       'patch-zaak': 'Update zaak',
       patchZaakInformation:
         'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
@@ -534,6 +540,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In diesem Feld muss auf die zaaktype verwiesen werden. Wenn nur ein Zaaktyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
+      now: 'Aktuelles Datum/Uhrzeit verwenden',
       text: 'Text',
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
@@ -649,6 +656,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       vestigingsNummer: 'Niederlassungsnummer',
       vestigingsNummerTooltip:
         'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)',
+      'get-zaakbesluiten': 'Zaakbesluiten abrufen',
       'patch-zaak': 'Zaak aktualisieren',
       patchZaakInformation:
         'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
