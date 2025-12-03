@@ -1,3 +1,5 @@
+import {v4 as uuidv4} from 'uuid';
+
 export interface PluginFieldMap {
   testId: string;
   type: 'input' | 'select';
@@ -11,7 +13,7 @@ export interface PluginTestConfiguration {
 
 export const pluginTypes = [
   'Besluiten API',
-  //   'Catalogi API',
+  'Catalogi API',
   //   'Documenten API',
   //   'Klantinteracties API',
   //   'Notificaties API',
@@ -33,9 +35,9 @@ export const pluginTestConfiguration = {
       {
         testId: 'pluginConfigurationId',
         type: 'input',
-        value: '857d4312-c420-4a22-979b-625818d97ed4',
+        value: uuidv4(),
       },
-      {testId: 'besluitenApiUrlConfigurationTitle', type: 'input', value: 'Test Besluiten API'},
+      {testId: 'besluitenApiConfigurationTitle', type: 'input', value: 'Test Besluiten API'},
       {testId: 'besluitenApiRsin', type: 'input', value: '328674989'},
       {testId: 'besluitenApiUrl', type: 'input', value: 'http://localhost:8001/besluiten/api/v1/'},
       {
@@ -49,11 +51,11 @@ export const pluginTestConfiguration = {
 
   'Catalogi API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: '22c78b91-0b0f-4008-8d8f-c4a84b8e71ed'},
-      {testId: 'configurationName', type: 'input', value: 'Test Catalogi API'},
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {testId: 'catalogApiConfigurationTitle', type: 'input', value: 'Test Catalogi API'},
       {testId: 'catalogiApiUrl', type: 'input', value: 'http://localhost:8001/catalogi/api/v1/'},
       {
-        testId: 'authenticationPluginConfiguration',
+        testId: 'catalogApiAuthenticationPluginConfiguration',
         type: 'select',
         value: 'OpenZaak Authentication - OpenZaak',
       },

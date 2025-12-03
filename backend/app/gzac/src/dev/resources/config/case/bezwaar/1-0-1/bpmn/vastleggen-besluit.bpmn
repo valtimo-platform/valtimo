@@ -67,7 +67,7 @@
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEventPatchBesluit">
         <dc:Bounds x="210" y="182" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0kvdccs" bpmnElement="LinkBesluitTask">
+      <bpmndi:BPMNShape id="BPMNShape_0kvdccs" bpmnElement="LinkDocumentAanBesluitTask">
         <dc:Bounds x="600" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
@@ -100,21 +100,6 @@
       <bpmndi:BPMNShape id="Activity_0wih9x4_di" bpmnElement="GetBesluitByUrlTask">
         <dc:Bounds x="1050" y="160" width="100" height="80" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0xjbg3r_di" bpmnElement="PatchBesluitUserTask">
-        <dc:Bounds x="880" y="160" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1d3vt1t" bpmnElement="GetBesluitUrlsTask">
-        <dc:Bounds x="740" y="160" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0tb6jh7" bpmnElement="PatchBesluitTask">
-        <dc:Bounds x="1030" y="160" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0cpeutm_di" bpmnElement="Event_0cpeutm">
-        <dc:Bounds x="1182" y="182" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1aqi6ks_di" bpmnElement="Flow_1aqi6ks">
         <di:waypoint x="246" y="200" />
