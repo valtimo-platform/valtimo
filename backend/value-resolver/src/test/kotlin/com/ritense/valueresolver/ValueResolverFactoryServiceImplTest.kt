@@ -20,11 +20,14 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.delegate.DelegateTask
 import org.camunda.community.mockito.delegate.DelegateTaskFake
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 internal class ValueResolverFactoryServiceImplTest {
 
@@ -144,5 +147,36 @@ internal class ValueResolverFactoryServiceImplTest {
             "lastName" to "Doe",
             "active" to true,
         ))
+    }
+
+    @Test
+    fun `Should not treat date-time value as prefixed value`() {
+        val dateTimeValue = "2024-11-18T10:15:30"
+
+        val resolvedValues = resolverService.resolveValues(
+            processInstanceId = UUID.randomUUID().toString(),
+            variableScope = mockTaskWithVariables(emptyMap()),
+            listOf(
+                dateTimeValue
+            )
+        )
+
+        assertThat(resolvedValues).containsExactlyEntriesOf(
+            mapOf(
+                dateTimeValue to dateTimeValue
+            )
+        )
+    }
+
+    private fun mockTaskWithVariables(map: Map<String, Any?>): DelegateTask {
+        val delegateTask: DelegateTask = mock()
+        whenever(delegateTask.variables).thenReturn(map)
+        whenever(delegateTask.getVariable(any())).thenAnswer(
+            { invocation ->
+                val variableName = invocation.getArgument<String>(0)
+                map[variableName]
+            }
+        )
+        return delegateTask
     }
 }

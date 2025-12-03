@@ -102,6 +102,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In dit veld moet de verwijzing komen naar de type zaak. Als er slechts één zaaktype beschikbaar is, wordt deze standaard geselecteerd.',
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
+      now: 'Gebruik huidige datum/tijd',
       text: 'Tekst',
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
@@ -149,6 +150,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
+      datumStatusGezet: 'Datum status gezet.',
+      datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
       statustoelichtingTooltip:
         'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
@@ -167,6 +171,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Invoertype datum status gezet',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
       addZaakProperty: 'Voeg nieuwe parameter toe',
       plannedEndDate: 'Geplande eind datum',
@@ -255,6 +260,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In this field the reference must be made to the type of the zaak. If only one zaaktype is available, it will be selected by default.',
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
+      now: 'Use current date/time',
       text: 'Text',
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
@@ -302,6 +308,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
+      datumStatusGezet: 'Date status set.',
+      datumStatusGezetTooltip: 'Date/time value of the zaakstatus.',
+      datumStatusGezetInvalidText: 'Date and time may not be in the future.',
       statustoelichting: 'Zaakstatus explanation',
       statustoelichtingTooltip:
         'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
@@ -320,6 +329,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Select the resultaat type.',
       inputTypeZaakStatusToggle: 'Input type Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Input type datum status gezet',
       inputTypeZaakResultaatToggle: 'Input type Zaakresultaat-URL',
       addZaakProperty: 'Add new case property',
       plannedEndDate: 'Planned end date',
@@ -407,6 +417,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In diesem Feld muss auf die zaaktype verwiesen werden. Wenn nur ein Zaaktyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
+      now: 'Aktuelles Datum/Uhrzeit verwenden',
       text: 'Text',
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
@@ -454,6 +465,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
+      datumStatusGezet: 'Datumsstatus festgelegt.',
+      datumStatusGezetTooltip: 'Datums-/Uhrzeitwert des zaakstatus.',
+      datumStatusGezetInvalidText: 'Datum und Uhrzeit dürfen nicht in der Zukunft liegen.',
       statustoelichting: 'Erklärung des Zaakstatus',
       statustoelichtingTooltip:
         'Eine Erklärung des Status eines zaak, die für den Initiator des Zaak relevant ist.',
@@ -472,6 +486,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Wählen Sie den Resultaattype aus.',
       inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
+      inputDatumStatusGezetToggle: 'Eingabetyp datum status gezet',
       inputTypeZaakResultaatToggle: 'Eingabetyp Zaakresultaat-URL',
       addZaakProperty: 'Neue Case-Eigenschaft hinzufügen',
       plannedEndDate: 'Geplantes Enddatum',

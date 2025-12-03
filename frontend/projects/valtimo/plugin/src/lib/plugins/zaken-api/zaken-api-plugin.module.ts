@@ -35,14 +35,7 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {
-  ButtonModule,
-  DatePickerInputModule,
-  DialogModule,
-  IconModule,
-  LoadingModule,
-  ToggleModule,
-} from 'carbon-components-angular';
+import { ButtonModule, DatePickerInputModule, DatePickerModule, DialogModule, IconModule, LoadingModule, TimePickerModule, ToggleModule, } from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
@@ -92,6 +85,8 @@ import {TranslateModule} from '@ngx-translate/core';
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    DatePickerModule,
+    TimePickerModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
