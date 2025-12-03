@@ -46,7 +46,7 @@ valtimo:
                 DocumentenApiPlugin:
                     enabled: false
                 TemporaryResourceStorageService:
-                    enabled: true
+                    enabled: false
 
 spring-actuator:
     username: test

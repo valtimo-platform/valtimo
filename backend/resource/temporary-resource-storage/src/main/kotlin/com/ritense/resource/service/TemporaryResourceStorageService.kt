@@ -59,7 +59,7 @@ class TemporaryResourceStorageService(
     private val objectMapper: ObjectMapper,
     private val repository: ResourceStorageMetadataRepository,
     private val virusScanService: VirusScanService,
-    private val virusScanEnabledForTemporaryStorage: Boolean = true
+    private val virusScanEnabledForTemporaryStorage: Boolean = false
 ) {
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
