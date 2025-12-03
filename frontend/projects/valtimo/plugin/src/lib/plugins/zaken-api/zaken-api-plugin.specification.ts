@@ -38,6 +38,7 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
@@ -67,7 +68,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
-    'patch-zaak': PatchZaakConfigurationComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
     'create-zaaknotitie': CreateZaakNotitieConfigurationComponent,
     'patch-zaaknotitie': PatchZaakNotitieConfigurationComponent,
