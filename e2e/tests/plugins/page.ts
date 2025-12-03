@@ -1,5 +1,5 @@
 import {expect, Page} from '@playwright/test';
-import {PluginFieldMap, pluginTestConfiguration} from './plugin-config';
+import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
 
 export class PluginPage {
   constructor(private readonly page: Page) {}
@@ -70,14 +70,12 @@ export class PluginPage {
   async fillPluginForm(type: string) {
     const fields: PluginFieldMap[] = pluginTestConfiguration[type].fieldMap;
     for (const field of fields) {
-      const inputWrapper = this.page.locator(`[data-test-id=${field.testId}]`);
+      const inputWrapper = this.page.getByTestId(field.testId);
       switch (field.type) {
         case 'input':
-          console.log('in input');
           await inputWrapper.locator('input').fill(field.value);
           break;
         case 'select':
-          console.log('in select');
           await inputWrapper.locator('cds-combo-box').click();
           await inputWrapper.getByRole('option').getByText(field.value).click();
           break;
@@ -90,16 +88,60 @@ export class PluginPage {
     await this.saveButton.click();
   }
 
-  async duplicateConfigurationName() {
-    const input = this.page.locator('input[name="configurationTitle"]');
+  async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
+    await this.page
+      .locator(`tr:has(td:has-text("${configurationName}"))`)
+      .getByRole('menu')
+      .locator('button')
+      .click();
+    await this.page.getByRole('menuitem', {name: 'Duplicate'}).click();
+
+    const input = this.page.getByTestId(configurationIdTestId).locator('input');
     const val = await input.inputValue();
     await input.fill(`${val} - Test Duplicated`);
     await this.saveConfiguration();
+    await this.page.waitForResponse(
+      res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
+    );
   }
 
-  async deletePlugin(pluginType: string) {
+  async editPluginRowClick(
+    pluginIdentifier: string,
+    configurationNameTestId: string,
+    newConfigurationName: string
+  ): Promise<void> {
+    await this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).click();
+    await this.editPluginName(configurationNameTestId, newConfigurationName);
+  }
+
+  async editPluginMenuClick(
+    pluginIdentifier: string,
+    configurationNameTestId: string,
+    newConfigurationName: string
+  ): Promise<void> {
     await this.page
-      .locator(`tr:has(td:has-text("${pluginTestConfiguration[pluginType].pluginIdentifier}"))`)
+      .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+      .getByRole('menu')
+      .locator('button')
+      .click();
+    await this.page.getByRole('menuitem', {name: 'Edit'}).click();
+    await this.editPluginName(configurationNameTestId, newConfigurationName);
+  }
+
+  async editPluginName(
+    configurationNameTestId: string,
+    newConfigurationName: string
+  ): Promise<void> {
+    await this.page
+      .getByTestId(configurationNameTestId)
+      .locator('input')
+      .fill(newConfigurationName);
+    await this.saveConfiguration();
+  }
+
+  async deletePlugin(pluginIdentifier: string): Promise<void> {
+    await this.page
+      .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
       .getByRole('menu')
       .locator('button')
       .click();
@@ -109,16 +151,25 @@ export class PluginPage {
     );
   }
 
-  async assertPluginCreated(pluginType: string) {
-    expect(
-      await this.page.getByText(pluginTestConfiguration[pluginType].pluginIdentifier).first()
-    ).toBeTruthy();
+  async assertPluginExists(pluginIdentifier: string): Promise<void> {
+    expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
   }
 
-  async assertPluginDeleted(pluginType: string) {
+  async assertPluginDeleted(pluginType: string): Promise<void> {
     const plugin = this.page.locator(
       `tr:has(td:has-text("${pluginTestConfiguration[pluginType].pluginIdentifier}"))`
     );
     await expect(plugin).not.toBeVisible();
+  }
+
+  async deleteAllTestPlugins(): Promise<void> {
+    for (const type of pluginTypes) {
+      if (type === 'Besluiten API') continue;
+
+      const isVisible = await this.page
+        .locator(`tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`)
+        .isVisible();
+      if (isVisible) await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+    }
   }
 }
