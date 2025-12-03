@@ -37,23 +37,17 @@ import {
   CheckboxModule,
   DialogModule,
   IconModule,
+  IconService,
   InputModule,
+  ModalModule,
   TagModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, map, Observable} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
-
-interface SchemaPropertyEntry {
-  path: string; // e.g. "contactmomenten[].kanaal"
-  label: string; // e.g. "contactmomenten → kanaal"
-  required: boolean; // whether it's currently required
-}
-
-interface ParentSchemaResult {
-  parent: any;
-  key: string;
-}
+import {ObjectLevel} from '../../models';
+import {collectObjectLevels, setRequiredOnSchema} from '../../utils';
+import {DocumentRequirements16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-schema-editor',
@@ -68,6 +62,7 @@ interface ParentSchemaResult {
     IconModule,
     InputModule,
     TagModule,
+    ModalModule,
   ],
   templateUrl: './schema-editor.component.html',
   styleUrl: './schema-editor.component.scss',
@@ -96,12 +91,41 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   private _modifiedValue: string = '';
 
-  public readonly requiredProperties$ = new BehaviorSubject<SchemaPropertyEntry[]>([]);
+  private readonly _objectLevels$ = new BehaviorSubject<ObjectLevel[]>([]);
+  public get objectLevels$(): Observable<ObjectLevel[]> {
+    return this._objectLevels$.asObservable();
+  }
 
-  constructor(private readonly zone: NgZone) {}
+  private readonly _required$ = new BehaviorSubject<ObjectLevel[]>([]);
+  public get required$(): Observable<ObjectLevel[]> {
+    return this._required$.asObservable();
+  }
+
+  public isRequired$(path: string[], property: string): Observable<boolean> {
+    return this.required$.pipe(
+      map(required => {
+        const joinedPath = path.join('.');
+        const matchingObjectLevel = required.find(level => level.path.join('.') === joinedPath);
+        if (!matchingObjectLevel) return false;
+        return matchingObjectLevel.properties.includes(property);
+      })
+    );
+  }
+
+  public readonly showRequiredPanel$ = new BehaviorSubject<boolean>(false);
+
+  constructor(
+    private readonly zone: NgZone,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([DocumentRequirements16]);
+  }
 
   public ngAfterViewInit(): void {
     const initial: Content = {text: this.schemaJson};
+
+    this.setObjectLevels(this.schemaJson);
+    this.setRequired(this.schemaJson);
 
     this._editor = createJSONEditor({
       target: this.hostEl.nativeElement,
@@ -130,7 +154,8 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
             this.changeEvent.emit(text);
             this._modifiedValue = text;
 
-            this.rebuildRequiredList(text);
+            this.setObjectLevels(text);
+            this.setRequired(text);
           });
         },
       },
@@ -171,157 +196,38 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.saveEvent.emit(this._modifiedValue);
   }
 
-  public onRequiredToggle(entry: SchemaPropertyEntry, checked: boolean): void {
-    if (this.disabled) return;
+  public onRequiredPropertyChange(path: string[], property: string, value: boolean): void {
+    const currentText = this._modifiedValue || this.schemaJson;
+    const schemaObj = JSON.parse(currentText);
 
-    let schema: any;
-    try {
-      schema = JSON.parse(this._modifiedValue || this.schemaJson);
-    } catch {
-      return;
-    }
+    setRequiredOnSchema(schemaObj, path, property, value);
 
-    this.updateRequiredForPath(schema, entry.path, checked);
+    const updatedText = JSON.stringify(schemaObj, null, 2);
 
-    const text = JSON.stringify(schema, null, 2);
+    this._modifiedValue = updatedText;
+    this.changeEvent.emit(updatedText);
 
-    // Push back into the editor
-    this._editor.updateProps({content: {text}});
-    this._modifiedValue = text;
-    this.changeEvent.emit(text);
-
-    const valid = Boolean(this._ajv.validateSchema(schema));
-    this.valid$.next(valid);
-    this.validEvent.emit(valid);
-
-    this.rebuildRequiredList(text);
-  }
-
-  public collectSchemaProperties(schema: any, basePath = ''): SchemaPropertyEntry[] {
-    const result: SchemaPropertyEntry[] = [];
-
-    if (!schema || typeof schema !== 'object') return result;
-
-    const isObject = schema.type === 'object' || schema.properties;
-    if (!isObject || !schema.properties) return result;
-
-    const requiredSet = new Set<string>(schema.required || []);
-
-    Object.entries<any>(schema.properties).forEach(([key, propSchema]) => {
-      const currentPath = basePath ? `${basePath}.${key}` : key;
-      const label = currentPath.replace(/\.\[\]/g, '[]').replace(/\./g, ' → ');
-      const isRequired = requiredSet.has(key);
-
-      result.push({
-        path: currentPath,
-        label,
-        required: isRequired,
-      });
-
-      // Nested object
-      if (propSchema && typeof propSchema === 'object') {
-        if (propSchema.type === 'object' || propSchema.properties) {
-          result.push(...this.collectSchemaProperties(propSchema, currentPath));
-        }
-
-        // Array of objects
-        if (propSchema.type === 'array' && propSchema.items) {
-          const itemsBasePath = `${currentPath}[]`;
-          result.push(...this.collectSchemaProperties(propSchema.items, itemsBasePath));
-        }
-      }
+    this._editor.updateProps({
+      content: {text: updatedText},
     });
 
-    return result;
+    this.setObjectLevels(updatedText);
+    this.setRequired(updatedText);
+
+    const valid = Boolean(this._ajv.validateSchema(schemaObj));
+    this.valid$.next(valid);
+    this.validEvent.emit(valid);
   }
 
-  public findParentSchemaForPath(rootSchema: any, path: string): ParentSchemaResult | null {
-    if (!rootSchema || typeof rootSchema !== 'object') return null;
-
-    const segments = path.split('.');
-    if (segments.length === 0) return null;
-
-    // Last segment is the property name (may be something like "field" or "field[]")
-    const lastSegment = segments[segments.length - 1];
-    const key = lastSegment.endsWith('[]') ? lastSegment.slice(0, -2) : lastSegment;
-
-    let parent: any = rootSchema;
-
-    // Walk all but last segment to find the parent schema node
-    for (let i = 0; i < segments.length - 1; i++) {
-      const seg = segments[i];
-      const isArraySeg = seg.endsWith('[]');
-      const name = isArraySeg ? seg.slice(0, -2) : seg;
-
-      if (!parent.properties || !parent.properties[name]) {
-        return null;
-      }
-
-      const next = parent.properties[name];
-
-      if (isArraySeg) {
-        parent = next.items ?? next;
-      } else {
-        parent = next;
-      }
-
-      if (!parent || typeof parent !== 'object') {
-        return null;
-      }
-    }
-
-    return {parent, key};
+  public onRequiredPanelToggle(): void {
+    this.showRequiredPanel$.next(!this.showRequiredPanel$.getValue());
   }
 
-  public updateRequiredForPath(rootSchema: any, path: string, makeRequired: boolean): any {
-    const result = this.findParentSchemaForPath(rootSchema, path);
-    if (!result) return rootSchema;
-
-    const {parent, key} = result;
-
-    const existing = Array.isArray(parent.required) ? [...parent.required] : [];
-    const idx = existing.indexOf(key);
-
-    if (makeRequired && idx === -1) {
-      existing.push(key);
-    } else if (!makeRequired && idx !== -1) {
-      existing.splice(idx, 1);
-    }
-
-    if (existing.length > 0) {
-      parent.required = existing;
-    } else {
-      delete parent.required;
-    }
-
-    return rootSchema;
+  private setObjectLevels(schema: string): void {
+    this._objectLevels$.next(collectObjectLevels(JSON.parse(schema)));
   }
 
-  public isRequired(property: string): boolean {
-    try {
-      const schema = JSON.parse(this._modifiedValue || this.schemaJson);
-      return Array.isArray(schema.required) && schema.required.includes(property);
-    } catch {
-      return false;
-    }
-  }
-
-  public getProperties(): string[] {
-    try {
-      const schema = JSON.parse(this._modifiedValue || this.schemaJson);
-      return schema?.properties ? Object.keys(schema.properties) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private rebuildRequiredList(schemaText: string): void {
-    try {
-      const schema = JSON.parse(schemaText);
-      const props = this.collectSchemaProperties(schema);
-      this.requiredProperties$.next(props);
-    } catch {
-      this.requiredProperties$.next([]);
-    }
+  private setRequired(schema: string): void {
+    this._required$.next(collectObjectLevels(JSON.parse(schema), true));
   }
 }
