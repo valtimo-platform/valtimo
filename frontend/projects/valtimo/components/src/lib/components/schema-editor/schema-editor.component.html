@@ -17,16 +17,11 @@
   <div class="cds--toolbar-content">
     <ng-content></ng-content>
 
-    <cds-overflow-menu
-      [customTrigger]="customTrigger"
-      [cdsOverflowMenu]="requiredPropertiesPanel"
-      [customPane]="true"
-      [flip]="true"
-      [description]="'listViewColumns.tooltip' | translate"
-      [offset]="{x: 2, y: 64}"
-      placement="bottom"
-    >
-    </cds-overflow-menu>
+    <button cdsButton="ghost" (click)="onRequiredPanelToggle()">
+      {{ 'schemaEditor.manageRequiredFields' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="document--requirements" size="16"></svg>
+    </button>
 
     <button
       cdsButton="primary"
@@ -34,11 +29,21 @@
       (click)="onSaveClick()"
     >
       {{ 'interface.save' | translate }}
+
       <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
 
-  <div [attr.data-carbon-theme]="'g10'" class="jse-host" #host></div>
+  <div class="jse-host-container">
+    <div [attr.data-carbon-theme]="'g10'" class="jse-host" #host></div>
+
+    <div
+      class="requirements-panel"
+      [ngClass]="{'requirements-panel--open': showRequiredPanel$ | async}"
+    >
+      <ng-container *ngTemplateOutlet="requiredPropertiesPanel"></ng-container>
+    </div>
+  </div>
 </div>
 
 <valtimo-confirmation-modal
@@ -52,27 +57,53 @@
 >
 </valtimo-confirmation-modal>
 
-<ng-template #customTrigger>
-  <button iconOnly="true" cdsButton="ghost">
-    <svg cdsIcon="view--off" size="16"></svg>
-  </button>
-</ng-template>
-
 <ng-template #requiredPropertiesPanel>
-  <div class="schema-editor__required-panel" *ngIf="!disabled">
-    <div class="schema-editor__required-title">
-      {{ 'interface.jsonEditor.requiredFields' | translate }}
-    </div>
+  <div class="schema-editor__required-properties" (click)="$event.stopPropagation()">
+    <header class="cds--modal-header default schema-editor__required-properties-header">
+      <h5>
+        {{ 'schemaEditor.requiredFields' | translate }}
+      </h5>
 
-    <div class="schema-editor__required-list">
-      <label class="schema-editor__required-item" *ngFor="let prop of requiredProperties$ | async">
-        <input
-          type="checkbox"
-          [checked]="prop.required"
-          (change)="onRequiredToggle(prop, $event.target.checked)"
-        />
-        <span>{{ prop.label }}</span>
-      </label>
+      <div class="cds--modal-close-button">
+        <button
+          cdsButton="primary"
+          class="cds--modal-close cds--btn--icon-only cds--btn--lg"
+          type="button"
+          (click)="onRequiredPanelToggle()"
+        >
+          <svg cdsIcon="close" size="20" class="cds--modal-close__icon"></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="schema-editor__required-properties-content">
+      @for (objectLevel of objectLevels$ | async; track $index) {
+        <div class="schema-editor__object-level">
+          <span class="schema-editor__object-level-title">
+            @if ((objectLevel.path || []).length === 0) {
+              {{ 'schemaEditor.rootObject' | translate }}
+            } @else {
+              @for (pathParth of objectLevel.path; track pathParth; let last = $last) {
+                <span class="schema-editor__object-level-title-part">{{
+                  pathParth + (!last ? ' >' : '')
+                }}</span>
+              }
+            }
+          </span>
+
+          @for (property of objectLevel.properties; track property) {
+            <div class="schema-editor__property">
+              <cds-checkbox
+                [disabled]="disabled"
+                [checked]="isRequired$(objectLevel.path, property) | async"
+                (checkedChange)="onRequiredPropertyChange(objectLevel.path, property, $event)"
+              >
+                {{ property }}
+              </cds-checkbox>
+            </div>
+          }
+        </div>
+      }
     </div>
   </div>
 </ng-template>

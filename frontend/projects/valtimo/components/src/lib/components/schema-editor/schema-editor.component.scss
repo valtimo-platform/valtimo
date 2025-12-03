@@ -15,10 +15,32 @@
  */
 
 .jse-host,
+.jse-host-container,
 :host {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.jse-host-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.requirements-panel {
+  width: 350px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  outline: 1px solid var(--cds-border-subtle);
+  outline-offset: -1px;
+  transform: translateX(350px);
+  transition: transform 240ms cubic-bezier(0, 0, 0.3, 1);
+}
+
+.requirements-panel--open {
+  transform: translateX(0px);
 }
 
 .schema-editor {
@@ -67,4 +89,49 @@
       gap: 4px;
     }
   }
+}
+
+.schema-editor__required-properties {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--cds-layer);
+}
+
+.schema-editor__object-level {
+  margin: 8px 8px 16px;
+}
+
+.schema-editor__object-level-title {
+  color: var(--cds-text-secondary);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--cds-border-subtle);
+}
+
+::ng-deep .schema-editor__property .cds--checkbox-label {
+  color: var(--cds-text-primary);
+}
+
+.schema-editor__required-properties-header {
+  margin: 1px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cds-border-subtle);
+  padding-top: 12px;
+}
+
+.schema-editor__required-properties-content {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.schema-editor__property {
+  margin-bottom: 4px;
 }
