@@ -20,24 +20,27 @@
       <div class="btn-group mt-m3px mb-3">
         <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
           <i class="icon mdi mdi-plus mr-1"></i>
+
           <span>{{ 'Create new Choice field' | translate }}</span>
         </button>
       </div>
     </div>
+
     <valtimo-widget>
       <valtimo-carbon-list
         [items]="choiceFields"
         [fields]="fields"
         (rowClicked)="rowClick($event)"
-        [pagination]="pagination"
+        [pagination]="$pagination()"
         [isSearchable]="true"
         paginationIdentifier="choiceFieldList"
         (paginationClicked)="paginationClicked($event)"
-        (paginationSet)="paginationSet()"
+        (paginationSet)="paginationSet($event)"
         [header]="true"
       >
         <div header>
           <h3 class="list-header-title">{{ 'Choice fields' | translate }}</h3>
+
           <h5 class="list-header-description">{{ 'Overview of all Choice fields' | translate }}</h5>
         </div>
       </valtimo-carbon-list>
