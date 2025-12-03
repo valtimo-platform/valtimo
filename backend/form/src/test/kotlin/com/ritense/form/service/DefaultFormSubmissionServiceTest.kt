@@ -135,6 +135,7 @@ class DefaultFormSubmissionServiceTest {
 
         processDefinition = mock<OperatonProcessDefinition>()
         whenever(processDefinition.key).thenReturn("myProcessDefinitionKey")
+        whenever(processDefinition.getCaseDefinitionId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
         whenever(repositoryService.findProcessDefinitionById(formProcessLink.processDefinitionId))
             .thenReturn(processDefinition)
 

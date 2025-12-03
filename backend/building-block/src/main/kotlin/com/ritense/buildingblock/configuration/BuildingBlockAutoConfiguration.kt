@@ -24,7 +24,7 @@ import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProce
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
@@ -35,6 +35,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
@@ -43,6 +44,8 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
@@ -74,7 +77,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
-        BuildingBlockDefinitionArtworkRepository::class
+        BuildingBlockDefinitionArtworkRepository::class,
+        BuildingBlockInstanceRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
@@ -137,6 +141,20 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             buildingBlockDefinitionArtworkRepository,
             authroizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockInstanceService::class)
+    fun buildingBlockInstanceService(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        documentService: DocumentService
+    ): BuildingBlockInstanceService {
+        return BuildingBlockInstanceService(
+            buildingBlockInstanceRepository,
+            buildingBlockDefinitionRepository,
+            documentService
         )
     }
 
@@ -245,7 +263,11 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         @Lazy processLinkService: ProcessLinkService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
-    ) = BuildingBlockProcessLinkMapper(objectMapper, processLinkService, processDefinitionBuildingBlockDefinitionRepository)
+    ) = BuildingBlockProcessLinkMapper(
+        objectMapper,
+        processLinkService,
+        processDefinitionBuildingBlockDefinitionRepository
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockSupportedProcessLinksHandler::class)
@@ -260,7 +282,10 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)
     fun buildingBlockCallActivityListener(
         processLinkService: ProcessLinkService,
-    ) = BuildingBlockCallActivityListener(processLinkService)
+        buildingBLockInstanceService: BuildingBlockInstanceService,
+    ) = BuildingBlockCallActivityListener(processLinkService,
+        buildingBLockInstanceService
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionMainProcessDefinitionImporter::class)
@@ -295,7 +320,10 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockPluginDefinitionService(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
-    ) = BuildingBlockPluginDefinitionService(pluginProcessLinkRepository, processDefinitionBuildingBlockDefinitionRepository)
+    ) = BuildingBlockPluginDefinitionService(
+        pluginProcessLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkImporter::class)
