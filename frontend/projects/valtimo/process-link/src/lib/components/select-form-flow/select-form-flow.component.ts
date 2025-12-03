@@ -26,7 +26,6 @@ import {
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormSize,
-  ProcessLinkEditMode,
 } from '../../models';
 import {
   ProcessLinkButtonService,
@@ -172,19 +171,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-          return;
-        }
-
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
       });
   }
 
@@ -209,19 +196,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         } as FormFlowProcessLinkCreateRequestDto;
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
-          return;
-        }
-
-        this.processLinkService.saveProcessLink(createRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkCreateEvent(createRequest);
       });
   }
 }

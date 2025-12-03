@@ -10,6 +10,9 @@ defaults:
   run:
     working-directory: backend
 
+env:
+  ORG_GRADLE_PROJECT_includeDev: false
+
 jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml

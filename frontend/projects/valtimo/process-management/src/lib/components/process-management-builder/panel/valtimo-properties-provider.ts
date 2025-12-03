@@ -145,9 +145,12 @@ const CustomRootElement = (props: {
   };
 
   const handleUnlinkClick = (): void => {
-    processManagementEditorService.deleteProcessLink({activityId: processLink.activityId}, () => {
-      modeling.updateProperties(element, {});
-    });
+    processManagementEditorService.sendDeleteProcessLinkEvent(
+      {activityId: processLink.activityId},
+      () => {
+        modeling.updateProperties(element, {});
+      }
+    );
   };
 
   const processLinkFormDefinitionId = processLink?.formDefinitionId;

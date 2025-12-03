@@ -22,13 +22,16 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BuildingBlockStateService} from '../../services/building-block-state.service';
-import {PluginConfiguration, PluginManagementService, PluginTranslationService} from '@valtimo/plugin';
+import {
+  PluginConfiguration,
+  PluginManagementService,
+  PluginTranslationService,
+} from '@valtimo/plugin';
 import {
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
   PluginConfigurationViewModel,
   ProcessLink,
-  ProcessLinkEditMode,
   ProcessLinkType,
 } from '../../models';
 import {combineLatest, Observable, of, shareReplay, Subscription} from 'rxjs';
@@ -90,8 +93,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
 
         return combineLatest(
           pluginKeys.map(pluginKey =>
-          this.getConfigurationOptions(pluginKey)
-            .pipe(
+            this.getConfigurationOptions(pluginKey).pipe(
               map(options => ({
                 key: pluginKey,
                 label: this.pluginLabel(pluginKey),
@@ -264,15 +266,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         pluginConfigurationMappings: this.getMappingsForPayload(),
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkCreateEvent(request);
-        return;
-      }
-
-      this.processLinkService.saveProcessLink(request).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
-      });
+      this.stateService.sendProcessLinkCreateEvent(request);
     });
   }
 
@@ -295,15 +289,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         pluginConfigurationMappings: this.getMappingsForPayload(),
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(request);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(request).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
-      });
+      this.stateService.sendProcessLinkUpdateEvent(request);
     });
   }
 

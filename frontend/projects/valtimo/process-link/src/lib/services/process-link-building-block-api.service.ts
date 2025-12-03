@@ -75,4 +75,18 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
         })
       );
   }
+
+  public getMainProcessDefinitionKeyForBuildingBlock(
+    key: string,
+    versionTag: string
+  ): Observable<string> {
+    return this.httpClient.get<string>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/main/key`
+      ),
+      {
+        responseType: 'text' as 'json',
+      }
+    );
+  }
 }
