@@ -128,8 +128,10 @@ class FormIoWidgetIntTest @Autowired constructor(
                     FormIoCaseWidgetDto(
                         key = widgetKey,
                         title = "My widget",
+                        icon = "mdi-home",
                         width = 1,
                         highContrast = true,
+                        isCompact = false,
                         actions = null,
                         displayConditions = emptyList(),
                         properties = FormIoWidgetProperties("form-example")

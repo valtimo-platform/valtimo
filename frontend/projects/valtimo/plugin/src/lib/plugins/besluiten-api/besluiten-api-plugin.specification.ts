@@ -18,7 +18,9 @@ import {PluginSpecification} from '../../models';
 import {BesluitenApiConfigurationComponent} from './components/besluiten-api-configuration/besluiten-api-configuration.component';
 import {BESLUITEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+import {GetBesluitConfigurationComponent} from './components/get-besluit/get-besluit-configuration.component';
 
 const besluitenApiPluginSpecification: PluginSpecification = {
   pluginId: 'besluitenapi',
@@ -26,7 +28,9 @@ const besluitenApiPluginSpecification: PluginSpecification = {
   pluginLogoBase64: BESLUITEN_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'create-besluit': CreateZaakBesluitConfigurationComponent,
+    'patch-besluit': PatchZaakBesluitConfigurationComponent,
     'link-document-to-besluit': LinkDocumentToBesluitConfigurationComponent,
+    'get-besluit': GetBesluitConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -51,13 +55,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
       ingangsdatum: 'Ingangsdatum',
       ingangsdatumTooltip:
-        'Ingangsdatum van de werkingsperiode van het besluit. Ondersteunt de value resolver, bijv: pv:ingangsdatum of doc:/besluit/ingangsdatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
+        'Ingangsdatum van de werkingsperiode van het besluit. Ondersteunt de value resolver, bijv: pv:ingangsdatum of doc:/besluit/ingangsdatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
       vervaldatum: 'Vervaldatum',
       vervaldatumTooltip:
-        'Datum waarop de werkingsperiode van het besluit eindigt. Ondersteunt de value resolver, bijv: pv:vervaldatum of doc:/besluit/vervaldatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
+        'Datum waarop de werkingsperiode van het besluit eindigt. Ondersteunt de value resolver, bijv: pv:vervaldatum of doc:/besluit/vervaldatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervalreden: 'Vervalreden',
       vervalredenTooltip:
-        'De omschrijving die aangeeft op grond waarvan het besluit is of komt te vervallen.',
+        'De omschrijving die aangeeft op grond waarvan het besluit is of komt te vervallen. Mogelijke waarden: tijdelijk, ingetrokken_overheid, ingetrokken_belanghebbende',
       tijdelijk: 'Tijdelijk',
       ingetrokken_overheid: 'Ingetrokken door overheid',
       ingetrokken_belanghebbende: 'Ingetrokken door belanghebbende',
@@ -87,6 +91,16 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Selecteer de dossierdefinitie waarvan u een Besluit-type wilt selecteren. Als er slechts één besluittype beschikbaar is, wordt deze standaard geselecteerd.',
       besluittypeUrlSelect: 'Besluittype',
       besluittypeUrlSelectTooltip: 'Selecteer het besluittype.',
+      'patch-besluit': 'Zaakbesluit bijwerken',
+      patchZaakBesluitInformation: 'Deze actie wijzigt een zaakbesluit in de Besluiten API.',
+      beslisdatum: 'Beslisdatum',
+      beslisdatumTooltip:
+        'De beslisdatum (AWB) van het besluit. Ondersteunt value resolver. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
+      addPatchBesluitProperty: 'Voeg nieuwe parameter toe',
+      'get-besluit': 'Besluit ophalen',
+      resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat moet worden opgeslagen.',
     },
     en: {
       title: 'Besluiten API',
@@ -110,13 +124,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'A body of a legal person established under public law or a person or body with any public authority under whose responsibility the decision has been adopted.',
       ingangsdatum: 'Starting date',
       ingangsdatumTooltip:
-        'Commencement date of the effective period of the besluit. Supports the value resolver eg: pv:ingangsdatum or doc:/besluit/ingangsdatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
+        'Commencement date of the effective period of the besluit. Supports the value resolver eg: pv:ingangsdatum or doc:/besluit/ingangsdatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervaldatum: 'Expiration date',
       vervaldatumTooltip:
-        'Date on which the period of operation of the besluit ends. Supports the value resolver eg: pv:vervaldatum or doc:/besluit/vervaldatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
+        'Date on which the period of operation of the besluit ends. Supports the value resolver eg: pv:vervaldatum or doc:/besluit/vervaldatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z.',
       vervalreden: 'Reason for expiry',
       vervalredenTooltip:
-        'The description that indicates on the basis of which the decision has been or will be cancelled.',
+        'The description that indicates on the basis of which the decision has been or will be cancelled. Possible value: tijdelijk, ingetrokken_overheid, ingetrokken_belanghebbende',
       tijdelijk: 'Temporary',
       ingetrokken_overheid: 'Withdrawn by government',
       ingetrokken_belanghebbende: 'Withdrawn by interested party',
@@ -147,67 +161,16 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Select the case definition from which you want to select a Besluit type. If only one Besluit type is available, it will be selected by default.',
       besluittypeUrlSelect: 'Besluittype',
       besluittypeUrlSelectTooltip: 'Select the Besluit type.',
-    },
-    de: {
-      title: 'Besluiten API',
-      rsin: 'RSIN',
-      rsinTooltip: 'Informationsnummer für juristische Personen und Partnerschaften.',
-      url: 'Besluiten API URL',
-      urlTooltip: 'Die URL zur REST API von Besluiten',
-      description:
-        'API für die Speicherung und den Zugriff auf Entscheidungen und zugehörige Metadaten.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
-      'create-besluit': 'Zaakbesluit erstellen',
-      createZaakBesluitInformation: 'Diese Aktion erstellt eine Zaakbesluit in der Besluiten-API.',
-      besluittypeUrl: 'Entscheidungstyp-URL',
-      besluittypeUrlTooltip: 'URL-Referenz zum Entscheidungstyp',
-      toelichting: 'Erläuterung',
-      toelichtingTooltip: 'Begründung der Entscheidung.',
-      bestuursorgaan: 'Leitungsgremium',
-      bestuursorgaanTooltip:
-        'Eine Körperschaft einer juristischen Person des öffentlichen Rechts oder eine Person oder Körperschaft einer öffentlichen Behörde, unter deren Verantwortung die Entscheidung getroffen wurde.',
-      ingangsdatum: 'Anfangsdatum',
-      ingangsdatumTooltip:
-        'Datum des Beginns der Geltungsdauer der Entscheidung. Unterstützt den Werteauflöser, z. B.: pv:ingangsdatum oder doc:/besluit/ingangdatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
-      vervaldatum: 'Verfallsdatum',
-      vervaldatumTooltip:
-        'Datum, an dem die Geltungsdauer der Entscheidung endet. Unterstützt den Werteauflöser, z. B.: pv:vervaldatum oder doc:/besluit/vervaldatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
-      vervalreden: 'Ablaufgrund',
-      vervalredenTooltip:
-        'Die Beschreibung, auf deren Grundlage die Entscheidung aufgehoben wurde oder wird.',
-      tijdelijk: 'Temporär',
-      ingetrokken_overheid: 'Von der Regierung zurückgezogen',
-      ingetrokken_belanghebbende: 'Von interessierter Partei zurückgezogen',
-      publicatiedatum: 'Veröffentlichungsdatum',
-      publicatiedatumTooltip: 'Datum, an dem die Entscheidung veröffentlicht wird.',
-      verzenddatum: 'Versanddatum',
-      verzenddatumTooltip: 'Datum, an dem die Entscheidung gesendet wurde.',
-      uiterlijkeReactieDatum: 'Antwortfrist',
-      uiterlijkeReactieDatumTooltip:
-        'Das Datum, bis zu dem eine Verteidigung gegen die Entscheidung möglich ist.',
-      besluitUrlProcessVariable: 'Prozessvariablenname mit Entscheidungs-URL',
-      besluitUrlProcessVariableTooltip:
-        'Hier muss der Name der Prozessvariable eingetragen werden, in der die Entscheidungs-URL lokal gespeichert wird',
-      'link-document-to-besluit': 'Verknüpf Document zum Besluit',
-      linkDocumentToBesluitInformation:
-        'Diese Aktion verknüpft ein Dokument mit einer Fallentscheidung in der Besluiten API.',
-      besluitUrl: 'Besluit URL',
-      besluitUrlTooltip: 'URL-Referenz zum besluit',
-      documentUrl: 'Document URL',
-      documentUrlTooltip: 'URL-Referenz zum document',
-      inputTypeBesluitToggle: 'Eingabetyp Besluit-URL',
-      inputTypeStartingDateToggle: 'Eingabetyp Begindatum',
-      inputTypeExpirationDateToggle: 'Eingabetyp Einddatum',
-      text: 'Text',
-      selection: 'Auswahl',
-      caseDefinition: 'Falltyp',
-      caseDefinitionTooltip:
-        'Wählen Sie die Falltyp aus, aus der Sie einen Besluit-typ auswählen möchten. Wenn nur ein Besluit-typ verfügbar ist, wird dieser standardmäßig ausgewählt.',
-      besluittypeUrlSelect: 'Besluittype',
-      besluittypeUrlSelectTooltip: 'Wählen Sie den Besluit-typ aus.',
+      'patch-besluit': 'Patch Zaakbesluit',
+      patchZaakBesluitInformation: 'This action patches a Zaakbesluit in the Besluiten API.',
+      beslisdatum: 'Decision date',
+      beslisdatumTooltip:
+        'The decision date (AWB) of the decision. Supports value resolver. Supported date examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z',
+      addPatchBesluitProperty: 'Add besluit property',
+      'get-besluit': 'Retrieve besluit',
+      resultProcessVariable: 'Result process variable',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result must be stored.',
     },
   },
 };

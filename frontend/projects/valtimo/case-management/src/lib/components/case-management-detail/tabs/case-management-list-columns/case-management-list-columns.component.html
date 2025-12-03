@@ -62,7 +62,7 @@
     <valtimo-json-editor
       [model]="obs.jsonEditorModel"
       [fitPage]="true"
-      [fitPageExtraSpace]="248"
+      [fitPageSpaceAdjustment]="248"
       [showEditButton]="obs.hasEditPermissions"
       (saveEvent)="updateCaseListColumns(obs.params.caseDefinitionKey, $event)"
     >

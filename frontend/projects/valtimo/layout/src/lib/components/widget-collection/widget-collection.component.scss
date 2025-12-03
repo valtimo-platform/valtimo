@@ -29,6 +29,12 @@
     justify-content: space-between;
   }
 
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__title {
     color: var(--cds-text-primary);
     font-weight: 600;
@@ -58,22 +64,29 @@
     width: 100%;
     gap: 16px;
 
+    &-title {
+      color: var(--cds-text-primary);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 22px;
+      font-style: italic;
+      width: 100%;
+    }
+
+    &-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    &-input {
+      background: transparent;
+    }
+
     &--hidden {
       visibility: hidden;
     }
-  }
-
-  &__card-title {
-    color: var(--cds-text-primary);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 22px;
-    font-style: italic;
-    width: 100%;
-  }
-
-  &__card-input {
-    background: transparent;
   }
 
   &__full-width-input {
@@ -90,28 +103,57 @@
     display: flex;
     justify-content: center;
   }
-}
 
-.valtimo-widget-collection__render {
-  &-vertically,
-  &-two-columns,
-  &-three-columns {
-    grid-gap: 16px;
-    align-items: stretch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+  &__render {
+    &-vertically,
+    &-two-columns,
+    &-three-columns {
+      grid-gap: 16px;
+      align-items: stretch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    &-vertically {
+      display: flex !important;
+    }
+
+    &-two-columns {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &-three-columns {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
-  &-vertically {
-    display: flex !important;
-  }
+  &--compact {
+    &.valtimo-widget-collection {
+      .cds--label {
+        margin: 0;
+      }
 
-  &-two-columns {
-    grid-template-columns: repeat(2, 1fr);
-  }
+      .valtimo-widget-collection__label .cds--text-input-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 32px;
+      }
 
-  &-three-columns {
-    grid-template-columns: repeat(3, 1fr);
+      &__card {
+        gap: 12px;
+
+        &-content {
+          padding-left: 16px;
+          gap: 12px;
+          border-left: 1px solid var(--cds-border-subtle-01);
+        }
+
+        &-input {
+          border: none;
+        }
+      }
+    }
   }
 }

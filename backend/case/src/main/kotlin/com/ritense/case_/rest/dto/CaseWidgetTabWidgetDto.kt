@@ -28,10 +28,12 @@ import jakarta.validation.constraints.NotBlank
 interface CaseWidgetTabWidgetDto {
     @get:NotBlank val key: String
     val title: String
+    val icon: String?
     @get:Min(1)
     @get:Max(4)
     val width: Int
     val highContrast: Boolean
+    val isCompact: Boolean?
     val actions: List<WidgetAction>?
     val displayConditions: List<Condition<*>>?
 

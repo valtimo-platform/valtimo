@@ -24,12 +24,12 @@
   <v-input
     name="roltypeUrl"
     [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.roltypeUrl"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -37,12 +37,12 @@
   <v-input
     name="rolToelichting"
     [title]="'rolToelichting' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.rolToelichting"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -50,12 +50,12 @@
   <v-input
     name="identificatie"
     [title]="'identificatie' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'identificatieOrganisatorischeEenheidTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.identificatie"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'identificatieOrganisatorischeEenheidTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -63,12 +63,12 @@
   <v-input
     name="naam"
     [title]="'naam' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'naamTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.naam"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'naamTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -76,12 +76,12 @@
   <v-input
     name="isGehuisvestIn"
     [title]="'isGehuisvestIn' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'isGehuisvestInTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.isGehuisvestIn"
     [disabled]="obs.disabled"
     [required]="true"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'isGehuisvestInTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -89,12 +89,12 @@
   <v-input
     name="afwijkendeNaamBetrokkene"
     [title]="'afwijkendeNaamBetrokkene' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'afwijkendeNaamBetrokkeneTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.afwijkendeNaamBetrokkene"
     [disabled]="obs.disabled"
     [required]="false"
+    [margin]="true"
     [trim]="true"
-    [tooltip]="'afwijkendeNaamBetrokkeneTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
@@ -102,26 +102,26 @@
   <v-radio
     name="indicatieMachtiging"
     [title]="'indicatieMachtiging' | pluginTranslate: pluginId | async"
-    [margin]="true"
+    [tooltip]="'indicatieMachtigingTooltip' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.indicatieMachtiging"
     [disabled]="obs.disabled"
     [required]="false"
-    [tooltip]="'indicatieMachtigingTooltip' | pluginTranslate: pluginId | async"
+    [margin]="true"
     [fullWidth]="true"
     [radioValues]="INDICATIE_MACHTIGING_VALUES"
   >
   </v-radio>
 
   <v-input
-          name="resultProcessVariable"
-          [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.resultProcessVariable"
-          [disabled]="obs.disabled"
-          [required]="false"
-          [trim]="true"
-          [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-          [fullWidth]="true"
+    name="resultProcessVariable"
+    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [defaultValue]="obs.prefill?.resultProcessVariable"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [margin]="true"
+    [trim]="true"
+    [fullWidth]="true"
   >
   </v-input>
 </v-form>

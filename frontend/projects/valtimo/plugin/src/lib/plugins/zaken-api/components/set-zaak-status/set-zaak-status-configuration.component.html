@@ -21,9 +21,11 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     pluginId: pluginId$ | async,
     selectedInputOption: selectedInputOption$ | async,
+    datumStatusGezetSelectedInputOption: datumStatusGezetSelectedInputOption$ | async,
     loading: loading$ | async,
     statusTypeItems: statusTypeSelectItems$ | async,
     context: context$ | async,
+    datePickerInvalid: datePickerInvalid$ | async
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -36,8 +38,52 @@
       [required]="false"
       [tooltip]="'statustoelichtingTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
+      [placeholder]="'statustoelichting' | pluginTranslate: obs.pluginId | async"
     >
     </v-input>
+
+    <v-radio
+      name="inputDatumStatusGezetToggle"
+      [disabled]="obs.disabled"
+      [title]="'inputDatumStatusGezetToggle' | pluginTranslate: obs.pluginId | async"
+      [radioValues]="datePickerInputTypeOptions$ | async"
+      [defaultValue]="obs.datumStatusGezetSelectedInputOption"
+      [margin]="true"
+    ></v-radio>
+
+    <div class="date-time-row" *ngIf="obs.datumStatusGezetSelectedInputOption === 'selection'">
+      <cds-date-picker
+        [attr.data-carbon-theme]="theme$ | async"
+        [label]="'logging.search.afterTimestamp' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        [value]="[selectedDate]"
+        [invalid]="obs.datePickerInvalid"
+        [invalidText]="'datumStatusGezetInvalidText' | pluginTranslate: obs.pluginId | async"
+        (valueChange)="onDateSelected($event)"
+      ></cds-date-picker>
+
+      <cds-timepicker
+        class="timepicker"
+        [attr.data-carbon-theme]="theme$ | async"
+        [value]="selectedTime"
+        [invalid]="obs.datePickerInvalid"
+        (valueChange)="onTimeSelected($event)"
+      ></cds-timepicker>
+    </div>
+
+    <v-input
+      *ngIf="obs.datumStatusGezetSelectedInputOption === 'text'"
+      name="datumStatusGezet"
+      [title]="'datumStatusGezet' | pluginTranslate: obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.datumStatusGezet"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [trim]="true"
+      [tooltip]="'datumStatusGezetTooltip' | pluginTranslate: obs.pluginId | async"
+      [fullWidth]="true"
+    ></v-input>
 
     <v-radio
       *ngIf="obs?.context?.[0] === 'case'"

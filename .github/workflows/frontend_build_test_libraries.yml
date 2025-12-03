@@ -101,7 +101,7 @@ jobs:
           if [[ "$INPUT_PROJECT_VERSION" != '' ]]; then
             echo "Version is ${INPUT_PROJECT_VERSION}"
             echo "project_version=${INPUT_PROJECT_VERSION}" >> $GITHUB_OUTPUT
-            return 0
+            exit 0
           fi
 
           # replace special characters with -

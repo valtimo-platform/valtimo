@@ -45,4 +45,29 @@ interface LinkDocumentToBesluitConfig {
   documentUrl: string;
 }
 
-export {BesluitenApiConfig, CreateZaakBesluitConfig, Vervalredenen, LinkDocumentToBesluitConfig};
+interface PatchZaakBesluitConfig {
+  besluitUrl: string;
+  beslisdatum?: string;
+  toelichting?: string;
+  bestuursorgaan?: string;
+  ingangsdatum?: string;
+  vervaldatum?: string;
+  vervalreden?: string;
+  publicatiedatum?: string;
+  verzenddatum?: string;
+  uiterlijkeReactiedatum?: string;
+}
+
+interface GetBesluitConfig {
+  besluitUrl: string;
+  resultProcessVariable: string;
+}
+
+export {
+  BesluitenApiConfig,
+  CreateZaakBesluitConfig,
+  Vervalredenen,
+  LinkDocumentToBesluitConfig,
+  PatchZaakBesluitConfig,
+  GetBesluitConfig,
+};

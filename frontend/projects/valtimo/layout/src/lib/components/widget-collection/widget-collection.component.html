@@ -19,15 +19,24 @@
     widgetConfiguration: widgetConfiguration$ | async,
     collectionWidgetCards: collectionWidgetCards$ | async,
     noVisibleFields: noVisibleFields$ | async,
+    widgetData: widgetData$ | async,
   } as obs"
 >
   <section class="valtimo-widget-collection__header">
-    <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+    <div class="valtimo-widget-collection__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
+
+      <span class="valtimo-widget-collection__title">{{ $widgetTitle() }}</span>
+    </div>
 
     <ng-content></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
+      [resolvedData]="obs.widgetData"
     ></valtimo-widget-action-button>
   </section>
 
@@ -44,33 +53,42 @@
       <div
         *ngIf="!obs.noVisibleFields"
         class="valtimo-widget-collection__card"
-        [ngClass]="{'valtimo-widget-collection__card--hidden': card.hidden}"
+        [ngClass]="{
+          'valtimo-widget-collection__card--hidden': card.hidden,
+        }"
       >
         <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
 
-        @for (field of card.fields; track field.key) {
-          <div
-            *ngIf="
-              (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
-              !field?.hideWhenEmpty
-            "
-            [ngClass]="{
-              'valtimo-widget-collection__full-width-input': field?.width === 'full',
-              'valtimo-widget-collection__half-width-input': field?.width === 'half',
-            }"
-          >
-            <cds-label class="valtimo-widget-collection__label" [attr.title]="field?.title">
-              {{ field?.title }}
+        <section
+          class="valtimo-widget-collection__card-content"
+        >
+          @for (field of card.fields; track field.key) {
+            <div
+              *ngIf="
+                (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
+                !field?.hideWhenEmpty
+              "
+              [ngClass]="{
+                'valtimo-widget-collection__full-width-input': field?.width === 'full',
+                'valtimo-widget-collection__half-width-input': field?.width === 'half',
+              }"
+            >
+              <cds-label
+                class="valtimo-widget-collection__label"
+                [attr.title]="field?.value ?? field?.title"
+              >
+                {{ field?.title }}
 
-              <input
-                [value]="field?.value"
-                [readonly]="true"
-                class="valtimo-widget-collection__card-input"
-                cdsText
-              />
-            </cds-label>
-          </div>
-        }
+                <input
+                  [value]="field?.value"
+                  [readonly]="true"
+                  class="valtimo-widget-collection__card-input"
+                  cdsText
+                />
+              </cds-label>
+            </div>
+          }
+        </section>
       </div>
     }
   </div>
@@ -78,9 +96,7 @@
   @if (obs.noVisibleFields || !obs?.collectionWidgetCards?.length) {
     <valtimo-no-results
       [collapseVertically]="true"
-      [description]="
-        (obs.noVisibleFields ? 'widgets.emptyFields' : 'widgets.noData') | translate
-      "
+      [description]="(obs.noVisibleFields ? 'widgets.emptyFields' : 'widgets.noData') | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
   }

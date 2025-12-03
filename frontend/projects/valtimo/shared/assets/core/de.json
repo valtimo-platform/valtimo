@@ -884,6 +884,14 @@
         "description": "Für Inhalte mit höherer Priorität"
       }
     },
+    "density": {
+      "description": "Wählen Sie die gewünschte Dichte für das Widget aus",
+      "default": {"title": "Standard", "description": "Für reguläre Inhalte"},
+      "highContrast": {
+        "title": "Kompakt",
+        "description": "Für eine Übersicht mit höherer Datendichte"
+      }
+    },
     "content": {
       "description": "Geben Sie den Inhalt für jede Spalte ein. Beachten Sie, dass nicht alle Felder die gleiche Höhe haben. Um das beste Ergebnis zu erzielen, stellen Sie sicher, dass die Artikel richtig verteilt sind.",
       "widgetTitle": "Widget-Titel",
@@ -994,9 +1002,9 @@
     },
     "actionButtonLabel": "Typ der Aktionsschaltfläche",
     "externalLink": {
-    "linkLabel": "Schaltfläche für externen Link",
-    "linkPlaceholder": "Externer Link",
-    "buttonTextLabel": "Text der Schaltfläche für externen Link"
+      "linkLabel": "Schaltfläche für externen Link",
+      "linkPlaceholder": "Externer Link",
+      "buttonTextLabel": "Text der Schaltfläche für externen Link"
     },
     "saveModalContent": "Sind Sie sicher, dass Sie die Widget-Konfiguration speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Widget-Konfiguration zerstören."
   },

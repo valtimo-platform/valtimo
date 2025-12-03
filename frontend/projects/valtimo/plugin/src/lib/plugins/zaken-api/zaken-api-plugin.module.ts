@@ -28,10 +28,12 @@ import {
 } from '@valtimo/components';
 import {
   ButtonModule,
-  DatePickerInputModule,
+  DatePickerInputModule, DatePickerModule,
   DialogModule,
   IconModule,
   LoadingModule,
+  NotificationModule,
+  TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
@@ -56,6 +58,10 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 import {ReactiveFormsModule} from '@angular/forms';
@@ -65,6 +71,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateMedewerkerZaakRolComponent,
@@ -83,6 +90,8 @@ import {ReactiveFormsModule} from '@angular/forms';
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    PatchZaakConfigurationComponent,
+    GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
   ],
@@ -102,6 +111,11 @@ import {ReactiveFormsModule} from '@angular/forms';
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    DatePickerModule,
+    FormsModule,
+    NotificationModule,
+    ReactiveFormsModule,
+    TimePickerModule,
     InputModule,
     ReactiveFormsModule,
     ReadOnlyDirective,
@@ -111,6 +125,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
@@ -129,6 +144,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
   ],

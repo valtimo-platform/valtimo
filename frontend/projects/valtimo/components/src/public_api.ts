@@ -238,6 +238,12 @@ export * from './lib/components/list-column-view/list-column-view.component';
 // Quick search
 export * from './lib/components/quick-search/quick-search.component';
 
+// MDI icon selector
+export * from './lib/components/mdi-icon-selector/mdi-icon-selector.component';
+
+// MDI icon viewer
+export * from './lib/components/mdi-icon-viewer/mdi-icon-viewer.component';
+
 /*
 directives
  */

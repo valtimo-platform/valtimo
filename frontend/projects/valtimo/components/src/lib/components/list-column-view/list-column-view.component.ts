@@ -53,7 +53,7 @@ import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
     TranslateModule,
     IconModule,
     InputModule,
-    TooltipModule
+    TooltipModule,
   ],
 })
 export class ListColumnViewComponent {

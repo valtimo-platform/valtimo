@@ -18,8 +18,8 @@ package com.ritense.widget.table
 
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -34,9 +34,11 @@ class TableWidget(
     id: UUID,
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction> = emptyList(),
     displayConditions: List<Condition<*>> = emptyList(),
 
@@ -44,24 +46,28 @@ class TableWidget(
     @Column(name = "properties", nullable = false)
     val properties: TableWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions, displayConditions
+    id, key, title, icon, order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
+        isCompact: Boolean?,
         actions: List<WidgetAction>,
         displayConditions: List<Condition<*>>,
     ) = TableWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties,
@@ -70,8 +76,10 @@ class TableWidget(
     override fun toDto() = TableWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
+        isCompact = this.isCompact,
         actions = this.actions,
         displayConditions = this.displayConditions,
         properties = this.properties,

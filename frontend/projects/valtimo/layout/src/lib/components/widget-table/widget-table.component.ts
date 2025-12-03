@@ -25,7 +25,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  CarbonListItem,
+  CarbonListModule,
+  ColumnConfig,
+  MdiIconViewerComponent,
+  ViewType,
+} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -52,6 +58,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetTableComponent {
@@ -91,9 +98,10 @@ export class WidgetTableComponent {
     this.cdr.detectChanges();
   }
 
-  public readonly showPagination = signal<boolean>(false);
+  public readonly $showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
+  public readonly resolvedData$ = new BehaviorSubject<object | null>(null);
 
   private _paginationInitialized = false;
 
@@ -102,7 +110,7 @@ export class WidgetTableComponent {
   @Input({required: true}) set widgetData(value: Page<CarbonListItem> | null) {
     if (!value) return;
 
-    this.showPagination.set(value.totalElements > value.size);
+    this.$showPagination.set(value.totalElements > value.size);
 
     if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
@@ -117,11 +125,12 @@ export class WidgetTableComponent {
     }
 
     this.widgetData$.next(widgetData);
+    this.resolvedData$.next(value?.resolved);
 
     if (!this._paginationInitialized) {
-      this.showPagination.set(value.totalElements > value.size);
+      this.$showPagination.set(value.totalElements > value.size);
 
-      this.paginationModel.set(
+      this.$paginationModel.set(
         value.totalPages < 0
           ? null
           : {
@@ -133,7 +142,7 @@ export class WidgetTableComponent {
 
       this._paginationInitialized = true;
     } else {
-      this.paginationModel.update((model: PaginationModel | null) =>
+      this.$paginationModel.update((model: PaginationModel | null) =>
         !model
           ? null
           : {
@@ -150,12 +159,12 @@ export class WidgetTableComponent {
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
-  public readonly paginationModel = signal<PaginationModel | null>(new PaginationModel());
+  public readonly $paginationModel = signal<PaginationModel | null>(new PaginationModel());
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
   public onSelectPage(page: number): void {
-    const paginationModel = this.paginationModel();
+    const paginationModel = this.$paginationModel();
     if (!paginationModel) return;
     this.paginationEvent.emit({...paginationModel, currentPage: page});
   }

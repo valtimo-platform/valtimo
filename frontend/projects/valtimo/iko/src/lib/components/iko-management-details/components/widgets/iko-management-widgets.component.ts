@@ -67,6 +67,7 @@ export class IkoManagementWidgetsComponent
     WidgetType.COLLECTION,
     WidgetType.TABLE,
     WidgetType.INTERACTIVE_TABLE,
+    WidgetType.MAP,
   ];
 
   private readonly _ikoRepositoryConfig$: Observable<IkoRepositoryConfigResponse> =

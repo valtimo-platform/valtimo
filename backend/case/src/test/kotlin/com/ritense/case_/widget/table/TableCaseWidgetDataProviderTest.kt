@@ -251,6 +251,7 @@ class TableCaseWidgetDataProviderTest(
         order = 0,
         width = 1,
         highContrast = true,
+        isCompact = true,
         actions = emptyList(),
         displayConditions = emptyList(),
         properties = TableWidgetProperties(
@@ -272,7 +273,7 @@ class TableCaseWidgetDataProviderTest(
     )
 
     private fun mockCollection(documentId: UUID, widget: TableCaseWidget, collectionValue: Any?) {
-        whenever(valueResolverService.resolveValues(any<Map<String, Any>>(), eq(listOf(widget.properties.collection)))).thenReturn(
+        whenever(valueResolverService.resolveValues(any<Map<String, Any>>(), any<Collection<String>>())).thenReturn(
             mapOf(widget.properties.collection to collectionValue)
         )
     }

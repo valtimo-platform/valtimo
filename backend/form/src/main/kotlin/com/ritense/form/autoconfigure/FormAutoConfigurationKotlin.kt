@@ -146,9 +146,15 @@ class FormAutoConfigurationKotlin {
     @ConditionalOnMissingBean(FormIoCaseWidgetDataProvider::class)
     @Bean
     fun formIoCaseWidgetDataProvider(
+        valueResolverService: ValueResolverService,
         formDefinitionService: FormDefinitionService,
-        formService: PrefillFormService
-    ) = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
+        formService: PrefillFormService,
+        objectMapper: ObjectMapper,
+    ) = FormIoCaseWidgetDataProvider(valueResolverService,
+        formDefinitionService,
+        formService,
+        objectMapper
+    )
 
     @ConditionalOnMissingBean(TableWidgetDataProvider::class)
     @Bean
@@ -210,12 +216,16 @@ class FormAutoConfigurationKotlin {
     @Bean
     @ConditionalOnMissingBean(FormIoWidgetDataProvider::class)
     fun formIoWidgetDataProvider(
+        valueResolverService: ValueResolverService,
         formDefinitionService: FormDefinitionService,
         formService: PrefillFormService,
         documentService: DocumentService,
+        objectMapper: ObjectMapper,
     ) = FormIoWidgetDataProvider(
+        valueResolverService,
         formDefinitionService,
         formService,
         documentService,
+        objectMapper,
     )
 }

@@ -21,6 +21,7 @@ import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -37,11 +38,17 @@ import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class FormIoCaseWidgetDataProviderTest(
+    @Mock val valueResolverService: ValueResolverService,
     @Mock val formDefinitionService: FormDefinitionService,
     @Mock val formService: PrefillFormService
 ) {
 
-    private val dataProvider = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
+    private val dataProvider = FormIoCaseWidgetDataProvider(
+        valueResolverService,
+        formDefinitionService,
+        formService,
+        MapperSingleton.get(),
+    )
 
     @Test
     fun `should return a prefilled form definition`() {
@@ -70,7 +77,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
@@ -88,7 +95,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)

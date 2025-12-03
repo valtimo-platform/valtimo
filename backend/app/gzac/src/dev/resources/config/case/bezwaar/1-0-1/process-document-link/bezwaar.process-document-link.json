@@ -1,0 +1,37 @@
+[
+    {
+        "processDefinitionKey": "bezwaar",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "catalogi-get-typen",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "change-name",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "patch-zaak",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "create-zaaknotitie",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "patch-zaaknotitie",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "vastleggen-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    }
+]

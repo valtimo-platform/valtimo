@@ -31,34 +31,42 @@ class DividerWidget(
     id: UUID = UUID.randomUUID(),
     key: String,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
 ) : Widget(
-    id, key, title, order, width, highContrast, emptyList()
+    id, key, title, icon,order, width, highContrast, isCompact, emptyList()
 ) {
     override fun copy(
         id: UUID,
         key: String,
         title: String,
+        icon: String?,
         order: Int,
         width: Int,
         highContrast: Boolean,
+        isCompact: Boolean?,
         actions: List<WidgetAction>,
         displayConditions: List<Condition<*>>,
     ) = DividerWidget(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
     )
 
     override fun toDto() = DividerWidgetDto(
         key = this.key,
         title = this.title,
+        icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
+        isCompact = this.isCompact,
     )
 }

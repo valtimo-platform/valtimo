@@ -265,6 +265,7 @@ class InteractiveTableWidgetDataProviderTest(
         order = 0,
         width = 1,
         highContrast = true,
+        isCompact = true,
         actions = emptyList(),
         properties = InteractiveTableWidgetProperties(
             collection = "test:someCollection",

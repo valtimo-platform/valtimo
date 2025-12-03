@@ -100,8 +100,4 @@ export class IkoWidgetTableComponent {
   private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
     return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
   }
-
-  public onWidgetActionClick(action: WidgetAction): void {
-    this.ikoApiService.handleAction(action);
-  }
 }

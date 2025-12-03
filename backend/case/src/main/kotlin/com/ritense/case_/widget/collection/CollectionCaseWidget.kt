@@ -18,9 +18,9 @@ package com.ritense.case_.widget.collection
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -33,9 +33,11 @@ import org.hibernate.annotations.Type
 class CollectionCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -43,16 +45,20 @@ class CollectionCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: CollectionWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions, displayConditions
+    id, title, icon, order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = CollectionCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties
     )
+
+    override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }
