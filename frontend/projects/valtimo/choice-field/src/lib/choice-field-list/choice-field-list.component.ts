@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {Router} from '@angular/router';
-import {ChoiceFieldService, ChoiceField} from '@valtimo/components';
+import {ChoiceField, ChoiceFieldService, Pagination} from '@valtimo/components';
 
 @Component({
   standalone: false,
   selector: 'valtimo-choice-field-list',
   templateUrl: './choice-field-list.component.html',
-  styleUrls: ['./choice-field-list.component.css'],
 })
 export class ChoiceFieldListComponent {
   public choiceFields: Array<ChoiceField> = [];
-  public pagination = {
+  public readonly $pagination = signal<Pagination>({
     collectionSize: 0,
     page: 1,
     size: 10,
-  };
+  });
   public pageParam = 0;
   public fields: Array<any> = [
     {
@@ -52,25 +50,33 @@ export class ChoiceFieldListComponent {
     private service: ChoiceFieldService
   ) {}
 
-  paginationSet() {
+  public paginationSet(size: string): void {
+    this.$pagination.update(pagination => ({
+      ...pagination,
+      size: +size,
+    }));
     this.initData();
   }
 
-  private initData() {
-    this.service
-      .queryPage({page: this.pageParam, size: this.pagination.size})
-      .subscribe(results => {
-        this.pagination.collectionSize = results.totalElements;
-        this.choiceFields = results.content;
-      });
-  }
-
-  public rowClick(data) {
+  public rowClick(data): void {
     this.router.navigate([`/choice-fields/field/${encodeURI(data.id)}`]);
   }
 
-  public paginationClicked(page) {
+  public paginationClicked(page: number): void {
     this.pageParam = page - 1;
     this.initData();
+  }
+
+  private initData(): void {
+    this.service
+      .queryPage({page: this.pageParam, size: this.$pagination().size})
+      .subscribe(results => {
+        this.$pagination.update(pagination => ({
+          ...pagination,
+          page: this.pageParam + 1,
+          collectionSize: results.totalElements,
+        }));
+        this.choiceFields = results.content;
+      });
   }
 }
