@@ -511,6 +511,7 @@ public class OperatonProcessService {
             }
 
             updateCaseDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
+            updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
 
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
@@ -715,6 +716,15 @@ public class OperatonProcessService {
             setCaseDefinitionProcessesVersionTags(bpmnModel, (CaseDefinitionId) solutionModuleId);
         } else {
             clearCaseDefinitionProcessesVersionTags(bpmnModel);
+        }
+    }
+
+    void updateBuildingBlockDefinitionProcessesVersionTags(
+        BpmnModelInstance bpmnModel,
+        @Nullable SolutionModuleId solutionModuleId
+    ) {
+        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) {
+            setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, (BuildingBlockDefinitionId) solutionModuleId);
         }
     }
 

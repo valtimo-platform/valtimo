@@ -112,6 +112,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In dit veld moet de verwijzing komen naar de type zaak. Als er slechts één zaaktype beschikbaar is, wordt deze standaard geselecteerd.',
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
+      now: 'Gebruik huidige datum/tijd',
       text: 'Tekst',
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - Natuurlijk persoon',
@@ -326,6 +327,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In this field the reference must be made to the type of the zaak. If only one zaaktype is available, it will be selected by default.',
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
+      now: 'Use current date/time',
       text: 'Text',
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
@@ -538,6 +540,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakTypeSelectTooltip:
         'In diesem Feld muss auf die zaaktype verwiesen werden. Wenn nur ein Zaaktyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
+      now: 'Aktuelles Datum/Uhrzeit verwenden',
       text: 'Text',
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
