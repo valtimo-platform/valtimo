@@ -118,13 +118,13 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {IkoModule} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
   return new Map<string, object>([
