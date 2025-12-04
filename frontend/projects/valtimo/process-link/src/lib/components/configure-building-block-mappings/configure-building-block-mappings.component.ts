@@ -22,8 +22,15 @@ import {
   OnInit,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {combineLatest, Observable, Subscription} from 'rxjs';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {combineLatest, Observable, startWith, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {
   BuildingBlockInputMapping,
@@ -31,6 +38,10 @@ import {
   BuildingBlockProcessLinkCreateDto,
   BuildingBlockProcessLinkUpdateDto,
   BuildingBlockSyncTiming,
+  InputRowFormGroup,
+  InputsFormGroup,
+  OutputRowFormGroup,
+  OutputsFormGroup,
   ProcessLink,
 } from '../../models';
 import {
@@ -93,12 +104,45 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       )
     );
 
-  public readonly inputsForm = this.fb.group({
-    inputs: this.fb.array<FormGroup>([]),
+  public readonly inputsForm: InputsFormGroup = new FormGroup<InputsFormGroup['controls']>({
+    inputs: new FormArray<InputRowFormGroup>([]),
   });
-  public readonly outputsForm = this.fb.group({
-    outputs: this.fb.array<FormGroup>([]),
+  public readonly outputsForm: OutputsFormGroup = new FormGroup<OutputsFormGroup['controls']>({
+    outputs: new FormArray<OutputRowFormGroup>([]),
   });
+
+  private readonly rowItemsCache = new WeakMap<InputRowFormGroup, Observable<SelectItem[]>>();
+
+  public getBuildingBlockFieldItemsForRow$(
+    group: InputRowFormGroup
+  ): Observable<Array<SelectItem>> {
+    const cached = this.rowItemsCache.get(group);
+    if (cached) {
+      return cached;
+    }
+
+    const stream = combineLatest([
+      this.buildingBlockFieldItems$,
+      this.inputsForm.valueChanges.pipe(startWith(this.inputsForm.value)),
+      group.valueChanges.pipe(startWith(group.value)),
+    ]).pipe(
+      map(([buildingBlockFieldItems, inputsFormValue, groupValue]) => {
+        const usedInputTargets =
+          inputsFormValue.inputs?.map(input => input.target).filter(Boolean) ?? [];
+
+        const currentTarget = groupValue.target;
+        const available = buildingBlockFieldItems.filter(item => {
+          if (item.text === currentTarget) return true;
+          return !usedInputTargets.includes(item.text);
+        });
+
+        return available;
+      })
+    );
+
+    this.rowItemsCache.set(group, stream);
+    return stream;
+  }
 
   public readonly syncTimingItems: Array<{id: BuildingBlockSyncTiming; labelKey: string}> = [
     {
@@ -118,12 +162,12 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   private _syncingFromState = false;
   private _suppressValidation = false;
 
-  get inputs(): FormArray<FormGroup> {
-    return this.inputsForm.get('inputs') as FormArray<FormGroup>;
+  get inputs(): FormArray<InputRowFormGroup> {
+    return this.inputsForm.controls.inputs;
   }
 
-  get outputs(): FormArray<FormGroup> {
-    return this.outputsForm.get('outputs') as FormArray<FormGroup>;
+  get outputs(): FormArray<OutputRowFormGroup> {
+    return this.outputsForm.controls.outputs;
   }
 
   constructor(
@@ -169,14 +213,15 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         this.persistProcessLink();
       })
     );
+
     this._subscriptions.add(
-      this.outputsForm.valueChanges.subscribe(changes => {
+      this.outputsForm.valueChanges.subscribe(() => {
         this.persistOutputFormState();
       })
     );
 
     this._subscriptions.add(
-      this.inputsForm.valueChanges.subscribe(changes => {
+      this.inputsForm.valueChanges.subscribe(() => {
         this.persistInputFormState();
       })
     );
@@ -186,13 +231,41 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this._subscriptions.unsubscribe();
   }
 
+  private createInputGroup(mapping?: BuildingBlockInputMapping): InputRowFormGroup {
+    return new FormGroup<InputRowFormGroup['controls']>({
+      source: new FormControl(mapping?.source ?? '', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      target: new FormControl(mapping?.target ?? '', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+    });
+  }
+
+  private createOutputGroup(
+    mapping?: BuildingBlockOutputMapping,
+    sourceOverride?: string
+  ): OutputRowFormGroup {
+    return new FormGroup<OutputRowFormGroup['controls']>({
+      source: new FormControl(sourceOverride ?? mapping?.source ?? '', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      target: new FormControl(mapping?.target ?? '', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      syncTiming: new FormControl<BuildingBlockSyncTiming>(
+        (mapping?.syncTiming as BuildingBlockSyncTiming) ?? ('END' as BuildingBlockSyncTiming),
+        {nonNullable: true, validators: [Validators.required]}
+      ),
+    });
+  }
+
   public addInput(): void {
-    this.inputs.push(
-      this.fb.group({
-        source: ['', Validators.required],
-        target: ['', Validators.required],
-      })
-    );
+    this.inputs.push(this.createInputGroup());
     this.persistInputFormState();
     this.changeDetectorRef.detectChanges();
   }
@@ -204,13 +277,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   }
 
   public addOutput(source?: string): void {
-    this.outputs.push(
-      this.fb.group({
-        source: [source ?? '', Validators.required],
-        target: ['', Validators.required],
-        syncTiming: ['END' as BuildingBlockSyncTiming, Validators.required],
-      })
-    );
+    this.outputs.push(this.createOutputGroup(undefined, source));
     this.persistOutputFormState();
     this.changeDetectorRef.detectChanges();
   }
@@ -239,35 +306,21 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
 
     this.inputs.clear();
     allMappings.forEach(mapping => {
-      this.inputs.push(
-        this.fb.group({
-          source: [mapping.source ?? '', Validators.required],
-          target: [mapping.target ?? '', Validators.required],
-        })
-      );
+      this.inputs.push(this.createInputGroup(mapping));
     });
     this._syncingFromState = false;
     this.triggerValidation();
   }
 
-  public isSyncTimingSelected(group: FormGroup, value: BuildingBlockSyncTiming): boolean {
-    return group.get('syncTiming')?.value === value;
+  public isSyncTimingSelected(group: OutputRowFormGroup, value: BuildingBlockSyncTiming): boolean {
+    return group.controls.syncTiming.value === value;
   }
 
   private syncOutputsFromState(mappings: BuildingBlockOutputMapping[]): void {
     this._syncingFromState = true;
     this.outputs.clear();
     (mappings || []).forEach(mapping => {
-      this.outputs.push(
-        this.fb.group({
-          source: [mapping.source ?? '', Validators.required],
-          target: [mapping.target ?? '', Validators.required],
-          syncTiming: [
-            (mapping.syncTiming as BuildingBlockSyncTiming) ?? 'END',
-            Validators.required,
-          ],
-        })
-      );
+      this.outputs.push(this.createOutputGroup(mapping));
     });
     this._syncingFromState = false;
     this.triggerValidation();
@@ -316,37 +369,34 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     const requiredTargets = new Set(fields.filter(f => f.required).map(f => f.name));
     const targetCounts: Record<string, number> = {};
 
-    // validate each row has been filled
     this.inputs.controls.forEach(group => {
-      const target = group.get('target')?.value || '';
-      const source = group.get('source')?.value || '';
+      const target = group.controls.target.value || '';
+      const source = group.controls.source.value || '';
       if (target) {
         targetCounts[target] = (targetCounts[target] || 0) + 1;
       }
       if (!source) {
-        group.get('source')?.setErrors({required: true});
+        group.controls.source.setErrors({required: true});
         valid = false;
       }
       if (!target) {
-        group.get('target')?.setErrors({required: true});
+        group.controls.target.setErrors({required: true});
         valid = false;
       }
     });
 
-    // validate there's not multiple mappings to the same target
     Object.entries(targetCounts).forEach(([target, count]) => {
       if (count > 1) {
         this.inputs.controls
-          .filter(g => g.get('target')?.value === target)
-          .forEach(g => g.get('target')?.setErrors({duplicateTarget: true}));
+          .filter(g => g.controls.target.value === target)
+          .forEach(g => g.controls.target.setErrors({duplicateTarget: true}));
         valid = false;
       }
     });
 
-    // validate all required target have been configured
     requiredTargets.forEach(reqTarget => {
-      const match = this.inputs.controls.find(g => g.get('target')?.value === reqTarget);
-      if (!match || !match.get('source')?.value) {
+      const match = this.inputs.controls.find(g => g.controls.target.value === reqTarget);
+      if (!match || !match.controls.source.value) {
         valid = false;
       }
     });
@@ -358,34 +408,32 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     let valid = true;
     const targetCounts: Record<string, number> = {};
 
-    // validate each row has been filled
     this.outputs.controls.forEach(group => {
-      const target = group.get('target')?.value || '';
-      const source = group.get('source')?.value || '';
-      const syncTiming = group.get('syncTiming')?.value;
+      const target = group.controls.target.value || '';
+      const source = group.controls.source.value || '';
+      const syncTiming = group.controls.syncTiming.value;
       if (target) {
         targetCounts[target] = (targetCounts[target] || 0) + 1;
       }
       if (!source) {
-        group.get('source')?.setErrors({required: true});
+        group.controls.source.setErrors({required: true});
         valid = false;
       }
       if (!target) {
-        group.get('target')?.setErrors({required: true});
+        group.controls.target.setErrors({required: true});
         valid = false;
       }
       if (!syncTiming) {
-        group.get('syncTiming')?.setErrors({required: true});
+        group.controls.syncTiming.setErrors({required: true});
         valid = false;
       }
     });
 
-    // validate there's not multiple mappings to the same target
     Object.entries(targetCounts).forEach(([target, count]) => {
       if (count > 1) {
         this.outputs.controls
-          .filter(g => g.get('target')?.value === target)
-          .forEach(g => g.get('target')?.setErrors({duplicateTarget: true}));
+          .filter(g => g.controls.target.value === target)
+          .forEach(g => g.controls.target.setErrors({duplicateTarget: true}));
         valid = false;
       }
     });
@@ -395,13 +443,13 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
 
   private clearCustomErrors(): void {
     this.inputs.controls.forEach(group => {
-      group.get('source')?.setErrors(null);
-      group.get('target')?.setErrors(null);
+      group.controls.source.setErrors(null);
+      group.controls.target.setErrors(null);
     });
     this.outputs.controls.forEach(group => {
-      group.get('source')?.setErrors(null);
-      group.get('target')?.setErrors(null);
-      group.get('syncTiming')?.setErrors(null);
+      group.controls.source.setErrors(null);
+      group.controls.target.setErrors(null);
+      group.controls.syncTiming.setErrors(null);
     });
   }
 

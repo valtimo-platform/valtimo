@@ -42,7 +42,7 @@
                   <v-select
                     [appendInline]="false"
                     formControlName="target"
-                    [items]="obs.fieldItems || []"
+                    [items]="getBuildingBlockFieldItemsForRow$(group) | async"
                   >
                   </v-select>
                 }
@@ -86,7 +86,9 @@
         <v-input-label
           [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
         />
+
         <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+
         <div class="sync-options">
           <v-input-label
             [title]="'processLinkConfiguration.buildingBlock.sync.continuous' | translate"
@@ -96,7 +98,7 @@
       </div>
 
       <div formArrayName="outputs">
-        @for (group of outputs.controls; let i = $index; track group) {
+        @for (group of outputs.controls; track group) {
           <div class="mapping-row output" [formGroup]="group">
             <div class="mapping-part">
               <div class="mapping-cell">
