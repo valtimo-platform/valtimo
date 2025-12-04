@@ -355,6 +355,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
+    // TODO: Fix this for building blocks
     public JsonSchemaDocumentId getDocumentId(
         ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
