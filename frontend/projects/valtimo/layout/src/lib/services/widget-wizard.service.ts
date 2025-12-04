@@ -36,6 +36,8 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
 export class WidgetWizardService {
   public readonly $currentStepIndex: WritableSignal<number> = signal(0);
 
+  public readonly $currentStep: WritableSignal<WidgetWizardStep> = signal(WidgetWizardStep.TYPE);
+
   public readonly $selectedWidget: WritableSignal<WidgetTypeSelection | null> = signal(null);
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
@@ -83,7 +85,8 @@ export class WidgetWizardService {
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
-      [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
+      [WidgetWizardStep.CONTENT]:
+        !!this.$widgetContent() && this.$widgetContentValid() && !!this.$widgetTitle(),
       [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
@@ -104,23 +107,30 @@ export class WidgetWizardService {
 
   public readonly $widgetWizardStepProperties: Signal<
     Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
-  > = computed(() =>
-    this.$widgetWizardSteps().reduce(
-      (acc, curr, index, steps) => ({
+  > = computed(() => {
+    const enabledConditions = this.$widgetWizardStepEnableCondition();
+    const completeConditions = this._$stepCompleteCondition();
+    const isEditMode = this.$editMode();
+    const steps = this.$widgetWizardSteps().filter(
+      step => enabledConditions[step]?.condition() ?? true
+    );
+
+    return steps.reduce(
+      (acc, step, index) => ({
         ...acc,
-        [curr]: {
+        [step]: {
           disabled:
-            (this.$editMode() && index === 0) ||
-            (!this._$stepCompleteCondition()[steps[index - 1]] && index > 0),
-          complete: this._$stepCompleteCondition()[curr] || this.$editMode(),
+            (isEditMode && index === 0) ||
+            (!isEditMode && index > 0 && !completeConditions[steps[index - 1]]),
+          complete: !!completeConditions[step] || isEditMode,
         },
       }),
       {} as Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
-    )
-  );
+    );
+  });
 
   public readonly $nextButtonDisabled = computed(
-    () => !this._$stepCompleteCondition()[this.$widgetWizardSteps()[this.$currentStepIndex()]]
+    () => !this._$stepCompleteCondition()[this.$currentStep()]
   );
 
   private _defaultWidth!: WidgetWidth | null;
@@ -149,6 +159,7 @@ export class WidgetWizardService {
   public resetWizard(): void {
     setTimeout(() => {
       this.$currentStepIndex.set(0);
+      this.$currentStep.set(WidgetWizardStep.TYPE);
       this.$selectedWidget.set(null);
       this.$widgetWidth.set(this._defaultWidth || null);
       this.$widgetStyle.set(null);
