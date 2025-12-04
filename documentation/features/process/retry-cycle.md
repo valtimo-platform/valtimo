@@ -1,5 +1,9 @@
 # Retry cycles for failed jobs
 
+{% hint style="success" %}
+Available since Valtimo 13.7.0.
+{% endhint %}
+
 Jobs can fail for different reasons, for example when external services fail. 
 Retry strategies provide resilience against temporary outages and help avoid incidents. 
 Valtimo includes intelligent retry strategies with sensible defaults, 
