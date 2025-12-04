@@ -2405,5 +2405,10 @@
     "mdi-clipboard-text-clock": "Klembord Tekst Klok",
     "mdi-clipboard-text-play": "Klembord Tekst Afspelen",
     "mdi-clipboard-flow": "Klembord Stroom"
+  },
+  "schemaEditor": {
+    "rootObject": "Hoofdniveau",
+    "manageRequiredFields": "Vereiste velden beheren",
+    "requiredFields": "Vereiste velden"
   }
 }

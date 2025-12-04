@@ -8,11 +8,17 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-export * from './carbon.utils';
-export * from './schema-editor.utils';
+package com.ritense.buildingblock.repository
+
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
+
+interface BuildingBlockInstanceRepository :
+    JpaRepository<BuildingBlockInstance, UUID>
