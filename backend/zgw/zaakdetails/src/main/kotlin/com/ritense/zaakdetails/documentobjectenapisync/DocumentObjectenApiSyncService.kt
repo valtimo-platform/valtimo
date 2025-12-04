@@ -70,7 +70,14 @@ class DocumentObjectenApiSyncService(
     }
 
     private fun sync(document: Document) {
-        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(document.definitionId().caseDefinitionId())
+        // TODO: Fix handling building blocks correctly
+        val caseDefinitionId = document.definitionId().caseDefinitionId()
+
+        if (caseDefinitionId == null) {
+            return
+        }
+
+        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
         if (syncConfiguration?.enabled == true) {
             logger.debug { "Sync configuration found for document ${document.id()}" }
             val objectManagementConfiguration =
@@ -82,10 +89,10 @@ class DocumentObjectenApiSyncService(
 
             val objectRequest = getObjectRequest(document, objecttypenApiPlugin, objectManagementConfiguration)
 
-            val zaakdetailsObject: ZaakdetailsObject;
+            val zaakdetailsObject: ZaakdetailsObject
             val zaakdetailsObjectOptional = zaakdetailsObjectService.findByDocumentId(document.id().id)
 
-            val checkExistingZaakObjectBeforeCreating: Boolean;
+            val checkExistingZaakObjectBeforeCreating: Boolean
 
             if(zaakdetailsObjectOptional.isPresent) { //Zaakdetails object exists and reference has been stored: update
                 logger.debug { "Zaakdetails object already exists: update." }
