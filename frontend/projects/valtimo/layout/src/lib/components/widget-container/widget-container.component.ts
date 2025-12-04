@@ -27,7 +27,7 @@ import {TranslatePipe} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import Muuri from 'muuri';
-import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
+import {BehaviorSubject, delay, merge, Observable, Subject, Subscription, take} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {v4 as uuid} from 'uuid';
 import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -29,7 +29,9 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, ViewContentService, MdiIconViewerComponent} from '@valtimo/components';
+import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -38,9 +40,6 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {CarbonListModule, ViewContentService} from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
-import {Page} from '@valtimo/shared';
 import {
   CollectionWidget,
   CollectionWidgetCardData,
@@ -67,15 +66,17 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TranslateModule,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
-  @HostBinding('class') public readonly class = 'valtimo-widget-collection';
+  @HostBinding('class') public hostClasses = 'valtimo-widget-collection';
   @ViewChild('widgetCollection') private _widgetCollectionRef: ElementRef<HTMLDivElement>;
 
   @Input() public set widgetConfiguration(value: CollectionWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.hostClasses = `valtimo-widget-collection ${value.isCompact ? 'valtimo-widget-collection--compact' : ''}`;
   }
 
   public readonly showPagination$ = new BehaviorSubject<boolean>(false);
@@ -136,7 +137,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   @Output() public readonly paginationEvent = new EventEmitter<PaginationModel>();
 
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
-  public readonly widgetTitle = signal('-');
+  public readonly $widgetTitle = signal('-');
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
@@ -147,7 +148,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     filter(([widgetConfig, widgetData]) => !!widgetConfig && !!widgetData),
     tap(([widgetConfig]) => {
-      this.widgetTitle.set(widgetConfig.title);
+      this.$widgetTitle.set(widgetConfig.title);
     }),
     map(([widgetConfig, widgetData]) =>
       widgetData.content.map((cardData, index) => ({

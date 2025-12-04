@@ -35,6 +35,7 @@ import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {CaseWidgetMapComponent} from './components/map/case-widget-map.component';
 import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
@@ -101,6 +102,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.TABLE]: CaseWidgetTableComponent,
     [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
+    [WidgetType.MAP]: CaseWidgetMapComponent,
   };
 
   constructor(

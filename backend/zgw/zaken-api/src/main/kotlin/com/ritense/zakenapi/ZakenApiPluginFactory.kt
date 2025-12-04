@@ -24,6 +24,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.service.ZaakDocumentService
 import org.springframework.transaction.PlatformTransactionManager
 
 class ZakenApiPluginFactory(
@@ -33,6 +34,7 @@ class ZakenApiPluginFactory(
     private val storageService: TemporaryResourceStorageService,
     private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
     private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
+    private val zaakDocumentService: ZaakDocumentService,
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
@@ -46,6 +48,7 @@ class ZakenApiPluginFactory(
             zaakInstanceLinkRepository,
             pluginService,
             zaakHersteltermijnRepository,
+            zaakDocumentService,
             platformTransactionManager,
             valueResolverService,
             objectMapper

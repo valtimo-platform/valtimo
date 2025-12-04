@@ -88,7 +88,10 @@ export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-z
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
+export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component'
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component';
+export * from './lib/plugins/zaken-api/components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
@@ -129,6 +132,7 @@ export * from './lib/plugins/besluiten-api/components/besluiten-api-configuratio
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+export * from './lib/plugins/besluiten-api/components/get-besluit/get-besluit-configuration.component';
 /* exact */
 export * from './lib/plugins/exact/exact.plugin.specification';
 export * from './lib/plugins/exact/exact-plugin.module';

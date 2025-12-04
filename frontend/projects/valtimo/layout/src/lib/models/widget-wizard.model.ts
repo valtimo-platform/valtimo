@@ -20,6 +20,7 @@ import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementMapComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -30,10 +31,12 @@ import {WidgetWizardStyleStepComponent} from '../components/widget-management/ma
 import {WidgetWizardContentStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
 import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
+import {WidgetWizardDensityStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
   WIDTH = 'width',
+  DENSITY = 'density',
   STYLE = 'style',
   CONTENT = 'content',
   DISPLAY_CONDITIONS = 'displayConditions',
@@ -48,6 +51,11 @@ enum WidgetWizardCloseEventType {
 enum WidgetStyle {
   DEFAULT = 'default',
   HIGH_CONTRAST = 'high-contrast',
+}
+
+enum WidgetDensity {
+  DEFAULT = 'default',
+  COMPACT = 'compact',
 }
 
 interface WidgetWizardCloseEvent {
@@ -66,6 +74,7 @@ interface WidgetTypeSelection {
 const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.TYPE]: WidgetWizardTypeStepComponent,
   [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
+  [WidgetWizardStep.DENSITY]: WidgetWizardDensityStepComponent,
   [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
   [WidgetWizardStep.DISPLAY_CONDITIONS]: WidgetWizardDisplayConditionsStepComponent,
@@ -114,6 +123,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     type: WidgetType.COLLECTION,
     component: WidgetManagementCollectionComponent,
   },
+  {
+    titleKey: 'widgetTabManagement.type.map.title',
+    descriptionKey: 'widgetTabManagement.type.map.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
+    type: WidgetType.MAP,
+    component: WidgetManagementMapComponent,
+  },
 ];
 
 const WIDGET_WIDTH_LABELS: {[key: number]: string} = {
@@ -128,10 +144,17 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
   [WidgetStyle.HIGH_CONTRAST]: 'widgetTabManagement.style.highContrast.title',
 };
 
+const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
+  [WidgetDensity.DEFAULT]: 'widgetTabManagement.density.default.title',
+  [WidgetDensity.COMPACT]: 'widgetTabManagement.density.compact.title',
+};
+
 export {
   AVAILABLE_WIDGETS,
+  WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
+  WidgetDensity,
   WidgetStyle,
   WidgetTypeSelection,
   WidgetWizardCloseEvent,

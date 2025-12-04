@@ -18,14 +18,17 @@ package com.ritense.case_.widget.custom
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.CaseWidgetMapper
+import java.util.Collections.emptyList
 
 class CustomCaseWidgetMapper : CaseWidgetMapper<CustomCaseWidget, CustomCaseWidgetDto> {
 
     override fun toDto(entity: CustomCaseWidget) = CustomCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
+        isCompact = entity.isCompact,
         actions = entity.actions,
         displayConditions = entity.displayConditions,
         properties = entity.properties
@@ -34,8 +37,10 @@ class CustomCaseWidgetMapper : CaseWidgetMapper<CustomCaseWidget, CustomCaseWidg
     override fun toEntity(dto: CustomCaseWidgetDto, index: Int) = CustomCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
+        isCompact = dto.isCompact,
         actions = dto.actions ?: emptyList(),
         displayConditions = dto.displayConditions,
         properties = dto.properties,

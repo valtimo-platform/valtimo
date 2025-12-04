@@ -52,6 +52,9 @@ abstract class Widget(
     @Column(name = "title", nullable = false)
     val title: String,
 
+    @Column(name = "icon", nullable = true)
+    val icon: String?,
+
     @Column(name = "widget_order", nullable = false)
     val order: Int,
 
@@ -60,6 +63,9 @@ abstract class Widget(
 
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean,
+
+    @Column(name = "is_compact", nullable = true)
+    val isCompact: Boolean?,
 
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
@@ -71,7 +77,7 @@ abstract class Widget(
 ) {
 
     init {
-        require(title == null || title.isNotBlank()) { "title was blank!" }
+        require(title.isNotBlank()) { "title was blank!" }
         require(order >= 0) { "order was < 0" }
     }
 
@@ -79,9 +85,11 @@ abstract class Widget(
         id: UUID = this.id,
         key: String = this.key,
         title: String = this.title,
+        icon: String? = this.icon,
         order: Int = this.order,
         width: Int = this.width,
         highContrast: Boolean = this.highContrast,
+        isCompact: Boolean? = this.isCompact,
         actions: List<WidgetAction> = this.actions,
         displayConditions: List<Condition<*>> = this.displayConditions,
     ): Widget
@@ -105,9 +113,11 @@ abstract class Widget(
         if (id != other.id) return false
         if (key != other.key) return false
         if (title != other.title) return false
+        if (icon != other.icon) return false
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
+        if (isCompact != other.isCompact) return false
         if (actions != other.actions) return false
         if (displayConditions != other.displayConditions) return false
 
@@ -119,15 +129,17 @@ abstract class Widget(
             id,
             key,
             title,
+            icon,
             order,
             width,
             highContrast,
+            isCompact,
             actions,
             displayConditions,
         )
     }
 
     override fun toString(): String {
-        return "Widget(id='$id', key='$key', title='$title', order=$order, width=$width, highContrast=$highContrast)"
+        return "Widget(id='$id', key='$key', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
     }
 }

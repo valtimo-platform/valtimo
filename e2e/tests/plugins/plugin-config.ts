@@ -1,129 +1,227 @@
+import {v4 as uuidv4} from 'uuid';
+
+export interface PluginFieldMap {
+  testId: string;
+  type: 'input' | 'select';
+  value: string;
+}
+
+export interface PluginTestConfiguration {
+  fieldMap: PluginFieldMap[];
+  pluginIdentifier: string;
+}
+
 export const pluginTypes = [
-    "Besluiten API",
-    "Catalogi API",
-    "Documenten API",
-    "Klantinteracties API",
-    "Notificaties API",
-    "OpenNotificaties",
-    "Objecten API",
-    "Object token authentication",
-    "Objecttypen API",
-    "OpenKlant token authentication",
-    "OpenZaak",
-    "Portal task",
-    "SmartDocuments",
-    "Verzoek",
-    "Zaken API",
+  'Besluiten API',
+  'Catalogi API',
+  //   'Documenten API',
+  //   'Klantinteracties API',
+  //   'Notificaties API',
+  //   'OpenNotificaties',
+  //   'Objecten API',
+  //   'Object token authentication',
+  //   'Objecttypen API',
+  //   'OpenKlant token authentication',
+  //   'OpenZaak',
+  //   'Portal task',
+  //   'SmartDocuments',
+  //   'Verzoek',
+  //   'Zaken API',
 ];
 
-export const pluginFieldMap = {
-    "Besluiten API": [
-        { label: "Configuration ID", value: "857d4312-c420-4a22-979b-625818d97ed4" },
-        { label: "Configuration name", value: "Test Besluiten API" },
-        { label: "RSIN", value: "328674989" },
-        { label: "Besluiten API URL", value: "http://localhost:8001/besluiten/api/v1/" },
-        { label: "Authentication plugin configuration", value: "OpenZaak Authentication - OpenZaak" },
+export const pluginTestConfiguration = {
+  'Besluiten API': {
+    fieldMap: [
+      {
+        testId: 'pluginConfigurationId',
+        type: 'input',
+        value: uuidv4(),
+      },
+      {testId: 'besluitenApiConfigurationTitle', type: 'input', value: 'Test Besluiten API'},
+      {testId: 'besluitenApiRsin', type: 'input', value: '328674989'},
+      {testId: 'besluitenApiUrl', type: 'input', value: 'http://localhost:8001/besluiten/api/v1/'},
+      {
+        testId: 'besluitenApiAuthenticationPluginConfiguration',
+        type: 'select',
+        value: 'OpenZaak Authentication - OpenZaak',
+      },
     ],
+    pluginIdentifier: 'Test Besluiten API',
+  },
 
-    "Catalogi API": [
-        { label: "Configuration ID", value: "22c78b91-0b0f-4008-8d8f-c4a84b8e71ed" },
-        { label: "Configuration name", value: "Test Catalogi API" },
-        { label: "Catalogi API URL", value: "http://localhost:8001/catalogi/api/v1/" },
-        { label: "Authentication plugin configuration", value: "OpenZaak Authentication - OpenZaak" },
+  'Catalogi API': {
+    fieldMap: [
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {testId: 'catalogApiConfigurationTitle', type: 'input', value: 'Test Catalogi API'},
+      {testId: 'catalogiApiUrl', type: 'input', value: 'http://localhost:8001/catalogi/api/v1/'},
+      {
+        testId: 'catalogApiAuthenticationPluginConfiguration',
+        type: 'select',
+        value: 'OpenZaak Authentication - OpenZaak',
+      },
     ],
+    pluginIdentifier: 'Test Catalogi API',
+  },
 
-    "Documenten API": [
-        { label: "Configuration ID", value: "5474fe57-532a-4050-8d89-32e62ca3e896" },
-        { label: "Configuration name", value: "Test Documenten API" },
-        { label: "Documenten API URL", value: "http://localhost:8001/documenten/api/v1/" },
-        { label: "Organisation RSIN", value: "151368508" },
-        { label: "Authentication plugin configuration", value: "OpenZaak Authentication - OpenZaak" },
-        { label: "Documenten API version", value: "1.4.2-maykin-1.13.0" },
+  'Documenten API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: '5474fe57-532a-4050-8d89-32e62ca3e896'},
+      {testId: 'configurationName', type: 'input', value: 'Test Documenten API'},
+      {
+        testId: 'documentenApiUrl',
+        type: 'input',
+        value: 'http://localhost:8001/documenten/api/v1/',
+      },
+      {testId: 'organisationRsin', type: 'input', value: '151368508'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: 'OpenZaak Authentication - OpenZaak',
+      },
+      {testId: 'documentenApiVersion', type: 'input', value: '1.4.2-maykin-1.13.0'},
     ],
+    pluginIdentifier: 'Test Documenten API',
+  },
 
-    "Klantinteracties API": [
-        { label: "Configuration ID", value: "5474fe57-532a-4050-8d89-32e62ca3e896" },
-        { label: "Configuration name", value: "Besluiten config" },
-        { label: "Klantinteracties API URL", value: "Besluiten config" },
-        { label: "Authentication plugin configuration", value: "OpenZaak Authentication - OpenZaak" },
+  'Klantinteracties API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: '5474fe57-532a-4050-8d89-32e62ca3e896'},
+      {testId: 'configurationName', type: 'input', value: 'Besluiten config'},
+      {testId: 'klantinteractiesApiUrl', type: 'input', value: 'Besluiten config'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: 'OpenZaak Authentication - OpenZaak',
+      },
     ],
+    pluginIdentifier: 'Besluiten config',
+  },
 
-    "Notificaties API": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Notificaties API" },
-        { label: "Notificaties API URL", value: "Besluiten config" },
-        { label: "Callback URL", value: "123456789" },
-        { label: "Authentication plugin configuration", value: "123456789" },
+  'Notificaties API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Notificaties API'},
+      {testId: 'notificatiesApiUrl', type: 'input', value: 'Besluiten config'},
+      {testId: 'callbackUrl', type: 'input', value: '123456789'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: '123456789',
+      },
     ],
+    pluginIdentifier: 'Test Notificaties API',
+  },
 
-    "OpenNotificaties": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test OpenNotificaties" },
-        { label: "Client ID", value: "Besluiten config" },
-        { label: "Secret", value: "123456789" },
+  OpenNotificaties: {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test OpenNotificaties'},
+      {testId: 'clientId', type: 'input', value: 'Besluiten config'},
+      {testId: 'secret', type: 'input', value: '123456789'},
     ],
+    pluginIdentifier: 'Test OpenNotificaties',
+  },
 
-    "Objecten API": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Objecten API" },
-        { label: "Objecten API URL", value: "Besluiten config" },
-        { label: "Authentication plugin configuration", value: "123456789" },
+  'Objecten API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Objecten API'},
+      {testId: 'objectenApiUrl', type: 'input', value: 'Besluiten config'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: '123456789',
+      },
     ],
+    pluginIdentifier: 'Test Objecten API',
+  },
 
-    "Object token authentication": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Object token authentication" },
-        { label: "Token", value: "Besluiten config" },
+  'Object token authentication': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Object token authentication'},
+      {testId: 'token', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test Object token authentication',
+  },
 
-    "Objecttypen API": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Objecttypen API" },
-        { label: "Objecttypen API UR", value: "Besluiten config" },
-        { label: "Authentication plugin configuration", value: "Besluiten config" },
+  'Objecttypen API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Objecttypen API'},
+      {testId: 'objecttypenApiUr', type: 'input', value: 'Besluiten config'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: 'Besluiten config',
+      },
     ],
+    pluginIdentifier: 'Test Objecttypen API',
+  },
 
-    "OpenKlant token authentication": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test OpenKlant token authentication" },
-        { label: "Token", value: "Besluiten config" },
+  'OpenKlant token authentication': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test OpenKlant token authentication'},
+      {testId: 'token', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test OpenKlant token authentication',
+  },
 
-    "OpenZaak": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test OpenZaak" },
-        { label: "Client ID", value: "Besluiten config" },
-        { label: "Secret", value: "Besluiten config" },
+  OpenZaak: {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test OpenZaak'},
+      {testId: 'clientId', type: 'input', value: 'Besluiten config'},
+      {testId: 'secret', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test OpenZaak',
+  },
 
-    "Portal task": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Portal task" },
-        { label: "Notificaties API plugin", value: "Besluiten config" },
-        { label: "Object management configuration", value: "Besluiten config" },
-        { label: "Process to complete Portaaltaak", value: "Besluiten config" },
+  'Portal task': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Portal task'},
+      {testId: 'notificatiesApiPlugin', type: 'input', value: 'Besluiten config'},
+      {testId: 'objectManagementConfiguration', type: 'input', value: 'Besluiten config'},
+      {testId: 'processToCompletePortaaltaak', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test Portal task',
+  },
 
-    "SmartDocuments": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test SmartDocuments" },
-        { label: "Notificaties API plugin", value: "Besluiten config" },
-        { label: "Username", value: "Besluiten config" },
-        { label: "Password", value: "Besluiten config" },
+  SmartDocuments: {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test SmartDocuments'},
+      {testId: 'notificatiesApiPlugin', type: 'input', value: 'Besluiten config'},
+      {testId: 'username', type: 'input', value: 'Besluiten config'},
+      {testId: 'password', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test SmartDocuments',
+  },
 
-    "Verzoek": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Verzoek" },
-        { label: "Notificaties API configuration", value: "Besluiten config" },
-        { label: "Process", value: "Besluiten config" },
-        { label: "RSIN", value: "Besluiten config" },
+  Verzoek: {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Verzoek'},
+      {testId: 'notificatiesApiConfiguration', type: 'input', value: 'Besluiten config'},
+      {testId: 'process', type: 'input', value: 'Besluiten config'},
+      {testId: 'rsin', type: 'input', value: 'Besluiten config'},
     ],
+    pluginIdentifier: 'Test Verzoek',
+  },
 
-    "Zaken API": [
-        { label: "Configuration ID", value: "config-besluiten-id" },
-        { label: "Configuration name", value: "Test Zaken API" },
-        { label: "URL", value: "Besluiten config" },
-        { label: "Authentication plugin configuration", value: "Besluiten config" },
+  'Zaken API': {
+    fieldMap: [
+      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
+      {testId: 'configurationName', type: 'input', value: 'Test Zaken API'},
+      {testId: 'url', type: 'input', value: 'Besluiten config'},
+      {
+        testId: 'authenticationPluginConfiguration',
+        type: 'select',
+        value: 'Besluiten config',
+      },
     ],
+    pluginIdentifier: 'Test Zaken API',
+  },
 };

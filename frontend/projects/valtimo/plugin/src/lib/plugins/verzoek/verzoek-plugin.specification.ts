@@ -127,60 +127,6 @@ const verzoekPluginSpecification: PluginSpecification = {
       target: 'Target',
       source: 'Source',
     },
-    de: {
-      title: 'Verzoek',
-      description:
-        'Das Verzoek-Plugin verarbeitet Anfragen und erstellt eine Zaakdossier. Eine Verzoek ist ein Object in der Objecten API und wird normalerweise mithilfe eines Portals erstellt.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
-      notificatiesApiPluginConfiguration: 'Notificaties API-Konfiguration',
-      objectManagementId: 'Object management-Konfiguration',
-      processToStart: 'Prozess',
-      rsin: 'RSIN',
-      verzoekProperties: 'Verzoektypen',
-      type: 'Typ',
-      caseDefinitionKey: 'Dateidefinition',
-      caseDefinitionVersionTag: 'Falldefinitionsversion',
-      initiatorRoltypeUrl: 'Rollentyp',
-      processDefinitionKey: 'Prozessdefinition',
-      initiatorRolDescription: 'Rollenbeschreibung',
-      addVerzoekType: 'Verzoektyp hinzufügen',
-      verzoekPropertiesTooltip:
-        'Die Verzoektypen die erstellt werden wenn eine Benachrichtigung eintrifft.',
-      notificatiesApiPluginConfigurationTooltip:
-        'Konfiguration der Notificaties API, die für die Kommunikation zwischen GZAC und anderen Anwendungen verwendet wird.',
-      objectManagementIdTooltip:
-        'Konfiguration des Objects, das zum Speichern einer Verzoek verwendet wird.',
-      processToStartTooltip:
-        'Der Prozess, der einen Fall erstellt, wenn eine Benachrichtigung eintrifft.',
-      rsinTooltip: 'Diese Nummer muss die gleichen Spezifikationen wie eine BSN-Nummer erfüllen.',
-      typeTooltip:
-        "Der Verzoektyp, der zum Identifizieren des Objects verwendet wird. Z.B. 'verzoek'.",
-      caseDefinitionKeyTooltip:
-        'Wählen Sie hier den Falltyp aus, von dem eine Instanz gestartet werden soll, wenn eine Verzoek eintrifft.',
-      caseDefinitionVersionTagTooltip:
-        'Die Version des Falltyps, dessen Instanz bei eingehender Verzoek gestartet werden soll.',
-      initiatorRoltypeUrlTooltip:
-        'Der Rollentyp des Anforderers, der gespeichert wird, wenn eine Verzoek eingeht.',
-      initiatorRolDescriptionTooltip:
-        'Eine Beschreibung des Rollentyps des Anforderers, die gespeichert wird, wenn eine Verzoek eingeht.',
-      processDefinitionKeyTooltip:
-        'Wählen Sie hier den Prozess aus, der gestartet werden soll, wenn der zuvor ausgewählte Systemprozess beendet ist.',
-      copyStrategy: 'Kopierstrategie',
-      copyStrategyTooltip:
-        'Diese Option legt fest, ob das gesamte Verzoek-Objekt in das Dokument aufgenommen wird oder nur die definierten Felder.',
-      full: 'Vollständig',
-      specified: 'Angegebene Felder',
-      mapping: 'Mapping',
-      setMapping: 'Mapping festlegen',
-      mappingTooltip:
-        "Legen Sie hier die Felder fest, die vom Verzoek-Objekt in das Dokument kopiert werden sollen. Zum Beispiel: '/voorletters' -> 'doc:/voorletters-machtiginggever'.",
-      close: 'Schließen',
-      save: 'Speichern',
-      target: 'Ziel',
-      source: 'Ursprung',
-    },
   },
 };
 

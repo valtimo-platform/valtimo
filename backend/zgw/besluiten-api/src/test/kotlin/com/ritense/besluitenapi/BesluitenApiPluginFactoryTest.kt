@@ -16,6 +16,7 @@
 
 package com.ritense.besluitenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.plugin.domain.PluginConfiguration
@@ -38,6 +39,8 @@ internal class BesluitenApiPluginFactoryTest {
         val besluitenApiClient: BesluitenApiClient = mock()
         val urlProvider: ZaakUrlProvider = mock()
         val authentication: BesluitenApiAuthentication = mock()
+        val objectMapper: ObjectMapper = mock()
+
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authentication)
         whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
 
@@ -49,7 +52,7 @@ internal class BesluitenApiPluginFactoryTest {
             }
         """.trimIndent()
 
-        val factory = BesluitenApiPluginFactory(pluginService, besluitenApiClient, urlProvider)
+        val factory = BesluitenApiPluginFactory(pluginService, besluitenApiClient, urlProvider, objectMapper)
 
         val pluginDefinition = createPluginDefinition()
         val pluginConfiguration = PluginConfiguration(

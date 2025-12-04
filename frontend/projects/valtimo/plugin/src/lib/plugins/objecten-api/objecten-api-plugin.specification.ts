@@ -61,23 +61,6 @@ const objectenApiPluginSpecification: PluginSpecification = {
       objectUrlTooltip:
         "The URL of the object to be removed from the Objecten API. The value entered may be a process variable, for example: 'pv:object'.",
     },
-    de: {
-      title: 'Objecten API',
-      url: 'Objecten API URL',
-      urlTooltip: 'Die URL zur REST API von Objecten',
-      description:
-        'Mit den Spezifikationen der Other Objects Registration API (Objecten) können Kommunen Objecten eindeutig registrieren, speichern und darauf zugreifen.',
-      configurationTitle: 'Konfigurationsname',
-      configurationTitleTooltip:
-        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
-      'delete-object': 'Objekt löschen',
-      deleteObjectWarning:
-        'Achtung: Die Objekte, die mit dieser Aktion gelöscht werden, dürfen nicht mit einem Zaak verknüpft werden.',
-      objectUrl: 'Objekt URL',
-      objectUrlTooltip:
-        "Die URL des Objekts, das aus der Objecten API entfernt werden soll. Der eingegebene Wert kann eine Prozessvariable sein, zum Beispiel: 'pv:object'.",
-    },
   },
 };
 
