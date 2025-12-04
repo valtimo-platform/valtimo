@@ -117,9 +117,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     group: InputRowFormGroup
   ): Observable<Array<SelectItem>> {
     const cached = this.rowItemsCache.get(group);
-    if (cached) {
-      return cached;
-    }
+
+    if (cached) return cached;
 
     const stream = combineLatest([
       this.buildingBlockFieldItems$,
@@ -130,17 +129,41 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         const usedInputTargets =
           inputsFormValue.inputs?.map(input => input.target).filter(Boolean) ?? [];
 
-        const currentTarget = groupValue.target;
-        const available = buildingBlockFieldItems.filter(item => {
-          if (item.text === currentTarget) return true;
+        return buildingBlockFieldItems.filter(item => {
+          if (item.text === groupValue.target) return true;
           return !usedInputTargets.includes(item.text);
         });
-
-        return available;
       })
     );
 
     this.rowItemsCache.set(group, stream);
+
+    return stream;
+  }
+
+  private readonly outputTargetFiltersCache = new WeakMap<
+    OutputRowFormGroup,
+    Observable<string[]>
+  >();
+
+  public getUsedCaseTargetsForRow$(group: OutputRowFormGroup): Observable<string[]> {
+    const cached = this.outputTargetFiltersCache.get(group);
+    if (cached) return cached;
+
+    const stream = combineLatest([
+      this.outputsForm.valueChanges.pipe(startWith(this.outputsForm.value)),
+      group.valueChanges.pipe(startWith(group.value)),
+    ]).pipe(
+      map(([outputsFormValue, groupValue]) => {
+        const allTargets =
+          outputsFormValue.outputs?.map(output => output.target).filter(Boolean) ?? [];
+
+        return allTargets.filter(target => target !== groupValue.target);
+      })
+    );
+
+    this.outputTargetFiltersCache.set(group, stream);
+
     return stream;
   }
 

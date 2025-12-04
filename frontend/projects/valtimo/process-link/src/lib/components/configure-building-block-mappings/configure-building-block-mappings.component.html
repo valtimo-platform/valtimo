@@ -119,6 +119,7 @@
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
                 [formControl]="group.get('target')"
                 [appendInline]="false"
+                [filterItems]="getUsedCaseTargetsForRow$(group) | async"
               ></valtimo-value-path-selector>
             </div>
 
