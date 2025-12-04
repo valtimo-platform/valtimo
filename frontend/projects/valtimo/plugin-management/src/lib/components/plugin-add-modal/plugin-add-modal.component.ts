@@ -67,6 +67,8 @@ export class PluginAddModalComponent {
     delete pluginConfiguration['configurationId'];
     delete pluginConfiguration['configurationTitle'];
 
+    this.stateService.disableInput();
+
     this.stateService.selectedPluginDefinition$.pipe(take(1)).subscribe(selectedDefinition => {
       this.pluginManagementService
         .savePluginConfiguration({
@@ -82,6 +84,7 @@ export class PluginAddModalComponent {
           },
           error: () => {
             this.logger.error('Something went wrong with saving the plugin configuration.');
+            this.stateService.enableInput();
           },
         });
     });
