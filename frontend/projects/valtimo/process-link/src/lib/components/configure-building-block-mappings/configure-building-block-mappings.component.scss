@@ -61,11 +61,15 @@
 
     .required-indicator {
       margin: 0 5px;
-      color: red;
+      color: var(--cds-text-error);
     }
 
     button {
       margin-bottom: 5px;
+
+      ::ng-deep .cds--btn__icon {
+        margin: 0 !important;
+      }
     }
   }
 
@@ -78,10 +82,8 @@
       margin-right: 0;
     }
 
-    ::ng-deep {
-      .cds--radio-button__label {
-        justify-content: normal;
-      }
+    ::ng-deep .cds--radio-button__label {
+      justify-content: normal;
     }
   }
 }
