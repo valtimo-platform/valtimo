@@ -65,7 +65,9 @@ import {filter} from 'rxjs/operators';
     },
   ],
 })
-export class AutoKeyInputComponent implements ControlValueAccessor, Validators, OnChanges, OnDestroy {
+export class AutoKeyInputComponent
+  implements ControlValueAccessor, Validators, OnChanges, OnDestroy
+{
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
 
@@ -99,10 +101,8 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
   private onChange = (_: any) => {};
   public onTouched = () => {};
   public onValidatorChange = () => {};
-  public validate = (control: any): { [key: string]: any } | null =>
-    this.idError$.getValue()
-      ? { idError: { value: this.idError$.getValue() } }
-      : null;
+  public validate = (control: any): {[key: string]: any} | null =>
+    this.idError$.getValue() ? {idError: {value: this.idError$.getValue()}} : null;
 
   private readonly subscription = new Subscription();
 
@@ -144,7 +144,12 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
     this.$disabled.set(disabled);
   }
 
-  public writeValue(value: string): void {
+  public writeValue(value: string | null): void {
+    if (value === null || value === '') {
+      this.resetInternalState();
+      return;
+    }
+
     this.value = value ?? '';
   }
 
@@ -162,7 +167,9 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
 
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
     const usedKeys = this._usedKeys$.getValue();
-    this.idError$.next(usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null);
+    this.idError$.next(
+      usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null
+    );
     this.onChange((this.value = event.target.value));
   }
 
@@ -181,11 +188,18 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
       .replace(/_[-_]+/g, '_')
       .replace(/^[^a-z]+/g, '');
 
-    if (!usedKeys.includes(baseKey)) {
+    if (!usedKeys.includes(baseKey) || this._mode$.getValue() === 'edit') {
       return baseKey;
     }
 
     return this.getUniqueKeyWithNumber(baseKey, usedKeys);
+  }
+
+  private resetInternalState(): void {
+    this.value = '';
+    this.idError$.next(null);
+    this.disableKeyEditing();
+    this.duplicateInitialized = false;
   }
 
   private updateKey(

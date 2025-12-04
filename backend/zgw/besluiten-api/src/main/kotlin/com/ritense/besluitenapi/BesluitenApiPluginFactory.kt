@@ -16,6 +16,7 @@
 
 package com.ritense.besluitenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
@@ -25,11 +26,13 @@ class BesluitenApiPluginFactory(
     pluginService: PluginService,
     private val besluitenApiClient: BesluitenApiClient,
     private val urlProvider: ZaakUrlProvider,
+    private val objectMapper: ObjectMapper
 ) : PluginFactory<BesluitenApiPlugin>(pluginService) {
     override fun create(): BesluitenApiPlugin {
         return BesluitenApiPlugin(
             besluitenApiClient,
-            urlProvider
+            urlProvider,
+            objectMapper
         )
     }
 }

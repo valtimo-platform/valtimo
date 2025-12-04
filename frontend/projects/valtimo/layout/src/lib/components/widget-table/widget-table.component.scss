@@ -26,6 +26,12 @@
     justify-content: space-between;
   }
 
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__content {
     display: flex;
     align-items: center;
@@ -67,6 +73,11 @@
     }
   }
 
+  &--compact .cds--data-table tr {
+    gap: 12px;
+    height: 32px;
+  }
+
   .cds--table-header-label > span {
     font-weight: 400;
     font-size: 12px;
@@ -77,8 +88,11 @@
     background: transparent !important;
   }
 
-  &--title {
+  &--compact &--transparent {
     border: none !important;
+  }
+
+  &--title {
     font-style: italic;
   }
 

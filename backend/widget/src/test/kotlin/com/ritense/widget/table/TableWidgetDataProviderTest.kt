@@ -249,6 +249,7 @@ class TableWidgetDataProviderTest(
         order = 0,
         width = 1,
         highContrast = true,
+        isCompact = true,
         actions = emptyList(),
         properties = TableWidgetProperties(
             collection = "test:someCollection",

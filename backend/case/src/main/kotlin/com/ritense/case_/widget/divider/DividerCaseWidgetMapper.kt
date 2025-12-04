@@ -23,16 +23,20 @@ class DividerCaseWidgetMapper : CaseWidgetMapper<DividerCaseWidget, DividerCaseW
     override fun toDto(entity: DividerCaseWidget) = DividerCaseWidgetDto(
         key = entity.id.key,
         title = entity.title,
+        icon = entity.icon,
         width = entity.width,
         highContrast = entity.highContrast,
+        isCompact = entity.isCompact,
         displayConditions = entity.displayConditions,
     )
 
     override fun toEntity(dto: DividerCaseWidgetDto, index: Int) = DividerCaseWidget(
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
+        icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
+        isCompact = dto.isCompact,
         displayConditions = dto.displayConditions,
         order = index
     )

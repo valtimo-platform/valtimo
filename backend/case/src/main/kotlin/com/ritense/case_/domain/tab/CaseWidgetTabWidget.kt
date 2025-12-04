@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
 import com.ritense.valtimo.contract.annotation.AllOpen
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -50,6 +50,9 @@ abstract class CaseWidgetTabWidget(
     @Column(name = "title", nullable = false)
     val title: String,
 
+    @Column(name = "icon", nullable = true)
+    val icon: String?,
+
     @Column(name = "sort_order", nullable = false)
     val order: Int,
 
@@ -58,6 +61,9 @@ abstract class CaseWidgetTabWidget(
 
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean,
+
+    @Column(name = "is_compact", nullable = true)
+    val isCompact: Boolean?,
 
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
@@ -85,6 +91,8 @@ abstract class CaseWidgetTabWidget(
 
         if (id != other.id) return false
         if (title != other.title) return false
+        if (icon != other.icon) return false
+        if (isCompact != other.isCompact) return false
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
@@ -97,15 +105,17 @@ abstract class CaseWidgetTabWidget(
     override fun hashCode(): Int {
         return Objects.hashCode(
             title,
+            icon,
             order,
             width,
             highContrast,
+            isCompact,
             actions,
             displayConditions
         )
     }
 
     override fun toString(): String {
-        return "CaseWidgetTabWidget(id='$id', title='$title', order=$order, width=$width, highContrast=$highContrast)"
+        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
     }
 }

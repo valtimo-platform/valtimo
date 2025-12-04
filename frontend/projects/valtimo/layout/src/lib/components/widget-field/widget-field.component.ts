@@ -29,8 +29,14 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
-import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {
+  CarbonListModule,
+  EllipsisPipe,
+  MdiIconViewerComponent,
+  ViewContentService,
+  ViewType,
+} from '@valtimo/components';
+import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
@@ -51,16 +57,19 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     EllipsisPipe,
     ButtonModule,
     WidgetActionButtonComponent,
+    MdiIconViewerComponent,
+    LayerModule,
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
-  @HostBinding('class') public readonly class = 'widget-field';
+  @HostBinding('class') public hostClasses = 'valtimo-widget-field';
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
 
   @Input() public set widgetConfiguration(value: FieldsWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.hostClasses = `valtimo-widget-field ${value.isCompact ? 'valtimo-widget-field--compact' : ''}`;
   }
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
@@ -70,8 +79,6 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
     this.widgetData$.next(value);
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
-
-  @Input() public compact = false;
 
   @Output() public readonly noVisibleFieldsEvent = new EventEmitter<boolean>();
 

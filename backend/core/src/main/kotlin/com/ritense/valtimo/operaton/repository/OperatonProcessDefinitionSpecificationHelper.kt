@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
 
@@ -114,7 +115,7 @@ class OperatonProcessDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        "CD:"
+                        OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )

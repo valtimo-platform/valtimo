@@ -20,19 +20,21 @@ import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 import {AppModule} from './app/app.module';
 import {environment} from './environments/environment';
 
-// Suppress only "ExpressionChangedAfterItHasBeenCheckedError" errors
-const originalConsoleError = console.error;
-console.error = (...args) => {
-  const errorMessage = args
-    .map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
-    .join(' ');
+if (!environment.production) {
+  // Suppress only "ExpressionChangedAfterItHasBeenCheckedError" errors during local dev
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const errorMessage = args
+      .map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+      .join(' ');
 
-  if (errorMessage.includes('100')) {
-    return; // Ignore NG0100 errors
-  }
+    if (errorMessage.includes('100')) {
+      return; // Ignore NG0100 errors
+    }
 
-  originalConsoleError(...args); // Keep all other errors
-};
+    originalConsoleError(...args);
+  };
+}
 
 if (environment.production) {
   enableProdMode();

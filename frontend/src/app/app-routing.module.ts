@@ -15,31 +15,10 @@
  */
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {AuthGuardService} from '@valtimo/security';
-import {FormioComponent} from './form-io/form-io.component';
-import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
-import {NotificationTestComponent} from './notification-test/notification-test.component';
+import {devToolRoutes} from './dev-tools';
+import {environment} from '../environments/environment';
 
-const routes: Routes = [
-  {
-    path: 'form-io',
-    component: FormioComponent,
-    canActivate: [AuthGuardService],
-    data: {title: 'Valtimo - Form.io V.3.27.1'},
-  },
-  {
-    path: 'upload-showcase',
-    component: UploadShowcaseComponent,
-    canActivate: [AuthGuardService],
-    data: {title: 'Upload - Showcase'},
-  },
-  {
-    path: 'notification-test',
-    component: NotificationTestComponent,
-    canActivate: [AuthGuardService],
-    data: {title: 'Notification test'},
-  },
-];
+const routes: Routes = environment.production ? [] : [...devToolRoutes];
 
 @NgModule({
   imports: [

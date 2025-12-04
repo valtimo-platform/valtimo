@@ -162,8 +162,10 @@ class TableWidgetIntTest @Autowired constructor(
                     TableCaseWidgetDto(
                         key = widgetKey,
                         title = "My widget",
+                        icon = "mdi-home",
                         width = 1,
                         highContrast = true,
+                        isCompact = true,
                         actions = null,
                         displayConditions = emptyList(),
                         properties = TableWidgetProperties(

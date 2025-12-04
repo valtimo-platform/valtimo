@@ -27,8 +27,10 @@ import java.util.UUID
 data class DividerWidgetDto(
     override val key: String,
     override val title: String,
+    override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
+    override val isCompact: Boolean?,
 ) : WidgetDto {
     override val actions: List<WidgetAction>
         get() = emptyList()
@@ -39,8 +41,10 @@ data class DividerWidgetDto(
         id = id,
         key = key,
         title = title,
+        icon = icon,
         width = width,
         order = order,
         highContrast = highContrast,
+        isCompact = isCompact,
     )
 }

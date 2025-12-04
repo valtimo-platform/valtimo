@@ -104,7 +104,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
     private readonly documentService: DocumentService,
-    private readonly taskService: TaskService,
+    private readonly taskService: TaskService
   ) {
     this.iconService.registerAll([FolderDetailsReference16]);
   }

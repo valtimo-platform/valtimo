@@ -57,19 +57,6 @@ const exactPluginSpecification: PluginSpecification = {
       bean: 'Service class',
       content: 'Content',
     },
-    de: {
-      title: 'Exact Plugin',
-      description: 'Plugin zum Einrichten einer Exact-API-Verbindung',
-      configurationTitle: 'Konfigurationsname',
-      clientId: 'Kunden ID',
-      clientSecret: 'Client-Geheimnis',
-      'exact-get-request': 'Exakte GET-Anfrage',
-      'exact-post-request': 'Exakte POST-Anfrage',
-      'exact-put-request': 'Exakte PUT-Anfrage',
-      uri: 'URI',
-      bean: 'Serviceklasse',
-      content: 'Inhalt',
-    },
   },
 };
 

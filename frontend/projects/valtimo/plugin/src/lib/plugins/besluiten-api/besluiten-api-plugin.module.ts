@@ -22,6 +22,7 @@ import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-
 import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
 import {ButtonModule, DialogModule, IconModule, LoadingModule} from 'carbon-components-angular';
+import {GetBesluitConfigurationComponent} from './components/get-besluit/get-besluit-configuration.component';
 import {
   DatePickerModule,
   FormModule,
@@ -37,6 +38,7 @@ import {
     CreateZaakBesluitConfigurationComponent,
     PatchZaakBesluitConfigurationComponent,
     LinkDocumentToBesluitConfigurationComponent,
+    GetBesluitConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -57,6 +59,7 @@ import {
     CreateZaakBesluitConfigurationComponent,
     PatchZaakBesluitConfigurationComponent,
     LinkDocumentToBesluitConfigurationComponent,
+    GetBesluitConfigurationComponent,
   ],
 })
 export class BesluitenApiPluginModule {}

@@ -18,9 +18,9 @@ package com.ritense.form.casewidget
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
-import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -33,9 +33,11 @@ import org.hibernate.annotations.Type
 class FormIoCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -43,14 +45,16 @@ class FormIoCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions, displayConditions
+    id, title, icon, order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = FormIoCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions?: emptyList(),
         properties = properties

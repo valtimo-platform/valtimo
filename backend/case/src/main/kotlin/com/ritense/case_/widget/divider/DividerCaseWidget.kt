@@ -29,19 +29,23 @@ import jakarta.persistence.Entity
 class DividerCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
+    icon: String? = null,
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     displayConditions: List<Condition<*>>,
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, emptyList(), displayConditions
+    id, title, icon,order, width, highContrast, isCompact, emptyList(), displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = DividerCaseWidget(
         id = id,
         title = title,
+        icon = icon,
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         displayConditions = displayConditions,
     )
 }

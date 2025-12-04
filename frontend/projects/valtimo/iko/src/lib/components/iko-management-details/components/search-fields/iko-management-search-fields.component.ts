@@ -15,7 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Params} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -46,6 +46,8 @@ import {
 } from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchFieldModalComponent} from './search-field-modal/search-field-modal.component';
+import {IkoManagementSearchActionModalComponent} from '../search-actions/search-action-modal/search-action-modal.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-fields',
@@ -63,6 +65,7 @@ import {IkoManagementSearchFieldModalComponent} from './search-field-modal/searc
   ],
 })
 export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
+  public readonly $modalMode = signal<ModalMode>('add');
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly params$: Observable<IkoManagementParams> = this.route.params.pipe(
     map((params: Params) => ({
@@ -73,6 +76,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
     }))
   );
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
   public readonly searchFields$: Observable<IkoSearchField[]> = combineLatest([
     this.params$,
@@ -89,7 +93,11 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
         fieldTypeText: this.translateService.instant(`searchFieldsOverview.${field.fieldType}`),
       }))
     ),
-    tap(() => this.loading$.next(false))
+    tap(content => {
+      const keys = content?.map(item => item.key) ?? [];
+      this.usedKeys$.next(keys);
+      this.loading$.next(false);
+    })
   );
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteFieldKey$ = new BehaviorSubject<string | null>(null);
@@ -192,6 +200,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
     this.fieldModalOpen$.next(true);
   }
 
@@ -201,6 +210,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public editSearchField(field: IkoSearchField): void {
+    this.$modalMode.set('edit');
     this.prefillData$.next(field);
     this.fieldModalOpen$.next(true);
   }
@@ -217,16 +227,19 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe(() => this._refresh$.next(null));
+
+    this.prefillData$.next(null);
   }
 
   public onModalClose(field: IkoSearchField | null): void {
     this.fieldModalOpen$.next(false);
+    this.prefillData$.next(null);
     if (!field) return;
 
     this.params$
       .pipe(
         switchMap((params: {aggregateKey: string; actionKey: string}) =>
-          this.prefillData$.getValue() === null
+          this.$modalMode() === 'add'
             ? this.ikoManagementApiService.createIkoSearchField(
                 params.aggregateKey,
                 params.actionKey,

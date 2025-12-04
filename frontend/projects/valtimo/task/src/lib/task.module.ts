@@ -32,7 +32,7 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirective,
   WidgetModule,
-  TooltipModule as ValtimoTooltipModule
+  TooltipModule as ValtimoTooltipModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/shared';
 import {ProcessLinkModule} from '@valtimo/process-link';

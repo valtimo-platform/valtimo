@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
+import {Condition} from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
-  WidgetTableContent,
   WidgetInteractiveTableContent,
+  WidgetMapContent,
+  WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
-import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
@@ -33,6 +34,7 @@ enum WidgetType {
   COLLECTION = 'collection',
   FORMIO = 'formio',
   DIVIDER = 'divider',
+  MAP = 'map',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -44,14 +46,16 @@ interface WidgetAction {
   caseDefinitionKey?: string;
   navigateTo?: string;
 }
- 
+
 interface BasicWidget {
   type: WidgetType;
   title: string;
+  icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
   properties?: WidgetContentProperties;
+  isCompact?: boolean;
   actions?: WidgetAction[];
   displayConditions: Array<Condition>;
 }
@@ -62,6 +66,14 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+}
+
+interface GeoJsonSource {
+  key: string;
+}
+
+interface MapData {
+  geoJsonFeatureCollection: any;
 }
 
 interface FieldsWidget extends BasicWidget {
@@ -105,6 +117,11 @@ interface DividerWidget extends BasicWidget {
   type: WidgetType.DIVIDER;
 }
 
+interface MapWidget extends BasicWidget {
+  type: WidgetType.MAP;
+  properties: WidgetMapContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -113,6 +130,7 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
+  | MapWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -201,16 +219,19 @@ export {
   DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
+  GeoJsonSource,
+  MapData,
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,
   TableWidget,
   InteractiveTableWidget,
+  MapWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
   WidgetContext,
-  WidgetGroup
+  WidgetGroup,
 };

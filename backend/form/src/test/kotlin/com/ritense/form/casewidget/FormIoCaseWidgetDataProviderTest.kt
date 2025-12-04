@@ -22,8 +22,6 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
-import java.util.Optional
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -35,6 +33,8 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Pageable
+import java.util.Optional
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class FormIoCaseWidgetDataProviderTest(
@@ -77,7 +77,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
@@ -95,7 +95,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", "mdi-home", 0, 4, false, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)

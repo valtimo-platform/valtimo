@@ -20,6 +20,7 @@ import {
   WidgetAction,
   WidgetContentProperties,
   WidgetContext,
+  WidgetDensity,
   WidgetStyle,
   WidgetType,
   WidgetTypeSelection,
@@ -41,11 +42,15 @@ export class WidgetWizardService {
 
   public readonly $widgetStyle: WritableSignal<WidgetStyle | null> = signal(null);
 
+  public readonly $widgetDensity: WritableSignal<WidgetDensity | null> = signal(null);
+
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
   public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
 
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
+
+  public readonly $widgetIcon: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
 
@@ -64,6 +69,7 @@ export class WidgetWizardService {
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
     WidgetWizardStep.TYPE,
     WidgetWizardStep.WIDTH,
+    WidgetWizardStep.DENSITY,
     WidgetWizardStep.STYLE,
     WidgetWizardStep.CONTENT,
     WidgetWizardStep.DISPLAY_CONDITIONS,
@@ -75,11 +81,26 @@ export class WidgetWizardService {
     () => ({
       [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
+      [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
       [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
       [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
+
+  public readonly $widgetWizardStepEnableCondition: Signal<
+    Record<any, {dependingStep: WidgetWizardStep; condition: () => boolean}>
+  > = computed(() => ({
+    [WidgetWizardStep.DENSITY]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => {
+        const selectedType = this.$selectedWidget()?.type;
+        return !selectedType
+          ? false
+          : [WidgetType.COLLECTION, WidgetType.FIELDS, WidgetType.TABLE].includes(selectedType);
+      },
+    },
+  }));
 
   public readonly $widgetWizardStepProperties: Signal<
     Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
@@ -111,9 +132,11 @@ export class WidgetWizardService {
   public readonly $widgetsConfig: Signal<BasicWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
+    icon: this.$widgetIcon() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
     width: this.$widgetWidth() || this._defaultWidth || 4,
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
+    isCompact: this.$widgetDensity() === WidgetDensity.COMPACT,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
     displayConditions: this.$widgetDisplayConditions() ?? [],
@@ -131,10 +154,12 @@ export class WidgetWizardService {
       this.$widgetStyle.set(null);
       this.$widgetContent.set(null);
       this.$widgetTitle.set(null);
+      this.$widgetIcon.set(null);
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
       this.$widgetDisplayConditions.set(null);
       this.$editMode.set(false);
+      this.$widgetDensity.set(null);
       this.$disableActionButton.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
@@ -143,6 +168,7 @@ export class WidgetWizardService {
     this.$widgetWizardSteps.set([
       WidgetWizardStep.TYPE,
       WidgetWizardStep.WIDTH,
+      WidgetWizardStep.DENSITY,
       WidgetWizardStep.STYLE,
       WidgetWizardStep.CONTENT,
       WidgetWizardStep.DISPLAY_CONDITIONS,

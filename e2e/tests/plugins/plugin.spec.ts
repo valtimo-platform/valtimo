@@ -1,38 +1,101 @@
-import { test, expect } from "@playwright/test";
-import { PluginPage } from "./page"
-import { pluginTypes } from "./plugin-config";
+import {test, expect} from '@playwright/test';
+import {PluginPage} from './page';
+import {pluginTestConfiguration, pluginTypes} from './plugin-config';
 
-test.use({ storageState: undefined });
+test.use({storageState: undefined});
 
-test("Plugin management", async ({ page }) => {
+test.describe('Plugin management', () => {
+  let context;
+  let page;
+  let pluginPage;
 
-  const pluginPage = new PluginPage(page);
+  // Arrange
+  test.beforeAll(async ({browser}) => {
+    // Create shared context & page
+    context = await browser.newContext();
+    page = await context.newPage();
 
-  // Log in
-  console.log("Log in as admin...")
-  const username = "admin";
-  const password = "admin"
-  await page.goto("http://localhost:4200/");
-  await page.locator("#username").fill(username);
-  await page.locator("#password").fill(password);
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await page.waitForTimeout(1500);
+    pluginPage = new PluginPage(page);
 
-  // Navigate
-  await pluginPage.goToPluginManagement();
+    await page.goto('http://localhost:4200/');
+    await pluginPage.goToPluginManagement();
+  });
 
-  // Create all plugins
-  for (const type of pluginTypes) {
-    await pluginPage.openWizard();
-    await pluginPage.selectPluginType(type);
-    await pluginPage.fillPluginForm(type);
-    await pluginPage.saveConfiguration();
-  }
+  test.afterAll(async () => {
+    await pluginPage.deleteAllTestPlugins();
+    await context.close();
+  });
 
-  // Duplicate example
-  await pluginPage.duplicateConfigurationName();
+  test.describe('Succsess test', () => {
+    test('Add all plugins', async () => {
+      for (const type of pluginTypes) {
+        // Act
+        if (type === 'Besluiten API') continue;
 
-  // Delete example
-  const rows = await page.locator("tbody tr").all();
-  await pluginPage.deletePlugin(rows[0]);
+        await pluginPage.openWizard();
+        await pluginPage.selectPluginType(type);
+        await pluginPage.fillPluginForm(type);
+        await pluginPage.saveConfiguration();
+
+        // Assert
+        await pluginPage.assertPluginExists(pluginTestConfiguration[type].pluginIdentifier);
+      }
+    });
+
+    test('Add Besluiten API plugin', async () => {
+      // Act
+      await pluginPage.openWizard();
+      await pluginPage.selectPluginType('Besluiten API');
+      await pluginPage.fillPluginForm('Besluiten API');
+      await pluginPage.saveConfiguration();
+
+      // Assert
+      await pluginPage.assertPluginExists(
+        pluginTestConfiguration['Besluiten API'].pluginIdentifier
+      );
+    });
+
+    test('Duplicate Besluiten API plugin', async () => {
+      // Act
+      await pluginPage.duplicateConfigurationName(
+        'Test Besluiten API',
+        'besluitenApiConfigurationTitle'
+      );
+
+      // Assert
+      await pluginPage.assertPluginExists('Test Besluiten API - Test Duplicated');
+    });
+
+    test('Edit Besluiten API plugin through row click', async () => {
+      // Act
+      await pluginPage.editPluginRowClick(
+        'Test Besluiten API - Test Duplicated',
+        'besluitenApiConfigurationTitle',
+        'Test Edited Besluiten API Row Click'
+      );
+      // Assert
+      await pluginPage.assertPluginExists('Test Edited Besluiten API Row Click');
+    });
+
+    test('Edit Besluiten API plugin through menu click', async () => {
+      // Act
+      await pluginPage.editPluginMenuClick(
+        'Test Edited Besluiten API Row Click',
+        'besluitenApiConfigurationTitle',
+        'Test Edited Besluiten API Menu Click'
+      );
+      // Assert
+      await pluginPage.assertPluginExists('Test Edited Besluiten API Menu Click');
+
+      await pluginPage.deletePlugin('Test Edited Besluiten API Menu Click');
+    });
+
+    test('Delete Besluiten API plugin', async () => {
+      // Act
+      await pluginPage.deletePlugin(pluginTestConfiguration['Besluiten API'].pluginIdentifier);
+
+      // Assert
+      await pluginPage.assertPluginDeleted('Besluiten API');
+    });
+  });
 });
