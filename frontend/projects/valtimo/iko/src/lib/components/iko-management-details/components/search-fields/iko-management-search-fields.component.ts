@@ -284,21 +284,21 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
           const save$ =
             this.$modalMode() === 'add'
               ? this.ikoManagementApiService.createIkoSearchField(
-                params.aggregateKey,
-                params.actionKey,
-                field.key,
-                field
-              )
+                  params.aggregateKey,
+                  params.actionKey,
+                  field.key,
+                  field
+                )
               : this.ikoManagementApiService.updateIkoSearchField(
-                params.aggregateKey,
-                params.actionKey,
-                field.key,
-                field
-              );
+                  params.aggregateKey,
+                  params.actionKey,
+                  field.key,
+                  field
+                );
 
-          return save$.pipe(map(result => ({ result, params })));
+          return save$.pipe(map(result => ({result, params})));
         }),
-        switchMap(({ result, params }) => {
+        switchMap(({result, params}) => {
           if (!hasDropdownValues) return of(result);
 
           return this.ikoManagementApiService.postDropdownData(

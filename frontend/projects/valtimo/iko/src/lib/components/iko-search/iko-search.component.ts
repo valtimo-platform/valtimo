@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 import {AsyncPipe, CommonModule, NgIf, NgTemplateOutlet} from '@angular/common';
-import {Component, OnDestroy} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule, ParagraphModule} from '@valtimo/components';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  CarbonListModule,
+  PageTitleService,
+  InputModule,
+  DatePickerModule,
+  SelectModule,
+  ParagraphModule,
+  InputLabelModule,
+} from '@valtimo/components';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
@@ -27,6 +35,7 @@ import {
   InputModule as CarbonInputModule,
   LayerModule,
   TabsModule,
+  TimePickerModule,
 } from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
@@ -60,11 +69,20 @@ import {validateBsn} from '@valtimo/shared';
     NgIf,
     NgTemplateOutlet,
     ParagraphModule,
+    InputLabelModule,
+    TimePickerModule,
   ],
 })
-export class IkoSearchComponent implements OnDestroy {
+export class IkoSearchComponent implements OnInit, OnDestroy {
   public readonly formValues: Record<string, string> = {};
   public bsnErrorKey: string | null = null;
+
+  public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
+
+  public readonly booleanItems = [
+    {id: true, text: this.translateService.instant('searchFields.booleanPositive')},
+    {id: false, text: this.translateService.instant('searchFields.booleanNegative')},
+  ];
 
   private readonly _key$ = this.route.params.pipe(
     map(params => params?.key),
@@ -94,9 +112,14 @@ export class IkoSearchComponent implements OnDestroy {
     private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
-    private readonly ikoApiService: IkoApiService
+    private readonly ikoApiService: IkoApiService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.register(Search16);
+  }
+
+  public ngOnInit(): void {
+    this.openDropdownSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -117,7 +140,10 @@ export class IkoSearchComponent implements OnDestroy {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(paramKey: string, params: { key: string; dataType?: string; fieldType?: string }[]): void {
+  public searchGroup(
+    paramKey: string,
+    params: {key: string; dataType?: string; fieldType?: string}[]
+  ): void {
     let invalidBsnFound = false;
 
     for (const param of params) {
@@ -148,14 +174,17 @@ export class IkoSearchComponent implements OnDestroy {
         const end = this.formValues[param.key + '_end'];
 
         if (start || end) {
-          queryParams[param.key] = JSON.stringify({ start, end });
+          queryParams[param.key] = JSON.stringify({start, end});
         }
-      } else if ((param.dataType === 'date' || param.dataType === 'datetime') && param.fieldType === 'range') {
+      } else if (
+        (param.dataType === 'date' || param.dataType === 'datetime') &&
+        param.fieldType === 'range'
+      ) {
         const start = this.formValues[param.key + '_start'];
         const end = this.formValues[param.key + '_end'];
 
         if (start || end) {
-          queryParams[param.key] = JSON.stringify({ start, end });
+          queryParams[param.key] = JSON.stringify({start, end});
         }
       } else {
         const value = this.formValues[param.key];
@@ -163,6 +192,53 @@ export class IkoSearchComponent implements OnDestroy {
       }
     }
 
-    this.router.navigate([`${paramKey}`], { relativeTo: this.route, queryParams });
+    this.router.navigate([`${paramKey}`], {relativeTo: this.route, queryParams});
+  }
+
+  private openDropdownSubscription(): void {
+    combineLatest([this._key$, this.dataRequests$]).subscribe(([aggregateKey, dataRequests]) => {
+      dataRequests.forEach(request => {
+        request.searchFields?.forEach(field => {
+          if (field.dataType === 'time' && field.fieldType === 'single') {
+            if (this.formValues[field.key] === undefined) {
+              this.formValues[field.key] = '';
+            }
+          }
+
+          if (field.dataType === 'time' && field.fieldType === 'range') {
+            if (this.formValues[field.key + '_start'] === undefined) {
+              this.formValues[field.key + '_start'] = '';
+            }
+
+            if (this.formValues[field.key + '_end'] === undefined) {
+              this.formValues[field.key + '_end'] = '';
+            }
+          }
+        });
+      });
+
+      dataRequests.forEach(request => {
+        const requestKey = request.key;
+
+        request.searchFields
+          ?.filter(field => field.dropdownDataProvider)
+          .forEach(field => {
+            this.ikoApiService
+              .getDropdownData(field.dropdownDataProvider!, aggregateKey, requestKey, field.key)
+              .subscribe(dropdownData => {
+                if (dropdownData) {
+                  this.dropdownSelectItemsMap[field.key] = Object.keys(dropdownData).map(
+                    dropdownFieldKey => ({
+                      id: dropdownFieldKey,
+                      text: (dropdownData as any)[dropdownFieldKey],
+                    })
+                  );
+                } else {
+                  this.dropdownSelectItemsMap[field.key] = [];
+                }
+              });
+          });
+      });
+    });
   }
 }

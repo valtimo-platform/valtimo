@@ -89,3 +89,15 @@ v-input {
   margin-inline-start: 8px;
   margin-inline-end: 8px;
 }
+
+.iko-datetime {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+::ng-deep .iko-search-tabs {
+  .cds--tab-content {
+    margin-top: 24px;
+  }
+}
