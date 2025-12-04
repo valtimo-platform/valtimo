@@ -14,7 +14,37 @@
  * limitations under the License.
  */
 
-export interface BuildingBlockField {
+import {FormArray, FormControl, FormGroup} from '@angular/forms';
+import {BuildingBlockSyncTiming} from './process-link.model';
+
+interface BuildingBlockField {
   name: string;
   required: boolean;
 }
+
+type InputRowFormGroup = FormGroup<{
+  source: FormControl<string>;
+  target: FormControl<string>;
+}>;
+
+type OutputRowFormGroup = FormGroup<{
+  source: FormControl<string>;
+  target: FormControl<string>;
+  syncTiming: FormControl<BuildingBlockSyncTiming>;
+}>;
+
+type InputsFormGroup = FormGroup<{
+  inputs: FormArray<InputRowFormGroup>;
+}>;
+
+type OutputsFormGroup = FormGroup<{
+  outputs: FormArray<OutputRowFormGroup>;
+}>;
+
+export {
+  BuildingBlockField,
+  InputsFormGroup,
+  OutputsFormGroup,
+  InputRowFormGroup,
+  OutputRowFormGroup,
+};
