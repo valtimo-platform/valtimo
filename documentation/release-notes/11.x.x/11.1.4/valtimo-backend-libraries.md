@@ -1,2 +1,0 @@
-# Valtimo backend libraries
-
