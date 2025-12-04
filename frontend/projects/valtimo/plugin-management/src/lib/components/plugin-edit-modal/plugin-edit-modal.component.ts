@@ -37,10 +37,10 @@ export class PluginEditModalComponent {
 
   @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
 
-  readonly inputDisabled$ = this.stateService.inputDisabled$;
-  readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
+  public readonly inputDisabled$ = this.stateService.inputDisabled$;
+  public readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
     this.stateService.selectedPluginConfiguration$;
-  readonly configurationValid$ = new BehaviorSubject<boolean>(false);
+  public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly stateService: PluginManagementStateService,
@@ -48,11 +48,11 @@ export class PluginEditModalComponent {
     private readonly logger: NGXLogger
   ) {}
 
-  save(): void {
+  public save(): void {
     this.stateService.saveEdit();
   }
 
-  delete(): void {
+  public delete(): void {
     this.stateService.delete();
     this.stateService.disableInput();
 
