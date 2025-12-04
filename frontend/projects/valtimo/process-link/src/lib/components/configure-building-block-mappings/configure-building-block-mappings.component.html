@@ -1,8 +1,9 @@
-@let obs = {
-  fields: (buildingBlockFields$ | async),
-  fieldItems: (buildingBlockFieldItems$ | async),
-  params: (params$ | async)
-};
+@let obs =
+  {
+    fields: (buildingBlockFields$ | async),
+    fieldItems: (buildingBlockFieldItems$ | async),
+    params: (params$ | async),
+  };
 
 <div class="mapping-step">
   <section class="mapping-section">
@@ -13,7 +14,9 @@
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
         <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
-        <v-input-label [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate" />
+        <v-input-label
+          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
+        />
       </div>
 
       <div formArrayName="inputs">
@@ -24,6 +27,7 @@
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
                 [caseDefinitionKey]="obs.params.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [appendInline]="false"
                 [formControl]="group.get('source')"
               ></valtimo-value-path-selector>
               <div class="arrow">→</div>
@@ -36,6 +40,7 @@
                   </div>
                 } @else {
                   <v-select
+                    [appendInline]="false"
                     formControlName="target"
                     [items]="obs.fieldItems || []"
                   >
@@ -45,15 +50,9 @@
 
               <div class="mapping-cell-actions">
                 @if (!isRequiredTarget(obs.fields, group.get('target')?.value)) {
-                  <button
-                    cdsButton="danger--ghost"
-                    size="sm"
-                    (click)="deleteInput(i)"
-                  >
-                    {{ 'interface.delete' | translate }}
+                  <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteInput(i)">
                     <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                   </button>
-
                 } @else {
                   <div class="required-indicator">*</div>
                   <div>
@@ -75,7 +74,6 @@
       {{ 'processLinkConfiguration.buildingBlock.addInput' | translate }}
       <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
     </button>
-
   </section>
 
   <section class="mapping-section">
@@ -85,10 +83,14 @@
 
     <div class="mapping-table" [formGroup]="outputsForm">
       <div class="mapping-header output">
-        <v-input-label [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate" />
+        <v-input-label
+          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
+        />
         <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
         <div class="sync-options">
-          <v-input-label [title]="'processLinkConfiguration.buildingBlock.sync.continuous' | translate" />
+          <v-input-label
+            [title]="'processLinkConfiguration.buildingBlock.sync.continuous' | translate"
+          />
           <v-input-label [title]="'processLinkConfiguration.buildingBlock.sync.end' | translate" />
         </div>
       </div>
@@ -99,6 +101,7 @@
             <div class="mapping-part">
               <div class="mapping-cell">
                 <v-select
+                  [appendInline]="false"
                   formControlName="source"
                   [items]="obs.fieldItems || []"
                 >
@@ -113,6 +116,7 @@
                 [caseDefinitionKey]="obs.params.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
                 [formControl]="group.get('target')"
+                [appendInline]="false"
               ></valtimo-value-path-selector>
             </div>
 
@@ -121,26 +125,21 @@
                 <cds-radio-group
                   class="sync-radio-group"
                   formControlName="syncTiming"
+                  [attr.name]="'syncTiming-' + i"
                 >
                   @for (item of syncTimingItems; track item.id) {
-                    <cds-radio [value]="item.id" />
+                    <cds-radio [value]="item.id" [checked]="isSyncTimingSelected(group, item.id)">
+                    </cds-radio>
                   }
                 </cds-radio-group>
               </div>
 
               <div class="mapping-cell-actions">
-                <button
-                  cdsButton="danger--ghost"
-                  size="sm"
-                  (click)="deleteOutput(i)"
-                >
-                  {{ 'interface.delete' | translate }}
+                <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteOutput(i)">
                   <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                 </button>
               </div>
-
             </div>
-
           </div>
         }
       </div>
@@ -157,4 +156,3 @@
     </button>
   </section>
 </div>
-

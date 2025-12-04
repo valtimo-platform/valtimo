@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {combineLatest, Observable, Subscription} from 'rxjs';
@@ -128,7 +134,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
     private readonly translateService: TranslateService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -187,11 +194,13 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       })
     );
     this.persistInputFormState();
+    this.changeDetectorRef.detectChanges();
   }
 
   public deleteInput(index: number): void {
     this.inputs.removeAt(index);
     this.persistInputFormState();
+    this.changeDetectorRef.detectChanges();
   }
 
   public addOutput(source?: string): void {
@@ -203,6 +212,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       })
     );
     this.persistOutputFormState();
+    this.changeDetectorRef.detectChanges();
   }
 
   public deleteOutput(index: number): void {
@@ -238,6 +248,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     });
     this._syncingFromState = false;
     this.triggerValidation();
+  }
+
+  public isSyncTimingSelected(group: FormGroup, value: BuildingBlockSyncTiming): boolean {
+    return group.get('syncTiming')?.value === value;
   }
 
   private syncOutputsFromState(mappings: BuildingBlockOutputMapping[]): void {
