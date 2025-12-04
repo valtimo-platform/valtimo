@@ -24,7 +24,8 @@
   @if (!obs.loading) {
     <valtimo-schema-editor
       [fitPage]="true"
-      [spaceAdjustment]="106"
+      [spaceAdjustment]="64"
+      [disableOverflow]="true"
       [schemaJson]="obs.documentDefinition"
       [disabled]="obs.isFinal"
       (changeEvent)="onChangeEvent($event)"

@@ -32,7 +32,7 @@
   <div class="version-selector-dropdown-template">
     <cds-tag
       class="cds-tag--no-margin"
-      [type]="!item.final ? 'red' : 'green'"
+      [type]="!item?.final ? 'red' : 'green'"
       [title]="item?.content"
     >
       {{ !item?.final ? 'DRAFT: ' + item?.content : item?.content }}

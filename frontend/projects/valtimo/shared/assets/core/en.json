@@ -2358,5 +2358,10 @@
     "mdi-clipboard-text-clock": "Clipboard Text Clock",
     "mdi-clipboard-text-play": "Clipboard Text Play",
     "mdi-clipboard-flow": "Clipboard Flow"
+  },
+  "schemaEditor": {
+    "rootObject": "Root level",
+    "manageRequiredFields": "Manage required fields",
+    "requiredFields": "Required fields"
   }
 }
