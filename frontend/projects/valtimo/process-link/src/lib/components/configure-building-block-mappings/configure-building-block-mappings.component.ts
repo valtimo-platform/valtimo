@@ -26,7 +26,6 @@ import {
   BuildingBlockProcessLinkUpdateDto,
   BuildingBlockSyncTiming,
   ProcessLink,
-  ProcessLinkEditMode,
 } from '../../models';
 import {
   BuildingBlockStateService,
@@ -449,15 +448,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         outputMappings: this.buildingBlockStateService.getOutputMappingsSnapshot(),
       };
 
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkCreateEvent(request);
-        return;
-      }
-
-      this.processLinkService.saveProcessLink(request).subscribe({
-        next: () => this.processLinkStateService.closeModal(),
-        error: () => this.processLinkStateService.stopSaving(),
-      });
+      this.processLinkStateService.sendProcessLinkCreateEvent(request);
     });
   }
 
@@ -486,15 +477,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         outputMappings: this.buildingBlockStateService.getOutputMappingsSnapshot(),
       };
 
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkUpdateEvent(request);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(request).subscribe({
-        next: () => this.processLinkStateService.closeModal(),
-        error: () => this.processLinkStateService.stopSaving(),
-      });
+      this.processLinkStateService.sendProcessLinkUpdateEvent(request);
     });
   }
 
