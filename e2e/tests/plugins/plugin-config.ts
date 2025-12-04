@@ -14,19 +14,19 @@ export interface PluginTestConfiguration {
 export const pluginTypes = [
   'Besluiten API',
   'Catalogi API',
-  //   'Documenten API',
-  //   'Klantinteracties API',
-  //   'Notificaties API',
-  //   'OpenNotificaties',
-  //   'Objecten API',
-  //   'Object token authentication',
-  //   'Objecttypen API',
-  //   'OpenKlant token authentication',
-  //   'OpenZaak',
-  //   'Portal task',
-  //   'SmartDocuments',
-  //   'Verzoek',
-  //   'Zaken API',
+  'Documenten API',
+  'Klantinteracties API',
+  'Notificaties API',
+  'OpenNotificaties',
+  'Objecten API',
+  'Object token authentication',
+  'Objecttypen API',
+  'OpenKlant token authentication',
+  'OpenZaak',
+  'Portaaltaak',
+  'SmartDocuments',
+  'Verzoek',
+  'Zaken API',
 ];
 
 export const pluginTestConfiguration = {
@@ -37,7 +37,7 @@ export const pluginTestConfiguration = {
         type: 'input',
         value: uuidv4(),
       },
-      {testId: 'besluitenApiConfigurationTitle', type: 'input', value: 'Test Besluiten API'},
+      {testId: 'besluitenApiConfigurationTitle', type: 'input', value: 'Test Besluiten API Plugin'},
       {testId: 'besluitenApiRsin', type: 'input', value: '328674989'},
       {testId: 'besluitenApiUrl', type: 'input', value: 'http://localhost:8001/besluiten/api/v1/'},
       {
@@ -52,7 +52,7 @@ export const pluginTestConfiguration = {
   'Catalogi API': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'catalogApiConfigurationTitle', type: 'input', value: 'Test Catalogi API'},
+      {testId: 'catalogApiConfigurationTitle', type: 'input', value: 'Test Catalogi API Plugin'},
       {testId: 'catalogiApiUrl', type: 'input', value: 'http://localhost:8001/catalogi/api/v1/'},
       {
         testId: 'catalogApiAuthenticationPluginConfiguration',
@@ -65,29 +65,33 @@ export const pluginTestConfiguration = {
 
   'Documenten API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: '5474fe57-532a-4050-8d89-32e62ca3e896'},
-      {testId: 'configurationName', type: 'input', value: 'Test Documenten API'},
+      {testId: 'configurationId', type: 'input',  value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Documenten API Plugin'},
       {
         testId: 'documentenApiUrl',
         type: 'input',
         value: 'http://localhost:8001/documenten/api/v1/',
       },
-      {testId: 'organisationRsin', type: 'input', value: '151368508'},
+      {testId: 'organisationRsin', type: 'input', value: '151368513'},
       {
-        testId: 'authenticationPluginConfiguration',
+        testId: 'documentenApiPluginConfiguration',
         type: 'select',
         value: 'OpenZaak Authentication - OpenZaak',
       },
-      {testId: 'documentenApiVersion', type: 'input', value: '1.4.2-maykin-1.13.0'},
+      {
+        testId: 'documentenApiVersion',
+        type: 'select',
+        value: '1.4.2-maykin-1.13.0',
+      },
     ],
     pluginIdentifier: 'Test Documenten API',
   },
 
   'Klantinteracties API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: '5474fe57-532a-4050-8d89-32e62ca3e896'},
-      {testId: 'configurationName', type: 'input', value: 'Besluiten config'},
-      {testId: 'klantinteractiesApiUrl', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Klantinteracties API Plugin'},
+      {testId: 'klantinteractiesApiUrl', type: 'input', value: 'http://localhost:8001/klantinteracties/api/v1'},
       {
         testId: 'authenticationPluginConfiguration',
         type: 'select',
@@ -99,24 +103,24 @@ export const pluginTestConfiguration = {
 
   'Notificaties API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Notificaties API'},
-      {testId: 'notificatiesApiUrl', type: 'input', value: 'Besluiten config'},
-      {testId: 'callbackUrl', type: 'input', value: '123456789'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Notificaties API Plugin'},
+      {testId: 'notificatiesApiUrl', type: 'input', value: 'http://localhost:8002/api/v1/'},
+      {testId: 'callbackUrl', type: 'input', value: 'http://localhost:8080/api/v1/notificatiesapi/callback'},
       {
         testId: 'authenticationPluginConfiguration',
         type: 'select',
-        value: '123456789',
+        value: 'OpenNotificaties Authentication - OpenNotificaties',
       },
     ],
     pluginIdentifier: 'Test Notificaties API',
   },
 
-  OpenNotificaties: {
+  'OpenNotificaties': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test OpenNotificaties'},
-      {testId: 'clientId', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input',value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test OpenNotificaties Plugin'},
+      {testId: 'clientId', type: 'input', value: 'valtimo_client'},
       {testId: 'secret', type: 'input', value: '123456789'},
     ],
     pluginIdentifier: 'Test OpenNotificaties',
@@ -124,13 +128,13 @@ export const pluginTestConfiguration = {
 
   'Objecten API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Objecten API'},
-      {testId: 'objectenApiUrl', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Objecten API Plugin'},
+      {testId: 'url', type: 'input', value: 'http://localhost:8002/api/v1/'},
       {
-        testId: 'authenticationPluginConfiguration',
+        testId: 'authenticationPluginConfigurat',
         type: 'select',
-        value: '123456789',
+        value: 'Objecten API Authentication - Object token authentication',
       },
     ],
     pluginIdentifier: 'Test Objecten API',
@@ -138,22 +142,22 @@ export const pluginTestConfiguration = {
 
   'Object token authentication': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Object token authentication'},
-      {testId: 'token', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input',value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Object token authentication Plugin'},
+      {testId: 'token', type: 'input', value: '593028174662901385427'},
     ],
     pluginIdentifier: 'Test Object token authentication',
   },
 
   'Objecttypen API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Objecttypen API'},
-      {testId: 'objecttypenApiUr', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Objecttypen API Plugin'},
+      {testId: 'url', type: 'input', value: 'http://localhost:8002/api/v1/'},
       {
-        testId: 'authenticationPluginConfiguration',
+        testId: 'authenticationPluginConfigurat',
         type: 'select',
-        value: 'Besluiten config',
+        value: 'Objecten API Authentication - Object token authentication',
       },
     ],
     pluginIdentifier: 'Test Objecttypen API',
@@ -161,65 +165,89 @@ export const pluginTestConfiguration = {
 
   'OpenKlant token authentication': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test OpenKlant token authentication'},
-      {testId: 'token', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test OpenKlant token authentication Plugin'},
+      {testId: 'token', type: 'input', value: '804193275660982431517'},
     ],
     pluginIdentifier: 'Test OpenKlant token authentication',
   },
 
-  OpenZaak: {
+  'OpenZaak': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test OpenZaak'},
-      {testId: 'clientId', type: 'input', value: 'Besluiten config'},
-      {testId: 'secret', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationTitle', type: 'input', value: 'Test OpenZaak Plugin'},
+      {testId: 'clientId', type: 'input', value: 'valtimo_client'},
+      {testId: 'clientSecret', type: 'input', value: '129870443512908776534'},
     ],
     pluginIdentifier: 'Test OpenZaak',
   },
 
-  'Portal task': {
+  'Portaaltaak': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Portal task'},
-      {testId: 'notificatiesApiPlugin', type: 'input', value: 'Besluiten config'},
-      {testId: 'objectManagementConfiguration', type: 'input', value: 'Besluiten config'},
-      {testId: 'processToCompletePortaaltaak', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationTitle', type: 'input', value: 'Test Portaaltaak Plugin'},
+      {
+        testId: 'notificatiesApiPluginConfigura',
+        type: 'select',
+        value: 'Notificaties API - Notificaties API',
+      },
+      {
+        testId: 'objectManagementConfigurationI',
+        type: 'select',
+        value: 'Bezwaar',
+      },
+      {
+        testId: 'completeTaakProcess',
+        type: 'select',
+        value: 'Bezwaar',
+      },
     ],
     pluginIdentifier: 'Test Portal task',
   },
 
-  SmartDocuments: {
+  'SmartDocuments': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test SmartDocuments'},
-      {testId: 'notificatiesApiPlugin', type: 'input', value: 'Besluiten config'},
-      {testId: 'username', type: 'input', value: 'Besluiten config'},
-      {testId: 'password', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test SmartDocuments Plugin'},
+      {testId: 'url', type: 'input', value: 'http://localhost:8002'},
+      {testId: 'username', type: 'input', value: 'valtimo_client'},
+      {testId: 'password', type: 'input', value: '705913488227640159382'},
     ],
     pluginIdentifier: 'Test SmartDocuments',
   },
 
-  Verzoek: {
+  'Verzoek': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Verzoek'},
-      {testId: 'notificatiesApiConfiguration', type: 'input', value: 'Besluiten config'},
-      {testId: 'process', type: 'input', value: 'Besluiten config'},
-      {testId: 'rsin', type: 'input', value: 'Besluiten config'},
+      {testId: 'configurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Verzoek Plugin'},
+      {
+        testId: 'notificatiesApiConfiguration',
+        type: 'select',
+        value: 'Notificaties API - Notificaties API',
+      },
+      {
+        testId: 'process',
+        type: 'select',
+        value: 'Bezwaar',
+      },
+      {
+        testId: 'rsin',
+        type: 'input',
+        value: 'rsin',
+      },
     ],
     pluginIdentifier: 'Test Verzoek',
   },
 
   'Zaken API': {
     fieldMap: [
-      {testId: 'configurationId', type: 'input', value: 'config-besluiten-id'},
-      {testId: 'configurationName', type: 'input', value: 'Test Zaken API'},
-      {testId: 'url', type: 'input', value: 'Besluiten config'},
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {testId: 'configurationName', type: 'input', value: 'Test Zaken API Plugin'},
+      {testId: 'url', type: 'input', value: 'http://localhost:8002/zaken/api/v1'},
       {
         testId: 'authenticationPluginConfiguration',
         type: 'select',
-        value: 'Besluiten config',
+        value: 'OpenZaak Authentication - OpenZaak',
       },
     ],
     pluginIdentifier: 'Test Zaken API',
