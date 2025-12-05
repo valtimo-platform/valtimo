@@ -16,7 +16,12 @@
 
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
-import {ProcessLink} from '../models';
+import {
+  BuildingBlockField,
+  BuildingBlockInputMapping,
+  BuildingBlockOutputMapping,
+  ProcessLink,
+} from '../models';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
 
 @Injectable({
@@ -28,10 +33,15 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _versions$ = new BehaviorSubject<Array<string>>([]);
   private readonly _requiredPluginKeys$ = new BehaviorSubject<Array<string>>([]);
   private readonly _pluginMappings$ = new BehaviorSubject<Record<string, string | null>>({});
+  private readonly _buildingBlockFields$ = new BehaviorSubject<Array<BuildingBlockField>>([]);
+  private readonly _inputMappings$ = new BehaviorSubject<Array<BuildingBlockInputMapping>>([]);
+  private readonly _outputMappings$ = new BehaviorSubject<Array<BuildingBlockOutputMapping>>([]);
   private readonly _loadingRequirements$ = new BehaviorSubject<boolean>(false);
+  private readonly _loadingFields$ = new BehaviorSubject<boolean>(false);
 
   private _versionSubscription?: Subscription;
   private _requirementsSubscription?: Subscription;
+  private _fieldsSubscription?: Subscription;
 
   constructor(
     private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
@@ -57,8 +67,24 @@ export class BuildingBlockStateService implements OnDestroy {
     return this._pluginMappings$.asObservable();
   }
 
+  public get buildingBlockFields$(): Observable<Array<BuildingBlockField>> {
+    return this._buildingBlockFields$.asObservable();
+  }
+
+  public get inputMappings$(): Observable<Array<BuildingBlockInputMapping>> {
+    return this._inputMappings$.asObservable();
+  }
+
+  public get outputMappings$(): Observable<Array<BuildingBlockOutputMapping>> {
+    return this._outputMappings$.asObservable();
+  }
+
   public get requirementsLoading$(): Observable<boolean> {
     return this._loadingRequirements$.asObservable();
+  }
+
+  public get fieldsLoading$(): Observable<boolean> {
+    return this._loadingFields$.asObservable();
   }
 
   public get mappingsComplete$(): Observable<boolean> {
@@ -74,6 +100,8 @@ export class BuildingBlockStateService implements OnDestroy {
     this._definitionVersionTag$.next(null);
     this._versions$.next([]);
     this.clearPluginRequirements();
+    this.clearMappings();
+    this.clearFields();
 
     this._versionSubscription?.unsubscribe();
     if (!key) return;
@@ -111,6 +139,8 @@ export class BuildingBlockStateService implements OnDestroy {
       this.setPluginConfigurationMappings(
         processLink.pluginConfigurationMappings as Record<string, string>
       );
+      this.setInputMappings(processLink.inputMappings ?? []);
+      this.setOutputMappings(processLink.outputMappings ?? []);
     } else {
       this.reset();
     }
@@ -122,10 +152,13 @@ export class BuildingBlockStateService implements OnDestroy {
   ): void {
     this._definitionVersionTag$.next(versionTag);
     this.clearPluginRequirements({preserveMappings});
+    this.clearFields();
+    this.clearMappings({preserveMappings});
 
     const key = this._definitionKey$.getValue();
     if (key && versionTag) {
       this.loadPluginRequirements(key, versionTag);
+      this.loadFields(key, versionTag);
     }
   }
 
@@ -148,6 +181,22 @@ export class BuildingBlockStateService implements OnDestroy {
     this._pluginMappings$.next(normalized);
   }
 
+  public setInputMappings(mappings: Array<BuildingBlockInputMapping>): void {
+    this._inputMappings$.next(mappings ?? []);
+  }
+
+  public setOutputMappings(mappings: Array<BuildingBlockOutputMapping>): void {
+    this._outputMappings$.next(mappings ?? []);
+  }
+
+  public getInputMappingsSnapshot(): Array<BuildingBlockInputMapping> {
+    return [...this._inputMappings$.getValue()];
+  }
+
+  public getOutputMappingsSnapshot(): Array<BuildingBlockOutputMapping> {
+    return [...this._outputMappings$.getValue()];
+  }
+
   public getPluginConfigurationMappingsSnapshot(): Record<string, string | null> {
     return {...this._pluginMappings$.getValue()};
   }
@@ -159,17 +208,24 @@ export class BuildingBlockStateService implements OnDestroy {
     };
   }
 
+  public getBuildingBlockFieldsSnapshot(): Array<BuildingBlockField> {
+    return [...this._buildingBlockFields$.getValue()];
+  }
+
   public reset(): void {
     this._definitionKey$.next(null);
     this._definitionVersionTag$.next(null);
     this._versions$.next([]);
     this._pluginMappings$.next({});
+    this.clearFields();
+    this.clearMappings();
     this.clearPluginRequirements();
   }
 
   public ngOnDestroy(): void {
     this._versionSubscription?.unsubscribe();
     this._requirementsSubscription?.unsubscribe();
+    this._fieldsSubscription?.unsubscribe();
   }
 
   private loadPluginRequirements(key: string, versionTag: string): void {
@@ -199,6 +255,23 @@ export class BuildingBlockStateService implements OnDestroy {
     this._pluginMappings$.next(normalized);
   }
 
+  private loadFields(key: string, versionTag: string): void {
+    this._loadingFields$.next(true);
+    this._fieldsSubscription?.unsubscribe();
+    this._fieldsSubscription = this.processLinkBuildingBlockApiService
+      .getFieldsForBuildingBlock(key, versionTag)
+      .subscribe({
+        next: fields => {
+          this._buildingBlockFields$.next(fields ?? []);
+          this._loadingFields$.next(false);
+        },
+        error: () => {
+          this._buildingBlockFields$.next([]);
+          this._loadingFields$.next(false);
+        },
+      });
+  }
+
   private clearPluginRequirements(options: {preserveMappings?: boolean} = {}): void {
     this._requirementsSubscription?.unsubscribe();
     this._requiredPluginKeys$.next([]);
@@ -206,5 +279,19 @@ export class BuildingBlockStateService implements OnDestroy {
       this._pluginMappings$.next({});
     }
     this._loadingRequirements$.next(false);
+  }
+
+  private clearFields(): void {
+    this._fieldsSubscription?.unsubscribe();
+    this._buildingBlockFields$.next([]);
+    this._loadingFields$.next(false);
+  }
+
+  private clearMappings(options: {preserveMappings?: boolean} = {}): void {
+    if (options.preserveMappings) {
+      return;
+    }
+    this._inputMappings$.next([]);
+    this._outputMappings$.next([]);
   }
 }

@@ -8,14 +8,23 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
-export * from './form-custom-component.model';
-export * from './building-block-field.model';
+package com.ritense.buildingblock.processlink.dto
+
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
+
+data class BuildingBlockInputMappingDto(
+    val source: String,
+    val target: String
+)
+
+data class BuildingBlockOutputMappingDto(
+    val source: String,
+    val target: String,
+    val syncTiming: BuildingBlockSyncTiming = BuildingBlockSyncTiming.END
+)

@@ -243,13 +243,14 @@ export class ProcessLinkStepService {
         {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
         {label: 'selectBuildingBlock'},
         {label: 'configureBuildingBlockPlugins', disabled: true},
+        {label: 'configureBuildingBlockMappings', disabled: true},
       ]);
       this._currentStepIndex$.next(hasOneType ? 0 : 1);
       this.buttonService.showBackButton();
       this.buttonService.showNextButton();
       this.buttonService.hideSaveButton();
       this.buttonService.disableNextButton();
-    })
+    });
   }
 
   setConfigureBuildingBlockPluginsStep(selectionLabel?: string): void {
@@ -258,15 +259,41 @@ export class ProcessLinkStepService {
         ? [
             {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
             {label: 'configureBuildingBlockPlugins'},
+            {label: 'configureBuildingBlockMappings', disabled: true},
           ]
         : [
             {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
             {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
             {label: 'configureBuildingBlockPlugins'},
+            {label: 'configureBuildingBlockMappings', disabled: true},
           ];
 
       this._steps$.next(steps);
       this._currentStepIndex$.next(hasOneType ? 1 : 2);
+      this.buttonService.showNextButton();
+      this.buttonService.hideSaveButton();
+      this.buttonService.disableNextButton();
+      this.buttonService.showBackButton();
+    });
+  }
+
+  setConfigureBuildingBlockMappingsStep(selectionLabel?: string): void {
+    this._hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneType => {
+      const steps = hasOneType
+        ? [
+            {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
+            {label: 'configureBuildingBlockPlugins'},
+            {label: 'configureBuildingBlockMappings'},
+          ]
+        : [
+            {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'},
+            {label: 'selectBuildingBlock', secondaryLabel: selectionLabel},
+            {label: 'configureBuildingBlockPlugins'},
+            {label: 'configureBuildingBlockMappings'},
+          ];
+
+      this._steps$.next(steps);
+      this._currentStepIndex$.next(hasOneType ? 2 : 3);
       this.buttonService.hideNextButton();
       this.buttonService.showSaveButton();
       this.buttonService.disableSaveButton();
