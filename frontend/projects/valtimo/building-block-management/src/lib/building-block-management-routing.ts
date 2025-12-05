@@ -52,6 +52,16 @@ const routes: Routes = [
       context: 'buildingBlock',
     },
   },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/create`,
+    component: ProcessManagementBuilderComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Create new Process',
+      roles: [ROLE_ADMIN],
+      context: 'buildingBlock',
+    },
+  },
 ];
 
 @NgModule({

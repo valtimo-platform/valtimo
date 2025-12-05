@@ -178,7 +178,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         buildingBlockDefinitionVersionTag: String,
         bpmn: MultipartFile,
         processLinks: List<ProcessLinkCreateRequestDto>,
-        currentProcessDefinitionId: String,
+        currentProcessDefinitionId: String?,
         main: Boolean
     ): ProcessDefinitionId? {
         denyAuthorization()
@@ -264,8 +264,10 @@ class BuildingBlockDefinitionProcessDefinitionService(
 
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
-        currentProcessDefinitionId: String
+        currentProcessDefinitionId: String?
     ): ProcessDefinitionBuildingBlockDefinition? {
+        if (currentProcessDefinitionId == null) return null
+
         return processDefinitionBuildingBlockDefinitionRepository
             .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
                 buildingBlockDefinitionId,

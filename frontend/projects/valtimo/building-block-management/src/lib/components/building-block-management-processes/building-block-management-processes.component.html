@@ -28,7 +28,7 @@
         <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
       </button>
 
-      <button cdsButton="primary" (click)="showCreateModal()" [disabled]="isFinal$ | async">
+      <button cdsButton="primary" (click)="onCreateClick()" [disabled]="isFinal$ | async">
         {{ 'interface.create' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
