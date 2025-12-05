@@ -56,6 +56,7 @@ import {
   ComboBoxModule,
   IconModule,
   InputModule,
+  LayerModule,
   RadioModule,
 } from 'carbon-components-angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -87,6 +88,7 @@ import {ActivatedRoute} from '@angular/router';
     ButtonModule,
     IconModule,
     SelectModule,
+    LayerModule,
   ],
 })
 export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy {
