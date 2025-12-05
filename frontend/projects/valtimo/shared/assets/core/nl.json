@@ -1832,7 +1832,9 @@
       "targetPlaceholder": "Selecteer doel",
       "outputSource": "Bouwblok-output",
       "syncTiming": "Sync-moment",
+      "selectedBuildingBlockFieldPlaceholder": "Selecteer een veld...",
       "sync": {
+        "title": "Synchroniseren",
         "continuous": "Continu",
         "end": "Aan het einde"
       }

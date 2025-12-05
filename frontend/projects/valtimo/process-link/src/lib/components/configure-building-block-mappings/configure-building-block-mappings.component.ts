@@ -111,12 +111,11 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     outputs: new FormArray<OutputRowFormGroup>([]),
   });
 
-  private readonly rowItemsCache = new WeakMap<InputRowFormGroup, Observable<SelectItem[]>>();
-
+  private readonly _rowItemsCache = new WeakMap<InputRowFormGroup, Observable<SelectItem[]>>();
   public getBuildingBlockFieldItemsForRow$(
     group: InputRowFormGroup
   ): Observable<Array<SelectItem>> {
-    const cached = this.rowItemsCache.get(group);
+    const cached = this._rowItemsCache.get(group);
 
     if (cached) return cached;
 
@@ -136,18 +135,17 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       })
     );
 
-    this.rowItemsCache.set(group, stream);
+    this._rowItemsCache.set(group, stream);
 
     return stream;
   }
 
-  private readonly outputTargetFiltersCache = new WeakMap<
+  private readonly _outputTargetFiltersCache = new WeakMap<
     OutputRowFormGroup,
     Observable<string[]>
   >();
-
   public getUsedCaseTargetsForRow$(group: OutputRowFormGroup): Observable<string[]> {
-    const cached = this.outputTargetFiltersCache.get(group);
+    const cached = this._outputTargetFiltersCache.get(group);
     if (cached) return cached;
 
     const stream = combineLatest([
@@ -162,7 +160,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       })
     );
 
-    this.outputTargetFiltersCache.set(group, stream);
+    this._outputTargetFiltersCache.set(group, stream);
 
     return stream;
   }
@@ -185,13 +183,29 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   private _syncingFromState = false;
   private _suppressValidation = false;
 
-  get inputs(): FormArray<InputRowFormGroup> {
+  public get inputs(): FormArray<InputRowFormGroup> {
     return this.inputsForm.controls.inputs;
   }
 
-  get outputs(): FormArray<OutputRowFormGroup> {
+  public get outputs(): FormArray<OutputRowFormGroup> {
     return this.outputsForm.controls.outputs;
   }
+
+  public readonly allInputsMapped$: Observable<boolean> = combineLatest([
+    this.buildingBlockFields$,
+    this.inputsForm.valueChanges.pipe(startWith(this.inputsForm.value)),
+  ]).pipe(
+    map(([fields, inputsFormValue]) => {
+      const allTargets =
+        inputsFormValue.inputs?.map(input => input.target).filter((t): t is string => !!t) ?? [];
+
+      if (!fields || fields.length === 0) {
+        return false;
+      }
+
+      return fields.every(field => allTargets.includes(field.name));
+    })
+  );
 
   constructor(
     private readonly fb: FormBuilder,
@@ -223,6 +237,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         }
       )
     );
+
     this.triggerValidation();
 
     this._subscriptions.add(
@@ -250,7 +265,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     );
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
@@ -310,10 +325,6 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this.persistOutputFormState();
   }
 
-  public syncTimingLabel(item: {id: BuildingBlockSyncTiming; labelKey: string}): string {
-    return this.translateService.instant(item.labelKey);
-  }
-
   private syncInputsFromState(
     fields: Array<{name: string; required: boolean}>,
     mappings: BuildingBlockInputMapping[]
@@ -354,8 +365,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       return;
     }
     const mapped: Array<BuildingBlockInputMapping> = this.inputs.controls.map(group => {
-      const value = group.value;
-      return {source: value.source, target: value.target} as BuildingBlockInputMapping;
+      return {source: group.value.source, target: group.value.target} as BuildingBlockInputMapping;
     });
     this.buildingBlockStateService.setInputMappings(mapped);
     this.triggerValidation();
@@ -366,11 +376,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
       return;
     }
     const mapped: Array<BuildingBlockOutputMapping> = this.outputs.controls.map(group => {
-      const value = group.value;
       return {
-        source: value.source,
-        target: value.target,
-        syncTiming: (value.syncTiming ?? 'END') as BuildingBlockSyncTiming,
+        source: group.value.source,
+        target: group.value.target,
+        syncTiming: (group.value.syncTiming ?? 'END') as BuildingBlockSyncTiming,
       } as BuildingBlockOutputMapping;
     });
     this.buildingBlockStateService.setOutputMappings(mapped);
