@@ -135,5 +135,15 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
 
   public showUploadModal(): void {}
 
-  public showCreateModal(): void {}
+  public onCreateClick(): void {
+    this.router.navigate([
+      '/building-block-management',
+      'building-block',
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+      'version',
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+      BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
+      'create',
+    ]);
+  }
 }

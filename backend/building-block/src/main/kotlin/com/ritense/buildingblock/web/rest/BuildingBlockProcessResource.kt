@@ -86,7 +86,7 @@ class BuildingBlockProcessResource(
         @PathVariable versionTag: String,
         @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestPart(name = "processDefinitionId") processDefinitionId: String,
+        @RequestPart(name = "processDefinitionId") processDefinitionId: String?,
         @RequestPart(name = "main", required = false) main: Boolean? = false
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
