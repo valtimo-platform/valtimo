@@ -217,13 +217,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     )
   );
 
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.managementParams$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context)
-    )
+  public readonly hasEditPermissions$: Observable<boolean> = this.context$.pipe(
+    switchMap(context => {
+      if (context === 'independent') {
+        return of(true);
+      }
+
+      return this.managementParams$.pipe(
+        switchMap(params =>
+          this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context)
+        )
+      );
+    })
   );
 
   private readonly _reload$ = new Subject<null>();
