@@ -7,9 +7,9 @@
 
 <div class="mapping-step">
   <section class="mapping-section">
-    <div class="section-header">
-      <h4>{{ 'processLinkConfiguration.buildingBlock.inputTitle' | translate }}</h4>
-    </div>
+    <h4 class="section-header">
+      {{ 'processLinkConfiguration.buildingBlock.inputTitle' | translate }}
+    </h4>
 
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
@@ -25,6 +25,7 @@
           <div class="mapping-row input" [formGroup]="group">
             <div class="mapping-part">
               <valtimo-value-path-selector
+                [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
                 [caseDefinitionKey]="obs.params.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
@@ -32,6 +33,7 @@
                 [dropUp]="false"
                 [formControl]="group.get('source')"
               ></valtimo-value-path-selector>
+
               <div class="arrow">→</div>
             </div>
 
@@ -43,6 +45,7 @@
                   </div>
                 } @else {
                   <v-select
+                    [cdsLayer]="2"
                     [appendInline]="false"
                     formControlName="target"
                     [placeholder]="
@@ -74,6 +77,7 @@
         }
       </div>
     </div>
+
     <button
       cdsButton="tertiary"
       size="sm"
@@ -88,9 +92,9 @@
   </section>
 
   <section class="mapping-section">
-    <div class="section-header">
-      <h4>{{ 'processLinkConfiguration.buildingBlock.outputTitle' | translate }}</h4>
-    </div>
+    <h4 class="section-header">
+      {{ 'processLinkConfiguration.buildingBlock.outputTitle' | translate }}
+    </h4>
 
     <div class="mapping-table" [formGroup]="outputsForm">
       <div class="mapping-header output">
@@ -113,6 +117,7 @@
             <div class="mapping-part">
               <div class="mapping-cell">
                 <v-select
+                  [cdsLayer]="2"
                   [appendInline]="false"
                   formControlName="source"
                   [items]="obs.fieldItems || []"
@@ -130,6 +135,7 @@
 
             <div class="mapping-part">
               <valtimo-value-path-selector
+                [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
                 [caseDefinitionKey]="obs.params.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
