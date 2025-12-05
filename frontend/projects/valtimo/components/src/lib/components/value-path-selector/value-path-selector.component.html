@@ -55,6 +55,7 @@
           !obs.valuePathListItems ||
           (obs.valuePathListItems || []).length === 0
         "
+        [dropUp]="dropUp"
         (selected)="onPathSelected($event)"
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >

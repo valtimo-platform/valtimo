@@ -198,6 +198,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Input() public required = false;
   @Input() public showCaseDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
+  @Input() public dropUp: boolean = false;
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;

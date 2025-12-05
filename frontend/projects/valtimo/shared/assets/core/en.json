@@ -1799,7 +1799,9 @@
       "targetPlaceholder": "Select target",
       "outputSource": "Building block output",
       "syncTiming": "Sync timing",
+      "selectedBuildingBlockFieldPlaceholder": "Select a field...",
       "sync": {
+        "title": "Sync",
         "continuous": "Continuous",
         "end": "At end"
       }

@@ -14,6 +14,7 @@
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
         <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+
         <v-input-label
           [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
         />
@@ -28,10 +29,12 @@
                 [caseDefinitionKey]="obs.params.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
                 [appendInline]="false"
+                [dropUp]="false"
                 [formControl]="group.get('source')"
               ></valtimo-value-path-selector>
               <div class="arrow">→</div>
             </div>
+
             <div class="mapping-part">
               <div class="mapping-cell">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
@@ -42,7 +45,12 @@
                   <v-select
                     [appendInline]="false"
                     formControlName="target"
+                    [placeholder]="
+                      'processLinkConfiguration.buildingBlock.selectedBuildingBlockFieldPlaceholder'
+                        | translate
+                    "
                     [items]="getBuildingBlockFieldItemsForRow$(group) | async"
+                    [dropUp]="false"
                   >
                   </v-select>
                 }
@@ -55,6 +63,7 @@
                   </button>
                 } @else {
                   <div class="required-indicator">*</div>
+
                   <div>
                     {{ 'interface.required' | translate }}
                   </div>
@@ -70,8 +79,10 @@
       size="sm"
       (click)="addInput()"
       [title]="'processLinkConfiguration.buildingBlock.addInput' | translate"
+      [disabled]="allInputsMapped$ | async"
     >
       {{ 'processLinkConfiguration.buildingBlock.addInput' | translate }}
+
       <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
     </button>
   </section>
@@ -91,9 +102,8 @@
 
         <div class="sync-options">
           <v-input-label
-            [title]="'processLinkConfiguration.buildingBlock.sync.continuous' | translate"
+            [title]="'processLinkConfiguration.buildingBlock.sync.title' | translate"
           />
-          <v-input-label [title]="'processLinkConfiguration.buildingBlock.sync.end' | translate" />
         </div>
       </div>
 
@@ -106,9 +116,15 @@
                   [appendInline]="false"
                   formControlName="source"
                   [items]="obs.fieldItems || []"
+                  [placeholder]="
+                    'processLinkConfiguration.buildingBlock.selectedBuildingBlockFieldPlaceholder'
+                      | translate
+                  "
+                  [dropUp]="true"
                 >
                 </v-select>
               </div>
+
               <div class="arrow">→</div>
             </div>
 
@@ -120,6 +136,7 @@
                 [formControl]="group.get('target')"
                 [appendInline]="false"
                 [filterItems]="getUsedCaseTargetsForRow$(group) | async"
+                [dropUp]="true"
               ></valtimo-value-path-selector>
             </div>
 
@@ -132,6 +149,7 @@
                 >
                   @for (item of syncTimingItems; track item.id) {
                     <cds-radio [value]="item.id" [checked]="isSyncTimingSelected(group, item.id)">
+                      {{ item.labelKey | translate }}
                     </cds-radio>
                   }
                 </cds-radio-group>
@@ -155,6 +173,7 @@
       [title]="'processLinkConfiguration.buildingBlock.addOutput' | translate"
     >
       {{ 'processLinkConfiguration.buildingBlock.addOutput' | translate }}
+
       <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
     </button>
   </section>
