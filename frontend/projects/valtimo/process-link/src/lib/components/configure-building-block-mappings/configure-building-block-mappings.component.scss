@@ -1,0 +1,83 @@
+.section-header {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.mapping-section {
+  margin-bottom: 16px;
+}
+
+.mapping-row,
+.mapping-header {
+  display: grid;
+  align-items: center;
+
+  &.input {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &.output {
+    grid-template-columns: 5fr 6fr 5fr;
+  }
+}
+
+.mapping-header .output .sync-options {
+  padding-left: 10px;
+  display: flex;
+}
+
+.mapping-row {
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: var(--cds-layer);
+
+  .mapping-part {
+    display: flex;
+  }
+
+  .arrow {
+    text-align: center;
+    width: 40px;
+    line-height: 40px;
+    font-size: large;
+  }
+
+  .mapping-cell {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mapping-cell-actions {
+    display: flex;
+    align-self: flex-end;
+    text-transform: capitalize;
+    margin-left: 10px;
+
+    .required-indicator {
+      margin: 0 5px;
+      color: var(--cds-text-error);
+    }
+
+    button {
+      margin-bottom: 5px;
+
+      ::ng-deep .cds--btn__icon {
+        margin: 0 !important;
+      }
+    }
+  }
+
+  .sync-radio-group {
+    padding-left: 10px;
+    margin-top: 8px;
+
+    .sync-radio:first-child {
+      margin-right: 0;
+    }
+
+    ::ng-deep .cds--radio-button__label {
+      justify-content: normal;
+    }
+  }
+}

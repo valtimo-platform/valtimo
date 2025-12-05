@@ -58,10 +58,10 @@ import {
 import {distinctUntilChanged, take} from 'rxjs/operators';
 import {
   ValuePathItem,
-  ValuePathType,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
+  ValuePathType,
 } from '../../models';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
@@ -99,6 +99,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     false;
   @HostBinding('class.value-path-selector--margin-bottom-xl') private _showMarginXl: boolean =
     false;
+
   @HostListener('focusout')
   public onBlur(): void {
     this.onBlurEvent();
@@ -109,7 +110,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   });
 
   public get selectedPath(): AbstractControl<string> {
-    return this.formGroup.get('selectedPath');
+    return this.formGroup.get('selectedPath')!;
   }
 
   private _onChangeFunction!: (value: string) => void;
@@ -129,6 +130,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   @Input() public name = '';
   @Input() public appendInline = false;
+
   @Input() public set margin(value: boolean) {
     this._showMargin = value;
   }
@@ -138,6 +140,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Input() public set marginXl(value: boolean) {
     this._showMarginXl = value;
   }
+
   @Input() public set disabled(value: boolean) {
     this.disabled$.next(!!value);
 
@@ -171,6 +174,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       });
     }
   }
+
   @Input() set caseDefinitionVersionTag(value: string | null) {
     if (value) {
       this._caseDefinitionVersionTag$.next(value);
@@ -184,28 +188,42 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       });
     }
   }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
+
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
   @Input() public showCaseDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
+  @Input() public dropUp: boolean = false;
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;
     this.selectedPath.setValue(value);
-    if (this.showCaseDefinitionSelector) this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+    if (this.showCaseDefinitionSelector) {
+      this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+    }
   }
+
   private readonly _type$ = new BehaviorSubject<ValuePathType>(ValuePathType.FIELD);
   @Input() public set type(value: ValuePathType) {
     this._type$.next(value);
   }
+
   private readonly _parentItem$ = new BehaviorSubject<ValuePathItem | null>(null);
   @Input() public set parentItem(value: ValuePathItem | null) {
     this._parentItem$.next(value);
   }
+
+  private readonly _filteredItems$ = new BehaviorSubject<string[]>([]);
+
+  @Input() public set filterItems(value: string[] | null | undefined) {
+    this._filteredItems$.next(value ?? []);
+  }
+
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
@@ -213,6 +231,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private get _caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
   }
+
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
   public readonly showToggle$ = this._caseDefinitionKey$.pipe(
@@ -225,9 +244,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     ValuePathSelectorInputMode.DROPDOWN
   );
   public inputModeIsDropdown$: Observable<boolean> = this._inputMode$.pipe(
-    map(mode => {
-      return mode === ValuePathSelectorInputMode.DROPDOWN;
-    })
+    map(mode => mode === ValuePathSelectorInputMode.DROPDOWN)
   );
 
   public readonly loadingValuePathItems$ = new BehaviorSubject<boolean>(true);
@@ -270,15 +287,27 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     ),
     tap(options => (this._cachedOptions = options)),
     switchMap(options =>
-      combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
+      combineLatest([
+        of(options),
+        this._selectedPath$,
+        this.inputModeIsDropdown$,
+        this._filteredItems$.pipe(startWith(this._filteredItems$.getValue())),
+      ])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
       const formattedOptions = options.map(option => option.formattedPath);
-      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
+      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown) {
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+      }
     }),
-    map(([options, selectedPath]) =>
-      options.map(option => {
+    map(([options, selectedPath, , filteredItems]) => {
+      const filteredOptions = options.filter(option => {
+        const isSelected = option.formattedPath === selectedPath;
+        if (isSelected) return true;
+        return !filteredItems.includes(option.formattedPath);
+      });
+
+      return filteredOptions.map(option => {
         const mappedOption = {
           content: option.formattedPath,
           selected: option.formattedPath === selectedPath,
@@ -288,8 +317,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
         if (mappedOption.selected) this.onPathSelected({item: mappedOption});
         return mappedOption;
-      })
-    ),
+      });
+    }),
     tap(() => this.loadingValuePathItems$.next(false))
   );
 
@@ -326,7 +355,6 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   public onBlurEvent(): void {
     if (!this._onTouchedFunction) return;
-
     this._onTouchedFunction();
   }
 

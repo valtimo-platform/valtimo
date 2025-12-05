@@ -136,14 +136,14 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         this.definitionVersionTag$,
       ]).subscribe(([keys, complete, loading, version]) => {
         if (loading || !version) {
-          this.buttonService.disableSaveButton();
+          this.buttonService.disableNextButton();
           return;
         }
 
         if (keys.length === 0 || complete) {
-          this.buttonService.enableSaveButton();
+          this.buttonService.enableNextButton();
         } else {
-          this.buttonService.disableSaveButton();
+          this.buttonService.disableNextButton();
         }
       })
     );
@@ -155,8 +155,10 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     );
 
     this._subscriptions.add(
-      this.buttonService.saveButtonClick$.subscribe(() => {
-        this.persistProcessLink();
+      this.buttonService.nextButtonClick$.subscribe(() => {
+        this.stepService.setConfigureBuildingBlockMappingsStep(
+          this.buildingBlockStateService.getDefinitionSnapshot().key ?? undefined
+        );
       })
     );
   }
@@ -229,17 +231,6 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     this.buildingBlockStateService.setDefinitionVersionTag(normalizedValue);
   }
 
-  private persistProcessLink(): void {
-    this.stateService.startSaving();
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (selectedProcessLink && selectedProcessLink.processLinkType === 'building-block') {
-        this.updateProcessLink(selectedProcessLink);
-      } else {
-        this.createProcessLink();
-      }
-    });
-  }
-
   private createProcessLink(): void {
     this.stateService.modalParams$.pipe(take(1)).subscribe(modalParams => {
       const {key, versionTag} = this.buildingBlockStateService.getDefinitionSnapshot();
@@ -264,6 +255,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         buildingBlockDefinitionKey: key,
         buildingBlockDefinitionVersionTag: versionTag,
         pluginConfigurationMappings: this.getMappingsForPayload(),
+        inputMappings: [],
+        outputMappings: [],
       };
 
       this.stateService.sendProcessLinkCreateEvent(request);
@@ -287,6 +280,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         buildingBlockDefinitionKey: key,
         buildingBlockDefinitionVersionTag: versionTag,
         pluginConfigurationMappings: this.getMappingsForPayload(),
+        inputMappings: [],
+        outputMappings: [],
       };
 
       this.stateService.sendProcessLinkUpdateEvent(request);

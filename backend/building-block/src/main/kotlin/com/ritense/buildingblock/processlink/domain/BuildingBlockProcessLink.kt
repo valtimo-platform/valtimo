@@ -64,7 +64,23 @@ class BuildingBlockProcessLink(
         columnDefinition = "json",
         table = SECONDARY_TABLE_NAME
     )
-    val pluginConfigurationMappings: Map<String, UUID>
+    val pluginConfigurationMappings: Map<String, UUID>,
+
+    @Type(value = JsonType::class)
+    @Column(
+        name = "input_mappings",
+        columnDefinition = "json",
+        table = SECONDARY_TABLE_NAME
+    )
+    val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
+
+    @Type(value = JsonType::class)
+    @Column(
+        name = "output_mappings",
+        columnDefinition = "json",
+        table = SECONDARY_TABLE_NAME
+    )
+    val outputMappings: List<BuildingBlockOutputMapping> = emptyList()
 
 ) : ProcessLink(
     id,
@@ -86,13 +102,17 @@ class BuildingBlockProcessLink(
         activityType: ActivityTypeWithEventName = this.activityType,
         buildingBlockDefinitionId: BuildingBlockDefinitionId = this.buildingBlockDefinitionId,
         pluginConfigurationMappings: Map<String, UUID> = this.pluginConfigurationMappings,
+        inputMappings: List<BuildingBlockInputMapping> = this.inputMappings,
+        outputMappings: List<BuildingBlockOutputMapping> = this.outputMappings,
     ): BuildingBlockProcessLink = BuildingBlockProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
         activityId = activityId,
         activityType = activityType,
         buildingBlockDefinitionId = buildingBlockDefinitionId,
-        pluginConfigurationMappings = pluginConfigurationMappings
+        pluginConfigurationMappings = pluginConfigurationMappings,
+        inputMappings = inputMappings,
+        outputMappings = outputMappings
     )
 
     override fun equals(other: Any?): Boolean {
@@ -104,6 +124,8 @@ class BuildingBlockProcessLink(
 
         if (buildingBlockDefinitionId != other.buildingBlockDefinitionId) return false
         if (pluginConfigurationMappings != other.pluginConfigurationMappings) return false
+        if (inputMappings != other.inputMappings) return false
+        if (outputMappings != other.outputMappings) return false
 
         return true
     }
@@ -112,6 +134,8 @@ class BuildingBlockProcessLink(
         var result = super.hashCode()
         result = 31 * result + buildingBlockDefinitionId.hashCode()
         result = 31 * result + pluginConfigurationMappings.hashCode()
+        result = 31 * result + inputMappings.hashCode()
+        result = 31 * result + outputMappings.hashCode()
         return result
     }
 
@@ -120,3 +144,19 @@ class BuildingBlockProcessLink(
         const val SECONDARY_TABLE_NAME = "building_block_process_link"
     }
 }
+
+data class BuildingBlockInputMapping(
+    val source: String,
+    val target: String
+)
+
+enum class BuildingBlockSyncTiming {
+    CONTINUOUS,
+    END
+}
+
+data class BuildingBlockOutputMapping(
+    val source: String,
+    val target: String,
+    val syncTiming: BuildingBlockSyncTiming = BuildingBlockSyncTiming.END
+)

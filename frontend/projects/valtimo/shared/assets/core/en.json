@@ -1789,7 +1789,22 @@
       "pluginLabel": "Plugin",
       "configurationPlaceholder": "Select a configuration",
       "versionLabel": "Choose building block version",
-      "versionPlaceholder": "Select a version"
+      "versionPlaceholder": "Select a version",
+      "inputTitle": "Input",
+      "outputTitle": "Sync",
+      "addInput": "Add input",
+      "addOutput": "Add sync",
+      "case": "Case",
+      "buildingBlock": "Building block",
+      "targetPlaceholder": "Select target",
+      "outputSource": "Building block output",
+      "syncTiming": "Sync timing",
+      "selectedBuildingBlockFieldPlaceholder": "Select a field...",
+      "sync": {
+        "title": "Sync",
+        "continuous": "Continuous",
+        "end": "At end"
+      }
     }
   },
   "processLinkType": {
@@ -1829,7 +1844,8 @@
     "addSubtitle": "Add subtitle",
     "uiComponent": "Select UI component",
     "selectBuildingBlock": "Select building block",
-    "configureBuildingBlockPlugins": "Configure plugin mappings"
+    "configureBuildingBlockPlugins": "Configure plugin mappings",
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",

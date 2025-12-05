@@ -203,9 +203,9 @@ export class ProcessLinkStateService implements OnDestroy {
     if (!processLink) return;
     this._selectedProcessLink$.next(processLink);
     this.pluginStateService.selectProcessLink(processLink);
+    this.buildingBlockStateService.setProcessLink(processLink);
     this.setViewModelEnabled(processLink.viewModelEnabled ?? false);
     this._url$.next(processLink.url ?? '');
-    this.buildingBlockStateService.setProcessLink(processLink);
   }
 
   public deselectProcessLink(): void {
