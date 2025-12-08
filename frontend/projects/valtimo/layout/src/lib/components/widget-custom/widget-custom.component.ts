@@ -61,6 +61,7 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
 
   @Input() public set widgetConfiguration(value: CustomWidget) {
     if (!value) return;
+    console.log({value});
     this._widgetConfigSubject$.next(value);
   }
 
