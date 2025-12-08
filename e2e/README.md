@@ -72,3 +72,9 @@ Going beyond this may cause:
 | `ui`            | Common UI helpers (click dropdowns, validate modals, etc.)                  |
 
 ---
+
+#### Valtimo Testing guidelines
+- When UI functionality testing requires setup, it should preferably be performed through the API.
+- When a large amount of data is required for the setup, prefer using import endpoints instead of autodeployment files or manually creating the data.
+- Ensure that each test file can run independently, including its own setup and teardown procedures.
+- Maintain proper separation of concerns based on functionality.
