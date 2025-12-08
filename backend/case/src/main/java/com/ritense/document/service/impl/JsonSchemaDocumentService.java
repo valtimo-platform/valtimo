@@ -856,7 +856,6 @@ public class JsonSchemaDocumentService implements DocumentService {
         if (document.retentionDate().isPresent()) {
             applicationEventPublisher.publishEvent(
                 new DocumentRetentionPeriodSetEvent(
-                    UUID.randomUUID(),
                     RequestHelper.getOrigin(),
                     LocalDateTime.now(),
                     AuditHelper.getActor(),
