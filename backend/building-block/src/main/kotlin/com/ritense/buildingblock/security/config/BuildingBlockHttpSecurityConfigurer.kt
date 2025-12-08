@@ -67,6 +67,12 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/main/key"
                         )
                     ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            POST,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}/main"
+                        )
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

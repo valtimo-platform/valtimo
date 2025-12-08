@@ -141,4 +141,21 @@ class BuildingBlockProcessResource(
 
         return mainKey?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
+
+    @PostMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/main")
+    fun setMainProcessDefinitionForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable processDefinitionId: String
+    ): ResponseEntity<Void> {
+        runWithoutAuthorization {
+            buildingBlockDefinitionProcessDefinitionService.setMainProcessDefinition(
+                key,
+                versionTag,
+                processDefinitionId
+            )
+        }
+
+        return ResponseEntity.noContent().build()
+    }
 }

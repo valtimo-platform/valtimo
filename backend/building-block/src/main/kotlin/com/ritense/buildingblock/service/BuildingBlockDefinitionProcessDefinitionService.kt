@@ -262,6 +262,47 @@ class BuildingBlockDefinitionProcessDefinitionService(
         return mainLink.processDefinitionKey
     }
 
+    @Transactional
+    fun setMainProcessDefinition(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String,
+        processDefinitionId: String
+    ) {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+
+        val targetProcessDefinitionId = ProcessDefinitionId.of(processDefinitionId)
+
+        val targetLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                targetProcessDefinitionId
+            ) ?: return
+
+        if (targetLink.main) {
+            ensureOnlyOneMainLink(buildingBlockDefinitionId, targetProcessDefinitionId)
+            return
+        }
+
+        val updatedMainLink = ProcessDefinitionBuildingBlockDefinition(
+            ProcessDefinitionBuildingBlockDefinitionId(
+                targetProcessDefinitionId,
+                buildingBlockDefinitionId
+            ),
+            true
+        )
+
+        processDefinitionBuildingBlockDefinitionRepository.save(updatedMainLink)
+
+        ensureOnlyOneMainLink(buildingBlockDefinitionId, targetProcessDefinitionId)
+    }
+
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         currentProcessDefinitionId: String?

@@ -16,6 +16,7 @@
 
 <valtimo-carbon-list
   [fields]="FIELDS"
+  [actionItems]="ACTION_ITEMS"
   [items]="buildingBlockProcessDefinitionItems$ | async"
   [loading]="$loading()"
   (rowClicked)="onRowClick($event)"

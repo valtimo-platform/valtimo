@@ -178,4 +178,17 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       )
     );
   }
+
+  public setMainBuildingBlockProcessDefinition(
+    key: string,
+    versionTag: string,
+    processDefinitionId: string
+  ): Observable<void> {
+    return this.httpClient.post<void>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionId}/main`
+      ),
+      {}
+    );
+  }
 }
