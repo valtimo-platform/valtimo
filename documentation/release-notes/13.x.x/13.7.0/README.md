@@ -21,6 +21,11 @@
   
   See more about it [here](../../features/process/retry-cycle.md).
 
+**Setting the internalStatus from within a form**
+
+It is now possible to set the internalStatus of a case from within a form by setting the `targetKey` to
+`case:internalStatus`.
+
 ## Enhancement
 
 * **Enhancement title**
