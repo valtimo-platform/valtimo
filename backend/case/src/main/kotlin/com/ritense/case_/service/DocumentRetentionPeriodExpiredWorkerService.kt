@@ -20,7 +20,7 @@ class DocumentRetentionPeriodExpiredWorkerService(
 
     private val running = AtomicBoolean(false)
 
-    @Scheduled(fixedDelayString = "\${valtimo.case.processing.retention.poll-interval:PT1S}")
+    @Scheduled(fixedDelayString = "\${valtimo.case.processing.retention.poll-interval:PT30M}")
     fun poll() {
         if (!running.compareAndSet(false, true)) {
             logger.debug { "Document retention period worker skipped run because another execution is still active" }
