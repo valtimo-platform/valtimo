@@ -96,7 +96,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     color: this.fb.control('', Validators.required),
   });
 
-  numberValidator(control: AbstractControl): ValidationErrors | null {
+  public numberValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (value === null || value === '' || value === undefined) return null; // allow empty
     return isNaN(value) ? { notNumber: true } : null;
