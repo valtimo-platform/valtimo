@@ -30,7 +30,7 @@ import {
   tap,
 } from 'rxjs';
 import {isEqual} from 'lodash';
-import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
@@ -53,6 +53,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     BuildingBlockProcessDefinitionDto[]
   >([]);
 
+  private _buildingBlockProcessDefinitionItems: BuildingBlockProcessDefinitionItem[] = [];
   public readonly buildingBlockProcessDefinitionItems$: Observable<
     BuildingBlockProcessDefinitionItem[]
   > = combineLatest([
@@ -66,6 +67,10 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
           definition.main &&
           this.translateService.instant('buildingBlockManagement.processDefinition.mainText'),
       }))
+    ),
+    tap(
+      buildingBlockProcessDefinitionItems =>
+        (this._buildingBlockProcessDefinitionItems = buildingBlockProcessDefinitionItems)
     )
   );
 
@@ -79,9 +84,26 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     },
   ];
 
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'buildingBlockManagement.processDefinition.markAsMain',
+      callback: this.onMarkAsMain.bind(this),
+      type: 'normal',
+      disabledCallback: this.markAsMainDisabled.bind(this),
+    },
+    {
+      label: 'interface.delete',
+      callback: this.onDeleteProcess.bind(this),
+      type: 'danger',
+      disabledCallback: this.deleteDisabled.bind(this),
+    },
+  ];
+
   public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
 
   private readonly _subscriptions = new Subscription();
+
+  private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -103,9 +125,14 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
           distinctUntilChanged((a, b) => isEqual(a, b)),
           tap(() => this.$loading.set(true)),
           switchMap(([key, versionTag]) =>
-            this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
-              key,
-              versionTag
+            this._refresh$.pipe(
+              tap(() => this.$loading.set(true)),
+              switchMap(() =>
+                this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
+                  key,
+                  versionTag
+                )
+              )
             )
           ),
           tap(processDefinitions => {
@@ -145,5 +172,40 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
       BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
       'create',
     ]);
+  }
+
+  public onDeleteProcess(process: BuildingBlockProcessDefinitionItem): void {
+    console.log(process);
+  }
+
+  public onMarkAsMain(process: BuildingBlockProcessDefinitionItem): void {
+    this.$loading.set(true);
+
+    this.buildingBlockManagementApiService
+      .setMainBuildingBlockProcessDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        process.id
+      )
+      .subscribe({
+        next: () => {
+          this.refresh();
+        },
+        error: () => {
+          this.$loading.set(false);
+        },
+      });
+  }
+
+  private markAsMainDisabled(process: BuildingBlockProcessDefinitionItem): boolean {
+    return process.main || this._buildingBlockProcessDefinitionItems.length === 1;
+  }
+
+  private deleteDisabled(process: BuildingBlockProcessDefinitionItem): boolean {
+    return process.main || this._buildingBlockProcessDefinitionItems.length === 1;
+  }
+
+  private refresh(): void {
+    this._refresh$.next(null);
   }
 }

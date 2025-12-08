@@ -128,4 +128,8 @@ td:first-child {
         inset 0 0 0 2px var(--cds-background, #f4f4f4);
     }
   }
+
+  ::ng-deep cds-table {
+    overflow: hidden;
+  }
 }
