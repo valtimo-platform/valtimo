@@ -22,7 +22,10 @@ import {ROLE_ADMIN} from '@valtimo/shared';
 import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
 import {BuildingBlockManagementDetailComponent} from './components/building-block-management-detail/building-block-management-detail.component';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from './constants';
-import {ProcessManagementBuilderComponent} from '@valtimo/process-management';
+import {
+  ProcessManagementBuilderComponent,
+  ProcessManagementRouteData,
+} from '@valtimo/process-management';
 
 const routes: Routes = [
   {
@@ -42,6 +45,16 @@ const routes: Routes = [
     },
   },
   {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/create`,
+    component: ProcessManagementBuilderComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Create new Process',
+      roles: [ROLE_ADMIN],
+      context: 'buildingBlock',
+    } as ProcessManagementRouteData,
+  },
+  {
     path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/:processDefinitionKey`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
@@ -49,16 +62,6 @@ const routes: Routes = [
       title: 'Process details',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
-      context: 'buildingBlock',
-    },
-  },
-  {
-    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/create`,
-    component: ProcessManagementBuilderComponent,
-    canActivate: [AuthGuardService],
-    data: {
-      title: 'Create new Process',
-      roles: [ROLE_ADMIN],
       context: 'buildingBlock',
     },
   },
