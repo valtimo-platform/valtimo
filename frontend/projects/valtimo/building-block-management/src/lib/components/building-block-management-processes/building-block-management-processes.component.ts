@@ -38,13 +38,21 @@ import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {Router} from '@angular/router';
+import {BuildingBlockManagementProcessUploadComponent} from '../building-block-management-process-upload/building-block-management-process-upload.component';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-processes',
   templateUrl: './building-block-management-processes.component.html',
   styleUrls: ['./building-block-management-processes.component.scss'],
-  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, IconModule],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    TranslateModule,
+    ButtonModule,
+    IconModule,
+    BuildingBlockManagementProcessUploadComponent,
+  ],
 })
 export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
@@ -103,8 +111,6 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
 
   private readonly _subscriptions = new Subscription();
 
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
-
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
@@ -125,7 +131,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
           distinctUntilChanged((a, b) => isEqual(a, b)),
           tap(() => this.$loading.set(true)),
           switchMap(([key, versionTag]) =>
-            this._refresh$.pipe(
+            this.buildingBlockManagementDetailService.reloadProcessDefinitions$.pipe(
               tap(() => this.$loading.set(true)),
               switchMap(() =>
                 this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
@@ -160,7 +166,9 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     ]);
   }
 
-  public showUploadModal(): void {}
+  public showUploadModal(): void {
+    this.buildingBlockManagementDetailService.showProcessDefinitionUploadModal();
+  }
 
   public onCreateClick(): void {
     this.router.navigate([
@@ -189,7 +197,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
       )
       .subscribe({
         next: () => {
-          this.refresh();
+          this.buildingBlockManagementDetailService.reloadProcessDefinitions();
         },
         error: () => {
           this.$loading.set(false);
@@ -203,9 +211,5 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
 
   private deleteDisabled(process: BuildingBlockProcessDefinitionItem): boolean {
     return process.main || this._buildingBlockProcessDefinitionItems.length === 1;
-  }
-
-  private refresh(): void {
-    this._refresh$.next(null);
   }
 }
