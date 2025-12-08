@@ -31,3 +31,5 @@
 ## Bugfixes
 
 * Resolved issue where there was no option to use current date/time in the set-zaakstatus action of the zaken-api-plugin.
+* Resolved issue where the plugin modal form remained disabled after a failed plugin creation.
+* Resolved issue where the Auto Key Input component did not correctly reset its value or the manual edit status.
