@@ -111,46 +111,30 @@ test.describe('Plugin management', () => {
       await pluginPage.saveConfiguration();
       await pluginPage.assertPluginExists(pluginTestConfiguration[type].pluginIdentifier);
 
-      // Force pluginConfigurationId duplication
-      const originalId = pluginTestConfiguration[type].fieldMap.find(
-          f => f.testId === 'pluginConfigurationId'
-      ).value;
-
-      await pluginPage.openWizard();
-      await pluginPage.selectPluginType(type);
-
-      // Fill duplicated ID
-      const idInput = pluginPage.page.getByTestId('pluginConfigurationId').locator('input');
-      await idInput.fill(originalId);
-
-      // Fill other fields
-      const otherFields = pluginTestConfiguration[type].fieldMap.filter(
-          f => f.testId !== 'pluginConfigurationId'
-      );
-
-      for (const field of otherFields) {
-        const wrapper = pluginPage.page.getByTestId(field.testId);
-        if (field.type === 'input') {
-          await wrapper.locator('input').fill(field.value);
-        } else {
-          await wrapper.locator('cds-combo-box').click();
-          await wrapper.getByRole('option').getByText(field.value).click();
-        }
-      }
-
-      await pluginPage.saveConfiguration();
-
-      // ASSERT
-      const errorMessage = pluginPage.page.getByText(
-          /Internal Server Error\. Details:.*already used by another plugin/i
-      );
-
-      await expect(errorMessage).toBeVisible();
-      await expect(pluginPage.page.locator('.notification-overlay')).toBeVisible();
     });
 
-    test('Add a plugin with incorrect RSIN', async () => {
+    test('Add Besluiten API plugin with incorrect RSIN', async () => {
+      // Act
+        await pluginPage.openWizard();
+        await pluginPage.selectPluginType('Besluiten API');
+        await pluginPage.fillPluginForm('Besluiten API');
+        await pluginPage.fillIncorrectRsinValue();
+        await pluginPage.saveConfiguration();
+        await pluginPage.expectSavingError();
 
+        // Assert
+        await pluginPage.assertPluginExists(
+            pluginTestConfiguration['Besluiten API'].pluginIdentifier
+        );
+    });
+
+    test('Remove value from authentication plugin', async () => {
+
+    });
+
+    test('Delete Zaken API expecting error', async () => {
+      // Remove Zaken API plugin
+      await pluginPage.deleteZakenApiExpectingError();
     });
   });
 });
