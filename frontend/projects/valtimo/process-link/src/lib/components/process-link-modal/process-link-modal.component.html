@@ -120,13 +120,12 @@
         ></valtimo-plugin-action-configuration>
       </ng-container>
 
-      <ng-container
-        *ngIf="
-          obs.currentStepId === 'configureBuildingBlockPlugins' ||
-          obs.typeOfSelectedProgressLink === 'building-block'
-        "
-      >
+      <ng-container *ngIf="obs.currentStepId === 'configureBuildingBlockPlugins'">
         <valtimo-configure-building-block-plugins></valtimo-configure-building-block-plugins>
+      </ng-container>
+
+      <ng-container *ngIf="obs.currentStepId === 'configureBuildingBlockMappings' || obs.typeOfSelectedProgressLink === 'building-block'">
+        <valtimo-configure-building-block-mappings></valtimo-configure-building-block-mappings>
       </ng-container>
     </ng-container>
 

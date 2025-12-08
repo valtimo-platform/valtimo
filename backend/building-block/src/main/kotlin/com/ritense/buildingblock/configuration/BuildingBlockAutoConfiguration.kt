@@ -35,6 +35,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
@@ -42,6 +43,7 @@ import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
+import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
@@ -104,6 +106,14 @@ class BuildingBlockAutoConfiguration {
         checker: BuildingBlockDefinitionChecker
     ): BuildingBlockDocumentDefinitionService {
         return BuildingBlockDocumentDefinitionService(repository, checker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFieldService::class)
+    fun buildingBlockFieldService(
+        jsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository
+    ): BuildingBlockFieldService {
+        return BuildingBlockFieldService(jsonSchemaDocumentDefinitionRepository)
     }
 
     @Bean
@@ -222,6 +232,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
     ): BuildingBlockDefinitionArtworkResource {
         return BuildingBlockDefinitionArtworkResource(buildingBlockDefinitionArtworkService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFieldResource::class)
+    fun buildingBlockFieldResource(
+        buildingBlockFieldService: BuildingBlockFieldService
+    ): BuildingBlockFieldResource {
+        return BuildingBlockFieldResource(buildingBlockFieldService)
     }
 
     @Bean

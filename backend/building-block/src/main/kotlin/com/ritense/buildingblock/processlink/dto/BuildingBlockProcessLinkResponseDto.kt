@@ -31,5 +31,7 @@ data class BuildingBlockProcessLinkResponseDto(
     override val processLinkType: String = BuildingBlockProcessLink.PROCESS_LINK_TYPE,
     val buildingBlockDefinitionKey: String,
     val buildingBlockDefinitionVersionTag: String,
-    val pluginConfigurationMappings: Map<String, UUID>
+    val pluginConfigurationMappings: Map<String, UUID>,
+    val inputMappings: List<BuildingBlockInputMappingDto> = emptyList(),
+    val outputMappings: List<BuildingBlockOutputMappingDto> = emptyList()
 ) : ProcessLinkResponseDto

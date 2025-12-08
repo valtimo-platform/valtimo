@@ -1,0 +1,186 @@
+@let obs =
+  {
+    fields: (buildingBlockFields$ | async),
+    fieldItems: (buildingBlockFieldItems$ | async),
+    params: (params$ | async),
+  };
+
+<div class="mapping-step">
+  <section class="mapping-section">
+    <h4 class="section-header">
+      {{ 'processLinkConfiguration.buildingBlock.inputTitle' | translate }}
+    </h4>
+
+    <div class="mapping-table" [formGroup]="inputsForm">
+      <div class="mapping-header input">
+        <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+
+        <v-input-label
+          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
+        />
+      </div>
+
+      <div formArrayName="inputs">
+        @for (group of inputs.controls; let i = $index; track i) {
+          <div class="mapping-row input" [formGroup]="group">
+            <div class="mapping-part">
+              <valtimo-value-path-selector
+                [cdsLayer]="2"
+                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                [caseDefinitionKey]="obs.params.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [appendInline]="false"
+                [dropUp]="false"
+                [formControl]="group.get('source')"
+              ></valtimo-value-path-selector>
+
+              <div class="arrow">→</div>
+            </div>
+
+            <div class="mapping-part">
+              <div class="mapping-cell">
+                @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
+                  <div class="required-target">
+                    {{ group.get('target')?.value }}
+                  </div>
+                } @else {
+                  <v-select
+                    [cdsLayer]="2"
+                    [appendInline]="false"
+                    formControlName="target"
+                    [placeholder]="
+                      'processLinkConfiguration.buildingBlock.selectedBuildingBlockFieldPlaceholder'
+                        | translate
+                    "
+                    [items]="getBuildingBlockFieldItemsForRow$(group) | async"
+                    [dropUp]="false"
+                  >
+                  </v-select>
+                }
+              </div>
+
+              <div class="mapping-cell-actions">
+                @if (!isRequiredTarget(obs.fields, group.get('target')?.value)) {
+                  <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteInput(i)">
+                    <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
+                  </button>
+                } @else {
+                  <div class="required-indicator">*</div>
+
+                  <div>
+                    {{ 'interface.required' | translate }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <button
+      cdsButton="tertiary"
+      size="sm"
+      (click)="addInput()"
+      [title]="'processLinkConfiguration.buildingBlock.addInput' | translate"
+      [disabled]="allInputsMapped$ | async"
+    >
+      {{ 'processLinkConfiguration.buildingBlock.addInput' | translate }}
+
+      <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
+    </button>
+  </section>
+
+  <section class="mapping-section">
+    <h4 class="section-header">
+      {{ 'processLinkConfiguration.buildingBlock.outputTitle' | translate }}
+    </h4>
+
+    <div class="mapping-table" [formGroup]="outputsForm">
+      <div class="mapping-header output">
+        <v-input-label
+          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
+        />
+
+        <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+
+        <div class="sync-options">
+          <v-input-label
+            [title]="'processLinkConfiguration.buildingBlock.sync.title' | translate"
+          />
+        </div>
+      </div>
+
+      <div formArrayName="outputs">
+        @for (group of outputs.controls; track group) {
+          <div class="mapping-row output" [formGroup]="group">
+            <div class="mapping-part">
+              <div class="mapping-cell">
+                <v-select
+                  [cdsLayer]="2"
+                  [appendInline]="false"
+                  formControlName="source"
+                  [items]="obs.fieldItems || []"
+                  [placeholder]="
+                    'processLinkConfiguration.buildingBlock.selectedBuildingBlockFieldPlaceholder'
+                      | translate
+                  "
+                  [dropUp]="true"
+                >
+                </v-select>
+              </div>
+
+              <div class="arrow">→</div>
+            </div>
+
+            <div class="mapping-part">
+              <valtimo-value-path-selector
+                [cdsLayer]="2"
+                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                [caseDefinitionKey]="obs.params.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [formControl]="group.get('target')"
+                [appendInline]="false"
+                [filterItems]="getUsedCaseTargetsForRow$(group) | async"
+                [dropUp]="true"
+              ></valtimo-value-path-selector>
+            </div>
+
+            <div class="mapping-part">
+              <div class="mapping-cell">
+                <cds-radio-group
+                  class="sync-radio-group"
+                  formControlName="syncTiming"
+                  [attr.name]="'syncTiming-' + i"
+                >
+                  @for (item of syncTimingItems; track item.id) {
+                    <cds-radio [value]="item.id" [checked]="isSyncTimingSelected(group, item.id)">
+                      {{ item.labelKey | translate }}
+                    </cds-radio>
+                  }
+                </cds-radio-group>
+              </div>
+
+              <div class="mapping-cell-actions">
+                <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteOutput(i)">
+                  <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <button
+      cdsButton="tertiary"
+      size="sm"
+      (click)="addOutput()"
+      [title]="'processLinkConfiguration.buildingBlock.addOutput' | translate"
+    >
+      {{ 'processLinkConfiguration.buildingBlock.addOutput' | translate }}
+
+      <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
+    </button>
+  </section>
+</div>

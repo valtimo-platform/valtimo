@@ -37,4 +37,5 @@
     <include file="changelog/20251110-add-building-block-definition-artwork-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251124-add-building-block-instance-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250601-create-building-block-process-link.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251120-add-building-block-process-link-mappings.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
