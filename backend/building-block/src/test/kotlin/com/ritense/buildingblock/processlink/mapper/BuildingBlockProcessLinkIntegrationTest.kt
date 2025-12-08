@@ -106,13 +106,13 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
 
         val inputMappings = listOf(
-            BuildingBlockInputMappingDto(source = "doc:firstName", target = "firstName"),
-            BuildingBlockInputMappingDto(source = "doc:Smith", target = "lastName")
+            BuildingBlockInputMappingDto(source = "doc:/firstName", target = "firstName"),
+            BuildingBlockInputMappingDto(source = "doc:/lastName", target = "lastName")
         )
         val outputMappings = listOf(
             BuildingBlockOutputMappingDto(
                 source = "result",
-                target = "doc:result",
+                target = "doc:/result",
                 syncTiming = BuildingBlockSyncTiming.END
             )
         )
@@ -131,8 +131,8 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         val processLink = mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0")) as BuildingBlockProcessLink
         assertEquals(
             listOf(
-                BuildingBlockInputMapping(target = "firstName", source = "doc:firstName"),
-                BuildingBlockInputMapping(target = "lastName", source = "manual:Smith")
+                BuildingBlockInputMapping(target = "firstName", source = "doc:/firstName"),
+                BuildingBlockInputMapping(target = "lastName", source = "doc:/lastName")
             ),
             processLink.inputMappings
         )
@@ -140,7 +140,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
             listOf(
                 BuildingBlockOutputMapping(
                     source = "result",
-                    target = "doc:result",
+                    target = "doc:/result",
                     syncTiming = BuildingBlockSyncTiming.END
                 )
             ),
@@ -168,11 +168,11 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
             pluginConfigurationMappings = emptyMap(),
-            inputMappings = listOf(BuildingBlockInputMapping(source = "doc:firstName", target = "firstName")),
+            inputMappings = listOf(BuildingBlockInputMapping(source = "doc:/firstName", target = "firstName")),
             outputMappings = listOf(
                 BuildingBlockOutputMapping(
                     source = "result",
-                    target = "doc:result",
+                    target = "doc:/result",
                     syncTiming = BuildingBlockSyncTiming.END
                 )
             )
@@ -183,7 +183,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
             buildingBlockDefinitionKey = "bb",
             buildingBlockDefinitionVersionTag = "1.0.0",
             pluginConfigurationMappings = emptyMap(),
-            inputMappings = listOf(BuildingBlockInputMappingDto(source = "doc:lastName", target = "lastName")),
+            inputMappings = listOf(BuildingBlockInputMappingDto(source = "doc:/lastName", target = "lastName")),
             outputMappings = listOf(
                 BuildingBlockOutputMappingDto(
                     source = "result",
@@ -196,7 +196,7 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
         val updated = mapper.toUpdatedProcessLink(existing, dto, CaseDefinitionId("case", "1.0.0")) as BuildingBlockProcessLink
 
         assertEquals(
-            listOf(BuildingBlockInputMapping(target = "lastName", source = "doc:lastName")),
+            listOf(BuildingBlockInputMapping(target = "lastName", source = "doc:/lastName")),
             updated.inputMappings
         )
         assertEquals(
