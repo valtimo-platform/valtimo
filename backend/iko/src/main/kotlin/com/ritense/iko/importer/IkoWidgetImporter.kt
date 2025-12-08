@@ -53,7 +53,7 @@ class IkoWidgetImporter(
                 service.create(
                     ikoWidgetsDto.ikoDataAggregateKey,
                     ikoWidgetsDto.ikoTabKey,
-                    widgetDto.toEntity(UUID.randomUUID(), index)
+                widgetDto.toEntity(UUID.randomUUID(), index)
                 )
             }
 

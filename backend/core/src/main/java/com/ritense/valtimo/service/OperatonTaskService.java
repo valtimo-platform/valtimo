@@ -395,6 +395,13 @@ public class OperatonTaskService {
     }
 
     @Transactional(readOnly = true)
+    public Specification<OperatonTask> getFilteredViewListSpecification(OperatonTaskService.TaskFilter taskFilter){
+        var spec = getAuthorizationSpecification(VIEW_LIST);
+
+        return spec.and(buildTaskFilterSpecification(taskFilter));
+    }
+
+    @Transactional(readOnly = true)
     public Page<TaskExtended> findTasksFiltered(
         TaskFilter taskFilter, Pageable pageable
     ) {
@@ -470,7 +477,7 @@ public class OperatonTaskService {
         return new PageImpl<>(tasks, pageable, countTasksFiltered(specification));
     }
 
-    private long countTasksFiltered(Specification<OperatonTask> specification) {
+    public long countTasksFiltered(Specification<OperatonTask> specification) {
         var cb = entityManager.getCriteriaBuilder();
         var countQuery = cb.createQuery(Long.class);
         var taskCountRoot = countQuery.from(OperatonTask.class);
@@ -643,7 +650,6 @@ public class OperatonTaskService {
             )
         );
     }
-
 
     private Specification<OperatonTask> buildTaskFilterSpecification(TaskFilter taskFilter) {
         var filterSpec = all();

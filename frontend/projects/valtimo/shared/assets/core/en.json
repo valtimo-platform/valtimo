@@ -803,7 +803,12 @@
       "save": "Save",
       "form": {"tabName": "Tab name"}
     },
-    "columns": {"highContrast": "High contrast", "type": "Type", "width": "Width"},
+    "columns": {
+      "highContrast": "High contrast",
+      "type": "Type",
+      "width": "Width",
+      "density": "Density"
+    },
     "list": {
       "dividerModal": {
         "addDividerTitle": "Add new widget divider",
@@ -837,6 +842,7 @@
         "style": "Choose widget style",
         "type": "Choose widget type",
         "width": "Choose widget width",
+        "density": "Choose widget density",
         "displayConditions": "Set display conditions"
       }
     },
@@ -855,7 +861,8 @@
         "description": "Create an interactive table"
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
-      "divider": {"title": "Divider"}
+      "divider": {"title": "Divider"},
+      "map": {"title": "Map", "description": "Create a map widget"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -870,6 +877,11 @@
       "description": "Select the desired style for the widget",
       "default": {"title": "Default", "description": "For regular content"},
       "highContrast": {"title": "High contrast", "description": "For higher priority content"}
+    },
+    "density": {
+      "description": "Select the desired density for the widget",
+      "default": {"title": "Default", "description": "For regular content"},
+      "compact": {"title": "Compact", "description": "For higher density data overview"}
     },
     "content": {
       "description": "Enter the content for each column. Keep in mind that not all fields are the same height. For the best result make sure items are properly distributed.",
@@ -912,6 +924,13 @@
         "linkText": "Link text",
         "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
         "linkTextPlaceholder": "Link text (optional)"
+      },
+      "map": {
+        "add": "Add field",
+        "layerTitle": "Map layer {{ layer }}",
+        "key": "Path to GeoJSON data",
+        "keyPlaceholder": "Source path",
+        "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "displayType": {
         "text": "Text",
@@ -1921,7 +1940,10 @@
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
-    "noCustomComponentDescription": "The custom component configured for this widget is not available."
+    "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "map": {
+      "title": "Map"
+    }
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity",

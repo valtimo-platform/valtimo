@@ -38,6 +38,7 @@ class CollectionWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction> = emptyList(),
     displayConditions: List<Condition<*>> = emptyList(),
 
@@ -45,7 +46,7 @@ class CollectionWidget(
     @Column(name = "properties", nullable = false)
     val properties: CollectionWidgetProperties
 ) : Widget(
-    id, key, title, icon,order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
@@ -55,6 +56,7 @@ class CollectionWidget(
         order: Int,
         width: Int,
         highContrast: Boolean,
+        isCompact: Boolean?,
         actions: List<WidgetAction>,
         displayConditions: List<Condition<*>>,
     ) = CollectionWidget(
@@ -65,6 +67,7 @@ class CollectionWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties,
@@ -76,6 +79,7 @@ class CollectionWidget(
         icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
+        isCompact = this.isCompact,
         actions = this.actions,
         displayConditions = this.displayConditions,
         properties = this.properties,

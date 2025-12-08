@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {AfterContentInit, ContentChild, Directive, OnDestroy, TemplateRef} from '@angular/core';
+import {
+  AfterContentInit,
+  ContentChild,
+  Directive,
+  EmbeddedViewRef,
+  OnDestroy,
+  TemplateRef,
+} from '@angular/core';
 import {combineLatest, Subscription} from 'rxjs';
 import {PageHeaderService} from '../../services';
 
@@ -22,6 +29,7 @@ import {PageHeaderService} from '../../services';
 export class RenderPageHeaderDirective implements AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
 
+  private embeddedView?: EmbeddedViewRef<any>;
   private readonly _subscriptions = new Subscription();
   constructor(private readonly pageHeaderService: PageHeaderService) {}
 
@@ -34,19 +42,19 @@ export class RenderPageHeaderDirective implements AfterContentInit, OnDestroy {
       ]).subscribe(([compactMode, headerViewContainerRef, contentViewContainerRef]) => {
         if (!this.templateRef) return;
 
-        headerViewContainerRef.clear();
-        contentViewContainerRef.clear();
+        this.embeddedView?.destroy();
 
         if (compactMode) {
-          headerViewContainerRef.createEmbeddedView(this.templateRef);
+          this.embeddedView = headerViewContainerRef.createEmbeddedView(this.templateRef);
         } else {
-          contentViewContainerRef.createEmbeddedView(this.templateRef);
+          this.embeddedView = contentViewContainerRef.createEmbeddedView(this.templateRef);
         }
       })
     );
   }
 
   public ngOnDestroy(): void {
+    this.embeddedView?.destroy();
     this._subscriptions.unsubscribe();
   }
 }

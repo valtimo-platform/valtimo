@@ -32,10 +32,10 @@
         <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
       } @else {
         <valtimo-widget-field
+          class="valtimo-widget-field--compact"
           [cdsLayer]="1"
           [widgetConfiguration]="obs.headerWidget"
           [widgetData]="obs.headerWidgetData"
-          [compact]="true"
           (noVisibleFieldsEvent)="onNoVisibleFields($event)"
         ></valtimo-widget-field>
       }
