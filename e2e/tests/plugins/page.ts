@@ -32,7 +32,11 @@ export class PluginPage {
   }
 
   async selectPluginType(type: string) {
-    await this.page.locator('cds-selection-tile', {hasText: type}).click();
+    const tile = this.page.locator('cds-selection-tile', {
+      hasText: new RegExp(type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    });
+
+    await tile.first().click();
     await this.enterDataButton.click();
     await this.verifyStepperStep2();
   }
@@ -81,11 +85,37 @@ export class PluginPage {
           break;
       }
     }
+
+    if (type === 'Verzoek') {
+      await this.fillVerzoekExtra();
+    }
+  }
+
+  async fillIncorrectRsinValue() {
+    await this.page.locator('input[name="rsin"]').fill('1');
   }
 
   async saveConfiguration() {
     await expect(this.saveButton).toBeEnabled();
     await this.saveButton.click();
+  }
+
+  async expectSavingError() {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          res.request().method() === 'POST}' &&
+          res.status() === 500
+      ),
+    ]);
+
+    expect(response.status()).toBe(500);
+
+    const errorToast = this.page.locator('.cds--toast-notification__details');
+
+    await expect(errorToast).toContainText(
+        "Plugin property with name 'rsin' failed to parse for plugin 'Besluiten API'. Cannot construct instance of `com.ritense.zgw.Rsin`, problem: Index 1 out of bounds for length 1"
+    );
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
@@ -151,6 +181,34 @@ export class PluginPage {
     );
   }
 
+  async deleteZakenApiExpectingError(): Promise<void> {
+    const pluginIdentifier = "zakenapi";
+
+    await this.page
+        .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+        .getByRole('menu')
+        .locator('button')
+        .click();
+
+    const [response] = await Promise.all([
+      this.page.waitForResponse(res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          res.request().method() === 'DELETE' &&
+          res.status() === 500
+      ),
+      this.page.getByRole('menuitem', { name: 'Delete' }).click()
+    ]);
+
+    expect(response.status()).toBe(500);
+
+    const errorToast = this.page.locator('.cds--toast-notification__details');
+
+    await expect(errorToast).toContainText(
+        "Failed to update CaseDefinition bezwaar:1.0.0. This case definition is final and therefore can't be updated."
+    );
+  }
+
+
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
     expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
   }
@@ -171,5 +229,11 @@ export class PluginPage {
         .isVisible();
       if (isVisible) await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
     }
+  }
+
+  private async fillVerzoekExtra() {
+    await this.page.getByRole('button', { name: 'Add verzoek type' }).click();
+
+    // TODO: fill subform
   }
 }
