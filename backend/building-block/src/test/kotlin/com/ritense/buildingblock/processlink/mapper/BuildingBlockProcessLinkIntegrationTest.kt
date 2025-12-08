@@ -37,7 +37,6 @@ import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.AfterEach
@@ -47,7 +46,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -57,9 +55,6 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
 ) : BaseIntegrationTest() {
-
-    @MockBean
-    lateinit var processLinkService: ProcessLinkService
 
     lateinit var buildingBlock: BuildingBlockDefinition
 

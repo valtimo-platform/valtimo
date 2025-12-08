@@ -16,12 +16,15 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -32,6 +35,8 @@ import java.util.UUID
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
     private val buidingBlockInstanceService: BuildingBlockInstanceService,
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper,
 ) {
 
     @EventListener(
@@ -46,19 +51,42 @@ class BuildingBlockCallActivityListener(
 
         val buildingBlockProcessLink = links.getOrNull(0)
 
-        // TODO: Add content here
         buildingBlockProcessLink?.let {
-            buidingBlockInstanceService.create(
-                NewDocumentRequest(
-                    null,
-                    null,
-                    null,
-                    it.buildingBlockDefinitionId.key,
-                    it.buildingBlockDefinitionId.versionTag.toString(),
-                    MapperSingleton.get().createObjectNode(),
-                ),
-                UUID.fromString(execution.businessKey)
-            )
+            this.createBuildingBlock(it,UUID.fromString(execution.businessKey))
         }
+    }
+
+    private fun createBuildingBlock(
+        buildingBlockProcessLink: BuildingBlockProcessLink,
+        caseDocumentId: UUID
+    ): BuildingBlockInstance {
+        val documentRequest = NewDocumentRequest(
+            null,
+            null,
+            null,
+            buildingBlockProcessLink.buildingBlockDefinitionId.key,
+            buildingBlockProcessLink.buildingBlockDefinitionId.versionTag.toString(),
+            buildDocumentContent(buildingBlockProcessLink, caseDocumentId),
+        )
+
+        return buidingBlockInstanceService.create(documentRequest, caseDocumentId)
+    }
+
+    private fun buildDocumentContent(
+        buildingBlockProcessLink: BuildingBlockProcessLink,
+        caseDocumentId: UUID
+    ): JsonNode {
+        val resolvedValues = valueResolverService.resolveValues(
+            caseDocumentId.toString(),
+            buildingBlockProcessLink.inputMappings.map {
+                it.source
+            }
+        )
+
+        val documentToCreate = buildingBlockProcessLink.inputMappings.associate {
+            it.target to resolvedValues[it.source]
+        }
+
+        return objectMapper.valueToTree(documentToCreate)
     }
 }
