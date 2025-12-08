@@ -39,3 +39,12 @@
 </valtimo-carbon-list>
 
 <valtimo-building-block-management-process-upload></valtimo-building-block-management-process-upload>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="processManagement.deleteModal.content"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="processManagement.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm()"
+></valtimo-confirmation-modal>

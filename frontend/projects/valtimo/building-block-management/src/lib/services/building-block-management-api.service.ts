@@ -191,4 +191,16 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       {}
     );
   }
+
+  public deleteBuildingBlockProcessDefinition(
+    key: string,
+    versionTag: string,
+    processDefinitionId: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionId}`
+      )
+    );
+  }
 }
