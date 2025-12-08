@@ -30,7 +30,13 @@ import {
   tap,
 } from 'rxjs';
 import {isEqual} from 'lodash';
-import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
 import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
@@ -52,6 +58,7 @@ import {BuildingBlockManagementProcessUploadComponent} from '../building-block-m
     ButtonModule,
     IconModule,
     BuildingBlockManagementProcessUploadComponent,
+    ConfirmationModalModule,
   ],
 })
 export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
@@ -92,6 +99,11 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     },
   ];
 
+  public onDeleteClick = (process: BuildingBlockProcessDefinitionItem): void => {
+    this._processToDelete = process;
+    this.showDeleteModal$.next(true);
+  };
+
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
       label: 'buildingBlockManagement.processDefinition.markAsMain',
@@ -101,7 +113,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     },
     {
       label: 'interface.delete',
-      callback: this.onDeleteProcess.bind(this),
+      callback: this.onDeleteClick,
       type: 'danger',
       disabledCallback: this.deleteDisabled.bind(this),
     },
@@ -109,7 +121,11 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
 
   public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
 
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
   private readonly _subscriptions = new Subscription();
+
+  private _processToDelete!: BuildingBlockProcessDefinitionItem;
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -182,8 +198,25 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     ]);
   }
 
-  public onDeleteProcess(process: BuildingBlockProcessDefinitionItem): void {
-    console.log(process);
+  public onDeleteConfirm(): void {
+    if (!this._processToDelete) return;
+
+    this.$loading.set(true);
+
+    this.buildingBlockManagementApiService
+      .deleteBuildingBlockProcessDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        this._processToDelete.id
+      )
+      .subscribe({
+        next: () => {
+          this.buildingBlockManagementDetailService.reloadProcessDefinitions();
+        },
+        error: () => {
+          this.$loading.set(false);
+        },
+      });
   }
 
   public onMarkAsMain(process: BuildingBlockProcessDefinitionItem): void {

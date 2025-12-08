@@ -303,6 +303,48 @@ class BuildingBlockDefinitionProcessDefinitionService(
         ensureOnlyOneMainLink(buildingBlockDefinitionId, targetProcessDefinitionId)
     }
 
+    @Transactional
+    fun deleteProcessDefinitionForBuildingBlock(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String,
+        processDefinitionId: String
+    ) {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+
+        val targetProcessDefinitionId = ProcessDefinitionId.of(processDefinitionId)
+
+        val link = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                targetProcessDefinitionId
+            )
+            ?: return
+
+        if (link.main) {
+            throw IllegalStateException(
+                "Cannot delete main process definition for building block $buildingBlockDefinitionId"
+            )
+        }
+
+        processDefinitionBuildingBlockDefinitionRepository.delete(link)
+
+        runWithoutAuthorization {
+            processLinkService.getProcessLinks(processDefinitionId).forEach { linkToDelete ->
+                processLinkService.deleteProcessLink(linkToDelete.id)
+            }
+
+            operatonProcessService.deleteProcessDefinition(processDefinitionId)
+        }
+    }
+
+
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         currentProcessDefinitionId: String?
