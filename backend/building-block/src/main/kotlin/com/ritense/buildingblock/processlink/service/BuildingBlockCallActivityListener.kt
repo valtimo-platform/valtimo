@@ -98,11 +98,11 @@ class BuildingBlockCallActivityListener(
 
         val resolvedValues = valueResolverService.resolveValues(
             buildingBlockInstance.documentId.toString(),
-            endSyncOutputMappings.map { it.source }
+            endSyncOutputMappings.map { "doc:/${it.source}" }
         )
 
         val valuesToHandle = endSyncOutputMappings.associate { mapping ->
-            mapping.target to resolvedValues[mapping.source]
+            mapping.target to resolvedValues["doc:/${mapping.source}"]
         }
 
         valueResolverService.handleValues(buildingBlockInstance.caseDocumentId, valuesToHandle)
