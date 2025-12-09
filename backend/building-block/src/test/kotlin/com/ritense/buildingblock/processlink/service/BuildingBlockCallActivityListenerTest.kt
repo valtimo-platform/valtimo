@@ -80,7 +80,13 @@ class BuildingBlockCallActivityListenerTest {
             .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
-        whenever(buidingBlockInstanceService.create(requestCaptor.capture(), eq(caseDocumentId)))
+        whenever(
+            buidingBlockInstanceService.create(
+                requestCaptor.capture(),
+                eq(caseDocumentId),
+                eq("callActivity")
+            )
+        )
             .thenReturn(mock())
 
         listener.onCallActivityStart(execution)
@@ -100,6 +106,6 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityStart(execution)
 
-        verify(buidingBlockInstanceService, never()).create(any(), any())
+        verify(buidingBlockInstanceService, never()).create(any(), any(), any())
     }
 }

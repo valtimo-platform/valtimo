@@ -29,6 +29,9 @@ open class BuildingBlockInstance(
     @Column(name = "case_document_id", nullable = false)
     val caseDocumentId: UUID,
 
+    @Column(name = "activity_id", nullable = false)
+    val activityId: String,
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
         JoinColumn(

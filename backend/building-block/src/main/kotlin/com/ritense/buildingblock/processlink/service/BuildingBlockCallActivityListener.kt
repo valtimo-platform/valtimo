@@ -52,13 +52,31 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
-            this.createBuildingBlock(it,UUID.fromString(execution.businessKey))
+            this.createBuildingBlock(
+                it,
+                UUID.fromString(execution.businessKey),
+                activityId
+            )
         }
     }
 
+    @EventListener(
+        condition = """#execution.bpmnModelElementInstance != null
+            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
+    )
+    fun onCallActivityEnd(execution: DelegateExecution) {
+        // write back variables that are at end of building block
+        execution.businessKey
+
+
+    }
+
+
     private fun createBuildingBlock(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID
+        caseDocumentId: UUID,
+        activityId: String
     ): BuildingBlockInstance {
         val documentRequest = NewDocumentRequest(
             null,
@@ -69,7 +87,11 @@ class BuildingBlockCallActivityListener(
             buildDocumentContent(buildingBlockProcessLink, caseDocumentId),
         )
 
-        return buidingBlockInstanceService.create(documentRequest, caseDocumentId)
+        return buidingBlockInstanceService.create(
+            documentRequest,
+            caseDocumentId,
+            activityId
+        )
     }
 
     private fun buildDocumentContent(

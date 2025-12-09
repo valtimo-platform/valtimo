@@ -16,7 +16,10 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
@@ -25,7 +28,10 @@ import java.util.UUID
 
 @Component
 @SkipComponentScan
-class DefaultBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfigurationResolver {
+class DefaultBuildingBlockPluginConfigurationResolver(
+    private val buildingBlockInstanceService: BuildingBlockInstanceService,
+    private val processLinkService: ProcessLinkService,
+) : BuildingBlockPluginConfigurationResolver {
     override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
         return findMappings(execution)[pluginDefinitionKey]
     }
@@ -35,6 +41,27 @@ class DefaultBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfi
     }
 
     private fun findMappings(execution: DelegateExecution): Map<String, UUID> {
-        throw NotImplementedError("TODO: find mapping for building block instance")
+        val businessKey = execution.businessKey
+            ?: throw IllegalStateException("Execution businessKey is required to resolve plugin configuration mappings")
+
+        val documentId = runCatching { UUID.fromString(businessKey) }.getOrElse {
+            throw IllegalStateException("Execution businessKey must be a UUID, but was '$businessKey'")
+        }
+
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId)
+            ?: throw IllegalStateException("No building block instance found for documentId '$documentId'")
+
+        val processLinks = processLinkService.getProcessLinks(
+            execution.processDefinitionId,
+            buildingBlockInstance.activityId
+        ).filterIsInstance<BuildingBlockProcessLink>()
+
+        val processLink = processLinks.singleOrNull()
+            ?: throw IllegalStateException(
+                "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
+                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
+            )
+
+        return processLink.pluginConfigurationMappings
     }
 }
