@@ -98,7 +98,16 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
     return this.buildingBlockDefinition$.pipe(map(definition => definition.final));
   }
 
+  private readonly _showProcessDefinitionUploadModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showProcessDefinitionUploadModal$ =
+    this._showProcessDefinitionUploadModal$.asObservable();
+
   private readonly _reload$ = new BehaviorSubject<null>(null);
+
+  private readonly _reloadProcessDefinitions$ = new BehaviorSubject<null>(null);
+  public get reloadProcessDefinitions$(): Observable<null> {
+    return this._reloadProcessDefinitions$.asObservable();
+  }
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
@@ -166,5 +175,17 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   public reload(): void {
     this._reload$.next(null);
+  }
+
+  public showProcessDefinitionUploadModal(): void {
+    this._showProcessDefinitionUploadModal$.next(true);
+  }
+
+  public hideProcessDefinitionUploadModal(): void {
+    this._showProcessDefinitionUploadModal$.next(false);
+  }
+
+  public reloadProcessDefinitions(): void {
+    this._reloadProcessDefinitions$.next(null);
   }
 }

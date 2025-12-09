@@ -30,7 +30,13 @@ import {
   tap,
 } from 'rxjs';
 import {isEqual} from 'lodash';
-import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
 import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
@@ -38,13 +44,22 @@ import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {Router} from '@angular/router';
+import {BuildingBlockManagementProcessUploadComponent} from '../building-block-management-process-upload/building-block-management-process-upload.component';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-processes',
   templateUrl: './building-block-management-processes.component.html',
   styleUrls: ['./building-block-management-processes.component.scss'],
-  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, IconModule],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    TranslateModule,
+    ButtonModule,
+    IconModule,
+    BuildingBlockManagementProcessUploadComponent,
+    ConfirmationModalModule,
+  ],
 })
 export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
@@ -53,6 +68,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     BuildingBlockProcessDefinitionDto[]
   >([]);
 
+  private _buildingBlockProcessDefinitionItems: BuildingBlockProcessDefinitionItem[] = [];
   public readonly buildingBlockProcessDefinitionItems$: Observable<
     BuildingBlockProcessDefinitionItem[]
   > = combineLatest([
@@ -66,6 +82,10 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
           definition.main &&
           this.translateService.instant('buildingBlockManagement.processDefinition.mainText'),
       }))
+    ),
+    tap(
+      buildingBlockProcessDefinitionItems =>
+        (this._buildingBlockProcessDefinitionItems = buildingBlockProcessDefinitionItems)
     )
   );
 
@@ -79,9 +99,33 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     },
   ];
 
+  public onDeleteClick = (process: BuildingBlockProcessDefinitionItem): void => {
+    this._processToDelete = process;
+    this.showDeleteModal$.next(true);
+  };
+
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'buildingBlockManagement.processDefinition.markAsMain',
+      callback: this.onMarkAsMain.bind(this),
+      type: 'normal',
+      disabledCallback: this.markAsMainDisabled.bind(this),
+    },
+    {
+      label: 'interface.delete',
+      callback: this.onDeleteClick,
+      type: 'danger',
+      disabledCallback: this.deleteDisabled.bind(this),
+    },
+  ];
+
   public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
 
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
   private readonly _subscriptions = new Subscription();
+
+  private _processToDelete!: BuildingBlockProcessDefinitionItem;
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -103,9 +147,14 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
           distinctUntilChanged((a, b) => isEqual(a, b)),
           tap(() => this.$loading.set(true)),
           switchMap(([key, versionTag]) =>
-            this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
-              key,
-              versionTag
+            this.buildingBlockManagementDetailService.reloadProcessDefinitions$.pipe(
+              tap(() => this.$loading.set(true)),
+              switchMap(() =>
+                this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
+                  key,
+                  versionTag
+                )
+              )
             )
           ),
           tap(processDefinitions => {
@@ -133,7 +182,67 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     ]);
   }
 
-  public showUploadModal(): void {}
+  public showUploadModal(): void {
+    this.buildingBlockManagementDetailService.showProcessDefinitionUploadModal();
+  }
 
-  public showCreateModal(): void {}
+  public onCreateClick(): void {
+    this.router.navigate([
+      '/building-block-management',
+      'building-block',
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+      'version',
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+      BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
+      'create',
+    ]);
+  }
+
+  public onDeleteConfirm(): void {
+    if (!this._processToDelete) return;
+
+    this.$loading.set(true);
+
+    this.buildingBlockManagementApiService
+      .deleteBuildingBlockProcessDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        this._processToDelete.id
+      )
+      .subscribe({
+        next: () => {
+          this.buildingBlockManagementDetailService.reloadProcessDefinitions();
+        },
+        error: () => {
+          this.$loading.set(false);
+        },
+      });
+  }
+
+  public onMarkAsMain(process: BuildingBlockProcessDefinitionItem): void {
+    this.$loading.set(true);
+
+    this.buildingBlockManagementApiService
+      .setMainBuildingBlockProcessDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        process.id
+      )
+      .subscribe({
+        next: () => {
+          this.buildingBlockManagementDetailService.reloadProcessDefinitions();
+        },
+        error: () => {
+          this.$loading.set(false);
+        },
+      });
+  }
+
+  private markAsMainDisabled(process: BuildingBlockProcessDefinitionItem): boolean {
+    return process.main || this._buildingBlockProcessDefinitionItems.length === 1;
+  }
+
+  private deleteDisabled(process: BuildingBlockProcessDefinitionItem): boolean {
+    return process.main || this._buildingBlockProcessDefinitionItems.length === 1;
+  }
 }

@@ -2128,7 +2128,8 @@
       "title": "Building block process definition",
       "name": "Name",
       "key": "Key",
-      "mainText": "Main process"
+      "mainText": "Main process",
+      "markAsMain": "Make main process"
     },
     "importDefinition": {
       "title": "Import building block definition",

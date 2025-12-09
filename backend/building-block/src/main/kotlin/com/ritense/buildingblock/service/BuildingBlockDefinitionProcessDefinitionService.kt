@@ -178,7 +178,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         buildingBlockDefinitionVersionTag: String,
         bpmn: MultipartFile,
         processLinks: List<ProcessLinkCreateRequestDto>,
-        currentProcessDefinitionId: String,
+        currentProcessDefinitionId: String?,
         main: Boolean
     ): ProcessDefinitionId? {
         denyAuthorization()
@@ -262,10 +262,97 @@ class BuildingBlockDefinitionProcessDefinitionService(
         return mainLink.processDefinitionKey
     }
 
+    @Transactional
+    fun setMainProcessDefinition(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String,
+        processDefinitionId: String
+    ) {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+
+        val targetProcessDefinitionId = ProcessDefinitionId.of(processDefinitionId)
+
+        val targetLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                targetProcessDefinitionId
+            ) ?: return
+
+        if (targetLink.main) {
+            return
+        }
+
+        val currentMainLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
+
+        processDefinitionBuildingBlockDefinitionRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                currentMainLink!!.id,
+                false
+            )
+        )
+
+        processDefinitionBuildingBlockDefinitionRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(
+                    targetProcessDefinitionId,
+                    buildingBlockDefinitionId
+                ),
+                true
+            )
+        )
+    }
+
+    @Transactional
+    fun deleteProcessDefinitionForBuildingBlock(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String,
+        processDefinitionId: String
+    ) {
+        denyAuthorization()
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+
+        val targetProcessDefinitionId = ProcessDefinitionId.of(processDefinitionId)
+
+        val link = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                targetProcessDefinitionId
+            )
+            ?: return
+
+        if (link.main) {
+            throw IllegalStateException(
+                "Cannot delete main process definition for building block $buildingBlockDefinitionId"
+            )
+        }
+
+        processDefinitionBuildingBlockDefinitionRepository.delete(link)
+        operatonProcessService.deleteProcessDefinition(processDefinitionId)
+        // TODO: delete process links based on event sent from deleteProcessDefinition
+        processLinkService.deleteProcessLinksForProcessDefinition(processDefinitionId)
+    }
+
+
     private fun findExistingLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
-        currentProcessDefinitionId: String
+        currentProcessDefinitionId: String?
     ): ProcessDefinitionBuildingBlockDefinition? {
+        if (currentProcessDefinitionId == null) return null
+
         return processDefinitionBuildingBlockDefinitionRepository
             .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
                 buildingBlockDefinitionId,

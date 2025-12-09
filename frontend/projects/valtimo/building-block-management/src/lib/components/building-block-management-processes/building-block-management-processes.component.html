@@ -16,19 +16,28 @@
 
 <valtimo-carbon-list
   [fields]="FIELDS"
+  [actionItems]="ACTION_ITEMS"
   [items]="buildingBlockProcessDefinitionItems$ | async"
   [loading]="$loading()"
   (rowClicked)="onRowClick($event)"
 >
   <div carbonToolbarContent>
     <div class="valtimo-building-block-management-list__actions">
-      <button cdsButton="ghost" (click)="showUploadModal()" [disabled]="isFinal$ | async">
+      <button
+        cdsButton="ghost"
+        (click)="showUploadModal()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
         {{ 'Upload' | translate }}
 
         <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
       </button>
 
-      <button cdsButton="primary" (click)="showCreateModal()" [disabled]="isFinal$ | async">
+      <button
+        cdsButton="primary"
+        (click)="onCreateClick()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
         {{ 'interface.create' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -36,3 +45,14 @@
     </div>
   </div>
 </valtimo-carbon-list>
+
+<valtimo-building-block-management-process-upload></valtimo-building-block-management-process-upload>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="processManagement.deleteModal.content"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="processManagement.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm()"
+></valtimo-confirmation-modal>
