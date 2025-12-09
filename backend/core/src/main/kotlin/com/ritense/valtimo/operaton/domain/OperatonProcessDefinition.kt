@@ -16,6 +16,8 @@
 
 package com.ritense.valtimo.operaton.domain
 
+import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -95,7 +97,13 @@ class OperatonProcessDefinition(
         return result
     }
 
-    fun getCaseDefinitionId(): CaseDefinitionId? {
-        return CaseDefinitionId.fromProcessVersionTag(versionTag)
+    fun getSolutionModuleId(): SolutionModuleId? {
+        return if (versionTag?.startsWith("BB:") == true) {
+            return BuildingBlockDefinitionId.fromProcessVersionTag(versionTag)
+        } else if (versionTag?.startsWith("CD:") == true) {
+            CaseDefinitionId.fromProcessVersionTag(versionTag)
+        } else {
+            return null
+        }
     }
 }

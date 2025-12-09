@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock
 
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import org.junit.jupiter.api.Tag
@@ -24,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -37,4 +39,7 @@ abstract class BaseIntegrationTest {
 
     @MockitoBean
     lateinit var mailSender: MailSender
+
+    @MockitoSpyBean
+    lateinit var processLinkService: ProcessLinkService
 }

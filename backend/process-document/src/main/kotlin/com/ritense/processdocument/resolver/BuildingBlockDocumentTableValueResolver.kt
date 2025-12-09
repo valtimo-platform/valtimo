@@ -75,7 +75,6 @@ class BuildingBlockDocumentTableValueResolver(
         return createFieldList(TABLE_COLUMN_LIST)
     }
 
-    // TODO: uh oh
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
             when (requestedValue) {

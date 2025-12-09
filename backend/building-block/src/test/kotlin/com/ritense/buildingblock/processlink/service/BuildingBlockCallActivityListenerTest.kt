@@ -16,14 +16,24 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
+import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.util.UUID
@@ -32,27 +42,64 @@ class BuildingBlockCallActivityListenerTest {
 
     private val processLinkService = mock<ProcessLinkService>()
     private val buidingBlockInstanceService = mock<BuildingBlockInstanceService>()
+    private val valueResolverService = mock<ValueResolverService>()
+    private val objectMapper = MapperSingleton.get()
+
+    private val listener = BuildingBlockCallActivityListener(
+        processLinkService,
+        buidingBlockInstanceService,
+        valueResolverService,
+        objectMapper,
+    )
 
     @Test
     fun `should create instance when process link is available`() {
-        val listener = BuildingBlockCallActivityListener(processLinkService, buidingBlockInstanceService)
+        val caseDocumentId = UUID.randomUUID()
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
-            on { businessKey } doReturn UUID.randomUUID().toString()
+            on { businessKey } doReturn caseDocumentId.toString()
         }
+        val inputMappings = listOf(
+            BuildingBlockInputMapping(
+                source = "doc:/person/name",
+                target = "name"
+            )
+        )
         val link = BuildingBlockProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = "case-process",
             activityId = "callActivity",
             activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
             buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0"),
-            pluginConfigurationMappings = mapOf("zaken" to UUID.randomUUID())
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(listOf(link))
+        whenever(valueResolverService.resolveValues(caseDocumentId.toString(), inputMappings.map { it.source }))
+            .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
+
+        val requestCaptor = argumentCaptor<NewDocumentRequest>()
+        whenever(buidingBlockInstanceService.create(requestCaptor.capture(), eq(caseDocumentId)))
+            .thenReturn(mock())
 
         listener.onCallActivityStart(execution)
 
-        //TODO: finish when link to instance is done.
+        val capturedContent = requestCaptor.firstValue.content()
+        assertThat(capturedContent.get("name").asText()).isEqualTo("Ada Lovelace")
+    }
+
+    @Test
+    fun `should not create instance when no building block link is found`() {
+        val execution = mock<DelegateExecution> {
+            on { currentActivityId } doReturn "callActivity"
+            on { processDefinitionId } doReturn "case-process"
+            on { businessKey } doReturn UUID.randomUUID().toString()
+        }
+        whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(emptyList())
+
+        listener.onCallActivityStart(execution)
+
+        verify(buidingBlockInstanceService, never()).create(any(), any())
     }
 }

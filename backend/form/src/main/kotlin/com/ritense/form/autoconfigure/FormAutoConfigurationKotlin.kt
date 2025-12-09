@@ -110,7 +110,6 @@ class FormAutoConfigurationKotlin {
         prefillFormService: PrefillFormService,
         authorizationService: AuthorizationService,
         valueResolverService: ValueResolverService,
-        caseDefinitionService: CaseDefinitionService,
         objectMapper: ObjectMapper,
     ) = DefaultFormSubmissionService(
         processLinkService,
@@ -125,7 +124,6 @@ class FormAutoConfigurationKotlin {
         prefillFormService,
         authorizationService,
         valueResolverService,
-        caseDefinitionService,
         objectMapper,
     )
 

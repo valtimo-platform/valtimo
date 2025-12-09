@@ -59,6 +59,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -301,8 +302,13 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockCallActivityListener(
         processLinkService: ProcessLinkService,
         buildingBLockInstanceService: BuildingBlockInstanceService,
-    ) = BuildingBlockCallActivityListener(processLinkService,
-        buildingBLockInstanceService
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+    ) = BuildingBlockCallActivityListener(
+        processLinkService,
+        buildingBLockInstanceService,
+        valueResolverService,
+        objectMapper
     )
 
     @Bean
