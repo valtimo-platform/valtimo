@@ -158,7 +158,7 @@ const applyBuildingBlockCalledElement = (
   );
 
   const inWithBusinessKey = moddle.create('camunda:In', {
-    businessKey: '#{execution.buildingBlockInstanceId}',
+    businessKey: '#{buildingBlockInstanceId}',
   });
 
   extensionElements.values.push(inWithBusinessKey);

@@ -53,7 +53,7 @@ class BuildingBlockCallActivityListener(
 
         buildingBlockProcessLink?.let {
             val buildingBlockInstance = this.createBuildingBlock(it, UUID.fromString(execution.businessKey))
-            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID, buildingBlockInstance.documentId)
+            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID, buildingBlockInstance.documentId.toString())
         }
     }
 
