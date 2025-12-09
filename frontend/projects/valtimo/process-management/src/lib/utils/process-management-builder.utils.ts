@@ -129,6 +129,7 @@ const applyBuildingBlockCalledElement = (
 
   const elementRegistry = (editor as any).get('elementRegistry') as any;
   const modeling = (editor as any).get('modeling') as any;
+  const moddle = (editor as any).get('moddle') as any;
 
   const element = elementRegistry.get(activityId);
 
@@ -142,6 +143,29 @@ const applyBuildingBlockCalledElement = (
     'camunda:calledElementVersionTag': versionTag,
     'camunda:calledElementType': 'BPMN',
   });
+
+  let extensionElements = element.businessObject.extensionElements;
+
+  if (!extensionElements) {
+    extensionElements = moddle.create('bpmn:ExtensionElements', {values: []});
+    modeling.updateProperties(element, {
+      extensionElements,
+    });
+  }
+
+  extensionElements.values = (extensionElements.values || []).filter(
+    (val: any) => !(val.$type === 'camunda:In' && val.businessKey)
+  );
+
+  const inWithBusinessKey = moddle.create('camunda:In', {
+    businessKey: '#{execution.buildingBlockInstanceId}',
+  });
+
+  extensionElements.values.push(inWithBusinessKey);
+
+  modeling.updateProperties(element, {
+    extensionElements,
+  });
 };
 
 const clearBuildingBlockCalledElement = (
@@ -149,29 +173,41 @@ const clearBuildingBlockCalledElement = (
   activityId: string
 ): void => {
   const localEditor = editor as any;
-
   if (!localEditor) return;
 
   const elementRegistry = localEditor.get('elementRegistry') as any;
   const modeling = localEditor.get('modeling') as any;
 
   const element = elementRegistry.get(activityId);
-
   if (!element || !is(element, 'bpmn:CallActivity')) return;
 
   const bo = element.businessObject;
   const versionTag = bo.get('camunda:calledElementVersionTag');
 
-  if (!versionTag || !versionTag.startsWith('BB:')) {
-    return;
-  }
+  if (!versionTag || !versionTag.startsWith('BB:')) return;
 
-  modeling.updateProperties(element, {
+  const props: any = {
     calledElement: undefined,
     'camunda:calledElementBinding': undefined,
     'camunda:calledElementVersionTag': undefined,
     'camunda:calledElementType': undefined,
-  });
+  };
+
+  const extensionElements = bo.extensionElements;
+  if (extensionElements && Array.isArray(extensionElements.values)) {
+    extensionElements.values = extensionElements.values.filter((val: any) => {
+      if (val.$type !== 'camunda:In') return true;
+      return !val.businessKey;
+    });
+
+    if (extensionElements.values.length === 0) {
+      props.extensionElements = undefined;
+    } else {
+      props.extensionElements = extensionElements;
+    }
+  }
+
+  modeling.updateProperties(element, props);
 
   const attrs = bo.$attrs || {};
 
