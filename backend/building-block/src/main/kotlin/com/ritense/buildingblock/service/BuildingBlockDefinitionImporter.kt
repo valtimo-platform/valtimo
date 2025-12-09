@@ -25,7 +25,6 @@ import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITI
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-// TODO: ensure these importers run before case definition importers do
 class BuildingBlockDefinitionImporter(
     private val objectMapper: ObjectMapper,
     private val repository: BuildingBlockDefinitionRepository,

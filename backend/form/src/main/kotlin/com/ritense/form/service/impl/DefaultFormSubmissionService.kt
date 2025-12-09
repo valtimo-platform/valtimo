@@ -59,18 +59,20 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_STAR
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
+import com.ritense.valtimo.contract.json.patch.JsonPatch
+import com.ritense.valtimo.contract.result.OperationError
+import com.ritense.valtimo.contract.result.OperationError.FromException
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.Companion.COMPLETE
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
-import com.ritense.valtimo.contract.json.patch.JsonPatch
-import com.ritense.valtimo.contract.result.OperationError
-import com.ritense.valtimo.contract.result.OperationError.FromException
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.valueresolver.ValueResolverServiceImpl
@@ -98,7 +100,6 @@ class DefaultFormSubmissionService(
     private val prefillFormService: PrefillFormService,
     private val authorizationService: AuthorizationService,
     private val valueResolverService: ValueResolverService,
-    private val caseDefinitionService: CaseDefinitionService,
     private val objectMapper: ObjectMapper,
 ) : FormSubmissionService {
 
@@ -140,7 +141,7 @@ class DefaultFormSubmissionService(
                 taskInstanceId,
                 documentDefinitionNameToUse,
                 processDefinition.key,
-                processDefinition.getCaseDefinitionId(),
+                processDefinition.getSolutionModuleId(),
                 categorizedKeyValues.createDocumentWithContent,
                 categorizedKeyValues.withProcessVars,
                 modifyDocumentWithJsonPatch
@@ -399,7 +400,7 @@ class DefaultFormSubmissionService(
         taskInstanceId: String?,
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?,
+        solutionModuleId: SolutionModuleId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
         modifyDocumentWithJsonPatch: JsonPatch
@@ -413,7 +414,7 @@ class DefaultFormSubmissionService(
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
                     processDefinitionKey,
-                    caseDefinitionId,
+                    solutionModuleId,
                     documentContent,
                     withProcessVars
                 )
@@ -445,19 +446,49 @@ class DefaultFormSubmissionService(
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?,
+        solutionModuleId: SolutionModuleId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
     ): NewDocumentAndStartProcessRequest {
-        return NewDocumentAndStartProcessRequest(
-            processDefinitionKey,
-            NewDocumentRequest(
-                documentDefinitionName,
-                caseDefinitionId?.key,
-                caseDefinitionId?.versionTag?.version,
-                documentContent
-            )
-        ).withProcessVars(withProcessVars)
+        return when (solutionModuleId) {
+            is CaseDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        solutionModuleId.key,
+                        solutionModuleId.versionTag.version,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+
+            is BuildingBlockDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        solutionModuleId.key,
+                        solutionModuleId.versionTag.version,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+
+            else -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        documentContent
+                    )
+                ).withProcessVars(withProcessVars)
+            }
+        }
     }
 
     private fun modifyDocumentAndStartProcessRequest(

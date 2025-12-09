@@ -66,7 +66,7 @@ class CaseDocumentJsonValueResolverFactory(
     override fun supportedPrefix(): String {
         return PREFIX
     }
-
+    // TODO: Fix this for building blocks
     override fun createResolver(
         processInstanceId: String,
         variableScope: VariableScope
@@ -325,10 +325,6 @@ class CaseDocumentJsonValueResolverFactory(
         return objectMapper.valueToTree(value)
     }
 
-    companion object {
-        const val PREFIX = "doc"
-    }
-
     private fun getPropertyNamesFromObjectNode(
         definition: JsonSchemaDocumentDefinition,
         node: ObjectNode,
@@ -372,6 +368,10 @@ class CaseDocumentJsonValueResolverFactory(
     private fun isSimpleObject(propertyType: String): Boolean {
         val simpleTypes = listOf("string", "boolean", "integer", "number")
         return simpleTypes.contains(propertyType)
+    }
+
+    companion object {
+        const val PREFIX = "doc"
     }
 
 }
