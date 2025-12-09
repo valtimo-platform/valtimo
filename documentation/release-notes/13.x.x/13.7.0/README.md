@@ -23,9 +23,10 @@
 
 ## Enhancement
 
-* **Enhancement title**
+* **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
 
-  Enhancement description
+  When you try to upload a file to the Documenten API, you are shown a modal where you can enter metadata about the file you want to upload.
+  Within this modal there is a drop-down labelled "Documenttype". The options within this drop-down are now ordered alphabetically and you can search through the list to select the appropriate documenttype. (As you can already do for the "Vertrouwelijkheidsaanduiding" and "Status" fields.)
 
 
 ## Bugfixes
