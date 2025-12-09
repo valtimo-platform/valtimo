@@ -57,6 +57,7 @@ class BuildingBlockCallActivityListener(
                 UUID.fromString(execution.businessKey),
                 activityId
             )
+            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID, buildingBlockInstance.documentId.toString())
         }
     }
 
@@ -110,5 +111,9 @@ class BuildingBlockCallActivityListener(
         }
 
         return objectMapper.valueToTree(documentToCreate)
+    }
+
+    companion object {
+        const val BUILDING_BLOCK_INSTANCE_ID = "buildingBlockInstanceId"
     }
 }

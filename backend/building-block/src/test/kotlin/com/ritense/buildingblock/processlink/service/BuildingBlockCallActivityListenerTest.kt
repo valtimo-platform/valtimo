@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
@@ -55,6 +56,7 @@ class BuildingBlockCallActivityListenerTest {
     @Test
     fun `should create instance when process link is available`() {
         val caseDocumentId = UUID.randomUUID()
+        val buildingBlockInstance: BuildingBlockInstance = mock()
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
@@ -79,6 +81,8 @@ class BuildingBlockCallActivityListenerTest {
         whenever(valueResolverService.resolveValues(caseDocumentId.toString(), inputMappings.map { it.source }))
             .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
 
+        whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
+
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
             buidingBlockInstanceService.create(
@@ -87,7 +91,7 @@ class BuildingBlockCallActivityListenerTest {
                 eq("callActivity")
             )
         )
-            .thenReturn(mock())
+        .thenReturn(buildingBlockInstance)
 
         listener.onCallActivityStart(execution)
 
