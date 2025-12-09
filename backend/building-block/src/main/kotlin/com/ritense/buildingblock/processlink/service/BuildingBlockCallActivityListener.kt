@@ -52,7 +52,8 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
-            this.createBuildingBlock(it,UUID.fromString(execution.businessKey))
+            val buildingBlockInstance = this.createBuildingBlock(it, UUID.fromString(execution.businessKey))
+            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID, buildingBlockInstance.documentId.toString())
         }
     }
 
@@ -88,5 +89,9 @@ class BuildingBlockCallActivityListener(
         }
 
         return objectMapper.valueToTree(documentToCreate)
+    }
+
+    companion object {
+        const val BUILDING_BLOCK_INSTANCE_ID = "buildingBlockInstanceId"
     }
 }
