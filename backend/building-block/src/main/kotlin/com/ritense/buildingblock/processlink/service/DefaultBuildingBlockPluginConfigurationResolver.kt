@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.service.ProcessLinkService
@@ -44,15 +45,20 @@ class DefaultBuildingBlockPluginConfigurationResolver(
         val businessKey = execution.businessKey
             ?: throw IllegalStateException("Execution businessKey is required to resolve plugin configuration mappings")
 
-        val documentId = runCatching { UUID.fromString(businessKey) }.getOrElse {
-            throw IllegalStateException("Execution businessKey must be a UUID, but was '$businessKey'")
+        val documentId = try {
+            UUID.fromString(businessKey)
+        } catch(_: IllegalArgumentException) {
+            throw IllegalStateException("BusinessKey for building block instance document must be a UUID, but was '$businessKey'")
         }
 
         val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId)
             ?: throw IllegalStateException("No building block instance found for documentId '$documentId'")
 
+        val processDefinitionId = findParentSolutionInstanceProcessId(execution)
+            ?: throw IllegalStateException("Parent solution instance process not found for activityId '${buildingBlockInstance.activityId}'")
+
         val processLinks = processLinkService.getProcessLinks(
-            execution.processDefinitionId,
+            processDefinitionId,
             buildingBlockInstance.activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
@@ -63,5 +69,19 @@ class DefaultBuildingBlockPluginConfigurationResolver(
             )
 
         return processLink.pluginConfigurationMappings
+    }
+
+    fun findParentSolutionInstanceProcessId(execution: DelegateExecution): String? {
+        var current: DelegateExecution? = execution
+
+
+        while (current != null ) {
+            if (current.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
+                return current.processDefinitionId
+            }
+            current = current.superExecution
+        }
+
+        return null
     }
 }

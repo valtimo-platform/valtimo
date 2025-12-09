@@ -19,6 +19,7 @@ package com.ritense.buildingblock.processlink.service
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
@@ -28,6 +29,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -55,6 +57,8 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val execution = mock<DelegateExecution> {
             on { businessKey } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
+            on { superExecution } doReturn this.mock
+            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
         }
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
@@ -103,7 +107,7 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
 
         assertThatThrownBy { resolver.resolve(execution, "any") }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("businessKey must be a UUID")
+            .hasMessage("BusinessKey for building block instance document must be a UUID, but was 'not-a-uuid'")
 
         verify(buildingBlockInstanceService, never()).getByDocumentId(any())
     }
@@ -129,6 +133,8 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val execution = mock<DelegateExecution> {
             on { businessKey } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
+            on { superExecution } doReturn this.mock
+            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
         }
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(

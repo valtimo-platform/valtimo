@@ -16,9 +16,12 @@
 
 package com.ritense.buildingblock.processlink.service
 
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
+import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -37,6 +40,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import java.time.LocalDateTime
 import java.util.UUID
 
 class BuildingBlockCallActivityListenerTest {
@@ -111,5 +115,71 @@ class BuildingBlockCallActivityListenerTest {
         listener.onCallActivityStart(execution)
 
         verify(buidingBlockInstanceService, never()).create(any(), any(), any())
+    }
+
+    @Test
+    fun `should write end sync output mappings to case document`() {
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
+        val activityId = "callActivity"
+        val testProcessDefinitionId = "case-process"
+        val execution = mock<DelegateExecution> {
+            on { businessKey } doReturn caseDocumentId.toString()
+            on { processDefinitionId } doReturn testProcessDefinitionId
+            on { getVariableLocal("buildingBlockInstanceId") } doReturn buildingBlockDocumentId.toString()
+        }
+
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
+        val definition = BuildingBlockDefinition(
+            buildingBlockDefinitionId,
+            "Test block",
+            "desc",
+            "tester",
+            LocalDateTime.now(),
+            null,
+            false
+        )
+        whenever(buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
+            BuildingBlockInstance(
+                documentId = buildingBlockDocumentId,
+                caseDocumentId = caseDocumentId,
+                activityId = activityId,
+                definition = definition
+            )
+        )
+
+        val outputMappings = listOf(
+            BuildingBlockOutputMapping(
+                source = "doc:/result",
+                target = "doc:/case/result",
+                syncTiming = BuildingBlockSyncTiming.END
+            ),
+            BuildingBlockOutputMapping(
+                source = "doc:/ignored",
+                target = "doc:/case/ignored",
+                syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+            )
+        )
+        val processLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = testProcessDefinitionId,
+            activityId = activityId,
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_END,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = emptyList(),
+            outputMappings = outputMappings
+        )
+        whenever(processLinkService.getProcessLinks(testProcessDefinitionId, activityId)).thenReturn(listOf(processLink))
+        whenever(
+            valueResolverService.resolveValues(
+                buildingBlockDocumentId.toString(),
+                listOf("doc:/result")
+            )
+        ).thenReturn(mapOf("doc:/result" to "value"))
+
+        listener.onCallActivityEnd(execution)
+
+        verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/case/result" to "value"))
     }
 }
