@@ -286,21 +286,28 @@ class BuildingBlockDefinitionProcessDefinitionService(
             ) ?: return
 
         if (targetLink.main) {
-            ensureOnlyOneMainLink(buildingBlockDefinitionId, targetProcessDefinitionId)
             return
         }
 
-        val updatedMainLink = ProcessDefinitionBuildingBlockDefinition(
-            ProcessDefinitionBuildingBlockDefinitionId(
-                targetProcessDefinitionId,
-                buildingBlockDefinitionId
-            ),
-            true
+        val currentMainLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
+
+        processDefinitionBuildingBlockDefinitionRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                currentMainLink!!.id,
+                false
+            )
         )
 
-        processDefinitionBuildingBlockDefinitionRepository.save(updatedMainLink)
-
-        ensureOnlyOneMainLink(buildingBlockDefinitionId, targetProcessDefinitionId)
+        processDefinitionBuildingBlockDefinitionRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(
+                    targetProcessDefinitionId,
+                    buildingBlockDefinitionId
+                ),
+                true
+            )
+        )
     }
 
     @Transactional
@@ -334,14 +341,9 @@ class BuildingBlockDefinitionProcessDefinitionService(
         }
 
         processDefinitionBuildingBlockDefinitionRepository.delete(link)
-
-        runWithoutAuthorization {
-            processLinkService.getProcessLinks(processDefinitionId).forEach { linkToDelete ->
-                processLinkService.deleteProcessLink(linkToDelete.id)
-            }
-
-            operatonProcessService.deleteProcessDefinition(processDefinitionId)
-        }
+        operatonProcessService.deleteProcessDefinition(processDefinitionId)
+        // TODO: delete process links based on event sent from deleteProcessDefinition
+        processLinkService.deleteProcessLinksForProcessDefinition(processDefinitionId)
     }
 
 

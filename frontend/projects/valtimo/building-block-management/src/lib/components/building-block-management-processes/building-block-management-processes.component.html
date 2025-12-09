@@ -23,13 +23,21 @@
 >
   <div carbonToolbarContent>
     <div class="valtimo-building-block-management-list__actions">
-      <button cdsButton="ghost" (click)="showUploadModal()" [disabled]="isFinal$ | async">
+      <button
+        cdsButton="ghost"
+        (click)="showUploadModal()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
         {{ 'Upload' | translate }}
 
         <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
       </button>
 
-      <button cdsButton="primary" (click)="onCreateClick()" [disabled]="isFinal$ | async">
+      <button
+        cdsButton="primary"
+        (click)="onCreateClick()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
         {{ 'interface.create' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
