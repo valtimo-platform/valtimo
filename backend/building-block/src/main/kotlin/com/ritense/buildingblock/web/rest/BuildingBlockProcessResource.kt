@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @SkipComponentScan
@@ -86,7 +88,7 @@ class BuildingBlockProcessResource(
         @PathVariable versionTag: String,
         @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestPart(name = "processDefinitionId") processDefinitionId: String,
+        @RequestPart(name = "processDefinitionId") processDefinitionId: String?,
         @RequestPart(name = "main", required = false) main: Boolean? = false
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
@@ -140,5 +142,42 @@ class BuildingBlockProcessResource(
         }
 
         return mainKey?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
+    }
+
+    @PostMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/main")
+    fun setMainProcessDefinitionForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable processDefinitionId: String
+    ): ResponseEntity<Void> {
+        runWithoutAuthorization {
+            buildingBlockDefinitionProcessDefinitionService.setMainProcessDefinition(
+                key,
+                versionTag,
+                processDefinitionId
+            )
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}")
+    fun deleteProcessDefinitionForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable processDefinitionId: String
+    ): ResponseEntity<Void> {
+        return try {
+            runWithoutAuthorization {
+                buildingBlockDefinitionProcessDefinitionService.deleteProcessDefinitionForBuildingBlock(
+                    key,
+                    versionTag,
+                    processDefinitionId
+                )
+            }
+            ResponseEntity.noContent().build()
+        } catch (ex: IllegalStateException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, ex.message, ex)
+        }
     }
 }

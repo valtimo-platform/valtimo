@@ -2161,7 +2161,8 @@
       "title": "Bouwsteen-procesdefinitie",
       "name": "Naam",
       "key": "Sleutel",
-      "mainText": "Hoofdproces"
+      "mainText": "Hoofdproces",
+      "markAsMain": "Maak hoofdproces"
     },
     "importDefinition": {
       "title": "Bouwblokdefinitie importeren",

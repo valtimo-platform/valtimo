@@ -39,8 +39,10 @@ import org.springframework.mock.web.MockPart
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
+import org.springframework.test.web.servlet.post
 
 class BuildingBlockProcessResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
@@ -247,5 +249,76 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
         verify(buildingBlockPluginDefinitionService)
             .getPluginDefinitionKeysForProcessDefinition(eq(processDefinitionId))
+    }
+
+    @Test
+    @WithMockUser
+    fun `should set main process definition for building block`() {
+        mockMvc.post(
+            "$base/{key}/version/{version}/process-definition/{processDefinitionId}/main",
+            key,
+            version,
+            processDefinitionId
+        ) {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isNoContent() }
+        }
+
+        verify(buildingBlockProcessService).setMainProcessDefinition(
+            eq(key),
+            eq(version),
+            eq(processDefinitionId)
+        )
+    }
+
+    @Test
+    @WithMockUser
+    fun `should delete process definition for building block`() {
+        mockMvc.delete(
+            "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
+            key,
+            version,
+            processDefinitionId
+        ) {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isNoContent() }
+        }
+
+        verify(buildingBlockProcessService).deleteProcessDefinitionForBuildingBlock(
+            eq(key),
+            eq(version),
+            eq(processDefinitionId)
+        )
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return 400 when deleting main process definition for building block`() {
+        whenever(
+            buildingBlockProcessService.deleteProcessDefinitionForBuildingBlock(
+                eq(key),
+                eq(version),
+                eq(processDefinitionId)
+            )
+        ).thenThrow(IllegalStateException("Cannot delete main process definition"))
+
+        mockMvc.delete(
+            "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
+            key,
+            version,
+            processDefinitionId
+        ) {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+        }
+
+        verify(buildingBlockProcessService).deleteProcessDefinitionForBuildingBlock(
+            eq(key),
+            eq(version),
+            eq(processDefinitionId)
+        )
     }
 }
