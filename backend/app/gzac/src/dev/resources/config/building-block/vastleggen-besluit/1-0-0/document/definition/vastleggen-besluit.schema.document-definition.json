@@ -1,0 +1,34 @@
+{
+    "$id": "vastleggen-besluit.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Vastleggen besluit",
+    "type": "object",
+    "properties": {
+        "besluitTypeDescription": {
+            "type": "string",
+            "description": "Een omschrijving van het besluittype (wordt later gebruikt om de BesluittypeURL op te halen)."
+        },
+        "besluitIngangsdatum": {
+            "type": "string",
+            "format": "date",
+            "description": "De ingangsdatum van het besluit."
+        },
+        "besluitDocumentUrl": {
+            "type": "string",
+            "description": "De URL van het besluitdocument."
+        },
+        "explanation": {
+            "type": "string",
+            "description": "Toelichting op het besluit."
+        },
+        "governingBody": {
+            "type": "string",
+            "description": "Het bestuursorgaan dat het besluit neemt."
+        }
+    },
+    "required": [
+        "besluitTypeDescription",
+        "besluitIngangsdatum",
+        "besluitDocumentUrl"
+    ]
+}
