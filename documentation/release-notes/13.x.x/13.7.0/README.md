@@ -21,10 +21,17 @@
   
   See more about it [here](../../features/process/retry-cycle.md).
 
-**Setting the internalStatus from within a form**
+**Setting case properties from within a form**
 
-It is now possible to set the internalStatus of a case from within a form by setting the `targetKey` to
-`case:internalStatus`.
+You can now update a limited set of `case:` properties directly from a Form.io form by using the **Form.io Custom
+Property** `targetKey`. The supported `targetKey` values:
+
+- `case:assigneeId` — updates the case assignee
+- `case:internalStatus` — updates the case internal status
+- `case:caseTags` — adds a tag to the case
+
+Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
+will still result in an error.
 
 ## Enhancement
 
