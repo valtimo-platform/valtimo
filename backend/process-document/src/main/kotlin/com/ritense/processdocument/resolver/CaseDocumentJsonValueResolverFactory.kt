@@ -66,7 +66,7 @@ class CaseDocumentJsonValueResolverFactory(
     override fun supportedPrefix(): String {
         return PREFIX
     }
-    // TODO: Fix this for building blocks
+
     override fun createResolver(
         processInstanceId: String,
         variableScope: VariableScope
