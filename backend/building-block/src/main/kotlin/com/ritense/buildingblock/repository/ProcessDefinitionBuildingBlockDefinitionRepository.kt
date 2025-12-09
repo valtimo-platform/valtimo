@@ -31,4 +31,8 @@ interface ProcessDefinitionBuildingBlockDefinitionRepository :
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         processDefinitionId: ProcessDefinitionId
     ): ProcessDefinitionBuildingBlockDefinition?
+    fun findByIdBuildingBlockDefinitionIdAndMain(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        main: Boolean
+    ): ProcessDefinitionBuildingBlockDefinition?
 }
