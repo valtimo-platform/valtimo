@@ -40,6 +40,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
@@ -58,6 +59,7 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
@@ -356,4 +358,13 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockDefinitionArtworkImporter {
         return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
     }
+
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkImporter::class)
+    fun buildingBlockProcessLinkImporter(
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+        objectMapper: ObjectMapper
+    ) = BuildingBlockProcessLinkImporter(processLinkService, repositoryService, objectMapper)
 }
