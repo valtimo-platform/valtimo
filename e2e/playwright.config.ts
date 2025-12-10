@@ -29,7 +29,7 @@ export default defineConfig({
       // headless: process.env.CI ? true : process.env.headlessMode === "true",
       args: ['--start-maximized'],
     },
-    baseURL: process.env.qa_url,
+    baseURL: process.env.qa_url ?? 'http://localhost:4200',
     screenshot: process.env.CI ? 'only-on-failure' : 'on',
     video: 'on',
     trace: {

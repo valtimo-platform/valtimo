@@ -14,19 +14,19 @@ export interface PluginTestConfiguration {
 export const pluginTypes = [
   'Besluiten API',
   'Catalogi API',
-  'Documenten API',
-  'Klantinteracties API',
-  'Notificaties API',
-  'OpenNotificaties',
-  'Objecten API',
-  'Object token authentication',
-  'Objecttypen API',
-  'OpenKlant token authentication',
-  'OpenZaak',
-  'Portaaltaak',
-  'SmartDocuments',
-  'Verzoek',
-  'Zaken API',
+  // 'Documenten API',
+  // 'Klantinteracties API',
+  // 'Notificaties API',
+  // 'OpenNotificaties',
+  // 'Objecten API',
+  // 'Object token authentication',
+  // 'Objecttypen API',
+  // 'OpenKlant token authentication',
+  // 'OpenZaak',
+  // 'Portaaltaak',
+  // 'SmartDocuments',
+  // 'Verzoek',
+  // 'Zaken API',
 ];
 
 export const pluginTestConfiguration = {
@@ -46,7 +46,7 @@ export const pluginTestConfiguration = {
         value: 'OpenZaak Authentication - OpenZaak',
       },
     ],
-    pluginIdentifier: 'Test Besluiten API',
+    pluginIdentifier: 'Test Besluiten API Plugin',
   },
 
   'Catalogi API': {

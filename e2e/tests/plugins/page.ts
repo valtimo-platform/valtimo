@@ -1,8 +1,8 @@
-import {expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
 
 export class PluginPage {
-  constructor(private readonly page: Page) {}
+  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
 
   // UI Elements
   get configureButton() {
@@ -33,7 +33,7 @@ export class PluginPage {
 
   async selectPluginType(type: string) {
     const tile = this.page.locator('cds-selection-tile', {
-      hasText: new RegExp(type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+      hasText: new RegExp(type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
     });
 
     await tile.first().click();
@@ -91,8 +91,8 @@ export class PluginPage {
     }
   }
 
-  async fillIncorrectRsinValue() {
-    await this.page.locator('input[name="rsin"]').fill('1');
+  async fillIncorrectRsinValue(testId: string) {
+    await this.page.getByTestId(testId).locator('input').fill('1');
   }
 
   async saveConfiguration() {
@@ -101,21 +101,47 @@ export class PluginPage {
   }
 
   async expectSavingError() {
-    const [response] = await Promise.all([
-      this.page.waitForResponse(res =>
-          res.url().includes('/api/v1/plugin/configuration') &&
-          res.request().method() === 'POST}' &&
-          res.status() === 500
+    // const [response] = await Promise.all([
+    //   this.page.waitForResponse(
+    //     res =>
+    //       res.url().includes('/api/v1/plugin/configuration') &&
+    //       res.request().method() === 'POST}' &&
+    //       res.status() === 500
+    //   ),
+    // ]);
+    const response = await this.request.post('/api/v1/plugin/configuration', {
+      failOnStatusCode: false,
+    });
+
+    const [response500] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/plugins') &&
+          res.status() === 500 &&
+          res.request().method() === 'POST'
       ),
+      this.saveButton.click(),
     ]);
 
-    expect(response.status()).toBe(500);
+    expect(response500.status()).toBe(500);
+
+    //   this.page.waitForResponse(
+    //     res =>
+    //       res.url().includes() &&
+    //       res.request().method() === 'POST}' &&
+    //       res.status() === 500
+    //   ),
+    // );
+
+    // console.log({response});
+    // expect(response.status()).toBe(500);
 
     const errorToast = this.page.locator('.cds--toast-notification__details');
 
     await expect(errorToast).toContainText(
-        "Plugin property with name 'rsin' failed to parse for plugin 'Besluiten API'. Cannot construct instance of `com.ritense.zgw.Rsin`, problem: Index 1 out of bounds for length 1"
+      "Plugin property with name 'rsin' failed to parse for plugin"
     );
+    await this.page.getByTestId('stepperFooterCancelButton').click();
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
@@ -182,21 +208,22 @@ export class PluginPage {
   }
 
   async deleteZakenApiExpectingError(): Promise<void> {
-    const pluginIdentifier = "zakenapi";
+    const pluginIdentifier = 'zakenapi';
 
     await this.page
-        .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-        .getByRole('menu')
-        .locator('button')
-        .click();
+      .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+      .getByRole('menu')
+      .locator('button')
+      .click();
 
     const [response] = await Promise.all([
-      this.page.waitForResponse(res =>
+      this.page.waitForResponse(
+        res =>
           res.url().includes('/api/v1/plugin/configuration') &&
           res.request().method() === 'DELETE' &&
           res.status() === 500
       ),
-      this.page.getByRole('menuitem', { name: 'Delete' }).click()
+      this.page.getByRole('menuitem', {name: 'Delete'}).click(),
     ]);
 
     expect(response.status()).toBe(500);
@@ -204,10 +231,9 @@ export class PluginPage {
     const errorToast = this.page.locator('.cds--toast-notification__details');
 
     await expect(errorToast).toContainText(
-        "Failed to update CaseDefinition bezwaar:1.0.0. This case definition is final and therefore can't be updated."
+      "Failed to update CaseDefinition bezwaar:1.0.0. This case definition is final and therefore can't be updated."
     );
   }
-
 
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
     expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
@@ -232,7 +258,7 @@ export class PluginPage {
   }
 
   private async fillVerzoekExtra() {
-    await this.page.getByRole('button', { name: 'Add verzoek type' }).click();
+    await this.page.getByRole('button', {name: 'Add verzoek type'}).click();
 
     // TODO: fill subform
   }

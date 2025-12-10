@@ -33,7 +33,12 @@
 </div>
 
 <ng-template #cancelButton let-disabled="disabled">
-  <button cdsButton="secondary" (click)="cancel()" [disabled]="disabled">
+  <button
+    cdsButton="secondary"
+    data-test-id="stepperFooterCancelButton"
+    (click)="cancel()"
+    [disabled]="disabled"
+  >
     {{
       cancelButtonTranslationKey
         ? (cancelButtonTranslationKey | translate)
