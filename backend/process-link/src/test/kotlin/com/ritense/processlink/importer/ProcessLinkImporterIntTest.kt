@@ -22,6 +22,7 @@ import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
@@ -48,7 +49,8 @@ class ProcessLinkImporterIntTest @Autowired constructor(
     fun `should deploy processLinks`() {
         processLinkImporter.import(ImportRequest(
             "/process-link/test-importer-process.process-link.json",
-            JSON.toByteArray(Charsets.UTF_8)
+            JSON.toByteArray(Charsets.UTF_8),
+            CaseDefinitionId.of("autodeploy", "1.0.0")
         ))
 
         val processDefinition = getLatestProcessDefinition()

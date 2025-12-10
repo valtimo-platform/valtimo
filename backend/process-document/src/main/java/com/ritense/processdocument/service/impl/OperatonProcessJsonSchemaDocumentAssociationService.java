@@ -17,6 +17,8 @@
 package com.ritense.processdocument.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byCaseDefinitionId;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
@@ -135,7 +137,10 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
 
                 process.setActive(operatonProcess.getEndTime() == null);
                 var operatonProcessDefinition = runWithoutAuthorization(() ->
-                        repositoryService.findLatestProcessDefinition(operatonProcess.getProcessDefinitionKey())
+                        repositoryService.findProcessDefinition(
+                            byKey(operatonProcess.getProcessDefinitionKey())
+                                .and(byCaseDefinitionId(document.definitionId().caseDefinitionId()))
+                        )
                 );
                 var startDateTime = LocalDateTime.ofInstant(
                     operatonProcess.getStartTime().toInstant(),
