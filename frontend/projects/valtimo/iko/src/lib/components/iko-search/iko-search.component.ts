@@ -27,6 +27,7 @@ import {
   SelectModule,
   ParagraphModule,
   InputLabelModule,
+  DateTimePickerModule
 } from '@valtimo/components';
 import {
   ButtonModule as CarbonButtonModule,
@@ -71,6 +72,7 @@ import {validateBsn} from '@valtimo/shared';
     ParagraphModule,
     InputLabelModule,
     TimePickerModule,
+    DateTimePickerModule
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {

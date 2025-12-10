@@ -50,6 +50,7 @@
 }
 
 <ng-template #searchFieldTemplate let-searchField="searchField">
+  <v-input-label *ngIf="searchField.title" [title]="searchField.title"></v-input-label>
   <ng-container
     *ngTemplateOutlet="searchFieldTemplateText; context: {searchField: searchField}"
   ></ng-container>
@@ -102,7 +103,6 @@
 </ng-template>
 
 <ng-template #searchFieldTemplateText let-searchField="searchField">
-  <v-input-label [title]="searchField.title"></v-input-label>
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
     [placeholder]="'searchFields.textPlaceholder' | translate"
@@ -274,11 +274,45 @@
 
 <ng-template #searchFieldTemplateDateTime let-searchField="searchField">
   <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'">
+    <valtimo-date-time-picker
+      [title]="searchField.title"
+      [placeholder]="'searchFields.datePlaceholder' | translate"
+      [enableTime]="true"
+      [fullWidth]="true"
+      [defaultDate]="formValues[searchField.key] ?? ''"
+      [showFieldLabel]="false"
+      (valueChange)="formValues[searchField.key] = $event"
+    >
+    </valtimo-date-time-picker>
   </ng-container>
 </ng-template>
 
 <ng-template #searchFieldTemplateDateTimeRange let-searchField="searchField">
   <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'range'">
+    <v-form class="multiple-search-fields">
+      <valtimo-date-time-picker
+        [title]="searchField.title"
+        [placeholder]="'searchFields.datePlaceholder' | translate"
+        [enableTime]="true"
+        [fullWidth]="true"
+        [defaultDate]="formValues[searchField.key + '_start'] ?? ''"
+        [showFieldLabel]="false"
+        (valueChange)="formValues[searchField.key + '_start'] = $event"
+      >
+      </valtimo-date-time-picker>
+
+      <ng-container *ngTemplateOutlet="toText"></ng-container>
+
+      <valtimo-date-time-picker
+        [placeholder]="'searchFields.datePlaceholder' | translate"
+        [enableTime]="true"
+        [fullWidth]="true"
+        [defaultDate]="formValues[searchField.key + '_end'] ?? ''"
+        [showFieldLabel]="false"
+        (valueChange)="formValues[searchField.key + '_end'] = $event"
+      >
+      </valtimo-date-time-picker>
+    </v-form>
   </ng-container>
 </ng-template>
 
