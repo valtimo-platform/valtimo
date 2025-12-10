@@ -65,7 +65,8 @@
       (click)="onNextButtonClick()"
     >
       {{
-        'interface.' + ($currentStepIndex() === $numberOfSteps() - 1 ? 'save' : 'next') | translate
+        'interface.' + ($currentStepIndex() === (numberOfSteps$ | async) - 1 ? 'save' : 'next')
+          | translate
       }}
     </button>
   </cds-modal-footer>
