@@ -17,11 +17,11 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.stereotype.Component
