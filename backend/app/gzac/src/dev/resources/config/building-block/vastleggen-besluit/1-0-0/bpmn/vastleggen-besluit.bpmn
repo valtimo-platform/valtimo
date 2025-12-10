@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0md492d" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_0n0mv3o">
+    <bpmn:participant id="VastleggenBesluitParticipant" name="Vastleggen besluit" processRef="vastleggen-besluit" />
+  </bpmn:collaboration>
+  <bpmn:process id="vastleggen-besluit" name="Vastleggen besluit" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="VastleggenBesluitStartStartEvent" name="Vastleggen besluit start">
+      <bpmn:outgoing>Flow_0e638zj</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_1unji4r">
+      <bpmn:incoming>Flow_07lkcbm</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="GetBesluittypeURLTask" name="Get besluittype URL" camunda:asyncAfter="true" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0e638zj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0j64qfr</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CreateBesluitTask" name="Create besluit" camunda:asyncAfter="true" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0j64qfr</bpmn:incoming>
+      <bpmn:outgoing>Flow_0b1fe00</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="LinkDocumentAanBesluitTask" name="Link document aan besluit" camunda:asyncAfter="true" camunda:expression="${true}">
+      <bpmn:incoming>Flow_0b1fe00</bpmn:incoming>
+      <bpmn:outgoing>Flow_07lkcbm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0e638zj" sourceRef="VastleggenBesluitStartStartEvent" targetRef="GetBesluittypeURLTask" />
+    <bpmn:sequenceFlow id="Flow_07lkcbm" sourceRef="LinkDocumentAanBesluitTask" targetRef="Event_1unji4r" />
+    <bpmn:sequenceFlow id="Flow_0j64qfr" sourceRef="GetBesluittypeURLTask" targetRef="CreateBesluitTask" />
+    <bpmn:sequenceFlow id="Flow_0b1fe00" sourceRef="CreateBesluitTask" targetRef="LinkDocumentAanBesluitTask" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0n0mv3o">
+      <bpmndi:BPMNShape id="Participant_1114gka_di" bpmnElement="VastleggenBesluitParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="730" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="VastleggenBesluitStartStartEvent">
+        <dc:Bounds x="239" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="212" y="202" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1unji4r_di" bpmnElement="Event_1unji4r">
+        <dc:Bounds x="812" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0asrtq8_di" bpmnElement="GetBesluittypeURLTask">
+        <dc:Bounds x="330" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_18ibfyq" bpmnElement="CreateBesluitTask">
+        <dc:Bounds x="490" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0jo2daf" bpmnElement="LinkDocumentAanBesluitTask">
+        <dc:Bounds x="650" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0e638zj_di" bpmnElement="Flow_0e638zj">
+        <di:waypoint x="275" y="177" />
+        <di:waypoint x="330" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j64qfr_di" bpmnElement="Flow_0j64qfr">
+        <di:waypoint x="430" y="177" />
+        <di:waypoint x="490" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0b1fe00_di" bpmnElement="Flow_0b1fe00">
+        <di:waypoint x="590" y="177" />
+        <di:waypoint x="650" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07lkcbm_di" bpmnElement="Flow_07lkcbm">
+        <di:waypoint x="750" y="177" />
+        <di:waypoint x="812" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
