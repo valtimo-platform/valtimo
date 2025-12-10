@@ -19,13 +19,13 @@
   These retry cycles can be customized in application.yml.
   In addition, custom cycles can be defined through Spring Boot configuration files.
   
-  See more about it [here](../../features/process/retry-cycle.md).
+  See more about it [here](../../../features/process/retry-cycle.md).
 
 * **Widget compact mode**
 
   During the configuration of the widgets, now a `Density` step appears under certain conditions.
   
-  See more about it [here](../../features/case/case-detail/tabs/widgets.md).
+  See more about it [here](../../../features/case/case-detail/tabs/widgets.md).
 
 ## Bugfixes
 
