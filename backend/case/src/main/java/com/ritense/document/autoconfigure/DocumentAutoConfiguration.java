@@ -31,6 +31,7 @@ import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
+import com.ritense.document.service.DefaultCaseDocumentResolver;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
@@ -55,6 +56,8 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.contract.document.SolutionModuleCaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -107,6 +110,15 @@ public class DocumentAutoConfiguration {
             caseTagService,
             entityManager
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDocumentResolver.class)
+    public CaseDocumentResolver caseDocumentResolver(
+        final DocumentService documentService,
+        final List<SolutionModuleCaseDocumentResolver> solutionModuleCaseDocumentResolvers
+    ) {
+        return new DefaultCaseDocumentResolver(documentService, solutionModuleCaseDocumentResolvers);
     }
 
     @Bean

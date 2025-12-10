@@ -27,6 +27,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
@@ -167,6 +168,14 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             documentService
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseDocumentResolver::class)
+    fun buildingBlockCaseDocumentResolver(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+    ): BuildingBlockCaseDocumentResolver {
+        return BuildingBlockCaseDocumentResolver(buildingBlockInstanceRepository)
     }
 
     @Bean
