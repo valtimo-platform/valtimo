@@ -15,19 +15,21 @@ This setting is particularly effective in environments that integrate case and p
 * Select the `Case detail` tab
 * Select the `Statuses` sub-tab
 
-<figure><img src="../../../.gitbook/assets/case-detail-statuses.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/case-detail-statuses-list.png" alt=""><figcaption></figcaption></figure>
 
 A status can be added with the **Add status** button. A modal will be shown with the configuration options.
 
-<figure><img src="../../../.gitbook/assets/image (47).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/case-detail-statuses-create.png" alt=""><figcaption></figcaption></figure>
 
 * **Name**\
   \_Used as a label in the case summary and case list, the name is presented in the UI.\_
 * **Key**\
   \_The identifier of the status, this must be a unique value within the scope of the case it is added to. A key based on the name is generated automatically but can be overwritten via the pencil button.\_
+* **Retention date**\
+  When the **retention period** is set to 0 or higher, the **retention date** is calculated as soon as this internal state is applied to a case. The case will be removed once the retention period has expired.<br>**Note:** If an internal state without a retention period is set, the retention date of the case will not be calculated or cleared when set.
 * **Color**\
-  \_Statuses are are displayed as a badge in the case details and list screen UI.\
-  &#xNAN;_\_This badge will be displayed in the selected color._\
+  Statuses are are displayed as a badge in the case details and list screen UI.\
+  This badge will be displayed in the selected color._\
   \
   **List of available status colors:**
   * Red (`RED`)
@@ -64,22 +66,22 @@ In case `internal-case-status.json` files are different between versions in your
 [
   {
     "key" : "awaiting-processing",
-    "caseDefinitionName" : "example-case",
     "title" : "Awaiting processing",
+    "retentionPeriod": -1,
     "visibleInCaseListByDefault" : true,
     "color" : "BLUE"
   },
   {
     "key" : "processing-order",
-    "caseDefinitionName" : "example-case",
     "title" : "Processing order",
+    "retentionPeriod": -1,
     "visibleInCaseListByDefault" : true,
     "color" : "PURPLE"
   },
   {
     "key" : "shipped",
-    "caseDefinitionName" : "example-case",
     "title" : "Shipped",
+    "retentionPeriod": 365,
     "visibleInCaseListByDefault" : true,
     "color" : "GREEN"
   }
