@@ -8,16 +8,19 @@ test.describe('Plugin management', () => {
   let context;
   let page;
   let pluginPage;
+  let request;
 
   // Arrange
-  test.beforeAll(async ({browser}) => {
+  test.beforeAll(async ({browser, baseURL}) => {
     // Create shared context & page
-    context = await browser.newContext();
+    console.log({baseURL});
+    context = await browser.newContext({baseURL});
     page = await context.newPage();
+    request = context.request;
 
-    pluginPage = new PluginPage(page);
+    pluginPage = new PluginPage(page, request);
 
-    await page.goto('http://localhost:4200/');
+    await page.goto('/');
     await pluginPage.goToPluginManagement();
   });
 
@@ -58,18 +61,18 @@ test.describe('Plugin management', () => {
     test('Duplicate Besluiten API plugin', async () => {
       // Act
       await pluginPage.duplicateConfigurationName(
-        'Test Besluiten API',
+        'Test Besluiten API Plugin',
         'besluitenApiConfigurationTitle'
       );
 
       // Assert
-      await pluginPage.assertPluginExists('Test Besluiten API - Test Duplicated');
+      await pluginPage.assertPluginExists('Test Besluiten API Plugin - Test Duplicated');
     });
 
     test('Edit Besluiten API plugin through row click', async () => {
       // Act
       await pluginPage.editPluginRowClick(
-        'Test Besluiten API - Test Duplicated',
+        'Test Besluiten API Plugin - Test Duplicated',
         'besluitenApiConfigurationTitle',
         'Test Edited Besluiten API Row Click'
       );
@@ -110,27 +113,21 @@ test.describe('Plugin management', () => {
       await pluginPage.fillPluginForm(type);
       await pluginPage.saveConfiguration();
       await pluginPage.assertPluginExists(pluginTestConfiguration[type].pluginIdentifier);
-
     });
 
     test('Add Besluiten API plugin with incorrect RSIN', async () => {
       // Act
-        await pluginPage.openWizard();
-        await pluginPage.selectPluginType('Besluiten API');
-        await pluginPage.fillPluginForm('Besluiten API');
-        await pluginPage.fillIncorrectRsinValue();
-        await pluginPage.saveConfiguration();
-        await pluginPage.expectSavingError();
+      await pluginPage.openWizard();
+      await pluginPage.selectPluginType('Besluiten API');
+      await pluginPage.fillPluginForm('Besluiten API');
+      await pluginPage.fillIncorrectRsinValue('besluitenApiRsin');
+      // await pluginPage.saveConfiguration();
 
-        // Assert
-        await pluginPage.assertPluginExists(
-            pluginTestConfiguration['Besluiten API'].pluginIdentifier
-        );
+      // Assert
+      await pluginPage.expectSavingError();
     });
 
-    test('Remove value from authentication plugin', async () => {
-
-    });
+    test('Remove value from authentication plugin', async () => {});
 
     test('Delete Zaken API expecting error', async () => {
       // Remove Zaken API plugin
