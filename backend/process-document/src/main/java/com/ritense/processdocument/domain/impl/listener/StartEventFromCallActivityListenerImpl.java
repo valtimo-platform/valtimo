@@ -16,6 +16,8 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
+import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_INSTANCE_ID_VARIABLE;
+
 import com.ritense.authorization.annotation.RunWithoutAuthorization;
 import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
@@ -55,7 +57,8 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
     }
 
     private Document.Id getDocumentId(DelegateExecution execution) {
-        if (execution.getSuperExecution() != null) {
+        DelegateExecution parentExecution = execution.getSuperExecution();
+        if (parentExecution != null && !parentExecution.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
             var processId = new OperatonProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
             var documentId = processDocumentService.getDocumentId(processId, execution);
             if (documentId != null) {
