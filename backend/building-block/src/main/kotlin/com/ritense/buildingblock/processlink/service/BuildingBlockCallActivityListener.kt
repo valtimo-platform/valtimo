@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
@@ -52,14 +53,65 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
-            val buildingBlockInstance = this.createBuildingBlock(it, UUID.fromString(execution.businessKey))
-            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID, buildingBlockInstance.documentId.toString())
+            val buildingBlockInstance = this.createBuildingBlock(
+                it,
+                UUID.fromString(execution.businessKey),
+                activityId
+            )
+            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
+    }
+
+    @EventListener(
+        condition = """#execution.bpmnModelElementInstance != null
+            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
+    )
+    fun onCallActivityEnd(execution: DelegateExecution) {
+        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE) as String
+
+        val buildingBlockDocumentId = try {
+            UUID.fromString(buildingBlockVariableString)
+        } catch(_: IllegalArgumentException) {
+            throw IllegalStateException("Execution variable '$BUILDING_BLOCK_INSTANCE_ID_VARIABLE' should be a UUID " +
+                "referencing the building block document, but was '$buildingBlockVariableString'")
+        }
+
+        val buildingBlockInstance = buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
+            ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+
+        val processLinks = processLinkService.getProcessLinks(
+            execution.processDefinitionId,
+            buildingBlockInstance.activityId
+        ).filterIsInstance<BuildingBlockProcessLink>()
+
+        val processLink = processLinks.singleOrNull()
+            ?: throw IllegalStateException(
+                "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
+                    "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
+            )
+
+        val endSyncOutputMappings = processLink.outputMappings.filter {
+            it.syncTiming == BuildingBlockSyncTiming.END
+        }
+        if (endSyncOutputMappings.isEmpty()) return
+
+        val resolvedValues = valueResolverService.resolveValues(
+            buildingBlockInstance.documentId.toString(),
+            endSyncOutputMappings.map { "doc:/${it.source}" }
+        )
+
+        val valuesToHandle = endSyncOutputMappings.associate { mapping ->
+            mapping.target to resolvedValues["doc:/${mapping.source}"]
+        }
+
+        valueResolverService.handleValues(buildingBlockInstance.caseDocumentId, valuesToHandle)
     }
 
     private fun createBuildingBlock(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID
+        caseDocumentId: UUID,
+        activityId: String
     ): BuildingBlockInstance {
         val documentRequest = NewDocumentRequest(
             null,
@@ -70,7 +122,11 @@ class BuildingBlockCallActivityListener(
             buildDocumentContent(buildingBlockProcessLink, caseDocumentId),
         )
 
-        return buidingBlockInstanceService.create(documentRequest, caseDocumentId)
+        return buidingBlockInstanceService.create(
+            documentRequest,
+            caseDocumentId,
+            activityId
+        )
     }
 
     private fun buildDocumentContent(
@@ -92,6 +148,6 @@ class BuildingBlockCallActivityListener(
     }
 
     companion object {
-        const val BUILDING_BLOCK_INSTANCE_ID = "buildingBlockInstanceId"
+        const val BUILDING_BLOCK_INSTANCE_ID_VARIABLE = "buildingBlockInstanceId"
     }
 }

@@ -294,8 +294,14 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockPluginConfigurationResolver::class)
-    fun buildingBlockPluginConfigurationResolver(): BuildingBlockPluginConfigurationResolver =
-        DefaultBuildingBlockPluginConfigurationResolver()
+    fun buildingBlockPluginConfigurationResolver(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        @Lazy processLinkService: ProcessLinkService,
+    ): BuildingBlockPluginConfigurationResolver =
+        DefaultBuildingBlockPluginConfigurationResolver(
+            buildingBlockInstanceService,
+            processLinkService
+        )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)

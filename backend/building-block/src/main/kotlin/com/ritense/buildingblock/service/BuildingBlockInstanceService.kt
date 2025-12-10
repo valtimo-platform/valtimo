@@ -36,7 +36,11 @@ class BuildingBlockInstanceService(
     private val documentService: DocumentService
 ) {
     @Transactional
-    fun create(newDocumentRequest: NewDocumentRequest, caseDocumentId: UUID): BuildingBlockInstance {
+    fun create(
+        newDocumentRequest: NewDocumentRequest,
+        caseDocumentId: UUID,
+        activityId: String
+    ): BuildingBlockInstance {
         // TODO: add validation building block definition has a main process definition, otherwise it is not valid
         val definitionId = BuildingBlockDefinitionId.of(
             newDocumentRequest.buildingBlockDefinitionKey(),
@@ -62,6 +66,7 @@ class BuildingBlockInstanceService(
             BuildingBlockInstance(
                 documentId = document.id().getId(),
                 caseDocumentId = caseDocumentId,
+                activityId = activityId,
                 definition = definition
             )
         )
@@ -70,6 +75,11 @@ class BuildingBlockInstanceService(
     @Transactional(readOnly = true)
     fun get(id: UUID): BuildingBlockInstance? {
         return buildingBlockInstanceRepository.findByIdOrNull(id)
+    }
+
+    @Transactional(readOnly = true)
+    fun getByDocumentId(documentId: UUID): BuildingBlockInstance? {
+        return buildingBlockInstanceRepository.findByDocumentId(documentId)
     }
 
     @Transactional(readOnly = true)
