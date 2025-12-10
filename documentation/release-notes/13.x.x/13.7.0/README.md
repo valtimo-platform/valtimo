@@ -21,6 +21,12 @@
   
   See more about it [here](../../features/process/retry-cycle.md).
 
+* **Widget compact mode**
+
+  During the configuration of the widgets, now a `Density` step appears under certain conditions.
+  
+  See more about it [here](../../features/case/case-detail/tabs/widgets.md).
+
 ## Bugfixes
 
 * Resolved issue where there was no option to use current date/time in the set-zaakstatus action of the zaken-api-plugin.
