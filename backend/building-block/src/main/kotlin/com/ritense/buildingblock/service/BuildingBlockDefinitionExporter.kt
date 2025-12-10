@@ -15,11 +15,9 @@
  */
 package com.ritense.buildingblock.service
 
-import CaseDefinitionDto
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
-import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
@@ -27,9 +25,7 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
-import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 
@@ -70,7 +66,7 @@ class BuildingBlockDefinitionExporter(
 
     }
 
-    private fun createDocumentDefinitionExportRequest(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDocumentDefinitionExportRequest>  {
+    private fun createDocumentDefinitionExportRequest(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDocumentDefinitionExportRequest> {
         val documentDefinition = documentDefinitionService.findBySolutionModuleId(buildingBlockDefinitionId)
         return if (documentDefinition.isPresent) {
             setOf(
@@ -85,6 +81,7 @@ class BuildingBlockDefinitionExporter(
     }
 
     companion object {
-        private const val PATH = "config/building-block/%s/%s/building-block/definition/%s.building-block-definition.json"
+        private const val PATH =
+            "config/building-block/%s/%s/building-block/definition/%s.building-block-definition.json"
     }
 }
