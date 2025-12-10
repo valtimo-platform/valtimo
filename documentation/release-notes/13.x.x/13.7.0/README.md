@@ -1,7 +1,7 @@
 # 13.7.0
 
 {% hint style="info" %}
-**Release date Day-Month - Year**
+**Release date 10-12-2025**
 {% endhint %}
 
 ## New Features
@@ -20,13 +20,6 @@
   In addition, custom cycles can be defined through Spring Boot configuration files.
   
   See more about it [here](../../features/process/retry-cycle.md).
-
-## Enhancement
-
-* **Enhancement title**
-
-  Enhancement description
-
 
 ## Bugfixes
 
