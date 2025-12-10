@@ -1,7 +1,7 @@
 # 13.7.0
 
 {% hint style="info" %}
-**Release date Day-Month - Year**
+**Release date 10-12-2025**
 {% endhint %}
 
 ## New Features
@@ -33,13 +33,8 @@ Property** `targetKey`. The supported `targetKey` values:
 Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
 will still result in an error.
 
-## Enhancement
-
-* **Enhancement title**
-
-  Enhancement description
-
-
 ## Bugfixes
 
 * Resolved issue where there was no option to use current date/time in the set-zaakstatus action of the zaken-api-plugin.
+* Resolved issue where the plugin modal form remained disabled after a failed plugin creation.
+* Resolved issue where the Auto Key Input component did not correctly reset its value or the manual edit status.
