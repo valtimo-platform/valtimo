@@ -35,12 +35,12 @@ class IkoWidgetsExporterIntTest @Autowired constructor(
 
     @Test
     fun `should export ikoWidgets`(): Unit = runWithoutAuthorization {
-        val ikoDataAggregateKey = "klant"
+        val ikoViewKey = "klant"
         val ikoTabKey = "general"
-        val request = IkoWidgetsExportRequest(ikoDataAggregateKey, ikoTabKey)
+        val request = IkoWidgetsExportRequest(ikoViewKey, ikoTabKey)
 
         val exportFiles = ikoWidgetsExporter.export(request).exportFiles
-        val expectedPath = IkoWidgetsExporter.PATH.format(ikoDataAggregateKey, ikoTabKey)
+        val expectedPath = IkoWidgetsExporter.PATH.format(ikoViewKey, ikoTabKey)
         val exportedFile = exportFiles.singleOrNull { it.path == expectedPath }
             ?: error("Exported file not found for path: $expectedPath")
 

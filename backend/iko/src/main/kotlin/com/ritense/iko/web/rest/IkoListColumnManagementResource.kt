@@ -41,74 +41,74 @@ class IkoListColumnManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/column")
     fun getIkoListColumnsForManagement(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
     ): ResponseEntity<List<ListColumnDto>> {
-        val ikoListColumns = service.findAllColumnsByIkoDataAggregateKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+        val ikoListColumns = service.findAllColumnsByIkoViewKey(
+            ikoViewKey = ikoViewKey,
         )
         return ResponseEntity.ok(ikoListColumns.map { ListColumnDto.from(it) })
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column/{key}")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun getIkoListColumn(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
     ): ResponseEntity<ListColumnDto> {
-        val ikoListColumn = service.getByKey(ikoDataAggregateKey, key)
+        val ikoListColumn = service.getByKey(ikoViewKey, key)
         return ResponseEntity.ok(ListColumnDto.from(ikoListColumn))
     }
 
     @RunWithoutAuthorization
-    @PostMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column/{key}")
+    @PostMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun createIkoListColumn(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoListColumnCreateRequest
     ): ResponseEntity<ListColumnDto> {
-        val existingIkoListColumns = service.findAllColumnsByIkoDataAggregateKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+        val existingIkoListColumns = service.findAllColumnsByIkoViewKey(
+            ikoViewKey = ikoViewKey,
         )
         val ikoListColumn = service.create(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            listColumn = request.toEntity(ikoDataAggregateKey, existingIkoListColumns.maxOfOrNull { it.order + 1 } ?: 0)
+            ikoViewKey = ikoViewKey,
+            listColumn = request.toEntity(ikoViewKey, existingIkoListColumns.maxOfOrNull { it.order + 1 } ?: 0)
         )
         return ResponseEntity.ok(ListColumnDto.from(ikoListColumn))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column/{key}")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun updateIkoListColumn(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoListColumnUpdateRequest,
     ): ResponseEntity<ListColumnDto> {
         require(request.key == key)
-        val existingIkoListColumn = service.findByKey(ikoDataAggregateKey, key)
+        val existingIkoListColumn = service.findByKey(ikoViewKey, key)
         requireNotNull(existingIkoListColumn)
         val ikoListColumn = service.update(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            listColumn = request.toEntity(existingIkoListColumn.id, ikoDataAggregateKey, existingIkoListColumn.order),
+            ikoViewKey = ikoViewKey,
+            listColumn = request.toEntity(existingIkoListColumn.id, ikoViewKey, existingIkoListColumn.order),
         )
         return ResponseEntity.ok(ListColumnDto.from(ikoListColumn))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/column")
     fun updateIkoListColumnsOrder(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @RequestBody request: List<IkoListColumnUpdateRequest>,
     ): ResponseEntity<List<ListColumnDto>> {
-        val existingIkoListColumns = service.findAllColumnsByIkoDataAggregateKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+        val existingIkoListColumns = service.findAllColumnsByIkoViewKey(
+            ikoViewKey = ikoViewKey,
         )
         require(request.map { it.key }.toSet() == existingIkoListColumns.map { it.key }.toSet())
         val ikoListColumns = request.mapIndexed { index, updatedListColumn ->
             val existingListColumn = existingIkoListColumns.first { it.key == updatedListColumn.key }
             service.update(
-                ikoDataAggregateKey = ikoDataAggregateKey,
+                ikoViewKey = ikoViewKey,
                 listColumn = existingListColumn.copy(order = index),
             )
         }
@@ -116,12 +116,12 @@ class IkoListColumnManagementResource(
     }
 
     @RunWithoutAuthorization
-    @DeleteMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/column/{key}")
+    @DeleteMapping("/v1/iko-view/{ikoViewKey}/column/{key}")
     fun deleteIkoListColumn(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
     ): ResponseEntity<ListColumnDto> {
-        service.deleteByKey(ikoDataAggregateKey, key)
+        service.deleteByKey(ikoViewKey, key)
         return ResponseEntity.noContent().build()
     }
 }

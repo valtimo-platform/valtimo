@@ -87,6 +87,7 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
             operatonProcessService.startProcess(
                 processDefinition.key,
                 UUID.randomUUID().toString(),
+                caseDefinitionId,
                 mapOf()
             )
         }
@@ -117,6 +118,7 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
             operatonProcessService.startProcess(
                 processDefinition.key,
                 UUID.randomUUID().toString(),
+                caseDefinitionId,
                 mapOf()
             )
         }
