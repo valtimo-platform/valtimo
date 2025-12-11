@@ -939,7 +939,11 @@
         "percent": "Percentage",
         "link": "Link"
       },
-      "custom": {"selectComponent": "Angular component", "placeholder": "Select a component"},
+      "custom": {
+        "selectComponent": "Angular component",
+        "placeholder": "Select a component",
+        "addCustomKeyValue": "Add custom key value"
+      },
       "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
       "table": {
         "addColumn": "Add column",
