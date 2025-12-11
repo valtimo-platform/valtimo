@@ -48,7 +48,6 @@ export const pluginTestConfiguration = {
     ],
     pluginIdentifier: 'Test Besluiten API Plugin',
   },
-
   'Catalogi API': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
@@ -62,11 +61,32 @@ export const pluginTestConfiguration = {
     ],
     pluginIdentifier: 'Test Catalogi API',
   },
+  'Catalogi API Same ID': {
+    fieldMap: [
+      {
+        testId: 'pluginConfigurationId',
+        type: 'input',
+        value: '72196b0c-90da-4df2-84d7-42d419170edc',
+      },
+      {testId: 'catalogiApiConfigurationTitle', type: 'input', value: 'Test Catalogi API Plugin'},
+      {testId: 'catalogiApiUrl', type: 'input', value: 'http://localhost:8001/catalogi/api/v1/'},
+      {
+        testId: 'catalogApiAuthenticationPluginConfiguration',
+        type: 'select',
+        value: 'OpenZaak Authentication - OpenZaak',
+      },
+    ],
+    pluginIdentifier: 'Test Catalogi API',
+  },
 
   'Documenten API': {
     fieldMap: [
-      {testId: 'pluginConfigurationId', type: 'input',  value: uuidv4()},
-      {testId: 'documentenApiConfigurationTitle', type: 'input', value: 'Test Documenten API Plugin'},
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {
+        testId: 'documentenApiConfigurationTitle',
+        type: 'input',
+        value: 'Test Documenten API Plugin',
+      },
       {
         testId: 'documentenApiUrl',
         type: 'input',
@@ -90,8 +110,16 @@ export const pluginTestConfiguration = {
   'Klantinteracties API': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'klantInteractiesApiConfigurationTitle', type: 'input', value: 'Test Klantinteracties API Plugin'},
-      {testId: 'klantInteractiesApiUrl', type: 'input', value: 'http://localhost:8001/klantinteracties/api/v1'},
+      {
+        testId: 'klantInteractiesApiConfigurationTitle',
+        type: 'input',
+        value: 'Test Klantinteracties API Plugin',
+      },
+      {
+        testId: 'klantInteractiesApiUrl',
+        type: 'input',
+        value: 'http://localhost:8001/klantinteracties/api/v1',
+      },
       {
         testId: 'klantInteractiesApiAuthenticationPluginConfiguration',
         type: 'select',
@@ -104,9 +132,17 @@ export const pluginTestConfiguration = {
   'Notificaties API': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'notificatiesApiConfigurationTitle', type: 'input', value: 'Test Notificaties API Plugin'},
+      {
+        testId: 'notificatiesApiConfigurationTitle',
+        type: 'input',
+        value: 'Test Notificaties API Plugin',
+      },
       {testId: 'notificatiesApiUrl', type: 'input', value: 'http://localhost:8002/api/v1/'},
-      {testId: 'notificatiesApiCallbackUrl', type: 'input', value: 'http://localhost:8080/api/v1/notificatiesapi/callback'},
+      {
+        testId: 'notificatiesApiCallbackUrl',
+        type: 'input',
+        value: 'http://localhost:8080/api/v1/notificatiesapi/callback',
+      },
       {
         testId: 'notificatiesApiAuthenticationPluginConfiguration',
         type: 'select',
@@ -116,10 +152,14 @@ export const pluginTestConfiguration = {
     pluginIdentifier: 'Test Notificaties API',
   },
 
-  'OpenNotificaties': {
+  OpenNotificaties: {
     fieldMap: [
-      {testId: 'pluginConfigurationId', type: 'input',value: uuidv4()},
-      {testId: 'openNotificatiesConfigurationTitle', type: 'input', value: 'Test OpenNotificaties Plugin'},
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {
+        testId: 'openNotificatiesConfigurationTitle',
+        type: 'input',
+        value: 'Test OpenNotificaties Plugin',
+      },
       {testId: 'openNotificatiesClientId', type: 'input', value: 'valtimo_client'},
       {testId: 'openNotificatiesClientSecret', type: 'input', value: '123456789'},
     ],
@@ -142,8 +182,12 @@ export const pluginTestConfiguration = {
 
   'Object token authentication': {
     fieldMap: [
-      {testId: 'pluginConfigurationId', type: 'input',value: uuidv4()},
-      {testId: 'objectTokenAuthenticationConfigurationTitle', type: 'input', value: 'Test Object token authentication Plugin'},
+      {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
+      {
+        testId: 'objectTokenAuthenticationConfigurationTitle',
+        type: 'input',
+        value: 'Test Object token authentication Plugin',
+      },
       {testId: 'objectTokenAuthenticationToken', type: 'input', value: '593028174662901385427'},
     ],
     pluginIdentifier: 'Test Object token authentication',
@@ -152,7 +196,11 @@ export const pluginTestConfiguration = {
   'Objecttypen API': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'objecttypenApiConfigurationTitle', type: 'input', value: 'Test Objecttypen API Plugin'},
+      {
+        testId: 'objecttypenApiConfigurationTitle',
+        type: 'input',
+        value: 'Test Objecttypen API Plugin',
+      },
       {testId: 'objecttypenApiUrl', type: 'input', value: 'http://localhost:8002/api/v1/'},
       {
         testId: 'objecttypenApiAuthenticationPluginConfiguration',
@@ -166,13 +214,17 @@ export const pluginTestConfiguration = {
   'OpenKlant token authentication': {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'openKlantTokenAuthenticationConfigurationTitle', type: 'input', value: 'Test OpenKlant token authentication Plugin'},
+      {
+        testId: 'openKlantTokenAuthenticationConfigurationTitle',
+        type: 'input',
+        value: 'Test OpenKlant token authentication Plugin',
+      },
       {testId: 'openKlantTokenAuthenticationToken', type: 'input', value: '804193275660982431517'},
     ],
     pluginIdentifier: 'Test OpenKlant token authentication',
   },
 
-  'OpenZaak': {
+  OpenZaak: {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
       {testId: 'openZaakConfigurationTitle', type: 'input', value: 'Test OpenZaak Plugin'},
@@ -182,7 +234,7 @@ export const pluginTestConfiguration = {
     pluginIdentifier: 'Test OpenZaak',
   },
 
-  'Portaaltaak': {
+  Portaaltaak: {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
       {testId: 'portaaltaakConfigurationTitle', type: 'input', value: 'Test Portaaltaak Plugin'},
@@ -205,10 +257,14 @@ export const pluginTestConfiguration = {
     pluginIdentifier: 'Test Portal task',
   },
 
-  'SmartDocuments': {
+  SmartDocuments: {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
-      {testId: 'smartDocumentsConfigurationTitle', type: 'input', value: 'Test SmartDocuments Plugin'},
+      {
+        testId: 'smartDocumentsConfigurationTitle',
+        type: 'input',
+        value: 'Test SmartDocuments Plugin',
+      },
       {testId: 'smartDocumentsUrl', type: 'input', value: 'http://localhost:8002'},
       {testId: 'smartDocumentsUsername', type: 'input', value: 'valtimo_client'},
       {testId: 'smartDocumentsPassword', type: 'input', value: '705913488227640159382'},
@@ -216,7 +272,7 @@ export const pluginTestConfiguration = {
     pluginIdentifier: 'Test SmartDocuments',
   },
 
-  'Verzoek': {
+  Verzoek: {
     fieldMap: [
       {testId: 'pluginConfigurationId', type: 'input', value: uuidv4()},
       {testId: 'verzoekConfigurationTitle', type: 'input', value: 'Test Verzoek Plugin'},
