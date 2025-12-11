@@ -16,3 +16,5 @@ jobs:
         if: ${{ github.event.label.name == 'test-env' }}
         uses: ./.github/workflows/delete_test_env.yml
         secrets: inherit
+        with:
+            env_name: pr${{ github.event.pull_request.number }}
