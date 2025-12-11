@@ -38,4 +38,5 @@
     <include file="changelog/20251124-add-building-block-instance-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250601-create-building-block-process-link.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251120-add-building-block-process-link-mappings.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251209-add-building-block-instance-activity-id.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

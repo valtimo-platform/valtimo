@@ -19,6 +19,7 @@ package com.ritense.zakenapi.provider
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
@@ -28,7 +29,8 @@ import java.util.UUID
 
 @AllOpen
 class DefaultZaakUrlProvider(
-    private val zaakInstanceLinkService: ZaakInstanceLinkService
+    private val zaakInstanceLinkService: ZaakInstanceLinkService,
+    private val caseDocumentResolver: CaseDocumentResolver
 ) : ZaakUrlProvider {
 
     @Throws(ZaakInstanceLinkNotFoundException::class)
@@ -36,7 +38,8 @@ class DefaultZaakUrlProvider(
         @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
     ): URI {
         logger.debug { "Getting zaak url for $documentId" }
-        return zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+        return zaakInstanceLinkService.getByDocumentId(caseDocumentId).zaakInstanceUrl
     }
 
     companion object {

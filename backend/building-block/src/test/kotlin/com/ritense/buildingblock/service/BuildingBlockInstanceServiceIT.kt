@@ -108,13 +108,15 @@ class BuildingBlockInstanceServiceIT : BaseIntegrationTest() {
             JsonNodeFactory.instance.objectNode().put("type", "building-block")
         )
 
+        val activityId = "call-activity"
         val instance = AuthorizationContext.runWithoutAuthorization(Callable {
-            buildingBlockInstanceService.create(buildingBlockDocumentRequest, caseDocumentId)
+            buildingBlockInstanceService.create(buildingBlockDocumentRequest, caseDocumentId, activityId)
         })
 
         assertThat(instance.documentId).isNotNull
         assertThat(instance.caseDocumentId).isEqualTo(caseDocumentId)
         assertThat(instance.definition.id).isEqualTo(definitionId)
+        assertThat(instance.activityId).isEqualTo(activityId)
 
         val stored = buildingBlockInstanceRepository.findById(instance.id)
         assertThat(stored).isPresent

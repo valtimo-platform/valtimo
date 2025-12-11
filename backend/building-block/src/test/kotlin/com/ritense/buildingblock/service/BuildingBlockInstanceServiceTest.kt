@@ -23,8 +23,8 @@ import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionExcepti
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.Document
-import com.ritense.document.service.DocumentService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
 import com.ritense.document.service.result.CreateDocumentResult
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -96,11 +96,16 @@ class BuildingBlockInstanceServiceTest(
         val caseDocumentId = UUID.randomUUID()
         whenever(buildingBlockInstanceRepository.save(any())).thenAnswer { it.arguments[0] as BuildingBlockInstance }
 
-        val instance = service.create(newDocumentRequest, caseDocumentId)
+        val instance = service.create(
+            newDocumentRequest,
+            caseDocumentId,
+            "call-activity"
+        )
 
         assertThat(instance.definition).isEqualTo(definition)
         assertThat(instance.documentId).isEqualTo(buildingBlockDocumentId)
         assertThat(instance.caseDocumentId).isEqualTo(caseDocumentId)
+        assertThat(instance.activityId).isEqualTo("call-activity")
 
         verify(documentService).createDocument(newDocumentRequest)
         verify(buildingBlockInstanceRepository).save(any())
@@ -119,8 +124,10 @@ class BuildingBlockInstanceServiceTest(
         )
         whenever(buildingBlockDefinitionRepository.findById(definitionId)).thenReturn(Optional.empty())
 
-        assertThatThrownBy { service.create(newDocumentRequest, UUID.randomUUID()) }
-            .isInstanceOf(UnknownBuildingBlockDefinitionException::class.java)
+        assertThatThrownBy {
+            service.create(newDocumentRequest, UUID.randomUUID(), "call-activity")
+        }
+        .isInstanceOf(UnknownBuildingBlockDefinitionException::class.java)
 
         verify(documentService, never()).createDocument(any())
     }

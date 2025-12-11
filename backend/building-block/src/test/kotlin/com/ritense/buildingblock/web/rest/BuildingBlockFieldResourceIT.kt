@@ -16,7 +16,6 @@
 
 package com.ritense.buildingblock.web.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -25,7 +24,6 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionReposito
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.Matchers.hasSize
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,11 +33,12 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 
+@Transactional
 class BuildingBlockFieldResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
-    private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
-    private val objectMapper: ObjectMapper
+    private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository
 ) : BaseIntegrationTest() {
 
     private val buildingBlockId = BuildingBlockDefinitionId.of("bb", "1.0.0")
@@ -61,11 +60,6 @@ class BuildingBlockFieldResourceIT @Autowired constructor(
         """.trimIndent()
         val schema = JsonSchema.fromString(schemaJson)
         documentDefinitionRepository.save(JsonSchemaDocumentDefinition(id, schema))
-    }
-
-    @AfterEach
-    fun teardown() {
-        documentDefinitionRepository.deleteAll()
     }
 
     @Test
