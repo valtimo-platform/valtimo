@@ -6,6 +6,9 @@
         "connectorTag": "brp",
         "connectorInstanceTag": "brp1",
         "endpointOperation": "Personen",
-        "aggregatedDataProfileName": "personen"
+        "aggregatedDataProfileName": "personen",
+        "endpointQueryParameters": {
+            "fields": "burgerservicenummer,naam,geboorte,nationaliteiten,verblijfplaats,partners"
+        }
     }
 }

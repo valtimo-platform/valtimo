@@ -15,16 +15,17 @@
  */
 
 INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b57e-6215bd6ef51e', 'BRP', 'brp', '- route:
-      id: "direct:iko:endpoint:transform:brp.personen"
+      id: "direct:iko:endpoint:transform:brp.Personen"
       errorHandler:
           noErrorHandler: {}
       from:
-          uri: "direct:iko:endpoint:transform:brp.personen"
+          uri: "direct:iko:endpoint:transform:brp.Personen"
           steps:
               - setBody:
                     jq: |
                         {
-                          type: (header("type") | tostring | split(",")),
+                           type: header("type"),
+                           fields: (header("fields") | tostring | split(",")),
                            gemeenteVanInschrijving: header("gemeenteVanInschrijving"),
                            inclusiefOverledenPersonen: header("inclusiefOverledenPersonen"),
                            geboortedatum: header("geboortedatum"),
@@ -42,10 +43,10 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
                            straat: header("straat"),
                            nummeraanduidingIdentificatie: header("nummeraanduidingIdentificatie"),
                            adresseerbaarObjectIdentificatie: header("adresseerbaarObjectIdentificatie")
-                           } | with_entries(select(.value!=null))
+                        } | with_entries(select(.value!=null))
               - removeHeaders:
                     pattern: "*"
-                    excludePattern: "type|gemeenteVanInschrijving|inclusiefOverledenPersonen|geboortedatum|geslachtsnaam|geslacht|voorvoegsel|voornamen|burgerservicenummer|huisletter|huisnummer|huisnummertoevoeging|postcode|geboortedatum|geslachtsnaam|straat|nummeraanduidingIdentificatie|adresseerbaarObjectIdentificatie"
+                    excludePattern: "type|fields|gemeenteVanInschrijving|inclusiefOverledenPersonen|geboortedatum|geslachtsnaam|geslacht|voorvoegsel|voornamen|burgerservicenummer|huisletter|huisnummer|huisnummertoevoeging|postcode|geboortedatum|geslachtsnaam|straat|nummeraanduidingIdentificatie|adresseerbaarObjectIdentificatie"
 - route:
       id: "direct:iko:connector:brp"
       errorHandler:
