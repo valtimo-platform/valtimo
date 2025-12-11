@@ -19,3 +19,5 @@ Only the keys listed above are supported. Setting `targetKey` to any other `case
 will still result in an error.
 
 ## Bugfixes
+
+* Resolved issue where during deployment of process-links the wrong process version is looked up.
