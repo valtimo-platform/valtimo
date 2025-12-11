@@ -63,7 +63,7 @@ An example action configuration:&#x20;
 
 <figure><img src="../../.gitbook/assets/link-document-to-besluit.png" alt=""><figcaption></figcaption></figure>
 
-### Retrieve besluit action added to 
+### Retrieve besluit
 
 This action retrieves the besluit from the Besluiten API with the given besluit-URL.
 When creating a process link the following properties can be provided:
