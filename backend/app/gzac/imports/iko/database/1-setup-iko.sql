@@ -21,11 +21,14 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
       from:
           uri: "direct:iko:endpoint:transform:brp.Personen"
           steps:
+              - setHeader:
+                    name: "id"
+                    variable: "id"
               - setBody:
                     jq: |
                         {
-                           type: header("type"),
-                           fields: (header("fields") | tostring | split(",")),
+                           type: (if (header("type") != null) then header("type") else "RaadpleegMetBurgerservicenummer" end),
+                           fields: (if (header("fields") != null) then header("fields") | split(",") else ["burgerservicenummer","naam","geboorte","nationaliteiten","verblijfplaats","partners"] end),
                            gemeenteVanInschrijving: header("gemeenteVanInschrijving"),
                            inclusiefOverledenPersonen: header("inclusiefOverledenPersonen"),
                            geboortedatum: header("geboortedatum"),
@@ -33,7 +36,7 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
                            geslacht: header("geslacht"),
                            voorvoegsel: header("voorvoegsel"),
                            voornamen: header("voornamen"),
-                           burgerservicenummer: (header("burgerservicenummer") | tostring | split(",")),
+                           burgerservicenummer: (if header("burgerservicenummer") != null then header("burgerservicenummer") | split(",") else [header("id")] end),
                            huisletter: header("huisletter"),
                            huisnummer: header("huisnummer"),
                            huisnummertoevoeging: header("huisnummertoevoeging"),
@@ -72,12 +75,13 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
 ');
 
 INSERT INTO connector_instance(id,name,connector_id,tag,config) VALUES('0734b815-1166-42eb-8200-26a19a86c605','brp1','e6aac203-a3b1-4832-b57e-6215bd6ef51e','brp1', NULL);
-INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'host', 'mVwcp2iZuNh8f2+8KLlCVPMy04B3vP+rwmzEu/n4Za4uy3h6bmkKNhjhHQdy26oBEA==');
+INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'host', 'kQ/JVrXIlxyUxRadQ72e53zlv6mvdGMKhmw6a26uOqJ6BBWPbfNictxxT/w9N7A78zzn7AmPyCKO2+gL');
 INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'specificationUri', 't5YB+lqLDYOLXJ2srmkrLLiGqG3rOlfxGgxgjn47A6LpMewKnzXOKpJRvljV1+aTtXR9zCJvnU8zZohpID8XL2fjplNwFk0svbQmUxsTJe8LI++AXmMu6+qYKLbivjtM');
 INSERT INTO connector_endpoint(id,name,connector_id,operation) VALUES('d53096fe-0fab-4bb0-9406-6859b6ba4274','Personen','e6aac203-a3b1-4832-b57e-6215bd6ef51e','Personen');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('c6c88840-074d-4a22-9af3-42037a600670','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_USER');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a16','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ADMIN');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a17','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ENDPOINT_BRPPERSONENENDPOINT');
+INSERT INTO aggregated_data_profile(id,name,primary_endpoint,transform,role,connector_endpoint_id,connector_instance_id) VALUES('4d4b7633-46d3-4eaf-9d78-9f9c95599c42','Personen',NULL,'.personen[0]','ROLE_ENDPOINT_BRPPERSONENENDPOINT','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605');
 
 
 

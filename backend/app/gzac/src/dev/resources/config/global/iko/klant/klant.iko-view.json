@@ -1,12 +1,12 @@
 {
     "key": "klant",
     "ikoRepositoryConfigKey": "iko-server",
-    "title": "Klant (wip)",
+    "title": "Klant (BRP)",
     "properties": {
         "connectorTag": "brp",
         "connectorInstanceTag": "brp1",
         "endpointOperation": "Personen",
-        "aggregatedDataProfileName": "personen",
+        "aggregatedDataProfileName": "Personen",
         "endpointQueryParameters": {
             "fields": "burgerservicenummer,naam,geboorte,nationaliteiten,verblijfplaats,partners"
         }
