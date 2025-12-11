@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AsyncPipe, CommonModule, NgIf, NgTemplateOutlet} from '@angular/common';
+import {AsyncPipe, CommonModule, NgClass, NgIf, NgTemplateOutlet} from '@angular/common';
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -27,7 +27,7 @@ import {
   SelectModule,
   ParagraphModule,
   InputLabelModule,
-  DateTimePickerModule
+  DateTimePickerModule,
 } from '@valtimo/components';
 import {
   ButtonModule as CarbonButtonModule,
@@ -42,6 +42,8 @@ import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
 import {validateBsn} from '@valtimo/shared';
+
+type SearchFormValue = string | boolean | string[] | null | undefined;
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -68,15 +70,16 @@ import {validateBsn} from '@valtimo/shared';
     NgTemplateOutlet,
     InputModule,
     NgIf,
+    NgClass,
     NgTemplateOutlet,
     ParagraphModule,
     InputLabelModule,
     TimePickerModule,
-    DateTimePickerModule
+    DateTimePickerModule,
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
-  public readonly formValues: Record<string, string> = {};
+  public readonly formValues: Record<string, SearchFormValue> = {};
   public bsnErrorKey: string | null = null;
 
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
@@ -129,13 +132,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public searchDisabled(params: {key: string; required: boolean; dataType?: string}[]): boolean {
-    return params.some(param => {
-      const value = this.formValues[param.key];
-
-      if (param.required && !value) return true;
-
-      return false;
-    });
+    return params.some(param => param.required && !this.hasValue(this.formValues[param.key]));
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
@@ -149,7 +146,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     let invalidBsnFound = false;
 
     for (const param of params) {
-      const value = this.formValues[param.key];
+      const value = (this.formValues[param.key] ?? '') as string;
 
       if (param.dataType === 'bsn') {
         const result = validateBsn(value);
@@ -171,26 +168,27 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
     const queryParams: Record<string, string> = {};
     for (const param of params) {
+      const rangeStart = this.formValues[param.key + '_start'];
+      const rangeEnd = this.formValues[param.key + '_end'];
       if (param.dataType === 'number' && param.fieldType === 'range') {
-        const start = this.formValues[param.key + '_start'];
-        const end = this.formValues[param.key + '_end'];
-
-        if (start || end) {
-          queryParams[param.key] = JSON.stringify({start, end});
+        if (this.hasValue(rangeStart) || this.hasValue(rangeEnd)) {
+          queryParams[param.key] = JSON.stringify({start: rangeStart, end: rangeEnd});
         }
       } else if (
-        (param.dataType === 'date' || param.dataType === 'datetime') &&
+        (param.dataType === 'date' ||
+          param.dataType === 'datetime' ||
+          param.dataType === 'time' ||
+          param.dataType === 'boolean') &&
         param.fieldType === 'range'
       ) {
-        const start = this.formValues[param.key + '_start'];
-        const end = this.formValues[param.key + '_end'];
-
-        if (start || end) {
-          queryParams[param.key] = JSON.stringify({start, end});
+        if (this.hasValue(rangeStart) || this.hasValue(rangeEnd)) {
+          queryParams[param.key] = JSON.stringify({start: rangeStart, end: rangeEnd});
         }
       } else {
         const value = this.formValues[param.key];
-        if (value) queryParams[param.key] = value;
+        if (this.hasValue(value)) {
+          queryParams[param.key] = this.serializeQueryParamValue(value);
+        }
       }
     }
 
@@ -242,5 +240,25 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
           });
       });
     });
+  }
+
+  private hasValue(value: SearchFormValue): boolean {
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+
+    return value !== undefined && value !== null && value !== '';
+  }
+
+  private serializeQueryParamValue(value: SearchFormValue): string {
+    if (value === undefined || value === null) {
+      return '';
+    }
+
+    if (Array.isArray(value)) {
+      return value.join(',');
+    }
+
+    return String(value);
   }
 }

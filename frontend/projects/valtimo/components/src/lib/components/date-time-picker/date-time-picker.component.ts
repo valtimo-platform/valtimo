@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  HostBinding,
-  Input,
-  Output,
-} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
@@ -70,13 +63,11 @@ export class DateTimePickerComponent implements AfterViewInit {
 
   constructor() {}
 
-  ngAfterViewInit(): void {
-    // Default: today
+  public ngAfterViewInit(): void {
     if (this.defaultDateIsToday) {
       this.dateValue$.next(this.formatDate(new Date()));
     }
 
-    // Clear
     if (this.clear$) {
       this._subscriptions.add(
         this.clear$.subscribe(() => {
@@ -87,18 +78,15 @@ export class DateTimePickerComponent implements AfterViewInit {
       );
     }
 
-    // Emit combo
-    this._subscriptions.add(
-      this.dateValue$.subscribe(val => this.emitValue(val, this._timeValue))
-    );
+    this._subscriptions.add(this.dateValue$.subscribe(val => this.emitValue(val, this._timeValue)));
   }
 
-  onDateSelected(value: string | Date[]): void {
+  public onDateSelected(value: string | Date[]): void {
     const formatted = Array.isArray(value) ? value[0] : value;
     this.dateValue$.next(this.normalizeDate(formatted));
   }
 
-  onTimeSelected(value: string): void {
+  public onTimeSelected(value: string): void {
     this._timeValue = value;
     this.emitValue(this.dateValue$.getValue(), value);
   }
@@ -113,8 +101,7 @@ export class DateTimePickerComponent implements AfterViewInit {
       return;
     }
 
-    const full =
-      this.enableTime && time ? `${date} ${time}` : date;
+    const full = this.enableTime && time ? `${date} ${time}` : date;
 
     this.valueChange.emit(full);
   }

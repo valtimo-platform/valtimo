@@ -45,6 +45,11 @@
     }
   }
 
+  &__field--time {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+
   &__label {
     font-size: 14px;
     font-weight: 600;

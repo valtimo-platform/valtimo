@@ -25,7 +25,10 @@
         <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
           <div class="query-group__row">
             @for (field of param.searchFields; track field.key) {
-              <div class="query-group__field">
+              <div
+                class="query-group__field"
+                [ngClass]="{'query-group__field--time': field.dataType === 'time'}"
+              >
                 <ng-container
                   class="query-group__field"
                   *ngTemplateOutlet="searchFieldTemplate; context: {searchField: field}"
@@ -51,6 +54,7 @@
 
 <ng-template #searchFieldTemplate let-searchField="searchField">
   <v-input-label *ngIf="searchField.title" [title]="searchField.title"></v-input-label>
+
   <ng-container
     *ngTemplateOutlet="searchFieldTemplateText; context: {searchField: searchField}"
   ></ng-container>

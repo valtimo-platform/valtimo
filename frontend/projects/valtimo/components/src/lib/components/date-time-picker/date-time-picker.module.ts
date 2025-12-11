@@ -20,11 +20,25 @@ import {DateTimePickerComponent} from './date-time-picker.component';
 import {FormsModule} from '@angular/forms';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {TranslateModule} from '@ngx-translate/core';
-import {DatePickerModule, InputModule, LayerModule, TimePickerModule} from 'carbon-components-angular';
+import {
+  DatePickerModule,
+  InputModule,
+  LayerModule,
+  TimePickerModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [DateTimePickerComponent],
-  imports: [CommonModule, InputLabelModule, FormsModule, TranslateModule, InputModule, DatePickerModule, TimePickerModule, LayerModule],
+  imports: [
+    CommonModule,
+    InputLabelModule,
+    FormsModule,
+    TranslateModule,
+    InputModule,
+    DatePickerModule,
+    TimePickerModule,
+    LayerModule,
+  ],
   exports: [DateTimePickerComponent],
 })
 export class DateTimePickerModule {}
