@@ -18,6 +18,13 @@ Property** `targetKey`. The supported `targetKey` values:
 Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
 will still result in an error.
 
+## Enhancement
+
+* **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
+
+  When you try to upload a file to the Documenten API, you are shown a modal where you can enter metadata about the file you want to upload.
+  Within this modal there is a drop-down labelled "Documenttype". The options within this drop-down are now ordered alphabetically and you can search through the list to select the appropriate documenttype. (As you can already do for the "Vertrouwelijkheidsaanduiding" and "Status" fields.)
+
 ## Bugfixes
 
 * Resolved issue where during deployment of process-links the wrong process version is looked up.
