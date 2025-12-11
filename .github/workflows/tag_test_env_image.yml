@@ -1,14 +1,14 @@
-name: Tag test environment image
+name: Tag image for use in a test environment
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       target:
         description: "Can be one of 'gzac-frontend', 'gzac-backend', (TODO:) 'valtimo-frontend' or 'valtimo-backend'"
         required: true
         type: string
       image_to_tag:
-        description: "Existing image tag that will receive an additional tag for the test environment. E.g. next-minor.15"
-        required: true
+        description: "Existing image tag that will receive an additional tag for the test environment when the build succeeds. E.g. next-minor.15"
+        required: false
         type: string
 
 permissions:
@@ -19,8 +19,7 @@ jobs:
   determine_test_env:
     uses: ./.github/workflows/determine_test_env.yml
 
-  tag_test_env:
-    environment: pr-test-environment
+  update_test_env:
     runs-on: ubuntu-latest
     needs:
       - determine_test_env
@@ -33,6 +32,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Buildx
+        if: ${{ inputs.build_succeeded }}
         uses: docker/setup-buildx-action@v3
 
       - name: Tag image for test environment
@@ -41,6 +41,10 @@ jobs:
           IMAGE_TO_TAG: "${{ inputs.image_to_tag }}"
           TEST_ENV_TAG: "testEnv-${{ needs.determine_test_env.outputs.name }}-${{ needs.determine_test_env.outputs.source_sha}}-${{ github.run_number }}"
         run: |
+          if [ -z "${IMAGE_TO_TAG}" ]; then
+            echo "image_to_tag is required when build_succeeded is true but was not provided." >&2
+            exit 1
+          fi
           docker buildx imagetools create \
             --tag "${IMAGE}:${TEST_ENV_TAG}" \
             "${IMAGE_TO_TAG}"

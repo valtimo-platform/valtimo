@@ -1,0 +1,16 @@
+name: Handle PR label updates
+
+on:
+    pull_request:
+        types:
+            - unlabeled
+
+permissions:
+    contents: read
+    actions: write
+
+jobs:
+    trigger_test_env_deletion:
+        if: ${{ github.event.label.name == 'test-env' }}
+        uses: ./.github/workflows/delete_test_env.yml
+        secrets: inherit

@@ -1,0 +1,19 @@
+name: Handle label updates
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  trigger_test_env_creation:
+    if: ${{ github.event.label.name == 'test-env' }}
+    uses: ./.github/workflows/create_test_env.yml
+    secrets: inherit
+    with:
+      commit_sha: ${{ github.event.pull_request.head.sha }}
+      env_name: pr${{ github.event.pull_request.number }}
