@@ -5,7 +5,7 @@
         "processLinkType": "plugin",
         "pluginActionDefinitionKey": "get-besluittype",
         "referenceType": "BUILDING_BLOCK",
-        "pluginDefinitionKey": "catalogi-api",
+        "pluginDefinitionKey": "catalogiapi",
         "actionProperties": {
             "besluittype": "doc:besluitTypeDescription",
             "processVariable": "besluittypeUrl"
@@ -17,7 +17,7 @@
         "processLinkType": "plugin",
         "pluginActionDefinitionKey": "create-besluit",
         "referenceType": "BUILDING_BLOCK",
-        "pluginDefinitionKey": "besluiten-api",
+        "pluginDefinitionKey": "besluitenapi",
         "actionProperties": {
             "besluittypeUrl": "doc:besluittypeUrl",
             "toelichting": "Besluit",
@@ -39,7 +39,7 @@
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
         "referenceType": "BUILDING_BLOCK",
-        "pluginDefinitionKey": "besluiten-api",
+        "pluginDefinitionKey": "besluitenapi",
         "pluginActionDefinitionKey": "link-document-to-besluit",
         "actionProperties": {
             "besluitUrl": "doc:besluitUrl",
