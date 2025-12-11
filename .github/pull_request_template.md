@@ -18,12 +18,8 @@ Specify the code branch location:
 - [ ] The contribution only contains changes that are not breaking.
 
 ### Documentation
-<!-- Release notes should be available in the Valtimo documentation.  -->
+<!-- Release notes should be added to the Valtimo documentation under `documentation/release-notes/` within this pull request.  -->
 - [ ] Release notes have been written for these changes.
-
-Specify the documents branch location:
-Link to the pull request in the [Valtimo documentation repository](https://github.com/valtimo-platform/valtimo-documentation):
->
 
 New features or changes that have been introduced have been documented.
 - [ ] Yes

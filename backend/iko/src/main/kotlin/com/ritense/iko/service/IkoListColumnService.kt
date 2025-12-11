@@ -16,10 +16,10 @@
 
 package com.ritense.iko.service
 
-import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoDataAggregateListColumn
-import com.ritense.iko.domain.IkoDataAggregateListColumnId
-import com.ritense.iko.repository.IkoDataAggregateListColumnRepository
+import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
+import com.ritense.iko.domain.IkoViewListColumn
+import com.ritense.iko.domain.IkoViewListColumnId
+import com.ritense.iko.repository.IkoViewListColumnRepository
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.search.service.SearchListColumnService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -31,88 +31,88 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class IkoListColumnService(
     private val listColumnService: SearchListColumnService,
-    private val ikoDataAggregateListColumnRepository: IkoDataAggregateListColumnRepository,
-    private val ikoDataAggregateService: IkoDataAggregateService,
+    private val ikoViewListColumnRepository: IkoViewListColumnRepository,
+    private val ikoViewService: IkoViewService,
 ) {
 
-    fun findByKey(ikoDataAggregateKey: String, columnKey: String): SearchListColumn? {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
-            ikoDataAggregateKey,
+    fun findByKey(ikoViewKey: String, columnKey: String): SearchListColumn? {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoViewListColumnRepository.findByIdIkoViewKeyAndColumnKey(
+            ikoViewKey,
             columnKey
         )?.column
     }
 
-    fun getByKey(ikoDataAggregateKey: String, columnKey: String): SearchListColumn {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return findByKey(ikoDataAggregateKey, columnKey)
+    fun getByKey(ikoViewKey: String, columnKey: String): SearchListColumn {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return findByKey(ikoViewKey, columnKey)
             ?: error("Unknown column key: $columnKey")
     }
 
-    fun findAllColumnsByIkoDataAggregateKey(ikoDataAggregateKey: String): List<SearchListColumn> {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataAggregateListColumnRepository.findAllByIdIkoDataAggregateKeyOrderByColumnOrder(ikoDataAggregateKey)
+    fun findAllColumnsByIkoViewKey(ikoViewKey: String): List<SearchListColumn> {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoViewListColumnRepository.findAllByIdIkoViewKeyOrderByColumnOrder(ikoViewKey)
             .map { it.column }
     }
 
-    fun deleteByKey(ikoDataAggregateKey: String, columnKey: String) {
-        ikoDataAggregateService.denyAuthorization()
-        ikoDataAggregateListColumnRepository.deleteByIdIkoDataAggregateKeyAndColumnKey(
-            ikoDataAggregateKey,
+    fun deleteByKey(ikoViewKey: String, columnKey: String) {
+        ikoViewService.denyAuthorization()
+        ikoViewListColumnRepository.deleteByIdIkoViewKeyAndColumnKey(
+            ikoViewKey,
             columnKey
         )
     }
 
-    fun deleteByIkoDataAggregateKey(ikoDataAggregateKey: String) {
-        ikoDataAggregateService.denyAuthorization()
-        ikoDataAggregateListColumnRepository.deleteByIdIkoDataAggregateKey(ikoDataAggregateKey)
+    fun deleteByIkoViewKey(ikoViewKey: String) {
+        ikoViewService.denyAuthorization()
+        ikoViewListColumnRepository.deleteByIdIkoViewKey(ikoViewKey)
     }
 
-    fun create(ikoDataAggregateKey: String, listColumn: SearchListColumn): SearchListColumn {
-        ikoDataAggregateService.denyAuthorization()
+    fun create(ikoViewKey: String, listColumn: SearchListColumn): SearchListColumn {
+        ikoViewService.denyAuthorization()
         require(
-            ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
-                ikoDataAggregateKey,
+            ikoViewListColumnRepository.findByIdIkoViewKeyAndColumnKey(
+                ikoViewKey,
                 listColumn.key
             ) == null
         )
         if (listColumn.defaultSort != null) {
-            unsetDefaultSort(ikoDataAggregateKey)
+            unsetDefaultSort(ikoViewKey)
         }
         val createdColumn = listColumnService.create(listColumn)
-        ikoDataAggregateListColumnRepository.save(
-            IkoDataAggregateListColumn(
-                id = IkoDataAggregateListColumnId(ikoDataAggregateKey, listColumn.id),
+        ikoViewListColumnRepository.save(
+            IkoViewListColumn(
+                id = IkoViewListColumnId(ikoViewKey, listColumn.id),
                 column = createdColumn,
             )
         )
         return createdColumn
     }
 
-    fun update(ikoDataAggregateKey: String, listColumn: SearchListColumn): SearchListColumn {
-        ikoDataAggregateService.denyAuthorization()
-        val ikoDataAggregateColumn =
-            ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
-                ikoDataAggregateKey,
+    fun update(ikoViewKey: String, listColumn: SearchListColumn): SearchListColumn {
+        ikoViewService.denyAuthorization()
+        val ikoViewColumn =
+            ikoViewListColumnRepository.findByIdIkoViewKeyAndColumnKey(
+                ikoViewKey,
                 listColumn.key
             )
-        requireNotNull(ikoDataAggregateColumn)
-        if (listColumn.defaultSort != null && ikoDataAggregateColumn.column.defaultSort == null) {
-            unsetDefaultSort(ikoDataAggregateKey)
+        requireNotNull(ikoViewColumn)
+        if (listColumn.defaultSort != null && ikoViewColumn.column.defaultSort == null) {
+            unsetDefaultSort(ikoViewKey)
         }
         val updatedColumn =
-            listColumnService.update(listColumn.copy(id = ikoDataAggregateColumn.id.listColumnId))
-        ikoDataAggregateListColumnRepository.save(
-            IkoDataAggregateListColumn(
-                id = IkoDataAggregateListColumnId(ikoDataAggregateKey, updatedColumn.id),
+            listColumnService.update(listColumn.copy(id = ikoViewColumn.id.listColumnId))
+        ikoViewListColumnRepository.save(
+            IkoViewListColumn(
+                id = IkoViewListColumnId(ikoViewKey, updatedColumn.id),
                 column = updatedColumn,
             )
         )
         return updatedColumn
     }
 
-    private fun unsetDefaultSort(ikoDataAggregateKey: String) {
-        findAllColumnsByIkoDataAggregateKey(ikoDataAggregateKey)
+    private fun unsetDefaultSort(ikoViewKey: String) {
+        findAllColumnsByIkoViewKey(ikoViewKey)
             .filter { listColumn -> listColumn.defaultSort != null }
             .forEach { listColumn -> listColumnService.update(listColumn.copy(defaultSort = null)) }
     }
