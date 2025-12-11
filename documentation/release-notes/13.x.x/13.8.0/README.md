@@ -18,6 +18,12 @@ Property** `targetKey`. The supported `targetKey` values:
 Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
 will still result in an error.
 
+* **Custom component widgets support for key/value inputs**
+
+Custom Key/Value pairs can be configured in the custom component widgets. These properties are then made accessible inside of the component.
+
+More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
+
 ## Enhancements
 
 * **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
