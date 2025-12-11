@@ -8,11 +8,11 @@
 
 **Date status set added to Zaken API plugin**
 
-A new field has been added to the set-zaakstatus action in the Zaken API plugin that allows setting the date of a zaak-status.
+A new field has been added to the set zaakstatus action in the Zaken API plugin that allows setting the date of a zaak-status.
 
 **New action is added to Zaken API plugin**
 
-A new action has been added to zaken api plugin allowing to collect zaak-besluiten
+A new action has been added to zaken api plugin allowing to collect zaak-besluiten.
 
 **New action is added to Besluiten API plugin**
 
