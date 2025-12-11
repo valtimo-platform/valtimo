@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.iko.service.IkoListColumnService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_AGGREGATE
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_VIEW
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_LIST_COLUMN
 
 class IkoListColumnImporter(
@@ -31,7 +31,7 @@ class IkoListColumnImporter(
 
     override fun type(): String = IKO_LIST_COLUMN
 
-    override fun dependsOn(): Set<String> = setOf(IKO_DATA_AGGREGATE)
+    override fun dependsOn(): Set<String> = setOf(IKO_VIEW)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
@@ -39,7 +39,7 @@ class IkoListColumnImporter(
         val ikoListColumnsDto = objectMapper.readValue<IkoListColumnsDto>(request.content.toString(Charsets.UTF_8))
 
         val existingListColumns =
-            service.findAllColumnsByIkoDataAggregateKey(ikoListColumnsDto.ikoDataAggregateKey)
+            service.findAllColumnsByIkoViewKey(ikoListColumnsDto.ikoViewKey)
 
         ikoListColumnsDto.ikoListColumns.forEachIndexed { index, listColumnDto ->
             val existingListColumnId = existingListColumns
@@ -47,13 +47,13 @@ class IkoListColumnImporter(
                 ?.id?.toString()
             if (existingListColumnId != null) {
                 service.update(
-                    ikoListColumnsDto.ikoDataAggregateKey,
-                    listColumnDto.toEntity("ikoDataAggregate:${ikoListColumnsDto.ikoDataAggregateKey}", index)
+                    ikoListColumnsDto.ikoViewKey,
+                    listColumnDto.toEntity("ikoView:${ikoListColumnsDto.ikoViewKey}", index)
                 )
             } else {
                 service.create(
-                    ikoListColumnsDto.ikoDataAggregateKey,
-                    listColumnDto.toEntity("ikoDataAggregate:${ikoListColumnsDto.ikoDataAggregateKey}", index)
+                    ikoListColumnsDto.ikoViewKey,
+                    listColumnDto.toEntity("ikoView:${ikoListColumnsDto.ikoViewKey}", index)
                 )
             }
         }
@@ -62,7 +62,7 @@ class IkoListColumnImporter(
             .filter { existingListColumn -> ikoListColumnsDto.ikoListColumns.none { listColumnDto -> listColumnDto.key == existingListColumn.key } }
             .forEach { existingListColumn ->
                 service.deleteByKey(
-                    ikoListColumnsDto.ikoDataAggregateKey,
+                    ikoListColumnsDto.ikoViewKey,
                     existingListColumn.key
                 )
             }

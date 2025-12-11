@@ -115,7 +115,7 @@ export class IkoManagementTabDetailsModalComponent {
     return this.form.get('type') as AbstractControl<string>;
   }
 
-  private readonly _dataAggregateKey$: Observable<string> = this.route.params.pipe(
+  private readonly _ikoViewKey$: Observable<string> = this.route.params.pipe(
     map(params => params?.key),
     filter(key => !!key)
   );
@@ -143,12 +143,12 @@ export class IkoManagementTabDetailsModalComponent {
 
     this.disableForm();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(
-        switchMap(dataAggregateKey =>
+        switchMap(ikoViewKey =>
           this.modalMode === 'add'
-            ? this.ikoManagementApiService.createIkoTab(dataAggregateKey, formValue.key, formValue)
-            : this.ikoManagementApiService.updateIkoTab(dataAggregateKey, formValue.key, formValue)
+            ? this.ikoManagementApiService.createIkoTab(ikoViewKey, formValue.key, formValue)
+            : this.ikoManagementApiService.updateIkoTab(ikoViewKey, formValue.key, formValue)
         )
       )
       .subscribe({

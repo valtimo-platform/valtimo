@@ -19,7 +19,7 @@ package com.ritense.iko.importer
 import com.ritense.widget.web.rest.dto.WidgetDto
 
 data class IkoWidgetsDto(
-    val ikoDataAggregateKey: String,
+    val ikoViewKey: String,
     val ikoTabKey: String,
     val ikoWidgets: List<WidgetDto>,
 )

@@ -49,7 +49,7 @@ class KlantinteractiesApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             PARTIJ_SOORT,
             PROPERTY_FIELD_TYPE_DROPDOWN,

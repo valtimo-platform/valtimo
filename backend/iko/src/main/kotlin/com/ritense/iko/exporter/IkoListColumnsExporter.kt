@@ -38,14 +38,14 @@ class IkoListColumnsExporter(
     override fun supports() = IkoListColumnsExportRequest::class.java
 
     override fun export(request: IkoListColumnsExportRequest): ExportResult {
-        val ikoListColumns = ikoListColumnService.findAllColumnsByIkoDataAggregateKey(
-            ikoDataAggregateKey = request.ikoDataAggregateKey
+        val ikoListColumns = ikoListColumnService.findAllColumnsByIkoViewKey(
+            ikoViewKey = request.ikoViewKey
         )
         if (ikoListColumns.isEmpty()) {
             return ExportResult()
         }
         val ikoListColumnsDto = IkoListColumnsDto(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
+            ikoViewKey = request.ikoViewKey,
             ikoListColumns = ikoListColumns.map { ikoListColumn ->
                 ListColumnDto(
                     id = null,
@@ -61,7 +61,7 @@ class IkoListColumnsExporter(
 
         return ExportResult(
             ExportFile(
-                PATH.format(request.ikoDataAggregateKey, request.ikoDataAggregateKey),
+                PATH.format(request.ikoViewKey, request.ikoViewKey),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoListColumnsDto)
             )
         )

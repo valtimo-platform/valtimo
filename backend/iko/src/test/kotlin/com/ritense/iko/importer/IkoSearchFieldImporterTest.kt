@@ -18,7 +18,7 @@ package com.ritense.iko.importer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.iko.service.IkoSearchFieldService
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_REQUEST
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_ACTION
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,8 +44,8 @@ class IkoSearchFieldImporterTest(
     }
 
     @Test
-    fun `should depend on 'ikodatarequest' type`() {
-        assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_DATA_REQUEST))
+    fun `should depend on 'ikosearchaction' type`() {
+        assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_SEARCH_ACTION))
     }
 
     @Test

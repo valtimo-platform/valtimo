@@ -1,0 +1,407 @@
+{
+    "ikoViewKey": "demo",
+    "ikoTabKey": "general",
+    "ikoWidgets": [
+        {
+            "type": "fields",
+            "key": "aaa",
+            "title": "Basisgegevens",
+            "width": 2,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "columns": [
+                    [
+                        {
+                            "key": "naam-persoon",
+                            "title": "Naam persoon",
+                            "value": "iko:/basisgegevens/naam",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "geslacht",
+                            "title": "Geslacht",
+                            "value": "iko:/basisgegevens/geslacht",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "geboortedatum",
+                            "title": "Geboortedatum",
+                            "value": "iko:/basisgegevens/geboortedatum",
+                            "displayProperties": {
+                                "type": "date",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "bsn",
+                            "title": "BSN",
+                            "value": "iko:/basisgegevens/bsn",
+                            "displayProperties": {
+                                "type": "number",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "adres",
+                            "title": "Adres",
+                            "value": "iko:/basisgegevens/adres",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            "key": "telefoon",
+                            "title": "Telefoon",
+                            "value": "iko:/basisgegevens/telefoon",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "e-mail",
+                            "title": "E-mail",
+                            "value": "iko:/basisgegevens/e_mail",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "nationaliteit",
+                            "title": "Nationaliteit",
+                            "value": "iko:/basisgegevens/nationaliteit",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "burgerlijke-staat",
+                            "title": "Burgerlijke staat",
+                            "value": "iko:/basisgegevens/burgerlijke_staat",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "fields",
+            "key": "inkomensprofiel",
+            "title": "Inkomen",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "columns": [
+                    [
+                        {
+                            "key": "primair-inkomen",
+                            "title": "Primair inkomen",
+                            "value": "iko:/inkomensprofiel/primair_inkomen",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "aanvullende-inkomsten",
+                            "title": "Aanvullende inkomsten",
+                            "value": "iko:/inkomensprofiel/aanvullende_inkomsten",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "uitkering",
+                            "title": "Uitkering",
+                            "value": "iko:/inkomensprofiel/uitkering",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "schulden",
+                            "title": "Schulden",
+                            "value": "iko:/inkomensprofiel/schulden",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "vermogen",
+                            "title": "Vermogen",
+                            "value": "iko:/inkomensprofiel/vermogen",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "fields",
+            "key": "gezinssituatie",
+            "title": "Gezinssituatie",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "columns": [
+                    [
+                        {
+                            "key": "mantelzorg",
+                            "title": "Mantelzorg",
+                            "value": "iko:/gezinsprofiel/mantelzorg",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": true
+                            }
+                        },
+                        {
+                            "key": "huishouding",
+                            "title": "Huishouding",
+                            "value": "iko:/gezinsprofiel/huishoudsamenstelling",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "zorgbehoefte",
+                            "title": "Zorgbehoefte?",
+                            "value": "iko:/gezinsprofiel/zorgbehoefte",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "table",
+            "key": "lopende-zaken",
+            "title": "Zaken",
+            "width": 2,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "collection": "iko:/lopende_zaken",
+                "defaultPageSize": 5,
+                "columns": [
+                    {
+                        "key": "type",
+                        "title": "Type",
+                        "value": "type",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    },
+                    {
+                        "key": "beschrijving",
+                        "title": "Beschrijving",
+                        "value": "beschrijving",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    }
+                ],
+                "firstColumnAsTitle": false
+            }
+        },
+        {
+            "type": "table",
+            "key": "contactmomenten",
+            "title": "Contactmomenten",
+            "width": 3,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "collection": "iko:/contactmomenten",
+                "defaultPageSize": 5,
+                "columns": [
+                    {
+                        "key": "kanaal",
+                        "title": "Kanaal",
+                        "value": "kanaal",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    },
+                    {
+                        "key": "beschrijving",
+                        "title": "Beschrijving",
+                        "value": "beschrijving",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    }
+                ],
+                "firstColumnAsTitle": false
+            }
+        },
+        {
+            "type": "fields",
+            "key": "werk",
+            "title": "Werk",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "columns": [
+                    [
+                        {
+                            "key": "arbeidsverleden",
+                            "title": "Arbeidsverleden",
+                            "value": "iko:/werkprofiel/arbeidsverleden",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "opleidingsniveau",
+                            "title": "Opleidingsniveau",
+                            "value": "iko:/werkprofiel/opleidingsniveau",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        },
+                        {
+                            "key": "reintegratietraject",
+                            "title": "Reintegratietraject",
+                            "value": "iko:/werkprofiel/re_integratietraject",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "collection",
+            "key": "gezin",
+            "title": "Gezin",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "collection": "iko:/gezinsprofiel/gezin/kinderen",
+                "defaultPageSize": 5,
+                "title": {
+                    "value": "naam"
+                },
+                "fields": [
+                    {
+                        "key": "leeftijd",
+                        "title": "Leeftijd",
+                        "value": "leeftijd",
+                        "width": "full",
+                        "displayProperties": {
+                            "type": "number",
+                            "hideWhenEmpty": false
+                        }
+                    },
+                    {
+                        "key": "relatie",
+                        "title": "Relatie",
+                        "value": "relatie",
+                        "width": "full",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "collection",
+            "key": "toeslagen",
+            "title": "Toeslagen",
+            "width": 2,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "collection": "iko:/producten_en_voorzieningen/toeslagen",
+                "defaultPageSize": 5,
+                "title": {
+                    "value": ""
+                },
+                "fields": [
+                    {
+                        "key": "type",
+                        "title": "Type",
+                        "value": "type",
+                        "width": "full",
+                        "displayProperties": {
+                            "type": "text",
+                            "hideWhenEmpty": false
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "map",
+            "key": "atlas",
+            "title": "Atlas",
+            "width": 1,
+            "highContrast": false,
+            "isCompact": null,
+            "actions": [],
+            "displayConditions": [],
+            "properties": {
+                "geoJsonSources": [
+                    {
+                        "key": "iko:/geometry"
+                    }
+                ]
+            }
+        }
+    ]
+}

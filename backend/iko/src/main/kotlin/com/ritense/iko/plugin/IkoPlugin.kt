@@ -79,4 +79,12 @@ class IkoPlugin(
             queryParams = queryParams,
         )
     }
+
+    companion object {
+        const val URL_PROPERTY = "url"
+
+        fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
+            url.toString().startsWith(properties[URL_PROPERTY].textValue())
+        }
+    }
 }
