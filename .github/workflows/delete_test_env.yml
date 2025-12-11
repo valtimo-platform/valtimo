@@ -10,7 +10,7 @@ on:
 # Assigns the same concurrency group to `delete_test_env` and `create_test_env`.
 # This prevents creating and deleting from running simultaneously, which could cause race conditions.
 concurrency:
-  group: setup-test-env-pr-${{ inputs.env_name }}
+  group: setup-test-env-${{ inputs.env_name }}
   cancel-in-progress: false
 
 permissions:
