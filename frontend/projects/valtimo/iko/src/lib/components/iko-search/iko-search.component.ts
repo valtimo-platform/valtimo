@@ -20,6 +20,10 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
+  SearchFieldBoolean,
+  SearchFieldValues,
+} from '@valtimo/shared';
+import {
   CarbonListModule,
   PageTitleService,
   InputModule,
@@ -38,10 +42,9 @@ import {
   TabsModule,
   TimePickerModule,
 } from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, take} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
-import {validateBsn} from '@valtimo/shared';
 
 type SearchFormValue = string | boolean | string[] | null | undefined;
 
@@ -68,7 +71,6 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     SelectModule,
     DatePickerModule,
     NgTemplateOutlet,
-    InputModule,
     NgIf,
     NgClass,
     NgTemplateOutlet,
@@ -80,14 +82,27 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
   public readonly formValues: Record<string, SearchFormValue> = {};
-  public bsnErrorKey: string | null = null;
-
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
+  public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
+  public readonly bsnErrorKey = 'interface.dataValidation.bsnValidator';
 
-  public readonly booleanItems = [
-    {id: true, text: this.translateService.instant('searchFields.booleanPositive')},
-    {id: false, text: this.translateService.instant('searchFields.booleanNegative')},
+  private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
+  private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
+
+  private readonly _BOOLEAN_TYPES: Array<SearchFieldBoolean> = [
+    this.BOOLEAN_POSITIVE,
+    this.BOOLEAN_NEGATIVE,
   ];
+  public readonly booleanItems$: Observable<Array<any>> = this.translateService
+    .stream('key')
+    .pipe(
+      map(() =>
+        this._BOOLEAN_TYPES.map(type => ({
+          id: type,
+          text: this.translateService.instant(`searchFields.${type}`),
+        }))
+      )
+    );
 
   private readonly _key$ = this.route.params.pipe(
     map(params => params?.key),
@@ -131,68 +146,66 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     this.pageTitleService.enableReset();
   }
 
-  public searchDisabled(params: {key: string; required: boolean; dataType?: string}[]): boolean {
-    return params.some(param => param.required && !this.hasValue(this.formValues[param.key]));
+  public searchDisabled(params: {key: string; required: boolean}[]): boolean {
+    return params.some(param => !this.formValues[param.key] && param.required);
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(
-    paramKey: string,
-    params: {key: string; dataType?: string; fieldType?: string}[]
-  ): void {
-    let invalidBsnFound = false;
+  public searchGroup(paramKey: string, params: { key: string }[]): void {
+    this.values$.pipe(take(1)).subscribe(values => {
+      console.log("values: ", values);
+      const queryParams: Record<string, any> = {};
 
-    for (const param of params) {
-      const value = (this.formValues[param.key] ?? '') as string;
-
-      if (param.dataType === 'bsn') {
-        const result = validateBsn(value);
-
-        if (!value) {
-          this.bsnErrorKey = null;
-        } else if (!result.isValid && result.errorKey) {
-          this.bsnErrorKey = result.errorKey;
-          invalidBsnFound = true;
-        } else {
-          this.bsnErrorKey = null;
+      for (const param of params) {
+        if (values.hasOwnProperty(param.key)) {
+          queryParams[param.key] = values[param.key];
         }
       }
-    }
 
-    if (invalidBsnFound) {
-      return;
-    }
+      this.router.navigate([`${paramKey}`], {
+        relativeTo: this.route,
+        queryParams,
+      });
+    });
+  }
 
-    const queryParams: Record<string, string> = {};
-    for (const param of params) {
-      const rangeStart = this.formValues[param.key + '_start'];
-      const rangeEnd = this.formValues[param.key + '_end'];
-      if (param.dataType === 'number' && param.fieldType === 'range') {
-        if (this.hasValue(rangeStart) || this.hasValue(rangeEnd)) {
-          queryParams[param.key] = JSON.stringify({start: rangeStart, end: rangeEnd});
-        }
-      } else if (
-        (param.dataType === 'date' ||
-          param.dataType === 'datetime' ||
-          param.dataType === 'time' ||
-          param.dataType === 'boolean') &&
-        param.fieldType === 'range'
-      ) {
-        if (this.hasValue(rangeStart) || this.hasValue(rangeEnd)) {
-          queryParams[param.key] = JSON.stringify({start: rangeStart, end: rangeEnd});
-        }
-      } else {
-        const value = this.formValues[param.key];
-        if (this.hasValue(value)) {
-          queryParams[param.key] = this.serializeQueryParamValue(value);
-        }
+  public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
+    this.values$.pipe(take(1)).subscribe(values => {
+      if (value || Number.isInteger(value)) {
+        this.values$.next({...values, [searchFieldKey]: this.getSingleValue(value, isDateTime)});
+      } else if (Object.keys(values).includes(searchFieldKey)) {
+        const valuesCopy = {...values};
+        delete valuesCopy[searchFieldKey];
+        this.values$.next(valuesCopy);
       }
-    }
+    });
+  }
 
-    this.router.navigate([`${paramKey}`], {relativeTo: this.route, queryParams});
+  public multipleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
+    console.log("hola")
+    this.values$.pipe(take(1)).subscribe(values => {
+      if (value.start && value.end) {
+        this.values$.next({
+          ...values,
+          [searchFieldKey]: {
+            start: this.getSingleValue(value.start, isDateTime),
+            end: this.getSingleValue(value.end, isDateTime),
+          },
+        });
+      } else if (Array.isArray(value) && value.length > 0) {
+        this.values$.next({
+          ...values,
+          [searchFieldKey]: value.map(v => this.getSingleValue(v, isDateTime)),
+        });
+      } else if (values[searchFieldKey]) {
+        const valuesCopy = {...values};
+        delete valuesCopy[searchFieldKey];
+        this.values$.next(valuesCopy);
+      }
+    });
   }
 
   private openDropdownSubscription(): void {
@@ -242,23 +255,17 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  private hasValue(value: SearchFormValue): boolean {
-    if (Array.isArray(value)) {
-      return value.length > 0;
+  private getSingleValue(value: any, isDateTime?: boolean): any {
+    if (isDateTime) {
+      return new Date(value).toISOString();
+    }
+    if (value === this.BOOLEAN_POSITIVE) {
+      return true;
+    }
+    if (value === this.BOOLEAN_NEGATIVE) {
+      return false;
     }
 
-    return value !== undefined && value !== null && value !== '';
-  }
-
-  private serializeQueryParamValue(value: SearchFormValue): string {
-    if (value === undefined || value === null) {
-      return '';
-    }
-
-    if (Array.isArray(value)) {
-      return value.join(',');
-    }
-
-    return String(value);
+    return value;
   }
 }

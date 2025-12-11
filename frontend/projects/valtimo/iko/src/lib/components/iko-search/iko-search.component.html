@@ -71,9 +71,6 @@
     *ngTemplateOutlet="searchFieldTemplateBoolean; context: {searchField: searchField}"
   ></ng-container>
   <ng-container
-    *ngTemplateOutlet="searchFieldTemplateBooleanRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
     *ngTemplateOutlet="searchFieldTemplateDate; context: {searchField: searchField}"
   ></ng-container>
   <ng-container
@@ -109,34 +106,33 @@
 <ng-template #searchFieldTemplateText let-searchField="searchField">
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
-    [placeholder]="'searchFields.textPlaceholder' | translate"
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
     [fullWidth]="true"
-    [(ngModel)]="formValues[searchField.key]"
-    ngDefaultControl
+    [placeholder]="'searchFields.textPlaceholder' | translate"
+    [defaultValue]="formValues[searchField.key]"
+    (valueChange)="formValues[searchField.key] = $event"
   ></v-input>
 </ng-template>
 
 <ng-template #searchFieldTemplateTextRange let-searchField="searchField">
   <ng-container *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'range'">
-    <v-form class="multiple-search-fields">
+    <v-form
+      (valueChange)="multipleValueChange(searchField.key, $event)"
+      className="multiple-search-fields"
+    >
       <v-input
         name="start"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [fullWidth]="true"
         [placeholder]="'searchFields.textPlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key + '_start']"
-        ngDefaultControl
       ></v-input>
-
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-
       <v-input
         name="end"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [fullWidth]="true"
         [placeholder]="'searchFields.textPlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key + '_end']"
-        ngDefaultControl
       ></v-input>
     </v-form>
   </ng-container>
@@ -147,25 +143,27 @@
     *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
     type="number"
     [dataTestId]="'iko-search-field-' + searchField.key"
+    [fullWidth]="true"
     [placeholder]="'searchFields.numberPlaceholder' | translate"
     [name]="searchField.key"
     [hideNumberSpinBox]="true"
-    [(ngModel)]="formValues[searchField.key]"
-    ngDefaultControl
+    (valueChange)="singleValueChange(searchField.key, $event)"
   ></v-input>
 </ng-template>
 
 <ng-template #searchFieldTemplateNumberRange let-searchField="searchField">
   <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
-    <v-form class="multiple-search-fields">
+    <v-form
+      (valueChange)="multipleValueChange(searchField.key, $event)"
+      class="multiple-search-fields"
+    >
       <v-input
         name="start"
         type="number"
-        [hideNumberSpinBox]="true"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [fullWidth]="true"
+        [hideNumberSpinBox]="true"
         [placeholder]="'searchFields.numberPlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key + '_start']"
-        ngDefaultControl
       ></v-input>
 
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -173,11 +171,10 @@
       <v-input
         name="end"
         type="number"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [hideNumberSpinBox]="true"
         [fullWidth]="true"
         [placeholder]="'searchFields.numberPlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key + '_end']"
-        ngDefaultControl
       ></v-input>
     </v-form>
   </ng-container>
@@ -186,33 +183,13 @@
 <ng-template #searchFieldTemplateBoolean let-searchField="searchField">
   <ng-container *ngIf="searchField.dataType === 'boolean' && searchField.fieldType === 'single'">
     <v-select
+      *ngIf="booleanItems$ | async as booleanItems"
+      [dataTestId]="'iko-search-field-' + searchField.key"
       [items]="booleanItems"
       [name]="searchField.key"
-      [(ngModel)]="formValues[searchField.key]"
-      ngDefaultControl
+      (selectedChange)="singleValueChange(searchField.key, $event)"
+      [appendInline]="false"
     ></v-select>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateBooleanRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'boolean' && searchField.fieldType === 'range'">
-    <v-form class="multiple-search-fields">
-      <v-select
-        name="start"
-        [items]="booleanItems"
-        [(ngModel)]="formValues[searchField.key + '_start']"
-        ngDefaultControl
-      ></v-select>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <v-select
-        name="end"
-        [items]="booleanItems"
-        [(ngModel)]="formValues[searchField.key + '_end']"
-        ngDefaultControl
-      ></v-select>
-    </v-form>
   </ng-container>
 </ng-template>
 
@@ -221,7 +198,6 @@
     *ngIf="searchField.dataType === 'time' && searchField.fieldType === 'single'"
     [placeholder]="'searchFields.timePlaceholder' | translate"
     [(ngModel)]="formValues[searchField.key]"
-    ngDefaultControl
   ></cds-timepicker>
 </ng-template>
 
@@ -230,16 +206,16 @@
     <v-form class="multiple-search-fields">
       <cds-timepicker
         [placeholder]="'searchFields.timePlaceholder' | translate"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [(ngModel)]="formValues[searchField.key + '_start']"
-        ngDefaultControl
       ></cds-timepicker>
 
       <ng-container *ngTemplateOutlet="toText"></ng-container>
 
       <cds-timepicker
         [placeholder]="'searchFields.timePlaceholder' | translate"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [(ngModel)]="formValues[searchField.key + '_end']"
-        ngDefaultControl
       ></cds-timepicker>
     </v-form>
   </ng-container>
@@ -248,9 +224,10 @@
 <ng-template #searchFieldTemplateDate let-searchField="searchField">
   <v-date-picker
     *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
+    [dataTestId]="'iko-search-field-' + searchField.key"
     [placeholder]="'searchFields.datePlaceholder' | translate"
-    [(ngModel)]="formValues[searchField.key]"
-    ngDefaultControl
+    [defaultDate]="formValues[searchField.key]"
+    (valueChange)="formValues[searchField.key] = $event"
   ></v-date-picker>
 </ng-template>
 
@@ -259,18 +236,20 @@
     <v-form class="multiple-search-fields">
       <v-date-picker
         name="start"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [placeholder]="'searchFields.datePlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key]"
-        ngDefaultControl
+        [defaultDate]="formValues[searchField.key]"
+        (valueChange)="formValues[searchField.key] = $event"
       ></v-date-picker>
 
       <ng-container *ngTemplateOutlet="toText"></ng-container>
 
       <v-date-picker
         name="end"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [placeholder]="'searchFields.datePlaceholder' | translate"
-        [(ngModel)]="formValues[searchField.key + '_end']"
-        ngDefaultControl
+        [defaultDate]="formValues[searchField.key + '_end']"
+        (valueChange)="formValues[searchField.key + '_end'] = $event"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -280,6 +259,7 @@
   <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'">
     <valtimo-date-time-picker
       [title]="searchField.title"
+      [dataTestId]="'iko-search-field-' + searchField.key"
       [placeholder]="'searchFields.datePlaceholder' | translate"
       [enableTime]="true"
       [fullWidth]="true"
@@ -295,7 +275,9 @@
   <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'range'">
     <v-form class="multiple-search-fields">
       <valtimo-date-time-picker
+        name="start"
         [title]="searchField.title"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [placeholder]="'searchFields.datePlaceholder' | translate"
         [enableTime]="true"
         [fullWidth]="true"
@@ -308,7 +290,9 @@
       <ng-container *ngTemplateOutlet="toText"></ng-container>
 
       <valtimo-date-time-picker
+        name="end"
         [placeholder]="'searchFields.datePlaceholder' | translate"
+        [dataTestId]="'iko-search-field-' + searchField.key"
         [enableTime]="true"
         [fullWidth]="true"
         [defaultDate]="formValues[searchField.key + '_end'] ?? ''"
@@ -330,9 +314,9 @@
   >
     <v-select
       *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
+      [dataTestId]="'iko-search-field-' + searchField.key"
       [items]="searchFieldSelectItems"
       [(ngModel)]="formValues[searchField.key]"
-      [disabled]="inputDisabled"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -347,10 +331,10 @@
   >
     <v-select
       *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
+      [dataTestId]="'iko-search-field-' + searchField.key"
       [items]="searchFieldSelectItems"
       [multiple]="true"
       [(ngModel)]="formValues[searchField.key]"
-      ngDefaultControl
     ></v-select>
   </ng-container>
 </ng-template>
@@ -361,9 +345,9 @@
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
     [placeholder]="'searchFields.bsnPlaceholder' | translate"
-    [(ngModel)]="formValues[searchField.key]"
+    [defaultValue]="formValues[searchField.key]"
+    (valueChange)="formValues[searchField.key] = $event"
     [errorKey]="bsnErrorKey"
-    ngDefaultControl
   ></v-input>
 </ng-template>
 
@@ -380,9 +364,9 @@
         name="start"
         [placeholder]="'searchFields.bsnPlaceholder' | translate"
         [dataTestId]="'iko-search-field-' + searchField.key + '-start'"
-        [(ngModel)]="formValues[searchField.key + '_start']"
+        [defaultValue]="formValues[searchField.key + '_start']"
+        (valueChange)="formValues[searchField.key + '_start'] = $event"
         [errorKey]="bsnErrorKey"
-        ngDefaultControl
       ></v-input>
 
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -391,9 +375,9 @@
         name="end"
         [placeholder]="'searchFields.bsnPlaceholder' | translate"
         [dataTestId]="'iko-search-field-' + searchField.key + '-end'"
-        [(ngModel)]="formValues[searchField.key + '_end']"
+        [defaultValue]="formValues[searchField.key + '_end']"
+        (valueChange)="formValues[searchField.key + '_end'] = $event"
         [errorKey]="bsnErrorKey"
-        ngDefaultControl
       ></v-input>
     </v-form>
   </ng-container>
