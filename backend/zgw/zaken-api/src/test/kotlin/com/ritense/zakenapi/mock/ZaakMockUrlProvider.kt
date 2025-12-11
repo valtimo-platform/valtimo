@@ -33,4 +33,8 @@ class ZaakMockUrlProvider : ZaakUrlProvider, ZaaktypeUrlProvider {
     override fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI {
         return URI("http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
     }
+
+    override fun getZaaktypeUrl(documentId: UUID): URI {
+        return URI("http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
+    }
 }
