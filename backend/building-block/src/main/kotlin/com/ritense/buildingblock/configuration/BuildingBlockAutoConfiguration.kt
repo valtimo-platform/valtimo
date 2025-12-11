@@ -374,7 +374,6 @@ class BuildingBlockAutoConfiguration {
         return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
     }
 
-
     @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessLinkImporter::class)
     fun buildingBlockProcessLinkImporter(
