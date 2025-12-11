@@ -2,6 +2,8 @@ name: Handle PR label updates
 
 on:
     pull_request:
+        branches:
+            - cicd/improve-pr-test-envs
         types:
             - unlabeled
 
