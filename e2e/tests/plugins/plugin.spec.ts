@@ -104,15 +104,20 @@ test.describe('Plugin management', () => {
 
   test.describe('Failure test', () => {
     test('Add a plugin with duplicated configurationId', async () => {
-      const type = 'Catalogi API';
+      const pluginType = 'Catalogi API';
+      const duplicatedPluginType = 'Catalogi API Same ID';
 
       // Act
-      // Create a plugin
       await pluginPage.openWizard();
-      await pluginPage.selectPluginType(type);
-      await pluginPage.fillPluginForm(type);
+      await pluginPage.selectPluginType(pluginType);
+      await pluginPage.fillPluginForm(duplicatedPluginType);
       await pluginPage.saveConfiguration();
-      await pluginPage.assertPluginExists(pluginTestConfiguration[type].pluginIdentifier);
+      await pluginPage.openWizard();
+      await pluginPage.selectPluginType(pluginType);
+      await pluginPage.fillPluginForm(duplicatedPluginType);
+
+      //Assert
+      await pluginPage.expectSameIdError();
     });
 
     test('Add Besluiten API plugin with incorrect RSIN', async () => {
@@ -121,17 +126,15 @@ test.describe('Plugin management', () => {
       await pluginPage.selectPluginType('Besluiten API');
       await pluginPage.fillPluginForm('Besluiten API');
       await pluginPage.fillIncorrectRsinValue('besluitenApiRsin');
-      // await pluginPage.saveConfiguration();
 
       // Assert
-      await pluginPage.expectSavingError();
+      await pluginPage.expectInvalidRSINError();
     });
 
-    test('Remove value from authentication plugin', async () => {});
-
-    test('Delete Zaken API expecting error', async () => {
-      // Remove Zaken API plugin
-      await pluginPage.deleteZakenApiExpectingError();
-    });
+    // TODO: After testing case importer, this needs a case setup and teardown
+    // test('Delete Zaken API expecting error', async () => {
+    //   // Remove Zaken API plugin
+    //   await pluginPage.deleteZakenApiExpectingError();
+    // });
   });
 });

@@ -100,23 +100,11 @@ export class PluginPage {
     await this.saveButton.click();
   }
 
-  async expectSavingError() {
-    // const [response] = await Promise.all([
-    //   this.page.waitForResponse(
-    //     res =>
-    //       res.url().includes('/api/v1/plugin/configuration') &&
-    //       res.request().method() === 'POST}' &&
-    //       res.status() === 500
-    //   ),
-    // ]);
-    const response = await this.request.post('/api/v1/plugin/configuration', {
-      failOnStatusCode: false,
-    });
-
+  async expectInvalidRSINError() {
     const [response500] = await Promise.all([
       this.page.waitForResponse(
         res =>
-          res.url().includes('/api/plugins') &&
+          res.url().includes('/api/v1/plugin/configuration') &&
           res.status() === 500 &&
           res.request().method() === 'POST'
       ),
@@ -125,22 +113,30 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    //   this.page.waitForResponse(
-    //     res =>
-    //       res.url().includes() &&
-    //       res.request().method() === 'POST}' &&
-    //       res.status() === 500
-    //   ),
-    // );
-
-    // console.log({response});
-    // expect(response.status()).toBe(500);
-
     const errorToast = this.page.locator('.cds--toast-notification__details');
 
     await expect(errorToast).toContainText(
       "Plugin property with name 'rsin' failed to parse for plugin"
     );
+    await this.page.getByTestId('stepperFooterCancelButton').click();
+  }
+
+  async expectSameIdError() {
+    const [response500] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          res.status() === 500 &&
+          res.request().method() === 'POST'
+      ),
+      this.saveButton.click(),
+    ]);
+
+    expect(response500.status()).toBe(500);
+
+    const errorToast = this.page.locator('.cds--toast-notification__details');
+
+    await expect(errorToast).toContainText('already used by another plugin');
     await this.page.getByTestId('stepperFooterCancelButton').click();
   }
 
