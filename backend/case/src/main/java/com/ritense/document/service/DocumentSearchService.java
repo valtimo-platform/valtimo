@@ -17,6 +17,7 @@
 package com.ritense.document.service;
 
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.service.impl.SearchRequest;
@@ -25,18 +26,33 @@ import org.springframework.data.domain.Pageable;
 
 public interface DocumentSearchService {
 
-    @SuppressWarnings({"squid:S1452","java:S1452"})
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
     Page<? extends Document> search(
         SearchRequest searchRequest,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         Pageable pageable
     );
 
-    @SuppressWarnings({"squid:S1452","java:S1452"})
-    Page<? extends Document> search(String documentDefinitionName, SearchWithConfigRequest searchWithConfigRequest, Pageable pageable);
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    Page<? extends Document> search(
+        String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Pageable pageable
+    );
 
-    @SuppressWarnings({"squid:S1452","java:S1452"})
-    Page<? extends Document> search(String documentDefinitionName, AdvancedSearchRequest searchRequest, Pageable pageable);
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    Page<? extends Document> search(
+        String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        AdvancedSearchRequest searchRequest,
+        Pageable pageable
+    );
 
-    Long count(String documentDefinitionName, AdvancedSearchRequest advancedSearchRequest);
+    Long count(
+        String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        AdvancedSearchRequest advancedSearchRequest
+    );
 
 }

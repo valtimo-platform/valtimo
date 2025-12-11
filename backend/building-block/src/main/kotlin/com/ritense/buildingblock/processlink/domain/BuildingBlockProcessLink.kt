@@ -92,7 +92,8 @@ class BuildingBlockProcessLink(
 
     override fun copy(id: UUID, processDefinitionId: String): ProcessLink = copy(
         id = id,
-        processDefinitionId = processDefinitionId
+        processDefinitionId = processDefinitionId,
+        activityId = activityId
     )
 
     fun copy(

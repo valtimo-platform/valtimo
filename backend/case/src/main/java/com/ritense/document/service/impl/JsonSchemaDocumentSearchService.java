@@ -28,6 +28,7 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
@@ -82,6 +83,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private static final String DOCUMENT_DEFINITION_ID = "documentDefinitionId";
+    private static final String SOLUTION_MODULE_TYPE = "solutionModuleType";
+    private static final String SOLUTION_MODULE_ID = "solutionModuleId";
     private static final String NAME = "name";
     private static final String CREATED_BY = "createdBy";
     private static final String SEQUENCE = "sequence";
@@ -135,57 +138,65 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         final SearchRequest searchRequest,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         final Pageable pageable
     ) {
-        return withLoggingContext("documentDefinitionName", searchRequest.getDocumentDefinitionName(), () ->
-            search(
-                (cb, query, documentRoot) ->
-                buildQueryWhere(
-                    searchRequest,
-                    cb,
-                    query,
-                    documentRoot
-                ),
-                pageable
-            )
+        return withLoggingContext(
+            "documentDefinitionName", searchRequest.getDocumentDefinitionName(), () ->
+                search(
+                    (cb, query, documentRoot) ->
+                        buildQueryWhere(
+                            searchRequest,
+                            solutionModuleType,
+                            cb,
+                            query,
+                            documentRoot
+                        ),
+                    pageable
+                )
         );
     }
 
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, searchWithConfigRequest, pageable, VIEW_LIST);
+        return search(documentDefinitionName, solutionModuleType, searchWithConfigRequest, pageable, VIEW_LIST);
     }
 
     public Page<JsonSchemaDocument> searchForExport(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, searchWithConfigRequest, pageable, EXPORT);
+        return search(documentDefinitionName, solutionModuleType, searchWithConfigRequest, pageable, EXPORT);
     }
 
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, advancedSearchRequest, pageable, VIEW_LIST);
+        return search(documentDefinitionName, solutionModuleType, advancedSearchRequest, pageable, VIEW_LIST);
     }
 
     @Override
     public Long count(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         AdvancedSearchRequest advancedSearchRequest
     ) {
 
         return count(
             (cb, query, documentRoot) -> buildQueryWhere(
                 documentDefinitionName,
+                solutionModuleType,
                 advancedSearchRequest,
                 cb,
                 query,
@@ -197,6 +208,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -213,13 +225,17 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             ))
             .toList();
 
-        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, searchCriteria);
+        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
+            searchWithConfigRequest,
+            searchCriteria
+        );
 
-        return search(documentDefinitionName, advancedSearchRequest, pageable, action);
+        return search(documentDefinitionName, solutionModuleType, advancedSearchRequest, pageable, action);
     }
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -228,6 +244,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         return search(
             (cb, query, documentRoot) -> buildQueryWhere(
                 documentDefinitionName,
+                solutionModuleType,
                 advancedSearchRequest,
                 cb,
                 query,
@@ -276,11 +293,19 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         SearchRequest searchRequest,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
         Root<JsonSchemaDocument> documentRoot
     ) {
         final List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(SOLUTION_MODULE_ID).get(SOLUTION_MODULE_TYPE),
+                solutionModuleType
+            )
+        );
 
         addNonJsonFieldPredicates(cb, documentRoot, searchRequest, predicates);
         addJsonFieldPredicates(cb, documentRoot, searchRequest, predicates);
@@ -300,6 +325,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         String documentDefinitionName,
+        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
         AdvancedSearchRequest searchRequest,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
@@ -321,6 +347,13 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                     ),
                     null
                 ).toPredicate(documentRoot, query, cb));
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(SOLUTION_MODULE_ID).get(SOLUTION_MODULE_TYPE),
+                solutionModuleType
+            )
+        );
 
         if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
             predicates.add(getAssigneeFilterPredicate(cb, documentRoot, searchRequest.getAssigneeFilter()));
@@ -407,7 +440,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         }
     }
 
-    private Predicate getAssigneeFilterPredicate(CriteriaBuilder cb, Root<JsonSchemaDocument> documentRoot, AssigneeFilter assigneeFilter) {
+    private Predicate getAssigneeFilterPredicate(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        AssigneeFilter assigneeFilter
+    ) {
         var caseAssigneeIdColumn = documentRoot.get(ASSIGNEE_ID);
         var userId = userManagementService.getCurrentUser().getUsername();
 
@@ -435,7 +472,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         }
     }
 
-    private Predicate getStatusFilterPredicate(CriteriaBuilder cb, Root<JsonSchemaDocument> documentRoot, Set<String> statusFilter) {
+    private Predicate getStatusFilterPredicate(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        Set<String> statusFilter
+    ) {
         Path<String> statusField = stringToPath(documentRoot, INTERNAL_STATUS_KEY);
         Predicate[] predicates = statusFilter.stream().map(status -> {
                 if (status == null || status.isEmpty()) {
@@ -449,7 +490,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         return cb.or(predicates);
     }
 
-    private Predicate getCaseTagsFilterPredicate(CriteriaBuilder cb, Root<JsonSchemaDocument> root, Set<String> caseTagsFilter) {
+    private Predicate getCaseTagsFilterPredicate(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> root,
+        Set<String> caseTagsFilter
+    ) {
 
         Join<JsonSchemaDocument, CaseTag> caseTagJoin = root.join(CASE_TAGS);
         Path<String> caseTagKeyPath = caseTagJoin.get(ID).get(KEY);
@@ -493,7 +538,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             case LESS_THAN_OR_EQUAL_TO -> searchLessThanOrEqualTo(cb, value, rangeTo);
             case BETWEEN -> searchBetween(cb, value, rangeFrom, rangeTo);
             case IN -> searchIn(cb, value, searchCriteria.getValues());
-            default -> throw new NotImplementedException("Searching for search type '" + searchCriteria.getSearchType() + "' hasn't been implemented.");
+            default ->
+                throw new NotImplementedException("Searching for search type '" + searchCriteria.getSearchType() + "' hasn't been implemented.");
         };
     }
 
@@ -557,7 +603,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         return in;
     }
 
-    private <T extends Comparable<? super T>> Predicate searchGreaterThanOrEqualTo(CriteriaBuilder cb, Expression<T> documentValue, T rangeFrom) {
+    private <T extends Comparable<? super T>> Predicate searchGreaterThanOrEqualTo(
+        CriteriaBuilder cb,
+        Expression<T> documentValue,
+        T rangeFrom
+    ) {
         if (rangeFrom instanceof TemporalAccessor) {
             var documentValueTimestamp = cast(documentValue, java.util.Date.class);
             return cb.greaterThanOrEqualTo(documentValueTimestamp, toJavaUtilDate(rangeFrom));
@@ -566,7 +616,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         }
     }
 
-    private <T extends Comparable<? super T>> Predicate searchLessThanOrEqualTo(CriteriaBuilder cb, Expression<T> documentValue, T rangeTo) {
+    private <T extends Comparable<? super T>> Predicate searchLessThanOrEqualTo(
+        CriteriaBuilder cb,
+        Expression<T> documentValue,
+        T rangeTo
+    ) {
         if (rangeTo instanceof TemporalAccessor) {
             var documentValueTimestamp = cast(documentValue, java.util.Date.class);
             return cb.lessThanOrEqualTo(documentValueTimestamp, toJavaUtilDate(rangeTo));
@@ -575,7 +629,12 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         }
     }
 
-    private <T extends Comparable<? super T>> Predicate searchBetween(CriteriaBuilder cb, Expression<T> documentValue, T rangeFrom, T rangeTo) {
+    private <T extends Comparable<? super T>> Predicate searchBetween(
+        CriteriaBuilder cb,
+        Expression<T> documentValue,
+        T rangeFrom,
+        T rangeTo
+    ) {
         if (rangeFrom instanceof TemporalAccessor) {
             var documentValueTimestamp = cast(documentValue, java.util.Date.class);
             return cb.between(documentValueTimestamp, toJavaUtilDate(rangeFrom), toJavaUtilDate(rangeTo));
@@ -617,7 +676,12 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 String property = order.getProperty();
                 if (property.startsWith(DOC_PREFIX)) {
                     var jsonPath = "$." + property.substring(DOC_PREFIX.length());
-                    expression = queryDialectHelper.getJsonValueExpression(cb, root.get(CONTENT).get(CONTENT), jsonPath, String.class);
+                    expression = queryDialectHelper.getJsonValueExpression(
+                        cb,
+                        root.get(CONTENT).get(CONTENT),
+                        jsonPath,
+                        String.class
+                    );
                 } else if (property.startsWith("$.")) {
                     expression = cb.lower(queryDialectHelper.getJsonValueExpression(
                         cb,
@@ -632,7 +696,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                     }
 
                     Path<?> parent;
-                    if( docProperty.equals(INTERNAL_STATUS_ORDER)) {
+                    if (docProperty.equals(INTERNAL_STATUS_ORDER)) {
                         parent = root.join(INTERNAL_STATUS, JoinType.LEFT);
                         docProperty = docProperty.substring(INTERNAL_STATUS.length() + 1);
                     } else {
