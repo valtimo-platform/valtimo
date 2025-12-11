@@ -64,10 +64,10 @@ internal class IkoListColumnManagementResourceTest {
 
     @Test
     fun `should get listColumns`() {
-        whenever(service.findAllColumnsByIkoDataAggregateKey("klant"))
+        whenever(service.findAllColumnsByIkoViewKey("klant"))
             .thenReturn(listOf(listColumn()))
 
-        mockMvc.perform(get("/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column", "klant"))
+        mockMvc.perform(get("/api/management/v1/iko-view/{ikoViewKey}/column", "klant"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].key").value("naam"))
@@ -84,7 +84,7 @@ internal class IkoListColumnManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column/{listColumnKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/column/{listColumnKey}",
                 "klant",
                 "naam"
             )
@@ -114,7 +114,7 @@ internal class IkoListColumnManagementResourceTest {
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column/{listColumnKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/column/{listColumnKey}",
                 "klant",
                 "naam"
             )
@@ -147,7 +147,7 @@ internal class IkoListColumnManagementResourceTest {
         whenever(service.update(eq("klant"), any())).thenReturn(listColumn)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/column/{key}",
                 "klant",
                 "naam"
             )
@@ -177,12 +177,12 @@ internal class IkoListColumnManagementResourceTest {
                 listColumn.defaultSort,
             )
         )
-        whenever(service.findAllColumnsByIkoDataAggregateKey("klant"))
+        whenever(service.findAllColumnsByIkoViewKey("klant"))
             .thenReturn(listOf(listColumn))
         whenever(service.update(eq("klant"), any())).thenReturn(listColumn)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column",
+                "/api/management/v1/iko-view/{ikoViewKey}/column",
                 "klant",
                 "naam"
             )
@@ -202,7 +202,7 @@ internal class IkoListColumnManagementResourceTest {
     fun `should delete listColumn`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/column/{listColumnKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/column/{listColumnKey}",
                 "klant",
                 "naam"
             )

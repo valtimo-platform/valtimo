@@ -39,7 +39,7 @@ import {
   tap,
 } from 'rxjs';
 import {
-  IkoDataRequestResponse,
+  IkoSearchActionResponse,
   IkoManagementParams,
   IkoRepositoryConfigResponse,
   IkoSearchField,
@@ -104,9 +104,9 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   public readonly fieldModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly prefillData$ = new BehaviorSubject<IkoSearchField | null>(null);
 
-  private readonly _searchAction$: Observable<IkoDataRequestResponse> = this.params$.pipe(
+  private readonly _searchAction$: Observable<IkoSearchActionResponse> = this.params$.pipe(
     switchMap((params: {aggregateKey: string; actionKey: string}) =>
-      this.ikoManagementApiService.getIkoDataRequest(params.aggregateKey, params.actionKey)
+      this.ikoManagementApiService.getIkoSearchAction(params.aggregateKey, params.actionKey)
     )
   );
   private readonly _ikoRepositoryConfig$: Observable<IkoRepositoryConfigResponse> =

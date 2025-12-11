@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition
 import com.ritense.valtimo.contract.LoggingConstants
+import com.ritense.valtimo.contract.case_.CaseDefinitionId.Companion.of
 import com.ritense.valtimo.logging.impl.LoggingTestBean
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ManagementService
@@ -38,6 +39,7 @@ class LoggingExecuteJobsRunnableIT @Autowired constructor(
 ) : BaseIntegrationTest() {
 
     private val businessKey = "some-id"
+    private val caseDefinitionId = of("everything", "1.0.0")
 
     @Test
     fun `should log correlation id for log messages in job execution`() {
@@ -45,6 +47,7 @@ class LoggingExecuteJobsRunnableIT @Autowired constructor(
             operatonProcessService.startProcess(
                 "logging-test-process",
                 businessKey,
+                caseDefinitionId,
                 mapOf()
             )
         } as ProcessInstanceWithDefinition

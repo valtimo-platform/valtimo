@@ -1,7 +1,7 @@
 # 13.7.0
 
 {% hint style="info" %}
-**Release date Day-Month - Year**
+**Release date 10-12-2025**
 {% endhint %}
 
 ## New Features
@@ -19,15 +19,13 @@
   These retry cycles can be customized in application.yml.
   In addition, custom cycles can be defined through Spring Boot configuration files.
   
-  See more about it [here](../../features/process/retry-cycle.md).
+  See more about it [here](../../../features/process/retry-cycle.md).
 
-## Enhancement
+* **Widget compact mode**
 
-* **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
-
-  When you try to upload a file to the Documenten API, you are shown a modal where you can enter metadata about the file you want to upload.
-  Within this modal there is a drop-down labelled "Documenttype". The options within this drop-down are now ordered alphabetically and you can search through the list to select the appropriate documenttype. (As you can already do for the "Vertrouwelijkheidsaanduiding" and "Status" fields.)
-
+  During the configuration of the widgets, now a `Density` step appears under certain conditions.
+  
+  See more about it [here](../../../features/case/case-detail/tabs/widgets.md).
 
 ## Bugfixes
 

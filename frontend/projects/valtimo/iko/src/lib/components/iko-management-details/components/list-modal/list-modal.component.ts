@@ -170,7 +170,7 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     ViewType.HIDDEN,
   ];
 
-  private readonly _dataAggregateKey$: Observable<string> = this.route.params.pipe(
+  private readonly _ikoViewKey$: Observable<string> = this.route.params.pipe(
     map(params => params?.key),
     filter(key => !!key)
   );
@@ -227,20 +227,16 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
 
     this.disableForm();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(
-        switchMap(dataAggregateKey =>
+        switchMap(ikoViewKey =>
           this.modalMode === 'add'
             ? this.ikoManagementApiService.createIkoListColumn(
-                dataAggregateKey,
+                ikoViewKey,
                 formValue.key,
                 requestBody
               )
-            : this.ikoManagementApiService.updateListColumn(
-                dataAggregateKey,
-                formValue.key,
-                requestBody
-              )
+            : this.ikoManagementApiService.updateListColumn(ikoViewKey, formValue.key, requestBody)
         )
       )
       .subscribe({

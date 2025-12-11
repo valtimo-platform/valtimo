@@ -19,6 +19,7 @@ package com.ritense.processlink.web.rest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.service.ProcessLinkActivityService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId.Companion.of
 import com.ritense.valtimo.service.OperatonProcessService
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
@@ -44,6 +45,7 @@ internal class ProcessLinkTaskResourceIT @Autowired constructor(
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
+    private val caseDefinitionId = of("autodeploy", "1.0.0")
 
     @BeforeEach
     fun init() {
@@ -59,6 +61,7 @@ internal class ProcessLinkTaskResourceIT @Autowired constructor(
                 operatonProcessService.startProcess(
                     PROCESS_DEF_KEY,
                     UUID.randomUUID().toString(),
+                    caseDefinitionId,
                     emptyMap()
                 )
             }

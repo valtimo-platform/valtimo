@@ -54,6 +54,14 @@ A widget can either have a "Default" color scheme or it can be "High Contrast" t
 {% endstep %}
 
 {% step %}
+**Choose widget density**
+
+A widget can either have a "Default" density or it can be "Compact" to display data in a more efficient manner. For now, Compact mode is only available for the Fields, Table and Collection widgets
+
+<figure><img src="../../../../.gitbook/assets/density.png" alt=""><figcaption><p>Choosing widget density</p></figcaption></figure>
+{% endstep %}
+
+{% step %}
 **Choose widget content**
 
 Depending on the widget type, the content is filled in differently. Click the widget type below to view the details for configuration.
