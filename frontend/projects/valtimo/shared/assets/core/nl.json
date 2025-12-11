@@ -964,7 +964,11 @@
         "percent": "Percentage",
         "link": "Link"
       },
-      "custom": {"selectComponent": "Angular-component", "placeholder": "Selecteer een component"},
+      "custom": {
+        "selectComponent": "Angular-component",
+        "placeholder": "Selecteer een component",
+        "addCustomKeyValue": "Aangepaste sleutel-waarde toevoegen"
+      },
       "formio": {
         "selectForm": "Formulierdefinitie",
         "placeholder": "Selecteer een formulierdefinitie"
