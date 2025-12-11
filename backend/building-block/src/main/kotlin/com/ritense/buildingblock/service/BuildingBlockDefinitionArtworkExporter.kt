@@ -23,7 +23,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
-import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
+import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 import java.util.Base64
@@ -32,10 +32,10 @@ import java.util.Base64
 class BuildingBlockDefinitionArtworkExporter(
     private val objectMapper: ObjectMapper,
     val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-) : Exporter<BuildingBlockDefinitionExportRequest> {
-    override fun supports() = BuildingBlockDefinitionExportRequest::class.java
+) : Exporter<BuildingBlockDocumentDefinitionExportRequest> {
+    override fun supports() = BuildingBlockDocumentDefinitionExportRequest::class.java
 
-    override fun export(request: BuildingBlockDefinitionExportRequest): ExportResult {
+    override fun export(request: BuildingBlockDocumentDefinitionExportRequest): ExportResult {
         val definition = buildingBlockDefinitionRepository.findByIdOrNull(request.buildingBlockDefinitionId)
             ?: return ExportResult()
         val artwork = definition.artwork ?: return ExportResult()
