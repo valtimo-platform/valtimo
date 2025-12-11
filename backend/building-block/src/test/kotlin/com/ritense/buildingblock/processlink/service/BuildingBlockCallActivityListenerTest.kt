@@ -150,13 +150,13 @@ class BuildingBlockCallActivityListenerTest {
 
         val outputMappings = listOf(
             BuildingBlockOutputMapping(
-                source = "doc:/result",
-                target = "doc:/case/result",
+                source = "result",
+                target = "doc:/result",
                 syncTiming = BuildingBlockSyncTiming.END
             ),
             BuildingBlockOutputMapping(
-                source = "doc:/ignored",
-                target = "doc:/case/ignored",
+                source = "ignored",
+                target = "doc:/ignored",
                 syncTiming = BuildingBlockSyncTiming.CONTINUOUS
             )
         )
@@ -180,6 +180,6 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityEnd(execution)
 
-        verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/case/result" to "value"))
+        verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/result" to "value"))
     }
 }
