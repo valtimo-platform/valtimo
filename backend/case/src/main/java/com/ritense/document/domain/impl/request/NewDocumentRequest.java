@@ -19,6 +19,7 @@ package com.ritense.document.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.resource.Resource;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
@@ -72,6 +73,14 @@ public class NewDocumentRequest {
 
     public String caseDefinitionVersionTag() {
         return caseDefinitionVersionTag;
+    }
+
+    public CaseDefinitionId caseDefinitionId() {
+        if (caseDefinitionKey == null || caseDefinitionVersionTag == null) {
+            return null;
+        } else {
+            return CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag);
+        }
     }
 
     public NewDocumentRequest withDocumentRelation(DocumentRelationRequest documentRelation) {

@@ -139,8 +139,8 @@
                     "copyStrategy": "specified",
                     "mapping": [
                         {
-                            "source": "zaakobjecten.0.objecttype",
-                            "target": "doc:zaakobjecten.0.objecttype"
+                            "source": "/zaakobjecten/0/objecttype",
+                            "target": "doc:/zaakobjecten/0/objecttype"
                         }
                     ]
                 }
