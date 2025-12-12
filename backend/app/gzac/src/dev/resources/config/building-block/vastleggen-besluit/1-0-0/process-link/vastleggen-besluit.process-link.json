@@ -4,7 +4,6 @@
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
         "pluginActionDefinitionKey": "get-besluittype",
-        "referenceType": "BUILDING_BLOCK",
         "pluginDefinitionKey": "catalogiapi",
         "actionProperties": {
             "besluittype": "doc:besluitTypeDescription",
@@ -16,7 +15,6 @@
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
         "pluginActionDefinitionKey": "create-besluit",
-        "referenceType": "BUILDING_BLOCK",
         "pluginDefinitionKey": "besluitenapi",
         "actionProperties": {
             "besluittypeUrl": "doc:besluittypeUrl",
@@ -38,7 +36,6 @@
         "activityId": "LinkDocumentAanBesluitTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",
-        "referenceType": "BUILDING_BLOCK",
         "pluginDefinitionKey": "besluitenapi",
         "pluginActionDefinitionKey": "link-document-to-besluit",
         "actionProperties": {
