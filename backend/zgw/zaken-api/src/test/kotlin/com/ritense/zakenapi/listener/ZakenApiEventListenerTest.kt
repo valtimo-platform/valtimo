@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.ritense.zakenapi.service
+package com.ritense.zakenapi.listener
 
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.DocumentDefinition
@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
+import com.ritense.zakenapi.service.ZaakTypeLinkService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

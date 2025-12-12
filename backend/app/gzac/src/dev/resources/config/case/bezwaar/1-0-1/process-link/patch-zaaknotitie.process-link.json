@@ -1,0 +1,23 @@
+[
+  {
+    "activityId" : "StartEvent_1",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-patch-zaaknotitie",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : null,
+    "processLinkType" : "form"
+  },
+  {
+    "activityId" : "st-patch-zaaknotitie",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+    "pluginActionDefinitionKey" : "patch-zaaknotitie",
+    "actionProperties" : {
+      "zaakNotitieUrl" : "pv:zaakNotitieUrl",
+      "tekst" : "pv:noteText"
+    },
+    "processLinkType" : "plugin"
+  }
+]

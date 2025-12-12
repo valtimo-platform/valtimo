@@ -7,3 +7,8 @@ spring:
 
 valtimo:
     database: mysql
+
+operaton:
+    bpm:
+        database:
+            type: mysql

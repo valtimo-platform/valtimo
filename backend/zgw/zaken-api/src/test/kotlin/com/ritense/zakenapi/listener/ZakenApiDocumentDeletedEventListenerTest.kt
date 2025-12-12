@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.service
+package com.ritense.zakenapi.listener
 
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
@@ -22,6 +22,7 @@ import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
+import com.ritense.zakenapi.service.ZaakDocumentService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -38,7 +39,8 @@ class ZakenApiDocumentDeletedEventListenerTest {
     private val zaakDocumentService = mock<ZaakDocumentService>()
     private val pluginService = mock<PluginService>()
 
-    private val listener: ZakenApiDocumentDeletedEventListener = ZakenApiDocumentDeletedEventListener(zaakInstanceService, zaakDocumentService, pluginService)
+    private val listener: ZakenApiDocumentDeletedEventListener =
+        ZakenApiDocumentDeletedEventListener(zaakInstanceService, zaakDocumentService, pluginService)
 
     @Test
     fun `should delete zaak when one is linked`() {

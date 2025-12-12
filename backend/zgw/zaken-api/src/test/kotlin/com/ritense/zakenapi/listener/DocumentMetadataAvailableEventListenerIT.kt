@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.service
+package com.ritense.zakenapi.listener
 
 import com.ritense.temporaryresource.domain.ResourceStorageMetadata
 import com.ritense.temporaryresource.domain.StorageMetadataKeys
