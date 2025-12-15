@@ -1,0 +1,10 @@
+{
+    "ikoViewKey": "demo",
+    "ikoTabs": [
+        {
+            "key": "general",
+            "title": "General",
+            "type": "widgets"
+        }
+    ]
+}

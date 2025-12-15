@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
+import {map, Observable, take} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
-import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
-import {map, Observable, take} from 'rxjs';
 import {
   BasicWidget,
   WidgetManagementTab,
@@ -29,8 +28,8 @@ import {
   WidgetWidth,
   WidgetWizardStep,
 } from '../../../models';
-import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {WidgetWizardService} from '../../../services';
+import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
 
 @Component({
   selector: 'valtimo-widget-management',

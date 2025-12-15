@@ -20,10 +20,6 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
-  SearchFieldBoolean,
-  SearchFieldValues,
-} from '@valtimo/shared';
-import {
   CarbonListModule,
   PageTitleService,
   InputModule,
@@ -34,6 +30,10 @@ import {
   DateTimePickerModule,
 } from '@valtimo/components';
 import {
+  SearchFieldBoolean,
+  SearchFieldValues,
+} from '@valtimo/shared';
+import {
   ButtonModule as CarbonButtonModule,
   IconModule,
   IconService,
@@ -43,7 +43,7 @@ import {
   TimePickerModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, take} from 'rxjs';
-import {IkoDataRequestUser} from '../../models';
+import {IkoSearchActionUser} from '../../models';
 import {IkoApiService} from '../../services';
 
 type SearchFormValue = string | boolean | string[] | null | undefined;
@@ -67,7 +67,6 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     LayerModule,
     NgTemplateOutlet,
     AsyncPipe,
-    InputModule,
     SelectModule,
     DatePickerModule,
     NgTemplateOutlet,
@@ -109,21 +108,21 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     filter(key => !!key)
   );
 
-  public readonly dataRequests$: Observable<IkoDataRequestUser[]> = this._key$.pipe(
+  public readonly ikoSearchActions$: Observable<IkoSearchActionUser[]> = this._key$.pipe(
     switchMap(key =>
       combineLatest([
         of(key),
         this.ikoApiService.cachedMenuItems$,
-        this.ikoApiService.getIkoDataRequests(key),
+        this.ikoApiService.getIkoSearchActions(key),
       ])
     ),
-    map(([key, menuItems, dataRequests]) => {
+    map(([key, menuItems, ikoSearchActions]) => {
       const currentMenuItem = menuItems.find(item => item.key === key);
 
       if (currentMenuItem && currentMenuItem?.title)
         this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
 
-      return dataRequests;
+      return ikoSearchActions;
     })
   );
 

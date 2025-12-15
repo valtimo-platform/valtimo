@@ -1,5 +1,5 @@
 {
-  "ikoDataAggregateKey" : "klant",
+  "ikoViewKey" : "klant",
   "ikoListColumns" : [
     {
       "key" : "naam",

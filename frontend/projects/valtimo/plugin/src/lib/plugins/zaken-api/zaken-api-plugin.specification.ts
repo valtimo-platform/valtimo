@@ -23,7 +23,12 @@ import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/
 import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
@@ -32,13 +37,10 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
-import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
-import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
-import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
-import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
+import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -50,13 +52,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
-    'delete-zaak-rol': DeleteZaakRolComponent,
     'create-zaak': CreateZaakConfigurationComponent,
+    'patch-zaak': PatchZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
     'create-medewerker-zaak-rol': CreateMedewerkerZaakRolComponent,
     'create-organisatorische-eenheid-zaak-rol': CreateOrganisatorischeEenheidZaakRolComponent,
     'create-vestiging-zaak-rol': CreateVestigingZaakRolComponent,
+    'delete-zaak-rol': DeleteZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
     'start-hersteltermijn': StartHersteltermijnConfigurationComponent,
     'end-hersteltermijn': EndHersteltermijnComponent,
@@ -65,8 +68,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
-    'patch-zaak': PatchZaakConfigurationComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
+    'create-zaaknotitie': CreateZaakNotitieConfigurationComponent,
+    'patch-zaaknotitie': PatchZaakNotitieConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -83,6 +87,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+      noteEventListenerEnabled: 'Synchroniseer Dossier notitie als Zaak-notitie naar de Zaak',
+      noteEventListenerEnabledTooltip:
+        'Wanneer geactiveerd zal bij het aanmaken, updaten of verwijderen van een Dossier notitie deze ook als Zaak-notitie worden gesynchroniseerd naar de Zaak (aangemaakt, bijgewerkt of verwijderd).',
+      'noteEventListenerEnabled.toggleOn': 'Geactiveerd',
+      'noteEventListenerEnabled.toggleOff': 'Gedeactiveerd',
+      noteSubject: 'De vaste onderwerp tekst van de Zaak-notitie',
       documentUrl: 'URL naar het document',
       documentUrlTooltip:
         'Dit veld ondersteunt URLs en proces variabelen. Gebruik pv:variable om een proces variabele uit te lezen',
@@ -167,8 +177,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
       datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
-      statustoelichtingTooltip:
-        'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
+      statustoelichtingTooltip: 'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
       'create-zaakresultaat': 'Zaakresultaat aanmaken',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
@@ -283,6 +292,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
+      'create-zaaknotitie': 'Zaak-notitie aanmaken',
+      createZaakNotitieInformation: 'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
+      'patch-zaaknotitie': 'Zaak-notitie bijwerken',
+      patchZaakNotitieInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak-notitie gekoppeld aan de Zaak in de Zaken API bij te werken.',
+      addPatchZaakNotitieProperty: 'Voeg parameter toe',
+      zaakNotitieUrl: 'Zaak-notitie URL',
+      zaakNotitieUrlTooltip: 'De URL referentie naar de Zaak-notitie in de Zaken API.',
+      onderwerp: 'Onderwerp',
+      tekst: 'Tekst',
+      aangemaaktDoor: 'Aangemaakt door',
+      notitieType: 'Notitietype',
+      status: 'Status',
     },
     en: {
       title: 'Zaken API',
@@ -298,6 +319,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
+      noteEventListenerEnabled: 'Synchronise Case note as Zaak-notitie to the Zaak',
+      noteEventListenerEnabledTooltip:
+        'When enabled, when creating, updating or deleting a Case note it will also be synchronized as a Zaak-notitie to the Zaak (created, updated or deleted)',
+      'noteEventListenerEnabled.toggleOn': 'Enabled',
+      'noteEventListenerEnabled.toggleOff': 'Disabled',
+      noteSubject: 'The fixed subject text of the Zaak-notitie',
       documentUrl: 'URL to the document',
       documentUrlTooltip:
         'This field supports URLs and process variables. Use pv:variable to read a process variable',
@@ -495,7 +522,19 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
-      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
+      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      'create-zaaknotitie': 'Create Zaak-notitie',
+      createZaakNotitieInformation: 'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
+      'patch-zaaknotitie': 'Update Zaak-notitie',
+      patchZaakNotitieInformation: 'This action allows you to update properties of the Zaak-notitie linked to the Zaak in the Zaken API.',
+      addPatchZaakNotitieProperty: 'Add property',
+      zaakNotitieUrl: 'Zaak-notitie URL',
+      zaakNotitieUrlTooltip: 'The reference URL to the Zaak-notitie in the Zaken API',
+      onderwerp: 'Subject',
+      tekst: 'Text',
+      aangemaaktDoor: 'Created by',
+      notitieType: 'Note type',
+      status: 'Status',
     },
     de: {
       title: 'Zaken API',
@@ -511,6 +550,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
+      noteEventListenerEnabled: 'Fallnotiz als Zaak-notitie mit Zaak synchronisieren',
+      noteEventListenerEnabledTooltip:
+        'Wenn aktiviert, wird beim Erstellen, Aktualisieren oder Löschen einer Fallnotiz diese auch als Zaak-notitie mit dem entsprechenden Zaak (erstellt, aktualisiert oder gelöscht) synchronisiert.',
+      'noteEventListenerEnabled.toggleOn': 'Aktiviert',
+      'noteEventListenerEnabled.toggleOff': 'Deaktiviert',
+      noteSubject: 'Der festgelegte Betrefftext der Zaak-notitie',
       documentUrl: 'URL zum Dokument',
       documentUrlTooltip:
         'Dieses Feld unterstützt URLs und Prozessvariablen. Verwenden Sie pv:Variablen, um eine Prozessvariable zu lesen',
@@ -711,6 +756,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuidTooltip: 'Die UUID der Rolle',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
+      'create-zaaknotitie': 'Zaak-notitie erstellen',
+      createZaakNotitieInformation: 'Mit dieser Aktion können Sie dem Zaak in der Zaken-API eine Zaak-notitie hinzufügen.',
+      'patch-zaaknotitie': 'Zaak-notitie aktualisieren',
+      patchZaakNotitieInformation: 'Mit dieser Aktion können Sie die Eigenschaften der mit dem Zaak verknüpften Zaak-notitie in der Zaken-API aktualisieren.',
+      addPatchZaakNotitieProperty: 'Parameter hinzufügen',
+      zaakNotitieUrl: 'Zaak-notitie-URL',
+      zaakNotitieUrlTooltip: 'URL-Referenz zur der Zaak-notitie in der Zaken-API',
+      onderwerp: 'Betreff',
+      tekst: 'Text',
+      aangemaaktDoor: 'Erstellt von',
+      notitieType: 'Notiztyp',
+      status: 'Status',
     },
   },
 };

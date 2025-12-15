@@ -14,14 +14,14 @@
   ~ limitations under the License.
   -->
 
-@if (dataRequests$ | async; as dataRequests) {
-  @if (dataRequests.length === 0) {
+@if (ikoSearchActions$ | async; as ikoSearchActions) {
+  @if (ikoSearchActions.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
   } @else {
     <h4>{{ 'iko.searchVia' | translate }}</h4>
 
     <cds-tabs class="iko-search-tabs" type="line">
-      @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
+      @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
         <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
           <div class="query-group__row">
             @for (field of param.searchFields; track field.key) {

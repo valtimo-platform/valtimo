@@ -8,13 +8,14 @@
                 "title": "Aanvrager",
                 "width": 1,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
                             {
                                 "key": "naam",
                                 "title": "Naam",
-                                "value": "iko:/persoon/naam/volledigeNaam?ikoDataAggregateKey=klant&id=doc:bsn",
+                                "value": "iko:/basisgegevens/naam?ikoViewKey=demo&id=999990755",
                                 "displayProperties": {
                                     "type": "text",
                                     "hideWhenEmpty": false
@@ -23,7 +24,7 @@
                             {
                                 "key": "geboortedatum",
                                 "title": "Geboortedatum",
-                                "value": "iko:/persoon/geboorte/datum/datum?ikoDataAggregateKey=klant&id=doc:bsn",
+                                "value": "iko:/basisgegevens/geboortedatum?ikoViewKey=demo&id=999990755",
                                 "displayProperties": {
                                     "type": "date",
                                     "format": "DD-MM-YYYY",
@@ -33,7 +34,7 @@
                             {
                                 "key": "burgerservicenummer",
                                 "title": "Burgerservicenummer",
-                                "value": "doc:bsn",
+                                "value": "iko:/basisgegevens/bsn?ikoViewKey=demo&id=999990755",
                                 "displayProperties": {
                                     "type": "text",
                                     "hideWhenEmpty": false
@@ -45,32 +46,32 @@
             },
             {
                 "type": "table",
-                "key": "klanten",
-                "title": "Klanten",
+                "key": "zaken",
+                "title": "Zaken",
                 "width": 4,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
-                    "collection": "iko:?ikoDataAggregateKey=klant&bsn=999990755",
+                    "collection": "iko:/lopende_zaken?ikoViewKey=demo&id=999990755",
                     "defaultPageSize": 4,
                     "columns": [
                         {
-                            "key": "naam",
-                            "title": "Naam",
-                            "value": "/naam/volledigeNaam"
-                        },
-                        {
-                            "key": "geboortedatum",
-                            "title": "Geboortedatum",
-                            "value": "/geboorte/datum/datum",
+                            "key": "type",
+                            "title": "Type",
+                            "value": "type",
                             "displayProperties": {
-                                "type": "date",
-                                "format": "DD-MM-YYYY"
+                                "type": "text",
+                                "hideWhenEmpty": false
                             }
                         },
                         {
-                            "key": "bsn",
-                            "title": "BSN",
-                            "value": "/burgerservicenummer"
+                            "key": "beschrijving",
+                            "title": "Beschrijving",
+                            "value": "beschrijving",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            }
                         }
                     ],
                     "firstColumnAsTitle": false

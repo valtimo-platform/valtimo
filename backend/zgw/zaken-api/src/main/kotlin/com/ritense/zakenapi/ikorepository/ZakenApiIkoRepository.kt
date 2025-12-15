@@ -54,7 +54,7 @@ class ZakenApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(ZAAKTYPE_URL, PROPERTY_FIELD_TYPE_URL),
     )
 

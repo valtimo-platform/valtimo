@@ -37,6 +37,7 @@ class FormIoCaseWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -44,7 +45,7 @@ class FormIoCaseWidget(
     @Column(name = "properties", nullable = false)
     val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, icon, order, width, highContrast, actions, displayConditions
+    id, title, icon, order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = FormIoCaseWidget(
         id = id,
@@ -53,6 +54,7 @@ class FormIoCaseWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions?: emptyList(),
         properties = properties

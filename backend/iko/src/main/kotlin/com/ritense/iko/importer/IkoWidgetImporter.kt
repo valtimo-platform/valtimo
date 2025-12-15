@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_REQUEST
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_ACTION
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_WIDGET
 import java.util.UUID
 
@@ -32,28 +32,28 @@ class IkoWidgetImporter(
 
     override fun type(): String = IKO_WIDGET
 
-    override fun dependsOn(): Set<String> = setOf(IKO_DATA_REQUEST)
+    override fun dependsOn(): Set<String> = setOf(IKO_SEARCH_ACTION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
         val ikoWidgetsDto = objectMapper.readValue<IkoWidgetsDto>(request.content.toString(Charsets.UTF_8))
 
-        val existingWidgets = service.findAllByTabKey(ikoWidgetsDto.ikoDataAggregateKey, ikoWidgetsDto.ikoTabKey)
+        val existingWidgets = service.findAllByTabKey(ikoWidgetsDto.ikoViewKey, ikoWidgetsDto.ikoTabKey)
 
         ikoWidgetsDto.ikoWidgets.forEachIndexed { index, widgetDto ->
             val existingWidgetId = existingWidgets.firstOrNull { existingTab -> existingTab.key == widgetDto.key }?.id
             if (existingWidgetId != null) {
                 service.update(
-                    ikoWidgetsDto.ikoDataAggregateKey,
+                    ikoWidgetsDto.ikoViewKey,
                     ikoWidgetsDto.ikoTabKey,
                     widgetDto.toEntity(existingWidgetId, index)
                 )
             } else {
                 service.create(
-                    ikoWidgetsDto.ikoDataAggregateKey,
+                    ikoWidgetsDto.ikoViewKey,
                     ikoWidgetsDto.ikoTabKey,
-                    widgetDto.toEntity(UUID.randomUUID(), index)
+                widgetDto.toEntity(UUID.randomUUID(), index)
                 )
             }
 
@@ -61,7 +61,7 @@ class IkoWidgetImporter(
                 .filter { existingWidget -> ikoWidgetsDto.ikoWidgets.none { widgetDto -> widgetDto.key == existingWidget.key } }
                 .forEach { existingWidget ->
                     service.deleteByKey(
-                        ikoWidgetsDto.ikoDataAggregateKey,
+                        ikoWidgetsDto.ikoViewKey,
                         ikoWidgetsDto.ikoTabKey,
                         existingWidget.key
                     )
