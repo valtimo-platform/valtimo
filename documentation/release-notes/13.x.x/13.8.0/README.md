@@ -18,7 +18,7 @@ Property** `targetKey`. The supported `targetKey` values:
 Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
 will still result in an error.
 
-## Enhancement
+## Enhancements
 
 * **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
 
