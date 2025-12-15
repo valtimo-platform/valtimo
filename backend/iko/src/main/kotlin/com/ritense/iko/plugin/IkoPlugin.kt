@@ -18,6 +18,7 @@ package com.ritense.iko.plugin
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.iko.client.IkoClient
+import com.ritense.iko.dto.ContainerParam
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.valtimo.contract.validation.Url
@@ -55,13 +56,13 @@ class IkoPlugin(
     fun getByAggregatedDataProfileId(
         aggregatedDataProfileName: String,
         id: String,
-        queryParams: Map<String, String>,
+        containerParams: List<ContainerParam>,
     ): JsonNode {
         return ikoClient.getByAggregatedDataProfileId(
             baseUrl = url,
             aggregatedDataProfileName = aggregatedDataProfileName,
             id = id,
-            queryParams = queryParams,
+            containerParams = containerParams,
         )
     }
 

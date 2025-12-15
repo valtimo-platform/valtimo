@@ -285,9 +285,11 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoClient::class)
     fun ikoClient(
         restClientBuilder: RestClient.Builder,
+        objectMapper: ObjectMapper,
     ): IkoClient {
         return IkoClient(
             restClientBuilder,
+            objectMapper,
         )
     }
 
@@ -298,12 +300,14 @@ class IkoAutoConfiguration {
         ikoSearchActionService: IkoSearchActionService,
         searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
+        pluginService: PluginService,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoViewService,
             ikoSearchActionService,
             searchFieldService,
             objectMapper,
+            pluginService,
         )
     }
 

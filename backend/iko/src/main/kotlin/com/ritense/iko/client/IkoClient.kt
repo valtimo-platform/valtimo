@@ -17,7 +17,9 @@
 package com.ritense.iko.client
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ritense.iko.dto.ContainerParam
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpHeaders.AUTHORIZATION
@@ -25,11 +27,13 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.net.URI
+import java.util.Base64
 import kotlin.collections.component1
 import kotlin.collections.component2
 
 class IkoClient(
     private val restClientBuilder: RestClient.Builder,
+    private val objectMapper: ObjectMapper,
 ) {
     fun getByEndpointId(
         baseUrl: URI,
@@ -112,9 +116,10 @@ class IkoClient(
         baseUrl: URI,
         aggregatedDataProfileName: String,
         id: String,
-        queryParams: Map<String, String> = emptyMap(),
+        containerParams: List<ContainerParam> = listOf(),
     ): JsonNode {
         try {
+            val base64UrlEncoder = Base64.getUrlEncoder()
             val result = restClientBuilder
                 .clone()
                 .build()
@@ -130,9 +135,14 @@ class IkoClient(
                         .pathSegment(id)
                         .queryParams(
                             LinkedMultiValueMap(
-                                queryParams
-                                    .map { (key, value) -> key to listOf(value) }
-                                    .associate { it })
+                                mapOf(
+                                    "containerParam" to containerParams.map {
+                                        base64UrlEncoder.encodeToString(
+                                            objectMapper.writeValueAsString(it).toByteArray()
+                                        )
+                                    }
+                                )
+                            )
                         )
                         .build()
                 }
