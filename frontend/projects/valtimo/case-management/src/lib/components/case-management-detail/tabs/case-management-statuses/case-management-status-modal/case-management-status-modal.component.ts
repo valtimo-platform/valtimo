@@ -88,19 +88,13 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
-    retentionPeriod: this.fb.control(0, [
+    retentionPeriod: this.fb.control(-1, [
       Validators.required,
-      this.numberValidator
+      Validators.pattern(/^-?\d+$/),
     ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
-
-  public numberValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    if (value === null || value === '' || value === undefined) return null; // allow empty
-    return isNaN(value) ? { notNumber: true } : null;
-  }
 
   private _isEdit!: boolean;
 
