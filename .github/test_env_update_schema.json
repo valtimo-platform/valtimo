@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test environment comment payloads",
+  "schemas": {
+    "test_env_state_changed": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "waiting_for_images",
+            "test_env_started",
+            "test_env_is_running",
+            "test_env_is_crash_looping"
+          ]
+        },
+        "test_env_comment_id": {
+          "type": "integer"
+        },
+        "test_env_image_tag": {
+          "type": "string"
+        },
+        "grafana_backend_pod_metrics_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grafana_backend_pod_logs_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "state",
+        "test_env_comment_id",
+        "test_env_image_tag",
+        "grafana_backend_pod_metrics_url",
+        "grafana_backend_pod_logs_url"
+      ],
+      "additionalProperties": false
+    },
+    "test_env_cannot_start": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "test_env_cannot_start"
+        },
+        "test_env_comment_id": {
+          "type": "integer"
+        },
+        "test_env_image_tag": {
+          "type": "string"
+        },
+        "error_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "test_env_comment_id",
+        "test_env_image_tag",
+        "error_message"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

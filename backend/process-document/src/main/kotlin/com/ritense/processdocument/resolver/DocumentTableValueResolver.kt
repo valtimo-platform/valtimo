@@ -18,6 +18,7 @@ package com.ritense.processdocument.resolver
 
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -25,8 +26,9 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.exception.ValueResolverValidationException
-import org.operaton.bpm.engine.delegate.VariableScope
+import java.util.UUID
 import java.util.function.Function
+import org.operaton.bpm.engine.delegate.VariableScope
 
 /**
  * This resolver can resolve requestedValues against the Document table columns
@@ -63,8 +65,13 @@ class DocumentTableValueResolver(
     }
 
     override fun handleValues(processInstanceId: String, variableScope: VariableScope?, values: Map<String, Any?>) {
-        val firstValue = values.iterator().next()
-        throw NotImplementedError("Unable to handle value: {${firstValue.key} to ${firstValue.value}}")
+        val documentId =
+            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope)
+        handleValues(documentId, values)
+    }
+
+    override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
+        handleValues(JsonSchemaDocumentId.existingId(documentId), values)
     }
 
     override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
@@ -94,6 +101,22 @@ class DocumentTableValueResolver(
                 "sequence" -> document.sequence()
                 "version" -> document.version()
                 else -> throw IllegalArgumentException("Unknown document column with name: $requestedValue")
+            }
+        }
+    }
+
+    private fun handleValues(documentId: Document.Id, values: Map<String, Any?>) {
+        values.entries.forEach { (key, value) ->
+            when (key) {
+                "assigneeId" -> if (value != null) {
+                    documentService.assignUserToDocument(documentId.id, value.toString())
+                } else {
+                    documentService.unassignUserFromDocument(documentId.id)
+                }
+
+                "internalStatus" -> documentService.setInternalStatus(documentId, value?.toString())
+                "caseTags" -> documentService.addCaseTag(documentId, value?.toString())
+                else -> throw IllegalArgumentException("Document column with name: $key cannot be set to: $value")
             }
         }
     }

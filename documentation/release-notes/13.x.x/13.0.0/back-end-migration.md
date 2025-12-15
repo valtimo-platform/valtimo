@@ -374,11 +374,11 @@ Whitelist patterns are configured in application.yml under valtimo.imports.white
 1. Review your auto-deployment configuration files
    * Identify all environment variables currently in use.
 2. Update the whitelist
-   * Add regex patterns or exact names for all variables you need in the `application.yml` under `valtimo.imports.whitelistedPaths`:
+   * Add regex patterns or exact names for all variables you need in the `application.yml` under `valtimo.import.whitelistedPaths`:
 
 ```yaml
 valtimo:
-  imports:
+  import:
     whitelistedPaths:
       - "VALTIMO_.*"
       - "GZAC_.*"

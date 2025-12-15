@@ -11,6 +11,7 @@ import com.ritense.formviewmodel.viewmodel.TestViewModel
 import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.BASE_URL
 import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.START_FORM
 import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.USER_TASK
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.service.OperatonProcessService
@@ -220,6 +221,7 @@ class FormViewModelResourceIntTest @Autowired constructor(
         processService.startProcess(
             processDefinitionKey,
             UUID.randomUUID().toString(),
+            CaseDefinitionId.of("fvm", "1.0.0"),
             mapOf()
         )
     }
