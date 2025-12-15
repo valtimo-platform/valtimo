@@ -6,7 +6,7 @@
 
 ## New Features
 
-* **Setting case properties from within a form**
+- **Setting case properties from within a form**
 
 You can now update a limited set of `case:` properties directly from a Form.io form by using the **Form.io Custom
 Property** `targetKey`. The supported `targetKey` values:
@@ -18,9 +18,10 @@ Property** `targetKey`. The supported `targetKey` values:
 Only the keys listed above are supported. Setting `targetKey` to any other `case:` property is **not supported** and
 will still result in an error.
 
-* **Custom component widgets support for key/value inputs**
+- **Custom component widgets support for key/value inputs**
 
 Custom Key/Value pairs can be configured in the custom component widgets. These properties are then made accessible inside of the component.
+More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
 
 More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
 

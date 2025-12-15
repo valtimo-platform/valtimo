@@ -967,7 +967,7 @@
       "custom": {
         "selectComponent": "Angular-component",
         "placeholder": "Selecteer een component",
-        "addCustomKeyValue": "Aangepaste sleutel-waarde toevoegen"
+        "addCustomKeyValue": "Voeg een aangepast sleutel-waarde-paar toe"
       },
       "formio": {
         "selectForm": "Formulierdefinitie",
