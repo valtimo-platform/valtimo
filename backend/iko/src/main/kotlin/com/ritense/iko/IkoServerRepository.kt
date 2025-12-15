@@ -19,7 +19,6 @@ package com.ritense.iko
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ContainerNode
-import com.ritense.iko.dto.ContainerParam
 import com.ritense.iko.plugin.IkoPlugin
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.iko.Comparator
@@ -30,7 +29,6 @@ import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_T
 import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_KEY_VALUE_LIST
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 
 class IkoServerRepository(
@@ -110,33 +108,6 @@ class IkoServerRepository(
         val arrayData = breathFirstSearch(data) { it is ArrayNode } as ArrayNode?
         val dataList = arrayData?.toList() ?: listOf(data)
         return PageImpl(dataList, pageable, dataList.size.toLong())
-    }
-
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
-        val aggregatedDataProfileName = config[AGGREGATED_DATA_PROFILE_NAME] as String?
-
-        return if (!aggregatedDataProfileName.isNullOrBlank()) {
-            val pageable = config[PAGEABLE] as Pageable?
-            val containerParams = listOf(ContainerParam(
-                containerId = "",
-                pageable = pageable ?: PageRequest.of(0,5),
-                filters = listOf(),
-            ))
-            getPlugin(config).getByAggregatedDataProfileId(
-                aggregatedDataProfileName = aggregatedDataProfileName,
-                id = id.toString(),
-                containerParams = containerParams,
-            )
-        } else {
-            val queryParams = config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?
-            getPlugin(config).getByEndpointId(
-                connectorTag = config[CONNECTOR_TAG].toString(),
-                connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
-                endpointOperation = config[ENDPOINT_OPERATION].toString(),
-                id = id.toString(),
-                queryParams = queryParams ?: emptyMap(),
-            )
-        }
     }
 
     private fun getPlugin(config: Map<String, Any?>): IkoPlugin {

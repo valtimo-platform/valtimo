@@ -19,6 +19,8 @@ package com.ritense.iko
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
+import com.ritense.iko.dto.ContainerParam
 import com.ritense.iko.plugin.IkoPlugin
 import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoSearchFieldService
@@ -27,12 +29,15 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
-import java.net.URI
 import java.util.function.Function
 import org.operaton.bpm.engine.delegate.VariableScope
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 
 class IkoValueResolverFactory(
     private val ikoViewService: IkoViewService,
@@ -56,7 +61,7 @@ class IkoValueResolverFactory(
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
         return getIkoViewDataById(properties)
-            ?: searchIkoViewData(properties)
+            ?: getIkoAdpDataById(properties)
             ?: Function { null }
     }
 
@@ -64,10 +69,45 @@ class IkoValueResolverFactory(
         val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
         val id = properties[ID]?.toString()
         if (ikoViewKey != null && id != null) {
-            val data = ikoViewService.getDataById(ikoViewKey, id)
+            val config = ikoViewService.getByKey(ikoViewKey).properties
+            val queryParams = config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?
+            val plugin = pluginService.createInstance(config[PLUGIN_CONFIGURATION].toString())
+            getIkoPlugin(config).getByEndpointId(
+                connectorTag = config[CONNECTOR_TAG].toString(),
+                connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
+                endpointOperation = config[ENDPOINT_OPERATION].toString(),
+                id = id.toString(),
+                queryParams = queryParams ?: emptyMap(),
+            )
             return toValueFunction(data)
         }
         return null
+    }
+
+    private fun getIkoAdpDataById(properties: Map<String, Any>): Function<String, Any?>? {
+        val aggregatedDataProfileName = properties[IKO_ADP_KEY]?.toString()
+        val id = properties[ID]?.toString()
+        if (aggregatedDataProfileName != null && id != null) {
+            val pageable = properties[PAGEABLE] as Pageable?
+            val containerParams = listOf(
+                ContainerParam(
+                    containerId = "",
+                    pageable = pageable ?: PageRequest.of(0, 5),
+                    filters = listOf(),
+                )
+            )
+            getIkoPlugin().getByAggregatedDataProfileId(
+                aggregatedDataProfileName = aggregatedDataProfileName,
+                id = id.toString(),
+                containerParams = containerParams,
+            )
+            return toValueFunction(data)
+        }
+        return null
+    }
+
+    private fun getPlugin(config: Map<String, Any?>): IkoPlugin {
+        return pluginService.createInstance(config[PLUGIN_CONFIGURATION].toString())
     }
 
     private fun getIkoPlugin(): IkoPlugin {
