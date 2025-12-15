@@ -17,7 +17,6 @@
 package com.ritense.catalogiapi
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.catalogiapi.client.BesluittypeRequest
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.EigenschapRequest
@@ -39,7 +38,6 @@ import com.ritense.catalogiapi.exception.EigenschapNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.domain.Document
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
@@ -54,6 +52,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
+import java.util.UUID
 
 @Plugin(
     key = "catalogiapi",
@@ -505,10 +504,7 @@ class CatalogiApiPlugin(
         }
 
     private fun getZaaktypeUrl(execution: DelegateExecution): URI =
-        zaaktypeUrlProvider.getZaaktypeUrl(getDocument(execution).definitionId().caseDefinitionId())
-
-    private fun getDocument(execution: DelegateExecution): Document =
-        AuthorizationContext.runWithoutAuthorization { documentService.get(execution.businessKey) }
+        zaaktypeUrlProvider.getZaaktypeUrl(UUID.fromString(execution.businessKey))
 
     companion object {
         private val logger = KotlinLogging.logger {}
