@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.outbox.OutboxService
@@ -284,9 +285,13 @@ class ZakenApiAutoConfiguration {
     @Primary
     @ConditionalOnMissingBean(ZaaktypeUrlProvider::class)
     fun zaaktypeUrlProvider(
-        zaakTypeLinkService: ZaakTypeLinkService
+        zaakTypeLinkService: ZaakTypeLinkService,
+        caseDocumentResolver: CaseDocumentResolver,
+        jsonSchemaDocumentService: JsonSchemaDocumentService,
     ) = DefaultZaaktypeUrlProvider(
-        zaakTypeLinkService
+        zaakTypeLinkService,
+        caseDocumentResolver,
+        jsonSchemaDocumentService
     )
 
     @Bean
