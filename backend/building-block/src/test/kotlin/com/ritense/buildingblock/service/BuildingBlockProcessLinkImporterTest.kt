@@ -18,6 +18,7 @@ package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_LINK
@@ -27,8 +28,7 @@ import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -53,7 +53,7 @@ class BuildingBlockProcessLinkImporterTest {
     lateinit var processLinkService: ProcessLinkService
 
     @Mock
-    lateinit var repositoryService: OperatonRepositoryService
+    lateinit var buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
 
     private lateinit var objectMapper: ObjectMapper
     private lateinit var importer: BuildingBlockProcessLinkImporter
@@ -61,11 +61,12 @@ class BuildingBlockProcessLinkImporterTest {
     @BeforeEach
     fun setUp() {
         objectMapper = jacksonObjectMapper()
-        PluginProcessLinkMapper(objectMapper) // registers PluginProcessLinkDeployDto subtype
+        PluginProcessLinkMapper(objectMapper)
+
         importer = BuildingBlockProcessLinkImporter(
             processLinkService = processLinkService,
-            repositoryService = repositoryService,
-            objectMapper = objectMapper
+            objectMapper = objectMapper,
+            buildingBlockDefinitionProcessDefinitionService = buildingBlockDefinitionProcessDefinitionService
         )
     }
 
@@ -104,13 +105,26 @@ class BuildingBlockProcessLinkImporterTest {
 
     @Test
     fun `should force referenceType BUILDING_BLOCK and remove pluginConfigurationId`() {
-        val processDefinitionKey = "my-process"
+        val processDefinitionKeyFromFilename = "my-process"
         val processDefinitionId = "pd-123"
+        val buildingBlockId = BuildingBlockDefinitionId.of("my-bb", "1.2.0")
 
-        val latestPd = mock<OperatonProcessDefinition> {
-            on { id } doReturn processDefinitionId
-        }
-        whenever(repositoryService.findLatestProcessDefinition(eq(processDefinitionKey))).thenReturn(latestPd)
+        whenever(
+            buildingBlockDefinitionProcessDefinitionService.getProcessDefinitionsForBuildingBlock(
+                eq(buildingBlockId.key),
+                eq(buildingBlockId.versionTag.toString())
+            )
+        ).thenReturn(
+            listOf(
+                BuildingBlockProcessDefinitionDto(
+                    id = processDefinitionId,
+                    key = processDefinitionKeyFromFilename,
+                    name = "My Process",
+                    versionTag = "1",
+                    main = true
+                )
+            )
+        )
 
         val pluginMapper = PluginProcessLinkMapper(objectMapper)
         whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
@@ -136,7 +150,7 @@ class BuildingBlockProcessLinkImporterTest {
             ImportRequest(
                 fileName = VALID_FILENAME,
                 content = json.toByteArray(),
-                buildingBlockDefinitionId = null,
+                buildingBlockDefinitionId = buildingBlockId,
                 caseDefinitionId = null
             )
         )
