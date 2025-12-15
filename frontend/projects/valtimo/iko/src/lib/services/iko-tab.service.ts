@@ -23,7 +23,7 @@ import {NGXLogger} from 'ngx-logger';
 @Injectable({providedIn: 'root'})
 export class IkoTabService {
   private readonly _activeTab$ = new BehaviorSubject<IkoTab | null>(null);
-  private readonly _dataAggregateKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _ikoViewKey$ = new BehaviorSubject<string | null>(null);
   private readonly _entryId$ = new BehaviorSubject<string | null>(null);
 
   public get activeTab$(): Observable<IkoTab> {
@@ -34,8 +34,8 @@ export class IkoTabService {
     return this.activeTab$.pipe(map(tab => tab.key));
   }
 
-  public get dataAggregateKey$(): Observable<string> {
-    return this._dataAggregateKey$.pipe(filter(key => !!key));
+  public get ikoViewKey$(): Observable<string> {
+    return this._ikoViewKey$.pipe(filter(key => !!key));
   }
 
   public get entryId$(): Observable<string> {
@@ -49,9 +49,9 @@ export class IkoTabService {
     this.logger.debug(`Active IKO tab set to ${JSON.stringify(tab)}`);
   }
 
-  public setDataAggregateKey(key: string): void {
-    this._dataAggregateKey$.next(key);
-    this.logger.debug(`Active IKO data aggregate key set to ${key}`);
+  public setIkoViewKey(key: string): void {
+    this._ikoViewKey$.next(key);
+    this.logger.debug(`Active IKO view key set to ${key}`);
   }
 
   public setEntryId(id: string): void {

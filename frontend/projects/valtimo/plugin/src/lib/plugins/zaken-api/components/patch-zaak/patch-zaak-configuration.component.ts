@@ -17,9 +17,9 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {PatchZaakConfig} from '../../models';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
+import {PatchZaakConfig, PatchZaakNotitieConfig, PropertyFormField} from '../../models';
 import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-zaak-properties';
 import {GEOMETRY_TYPES} from '../../models/geometry-types';
 import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
@@ -41,7 +41,7 @@ export class PatchZaakConfigurationComponent
   @Output() configuration: EventEmitter<PatchZaakConfig> = new EventEmitter<PatchZaakConfig>();
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakPropertyOptions);
-  public readonly propertyList: Array<PatchZaakProperties> = [];
+  public readonly propertyList: Array<PropertyFormField> = [];
   public readonly geometryTypes: string[] = GEOMETRY_TYPES;
   public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
 
@@ -54,20 +54,15 @@ export class PatchZaakConfigurationComponent
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly iconService: IconService) {
+  constructor(
+    private readonly iconService: IconService
+  ) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
   public ngOnInit(): void {
+    this.initPropertyList();
     this.openSaveSubscription();
-
-    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      if (prefill) {
-        PatchZaakPropertyOptions.filter(property => !!prefill[property]).forEach(property =>
-          this.addProperty(property)
-        );
-      }
-    });
   }
 
   public ngOnDestroy(): void {
@@ -88,22 +83,9 @@ export class PatchZaakConfigurationComponent
     this.onFormValueChanged(formValue);
   }
 
-  public prefillValueFor(property: string, prefill: PatchZaakConfig): string | null {
-    return prefill != null ? prefill[property] : null;
-  }
-
-  public translationKeyFor(property: string): string {
-    return property === 'description' ? 'omschrijving' : property;
-  }
-
-  public translationKeyForPropertyList(property: string): string {
-    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
-  }
-
   public addProperty(property: PatchZaakProperties): void {
-    // only add the property to the list if it is not in the list
-    if (this.propertyList.indexOf(property) == -1) {
-      this.propertyList.push(property);
+    if (!this.hasPropertyBeenAdded(property)) {
+      this.propertyList.push(this.propertyFormFieldFor(property));
       this.onPropertyChanged(property, undefined);
     }
     // add linked field coordinates
@@ -113,9 +95,8 @@ export class PatchZaakConfigurationComponent
   }
 
   public removeProperty(property: PatchZaakProperties): void {
-    // only remove the property from the list if it is in the list
-    if (this.propertyList.indexOf(property) != -1) {
-      this.propertyList.splice(this.propertyList.indexOf(property), 1);
+    if (this.hasPropertyBeenAdded(property)) {
+      this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
       this.onPropertyChanged(property, undefined);
     }
     // remove linked field coordinates
@@ -125,11 +106,63 @@ export class PatchZaakConfigurationComponent
   }
 
   public hasPropertyBeenAdded(property: PatchZaakProperties): boolean {
-    return this.propertyList.indexOf(property) !== -1;
+    return this.propertyList.findIndex(item => item.name === property) !== -1;
+  }
+
+  public prefillValueFor(property: PatchZaakProperties, prefill: PatchZaakNotitieConfig): string | null {
+    return prefill != null ? prefill[property] : null;
+  }
+
+  public translationKeyForPropertyList(property: PatchZaakProperties): string {
+    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
+  }
+
+  private initPropertyList(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
+      if (prefill) {
+        PatchZaakPropertyOptions.forEach(property => {
+          if (!!prefill[property]) this.addProperty(property);
+        });
+      }
+    });
+  }
+
+  private propertyFormFieldFor(property: PatchZaakProperties): PropertyFormField {
+    return {
+      name: property,
+      translationKey: this.translationKeyFor(property),
+      tooltipTranslationKey: this.tooltipTranslationKeyFor(property),
+      presetOptions: this.presetOptionsForProperty(property)
+    }
+  }
+
+  private translationKeyFor(property: PatchZaakProperties): string {
+    return property === 'description' ? 'omschrijving' : property;
+  }
+
+  private tooltipTranslationKeyFor(property: PatchZaakProperties): string {
+    if (property.includes('Date')) {
+      return 'dateformatTooltip'
+    } else if (property === this.CASE_GEOMETRY_COORDINATES) {
+      return `${property}Tooltip`
+    } else {
+      return null;
+    }
+  }
+
+  private presetOptionsForProperty(property: PatchZaakProperties): string[] {
+    switch (property) {
+      case this.CASE_GEOMETRY_TYPE:
+        return this.geometryTypes;
+      case this.PAYMENT_INDICATION_TYPE:
+        return this.paymentIndicationTypes;
+      default:
+        return [];
+    }
   }
 
   private handleValid(formValue: PatchZaakConfig): void {
-    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
+    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property.name]);
     const valid = !isPropertyInvalid;
     this._valid$.next(valid);
     this.valid.emit(valid);
@@ -141,8 +174,6 @@ export class PatchZaakConfigurationComponent
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            const payload: PatchZaakConfig = {};
-            this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(formValue);
           }
         });

@@ -22,10 +22,14 @@ import com.ritense.processdocument.domain.CaseDefinitionProcessLinkId.Companion.
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessLinkResponse
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byCaseDefinitionId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -38,9 +42,7 @@ open class CaseDefinitionProcessLinkService(
         val link = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(caseDefinitionId, type)
 
         return link?.let {
-            val processDefinition = runWithoutAuthorization {
-                repositoryService.findLatestProcessDefinition(link.id.processDefinitionKey)
-            }
+            val processDefinition = findProcessDefinition(link.id.processDefinitionKey, caseDefinitionId)
 
             CaseDefinitionProcess(processDefinition!!.key, processDefinition.name!!)
         }
@@ -79,31 +81,29 @@ open class CaseDefinitionProcessLinkService(
     ): DocumentDefinitionProcessLinkResponse {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
-        val processDefinition: OperatonProcessDefinition? = runWithoutAuthorization {
-            repositoryService.findLatestProcessDefinition(request.getProcessDefinitionKey())
-        }
+        val processDefinition = findProcessDefinition(request.processDefinitionKey, caseDefinitionId)
 
         requireNotNull(processDefinition) { "Unknown process definition with key: " + request.getProcessDefinitionKey() }
 
-        var currentLink = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(
+        val currentLink = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(
             caseDefinitionId,
-            request.getLinkType()
+            request.linkType
         )
         if (currentLink != null) {
             // If there is already a link set for this document definition then delete the current link
             // before storing the new one
             caseDefinitionProcessLinkRepository.deleteByIdCaseDefinitionIdAndType(
                 caseDefinitionId,
-                request.getLinkType()
+                request.linkType
             )
         }
 
         val link = CaseDefinitionProcessLink(
             newId(
                 caseDefinitionId,
-                request.getProcessDefinitionKey()
+                request.processDefinitionKey
             ),
-            request.getLinkType()
+            request.linkType
         )
 
         caseDefinitionProcessLinkRepository.save(link)
@@ -122,5 +122,22 @@ open class CaseDefinitionProcessLinkService(
     fun deleteDocumentDefinitionProcesses(caseDefinitionId: CaseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         caseDefinitionProcessLinkRepository.deleteAllByIdCaseDefinitionId(caseDefinitionId)
+    }
+
+    private fun findProcessDefinition(
+        processDefinitionKey: String,
+        caseDefinitionId: CaseDefinitionId?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            repositoryService.findProcessDefinition(
+                byKey(processDefinitionKey)
+                    .and(byCaseDefinitionId(caseDefinitionId))
+            )
+                // Needed when linking the 'document-upload' process:
+                ?: repositoryService.findProcessDefinition(
+                byKey(processDefinitionKey)
+                    .and(maxVersionOf(byNotLinkedToCaseDefinition()))
+            )
+        }
     }
 }
