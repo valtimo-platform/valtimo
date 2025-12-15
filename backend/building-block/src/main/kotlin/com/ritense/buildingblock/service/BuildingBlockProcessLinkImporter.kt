@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
@@ -31,14 +30,13 @@ import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class BuildingBlockProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
-    private val repositoryService: OperatonRepositoryService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
 ) : Importer {
 
     override fun type() = BUILDING_BLOCK_PROCESS_LINK
@@ -51,36 +49,36 @@ class BuildingBlockProcessLinkImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val processDefinitionKey =
-            getFilenameRegexToImport().matchEntire(request.fileName)!!.groupValues[1]
+        val processDefinitionKey = getFilenameRegexToImport().matchEntire(request.fileName)!!.groupValues[1]
+
+        val buildingBlockDefinitionId = request.buildingBlockDefinitionId ?: return;
 
         withLoggingContext("processDefinitionKey", processDefinitionKey) {
-            val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
-                repositoryService.findLatestProcessDefinition(processDefinitionKey)?.id
-                    ?: throw IllegalStateException(
-                        "Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey'."
-                    )
-            }
+            val processDefinitions = buildingBlockDefinitionProcessDefinitionService.getProcessDefinitionsForBuildingBlock(
+                buildingBlockDefinitionId.key,
+                buildingBlockDefinitionId.versionTag.toString()
+            )
+
+            val processDefinitionId = processDefinitions
+                .firstOrNull { it.key == processDefinitionKey }
+                ?.id
+                ?: throw IllegalStateException(
+                    "Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey' for building block '$buildingBlockDefinitionId'."
+                )
 
             val jsonTree = objectMapper.readTree(request.content.toString(Charsets.UTF_8))
             require(jsonTree is ArrayNode)
 
-            jsonTree.forEachIndexed { _, node ->
+            jsonTree.forEach { node ->
                 require(node is ObjectNode)
 
                 node.set<ObjectNode>(
                     "referenceType",
                     TextNode.valueOf(PluginConfigurationReferenceType.BUILDING_BLOCK.name)
                 )
-
                 node.remove("pluginConfigurationId")
 
-                if (!node.has("processDefinitionId")) {
-                    node.set<ObjectNode>(
-                        "processDefinitionId",
-                        TextNode.valueOf(processDefinitionId)
-                    )
-                }
+                node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
 
                 val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
                 val mapper = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
@@ -89,8 +87,7 @@ class BuildingBlockProcessLinkImporter(
                 try {
                     processLinkService.createProcessLink(createDto, request.caseDefinitionId)
                 } catch (e: ProcessLinkExistsException) {
-                    val updateDto =
-                        mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId)
+                    val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId)
                     processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
                 }
             }
@@ -101,9 +98,7 @@ class BuildingBlockProcessLinkImporter(
 
     override fun partOfBuildingBlockDefinition() = true
 
-    protected fun getFilenameRegexToImport(): Regex {
-        return FILENAME_REGEX
-    }
+    protected fun getFilenameRegexToImport(): Regex = FILENAME_REGEX
 
     private companion object {
         val FILENAME_REGEX = """/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()

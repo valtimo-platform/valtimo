@@ -60,7 +60,6 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
@@ -378,7 +377,7 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessLinkImporter::class)
     fun buildingBlockProcessLinkImporter(
         processLinkService: ProcessLinkService,
-        repositoryService: OperatonRepositoryService,
-        objectMapper: ObjectMapper
-    ) = BuildingBlockProcessLinkImporter(processLinkService, repositoryService, objectMapper)
+        objectMapper: ObjectMapper,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
+    ) = BuildingBlockProcessLinkImporter(processLinkService, objectMapper, buildingBlockDefinitionProcessDefinitionService)
 }
