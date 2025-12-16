@@ -30,10 +30,11 @@
 
   <div class="valtimo-date-time-picker__wrapper">
     <cds-date-picker
+      class="date-only"
       [cdsLayer]="1"
       [attr.data-carbon-theme]="carbonTheme"
       [label]="labelText"
-      [placeholder]="datePlaceholder || 'DD-MM-YYYY'"
+      [placeholder]="datePlaceholder || 'dd-mm-yyyy'"
       [dateFormat]="dateFormat"
       [disabled]="disabled"
       (valueChange)="onDateSelected($event)"
@@ -46,6 +47,7 @@
       [placeholder]="'hh:mm'"
       [value]="timeValue"
       [disabled]="disabled"
+      [placeholder]="timePlaceholder || 'dd-mm-yyyy'"
       (valueChange)="onTimeSelected($event)"
     >
     </cds-timepicker>

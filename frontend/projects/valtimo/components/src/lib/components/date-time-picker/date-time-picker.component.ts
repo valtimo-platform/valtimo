@@ -39,7 +39,8 @@ export class DateTimePickerComponent implements AfterViewInit {
   @Input() carbonTheme = 'white';
   @Input() dateFormat = 'd-m-Y';
   @Input() showFieldLabel = true;
-  @Input() datePlaceholder = 'DD-MM-YYYY';
+  @Input() datePlaceholder = 'dd-mm-yyyy';
+  @Input() timePlaceholder = 'hh:mm';
   @Input() labelText = '';
 
   @Input() set fullWidth(value: boolean) {

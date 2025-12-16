@@ -28,12 +28,9 @@ import {
   ParagraphModule,
   InputLabelModule,
   DateTimePickerModule,
-  FormModule
+  FormModule,
 } from '@valtimo/components';
-import {
-  SearchFieldBoolean,
-  SearchFieldValues,
-} from '@valtimo/shared'
+import {SearchFieldBoolean, SearchFieldValues} from '@valtimo/shared';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
@@ -71,12 +68,9 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     AsyncPipe,
     SelectModule,
     DatePickerModule,
-    NgTemplateOutlet,
     NgIf,
     NgClass,
-    NgTemplateOutlet,
     ParagraphModule,
-    InputLabelModule,
     TimePickerModule,
     DateTimePickerModule,
     InputLabelModule,
@@ -97,16 +91,15 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     this.BOOLEAN_POSITIVE,
     this.BOOLEAN_NEGATIVE,
   ];
-  public readonly booleanItems$: Observable<Array<any>> = this.translateService
-    .stream('key')
-    .pipe(
-      map(() =>
-        this._BOOLEAN_TYPES.map(type => ({
-          id: type,
-          text: this.translateService.instant(`searchFields.${type}`),
-        }))
-      )
-    );
+
+  public readonly booleanItems$: Observable<Array<any>> = this.translateService.stream('key').pipe(
+    map(() =>
+      this._BOOLEAN_TYPES.map(type => ({
+        id: type,
+        text: this.translateService.instant(`searchFields.${type}`),
+      }))
+    )
+  );
 
   private readonly _key$ = this.route.params.pipe(
     map(params => params?.key),
@@ -152,7 +145,10 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public searchDisabled(params: {key: string; required: boolean}[]): boolean {
-    return params.some(param => !this.formValues[param.key] && param.required) || this.bsnErrorKey !== null;
+    return (
+      params.some(param => !this.formValues[param.key] && param.required) ||
+      this.bsnErrorKey !== null
+    );
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
@@ -185,8 +181,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-
-  public singleValueChange(searchFieldKey: string, value: any, dataType: string, ): void {
+  public singleValueChange(searchFieldKey: string, value: any, dataType: string): void {
     this.values$.pipe(take(1)).subscribe(values => {
       if (dataType === 'bsn') this.validateBsnValue(value);
 
@@ -203,11 +198,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  public multipleValueChange(
-    searchFieldKey: string,
-    value: any,
-    dataType: any
-  ): void {
+  public multipleValueChange(searchFieldKey: string, value: any, dataType: string): void {
     const isDateTime = dataType === 'datetime';
     this.values$.pipe(take(1)).subscribe(values => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -230,10 +221,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
         this.values$.next({
           ...values,
           [searchFieldKey]: value.map(v =>
-            this.getSingleValue(
-              typeof v === 'object' && 'id' in v ? v.id : v,
-              isDateTime
-            )
+            this.getSingleValue(typeof v === 'object' && 'id' in v ? v.id : v, dataType)
           ),
         });
         return;
@@ -247,11 +235,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-
   private openDropdownSubscription(): void {
     combineLatest([this._key$, this.ikoSearchActions$]).subscribe(
       ([aggregateKey, searchActions]) => {
-
         searchActions.forEach(action => {
           action.searchFields?.forEach(field => {
             if (field.dataType === 'time' && field.fieldType === 'single') {
@@ -279,18 +265,13 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
             ?.filter(field => field.dropdownDataProvider)
             .forEach(field => {
               this.ikoApiService
-                .getDropdownData(
-                  field.dropdownDataProvider!,
-                  aggregateKey,
-                  actionKey,
-                  field.key
-                )
+                .getDropdownData(field.dropdownDataProvider!, aggregateKey, actionKey, field.key)
                 .subscribe(dropdownData => {
                   this.dropdownSelectItemsMap[field.key] = dropdownData
                     ? Object.keys(dropdownData).map(dropdownFieldKey => ({
-                      id: dropdownFieldKey,
-                      text: (dropdownData as any)[dropdownFieldKey],
-                    }))
+                        id: dropdownFieldKey,
+                        text: (dropdownData as any)[dropdownFieldKey],
+                      }))
                     : [];
                 });
             });
@@ -299,12 +280,12 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getSingleValue(value: any, dataType: any): any {
+  private getSingleValue(value: any, dataType: string): any {
     if (dataType === 'datetime') {
       return new Date(value).toISOString();
     }
 
-    if(dataType === 'boolean') {
+    if (dataType === 'boolean') {
       if (value === this.BOOLEAN_POSITIVE) {
         return true;
       }
@@ -317,9 +298,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   private validateBsnValue(value: string): void {
-   if(value) {
-     const validation = validateBsn(value);
-     this.bsnErrorKey = validation.isValid ? null : validation.errorKey;
-   }
+    if (value) {
+      const validation = validateBsn(value);
+      this.bsnErrorKey = validation.isValid ? null : validation.errorKey;
+    }
   }
 }

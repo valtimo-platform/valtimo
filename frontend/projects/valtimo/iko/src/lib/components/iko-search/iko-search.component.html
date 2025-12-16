@@ -27,7 +27,11 @@
             @for (field of param.searchFields; track field.key) {
               <div
                 class="query-group__field"
-                [ngClass]="{'query-group__field--time': field.dataType === 'time'}"
+                [ngClass]="{
+                  'query-group__field--time': field.dataType === 'time',
+                  'query-group__field--date': field.dataType === 'date',
+                  'query-group__field--datetime': field.dataType === 'datetime'
+                }"
               >
                 <ng-container
                   class="query-group__field"
@@ -222,11 +226,17 @@
 </ng-template>
 
 <ng-template #searchFieldTemplateDate let-searchField="searchField">
-  <v-date-picker
+  <valtimo-date-time-picker
     *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
-    placeholder="dd-mm-yyyy"
+    [title]="searchField.title"
+    [dataTestId]="'iko-search-field-' + searchField.key"
+    [placeholder]="'searchFields.datePlaceholder' | translate"
+    [defaultDate]="formValues[searchField.key] ?? ''"
+    [showFieldLabel]="false"
+    [enableTime]="false"
     (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-  ></v-date-picker>
+  >
+  </valtimo-date-time-picker>
 </ng-template>
 
 <ng-template #searchFieldTemplateDateRange let-searchField="searchField">
@@ -235,19 +245,29 @@
       (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
       className="multiple-search-fields"
     >
-      <v-date-picker
+      <valtimo-date-time-picker
         name="start"
+        [title]="searchField.title"
         [dataTestId]="'iko-search-field-' + searchField.key"
         [placeholder]="'searchFields.datePlaceholder' | translate"
-      ></v-date-picker>
+        [defaultDate]="formValues[searchField.key] ?? ''"
+        [showFieldLabel]="false"
+        [enableTime]="false"
+      >
+      </valtimo-date-time-picker>
 
       <ng-container *ngTemplateOutlet="toText"></ng-container>
 
-      <v-date-picker
+      <valtimo-date-time-picker
         name="end"
+        [title]="searchField.title"
         [dataTestId]="'iko-search-field-' + searchField.key"
         [placeholder]="'searchFields.datePlaceholder' | translate"
-      ></v-date-picker>
+        [defaultDate]="formValues[searchField.key] ?? ''"
+        [showFieldLabel]="false"
+        [enableTime]="false"
+      >
+      </valtimo-date-time-picker>
     </v-form>
   </ng-container>
 </ng-template>

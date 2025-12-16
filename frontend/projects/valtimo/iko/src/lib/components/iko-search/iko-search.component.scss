@@ -38,7 +38,9 @@
     }
   }
 
-  &__field--time {
+  &__field--time,
+  &__field--date,
+  &__field--datetime {
     flex: 0 0 auto;
     max-width: none;
   }
