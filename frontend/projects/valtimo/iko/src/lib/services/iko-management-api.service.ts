@@ -422,13 +422,11 @@ export class IkoManagementApiService extends BaseApiService {
 
   public getDropdownData(
     provider: string,
-    ikoDataAggregateKey: string,
-    ikoDataRequestKey: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
     searchFieldKey: string
   ): Observable<object> {
-    const dropdownListKey = encodeURI(
-      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
-    );
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
     return this.httpClient.get<object>(
       this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
@@ -436,14 +434,12 @@ export class IkoManagementApiService extends BaseApiService {
 
   public postDropdownData(
     provider: string,
-    ikoDataAggregateKey: string,
-    ikoDataRequestKey: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
     searchFieldKey: string,
     dropdownData: object
   ): Observable<object> {
-    const dropdownListKey = encodeURI(
-      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
-    );
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
     return this.httpClient.post<object>(
       this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`),
       dropdownData
@@ -452,13 +448,11 @@ export class IkoManagementApiService extends BaseApiService {
 
   public deleteDropdownData(
     provider: string,
-    ikoDataAggregateKey: string,
-    ikoDataRequestKey: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
     searchFieldKey: string
   ): Observable<object> {
-    const dropdownListKey = encodeURI(
-      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
-    );
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
     return this.httpClient.delete<object>(
       this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
