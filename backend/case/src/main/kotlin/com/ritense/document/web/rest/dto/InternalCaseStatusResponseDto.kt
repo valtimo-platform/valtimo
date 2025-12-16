@@ -24,7 +24,7 @@ data class InternalCaseStatusResponseDto(
     val caseDefinitionName: String,
     val title: String,
     val visibleInCaseListByDefault: Boolean,
-    val retentionPeriod: Int,
+    val retentionPeriod: Int = -1,
     val order: Int,
     val color: InternalCaseStatusColor
 ) {

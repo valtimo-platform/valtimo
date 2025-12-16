@@ -86,6 +86,36 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 
+
+    @Test
+    fun `should create status with retention period -1 when omitted in the dto`() {
+        AuthorizationContext.runWithoutAuthorization {
+            internalCaseStatusService.create(
+                "house",
+                InternalCaseStatusCreateRequestDto(
+                    key = "house123",
+                    title = "456",
+                    visibleInCaseListByDefault = true,
+                    color = GRAY
+                )
+            )
+        }
+
+        val internalCaseStatus = internalCaseStatusRepository
+            .findDistinctByIdCaseDefinitionKeyAndIdKey("house", "house123")
+
+        val internalCaseCount = internalCaseStatusRepository
+            .findByIdCaseDefinitionKeyOrderByOrder("house").size
+
+        assertNotNull(internalCaseStatus)
+        assertEquals("house", internalCaseStatus.id.caseDefinitionKey)
+        assertEquals("house123", internalCaseStatus.id.key)
+        assertEquals("456", internalCaseStatus.title)
+        assertEquals(-1, internalCaseStatus.retentionPeriod)
+        assertTrue(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(internalCaseCount - 1, internalCaseStatus.order)
+    }
+
     @Test
     fun `should throw error when creating status with invalid key`() {
         AuthorizationContext.runWithoutAuthorization {
@@ -207,6 +237,47 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("789", internalCaseStatus.title)
         assertFalse(internalCaseStatus.visibleInCaseListByDefault)
         assertEquals(123, internalCaseStatus.retentionPeriod)
+        assertEquals(internalCaseCount - 1, internalCaseStatus.order)
+    }
+
+    @Test
+    fun `should update internal case status with retention period set to -1`() {
+        AuthorizationContext.runWithoutAuthorization {
+            internalCaseStatusService.create(
+                "house",
+                InternalCaseStatusCreateRequestDto(
+                    key = "house123",
+                    title = "456",
+                    visibleInCaseListByDefault = true,
+                    retentionPeriod = 190,
+                    color = GRAY
+                )
+            )
+
+            internalCaseStatusService.update(
+                "house",
+                "house123",
+                InternalCaseStatusUpdateRequestDto(
+                    key = "house123",
+                    title = "789",
+                    visibleInCaseListByDefault = false,
+                    color = GRAY
+                )
+            )
+        }
+
+        val internalCaseStatus = internalCaseStatusRepository
+            .findDistinctByIdCaseDefinitionKeyAndIdKey("house", "house123")
+
+        val internalCaseCount = internalCaseStatusRepository
+            .findByIdCaseDefinitionKeyOrderByOrder("house").size
+
+        assertNotNull(internalCaseStatus)
+        assertEquals("house", internalCaseStatus.id.caseDefinitionKey)
+        assertEquals("house123", internalCaseStatus.id.key)
+        assertEquals("789", internalCaseStatus.title)
+        assertFalse(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(-1, internalCaseStatus.retentionPeriod)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 

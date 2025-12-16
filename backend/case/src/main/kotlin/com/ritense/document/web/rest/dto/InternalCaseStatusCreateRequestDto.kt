@@ -24,6 +24,6 @@ data class InternalCaseStatusCreateRequestDto(
     @field:Pattern(regexp = Constants.KEY_REGEX) val key: String,
     val title: String,
     val visibleInCaseListByDefault: Boolean,
-    val retentionPeriod: Int,
+    val retentionPeriod: Int = -1,
     val color: InternalCaseStatusColor
 )
