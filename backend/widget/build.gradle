@@ -39,6 +39,7 @@ dependencies {
     implementation project(":contract")
     implementation project(":exporter")
     implementation project(":importer")
+    implementation project(":search")
     implementation project(":value-resolver")
 
     implementation "org.springframework.boot:spring-boot"

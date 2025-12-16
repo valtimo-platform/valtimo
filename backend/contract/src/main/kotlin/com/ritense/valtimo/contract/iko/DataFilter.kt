@@ -24,7 +24,12 @@ data class DataFilter(
     constructor(property: String, value: Any?) : this(property, Comparator.EQUAL_TO, value)
 }
 
-enum class Comparator() {
+enum class Comparator {
+    NOT_EQUAL_TO,
     EQUAL_TO,
+    GREATER_THAN,
+    GREATER_THAN_OR_EQUAL_TO,
+    LESS_THAN,
+    LESS_THAN_OR_EQUAL_TO,
     STRING_CONTAINS,
 }

@@ -16,10 +16,36 @@
 
 package com.ritense.iko.dto
 
+import com.ritense.search.domain.FieldType
+import com.ritense.search.domain.SearchFieldMatchType
+import com.ritense.widget.interactivetable.InteractiveTableWidgetProperties.FilterConfig
 import org.springframework.data.domain.Pageable
 
 data class ContainerParam(
     val containerId: String,
     val pageable: Pageable,
     val filters: Map<String, String>
-)
+) {
+    companion object {
+        fun fromFilter(config: FilterConfig, value: Any?): List<Pair<String, String>> {
+            return if (value == null || value == "") {
+                emptyList()
+            } else if (config.matchType == SearchFieldMatchType.EXACT && config.fieldType != FieldType.RANGE) {
+                listOf(config.key to value.toString())
+            } else if (config.matchType == SearchFieldMatchType.LIKE && config.fieldType != FieldType.RANGE) {
+                listOf(config.key + "~" to value.toString())
+            } else if (config.matchType == SearchFieldMatchType.EXACT && config.fieldType == FieldType.RANGE) {
+                if (value is Map<*, *>) {
+                    val filter = mutableListOf<Pair<String, String>>()
+                    value["rangeFrom"]?.let { filter.add(config.key + ">=" to it.toString()) }
+                    value["rangeTo"]?.let { filter.add(config.key + "<" to it.toString()) }
+                    filter
+                } else {
+                    listOf(config.key + ">=" to value.toString())
+                }
+            } else {
+                error("Unsupported combination of filter config and value: $config, $value")
+            }
+        }
+    }
+}
