@@ -366,9 +366,8 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkExporter::class)
     fun buildingBlockDefinitionArtworkExporter(
-        objectMapper: ObjectMapper,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
-    ) = BuildingBlockDefinitionArtworkExporter(objectMapper, buildingBlockDefinitionRepository)
+    ) = BuildingBlockDefinitionArtworkExporter(buildingBlockDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockJsonSchemaDocumentDefinitionExporter::class)

@@ -18,7 +18,6 @@
 
 package com.ritense.buildingblock.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
@@ -30,7 +29,6 @@ import java.util.Base64
 
 @Transactional(readOnly = true)
 class BuildingBlockDefinitionArtworkExporter(
-    private val objectMapper: ObjectMapper,
     val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
 ) : Exporter<BuildingBlockDocumentDefinitionExportRequest> {
     override fun supports() = BuildingBlockDocumentDefinitionExportRequest::class.java
@@ -45,7 +43,7 @@ class BuildingBlockDefinitionArtworkExporter(
 
         val artworkExport = ExportFile(
             PATH.format(definition.id.key, formattedVersion),
-            objectMapper.writeValueAsBytes(Base64.getDecoder().decode(artwork.imageBase64))
+            Base64.getDecoder().decode(artwork.imageBase64)
         )
 
         return ExportResult(artworkExport)
