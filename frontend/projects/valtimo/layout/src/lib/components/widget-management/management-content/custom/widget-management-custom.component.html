@@ -58,4 +58,19 @@
       <cds-dropdown-list [items]="componentListItems"> </cds-dropdown-list>
     </cds-dropdown>
   </cds-label>
+
+  <valtimo-carbon-multi-input
+    type="keyValue"
+    [addRowText]="'widgetTabManagement.content.custom.addCustomKeyValue' | translate"
+    addButtonType="tertiary"
+    [defaultValues]="$defaultComponentValues()"
+    [keyColumnTitle]="'interface.key' | translate"
+    [valueColumnTitle]="'interface.value' | translate"
+    [fullWidth]="true"
+    [initialAmountOfRows]="0"
+    [minimumAmountOfRows]="0"
+    (valueChange)="onKeyValueChange($event)"
+    [keyColumnFlex]="1"
+    [valueColumnFlex]="1"
+  ></valtimo-carbon-multi-input>
 </form>
