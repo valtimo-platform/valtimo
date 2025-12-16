@@ -28,11 +28,12 @@ import {
   ParagraphModule,
   InputLabelModule,
   DateTimePickerModule,
+  FormModule
 } from '@valtimo/components';
 import {
   SearchFieldBoolean,
   SearchFieldValues,
-} from '@valtimo/shared';
+} from '@valtimo/shared'
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
@@ -45,6 +46,7 @@ import {
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, take} from 'rxjs';
 import {IkoSearchActionUser} from '../../models';
 import {IkoApiService} from '../../services';
+import {validateBsn} from '@valtimo/shared';
 
 type SearchFormValue = string | boolean | string[] | null | undefined;
 
@@ -77,12 +79,15 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     InputLabelModule,
     TimePickerModule,
     DateTimePickerModule,
+    InputLabelModule,
+    InputModule,
+    FormModule,
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
   public readonly formValues: Record<string, SearchFormValue> = {};
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
-  public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
+  public readonly values$ = new BehaviorSubject<any>({});
   public readonly bsnErrorKey = 'interface.dataValidation.bsnValidator';
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
@@ -153,23 +158,32 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(paramKey: string, params: { key: string }[]): void {
+  public searchGroup(paramKey: string, params: {key: string}[]): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      console.log("values: ", values);
       const queryParams: Record<string, any> = {};
 
       for (const param of params) {
-        if (values.hasOwnProperty(param.key)) {
-          queryParams[param.key] = values[param.key];
+        const value = values[param.key];
+
+        if (!value) continue;
+
+        if (typeof value === 'object' && value.start && value.end) {
+          queryParams[param.key] = {
+            rangeFrom: value.start,
+            rangeTo: value.end,
+          };
+        } else {
+          queryParams[param.key] = value;
         }
       }
 
-      this.router.navigate([`${paramKey}`], {
+      this.router.navigate([paramKey], {
         relativeTo: this.route,
         queryParams,
       });
     });
   }
+
 
   public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
@@ -183,23 +197,42 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  public multipleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
-    console.log("hola")
+  public multipleValueChange(
+    searchFieldKey: string,
+    value: any,
+    isDateTime?: boolean
+  ): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      if (value.start && value.end) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const hasStart = value.start !== undefined && value.start !== '';
+        const hasEnd = value.end !== undefined && value.end !== '';
+
+        if (hasStart || hasEnd) {
+          this.values$.next({
+            ...values,
+            [searchFieldKey]: {
+              start: hasStart ? this.getSingleValue(value.start, isDateTime) : null,
+              end: hasEnd ? this.getSingleValue(value.end, isDateTime) : null,
+            },
+          });
+          return;
+        }
+      }
+
+      if (Array.isArray(value) && value.length > 0) {
         this.values$.next({
           ...values,
-          [searchFieldKey]: {
-            start: this.getSingleValue(value.start, isDateTime),
-            end: this.getSingleValue(value.end, isDateTime),
-          },
+          [searchFieldKey]: value.map(v =>
+            this.getSingleValue(
+              typeof v === 'object' && 'id' in v ? v.id : v,
+              isDateTime
+            )
+          ),
         });
-      } else if (Array.isArray(value) && value.length > 0) {
-        this.values$.next({
-          ...values,
-          [searchFieldKey]: value.map(v => this.getSingleValue(v, isDateTime)),
-        });
-      } else if (values[searchFieldKey]) {
+        return;
+      }
+
+      if (values[searchFieldKey] !== undefined) {
         const valuesCopy = {...values};
         delete valuesCopy[searchFieldKey];
         this.values$.next(valuesCopy);
@@ -207,57 +240,63 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     });
   }
 
+
   private openDropdownSubscription(): void {
-    combineLatest([this._key$, this.dataRequests$]).subscribe(([aggregateKey, dataRequests]) => {
-      dataRequests.forEach(request => {
-        request.searchFields?.forEach(field => {
-          if (field.dataType === 'time' && field.fieldType === 'single') {
-            if (this.formValues[field.key] === undefined) {
-              this.formValues[field.key] = '';
-            }
-          }
+    combineLatest([this._key$, this.ikoSearchActions$]).subscribe(
+      ([aggregateKey, searchActions]) => {
 
-          if (field.dataType === 'time' && field.fieldType === 'range') {
-            if (this.formValues[field.key + '_start'] === undefined) {
-              this.formValues[field.key + '_start'] = '';
+        searchActions.forEach(action => {
+          action.searchFields?.forEach(field => {
+            if (field.dataType === 'time' && field.fieldType === 'single') {
+              if (this.formValues[field.key] === undefined) {
+                this.formValues[field.key] = '';
+              }
             }
 
-            if (this.formValues[field.key + '_end'] === undefined) {
-              this.formValues[field.key + '_end'] = '';
+            if (field.dataType === 'time' && field.fieldType === 'range') {
+              if (this.formValues[field.key + '_start'] === undefined) {
+                this.formValues[field.key + '_start'] = '';
+              }
+
+              if (this.formValues[field.key + '_end'] === undefined) {
+                this.formValues[field.key + '_end'] = '';
+              }
             }
-          }
+          });
         });
-      });
 
-      dataRequests.forEach(request => {
-        const requestKey = request.key;
+        searchActions.forEach(action => {
+          const actionKey = action.key;
 
-        request.searchFields
-          ?.filter(field => field.dropdownDataProvider)
-          .forEach(field => {
-            this.ikoApiService
-              .getDropdownData(field.dropdownDataProvider!, aggregateKey, requestKey, field.key)
-              .subscribe(dropdownData => {
-                if (dropdownData) {
-                  this.dropdownSelectItemsMap[field.key] = Object.keys(dropdownData).map(
-                    dropdownFieldKey => ({
+          action.searchFields
+            ?.filter(field => field.dropdownDataProvider)
+            .forEach(field => {
+              this.ikoApiService
+                .getDropdownData(
+                  field.dropdownDataProvider!,
+                  aggregateKey,
+                  actionKey,
+                  field.key
+                )
+                .subscribe(dropdownData => {
+                  this.dropdownSelectItemsMap[field.key] = dropdownData
+                    ? Object.keys(dropdownData).map(dropdownFieldKey => ({
                       id: dropdownFieldKey,
                       text: (dropdownData as any)[dropdownFieldKey],
-                    })
-                  );
-                } else {
-                  this.dropdownSelectItemsMap[field.key] = [];
-                }
-              });
-          });
-      });
-    });
+                    }))
+                    : [];
+                });
+            });
+        });
+      }
+    );
   }
 
   private getSingleValue(value: any, isDateTime?: boolean): any {
     if (isDateTime) {
       return new Date(value).toISOString();
     }
+
     if (value === this.BOOLEAN_POSITIVE) {
       return true;
     }
