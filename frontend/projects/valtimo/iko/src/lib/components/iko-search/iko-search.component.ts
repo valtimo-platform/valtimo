@@ -164,11 +164,11 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
         if (value === null) continue;
 
-        if (typeof value === 'object' && value.start && value.end) {
-          queryParams[param.key] = {
+        if (typeof value === 'object' && value.start !== null && value.end !== null) {
+          queryParams[param.key] = JSON.stringify({
             rangeFrom: value.start,
             rangeTo: value.end,
-          };
+          });
         } else {
           queryParams[param.key] = value;
         }
@@ -182,10 +182,12 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public singleValueChange(searchFieldKey: string, value: any, dataType: string): void {
+    this.formValues[searchFieldKey] = value;
+
     this.values$.pipe(take(1)).subscribe(values => {
       if (dataType === 'bsn') this.validateBsnValue(value);
 
-      if (value !== undefined && value !== null) {
+      if (value) {
         this.values$.next({
           ...values,
           [searchFieldKey]: this.getSingleValue(value, dataType),
@@ -199,7 +201,6 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public multipleValueChange(searchFieldKey: string, value: any, dataType: string): void {
-    const isDateTime = dataType === 'datetime';
     this.values$.pipe(take(1)).subscribe(values => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         const hasStart = value.start !== undefined && value.start !== '';
@@ -282,7 +283,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
   private getSingleValue(value: any, dataType: string): any {
     if (dataType === 'datetime') {
-      return new Date(value).toISOString();
+      console.log("value: ", value)
     }
 
     if (dataType === 'boolean') {

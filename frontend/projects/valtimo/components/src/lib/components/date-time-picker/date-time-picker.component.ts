@@ -52,7 +52,6 @@ export class DateTimePickerComponent implements AfterViewInit {
   }
 
   @Input() defaultDateIsToday = false;
-
   @Input() clear$!: Observable<null>;
 
   @Output() valueChange = new EventEmitter<string>();
