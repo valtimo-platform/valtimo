@@ -22,12 +22,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
-import com.ritense.exporter.request.DecisionDefinitionExportRequest
-import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.exporter.ProcessDefinitionExporter
-import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersion
@@ -58,13 +53,18 @@ class BuildingBlockProcessDefinitionExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
-        val subProcessDefinitionExportRequests = getCallActivityProcessDefinitionExportRequests(bpmnModelInstance, request.buildingBlockDefinitionId)
+        val subProcessDefinitionExportRequests =
+            getCallActivityProcessDefinitionExportRequests(bpmnModelInstance, request.buildingBlockDefinitionId)
         //val decisionExportRequests = getDecisionExportRequests(request.buildingBlockDefinitionId, bpmnModelInstance)
 
         val exportFile = ByteArrayOutputStream().use {
             Bpmn.writeModelToStream(it, bpmnModelInstance)
             ExportFile(
-                PATH.format(request.buildingBlockDefinitionId.key, formattedCaseDefinitionVersion, processDefinition.key),
+                PATH.format(
+                    request.buildingBlockDefinitionId.key,
+                    formattedCaseDefinitionVersion,
+                    processDefinition.key
+                ),
                 it.toByteArray()
             )
         }
@@ -74,7 +74,10 @@ class BuildingBlockProcessDefinitionExporter(
         )
     }
 
-    private fun getCallActivityProcessDefinitionExportRequests(bpmnModelInstance: BpmnModelInstance, buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockProcessDefinitionExportRequest> {
+    private fun getCallActivityProcessDefinitionExportRequests(
+        bpmnModelInstance: BpmnModelInstance,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Set<BuildingBlockProcessDefinitionExportRequest> {
         return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull {
             if (it.calledElement != null) {
                 val spec = byKey(it.calledElement)

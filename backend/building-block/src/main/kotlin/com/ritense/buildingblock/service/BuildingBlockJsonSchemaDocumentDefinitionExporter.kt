@@ -38,7 +38,7 @@ class BuildingBlockJsonSchemaDocumentDefinitionExporter(
 
     override fun export(request: BuildingBlockDocumentDefinitionExportRequest): ExportResult {
         val documentDefinition = if (request.name != "") {
-            val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(request.name, request.caseDefinitionId)
+            val documentDefinitionId = JsonSchemaDocumentDefinitionId.forBuildingBlock(request.name, request.buildingBlockDefinitionId)
             documentDefinitionService.findBy(documentDefinitionId).orElseThrow()
         } else {
             documentDefinitionService.findBySolutionModuleId(request.caseDefinitionId).orElseThrow()
