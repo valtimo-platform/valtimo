@@ -170,15 +170,16 @@
             </cds-tooltip>
           </cds-label>
           <div class="documenten-metada-form-input">
-            <cds-dropdown
+            <cds-combo-box
               [placeholder]="'document.informatieobjecttypePlaceholder' | translate"
               [disabled]="obs.disabled || (informatieobjecttypeDisabled$ | async)"
               id="informatieobjecttype"
               [appendInline]="true"
               (selected)="informatieobjecttypeSelected($event)"
+              (clear)="informatieobjecttypeFormControl.setValue(null)"
             >
               <cds-dropdown-list [items]="obs.documentTypeItems || []"></cds-dropdown-list>
-            </cds-dropdown>
+            </cds-combo-box>
           </div>
         }
         @if (!hideFields.includes('aanvullendeDatum')) {
