@@ -53,6 +53,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
@@ -358,10 +359,12 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
     fun buildingBlockPluginDefinitionService(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        pluginService: PluginService
     ) = BuildingBlockPluginDefinitionService(
         pluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository,
+        pluginService
     )
 
     @Bean

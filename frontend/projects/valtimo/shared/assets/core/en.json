@@ -1804,6 +1804,12 @@
         "title": "Sync",
         "continuous": "Continuous",
         "end": "At end"
+      },
+      "pluginDependenciesWarning": {
+        "title": "Dependencies",
+        "zaakInstanceAndTypeLink": "This building block may need both a zaak instance link and a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly.",
+        "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
+        "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
       }
     }
   },

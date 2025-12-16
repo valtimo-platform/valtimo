@@ -27,6 +27,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginDefinition
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.repository.PluginConfigurationRepository
@@ -496,6 +497,30 @@ internal class PluginServiceIT : BaseIntegrationTest() {
         assertEquals(updatedConfiguration.get().properties!!["property1"].textValue(), "updated")
         val linkedConfiguration = pluginConfigurationRepository.findById(pluginConfigurationWithRef.id).get()
         assertEquals(linkedConfiguration.properties!!["property4"].textValue(), newPluginConfigurationId.id.toString())
+    }
+
+    @Test
+    @Transactional
+    fun `should return merged and sorted plugin dependencies for plugin definitions`() {
+        val pluginKeys = listOf(
+            "test-plugin",
+            "test-category-plugin"
+        )
+
+        val result = pluginService.getPluginDefinitionsWithDependencies(pluginKeys)
+
+        assertEquals(
+            listOf("test-category-plugin", "test-plugin"),
+            result.pluginDefinitionKeys
+        )
+
+        assertEquals(
+            listOf(
+                PluginDependency.ZAAK_INSTANCE_LINK,
+                PluginDependency.ZAAK_TYPE_LINK
+            ),
+            result.dependencies
+        )
     }
 
     @TestConfiguration

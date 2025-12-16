@@ -52,6 +52,7 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
 import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
+import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
@@ -477,6 +478,26 @@ class PluginService(
 
             method.invoke(instance, *methodArguments)
         }
+    }
+
+
+    fun getPluginDefinitionsWithDependencies(
+        pluginDefinitionKeys: Collection<String>
+    ): PluginDefinitionsWithDependenciesDto {
+        val definitions = pluginDefinitionRepository.findAllById(pluginDefinitionKeys)
+
+        val mergedDependencies = definitions
+            .mapNotNull { definition ->
+                val pluginClass = Class.forName(definition.fullyQualifiedClassName)
+                pluginClass.getAnnotation(Plugin::class.java)
+            }
+            .flatMap { it.dependencies.asList() }
+            .toSet()
+
+        return PluginDefinitionsWithDependenciesDto(
+            pluginDefinitionKeys = pluginDefinitionKeys.sorted(),
+            dependencies = mergedDependencies.sortedBy { it.name }
+        )
     }
 
     private fun updatePluginConfigurationId(
