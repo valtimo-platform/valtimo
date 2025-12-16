@@ -23,6 +23,7 @@ import {
   ProcessLink,
 } from '../models';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
+import {PluginDependency} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +39,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _outputMappings$ = new BehaviorSubject<Array<BuildingBlockOutputMapping>>([]);
   private readonly _loadingRequirements$ = new BehaviorSubject<boolean>(false);
   private readonly _loadingFields$ = new BehaviorSubject<boolean>(false);
+  private readonly _pluginDependencies$ = new BehaviorSubject<Array<PluginDependency>>([]);
 
   private _versionSubscription?: Subscription;
   private _requirementsSubscription?: Subscription;
@@ -85,6 +87,10 @@ export class BuildingBlockStateService implements OnDestroy {
 
   public get fieldsLoading$(): Observable<boolean> {
     return this._loadingFields$.asObservable();
+  }
+
+  public get pluginDependencies$(): Observable<Array<PluginDependency>> {
+    return this._pluginDependencies$.asObservable();
   }
 
   public get mappingsComplete$(): Observable<boolean> {
@@ -234,12 +240,14 @@ export class BuildingBlockStateService implements OnDestroy {
     this._requirementsSubscription = this.processLinkBuildingBlockApiService
       .getPluginDefinitionsForBuildingBlock(key, versionTag)
       .subscribe({
-        next: pluginKeys => {
-          this.applyPluginKeys(pluginKeys ?? []);
+        next: res => {
+          this.applyPluginKeys(res.pluginDefinitionKeys ?? []);
+          this._pluginDependencies$.next(res.dependencies);
           this._loadingRequirements$.next(false);
         },
         error: () => {
           this.applyPluginKeys([]);
+          this._pluginDependencies$.next([]);
           this._loadingRequirements$.next(false);
         },
       });

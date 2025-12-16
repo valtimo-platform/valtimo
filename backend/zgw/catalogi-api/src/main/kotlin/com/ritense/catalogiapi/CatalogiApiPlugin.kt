@@ -44,6 +44,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
@@ -57,7 +58,8 @@ import java.util.UUID
 @Plugin(
     key = "catalogiapi",
     title = "Catalogi API",
-    description = "Connects to the Catalogi API to retrieve zaak type information"
+    description = "Connects to the Catalogi API to retrieve zaak type information",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK]
 )
 class CatalogiApiPlugin(
     val client: CatalogiApiClient,
