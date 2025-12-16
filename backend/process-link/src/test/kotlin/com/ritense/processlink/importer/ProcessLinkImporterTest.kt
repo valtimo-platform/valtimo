@@ -17,9 +17,10 @@
 package com.ritense.processlink.importer
 
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,19 +30,25 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
 
 @ExtendWith(MockitoExtension::class)
-class ProcessLinkImporterTest(
-    @Mock private val processLinkService: ProcessLinkService,
-    @Mock private val repositoryService: OperatonRepositoryService
-) {
+class ProcessLinkImporterTest {
+
+    @Mock
+    lateinit var processLinkService: ProcessLinkService
+
+    @Mock
+    lateinit var repositoryService: OperatonRepositoryService
+
+    @Mock
+    lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
+
     private lateinit var importer: ProcessLinkImporter
 
     @BeforeEach
     fun before() {
-        whenever(processLinkService.getImporterDependsOnTypes()).thenReturn(setOf("x", "y", "z"))
-
         importer = ProcessLinkImporter(
             processLinkService,
             repositoryService,
+            processDefinitionCaseDefinitionService,
             MapperSingleton.get()
         )
     }
@@ -53,6 +60,8 @@ class ProcessLinkImporterTest(
 
     @Test
     fun `should depend on 'processdefinition' type`() {
+        whenever(processLinkService.getImporterDependsOnTypes()).thenReturn(setOf("x", "y", "z"))
+
         assertThat(importer.dependsOn()).isEqualTo(setOf(PROCESS_DEFINITION, "x", "y", "z"))
     }
 

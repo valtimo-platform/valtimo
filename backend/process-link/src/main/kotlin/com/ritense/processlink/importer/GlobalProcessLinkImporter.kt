@@ -19,6 +19,7 @@ package com.ritense.processlink.importer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_LINK
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
@@ -27,8 +28,9 @@ import org.springframework.transaction.annotation.Transactional
 class GlobalProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
     repositoryService: OperatonRepositoryService,
+    processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     objectMapper: ObjectMapper
-) : ProcessLinkImporter(processLinkService, repositoryService, objectMapper) {
+) : ProcessLinkImporter(processLinkService, repositoryService, processDefinitionCaseDefinitionService, objectMapper) {
     override fun type() = GLOBAL_PROCESS_LINK
 
     override fun dependsOn(): Set<String> {
