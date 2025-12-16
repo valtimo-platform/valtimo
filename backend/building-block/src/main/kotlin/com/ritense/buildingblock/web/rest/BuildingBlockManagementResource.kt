@@ -27,13 +27,11 @@ import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
-import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -130,6 +128,7 @@ class BuildingBlockManagementResource(
         "/{key}/version/{versionTag}/export",
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
     )
+
     @RunWithoutAuthorization
     fun getExport(
         @LoggableResource("buildingBlockDefinitionKey") @PathVariable key: String,

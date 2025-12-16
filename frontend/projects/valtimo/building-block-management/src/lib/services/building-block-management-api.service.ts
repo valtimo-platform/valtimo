@@ -203,4 +203,14 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       )
     );
   }
+
+  public exportBuildingBlock(key: string, versionTag: string): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/export`),
+      {
+        responseType: 'blob',
+        observe: 'response',
+      }
+    );
+  }
 }

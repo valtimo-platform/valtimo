@@ -13,19 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-.valtimo-building-block-management-list__actions {
-  display: flex;
-}
-
-:host ::ng-deep .cds--tab-content {
-  margin: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  outline: none !important;
-}
-
-.building-block-management-header {
-  display: flex;
-  justify-content: space-between;
-}
