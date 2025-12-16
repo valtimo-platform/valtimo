@@ -54,9 +54,7 @@ export class PatchZaakConfigurationComponent
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly iconService: IconService
-  ) {
+  constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
@@ -96,7 +94,10 @@ export class PatchZaakConfigurationComponent
 
   public removeProperty(property: PatchZaakProperties): void {
     if (this.hasPropertyBeenAdded(property)) {
-      this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
+      this.propertyList.splice(
+        this.propertyList.findIndex(item => item.name === property),
+        1
+      );
       this.onPropertyChanged(property, undefined);
     }
     // remove linked field coordinates
@@ -109,7 +110,10 @@ export class PatchZaakConfigurationComponent
     return this.propertyList.findIndex(item => item.name === property) !== -1;
   }
 
-  public prefillValueFor(property: PatchZaakProperties, prefill: PatchZaakNotitieConfig): string | null {
+  public prefillValueFor(
+    property: PatchZaakProperties,
+    prefill: PatchZaakNotitieConfig
+  ): string | null {
     return prefill != null ? prefill[property] : null;
   }
 
@@ -132,22 +136,22 @@ export class PatchZaakConfigurationComponent
       name: property,
       translationKey: this.translationKeyFor(property),
       tooltipTranslationKey: this.tooltipTranslationKeyFor(property),
-      presetOptions: this.presetOptionsForProperty(property)
-    }
+      presetOptions: this.presetOptionsForProperty(property),
+    };
   }
 
   private translationKeyFor(property: PatchZaakProperties): string {
     return property === 'description' ? 'omschrijving' : property;
   }
 
-  private tooltipTranslationKeyFor(property: PatchZaakProperties): string {
+  private tooltipTranslationKeyFor(property: PatchZaakProperties): string | null{
     if (property.includes('Date')) {
-      return 'dateformatTooltip'
+      return 'dateformatTooltip';
     } else if (property === this.CASE_GEOMETRY_COORDINATES) {
-      return `${property}Tooltip`
-    } else {
-      return null;
+      return `${property}Tooltip`;
     }
+
+    return null;
   }
 
   private presetOptionsForProperty(property: PatchZaakProperties): string[] {
