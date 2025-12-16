@@ -88,7 +88,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   public readonly formValues: Record<string, SearchFormValue> = {};
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
   public readonly values$ = new BehaviorSubject<any>({});
-  public readonly bsnErrorKey = 'interface.dataValidation.bsnValidator';
+  public bsnErrorKey: string | null = null;
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -148,10 +148,11 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.bsnErrorKey = null;
   }
 
   public searchDisabled(params: {key: string; required: boolean}[]): boolean {
-    return params.some(param => !this.formValues[param.key] && param.required);
+    return params.some(param => !this.formValues[param.key] && param.required) || this.bsnErrorKey !== null;
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
@@ -165,7 +166,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
       for (const param of params) {
         const value = values[param.key];
 
-        if (!value) continue;
+        if (value === null) continue;
 
         if (typeof value === 'object' && value.start && value.end) {
           queryParams[param.key] = {
@@ -185,10 +186,15 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
 
-  public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
+  public singleValueChange(searchFieldKey: string, value: any, dataType: string, ): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      if (value || Number.isInteger(value)) {
-        this.values$.next({...values, [searchFieldKey]: this.getSingleValue(value, isDateTime)});
+      if (dataType === 'bsn') this.validateBsnValue(value);
+
+      if (value !== undefined && value !== null) {
+        this.values$.next({
+          ...values,
+          [searchFieldKey]: this.getSingleValue(value, dataType),
+        });
       } else if (Object.keys(values).includes(searchFieldKey)) {
         const valuesCopy = {...values};
         delete valuesCopy[searchFieldKey];
@@ -200,8 +206,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   public multipleValueChange(
     searchFieldKey: string,
     value: any,
-    isDateTime?: boolean
+    dataType: any
   ): void {
+    const isDateTime = dataType === 'datetime';
     this.values$.pipe(take(1)).subscribe(values => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         const hasStart = value.start !== undefined && value.start !== '';
@@ -211,8 +218,8 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
           this.values$.next({
             ...values,
             [searchFieldKey]: {
-              start: hasStart ? this.getSingleValue(value.start, isDateTime) : null,
-              end: hasEnd ? this.getSingleValue(value.end, isDateTime) : null,
+              start: hasStart ? this.getSingleValue(value.start, dataType) : null,
+              end: hasEnd ? this.getSingleValue(value.end, dataType) : null,
             },
           });
           return;
@@ -292,18 +299,27 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getSingleValue(value: any, isDateTime?: boolean): any {
-    if (isDateTime) {
+  private getSingleValue(value: any, dataType: any): any {
+    if (dataType === 'datetime') {
       return new Date(value).toISOString();
     }
 
-    if (value === this.BOOLEAN_POSITIVE) {
-      return true;
-    }
-    if (value === this.BOOLEAN_NEGATIVE) {
-      return false;
+    if(dataType === 'boolean') {
+      if (value === this.BOOLEAN_POSITIVE) {
+        return true;
+      }
+      if (value === this.BOOLEAN_NEGATIVE) {
+        return false;
+      }
     }
 
     return value;
+  }
+
+  private validateBsnValue(value: string): void {
+   if(value) {
+     const validation = validateBsn(value);
+     this.bsnErrorKey = validation.isValid ? null : validation.errorKey;
+   }
   }
 }
