@@ -39,20 +39,18 @@ class BuildingBlockDefinitionMainProcessDefinitionImporter(
     override fun import(request: ImportRequest) {
         val dto = toDto(request.content.toString(Charsets.UTF_8))
 
-        val definitionsByKeyAndSolutionModule = operatonProcessService.getDefinitionsByKeyAndSolutionModule(
+        val definitionsByKeyAndSolutionModule = operatonProcessService.getDefinitionByKeyAndSolutionModule(
             request.buildingBlockDefinitionId!!,
             dto.processDefinitionKey
         )
 
-        if (definitionsByKeyAndSolutionModule.isNotEmpty()) {
-            val definitionId = definitionsByKeyAndSolutionModule.first().id
-            buildingBlockDefinitionProcessDefinitionService.setMainLink(
-                request.buildingBlockDefinitionId!!,
-                null,
-                ProcessDefinitionId(definitionId),
-                true
-            )
-        }
+        val definitionId = definitionsByKeyAndSolutionModule.id
+        buildingBlockDefinitionProcessDefinitionService.setMainLink(
+            request.buildingBlockDefinitionId!!,
+            null,
+            ProcessDefinitionId(definitionId),
+            true
+        )
     }
 
     override fun partOfCaseDefinition() = false

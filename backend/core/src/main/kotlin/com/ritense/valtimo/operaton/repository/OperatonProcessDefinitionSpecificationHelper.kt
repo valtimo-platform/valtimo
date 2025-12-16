@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.operaton.repository
 
+import com.ritense.valtimo.contract.SolutionModuleId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -81,14 +82,14 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun byLatestVersionTag(versionTag: String) = Specification<OperatonProcessDefinition> { root, query, cb ->
+        fun maxVersionOf(spec: Specification<OperatonProcessDefinition>) = Specification<OperatonProcessDefinition> { root, query, cb ->
             val sub = query.subquery(Long::class.java)
             val subRoot = sub.from(OperatonProcessDefinition::class.java)
             sub.select(cb.max(subRoot.get(VERSION)))
             sub.where(
                 cb.and(
                     cb.equal(subRoot.get<Any>(KEY), root.get<Any>(KEY)),
-                    cb.equal(subRoot.get<Any>(VERSION_TAG), versionTag),
+                    spec.toPredicate(subRoot, query, cb),
                     cb.or(
                         cb.equal(subRoot.get<Any>(TENANT_ID), root.get<Any>(TENANT_ID)),
                         cb.and(subRoot.get<Any>(TENANT_ID).isNull, root.get<Any>(TENANT_ID).isNull)
@@ -102,6 +103,15 @@ class OperatonProcessDefinitionSpecificationHelper {
         @JvmStatic
         fun byActive() = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(SUSPENSION_STATE), SuspensionState.ACTIVE.stateCode)
+        }
+
+        @JvmStatic
+        fun bySolutionModuleId(solutionModuleId: SolutionModuleId?): Specification<OperatonProcessDefinition> {
+            return if (solutionModuleId != null) {
+                byVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId.toString())
+            } else {
+                maxVersionOf(byNotLinkedToCaseDefinition())
+            }
         }
 
         @JvmStatic

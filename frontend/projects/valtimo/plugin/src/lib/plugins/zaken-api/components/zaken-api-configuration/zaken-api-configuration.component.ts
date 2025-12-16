@@ -30,19 +30,14 @@ import {ZakenApiConfig} from '../../models';
 export class ZakenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<ZakenApiConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
+  @Input() public save$: Observable<void>;
+  @Input() public disabled$: Observable<boolean>;
+  @Input() public pluginId: string;
+  @Input() public prefillConfiguration$: Observable<ZakenApiConfig>;
+  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() public configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
 
-  private saveSubscription!: Subscription;
-
-  private readonly formValue$ = new BehaviorSubject<ZakenApiConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
-
-  readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
+  public readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
       this.pluginManagementService.getPluginConfigurationsByCategory('zaken-api-authentication'),
       this.translateService.stream('key'),
@@ -57,6 +52,12 @@ export class ZakenApiConfigurationComponent
         }))
       )
     );
+  public readonly noteEventListenerEnabled$ = new BehaviorSubject<boolean>(false);
+
+  private _eventListenerEnabledSubscription!: Subscription;
+  private readonly formValue$ = new BehaviorSubject<ZakenApiConfig | null>(null);
+  private _saveSubscription!: Subscription;
+  private readonly valid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
@@ -64,32 +65,61 @@ export class ZakenApiConfigurationComponent
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    this.initNoteEventListenerEnabled()
+    this.openEventListenerEnabledSubscription();
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy() {
+    this._saveSubscription?.unsubscribe();
+    this._eventListenerEnabledSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: ZakenApiConfig): void {
-    this.formValue$.next(formValue);
-    this.handleValid(formValue);
+  public formValueChange(formValue: ZakenApiConfig): void {
+    const formValueIncludingToggle = {
+      ...formValue,
+      noteEventListenerEnabled: this.noteEventListenerEnabled$.getValue()
+    }
+    this.formValue$.next(formValueIncludingToggle);
+    this.handleValid(formValueIncludingToggle);
+  }
+
+  public onNoteEventListenerEnabledChange(event: any): void {
+    this.noteEventListenerEnabled$.next(event);
+  }
+
+  private initNoteEventListenerEnabled(): void {
+    this.prefillConfiguration$.pipe(take(1)).subscribe(configuration => {
+      this.noteEventListenerEnabled$.next(configuration.noteEventListenerEnabled);
+    })
+  }
+
+  private openEventListenerEnabledSubscription(): void {
+    this._eventListenerEnabledSubscription = this.noteEventListenerEnabled$.subscribe( value => {
+      this.formValueChange(this.formValue$.getValue());
+    })
   }
 
   private handleValid(formValue: ZakenApiConfig): void {
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
-      formValue.authenticationPluginConfiguration
+      formValue.authenticationPluginConfiguration &&
+      formValue.noteEventListenerEnabled !== null &&
+      (
+        formValue.noteEventListenerEnabled === false
+        ||
+        formValue.noteEventListenerEnabled === true &&
+        formValue.noteSubject
+      )
     );
-
     this.valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
+    this._saveSubscription = this.save$.subscribe(() => {
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
@@ -97,6 +127,6 @@ export class ZakenApiConfigurationComponent
             this.configuration.emit(formValue);
           }
         });
-    });
+    })
   }
 }

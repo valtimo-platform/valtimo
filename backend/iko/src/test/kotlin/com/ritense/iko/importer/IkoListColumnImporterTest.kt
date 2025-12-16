@@ -18,7 +18,7 @@ package com.ritense.iko.importer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.iko.service.IkoListColumnService
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_AGGREGATE
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_VIEW
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,8 +44,8 @@ class IkoListColumnImporterTest(
     }
 
     @Test
-    fun `should depend on 'ikodataaggregate' type`() {
-        assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_DATA_AGGREGATE))
+    fun `should depend on 'ikoview' type`() {
+        assertThat(importer.dependsOn()).isEqualTo(setOf(IKO_VIEW))
     }
 
     @Test

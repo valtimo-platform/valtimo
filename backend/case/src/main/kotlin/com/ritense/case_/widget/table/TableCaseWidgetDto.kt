@@ -29,6 +29,7 @@ data class TableCaseWidgetDto(
     override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
+    override val isCompact: Boolean?,
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: TableWidgetProperties

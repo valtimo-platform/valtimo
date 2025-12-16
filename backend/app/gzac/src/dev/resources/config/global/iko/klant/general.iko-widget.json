@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoViewKey": "klant",
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
@@ -8,6 +8,7 @@
             "title": "Klant",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -43,6 +44,7 @@
             "title": "Nationaliteiten",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -73,6 +75,7 @@
             "title": "Verblijfplaats",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -108,6 +111,7 @@
             "title": "Partners",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -136,42 +140,6 @@
                         "width": "full"
                     }
                 ]
-            }
-        },
-        {
-            "type": "interactive-table",
-            "key": "personen",
-            "title": "Personen",
-            "width": 4,
-            "highContrast": false,
-            "actions": [
-                {
-                    "name": "Create new Verzoek",
-                    "navigateTo": "http://localhost:8003/leningaanvragen/startpagina"
-                }
-            ],
-            "displayConditions": [],
-            "properties": {
-                "collection": "iko:?ikoDataAggregateKey=klant&achternaam=Goede&geboortedatum=1987-04-01&id=",
-                "defaultPageSize": 4,
-                "columns": [
-                    {
-                        "key": "naam",
-                        "title": "Naam",
-                        "value": "/naam/volledigeNaam"
-                    },
-                    {
-                        "key": "bsn",
-                        "title": "BSN",
-                        "value": "/burgerservicenummer"
-                    }
-                ],
-                "firstColumnAsTitle": false,
-                "rowClickAction": {
-                    "name": null,
-                    "navigateTo": "http://www.ritense.nl/persoon/${/burgerservicenummer}"
-                },
-                "canStartCase": true
             }
         }
     ]

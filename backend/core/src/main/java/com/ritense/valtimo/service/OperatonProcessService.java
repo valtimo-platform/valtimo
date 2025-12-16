@@ -25,9 +25,9 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersionTag;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.bySolutionModuleId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersionTag;
 
 import com.fasterxml.jackson.core.JsonPointer;
@@ -52,6 +52,8 @@ import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
@@ -253,21 +255,20 @@ public class OperatonProcessService {
     ) {
         final OperatonProcessDefinition processDefinition = AuthorizationContext
             .runWithoutAuthorization(() -> {
-                if (solutionModuleId == null) {
-                    return operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey);
+                var pd = operatonRepositoryService.findProcessDefinition(
+                    byKey(processDefinitionKey).and(bySolutionModuleId(solutionModuleId))
+                );
+                if (pd != null) {
+                    return pd;
                 } else {
-                    // TODO: What to do if we're working on a global process definition? Currently taking latest
-                    OperatonProcessDefinition procDef = operatonRepositoryService.findProcessDefinition(
-                        byKey(processDefinitionKey).and(byLatestVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId))
+                    // Needed by the VerzoekPlugin:
+                    return operatonRepositoryService.findProcessDefinition(
+                        byKey(processDefinitionKey).and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(byNotLinkedToCaseDefinition()))
                     );
-                    if (procDef == null) {
-                        procDef = operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey);
-                    }
-                    return procDef;
                 }
             });
         if (processDefinition == null) {
-            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "'");
+            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and solutionModuleId: '" + solutionModuleId + "'");
         }
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
@@ -323,6 +324,10 @@ public class OperatonProcessService {
         return execution;
     }
 
+    /**
+     * @deprecated Please use getDefinitionByKeyAndCaseDefinition(...)
+     */
+    @Deprecated(since = "Since 13.8.0", forRemoval = true)
     public OperatonProcessDefinition getProcessDefinition(String processDefinitionKey) {
         denyAuthorization();
         return AuthorizationContext
@@ -375,7 +380,7 @@ public class OperatonProcessService {
         String versionTag = caseDefinitionId.getTagPrefix() + caseDefinitionId;
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
             byActive()
-                .and(byLatestVersionTag(versionTag)),
+                .and(bySolutionModuleId(caseDefinitionId)),
             Sort.by(NAME)
         ));
     }
@@ -412,27 +417,14 @@ public class OperatonProcessService {
         );
     }
 
-    public List<OperatonProcessDefinition> getDefinitionsByKeyAndSolutionModule(
+    public OperatonProcessDefinition getDefinitionByKeyAndSolutionModule(
         SolutionModuleId solutionModuleId,
         String processDefinitionKey
     ) {
         denyAuthorization();
-        return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId)
-                .and(byKey(processDefinitionKey))
-        ));
-    }
-
-    public OperatonProcessDefinition getLatestDefinitionByKeyAndSolutionModule(
-        SolutionModuleId solutionModuleId,
-        String processDefinitionKey
-    ) {
-        denyAuthorization();
-        String versionTag = solutionModuleId.getTagPrefix() + solutionModuleId;
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinition(
-            byVersionTag(versionTag)
+            bySolutionModuleId(solutionModuleId)
                 .and(byKey(processDefinitionKey))
-                .and(byLatestVersionTag(versionTag))
         ));
     }
 
@@ -669,8 +661,7 @@ public class OperatonProcessService {
         List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
                 .and(byActive())
-                .and(solutionModuleId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    solutionModuleId.getTagPrefix() + solutionModuleId))
+                .and(bySolutionModuleId(solutionModuleId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );
@@ -949,11 +940,16 @@ public class OperatonProcessService {
         model.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
                 String processDefinitionKey = process.getId();
+                String versionTag = process.getOperatonVersionTag();
                 if (processDefinitionKey == null || processDefinitionKey.isEmpty() || isSystemProcess(
                     AuthorizationContext
                         .runWithoutAuthorization(
-                            () -> operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey)))
-                ) {
+                            () -> operatonRepositoryService.findProcessDefinition(
+                                byKey(processDefinitionKey)
+                                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(versionTag != null ? byVersionTag(versionTag) : byNotLinkedToCaseDefinition()))
+                            )
+                        )
+                )) {
                     isDeployable.set(false);
                 }
             });
