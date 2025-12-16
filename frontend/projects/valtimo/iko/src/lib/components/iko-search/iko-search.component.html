@@ -357,7 +357,6 @@
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
     [placeholder]="'searchFields.bsnPlaceholder' | translate"
-    [defaultValue]="formValues[searchField.key]"
     (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
   ></v-input>
 </ng-template>

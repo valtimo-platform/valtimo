@@ -82,7 +82,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   public readonly formValues: Record<string, SearchFormValue> = {};
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();
   public readonly values$ = new BehaviorSubject<any>({});
-  public bsnErrorKey: string | null = null;
+  public readonly bsnErrors: Record<string, string | null> = {};
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -141,14 +141,19 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
-    this.bsnErrorKey = null;
   }
 
-  public searchDisabled(params: {key: string; required: boolean}[]): boolean {
-    return (
-      params.some(param => !this.formValues[param.key] && param.required) ||
-      this.bsnErrorKey !== null
+  public searchDisabled(params: { key: string; required: boolean; dataType?: string }[]): boolean {
+    const hasMissingRequired = params.some(param => {
+      if (!param.required) return false;
+      return !this.hasValue(this.formValues[param.key]);
+    });
+
+    const hasInvalidBsn = params.some(
+      param => param.dataType === 'bsn' && this.bsnErrors[param.key] !== null
     );
+
+    return hasMissingRequired || hasInvalidBsn;
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
@@ -185,7 +190,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     this.formValues[searchFieldKey] = value;
 
     this.values$.pipe(take(1)).subscribe(values => {
-      if (dataType === 'bsn') this.validateBsnValue(value);
+      if (dataType === 'bsn') {
+        this.validateBsnValue(searchFieldKey, value);
+      }
 
       if (value) {
         this.values$.next({
@@ -193,7 +200,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
           [searchFieldKey]: this.getSingleValue(value, dataType),
         });
       } else if (Object.keys(values).includes(searchFieldKey)) {
-        const valuesCopy = {...values};
+        const valuesCopy = { ...values };
         delete valuesCopy[searchFieldKey];
         this.values$.next(valuesCopy);
       }
@@ -270,9 +277,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
                 .subscribe(dropdownData => {
                   this.dropdownSelectItemsMap[field.key] = dropdownData
                     ? Object.keys(dropdownData).map(dropdownFieldKey => ({
-                        id: dropdownFieldKey,
-                        text: (dropdownData as any)[dropdownFieldKey],
-                      }))
+                      id: dropdownFieldKey,
+                      text: (dropdownData as any)[dropdownFieldKey],
+                    }))
                     : [];
                 });
             });
@@ -294,10 +301,33 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     return value;
   }
 
-  private validateBsnValue(value: string): void {
-    if (value) {
-      const validation = validateBsn(value);
-      this.bsnErrorKey = validation.isValid ? null : validation.errorKey;
+  private validateBsnValue(fieldKey: string, value: string | null | undefined): void {
+    if (!value) {
+      this.bsnErrors[fieldKey] = null;
+      return;
     }
+
+    const validation = validateBsn(value);
+    this.bsnErrors[fieldKey] = validation.isValid ? null : validation.errorKey;
+  }
+
+  private hasValue(value: SearchFormValue): boolean {
+    if (value === null || value === undefined) return false;
+
+    if (typeof value === 'string') return value.trim().length > 0;
+
+    if (typeof value === 'boolean') return true;
+
+    if (Array.isArray(value)) return value.length > 0;
+
+    if (typeof value === 'object') {
+      const v = value as any;
+      return (
+        (v.start !== null && v.start !== undefined && v.start !== '') ||
+        (v.end !== null && v.end !== undefined && v.end !== '')
+      );
+    }
+
+    return false;
   }
 }
