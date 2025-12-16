@@ -282,10 +282,6 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   private getSingleValue(value: any, dataType: string): any {
-    if (dataType === 'datetime') {
-      console.log("value: ", value)
-    }
-
     if (dataType === 'boolean') {
       if (value === this.BOOLEAN_POSITIVE) {
         return true;
