@@ -162,4 +162,34 @@
         </sql>
     </changeSet>
 
+    <changeSet author="Ritense" id="5">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE search_list_column
+            SET owner_id = 'ikoView:' || substring(owner_id from length('ikoDataAggregate:') + 1)
+            WHERE owner_id LIKE 'ikoDataAggregate:%';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            UPDATE search_list_column
+            SET owner_id = CONCAT('ikoView:', SUBSTRING(owner_id, CHAR_LENGTH('ikoDataAggregate:') + 1))
+            WHERE owner_id LIKE 'ikoDataAggregate:%';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="7">
+        <sql>
+            UPDATE search_field_v2
+            SET owner_type = 'IkoSearchAction'
+            WHERE owner_type = 'IkoDataRequest';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
