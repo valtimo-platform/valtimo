@@ -37,7 +37,7 @@ import {IkoWidgetMapComponent} from '../../widget-map';
   imports: [CommonModule, WidgetContainerComponent, FitPageDirective],
 })
 export class IkoWidgetComponent {
-  public readonly dataAggregateKey$ = this.ikoTabService.dataAggregateKey$;
+  public readonly ikoViewKey$ = this.ikoTabService.ikoViewKey$;
   public readonly entryId$ = this.ikoTabService.entryId$;
 
   private readonly _key$ = new BehaviorSubject<string>('');
@@ -51,16 +51,16 @@ export class IkoWidgetComponent {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public widgets$ = combineLatest([this.dataAggregateKey$, this.key$]).pipe(
-    switchMap(([dataAggregateKey, key]) => this.ikoApiService.getIkoWidget(dataAggregateKey, key))
+  public widgets$ = combineLatest([this.ikoViewKey$, this.key$]).pipe(
+    switchMap(([ikoViewKey, key]) => this.ikoApiService.getIkoWidget(ikoViewKey, key))
   );
   public widgetParams$: Observable<IkoWidgetParams> = combineLatest([
-    this.dataAggregateKey$,
+    this.ikoViewKey$,
     this.key$,
     this.entryId$,
   ]).pipe(
-    map(([dataAggregateKey, tabKey, entryId]) => ({
-      dataAggregateKey,
+    map(([ikoViewKey, tabKey, entryId]) => ({
+      ikoViewKey,
       entryId,
       tabKey,
     })),

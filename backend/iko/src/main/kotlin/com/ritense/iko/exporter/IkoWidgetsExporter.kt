@@ -38,20 +38,20 @@ class IkoWidgetsExporter(
 
     override fun export(request: IkoWidgetsExportRequest): ExportResult {
         val ikoWidgets = ikoWidgetService.findAllByTabKey(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
+            ikoViewKey = request.ikoViewKey,
             tabKey = request.tabKey,
         )
         if (ikoWidgets.isEmpty()) {
             return ExportResult()
         }
         val ikoWidgetsDto = IkoWidgetsDto(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
+            ikoViewKey = request.ikoViewKey,
             ikoTabKey = request.tabKey,
             ikoWidgets = ikoWidgets.map { it.toDto() }
         )
         return ExportResult(
             ExportFile(
-                PATH.format(request.ikoDataAggregateKey, request.tabKey),
+                PATH.format(request.ikoViewKey, request.tabKey),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoWidgetsDto)
             )
         )

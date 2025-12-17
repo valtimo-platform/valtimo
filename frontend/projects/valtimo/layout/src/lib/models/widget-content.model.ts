@@ -71,6 +71,7 @@ interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstC
 
 interface WidgetCustomContent {
   componentKey: string;
+  componentValue: {[key: string]: string};
 }
 
 interface WidgetFormioContent {

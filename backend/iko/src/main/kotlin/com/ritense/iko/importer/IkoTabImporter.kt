@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.iko.service.IkoTabService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.IKO_DATA_REQUEST
+import com.ritense.importer.ValtimoImportTypes.Companion.IKO_SEARCH_ACTION
 import com.ritense.importer.ValtimoImportTypes.Companion.IKO_TAB
 import java.util.UUID
 
@@ -32,27 +32,27 @@ class IkoTabImporter(
 
     override fun type(): String = IKO_TAB
 
-    override fun dependsOn(): Set<String> = setOf(IKO_DATA_REQUEST)
+    override fun dependsOn(): Set<String> = setOf(IKO_SEARCH_ACTION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
         val ikoTabsDto = objectMapper.readValue<IkoTabsDto>(request.content.toString(Charsets.UTF_8))
 
-        val existingTabs = service.findAllTabsByIkoDataAggregateKey(ikoTabsDto.ikoDataAggregateKey)
+        val existingTabs = service.findAllTabsByIkoViewKey(ikoTabsDto.ikoViewKey)
 
         ikoTabsDto.ikoTabs.forEachIndexed { index, tabDto ->
             val existingTabId = existingTabs.firstOrNull { existingTab -> existingTab.key == tabDto.key }?.id
             if (existingTabId != null) {
-                service.update(ikoTabsDto.ikoDataAggregateKey, tabDto.toEntity(existingTabId, index))
+                service.update(ikoTabsDto.ikoViewKey, tabDto.toEntity(existingTabId, index))
             } else {
-                service.create(ikoTabsDto.ikoDataAggregateKey, tabDto.toEntity(UUID.randomUUID(), index))
+                service.create(ikoTabsDto.ikoViewKey, tabDto.toEntity(UUID.randomUUID(), index))
             }
         }
 
         existingTabs
             .filter { existingTab -> ikoTabsDto.ikoTabs.none { tabDto -> tabDto.key == existingTab.key } }
-            .forEach { existingTab -> service.deleteByKey(ikoTabsDto.ikoDataAggregateKey, existingTab.key) }
+            .forEach { existingTab -> service.deleteByKey(ikoTabsDto.ikoViewKey, existingTab.key) }
     }
 
     override fun partOfCaseDefinition(): Boolean = false
