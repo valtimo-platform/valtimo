@@ -1,22 +1,7 @@
-<!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
-  ~
-  ~ Licensed under EUPL, Version 1.2 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" basis,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 @if (ikoSearchActions$ | async; as ikoSearchActions) {
   @if (ikoSearchActions.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
+
   } @else {
     <h4>{{ 'iko.searchVia' | translate }}</h4>
 
@@ -30,13 +15,148 @@
                 [ngClass]="{
                   'query-group__field--time': field.dataType === 'time',
                   'query-group__field--date': field.dataType === 'date',
-                  'query-group__field--datetime': field.dataType === 'datetime'
+                  'query-group__field--datetime': field.dataType === 'datetime',
                 }"
               >
-                <ng-container
-                  class="query-group__field"
-                  *ngTemplateOutlet="searchFieldTemplate; context: {searchField: field}"
-                ></ng-container>
+                <v-input-label *ngIf="field.title" [title]="field.title"></v-input-label>
+
+                @if (field.dataType === 'text' && field.fieldType === 'single') {
+                  <v-input
+                    [dataTestId]="'iko-search-field-' + field.key"
+                    [name]="field.key"
+                    [placeholder]="'searchFields.textPlaceholder' | translate"
+                    [defaultValue]="formValues[field.key]"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-input>
+
+                } @else if (field.dataType === 'text' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <v-input
+                      name="start"
+                      [placeholder]="'searchFields.textPlaceholder' | translate"
+                    ></v-input>
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+                    <v-input
+                      name="end"
+                      [placeholder]="'searchFields.textPlaceholder' | translate"
+                    ></v-input>
+                  </v-form>
+                }
+                @else if (field.dataType === 'number' && field.fieldType === 'single') {
+                  <v-input
+                    type="number"
+                    [hideNumberSpinBox]="true"
+                    [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-input>
+
+                } @else if (field.dataType === 'number' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <v-input
+                      type="number"
+                      name="start"
+                      [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    ></v-input>
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+                    <v-input
+                      type="number"
+                      name="end"
+                      [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    ></v-input>
+                  </v-form>
+                }
+                @else if (field.dataType === 'boolean' && field.fieldType === 'single') {
+                  <v-select
+                    *ngIf="booleanItems$ | async as booleanItems"
+                    [items]="booleanItems"
+                    (selectedChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-select>
+                }
+
+                @else if (field.dataType === 'time' && field.fieldType === 'single') {
+                  <cds-timepicker
+                    [placeholder]="'searchFields.timePlaceholder' | translate"
+                    [ngModel]="formValues[field.key]"
+                    (ngModelChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></cds-timepicker>
+
+                } @else if (field.dataType === 'time' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_start']"></cds-timepicker>
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_end']"></cds-timepicker>
+                  </v-form>
+                }
+                @else if (field.dataType === 'date' && field.fieldType === 'single') {
+                  <valtimo-date-time-picker
+                    [defaultDate]="formValues[field.key] ?? ''"
+                    [enableTime]="false"
+                    [showFieldLabel]="false"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></valtimo-date-time-picker>
+
+                } @else if (field.dataType === 'date' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <valtimo-date-time-picker
+                      name="start"
+                      [enableTime]="false"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+                    <valtimo-date-time-picker
+                      name="end"
+                      [enableTime]="false"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                  </v-form>
+                }
+                @else if (field.dataType === 'datetime' && field.fieldType === 'single') {
+                  <valtimo-date-time-picker
+                    [enableTime]="true"
+                    [showFieldLabel]="false"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></valtimo-date-time-picker>
+
+                } @else if (field.dataType === 'datetime' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <valtimo-date-time-picker
+                      name="start"
+                      [enableTime]="true"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+                    <valtimo-date-time-picker
+                      name="end"
+                      [enableTime]="true"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                  </v-form>
+                }
               </div>
             }
           </div>
@@ -55,339 +175,3 @@
     </cds-tabs>
   }
 }
-
-<ng-template #searchFieldTemplate let-searchField="searchField">
-  <v-input-label *ngIf="searchField.title" [title]="searchField.title"></v-input-label>
-
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateText; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateTextRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateNumber; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateNumberRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateBoolean; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateDate; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateDateRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateTime; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateTimeRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateDateTime; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateDateTimeRange; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateSingleSelectDropdown; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateMultiSelectDropdown; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateBsn; context: {searchField: searchField}"
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="searchFieldTemplateBsnRange; context: {searchField: searchField}"
-  >
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateText let-searchField="searchField">
-  <v-input
-    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
-    [dataTestId]="'iko-search-field-' + searchField.key"
-    [name]="searchField.key"
-    [placeholder]="'searchFields.textPlaceholder' | translate"
-    [defaultValue]="formValues[searchField.key]"
-    (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-  ></v-input>
-</ng-template>
-
-<ng-template #searchFieldTemplateTextRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <v-input
-        name="start"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [placeholder]="'searchFields.textPlaceholder' | translate"
-      ></v-input>
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-input
-        name="end"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [placeholder]="'searchFields.textPlaceholder' | translate"
-      ></v-input>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateNumber let-searchField="searchField">
-  <v-input
-    *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
-    type="number"
-    [dataTestId]="'iko-search-field-' + searchField.key"
-    [placeholder]="'searchFields.numberPlaceholder' | translate"
-    [name]="searchField.key"
-    [hideNumberSpinBox]="true"
-    (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-  ></v-input>
-</ng-template>
-
-<ng-template #searchFieldTemplateNumberRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <v-input
-        name="start"
-        type="number"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [fullWidth]="true"
-        [placeholder]="'searchFields.numberPlaceholder' | translate"
-      ></v-input>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <v-input
-        name="end"
-        type="number"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [fullWidth]="true"
-        [placeholder]="'searchFields.numberPlaceholder' | translate"
-      ></v-input>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateBoolean let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'boolean' && searchField.fieldType === 'single'">
-    <v-select
-      *ngIf="booleanItems$ | async as booleanItems"
-      [dataTestId]="'iko-search-field-' + searchField.key"
-      [items]="booleanItems"
-      [name]="searchField.key"
-      (selectedChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-      [appendInline]="false"
-    ></v-select>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateTime let-searchField="searchField">
-  <cds-timepicker
-    *ngIf="searchField.dataType === 'time' && searchField.fieldType === 'single'"
-    [dataTestId]="'iko-search-field-' + searchField.key"
-    [placeholder]="'searchFields.timePlaceholder' | translate"
-    (ngModelChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-    [ngModel]="formValues[searchField.key]"
-  ></cds-timepicker>
-</ng-template>
-
-<ng-template #searchFieldTemplateTimeRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'time' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <cds-timepicker
-        [placeholder]="'searchFields.timePlaceholder' | translate"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [(ngModel)]="formValues[searchField.key + '_start']"
-      >
-      </cds-timepicker>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <cds-timepicker
-        [placeholder]="'searchFields.timePlaceholder' | translate"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [(ngModel)]="formValues[searchField.key + '_end']"
-      >
-      </cds-timepicker>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateDate let-searchField="searchField">
-  <valtimo-date-time-picker
-    *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
-    [title]="searchField.title"
-    [dataTestId]="'iko-search-field-' + searchField.key"
-    [placeholder]="'searchFields.datePlaceholder' | translate"
-    [defaultDate]="formValues[searchField.key] ?? ''"
-    [showFieldLabel]="false"
-    [enableTime]="false"
-    (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-  >
-  </valtimo-date-time-picker>
-</ng-template>
-
-<ng-template #searchFieldTemplateDateRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <valtimo-date-time-picker
-        name="start"
-        [title]="searchField.title"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [placeholder]="'searchFields.datePlaceholder' | translate"
-        [showFieldLabel]="false"
-        [enableTime]="false"
-      >
-      </valtimo-date-time-picker>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <valtimo-date-time-picker
-        name="end"
-        [title]="searchField.title"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [placeholder]="'searchFields.datePlaceholder' | translate"
-        [showFieldLabel]="false"
-        [enableTime]="false"
-      >
-      </valtimo-date-time-picker>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateDateTime let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'">
-    <valtimo-date-time-picker
-      [title]="searchField.title"
-      [dataTestId]="'iko-search-field-' + searchField.key"
-      [placeholder]="'searchFields.datePlaceholder' | translate"
-      [enableTime]="true"
-      [showFieldLabel]="false"
-      (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-    >
-    </valtimo-date-time-picker>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateDateTimeRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <valtimo-date-time-picker
-        name="start"
-        [title]="searchField.title"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [placeholder]="'searchFields.datePlaceholder' | translate"
-        [enableTime]="true"
-        [showFieldLabel]="false"
-      >
-      </valtimo-date-time-picker>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <valtimo-date-time-picker
-        name="end"
-        [placeholder]="'searchFields.datePlaceholder' | translate"
-        [dataTestId]="'iko-search-field-' + searchField.key"
-        [enableTime]="true"
-        [showFieldLabel]="false"
-      >
-      </valtimo-date-time-picker>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateSingleSelectDropdown let-searchField="searchField">
-  <ng-container
-    *ngIf="
-      searchField.dataType === 'text' &&
-      (searchField.fieldType === 'single-select-dropdown' ||
-        searchField.fieldType === 'single_select_dropdown')
-    "
-  >
-    <v-select
-      *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
-      [items]="searchFieldSelectItems"
-      (selectedChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-    ></v-select>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateMultiSelectDropdown let-searchField="searchField">
-  <ng-container
-    *ngIf="
-      searchField.dataType === 'text' &&
-      (searchField.fieldType === 'multi-select-dropdown' ||
-        searchField.fieldType === 'multi_select_dropdown')
-    "
-  >
-    <v-select
-      *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
-      [dataTestId]="'iko-search-field-' + searchField.key"
-      [items]="searchFieldSelectItems"
-      [multiple]="true"
-      [appendInline]="false"
-      [defaultSelectionIds]="formValues[searchField.key]"
-      (selectedChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-    ></v-select>
-  </ng-container>
-</ng-template>
-
-<ng-template #searchFieldTemplateBsn let-searchField="searchField">
-  <v-input
-    *ngIf="searchField.dataType === 'bsn' && searchField.fieldType === 'single'"
-    [dataTestId]="'iko-search-field-' + searchField.key"
-    [name]="searchField.key"
-    [placeholder]="'searchFields.bsnPlaceholder' | translate"
-    (valueChange)="singleValueChange(searchField.key, $event, searchField.dataType)"
-  ></v-input>
-</ng-template>
-
-<ng-template #searchFieldTemplateBsnRange let-searchField="searchField">
-  <ng-container *ngIf="searchField.dataType === 'bsn' && searchField.fieldType === 'range'">
-    <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event, searchField.dataType)"
-      className="multiple-search-fields"
-    >
-      <v-input
-        name="start"
-        [placeholder]="'searchFields.bsnPlaceholder' | translate"
-        [dataTestId]="'iko-search-field-' + searchField.key + '-start'"
-        [defaultValue]="formValues[searchField.key + '_start']"
-      ></v-input>
-
-      <ng-container *ngTemplateOutlet="toText"></ng-container>
-
-      <v-input
-        name="end"
-        [placeholder]="'searchFields.bsnPlaceholder' | translate"
-        [dataTestId]="'iko-search-field-' + searchField.key + '-end'"
-        [defaultValue]="formValues[searchField.key + '_end']"
-      ></v-input>
-    </v-form>
-  </ng-container>
-</ng-template>
-
-<ng-template #toText>
-  <div class="to-text">
-    <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
-  </div>
-</ng-template>

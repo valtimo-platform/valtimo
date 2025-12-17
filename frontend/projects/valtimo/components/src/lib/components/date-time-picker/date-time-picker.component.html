@@ -14,42 +14,37 @@
   ~ limitations under the License.
 -->
 
-<div class="valtimo-date-time-picker" [class.full-width]="fullWidthClass" [class.margin]="margin">
-  <ng-container *ngIf="showFieldLabel">
-    <v-input-label
-      *ngIf="title || titleTranslationKey"
-      [name]="name"
-      [required]="required"
-      [small]="smallLabel"
-      [titleTranslationKey]="titleTranslationKey"
-      [title]="title"
-      [tooltip]="tooltip"
-    >
-    </v-input-label>
-  </ng-container>
+<v-input-label
+  *ngIf="showFieldLabel && (title || titleTranslationKey)"
+  [name]="name"
+  [required]="required"
+  [small]="smallLabel"
+  [titleTranslationKey]="titleTranslationKey"
+  [title]="title"
+  [tooltip]="tooltip"
+>
+</v-input-label>
 
-  <div class="valtimo-date-time-picker__wrapper">
-    <cds-date-picker
-      class="date-only"
-      [cdsLayer]="1"
-      [attr.data-carbon-theme]="carbonTheme"
-      [label]="labelText"
-      [placeholder]="datePlaceholder || 'dd-mm-yyyy'"
-      [dateFormat]="dateFormat"
-      [disabled]="disabled"
-      (valueChange)="onDateSelected($event)"
-    ></cds-date-picker>
+<div class="valtimo-date-time-picker__wrapper">
+  <cds-date-picker
+    class="date-only"
+    [cdsLayer]="1"
+    [attr.data-carbon-theme]="carbonTheme"
+    [label]="labelText"
+    [placeholder]="datePlaceholder || 'dd-mm-yyyy'"
+    [dateFormat]="dateFormat"
+    [disabled]="disabled"
+    (valueChange)="onDateSelected($event)"
+  ></cds-date-picker>
 
-    <cds-timepicker
-      [cdsLayer]="1"
-      *ngIf="enableTime"
-      [attr.data-carbon-theme]="carbonTheme"
-      [placeholder]="'hh:mm'"
-      [value]="timeValue"
-      [disabled]="disabled"
-      [placeholder]="timePlaceholder || 'dd-mm-yyyy'"
-      (valueChange)="onTimeSelected($event)"
-    >
-    </cds-timepicker>
-  </div>
+  <cds-timepicker
+    *ngIf="enableTime"
+    [cdsLayer]="1"
+    [attr.data-carbon-theme]="carbonTheme"
+    [placeholder]="timePlaceholder || 'hh:mm'"
+    [value]="timeValue"
+    [disabled]="disabled"
+    (valueChange)="onTimeSelected($event)"
+  >
+  </cds-timepicker>
 </div>

@@ -64,7 +64,6 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     CarbonListModule,
     TabsModule,
     LayerModule,
-    NgTemplateOutlet,
     AsyncPipe,
     SelectModule,
     DatePickerModule,
@@ -143,7 +142,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
     this.pageTitleService.enableReset();
   }
 
-  public searchDisabled(params: { key: string; required: boolean; dataType?: string }[]): boolean {
+  public searchDisabled(params: {key: string; required: boolean; dataType?: string}[]): boolean {
     const hasMissingRequired = params.some(param => {
       if (!param.required) return false;
       return !this.hasValue(this.formValues[param.key]);
@@ -200,7 +199,7 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
           [searchFieldKey]: this.getSingleValue(value, dataType),
         });
       } else if (Object.keys(values).includes(searchFieldKey)) {
-        const valuesCopy = { ...values };
+        const valuesCopy = {...values};
         delete valuesCopy[searchFieldKey];
         this.values$.next(valuesCopy);
       }
@@ -248,10 +247,12 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
       ([aggregateKey, searchActions]) => {
         searchActions.forEach(action => {
           action.searchFields?.forEach(field => {
-            if (field.dataType === 'time' && field.fieldType === 'single') {
-              if (this.formValues[field.key] === undefined) {
-                this.formValues[field.key] = '';
-              }
+            if (
+              field.dataType === 'time' &&
+              field.fieldType === 'single' &&
+              this.formValues[field.key] === undefined
+            ) {
+              this.formValues[field.key] = '';
             }
 
             if (field.dataType === 'time' && field.fieldType === 'range') {
@@ -277,9 +278,9 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
                 .subscribe(dropdownData => {
                   this.dropdownSelectItemsMap[field.key] = dropdownData
                     ? Object.keys(dropdownData).map(dropdownFieldKey => ({
-                      id: dropdownFieldKey,
-                      text: (dropdownData as any)[dropdownFieldKey],
-                    }))
+                        id: dropdownFieldKey,
+                        text: (dropdownData as any)[dropdownFieldKey],
+                      }))
                     : [];
                 });
             });

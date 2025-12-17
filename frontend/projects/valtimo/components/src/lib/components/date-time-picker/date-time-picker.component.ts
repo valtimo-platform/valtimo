@@ -24,13 +24,21 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   standalone: false,
 })
 export class DateTimePickerComponent implements AfterViewInit {
-  @HostBinding('class.full-width') fullWidthClass = false;
+  @HostBinding('class.valtimo-date-time-picker')
+  readonly hostClass = true;
+
+  @Input()
+  @HostBinding('class.full-width')
+  fullWidth = false;
+
+  @Input()
+  @HostBinding('class.margin')
+  margin = false;
 
   @Input() name = '';
   @Input() title = '';
   @Input() placeholder = '';
   @Input() titleTranslationKey = '';
-  @Input() margin = false;
   @Input() disabled = false;
   @Input() tooltip = '';
   @Input() required = false;
@@ -43,12 +51,10 @@ export class DateTimePickerComponent implements AfterViewInit {
   @Input() timePlaceholder = 'hh:mm';
   @Input() labelText = '';
 
-  @Input() set fullWidth(value: boolean) {
-    this.fullWidthClass = value;
-  }
-
   @Input() set defaultDate(value: string | null) {
-    if (value) this.dateValue$.next(value);
+    if (value) {
+      this.dateValue$.next(value);
+    }
   }
 
   @Input() defaultDateIsToday = false;
@@ -56,43 +62,43 @@ export class DateTimePickerComponent implements AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  public readonly dateValue$ = new BehaviorSubject<string>('');
-  private _timeValue = '';
+  readonly dateValue$ = new BehaviorSubject<string>('');
+  private timeValueInternal = '';
 
-  private readonly _subscriptions = new Subscription();
+  private readonly subscriptions = new Subscription();
 
-  constructor() {}
-
-  public ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     if (this.defaultDateIsToday) {
       this.dateValue$.next(this.formatDate(new Date()));
     }
 
     if (this.clear$) {
-      this._subscriptions.add(
+      this.subscriptions.add(
         this.clear$.subscribe(() => {
           this.dateValue$.next('');
-          this._timeValue = '';
+          this.timeValueInternal = '';
           this.valueChange.emit('');
         })
       );
     }
 
-    this._subscriptions.add(this.dateValue$.subscribe(val => this.emitValue(val, this._timeValue)));
+    this.subscriptions.add(
+      this.dateValue$.subscribe(date => this.emitValue(date, this.timeValueInternal))
+    );
   }
 
-  public onDateSelected(value: string | Date[]): void {
+  onDateSelected(value: string | Date[]): void {
     const formatted = Array.isArray(value) ? value[0] : value;
     this.dateValue$.next(this.normalizeDate(formatted));
   }
 
-  public onTimeSelected(value: string): void {
-    this._timeValue = value;
+  onTimeSelected(value: string): void {
+    this.timeValueInternal = value;
     this.emitValue(this.dateValue$.getValue(), value);
   }
 
-  public get timeValue(): string {
-    return this._timeValue;
+  get timeValue(): string {
+    return this.timeValueInternal;
   }
 
   private emitValue(date: string, time: string): void {
@@ -101,12 +107,11 @@ export class DateTimePickerComponent implements AfterViewInit {
       return;
     }
 
-    const full = this.enableTime && time ? `${date} ${time}` : date;
-
-    this.valueChange.emit(full);
+    const fullValue = this.enableTime && time ? `${date} ${time}` : date;
+    this.valueChange.emit(fullValue);
   }
 
-  private normalizeDate(date: any): string {
+  private normalizeDate(date: unknown): string {
     if (typeof date === 'string') return date;
     if (date instanceof Date) return this.formatDate(date);
     return '';
