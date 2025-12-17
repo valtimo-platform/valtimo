@@ -90,7 +90,6 @@ class IkoServerRepository(
         filters: List<DataFilter>,
         pageable: Pageable
     ): Page<JsonNode> {
-        require(filters.all { it.comparator == Comparator.EQUAL_TO })
         val configuredFilterMap = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
         val filterMap = configuredFilterMap + filters.associate {
             val filterKey = it.property.substringAfter(':').substringBefore('=')

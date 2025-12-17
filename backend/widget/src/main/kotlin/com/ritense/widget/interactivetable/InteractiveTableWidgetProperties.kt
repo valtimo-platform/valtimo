@@ -46,7 +46,7 @@ data class InteractiveTableWidgetProperties(
         val title: String?,
         @field:NotBlank val value: String,
         @field:Valid val displayProperties: FieldDisplayProperties? = null,
-        val sortable: Boolean,
+        val sortable: Boolean = false,
         val defaultSort: ColumnDefaultSort? = null,
     )
 

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.widget.table.TableCaseWidgetDto
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
 import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_INSTANCE_TAG
 import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_TAG
 import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_OPERATION
@@ -29,8 +30,6 @@ import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_QUERY_PARAMETERS
 import com.ritense.iko.IkoServerRepository.Companion.PLUGIN_CONFIGURATION
 import com.ritense.iko.dto.ContainerParam
 import com.ritense.iko.plugin.IkoPlugin
-import com.ritense.iko.service.IkoSearchActionService
-import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.service.IkoViewService
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.plugin.service.PluginService
@@ -53,8 +52,6 @@ import org.springframework.data.domain.Pageable
 
 class IkoValueResolverFactory(
     private val ikoViewService: IkoViewService,
-    private val ikoSearchActionService: IkoSearchActionService,
-    private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
     private val pluginService: PluginService,
     private val ikoWidgetService: IkoWidgetService,
@@ -80,42 +77,47 @@ class IkoValueResolverFactory(
     }
 
     private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
-        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
-        val id = properties[ID]?.toString()
-        if (ikoViewKey != null && id != null) {
-            val config = ikoViewService.getIkoViewConfig(ikoViewKey)
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString() ?: return null
+        val id = properties[ID]?.toString() ?: return null
+        val config = ikoViewService.getIkoViewConfig(ikoViewKey)
+        val plugin = pluginService.createInstance<IkoPlugin>(config[PLUGIN_CONFIGURATION].toString())
+        val aggregatedDataProfileName =
+            properties[IKO_ADP_KEY]?.toString() ?: config[AGGREGATED_DATA_PROFILE_NAME]?.toString()
+        val data = if (aggregatedDataProfileName != null) {
+            plugin.getByAggregatedDataProfileId(
+                aggregatedDataProfileName = aggregatedDataProfileName,
+                id = id,
+                containerParams = getContainerParams(properties),
+            )
+        } else {
             val queryParams = config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?
-            val plugin = pluginService.createInstance<IkoPlugin>(config[PLUGIN_CONFIGURATION].toString())
-            val data = plugin.getByEndpointId(
+            plugin.getByEndpointId(
                 connectorTag = config[CONNECTOR_TAG].toString(),
                 connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
                 endpointOperation = config[ENDPOINT_OPERATION].toString(),
                 id = id,
                 queryParams = queryParams ?: emptyMap(),
             )
-            return toValueFunction(data)
         }
-        return null
+        return toValueFunction(data)
     }
 
     private fun getIkoAdpDataById(properties: Map<String, Any>): Function<String, Any?>? {
-        val aggregatedDataProfileName = properties[IKO_ADP_KEY]?.toString()
-        val id = properties[ID]?.toString()
-        if (aggregatedDataProfileName != null && id != null) {
-
-            val containerParam = getIkoTableContainerParam(properties)
-                ?: getCaseTableContainerParam(properties)
-            val plugin = checkNotNull(pluginService.createInstance(IkoPlugin::class.java) { true }) {
-                "Could not find ${IkoPlugin::class.simpleName} configuration"
-            }
-            val data = plugin.getByAggregatedDataProfileId(
-                aggregatedDataProfileName = aggregatedDataProfileName,
-                id = id,
-                containerParams = listOfNotNull(containerParam),
-            )
-            return toValueFunction(data)
+        val aggregatedDataProfileName = properties[IKO_ADP_KEY]?.toString() ?: return null
+        val id = properties[ID]?.toString() ?: return null
+        val plugin = checkNotNull(pluginService.createInstance(IkoPlugin::class.java) { true }) {
+            "Could not find ${IkoPlugin::class.simpleName} configuration"
         }
-        return null
+        val data = plugin.getByAggregatedDataProfileId(
+            aggregatedDataProfileName = aggregatedDataProfileName,
+            id = id,
+            containerParams = getContainerParams(properties),
+        )
+        return toValueFunction(data)
+    }
+
+    private fun getContainerParams(properties: Map<String, Any>): List<ContainerParam> {
+        return listOfNotNull(getIkoTableContainerParam(properties) ?: getCaseTableContainerParam(properties))
     }
 
     private fun getIkoTableContainerParam(properties: Map<String, Any>): ContainerParam? {
