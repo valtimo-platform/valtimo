@@ -94,7 +94,7 @@ export class IkoWidgetInteractiveTableComponent {
       !widgetParams || !widgetConfiguration
         ? of(null)
         : this.ikoApiService.getIkoWidgetData(
-            widgetParams.dataAggregateKey,
+            widgetParams.ikoViewKey,
             widgetParams.tabKey,
             widgetConfiguration.key,
             widgetParams.entryId

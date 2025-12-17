@@ -33,10 +33,10 @@ export class PluginAddModalComponent {
 
   @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
 
-  readonly inputDisabled$ = this.stateService.inputDisabled$;
-  readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
-  readonly configurationValid$ = new BehaviorSubject<boolean>(false);
-  readonly returnToFirstStepSubject$ = new Subject<boolean>();
+  public readonly inputDisabled$ = this.stateService.inputDisabled$;
+  public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
+  public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
+  public readonly returnToFirstStepSubject$ = new Subject<boolean>();
 
   constructor(
     private readonly stateService: PluginManagementStateService,
@@ -44,11 +44,11 @@ export class PluginAddModalComponent {
     private readonly logger: NGXLogger
   ) {}
 
-  complete(): void {
+  public complete(): void {
     this.stateService.save();
   }
 
-  hide(): void {
+  public hide(): void {
     this.closeModal.emit();
 
     setTimeout(() => {
@@ -58,11 +58,11 @@ export class PluginAddModalComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  onValid(valid: boolean): void {
+  public onValid(valid: boolean): void {
     this.configurationValid$.next(valid);
   }
 
-  onConfiguration(configuration: PluginConfigurationData): void {
+  public onConfiguration(configuration: PluginConfigurationData): void {
     const pluginConfiguration = {...configuration};
     delete pluginConfiguration['configurationId'];
     delete pluginConfiguration['configurationTitle'];
@@ -84,6 +84,7 @@ export class PluginAddModalComponent {
           },
           error: () => {
             this.logger.error('Something went wrong with saving the plugin configuration.');
+            this.stateService.enableInput();
           },
         });
     });

@@ -184,6 +184,7 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
 
         // Mock document service
         doReturn(Optional.of(document)).when(documentService).findBy(any());
+        when(document.definitionId()).thenReturn(mock());
 
         // Mock process document instance repository
         when(processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId))
@@ -205,7 +206,7 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
         when(historicProcessInstance.getProcessDefinitionVersion()).thenReturn(2);
 
         // Mock repository service
-        when(repositoryService.findLatestProcessDefinition("test-process-key")).thenReturn(operatonProcessDefinition);
+        when(repositoryService.findProcessDefinition(any())).thenReturn(operatonProcessDefinition);
         when(operatonProcessDefinition.getVersion()).thenReturn(3);
 
         // Mock user management service

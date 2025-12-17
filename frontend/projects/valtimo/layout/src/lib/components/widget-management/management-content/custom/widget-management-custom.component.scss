@@ -20,9 +20,18 @@
   gap: 16px;
   padding: 16px;
 
-  ::ng-deep > * {
+  ::ng-deep > *:not(:last-child) {
     padding: 16px;
     background: var(--cds-layer-02);
+  }
+
+  ::ng-deep.v-multi-input__row {
+    padding: 16px;
+    background: var(--cds-layer-02);
+
+    .cds--text-input {
+      background: var(--cds-layer-01);
+    }
   }
 
   ::ng-deep.dropdown-label {

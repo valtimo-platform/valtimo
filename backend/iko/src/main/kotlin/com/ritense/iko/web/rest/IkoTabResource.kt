@@ -33,12 +33,12 @@ class IkoTabResource(
     private val ikoTabService: IkoTabService
 ) {
 
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun getIkoTabs(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
     ): ResponseEntity<List<TabDto>> {
         return ResponseEntity.ok(
-            ikoTabService.findAllTabsByIkoDataAggregateKey(ikoDataAggregateKey).map { TabDto.from(it) }
+            ikoTabService.findAllTabsByIkoViewKey(ikoViewKey).map { TabDto.from(it) }
         )
     }
 
