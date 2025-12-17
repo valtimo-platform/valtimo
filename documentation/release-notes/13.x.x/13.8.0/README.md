@@ -25,6 +25,11 @@ More details can be found [here](../../features/case/case-detail/tabs/widgets.md
 
 More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
 
+- **Enabling virus scanning**
+
+When enabled files uploaded to the Documenten API or in temporary file storage will be scanned for viruses.
+More details can be found [here](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
+
 ## Enhancements
 
 * **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
