@@ -580,8 +580,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       .pipe(
         tap(([file, userEmail]) => {
           const filename = file?.bestandsnaam || this.defaultValues.bestandsnaam || file?.name;
-          this.filenameExtension = filename?.split('.')?.pop() || '';
-          if (this.filenameExtension.length === filename?.length) {
+          this.filenameExtension = file?.name?.split('.')?.pop() || '';
+          if (this.filenameExtension.length === file?.name?.length) {
             this.filenameExtension = '';
           }
           this.documentenApiMetadataForm.patchValue({

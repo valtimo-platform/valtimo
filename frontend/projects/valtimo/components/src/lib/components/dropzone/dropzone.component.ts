@@ -46,15 +46,37 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() hideTitle: boolean;
   @Input() subtitle: string;
   @Input() externalError$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  @Input() maxFileSize = 5;
   @Input() showMaxFileSize = true;
-  @Input() acceptedFiles = '.json';
+  @Input() showAcceptedFiles = true;
   @Input() clear$: Subject<any> = new Subject();
   @Input() disabled: boolean;
   @Input() hideFilePreview: boolean;
   @Input() uploading: boolean;
   @Input() camera = false;
-  @Input() maxFiles!: number;
+
+  @Input() _maxFiles!: number;
+
+  @Input()
+  set maxFiles(value: number) {
+    this._maxFiles = value;
+    this.initDropzone();
+  }
+
+  @Input() _maxFileSize: number = 5;
+
+  @Input()
+  set maxFileSize(value: number) {
+    this._maxFileSize = value;
+    this.initDropzone();
+  }
+
+  @Input() _acceptedFiles: string = '';
+
+  @Input()
+  set acceptedFiles(value: string) {
+    this._acceptedFiles = value;
+    this.initDropzone();
+  }
 
   @Output() fileSelected: EventEmitter<File> = new EventEmitter();
   readonly file$ = new BehaviorSubject<File>(undefined);
@@ -128,13 +150,13 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   private initDropzone(): void {
     this.dropzone = new Dropzone(this.dropzoneRef.nativeElement, {
       url: '/',
-      maxFilesize: this.maxFileSize,
+      maxFilesize: this._maxFileSize,
       clickable: this.dropzoneRef.nativeElement,
       autoProcessQueue: false,
       createImageThumbnails: false,
-      acceptedFiles: this.acceptedFiles,
+      acceptedFiles: this._acceptedFiles,
       previewTemplate: `<p style='display:none'></p>`,
-      ...(this.maxFiles && {maxFiles: this.maxFiles}),
+      ...(this._maxFiles && {maxFiles: this._maxFiles}),
       accept: file => {
         this.dropzone.removeAllFiles();
         this.setFile(file);
