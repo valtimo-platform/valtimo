@@ -21,9 +21,7 @@ will still result in an error.
 - **Custom component widgets support for key/value inputs**
 
 Custom Key/Value pairs can be configured in the custom component widgets. These properties are then made accessible inside of the component.
-More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
-
-More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
+More details can be found [here](../../../features/case/case-detail/tabs/widgets.md)
 
 ## Enhancements
 
