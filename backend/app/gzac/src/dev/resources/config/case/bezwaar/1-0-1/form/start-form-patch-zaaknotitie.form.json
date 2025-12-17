@@ -1,0 +1,42 @@
+{
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "pv:zaakNotitieUrl",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Zaaknotitie Url",
+      "validate" : {
+        "required" : true
+      },
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "start-form-patch-zaaknotitie-pv:zaaknotitieUrl"
+      },
+      "applyMaskOn" : "change"
+    },
+    {
+      "key" : "pv:noteText",
+      "type" : "textarea",
+      "input" : true,
+      "label" : "Tekst",
+      "validate" : {
+        "required" : true
+      },
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "start-form-patch-zaaknotitie-pv:noteText"
+      },
+      "autoExpand" : false,
+      "applyMaskOn" : "change"
+    },
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "Submit",
+      "tableView" : false,
+      "disableOnInvalid" : true
+    }
+  ]
+}

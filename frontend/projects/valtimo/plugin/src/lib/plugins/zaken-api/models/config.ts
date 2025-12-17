@@ -20,6 +20,8 @@ import {InputOption} from './input';
 interface ZakenApiConfig extends PluginConfigurationData {
   url: string;
   authenticationPluginConfiguration: string;
+  noteEventListenerEnabled?: boolean;
+  noteSubject?: string;
 }
 
 interface LinkDocumentToZaakConfig {
@@ -170,6 +172,31 @@ interface GetZaakbesluitenConfig {
   resultProcessVariable: string;
 }
 
+interface CreateZaakNotitieConfig {
+  onderwerp: string;
+  tekst: string;
+  aangemaaktDoor?: string;
+  notitieType?: string;
+  status?: string;
+}
+
+interface PatchZaakNotitieConfig {
+  zaakNotitieUrl: string;
+  onderwerp?: string;
+  tekst?: string;
+  aangemaaktDoor?: string;
+  notitieType?: string;
+  status?: string;
+}
+
+export interface PropertyFormField {
+  type?: string;
+  name: string;
+  translationKey: string;
+  tooltipTranslationKey?: string;
+  presetOptions?: string[];
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -191,4 +218,6 @@ export {
   PatchZaakConfig,
   RelateerZakenConfig,
   GetZaakbesluitenConfig,
+  CreateZaakNotitieConfig,
+  PatchZaakNotitieConfig,
 };

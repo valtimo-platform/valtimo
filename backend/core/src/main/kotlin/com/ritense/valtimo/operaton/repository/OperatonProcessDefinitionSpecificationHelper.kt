@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.operaton.repository
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
@@ -80,14 +81,14 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun byLatestVersionTag(versionTag: String) = Specification<OperatonProcessDefinition> { root, query, cb ->
+        fun maxVersionOf(spec: Specification<OperatonProcessDefinition>) = Specification<OperatonProcessDefinition> { root, query, cb ->
             val sub = query.subquery(Long::class.java)
             val subRoot = sub.from(OperatonProcessDefinition::class.java)
             sub.select(cb.max(subRoot.get(VERSION)))
             sub.where(
                 cb.and(
                     cb.equal(subRoot.get<Any>(KEY), root.get<Any>(KEY)),
-                    cb.equal(subRoot.get<Any>(VERSION_TAG), versionTag),
+                    spec.toPredicate(subRoot, query, cb),
                     cb.or(
                         cb.equal(subRoot.get<Any>(TENANT_ID), root.get<Any>(TENANT_ID)),
                         cb.and(subRoot.get<Any>(TENANT_ID).isNull, root.get<Any>(TENANT_ID).isNull)
@@ -101,6 +102,15 @@ class OperatonProcessDefinitionSpecificationHelper {
         @JvmStatic
         fun byActive() = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(SUSPENSION_STATE), SuspensionState.ACTIVE.stateCode)
+        }
+
+        @JvmStatic
+        fun byCaseDefinitionId(caseDefinitionId: CaseDefinitionId?): Specification<OperatonProcessDefinition> {
+            return if (caseDefinitionId != null) {
+                byVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+            } else {
+                maxVersionOf(byNotLinkedToCaseDefinition())
+            }
         }
 
         @JvmStatic

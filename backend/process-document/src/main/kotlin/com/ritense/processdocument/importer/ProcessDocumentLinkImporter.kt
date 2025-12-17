@@ -76,7 +76,7 @@ class ProcessDocumentLinkImporter(
         documentDefinitionName: String,
         item: ProcessDocumentLinkConfigItem
     ) {
-        val processDefinition = processService.getLatestDefinitionByKeyAndCaseDefinition(
+        val processDefinition = processService.getDefinitionByKeyAndCaseDefinition(
             caseDefinitionId,
             item.processDefinitionKey
         )

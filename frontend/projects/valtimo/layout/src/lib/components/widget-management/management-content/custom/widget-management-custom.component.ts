@@ -17,19 +17,24 @@ import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   Inject,
   OnDestroy,
   OnInit,
   Optional,
+  signal,
 } from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
+  CarbonMultiInputModule,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
   MdiIconSelectorComponent,
+  MultiInputKeyValue,
 } from '@valtimo/components';
 import {
   DropdownModule,
@@ -39,9 +44,9 @@ import {
   SelectModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {CustomWidgetConfig, WidgetCustomContent} from '../../../../models';
-import {WidgetWizardService} from '../../../../services';
 import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
+import {CustomWidgetConfig, WidgetContentProperties, WidgetCustomContent} from '../../../../models';
+import {WidgetWizardService} from '../../../../services';
 
 @Component({
   templateUrl: './widget-management-custom.component.html',
@@ -58,6 +63,7 @@ import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
     LayerModule,
     MdiIconSelectorComponent,
     InputLabelModule,
+    CarbonMultiInputModule,
   ],
 })
 export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
@@ -80,12 +86,14 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
     )
   );
 
-  private readonly _selectedCustomComponentKey$ = new BehaviorSubject<string | null>(null);
+  public readonly $defaultComponentValues = signal<Array<MultiInputKeyValue>>([]);
+
+  private readonly _$selectedCustomComponentKey = signal<string | null>(null);
   private readonly _customWidgetConfig$ = new BehaviorSubject<CustomWidgetConfig>({});
 
   public readonly componentListItems$: Observable<ListItem[]> = combineLatest([
     this._customWidgetConfig$,
-    this._selectedCustomComponentKey$,
+    toObservable(this._$selectedCustomComponentKey),
   ]).pipe(
     filter(([config]) => !!config),
     map(([config, selectedKey]) =>
@@ -97,6 +105,7 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
   );
 
   private readonly _subscriptions = new Subscription();
+  private readonly _$componentValueValid = signal<boolean>(false);
 
   constructor(
     @Optional()
@@ -107,6 +116,12 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
     private readonly widgetWizardService: WidgetWizardService
   ) {
     if (customWidgetConfig) this._customWidgetConfig$.next(customWidgetConfig);
+
+    effect(() =>
+      this.widgetWizardService.$widgetContentValid.set(
+        !!this._$selectedCustomComponentKey() && this._$componentValueValid()
+      )
+    );
   }
 
   public componentDropDownChange(event: {
@@ -117,9 +132,15 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
 
     if (!componentKey) return;
 
-    this._selectedCustomComponentKey$.next(componentKey);
-    this.widgetWizardService.$widgetContent.set({componentKey});
-    this.widgetWizardService.$widgetContentValid.set(true);
+    this._$selectedCustomComponentKey.set(componentKey);
+    this.widgetWizardService.$widgetContent.update((content: WidgetContentProperties | null) =>
+      !content
+        ? {componentKey, componentValue: {}}
+        : {
+            ...content,
+            componentKey,
+          }
+    );
   }
 
   public ngOnInit(): void {
@@ -130,6 +151,23 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  public onKeyValueChange(changeEvent: Array<MultiInputKeyValue>): void {
+    this.widgetWizardService.$widgetContent.update((content: WidgetContentProperties | null) => {
+      this._$componentValueValid.set(
+        !changeEvent.some(value => !value.key || !value.value) || changeEvent.length === 0
+      );
+      const componentValue = changeEvent.reduce(
+        (acc, curr) => ({
+          ...acc,
+          ...(!curr.key || !curr.value ? {} : {[curr.key]: curr.value}),
+        }),
+        {} as {[key: string]: string}
+      );
+      if (!content) return {componentKey: '', componentValue};
+      return {...content, componentValue};
+    });
   }
 
   private openTitleSubscription(): void {
@@ -149,12 +187,19 @@ export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
   }
 
   private prefill(): void {
-    const componentKey = (this.widgetWizardService.$widgetContent() as WidgetCustomContent)
-      ?.componentKey;
+    const {componentKey, componentValue} =
+      this.widgetWizardService.$widgetContent() as WidgetCustomContent;
 
-    if (!componentKey || Object.keys(this.customWidgetConfig || {}).length === 0) return;
+    if (
+      (!componentKey && !componentValue) ||
+      Object.keys(this.customWidgetConfig || {}).length === 0
+    )
+      return;
 
-    this._selectedCustomComponentKey$.next(componentKey);
+    this._$selectedCustomComponentKey.set(componentKey);
+    this.$defaultComponentValues.set(
+      Object.entries(componentValue).map(([key, value]) => ({key, value}))
+    );
     this.widgetWizardService.$widgetContentValid.set(true);
   }
 }

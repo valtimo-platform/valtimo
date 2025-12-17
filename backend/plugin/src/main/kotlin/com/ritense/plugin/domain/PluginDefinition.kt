@@ -80,12 +80,27 @@ class PluginDefinition (
                 propertyAnnotation.required,
                 propertyAnnotation.secret,
                 field.name,
-                field.type.typeName
+                mapTypeName(field.type.typeName)
             )
         )
     }
 
     fun addCategory(category: PluginCategory) {
         (categories as MutableSet).add(category)
+    }
+
+    private fun mapTypeName(typeName: String): String {
+        return when (typeName) {
+            "boolean" -> "java.lang.Boolean"
+            "byte" -> "java.lang.Byte"
+            "char" -> "java.lang.Character"
+            "double" -> "java.lang.Double"
+            "float" -> "java.lang.Float"
+            "int" -> "java.lang.Integer"
+            "long" -> "java.lang.Long"
+            "short" -> "java.lang.Short"
+            "void" -> "java.lang.Void"
+            else -> typeName
+        }
     }
 }

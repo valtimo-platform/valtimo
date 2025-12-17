@@ -54,7 +54,7 @@ class ObjectenApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(OBJECTTYPEN_API_URL, PROPERTY_FIELD_TYPE_URL),
         PropertyField(OBJECT_TYPE_VERSION, PROPERTY_FIELD_TYPE_INTEGER),
     )
