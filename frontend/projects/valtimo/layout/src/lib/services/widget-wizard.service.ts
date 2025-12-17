@@ -86,7 +86,9 @@ export class WidgetWizardService {
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
       [WidgetWizardStep.CONTENT]:
-        !!this.$widgetContent() && this.$widgetContentValid() && !!this.$widgetTitle(),
+        !!this.$widgetContent() &&
+        this.$widgetContentValid() &&
+        (!!this.$widgetTitle() || this.$disableTitleInput()),
       [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
@@ -172,6 +174,7 @@ export class WidgetWizardService {
       this.$editMode.set(false);
       this.$widgetDensity.set(null);
       this.$disableActionButton.set(false);
+      this.$disableTitleInput.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
