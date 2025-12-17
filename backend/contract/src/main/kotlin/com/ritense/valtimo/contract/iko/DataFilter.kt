@@ -32,4 +32,5 @@ enum class Comparator {
     LESS_THAN,
     LESS_THAN_OR_EQUAL_TO,
     STRING_CONTAINS,
+    IN,
 }

@@ -30,19 +30,22 @@ data class ContainerParam(
         fun fromFilter(config: FilterConfig, value: Any?): List<Pair<String, String>> {
             return if (value == null || value == "") {
                 emptyList()
-            } else if (config.matchType == SearchFieldMatchType.EXACT && config.fieldType != FieldType.RANGE) {
-                listOf(config.key to value.toString())
-            } else if (config.matchType == SearchFieldMatchType.LIKE && config.fieldType != FieldType.RANGE) {
+            } else if (config.matchType == SearchFieldMatchType.LIKE) {
                 listOf(config.key + "~" to value.toString())
-            } else if (config.matchType == SearchFieldMatchType.EXACT && config.fieldType == FieldType.RANGE) {
+            } else if (config.fieldType == FieldType.RANGE) {
                 if (value is Map<*, *>) {
                     val filter = mutableListOf<Pair<String, String>>()
                     value["rangeFrom"]?.let { filter.add(config.key + ">=" to it.toString()) }
                     value["rangeTo"]?.let { filter.add(config.key + "<" to it.toString()) }
                     filter
                 } else {
-                    listOf(config.key + ">=" to value.toString())
+                    error("Unsupported combination of filter config and value: $config, $value")
                 }
+            } else if (config.fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
+                val listValue = value as? Collection<*> ?: listOf(value)
+                listOf(config.key to listValue.toString())
+            } else if (config.matchType == SearchFieldMatchType.EXACT) {
+                listOf(config.key to value.toString())
             } else {
                 error("Unsupported combination of filter config and value: $config, $value")
             }

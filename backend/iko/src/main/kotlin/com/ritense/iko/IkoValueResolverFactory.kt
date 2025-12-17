@@ -36,7 +36,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
@@ -81,11 +81,10 @@ class IkoValueResolverFactory(
         val id = properties[ID]?.toString() ?: return null
         val config = ikoViewService.getIkoViewConfig(ikoViewKey)
         val plugin = pluginService.createInstance<IkoPlugin>(config[PLUGIN_CONFIGURATION].toString())
-        val aggregatedDataProfileName =
-            properties[IKO_ADP_KEY]?.toString() ?: config[AGGREGATED_DATA_PROFILE_NAME]?.toString()
-        val data = if (aggregatedDataProfileName != null) {
+        val adp = properties[IKO_ADP]?.toString() ?: config[AGGREGATED_DATA_PROFILE_NAME]?.toString()
+        val data = if (adp != null) {
             plugin.getByAggregatedDataProfileId(
-                aggregatedDataProfileName = aggregatedDataProfileName,
+                aggregatedDataProfileName = adp,
                 id = id,
                 containerParams = getContainerParams(properties),
             )
@@ -103,13 +102,13 @@ class IkoValueResolverFactory(
     }
 
     private fun getIkoAdpDataById(properties: Map<String, Any>): Function<String, Any?>? {
-        val aggregatedDataProfileName = properties[IKO_ADP_KEY]?.toString() ?: return null
+        val adp = properties[IKO_ADP]?.toString() ?: return null
         val id = properties[ID]?.toString() ?: return null
         val plugin = checkNotNull(pluginService.createInstance(IkoPlugin::class.java) { true }) {
             "Could not find ${IkoPlugin::class.simpleName} configuration"
         }
         val data = plugin.getByAggregatedDataProfileId(
-            aggregatedDataProfileName = aggregatedDataProfileName,
+            aggregatedDataProfileName = adp,
             id = id,
             containerParams = getContainerParams(properties),
         )

@@ -16,6 +16,11 @@
 
 package com.ritense.search.domain
 
+import com.ritense.valtimo.contract.iko.Comparator.GREATER_THAN_OR_EQUAL_TO
+import com.ritense.valtimo.contract.iko.Comparator.IN
+import com.ritense.valtimo.contract.iko.Comparator.LESS_THAN
+import com.ritense.valtimo.contract.iko.Comparator.STRING_CONTAINS
+import com.ritense.valtimo.contract.iko.DataFilter
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -79,7 +84,7 @@ data class SearchFieldV2(
         order: Int,
         dataType: DataType,
         fieldType: FieldType
-    ): this(
+    ) : this(
         id = id,
         ownerId = ownerId,
         key = key,
@@ -93,4 +98,32 @@ data class SearchFieldV2(
         dropdownDataProvider = null,
         required = false,
     )
+
+    override fun toString(): String = "$ownerType:$ownerId:$key"
+
+    fun toDataFilters(value: Any?): List<DataFilter> {
+        val dataFilters = mutableListOf<DataFilter>()
+        if (matchType == SearchFieldMatchType.LIKE) {
+            dataFilters.add(DataFilter(key, STRING_CONTAINS, value))
+        } else if (fieldType == FieldType.RANGE) {
+            if (value is Map<*, *>) {
+                value["rangeFrom"]?.let {
+                    dataFilters.add(DataFilter(key, GREATER_THAN_OR_EQUAL_TO, it))
+                }
+                value["rangeTo"]?.let {
+                    dataFilters.add(DataFilter(key, LESS_THAN, it))
+                }
+            } else {
+                error("Unsupported configuration of search field '$this'")
+            }
+        } else if (fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
+            val listValue = value as? Collection<*> ?: listOf(value)
+            dataFilters.add(DataFilter(key, IN, listValue))
+        } else if (matchType == SearchFieldMatchType.EXACT) {
+            dataFilters.add(DataFilter(key, value))
+        } else {
+            error("Unsupported configuration of search field '$this'")
+        }
+        return dataFilters
+    }
 }

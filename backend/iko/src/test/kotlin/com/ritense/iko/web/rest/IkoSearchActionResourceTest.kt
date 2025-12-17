@@ -27,6 +27,7 @@ import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.FieldType
+import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -143,6 +144,7 @@ internal class IkoSearchActionResourceTest {
                         order = 0,
                         dataType = DataType.TEXT,
                         fieldType = FieldType.SINGLE,
+                        matchType = SearchFieldMatchType.EXACT,
                     )
                 )
             )

@@ -28,27 +28,16 @@ class CopiedHeadInputStream(
     private var index: Int = 0
 
     private var closed: Boolean = false
-    private var headSent: Boolean = false
-    private val byteBuffer: ByteArray = ByteArray(buffer.size)
+    private var headEmitted = false
 
     override fun read(): Int {
         checkClosed()
         val b = inputStream.read()
-        if (b == -1) {
-            maybeSendHead()
-            return -1
-        }
-
-        if (index < buffer.size) {
-            buffer[index] = b
-            byteBuffer[index] = b.toByte()
-            index++
-            if (index == buffer.size) {
-                maybeSendHead()
-            }
-        } else {
-            // Buffer already full, ensure we sent the head
-            maybeSendHead()
+        if (b != -1 && index < buffer.size) {
+            buffer[index++] = b
+            if (index == buffer.size) emitHead()
+        } else if (b == -1) {
+            emitHead()
         }
         return b
     }
@@ -84,59 +73,16 @@ class CopiedHeadInputStream(
     override fun reset() = inputStream.reset()
     override fun markSupported() = inputStream.markSupported()
 
+    private fun emitHead() {
+        if (!headEmitted) {
+            headEmitted = true
+            onHeadReady(buffer.take(index).map { it.toByte() }.toByteArray())
+        }
+    }
+
     private fun checkClosed() {
         if (closed) {
             throw IOException("Stream is closed")
-        }
-    }
-
-    private fun maybeSendHead() {
-        if (headSent) return
-        val length = validUtf8PrefixLength(byteBuffer, index)
-        val head = byteBuffer.copyOfRange(0, length)
-        onHeadReady(head)
-        headSent = true
-    }
-
-    /**
-     * Returns the length (in bytes) of the longest valid UTF-8 prefix
-     * within bytes[0, currentIndex). If currentIndex ends in a partial
-     * multi-byte sequence, the incomplete tail is trimmed off.
-     */
-    private fun validUtf8PrefixLength(bytes: ByteArray, currentIndex: Int): Int {
-        var i = currentIndex
-        if (i <= 0) return 0
-
-        // Fast-path: if last byte ends a sequence properly, return as-is
-        // We still need to verify only the tail; scanning backwards to the start of the last sequence
-        var k = i - 1
-        // Count continuation bytes (10xxxxxx)
-        var cont = 0
-        while (k >= 0 && (bytes[k].toInt() and 0xC0) == 0x80) {
-            cont++
-            k--
-        }
-
-        if (k < 0) {
-            // Buffer ends with continuation bytes without a lead byte in view -> drop them
-            return i - cont
-        }
-
-        val lead = bytes[k].toInt() and 0xFF
-        val expected = when {
-            (lead and 0x80) == 0x00 -> 1
-            (lead and 0xE0) == 0xC0 -> 2
-            (lead and 0xF0) == 0xE0 -> 3
-            (lead and 0xF8) == 0xF0 -> 4
-            else -> 1 // invalid lead; treat as single byte to avoid negative cut
-        }
-
-        return if (cont >= expected - 1 && k + expected <= i) {
-            // Last sequence complete
-            i
-        } else {
-            // Trim incomplete sequence starting at k
-            k
         }
     }
 
