@@ -39,8 +39,11 @@
 <ng-template #body>
   <h2 *ngIf="!hideTitle" class="mb-4 mt-2">{{ title || ('dropzone.drop' | translate) }}</h2>
   <span *ngIf="subtitle" class="note mb-3">{{ subtitle }}</span>
+  <span *ngIf="showAcceptedFiles && _acceptedFiles" class="note mb-3 small-font"
+  >{{ 'dropzone.acceptedFiles' | translate }}<b>{{ _acceptedFiles }}</b></span
+  >
   <span *ngIf="showMaxFileSize" class="note mb-3 small-font"
-    >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
+    >{{ 'dropzone.maxFileSize' | translate }}<b>{{ _maxFileSize }}mb</b></span
   >
   <ng-container *ngTemplateOutlet="preview"></ng-container>
 </ng-template>
