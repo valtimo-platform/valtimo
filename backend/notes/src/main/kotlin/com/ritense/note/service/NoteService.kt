@@ -23,11 +23,8 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.note.domain.Note
 import com.ritense.note.event.NoteCreated
-import com.ritense.note.event.NoteCreatedEvent
 import com.ritense.note.event.NoteDeleted
-import com.ritense.note.event.NoteDeletedEvent
 import com.ritense.note.event.NoteUpdated
-import com.ritense.note.event.NoteUpdatedEvent
 import com.ritense.note.event.NoteViewed
 import com.ritense.note.event.NotesListed
 import com.ritense.note.exception.NoteNotFoundException
@@ -36,6 +33,9 @@ import com.ritense.note.repository.SpecificationHelper
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.event.NoteCreatedEvent
+import com.ritense.valtimo.contract.event.NoteDeletedEvent
+import com.ritense.valtimo.contract.event.NoteUpdatedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
@@ -85,49 +85,60 @@ class NoteService(
         noteContent: String,
     ): Note {
         logger.debug { "Create note for document $documentId" }
-        val user = userManagementService.currentUser
-        val note = noteRepository.save(Note(documentId, user, noteContent))
-        requirePermission(note, NoteActionProvider.CREATE)
-        applicationEventPublisher.publishEvent(NoteCreatedEvent(documentId.id, note.id))
-
-        outboxService.send {
-            NoteCreated(
-                note.id.toString(),
-                objectMapper.valueToTree(note)
-            )
+        return Note(documentId, userManagementService.currentUser, noteContent).let {
+            requirePermission(it, NoteActionProvider.CREATE)
+            noteRepository.save(it)
+        }.also { note ->
+            applicationEventPublisher.publishEvent(NoteCreatedEvent(
+                noteId = note.id,
+                noteDocumentId = documentId.id,
+                noteContent = note.content,
+                noteCreatedByUserId = note.createdByUserId,
+                noteCreatedByUserFullName = note.createdByUserFullName,
+                noteCreatedOn = note.createdDate,
+            ))
+            outboxService.send {
+                NoteCreated(
+                    note.id.toString(),
+                    objectMapper.valueToTree(note)
+                )
+            }
         }
-
-        return note
     }
 
     fun editNote(noteId: UUID, noteContent: String): Note {
         logger.debug { "Update note with id '$noteId'" }
-        val note = getNoteById(noteId)
-        requirePermission(note, NoteActionProvider.MODIFY)
-        val copiedNote = note.copy(content = noteContent)
-        val updatedNote = noteRepository.save(copiedNote)
-        applicationEventPublisher.publishEvent(NoteUpdatedEvent(noteId))
-
-        outboxService.send {
-            NoteUpdated(
-                updatedNote.id.toString(),
-                objectMapper.valueToTree(updatedNote)
-            )
+        return getNoteById(noteId).let { note ->
+            requirePermission(note, NoteActionProvider.MODIFY)
+            noteRepository.save(note.copy(content = noteContent)).also { updatedNote ->
+                applicationEventPublisher.publishEvent(NoteUpdatedEvent(
+                    noteId = updatedNote.id,
+                    noteDocumentId = updatedNote.documentId,
+                    noteContent = updatedNote.content
+                ))
+                outboxService.send {
+                    NoteUpdated(
+                        updatedNote.id.toString(),
+                        objectMapper.valueToTree(updatedNote)
+                    )
+                }
+            }
         }
-
-        return updatedNote
     }
 
     fun deleteNote(noteId: UUID) {
         logger.debug { "Delete note with id '$noteId'" }
-        val note = getNoteById(noteId)
-        requirePermission(note, NoteActionProvider.DELETE)
-        noteRepository.deleteById(noteId)
-        applicationEventPublisher.publishEvent(NoteDeletedEvent(noteId))
-        outboxService.send {
-            NoteDeleted(
-                noteId.toString()
-            )
+        getNoteById(noteId).let { note ->
+            requirePermission(note, NoteActionProvider.DELETE)
+            noteRepository.deleteById(noteId).also {
+                applicationEventPublisher.publishEvent(NoteDeletedEvent(
+                    noteId = note.id,
+                    noteDocumentId = note.documentId,
+                ))
+                outboxService.send {
+                    NoteDeleted(noteId.toString())
+                }
+            }
         }
     }
 
