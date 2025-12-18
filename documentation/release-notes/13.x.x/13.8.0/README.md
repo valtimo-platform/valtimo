@@ -34,3 +34,4 @@ More details can be found [here](../../../features/case/case-detail/tabs/widgets
 
 * Resolved issue where during deployment of process-links the wrong process version is looked up.
 * Resolved issue where the translations in the plugin action 'Get Resultaattypen' configuration page of plugin 'Catalogi API' were not displayed correctly.
+* Resolved issue where saving a case header widget configuration was not possible due to the save button being disabled.
