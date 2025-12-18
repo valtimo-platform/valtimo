@@ -61,13 +61,11 @@ import {
   of,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 import {
   IkoSearchField,
   SearchDropdownDataProvider,
   SearchDropdownValue,
-  SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
@@ -254,6 +252,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
           content: this.translateService.instant('searchFields.time'),
           id: SearchFieldDataType.TIME,
         },
+        {
+          content: this.translateService.instant('searchFields.bsn'),
+          id: SearchFieldDataType.BSN,
+        },
       ].map(item => ({...item, selected: item.id === dataTypeValue?.id}))
     )
   );
@@ -304,12 +306,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
               'searchFieldsOverview.dropdownDatabaseDataProvider'
             ),
             id: SearchDropdownDataProvider.DATABASE,
-          },
-          {
-            content: this.translateService.instant(
-              'searchFieldsOverview.dropdownJsonFileDataProvider'
-            ),
-            id: SearchDropdownDataProvider.JSON,
           },
         ].map(item => ({...item, selected: item.id === dataProviderValue?.id}))
       )
