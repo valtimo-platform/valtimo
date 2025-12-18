@@ -994,9 +994,10 @@
     },
     "actionButtonLabel": "Action button type",
     "externalLink": {
-      "linkLabel": "External link button",
-      "linkPlaceholder": "External link",
-      "buttonTextLabel": "External link button text"
+      "linkLabel": "Target URL (with placeholders)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Button label",
+      "buttonTextPlaceholder": "'Go to zaak'"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
   },

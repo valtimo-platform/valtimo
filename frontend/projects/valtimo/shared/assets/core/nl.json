@@ -1016,15 +1016,16 @@
     },
     "processes": {
       "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
-      "buttonTextPlaceholder": "Knop tekst",
+      "buttonTextPlaceholder": "Knoptekst",
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
-      "linkLabel": "Knop voor externe link",
-      "linkPlaceholder": "Externe link",
-      "buttonTextLabel": "Tekst van knop voor externe link"
+      "linkLabel": "Link-URL (met variabelen)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Knoptekst",
+      "buttonTextPlaceholder": "'Ga naar zaak'"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
