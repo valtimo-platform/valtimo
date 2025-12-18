@@ -18,7 +18,16 @@ package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
 import com.ritense.valtimo.repository.ReadOnlyJpaSpecificationRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
-interface OperatonDecisionDefinitionRepository : ReadOnlyJpaSpecificationRepository<OperatonDecisionDefinition, String>
+interface OperatonDecisionDefinitionRepository :
+    ReadOnlyJpaSpecificationRepository<OperatonDecisionDefinition, String> {
+
+    @Modifying
+    @Query(value = "UPDATE ACT_RE_DECISION_DEF SET VERSION_TAG_ = NULL WHERE ID_ = :id", nativeQuery = true)
+    fun clearVersionTag(@Param("id") id: String?)
+}

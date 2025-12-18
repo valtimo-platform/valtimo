@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
+import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
@@ -115,6 +116,9 @@ class OperatonProcessServiceTest {
     @Mock
     private OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
 
+    @Mock
+    private OperatonDecisionDefinitionRepository operatonDecisionDefinitionRepository;
+
     private OperatonHistoryService historyService = mock(OperatonHistoryService.class, RETURNS_DEEP_STUBS);
 
     @BeforeEach
@@ -139,7 +143,8 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository,
+            operatonDecisionDefinitionRepository
         );
 
         //when
@@ -187,7 +192,8 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository,
+            operatonDecisionDefinitionRepository
         );
 
         //when

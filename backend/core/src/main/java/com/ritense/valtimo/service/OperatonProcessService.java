@@ -45,6 +45,7 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
+import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
@@ -124,6 +125,7 @@ public class OperatonProcessService {
     private final OperatonExecutionRepository operatonExecutionRepository;
     private final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
     private final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
+    private final OperatonDecisionDefinitionRepository operatonDecisionDefinitionRepository;
 
     public OperatonProcessService(
         RuntimeService runtimeService,
@@ -140,7 +142,8 @@ public class OperatonProcessService {
         OperatonByteArrayService operatonByteArrayService,
         ApplicationEventPublisher applicationEventPublisher,
         OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
-        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
+        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository,
+        OperatonDecisionDefinitionRepository operatonDecisionDefinitionRepository
     ) {
         this.runtimeService = runtimeService;
         this.operatonRuntimeService = operatonRuntimeService;
@@ -157,6 +160,7 @@ public class OperatonProcessService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.operatonDeploymentSourceHelper = operatonDeploymentSourceHelper;
         this.operatonProcessDefinitionRepository = operatonProcessDefinitionRepository;
+        this.operatonDecisionDefinitionRepository = operatonDecisionDefinitionRepository;
     }
 
     public OperatonProcessDefinition findProcessDefinitionById(String processDefinitionId) {
@@ -552,17 +556,13 @@ public class OperatonProcessService {
                     .findFirst()
                     .orElseThrow();
 
-                DecisionDefinitionQuery decisionDefinitionQuery = repositoryService.createDecisionDefinitionQuery()
-                    .decisionDefinitionKey(decisionDefinitionKey);
-
-                if (caseDefinitionId != null) {
-                    decisionDefinitionQuery.versionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
-                }
-
-                DecisionDefinition decisionDefinition = decisionDefinitionQuery.singleResult();
+                DecisionDefinition decisionDefinition = repositoryService.createDecisionDefinitionQuery()
+                    .decisionDefinitionKey(decisionDefinitionKey)
+                    .versionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                    .singleResult();
 
                 if (decisionDefinition != null) {
-                    repositoryService.deleteDeployment(decisionDefinition.getDeploymentId());
+                    operatonDecisionDefinitionRepository.clearVersionTag(decisionDefinition.getId());
                 }
             }
 
