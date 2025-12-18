@@ -44,10 +44,13 @@ import {
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  SelectItem,
+  SelectModule,
   ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
+import {Direction} from '@valtimo/shared';
 import {
   AccordionModule,
   ButtonModule,
@@ -61,7 +64,8 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
-import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
+import {IWidgetManagementService} from '../../../../../interfaces';
 import {
   FieldsWidgetValue,
   WidgetCurrencyDisplayType,
@@ -69,13 +73,12 @@ import {
   WidgetDateTimeDisplayType,
   WidgetDisplayTypeKey,
   WidgetEnumDisplayType,
+  WidgetLinkDisplayType,
   WidgetNumberDisplayType,
   WidgetTextDisplayType,
   WidgetType,
-  WidgetLinkDisplayType,
 } from '../../../../../models';
-import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
-import {IWidgetManagementService} from '../../../../../interfaces';
+import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
 
 @Component({
   selector: 'valtimo-widget-management-fields-column',
@@ -97,6 +100,7 @@ import {IWidgetManagementService} from '../../../../../interfaces';
     ValuePathSelectorComponent,
     CheckboxModule,
     LayerModule,
+    SelectModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -106,6 +110,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
   @Input() public selectedCollection?: ValuePathItem;
   @Input() public showHideWhenEmptyCheckbox = false;
+  @Input() public showSortableCheckbox = false;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsWidgetValue[];
@@ -142,8 +147,18 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   );
 
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;
+  public readonly DEFAULT_SORT_OPTIONS: SelectItem[] = [
+    {
+      id: 'ASC',
+      translationKey: 'interface.sorting.ascending',
+    },
+    {
+      id: 'DESC',
+      translationKey: 'interface.sorting.descending',
+    },
+  ];
 
-  private _subscriptions = new Subscription();
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
@@ -185,6 +200,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           Validators.pattern('[1-9][0-9]*')
         ),
         hideWhenEmpty: this.fb.control<boolean>(false),
+        sortable: this.fb.control<boolean>(false),
+        defaultSort: this.fb.control<Direction | ''>({value: '', disabled: true}),
       })
     );
   }
@@ -241,6 +258,11 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           (row.displayProperties as WidgetTextDisplayType)?.ellipsisCharacterLimit ?? null,
           Validators.pattern('[1-9][0-9]*')
         ),
+      }),
+      sortable: this.fb.control<boolean>(row.sortable ?? false),
+      defaultSort: this.fb.control<Direction | null>({
+        value: row.defaultSort ?? null,
+        disabled: !row.sortable,
       }),
       hideWhenEmpty: this.fb.control(
         (row.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false
@@ -316,6 +338,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
           title: row.title,
           value: row.content,
+          ...(row.sortable !== undefined && {sortable: row.sortable}),
+          ...(row.defaultSort !== '' && row.sortable && {defaultSort: row.defaultSort}),
           ...(!!row?.type.id && {
             displayProperties: {
               type: row.type.id,

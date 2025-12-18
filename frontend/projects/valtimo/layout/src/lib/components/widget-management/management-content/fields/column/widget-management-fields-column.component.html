@@ -359,6 +359,23 @@
             <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty">
               {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
             </cds-checkbox>
+
+            <div
+              *ngIf="showSortableCheckbox"
+              class="valtimo-widget-management-field-column__sorting"
+            >
+              <cds-checkbox formControlName="sortable">
+                {{ 'listColumn.sortable' | translate }}
+              </cds-checkbox>
+
+              <v-select
+                formControlName="defaultSort"
+                [disabled]="!formRow.get('sortable')?.value"
+                [items]="DEFAULT_SORT_OPTIONS"
+                [dropUp]="false"
+                [placeholder]="'interface.sorting.noDefault' | translate"
+              ></v-select>
+            </div>
           </div>
         </form>
       </cds-accordion-item>
