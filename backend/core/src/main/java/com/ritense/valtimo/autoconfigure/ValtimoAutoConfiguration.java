@@ -161,7 +161,7 @@ public class ValtimoAutoConfiguration {
         final OperatonByteArrayService operatonByteArrayService,
         final ApplicationEventPublisher applicationEventPublisher,
         final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
-        final OperatonProcessDefinitionRepository operatonProcessDefinitionRepositor
+        final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
     ) {
         return new OperatonProcessService(
             runtimeService,
@@ -178,7 +178,7 @@ public class ValtimoAutoConfiguration {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepositor
+            operatonProcessDefinitionRepository
         );
     }
 

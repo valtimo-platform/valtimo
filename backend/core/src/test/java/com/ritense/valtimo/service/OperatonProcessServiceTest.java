@@ -113,7 +113,7 @@ class OperatonProcessServiceTest {
     private OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
 
     @Mock
-    private OperatonProcessDefinitionRepository operatonProcessDefinitionRepositor;
+    private OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
 
     private OperatonHistoryService historyService = mock(OperatonHistoryService.class, RETURNS_DEEP_STUBS);
 
@@ -139,7 +139,7 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepositor
+            operatonProcessDefinitionRepository
         );
 
         //when
@@ -187,7 +187,7 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepositor
+            operatonProcessDefinitionRepository
         );
 
         //when
