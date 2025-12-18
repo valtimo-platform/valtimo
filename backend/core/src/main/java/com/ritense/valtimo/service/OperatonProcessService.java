@@ -34,7 +34,6 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
-import com.ritense.valtimo.event.ProcessDefinitionDeleted;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
 import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
@@ -47,6 +46,7 @@ import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
@@ -121,10 +121,9 @@ public class OperatonProcessService {
     private final ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
     private final OperatonByteArrayService operatonByteArrayService;
     private final ApplicationEventPublisher applicationEventPublisher;
-
     private final OperatonExecutionRepository operatonExecutionRepository;
-
     private final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
+    private final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
 
     public OperatonProcessService(
         RuntimeService runtimeService,
@@ -140,7 +139,8 @@ public class OperatonProcessService {
         ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker,
         OperatonByteArrayService operatonByteArrayService,
         ApplicationEventPublisher applicationEventPublisher,
-        OperatonDeploymentSourceHelper operatonDeploymentSourceHelper
+        OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
+        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
     ) {
         this.runtimeService = runtimeService;
         this.operatonRuntimeService = operatonRuntimeService;
@@ -156,6 +156,7 @@ public class OperatonProcessService {
         this.operatonByteArrayService = operatonByteArrayService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.operatonDeploymentSourceHelper = operatonDeploymentSourceHelper;
+        this.operatonProcessDefinitionRepository = operatonProcessDefinitionRepository;
     }
 
     public OperatonProcessDefinition findProcessDefinitionById(String processDefinitionId) {
@@ -512,12 +513,7 @@ public class OperatonProcessService {
 
             OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(caseDefinitionId, bpmnModel);
             if (latestProcessDefinition != null && caseDefinitionId != null) {
-                // clean up previous process definition, can only be triggered when we're deploying a draft version
-                applicationEventPublisher.publishEvent(new ProcessDefinitionDeleted(
-                    latestProcessDefinition.getId(),
-                    caseDefinitionId
-                ));
-                repositoryService.deleteDeployment(latestProcessDefinition.getDeploymentId(), true);
+                operatonProcessDefinitionRepository.clearVersionTag(latestProcessDefinition.getId());
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
