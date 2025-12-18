@@ -144,12 +144,13 @@ export class PatchZaakConfigurationComponent
     return property === 'description' ? 'omschrijving' : property;
   }
 
-  private tooltipTranslationKeyFor(property: PatchZaakProperties): string | null {
+  private tooltipTranslationKeyFor(property: PatchZaakProperties): string | null{
     if (property.includes('Date')) {
       return 'dateformatTooltip';
     } else if (property === this.CASE_GEOMETRY_COORDINATES) {
       return `${property}Tooltip`;
     }
+
     return null;
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type SearchFieldDataType = 'text' | 'number' | 'date' | 'datetime' | 'boolean';
+type SearchFieldDataType = 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'bsn';
 
 type SearchFieldFieldType =
   | 'single'

@@ -48,7 +48,7 @@
   confirmButtonTextTranslationKey="interface.delete"
   confirmButtonType="danger"
   contentTranslationKey="ikoManagement.searchFields.deleteModalText"
-  [outputOnConfirm]="deleteFieldKey$ | async"
+  [outputOnConfirm]="deleteField$ | async"
   [showModalSubject$]="deleteModalOpen$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDeleteSearchField($event)"
