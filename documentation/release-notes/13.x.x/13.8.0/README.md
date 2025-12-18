@@ -21,9 +21,7 @@ will still result in an error.
 - **Custom component widgets support for key/value inputs**
 
 Custom Key/Value pairs can be configured in the custom component widgets. These properties are then made accessible inside of the component.
-More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
-
-More details can be found [here](../../features/case/case-detail/tabs/widgets.md)
+More details can be found [here](../../../features/case/case-detail/tabs/widgets.md)
 
 ## Enhancements
 
@@ -36,3 +34,4 @@ More details can be found [here](../../features/case/case-detail/tabs/widgets.md
 
 * Resolved issue where during deployment of process-links the wrong process version is looked up.
 * Resolved issue where the translations in the plugin action 'Get Resultaattypen' configuration page of plugin 'Catalogi API' were not displayed correctly.
+* Resolved issue where saving a case header widget configuration was not possible due to the save button being disabled.
