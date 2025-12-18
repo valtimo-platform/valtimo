@@ -144,7 +144,6 @@ export * from './lib/components/search-fields/search-fields.module';
 export * from './lib/components/search-fields/search-fields.component';
 
 export * from './lib/components/date-time-picker/date-time-picker.component';
-export * from './lib/components/date-time-picker/date-time-picker.module';
 
 export * from './lib/components/multi-input/carbon-multi-input.module';
 export * from './lib/components/multi-input/carbon-multi-input.component';

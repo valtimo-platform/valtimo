@@ -27,7 +27,7 @@ import {
   SelectModule,
   ParagraphModule,
   InputLabelModule,
-  DateTimePickerModule,
+  DateTimePickerComponent,
   FormModule,
 } from '@valtimo/components';
 import {SearchFieldBoolean, SearchFieldValues} from '@valtimo/shared';
@@ -71,7 +71,7 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     NgClass,
     ParagraphModule,
     TimePickerModule,
-    DateTimePickerModule,
+    DateTimePickerComponent,
     InputLabelModule,
     InputModule,
     FormModule,

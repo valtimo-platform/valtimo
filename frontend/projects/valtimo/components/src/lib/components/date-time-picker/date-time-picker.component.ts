@@ -14,14 +14,34 @@
  * limitations under the License.
  */
 
+import {CommonModule} from '@angular/common';
 import {AfterViewInit, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {TranslateModule} from '@ngx-translate/core';
+import {
+  DatePickerModule,
+  InputModule,
+  LayerModule,
+  TimePickerModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {InputLabelModule} from '../input-label/input-label.module';
 
 @Component({
   selector: 'valtimo-date-time-picker',
   templateUrl: './date-time-picker.component.html',
   styleUrls: ['./date-time-picker.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    InputLabelModule,
+    FormsModule,
+    TranslateModule,
+    InputModule,
+    DatePickerModule,
+    TimePickerModule,
+    LayerModule,
+  ],
 })
 export class DateTimePickerComponent implements AfterViewInit {
   @HostBinding('class.valtimo-date-time-picker')
