@@ -36,7 +36,7 @@ import {
   ViewContentService,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, SkeletonModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
@@ -59,6 +59,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
     LayerModule,
+    SkeletonModule,
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
@@ -125,6 +126,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
         )
       )
     ),
+    tap(columns => console.log(columns)),
     tap(columns => this.checkEmptyFields(columns))
   );
 
