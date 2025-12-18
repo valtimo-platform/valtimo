@@ -68,3 +68,11 @@ Configuring the first service task of the Upload Document process is enough to l
 The second service task in the Upload Document process is called 'Link uploaded document to zaak'. The Zaken API plugin can take care of this action. Look [here](../zgw-plugins/configure-zaken-api-plugin.md) for more information.
 
 ![Plugin action: Link uploaded document to zaak](../../../using-valtimo/upload/img/link-uploaded-document-to-zaak.png)
+
+## Using the Documenten API uploader FormIO component in user tasks
+
+In the form builder you will find the Documenten API uploader component under the advanced section.
+Drag and drop the component into your form to use it.
+
+The following properties can be configured:
+
