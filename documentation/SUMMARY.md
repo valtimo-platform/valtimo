@@ -162,15 +162,16 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.9.0](release-notes/13.x.x/13.9.0/README.md)
   * [13.8.0](release-notes/13.x.x/13.8.0/README.md)
   * [13.7.0](release-notes/13.x.x/13.7.0/README.md)
   * [13.6.0](release-notes/13.x.x/13.6.0/README.md)
   * [13.5.0](release-notes/13.x.x/13.5.0/README.md)
   * [13.4.0](release-notes/13.x.x/13.4.0/README.md)
-    * [13.4.1](release-notes/13.x.x/13.4.0/13.4.1.md)
+  * [13.4.1](release-notes/13.x.x/13.4.0/13.4.1.md)
   * [13.3.0](release-notes/13.x.x/13.3.0/README.md)
   * [13.2.0](release-notes/13.x.x/13.2.0/README.md)
-    * [13.2.1](release-notes/13.x.x/13.2.1/README.md)
+  * [13.2.1](release-notes/13.x.x/13.2.1/README.md)
   * [13.1.3](release-notes/13.x.x/13.1.3/README.md)
   * [13.1.2](release-notes/13.x.x/13.1.2/README.md)
   * [13.1.1](release-notes/13.x.x/13.1.1/README.md)
@@ -178,8 +179,8 @@
   * [13.0.2](release-notes/13.x.x/13.0.2/README.md)
   * [13.0.1](release-notes/13.x.x/13.0.1/README.md)
   * [13.0.0](release-notes/13.x.x/13.0.0/README.md)
-    * [Front-end migration](release-notes/13.x.x/13.0.0/front-end-migration.md)
-    * [Back-end migration](release-notes/13.x.x/13.0.0/back-end-migration.md)
+  * [Front-end migration](release-notes/13.x.x/13.0.0/front-end-migration.md)
+  * [Back-end migration](release-notes/13.x.x/13.0.0/back-end-migration.md)
 
 ## Running Valtimo
 
