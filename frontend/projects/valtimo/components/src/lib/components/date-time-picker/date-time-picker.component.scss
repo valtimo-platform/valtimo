@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,10 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+.valtimo-date-time-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
-export * from './router.utils';
-export * from './url.utils';
-export * from './global-notification.utils';
-export * from './route-params.utils';
-export * from './display-type.utils';
-export * from './validate-bsn.utils';
+  &.full-width {
+    width: 100%;
+  }
+
+  &.margin {
+    margin-bottom: 16px;
+  }
+
+  &__wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  ::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
+    inline-size: unset !important;
+  }
+
+  ::ng-deep .cds--date-picker__input,
+  ::ng-deep .cds--time-picker__input-field {
+    background-color: var(--cds-field-01) !important;
+  }
+}
