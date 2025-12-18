@@ -1,23 +1,40 @@
 export interface CaseManagementFieldMap {
-    testId: string;
-    type: 'input' | 'select';
-    value: string;
+  testId: string;
+  type: 'input' | 'select';
+  isAutoKey?: boolean;
+  value: string;
 }
 
-export const caseConfiguration = [
+export interface CaseManagementConfiguration {
+  fields: CaseManagementFieldMap[];
+  caseKey: string;
+  caseVersion: string;
+}
+
+export const caseConfiguration: CaseManagementConfiguration = {
+  fields: [
     {
-        testId: 'caseDefinitionName',
-        type: 'input',
-        value: 'Test Case',
+      testId: 'caseDefinitionNameInput',
+      type: 'input',
+      value: 'Test Case',
     },
     {
-        testId: 'caseDefinitionVersion',
-        type: 'input',
-        value: '1.0.0',
+      testId: 'caseDefinitionKeyInput',
+      type: 'input',
+      isAutoKey: true,
+      value: 'test-case',
     },
     {
-        testId: 'caseDefinitionDescription',
-        type: 'input',
-        value: 'Testing a case definition...',
+      testId: 'caseDefinitionVersionInput',
+      type: 'input',
+      value: '1.0.0',
     },
-];
+    {
+      testId: 'caseDefinitionDescriptionInput',
+      type: 'input',
+      value: 'Testing a case definition...',
+    },
+  ],
+  caseKey: 'test-case',
+  caseVersion: '1.0.0',
+};

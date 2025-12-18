@@ -1,5 +1,5 @@
 // e2e/utils/api.utils.ts
-import { request, APIRequestContext, APIResponse } from '@playwright/test';
+import {request, APIRequestContext, APIResponse} from '@playwright/test';
 
 let _context: APIRequestContext | undefined;
 
@@ -41,22 +41,16 @@ export async function apiGet<T = unknown>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function apiPost<T = unknown>(
-  url: string,
-  body: unknown,
-): Promise<T> {
+export async function apiPost<T = unknown>(url: string, body: unknown): Promise<T> {
   const ctx = await getContext();
-  const res = await ctx.post(url, { data: body });
+  const res = await ctx.post(url, {data: body});
   await assertOk('POST', url, res);
   return (await res.json()) as T;
 }
 
-export async function apiPut<T = unknown>(
-  url: string,
-  body: unknown,
-): Promise<T> {
+export async function apiPut<T = unknown>(url: string, body: unknown): Promise<T> {
   const ctx = await getContext();
-  const res = await ctx.put(url, { data: body });
+  const res = await ctx.put(url, {data: body});
   await assertOk('PUT', url, res);
   const text = await res.text();
   if (!text) {

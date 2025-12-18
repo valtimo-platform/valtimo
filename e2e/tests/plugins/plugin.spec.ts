@@ -13,7 +13,6 @@ test.describe('Plugin management', () => {
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
     // Create shared context & page
-    console.log({baseURL});
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     request = context.request;
