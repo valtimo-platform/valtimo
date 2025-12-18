@@ -1,3 +1,19 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 @if (ikoSearchActions$ | async; as ikoSearchActions) {
   @if (ikoSearchActions.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
@@ -38,9 +54,11 @@
                       name="start"
                       [placeholder]="'searchFields.textPlaceholder' | translate"
                     ></v-input>
+
                     <div class="to-text">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
+
                     <v-input
                       name="end"
                       [placeholder]="'searchFields.textPlaceholder' | translate"
@@ -65,9 +83,11 @@
                       name="start"
                       [placeholder]="'searchFields.numberPlaceholder' | translate"
                     ></v-input>
+
                     <div class="to-text">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
+
                     <v-input
                       type="number"
                       name="end"
@@ -96,9 +116,11 @@
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
                   >
                     <cds-timepicker [(ngModel)]="formValues[field.key + '_start']"></cds-timepicker>
+
                     <div class="to-text">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
+
                     <cds-timepicker [(ngModel)]="formValues[field.key + '_end']"></cds-timepicker>
                   </v-form>
                 }
@@ -120,9 +142,11 @@
                       [enableTime]="false"
                       [showFieldLabel]="false"
                     ></valtimo-date-time-picker>
+
                     <div class="to-text">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
+
                     <valtimo-date-time-picker
                       name="end"
                       [enableTime]="false"
@@ -147,9 +171,11 @@
                       [enableTime]="true"
                       [showFieldLabel]="false"
                     ></valtimo-date-time-picker>
+
                     <div class="to-text">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
+
                     <valtimo-date-time-picker
                       name="end"
                       [enableTime]="true"

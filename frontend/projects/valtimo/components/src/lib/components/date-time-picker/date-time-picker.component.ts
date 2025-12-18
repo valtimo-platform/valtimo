@@ -82,12 +82,12 @@ export class DateTimePickerComponent implements AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  readonly dateValue$ = new BehaviorSubject<string>('');
+  public readonly dateValue$ = new BehaviorSubject<string>('');
   private timeValueInternal = '';
 
   private readonly subscriptions = new Subscription();
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     if (this.defaultDateIsToday) {
       this.dateValue$.next(this.formatDate(new Date()));
     }
@@ -107,17 +107,17 @@ export class DateTimePickerComponent implements AfterViewInit {
     );
   }
 
-  onDateSelected(value: string | Date[]): void {
+  public onDateSelected(value: string | Date[]): void {
     const formatted = Array.isArray(value) ? value[0] : value;
     this.dateValue$.next(this.normalizeDate(formatted));
   }
 
-  onTimeSelected(value: string): void {
+  public onTimeSelected(value: string): void {
     this.timeValueInternal = value;
     this.emitValue(this.dateValue$.getValue(), value);
   }
 
-  get timeValue(): string {
+  public get timeValue(): string {
     return this.timeValueInternal;
   }
 
