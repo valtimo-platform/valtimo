@@ -75,7 +75,6 @@ import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState;
 import org.operaton.bpm.engine.repository.DecisionDefinition;
-import org.operaton.bpm.engine.repository.DecisionDefinitionQuery;
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
@@ -517,7 +516,7 @@ public class OperatonProcessService {
 
             OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(caseDefinitionId, bpmnModel);
             if (latestProcessDefinition != null && caseDefinitionId != null) {
-                operatonProcessDefinitionRepository.clearVersionTag(latestProcessDefinition.getId());
+                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), "DELETED:" + caseDefinitionId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
@@ -562,7 +561,7 @@ public class OperatonProcessService {
                     .singleResult();
 
                 if (decisionDefinition != null) {
-                    operatonDecisionDefinitionRepository.clearVersionTag(decisionDefinition.getId());
+                    operatonDecisionDefinitionRepository.setVersionTag(decisionDefinition.getId(), "DELETED:" + caseDefinitionId);
                 }
             }
 

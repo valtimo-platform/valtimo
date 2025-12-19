@@ -28,6 +28,6 @@ interface OperatonDecisionDefinitionRepository :
     ReadOnlyJpaSpecificationRepository<OperatonDecisionDefinition, String> {
 
     @Modifying
-    @Query(value = "UPDATE ACT_RE_DECISION_DEF SET VERSION_TAG_ = NULL WHERE ID_ = :id", nativeQuery = true)
-    fun clearVersionTag(@Param("id") id: String?)
+    @Query(value = "UPDATE ACT_RE_DECISION_DEF SET VERSION_TAG_ = :versionTag WHERE ID_ = :id", nativeQuery = true)
+    fun setVersionTag(@Param("id") id: String, @Param("versionTag") versionTag: String?)
 }
