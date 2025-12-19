@@ -23,6 +23,7 @@
 >
   <v-input
     name="configurationTitle"
+    data-test-id="portaaltaakConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -40,6 +41,7 @@
       [items]="notificatiesApiPluginSelectItems"
       [margin]="true"
       name="notificatiesApiPluginConfiguration"
+      data-test-id="portaaltaakNotificatiesApiPluginConfiguration"
       [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
@@ -55,6 +57,7 @@
       [items]="objectManagementConfigurationItems"
       [margin]="true"
       name="objectManagementConfigurationId"
+      data-test-id="portaaltaakObjectManagementConfiguration"
       [title]="'objectManagementConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.objectManagementConfigurationId"
@@ -68,6 +71,7 @@
       [items]="vars.processSelectItems"
       [margin]="true"
       name="completeTaakProcess"
+      data-test-id="portaaltaakCompleteTaakProcess"
       [title]="'completeTaakProcess' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.completeTaakProcess"
