@@ -156,7 +156,6 @@ public class OperatonProcessService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.operatonDeploymentSourceHelper = operatonDeploymentSourceHelper;
         this.operatonProcessDefinitionRepository = operatonProcessDefinitionRepository;
-        this.operatonDecisionDefinitionRepository = operatonDecisionDefinitionRepository;
     }
 
     public OperatonProcessDefinition findProcessDefinitionById(String processDefinitionId) {

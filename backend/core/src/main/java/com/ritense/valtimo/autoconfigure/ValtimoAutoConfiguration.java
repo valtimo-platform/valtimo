@@ -178,7 +178,7 @@ public class ValtimoAutoConfiguration {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository,
+            operatonProcessDefinitionRepository
         );
     }
 
