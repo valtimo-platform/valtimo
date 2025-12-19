@@ -45,7 +45,6 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
-import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
@@ -124,7 +123,6 @@ public class OperatonProcessService {
     private final OperatonExecutionRepository operatonExecutionRepository;
     private final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
     private final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
-    private final OperatonDecisionDefinitionRepository operatonDecisionDefinitionRepository;
 
     public OperatonProcessService(
         RuntimeService runtimeService,
@@ -141,8 +139,7 @@ public class OperatonProcessService {
         OperatonByteArrayService operatonByteArrayService,
         ApplicationEventPublisher applicationEventPublisher,
         OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
-        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository,
-        OperatonDecisionDefinitionRepository operatonDecisionDefinitionRepository
+        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
     ) {
         this.runtimeService = runtimeService;
         this.operatonRuntimeService = operatonRuntimeService;
@@ -561,7 +558,7 @@ public class OperatonProcessService {
                     .singleResult();
 
                 if (decisionDefinition != null) {
-                    operatonDecisionDefinitionRepository.setVersionTag(decisionDefinition.getId(), "DELETED:" + caseDefinitionId);
+                    repositoryService.deleteDeployment(decisionDefinition.getDeploymentId());
                 }
             }
 
