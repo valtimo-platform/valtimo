@@ -40,43 +40,63 @@
       [resolvedData]="obs.widgetData"
     ></valtimo-widget-action-button>
   </section>
-  <div
-    #widgetField
-    class="valtimo-widget-field__render"
-    [ngClass]="{
-      'valtimo-widget-field__render-vertically': renderVertically() === 1,
-      'valtimo-widget-field__render-two-columns': renderVertically() === 2,
-      'valtimo-widget-field__render-three-columns': renderVertically() === 3,
-      'valtimo-widget-field__container': renderVertically() === 4,
-    }"
-  >
-    @for (column of obs?.widgetPropertyValue; track column.key) {
-      <div class="valtimo-widget-field__column">
-        {{ column }}
-        @for (property of column; track property) {
-          <div
-            *ngIf="
-              (property?.value !== null && property?.value !== '-' && property?.hideWhenEmpty) ||
-              !property?.hideWhenEmpty
-            "
-            class="valtimo-widget-field__field"
-          >
-            <cds-skeleton-text [lines]="1" [maxLineWidth]="30"></cds-skeleton-text>
 
-            <label class="valtimo-widget-field__field-label" [attr.title]="property?.title">
-              {{ property?.title }}</label
-            >
+  @if (obs?.isEmptyWidgetData) {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  } @else {
+    <div
+      #widgetField
+      class="valtimo-widget-field__render"
+      [ngClass]="{
+        'valtimo-widget-field__render-vertically': renderVertically() === 1,
+        'valtimo-widget-field__render-two-columns': renderVertically() === 2,
+        'valtimo-widget-field__render-three-columns': renderVertically() === 3,
+        'valtimo-widget-field__container': renderVertically() === 4,
+      }"
+    >
+      @if (obs.widgetData && obs.noVisibleFields) {
+        <valtimo-no-results
+          [collapseVertically]="true"
+          [description]="'widgets.emptyFields' | translate"
+          [smallPadding]="true"
+        ></valtimo-no-results>
+      } @else {
+        @for (column of obs?.widgetPropertyValue; track column.key) {
+          <div class="valtimo-widget-field__column">
+            @for (property of column; track property) {
+              <div
+                *ngIf="
+                  (property?.value !== null &&
+                    property?.value !== '-' &&
+                    property?.hideWhenEmpty) ||
+                  !property?.hideWhenEmpty
+                "
+                class="valtimo-widget-field__field"
+              >
+                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title">
+                  {{ property?.title }}</label
+                >
 
-            <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
-              @if (property?.isRawValue) {
-                <div [innerHTML]="property?.value"></div>
-              } @else {
-                {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
-              }
-            </div>
+                <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
+                  @if (!obs.widgetData) {
+                    <cds-skeleton-text [lines]="1" [maxLineWidth]="100"></cds-skeleton-text>
+                  } @else {
+                    @if (property?.isRawValue) {
+                      <div [innerHTML]="property?.value"></div>
+                    } @else {
+                      {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                    }
+                  }
+                </div>
+              </div>
+            }
           </div>
         }
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 </ng-container>

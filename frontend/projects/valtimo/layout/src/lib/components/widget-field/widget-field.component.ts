@@ -90,7 +90,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   public readonly widgetPropertyValue$: Observable<
     {
       title: string;
-      value: string;
+      value: string | null;
       ellipsisCharacterLimit: number | null;
       hideWhenEmpty: boolean | false;
       isRawValue: boolean | false;
@@ -101,19 +101,23 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
         column.reduce(
           (columnFields, property) => [
             ...columnFields,
-            ...(widgetData?.hasOwnProperty(property.key)
+            ...(widgetData === null || widgetData?.hasOwnProperty(property.key)
               ? [
                   {
                     title: property.title,
                     ellipsisCharacterLimit:
                       (property.displayProperties as WidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
-                    hideWhenEmpty:
-                      (property.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false,
-                    value: this.viewContentService.get(widgetData[property.key], {
-                      ...property.displayProperties,
-                      viewType: property.displayProperties?.type ?? ViewType.TEXT,
-                    }),
+                    hideWhenEmpty: widgetData
+                      ? ((property.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ??
+                        false)
+                      : false,
+                    value: widgetData
+                      ? this.viewContentService.get(widgetData[property.key], {
+                          ...property.displayProperties,
+                          viewType: property.displayProperties?.type ?? ViewType.TEXT,
+                        })
+                      : null,
                     isRawValue: this.viewContentService.isRawValue({
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
@@ -126,7 +130,6 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
         )
       )
     ),
-    tap(columns => console.log(columns)),
     tap(columns => this.checkEmptyFields(columns))
   );
 
