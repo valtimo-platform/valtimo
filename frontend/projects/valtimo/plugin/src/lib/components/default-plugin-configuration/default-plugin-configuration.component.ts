@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {DefaultPluginConfigurationData} from '../../models';
 import {validate as isValidUUID} from 'uuid';
+// import {PLUGIN_CONFIGURATION_ID_TEST} from '@e2e/constants';
 
 @Component({
   selector: 'valtimo-default-plugin-configuration',
@@ -32,6 +33,8 @@ export class DefaultPluginConfigurationComponent implements OnInit, OnDestroy {
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<DefaultPluginConfigurationData> =
     new EventEmitter<DefaultPluginConfigurationData>();
+
+  // public readonly PLUGIN_CONFIGURATION_ID_TEST = PLUGIN_CONFIGURATION_ID_TEST;
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<DefaultPluginConfigurationData | null>(null);
