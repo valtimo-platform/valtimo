@@ -34,6 +34,7 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
+import com.ritense.valtimo.event.ProcessDefinitionDetached;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
 import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
@@ -512,7 +513,11 @@ public class OperatonProcessService {
 
             OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(caseDefinitionId, bpmnModel);
             if (latestProcessDefinition != null && caseDefinitionId != null) {
-                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), "DELETED:" + caseDefinitionId);
+                applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
+                    latestProcessDefinition.getId(),
+                    caseDefinitionId
+                ));
+                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), "DETACHED:" + caseDefinitionId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
