@@ -106,6 +106,7 @@
     [flip]="true"
     [offset]="{x: 0, y: 50}"
     placement="bottom"
+    role="menu"
     (click)="$event.stopPropagation()"
   >
     @for (action of data.actions; track action.label) {
