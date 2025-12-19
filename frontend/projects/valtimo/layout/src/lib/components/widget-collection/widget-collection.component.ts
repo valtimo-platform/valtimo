@@ -99,7 +99,13 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
+    if (!this._initialNumberOfElements) {
+      const widgetConfig = this.widgetConfiguration$.getValue();
+      this._initialNumberOfElements = Math.max(
+        value.numberOfElements,
+        widgetConfig?.properties?.defaultPageSize || 0
+      );
+    }
 
     let widgetData: Page<CollectionWidgetCardData> = value;
 
