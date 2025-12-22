@@ -10,4 +10,4 @@
 
 ## Bugfixes
 
-* Fixed importing of existing case definition zip files.
+* Importing an existing case definition from an uploaded zip file will now overwrite the existing data.
