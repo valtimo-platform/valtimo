@@ -26,6 +26,7 @@ import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.service.ApplicationStateService
+import com.ritense.verzoek.DocumentVerzoekPluginFactory
 import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -34,6 +35,18 @@ import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
 class VerzoekAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentVerzoekPluginFactory::class)
+    fun documentVerzoekPluginFactory(
+        pluginService: PluginService,
+        applicationStateService: ApplicationStateService,
+    ): DocumentVerzoekPluginFactory {
+        return DocumentVerzoekPluginFactory(
+            pluginService,
+            applicationStateService,
+        )
+    }
 
     @Bean
     @ConditionalOnMissingBean(VerzoekPluginFactory::class)

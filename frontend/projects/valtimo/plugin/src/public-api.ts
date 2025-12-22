@@ -128,6 +128,10 @@ export * from './lib/plugins/portaaltaak/components/complete-portal-task/complet
 export * from './lib/plugins/verzoek/verzoek-plugin.module';
 export * from './lib/plugins/verzoek/verzoek-plugin.specification';
 export * from './lib/plugins/verzoek/components/verzoek-configuration/verzoek-configuration.component';
+/* document verzoek plugin */
+export * from './lib/plugins/document-verzoek/document-verzoek-plugin.module';
+export * from './lib/plugins/document-verzoek/document-verzoek-plugin.specification';
+export * from './lib/plugins/document-verzoek/components/document-verzoek-configuration/document-verzoek-configuration.component';
 /* besluiten plugin */
 export * from './lib/plugins/besluiten-api/besluiten-api-plugin.module';
 export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
