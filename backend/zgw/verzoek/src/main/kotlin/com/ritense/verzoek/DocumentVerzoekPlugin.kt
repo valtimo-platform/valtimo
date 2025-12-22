@@ -16,6 +16,7 @@
 
 package com.ritense.verzoek
 
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
 import com.ritense.notificatiesapi.domain.Abonnement
@@ -25,7 +26,9 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
+import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zgw.Rsin
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 
 @Plugin(
@@ -35,6 +38,8 @@ import jakarta.validation.Valid
 )
 class DocumentVerzoekPlugin(
     private val applicationStateService: ApplicationStateService,
+    private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
+    private val caseDefinitionService: CaseDefinitionService,
 ) : NotificatiesApiListener {
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
@@ -62,11 +67,18 @@ class DocumentVerzoekPlugin(
     }
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        return documentVerzoekProperties.map { verzoekProperty ->
+        return documentVerzoekProperties.mapNotNull { verzoekProperty ->
+            val caseDefinition =
+                caseDefinitionService.getActiveCaseDefinition(verzoekProperty.caseDefinitionKey)
+                    ?: return@mapNotNull null
+
+            val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
+                ?: return@mapNotNull null
+
             Abonnement.Kanaal(
                 naam = "zaken",
                 filters = mapOf(
-                    "zaakType" to verzoekProperty.caseDefinitionKey,
+                    "zaakType" to zaakTypeLink.zaakTypeUrl.toString(),
                     "actie" to "create"
                 )
             )

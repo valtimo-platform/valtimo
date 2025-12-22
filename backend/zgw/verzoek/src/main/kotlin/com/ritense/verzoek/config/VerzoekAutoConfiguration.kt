@@ -29,6 +29,7 @@ import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.DocumentVerzoekPluginFactory
 import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
+import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -41,10 +42,14 @@ class VerzoekAutoConfiguration {
     fun documentVerzoekPluginFactory(
         pluginService: PluginService,
         applicationStateService: ApplicationStateService,
+        zaakTypeLinkRepository: ZaakTypeLinkRepository,
+        caseDefinitionService: CaseDefinitionService
     ): DocumentVerzoekPluginFactory {
         return DocumentVerzoekPluginFactory(
             pluginService,
             applicationStateService,
+            zaakTypeLinkRepository,
+            caseDefinitionService
         )
     }
 

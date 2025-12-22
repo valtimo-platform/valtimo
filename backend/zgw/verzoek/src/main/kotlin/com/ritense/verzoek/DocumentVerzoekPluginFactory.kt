@@ -17,20 +17,23 @@
 package com.ritense.verzoek
 
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
-import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.service.ApplicationStateService
+import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 
 class DocumentVerzoekPluginFactory(
     pluginService: PluginService,
     private val applicationStateService: ApplicationStateService,
+    private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
+    private val caseDefinitionService: CaseDefinitionService
 ) : PluginFactory<DocumentVerzoekPlugin>(pluginService) {
 
     override fun create(): DocumentVerzoekPlugin {
         return DocumentVerzoekPlugin(
-            applicationStateService
+            applicationStateService,
+            zaakTypeLinkRepository,
+            caseDefinitionService
         )
     }
 }
