@@ -23,6 +23,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -36,6 +37,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationEventPublisher
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -56,6 +58,9 @@ class BuildingBlockManagementServiceTest {
     @Mock
     private lateinit var authorizationService: AuthorizationService
 
+    @Mock
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
+
     @InjectMocks
     private lateinit var buildingBlockManagementService: BuildingBlockManagementService
 
@@ -72,6 +77,8 @@ class BuildingBlockManagementServiceTest {
     )
 
     private val finalizedDefinition = draftDefinition.copy(final = true)
+
+    private val newDraftId = BuildingBlockDefinitionId("test", "2.0.0")
 
     @Test
     fun `finalize transitions definition to final`() {
@@ -130,5 +137,25 @@ class BuildingBlockManagementServiceTest {
             buildingBlockManagementService.update(definitionId.key, definitionId.versionTag.toString(), UpdateBuildingBlockDefinitionDto("t", null))
         }
         verify(buildingBlockDefinitionChecker, never()).assertCanUpdateBuildingBlockDefinition(definitionId)
+    }
+
+    @Test
+    fun `createDraft clones metadata and related resources`() {
+        whenever(buildingBlockDefinitionRepository.existsById(newDraftId)).thenReturn(false)
+        whenever(buildingBlockDefinitionRepository.findById(definitionId)).thenReturn(Optional.of(finalizedDefinition))
+        whenever(buildingBlockDefinitionRepository.saveAndFlush(any())).thenAnswer { invocation ->
+            invocation.getArgument<BuildingBlockDefinition>(0)
+        }
+
+        val result = buildingBlockManagementService.createDraft(
+            definitionId.key,
+            definitionId.versionTag.toString(),
+            newDraftId.versionTag.toString()
+        )
+
+        assertEquals(newDraftId.versionTag.toString(), result.versionTag)
+        assertEquals(definitionId.versionTag.toString(), result.basedOnVersionTag)
+        assertTrue(!result.final)
+        verify(applicationEventPublisher).publishEvent(any<BuildingBlockDefinitionCreatedEvent>())
     }
 }

@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-.valtimo-building-block-management-list__actions {
-  display: flex;
-}
+package com.ritense.buildingblock.web.rest.dto
 
-:host ::ng-deep .building-block-management-detail__header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
-:host ::ng-deep .cds--tab-content {
-  margin: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  outline: none !important;
-}
+data class CreateBuildingBlockDraftDto(
+    val versionTag: String
+)

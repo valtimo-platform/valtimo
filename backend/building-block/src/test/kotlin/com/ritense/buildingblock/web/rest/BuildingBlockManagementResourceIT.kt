@@ -25,14 +25,18 @@ import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -60,6 +64,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @MockitoBean
     lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
+
+    @MockitoBean
+    lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     private val base = "/api/management/v1/building-block"
     private val key = "my-bb"
@@ -278,5 +285,26 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         }.andExpect { status { isOk() } }
 
         verify(buildingBlockProcessService).createEmptyProcessAndLink(eq("My Building Block"), eq(key), eq(version))
+    }
+
+    @Test
+    @WithMockUser
+    fun `should create draft version`() {
+        val newVersion = "2.1.0"
+        val draftDto = dto.copy(versionTag = newVersion, basedOnVersionTag = version, final = false)
+        doReturn(draftDto).whenever(buildingBlockManagementService).createDraft(key, version, newVersion)
+
+        mockMvc.post("$base/{key}/version/{version}/draft", key, version) {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsBytes(mapOf("versionTag" to newVersion))
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.versionTag") { value(newVersion) }
+            jsonPath("$.basedOnVersionTag") { value(version) }
+            jsonPath("$.final") { value(false) }
+        }
+
+        verify(buildingBlockManagementService).createDraft(key, version, newVersion)
+        verify(applicationEventPublisher, never()).publishEvent(any<BuildingBlockDefinitionCreatedEvent>())
     }
 }
