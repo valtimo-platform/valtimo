@@ -104,6 +104,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OperatonProcessService {
 
     public static final String OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX = "CD:";
+    public static final String DETACHED_PROCESS_DEFINITION_PREFIX = "DETACHED:";
 
     private static final String UNDEFINED_BUSINESS_KEY = "UNDEFINED_BUSINESS_KEY";
     private static final String SYSTEM_PROCESS_PROPERTY = "systemProcess";
@@ -517,7 +518,7 @@ public class OperatonProcessService {
                     latestProcessDefinition.getId(),
                     caseDefinitionId
                 ));
-                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), "DETACHED:" + caseDefinitionId);
+                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + caseDefinitionId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
