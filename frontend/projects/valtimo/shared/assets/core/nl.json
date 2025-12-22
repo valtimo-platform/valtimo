@@ -2131,6 +2131,23 @@
     "detail": {
       "title": "Bouwblokdetails"
     },
+    "actions": {
+      "more": "Meer",
+      "makeFinal": "Maak versie definitief",
+      "createDraft": "Nieuwe conceptversie",
+      "finalize": {
+        "success": "Conceptversie is definitief gemaakt",
+        "error": "Definitief maken van conceptversie mislukt"
+      },
+      "draft": {
+        "title": "Conceptversie aanmaken",
+        "version": "Nieuwe versietag",
+        "placeholder": "Nieuwe versietag",
+        "confirm": "Conceptversie aanmaken",
+        "success": "Conceptversie aangemaakt",
+        "error": "Conceptversie aanmaken mislukt"
+      }
+    },
     "noResults": {
       "title": "Er zijn geen bouwblokken",
       "description": "Voeg een bouwblok toe om te beginnen"

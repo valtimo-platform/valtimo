@@ -30,12 +30,14 @@ import {DropdownModule, ListItem, TagModule} from 'carbon-components-angular';
   imports: [CommonModule, DropdownModule, TagModule],
 })
 export class BuildingBlockManagementVersionSelectorComponent {
-  private readonly _versions$ =
-    this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$.pipe(
-      switchMap(key =>
-        this.buildingBlockManagementApiService.getVersionsForBuildingBlock(key, 0, 10)
-      )
-    );
+  private readonly _versions$ = combineLatest([
+    this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
+    this.buildingBlockManagementDetailService.reloadVersions$,
+  ]).pipe(
+    switchMap(([key]) =>
+      this.buildingBlockManagementApiService.getVersionsForBuildingBlock(key, 0, 10, true)
+    )
+  );
 
   public readonly versionListItems$: Observable<ListItem[]> = combineLatest([
     this._versions$,

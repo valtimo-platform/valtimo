@@ -26,7 +26,7 @@ import {BuildingBlockManagementDocumentComponent} from '../building-block-manage
 import {BuildingBlockManagementTabKey} from '../../models';
 import {take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
-import {BuildingBlockManagementVersionSelectorComponent} from '../building-block-management-version-selector/building-block-management-version-selector.component';
+import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 
 @Component({
   standalone: true,
@@ -44,7 +44,7 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
     BuildingBlockManagementDocumentComponent,
     BuildingBlockManagementProcessesComponent,
     RenderInPageHeaderDirective,
-    BuildingBlockManagementVersionSelectorComponent,
+    BuildingBlockManagementDetailActionsComponent,
   ],
   providers: [BuildingBlockManagementDetailService],
 })

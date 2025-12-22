@@ -171,11 +171,36 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     size: number = 5,
     all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
-    const allParam: string = all ? 'all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
-      this.getApiUrl(
-        `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
-      )
+      this.getApiUrl(`management/v1/building-block/${key}/version`),
+      {
+        params: {
+          page,
+          size,
+          all,
+        } as any,
+      }
+    );
+  }
+
+  public finalizeBuildingBlockDefinition(
+    key: string,
+    versionTag: string
+  ): Observable<BuildingBlockDefinitionDto> {
+    return this.httpClient.post<BuildingBlockDefinitionDto>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/finalize`),
+      {}
+    );
+  }
+
+  public createDraftBuildingBlockDefinition(
+    key: string,
+    basedOnVersionTag: string,
+    versionTag: string
+  ): Observable<BuildingBlockDefinitionDto> {
+    return this.httpClient.post<BuildingBlockDefinitionDto>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${basedOnVersionTag}/draft`),
+      {versionTag}
     );
   }
 

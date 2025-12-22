@@ -29,12 +29,15 @@ import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class BuildingBlockManagementService(
@@ -43,6 +46,7 @@ class BuildingBlockManagementService(
     private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
     private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     private val authorizationService: AuthorizationService,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     @Transactional(readOnly = true)
     fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
@@ -97,6 +101,15 @@ class BuildingBlockManagementService(
             )
         }
 
+        applicationEventPublisher.publishEvent(
+            BuildingBlockDefinitionCreatedEvent(
+                buildingBlockDefinitionId = saved.id,
+                buildingBlockDefinitionName = saved.name,
+                basedOnBuildingBlockDefinitionId = null,
+                duplicate = false
+            )
+        )
+
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
             versionTag = saved.id.versionTag.toString(),
@@ -107,6 +120,48 @@ class BuildingBlockManagementService(
             basedOnVersionTag = saved.basedOnVersionTag?.toString(),
             final = saved.final
         )
+    }
+
+    @Transactional
+    fun createDraft(key: String, basedOnVersionTag: String, newVersionTag: String): BuildingBlockDefinitionDto {
+        denyAuthorization()
+
+        val basedOnId = BuildingBlockDefinitionId.of(key, basedOnVersionTag)
+        val newId = BuildingBlockDefinitionId.of(key, newVersionTag)
+
+        require(!buildingBlockDefinitionRepository.existsById(newId)) {
+            "Building block definition with id '$newId' already exists"
+        }
+
+        val basedOn = buildingBlockDefinitionRepository.findByIdOrNull(basedOnId)
+            ?: throw UnknownBuildingBlockDefinitionException(basedOnId)
+
+        require(basedOn.final) {
+            "Only final building block definitions can be used to create a draft"
+        }
+
+        val draftDefinition = BuildingBlockDefinition(
+            id = newId,
+            name = basedOn.name,
+            description = basedOn.description,
+            createdBy = null,
+            createdDate = LocalDateTime.now(),
+            basedOnVersionTag = basedOn.id.versionTag,
+            final = false
+        )
+
+        val savedDraft = buildingBlockDefinitionRepository.saveAndFlush(draftDefinition)
+
+        applicationEventPublisher.publishEvent(
+            BuildingBlockDefinitionCreatedEvent(
+                buildingBlockDefinitionId = savedDraft.id,
+                buildingBlockDefinitionName = savedDraft.name,
+                basedOnBuildingBlockDefinitionId = basedOnId,
+                duplicate = true
+            )
+        )
+
+        return savedDraft.toDto()
     }
 
     @Transactional

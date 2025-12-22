@@ -1,0 +1,54 @@
+.building-block-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  &.--compact {
+    align-items: center;
+  }
+
+  ::ng-deep .version-selection {
+    width: 160px;
+
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}
+
+.bb-management-actions__modal {
+  min-width: 320px;
+}
+
+.building-block-metadata {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.building-block-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+::ng-deep .cds--list-box__field {
+  display: flex;
+  justify-content: space-between;
+}
+
+::ng-deep .cds--list-box__menu-item__option {
+  display: flex;
+  justify-content: space-between;
+  padding-inline-end: 0;
+}
+
+::ng-deep .cds--list-box__menu-item__option > div {
+  margin-top: -4px;
+}
+
+.full-width-notification {
+  max-inline-size: 100%;
+  min-inline-size: 100%;
+}

@@ -2098,6 +2098,23 @@
     "detail": {
       "title": "Building block details"
     },
+    "actions": {
+      "more": "More",
+      "makeFinal": "Make version final",
+      "createDraft": "Create a new draft",
+      "finalize": {
+        "success": "Draft version has been finalized",
+        "error": "Finalizing draft version failed"
+      },
+      "draft": {
+        "title": "Create draft version",
+        "version": "New version tag",
+        "placeholder": "Enter new version tag",
+        "confirm": "Create draft",
+        "success": "Draft version created",
+        "error": "Creating draft version failed"
+      }
+    },
     "noResults": {
       "title": "There are no building blocks",
       "description": "Add a building block to get started"
