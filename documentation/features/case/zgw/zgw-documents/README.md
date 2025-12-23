@@ -95,16 +95,15 @@ The `hostName` and `port` properties are specific to the ClamAV service.
 
 ```yaml
 valtimo:
-    config:
-        virusscan:
-            clamav:
-                properties:
-                    hostName: localhost
-                    port: 3310
-                DocumentenApiPlugin:
-                    enabled: true
-                TemporaryResourceStorageService:
-                    enabled: true
+    virusscan:
+        clamav:
+            properties:
+                hostName: localhost
+                port: 3310
+            DocumentenApiPlugin:
+                enabled: true
+            TemporaryResourceStorageService:
+                enabled: true
 ```
 #### Example Running the clamav service
 ```bash
