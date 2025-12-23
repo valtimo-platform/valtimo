@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ConfigurationProperties(prefix = "valtimo.config.virusscan.clamav")
-class ClamAVVirusScanConfig {
+class ClamAVVirusScan {
     var enabled: Boolean = false
     var properties: ClamAVVirusScanConfigProperties = ClamAVVirusScanConfigProperties()
 
