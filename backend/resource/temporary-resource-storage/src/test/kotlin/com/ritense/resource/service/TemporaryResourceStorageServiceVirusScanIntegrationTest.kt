@@ -16,22 +16,22 @@
 
 package com.ritense.resource.service
 
-import com.ritense.resource.domain.VirusScanStatus
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import com.ritense.resource.BaseIntegrationTest
 import com.ritense.resource.domain.VirusScanResult
+import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @TestPropertySource(properties = [
-    "valtimo.config.virusscan.clamav.TemporaryResourceStorageService.enabled=true"
+    "valtimo.virusscan.clamav.TemporaryResourceStorageService.enabled=true"
 ])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemporaryResourceStorageServiceVirusScanIntegrationTest : BaseIntegrationTest() {
