@@ -244,16 +244,15 @@ valtimo:
     includeDocumentContentInResponse: true
 
 
-    config:
-        virusscan:
-            clamav:
-                properties:
-                    hostName: localhost
-                    port: 3310
-                DocumentenApiPlugin:
-                    enabled: false
-                TemporaryResourceStorageService:
-                    enabled: false
+    virusscan:
+        clamav:
+            properties:
+                hostName: localhost
+                port: 3310
+            DocumentenApiPlugin:
+                enabled: false
+            TemporaryResourceStorageService:
+                enabled: false
 
 spring-actuator:
     username: ${SPRING_ACTUATOR_USERNAME:admin}
