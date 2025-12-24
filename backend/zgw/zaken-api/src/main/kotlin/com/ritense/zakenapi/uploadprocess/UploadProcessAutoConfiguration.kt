@@ -22,7 +22,6 @@ import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -46,12 +45,12 @@ class UploadProcessAutoConfiguration {
     fun resourceUploadedEventListener(
         resourceService: TemporaryResourceStorageService,
         uploadProcessService: UploadProcessService,
-        authorizationService: AuthorizationService,
+        authorizationService: AuthorizationService
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
-            authorizationService,
+            authorizationService
         )
     }
 

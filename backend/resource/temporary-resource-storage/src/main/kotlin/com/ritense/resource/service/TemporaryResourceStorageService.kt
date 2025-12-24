@@ -19,6 +19,7 @@ package com.ritense.resource.service
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.resource.domain.MetadataType
+import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.temporaryresource.domain.ResourceStorageMetadata
 import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
 import com.ritense.temporaryresource.domain.StorageMetadataKeys
@@ -27,15 +28,18 @@ import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepositor
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
+import com.ritense.valtimo.contract.upload.VirusDetectedException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.tika.Tika
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.io.BufferedInputStream
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.SecureRandom
+import java.util.Collections.emptyMap
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.fileSize
@@ -52,7 +56,9 @@ class TemporaryResourceStorageService(
     valtimoResourceTempDirectory: String = "",
     private val uploadProperties: ValtimoUploadProperties,
     private val objectMapper: ObjectMapper,
-    private val repository: ResourceStorageMetadataRepository
+    private val repository: ResourceStorageMetadataRepository,
+    private val virusScanService: VirusScanService,
+    private val virusScanEnabledForTemporaryStorage: Boolean = false
 ) {
     val tempDir: Path = if (valtimoResourceTempDirectory.isNotBlank()) {
         Path.of(valtimoResourceTempDirectory)
@@ -65,6 +71,23 @@ class TemporaryResourceStorageService(
     }
 
     fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
+
+        val (inputStream, virusScanResult) = virusScanService.takeIf { virusScanEnabledForTemporaryStorage }?.let { svc ->
+            val bytes: ByteArray = inputStream.readBytes()
+            val virusScanResult = svc.scan(bytes)
+
+            if (VirusScanStatus.VIRUS_FOUND == virusScanResult.status) {
+                throw VirusDetectedException(
+                    "virus detected, found viruses: ${
+                        virusScanResult.foundViruses.entries.joinToString("; ") { (k, v) ->
+                            "$k=${v.joinToString(",")}"
+                        }
+                    } "
+                )
+            }
+            ByteArrayInputStream(bytes) to virusScanResult
+        } ?: (inputStream to null)
+
         val dataFile = BufferedInputStream(inputStream).use { bis ->
             if (uploadProperties.acceptedMimeTypes.isNotEmpty()) {
                 //Tika marks the stream, reads the first few bytes and resets it when done.
@@ -79,11 +102,14 @@ class TemporaryResourceStorageService(
             tempFile
         }
 
-        val metaDataContent = metadata + mapOf(
-            MetadataType.FILE_PATH.key to dataFile.absolutePathString(),
-            MetadataType.FILE_SIZE.key to dataFile.fileSize().toString()
-        )
         val metaDataFile = Files.createTempFile(tempDir, "${random.nextLong().toULong()}-", ".json")
+        val metaDataContent = metadata.toMutableMap().apply {
+            put(MetadataType.FILE_PATH.key, dataFile.absolutePathString())
+            put(MetadataType.FILE_SIZE.key, dataFile.fileSize().toString())
+            virusScanResult?.let {
+                put(MetadataType.VIRUS_SCANNED_RESULT.key, it.status.toString())
+            }
+        }.toMap()
         writeMetaDataFile(metaDataFile, metaDataContent)
 
         return metaDataFile.nameWithoutExtension
