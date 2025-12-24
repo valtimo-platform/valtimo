@@ -34,6 +34,7 @@ import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-o
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -42,6 +43,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
+    'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
     'delete-zaak-rol': DeleteZaakRolComponent,
@@ -89,6 +91,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
       'create-zaak': 'Zaak aanmaken',
       'create-zaak-object': 'Zaakobject aanmaken',
+      'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       createZaakInformation:
         'Deze actie creëert een zaak in de Zaken API en koppeld de nieuwe zaak aan het dossier.',
       rsin: 'RSIN',
@@ -247,6 +250,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'This action links a document from the Documents API to the zaak associated with the case.',
       'create-zaak': 'Create zaak',
       'create-zaak-object': 'Create zaak object',
+      'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
       createZaakInformation:
         'This action creates a zaak in the Zaken API and links the new zaak with the case.',
       rsin: 'RSIN',
@@ -404,6 +408,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',
       'create-zaak': 'Zaak erschaffen',
       'create-zaak-object': 'Zaakobject erschaffen',
+      'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       createZaakInformation:
         'Diese Aktion hat einen zaak in der Zaken-API definiert und den neuen zaak mit dem Fall verknüpft.',
       rsin: 'RSIN',
