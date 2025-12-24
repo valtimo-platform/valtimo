@@ -41,8 +41,8 @@ import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -52,6 +52,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
@@ -92,8 +93,10 @@ class DocumentenApiAutoConfiguration {
         objectMapper: ObjectMapper,
         documentDeleteHandlers: List<DocumentDeleteHandler>,
         documentenApiVersionService: DocumentenApiVersionService,
-        processDocumentAssociationService: ProcessDocumentAssociationService,
         runtimeService: OperatonRuntimeService,
+        virusScanService: VirusScanService,
+        @Value("\${valtimo.virusscan.clamav.DocumentenApiPlugin.enabled:false}")
+        virusScanEnabledForDocumentenApiPlugin: Boolean
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -103,7 +106,9 @@ class DocumentenApiAutoConfiguration {
             objectMapper,
             documentDeleteHandlers,
             documentenApiVersionService,
-            runtimeService
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
     }
 

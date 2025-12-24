@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.ritense.resource.client
 
-package com.ritense.resource.domain
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Configuration
 
-enum class MetadataType(val key: String) {
-    CONTENT_TYPE("contentType"),
-    DOCUMENT_ID("documentId"),
-    FILE_NAME("filename"),
-    FILE_PATH("filePath"),
-    FILE_SIZE("fileSize"),
-    USER("user"),
-    VIRUS_SCANNED_RESULT("virusScanResult"),
+@Configuration
+@ConfigurationProperties(prefix = "valtimo.virusscan.clamav")
+class ClamAVVirusScanConfig {
+    var enabled: Boolean = false
+    var properties: ClamAVVirusScanConfigProperties = ClamAVVirusScanConfigProperties()
+
+    class ClamAVVirusScanConfigProperties {
+        var hostName: String = ""
+        var port: Int = 3310
+    }
 }

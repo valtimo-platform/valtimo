@@ -37,6 +37,17 @@ valtimo:
         acceptedMimeTypes:
             - text/plain
 
+    config:
+        virusscan:
+            clamav:
+                properties:
+                    hostName: localhost
+                    port: 3310
+                DocumentenApiPlugin:
+                    enabled: false
+                TemporaryResourceStorageService:
+                    enabled: false
+
 spring-actuator:
     username: test
     password: test

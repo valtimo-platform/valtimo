@@ -34,9 +34,12 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.resource.domain.VirusScanResult
+import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Vertrouwelijkheid
@@ -46,6 +49,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -66,6 +70,7 @@ internal class DocumentenApiPluginTest {
     lateinit var pluginService: PluginService
     lateinit var client: DocumentenApiClient
     lateinit var runtimeService: OperatonRuntimeService
+    lateinit var virusScanService: VirusScanService
 
 
     @BeforeEach
@@ -87,6 +92,7 @@ internal class DocumentenApiPluginTest {
 
         client = mock()
         runtimeService = mock()
+        virusScanService = mock()
     }
 
     @Test
@@ -101,6 +107,7 @@ internal class DocumentenApiPluginTest {
         val executionMock = mock<DelegateExecution>()
         val content = "contentForRequest"
         val inputStream = ByteArrayInputStream(content.toByteArray())
+        val virusScanEnabledForDocumentenApiPlugin = false
         val result = CreateDocumentResult(
             "returnedUrl",
             "returnedAuthor",
@@ -126,6 +133,8 @@ internal class DocumentenApiPluginTest {
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -184,6 +193,166 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should call virus scan store file and throw exception when scan fails`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val objectMapper = MapperSingleton.get()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val pluginConfiguration: PluginConfiguration = mock()
+        val pluginConfigurationId: PluginConfigurationId = mock()
+        val executionMock = mock<DelegateExecution>()
+        val content = "contentForRequest"
+        val inputStream = ByteArrayInputStream(content.toByteArray())
+        val virusScanEnabledForDocumentenApiPlugin = true
+        val result = CreateDocumentResult(
+            "returnedUrl",
+            "returnedAuthor",
+            "returnedFileName",
+            1L,
+            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            listOf(),
+            null
+        )
+        val byFileResult = VirusScanResult(
+            status = VirusScanStatus.VIRUS_FOUND,
+            foundViruses = mapOf(
+                "/tmp/upload/doc1.pdf" to listOf("Eicar-Test-Signature"),
+                "/tmp/upload/image.png" to listOf("Dummy.Worm.XYZ")
+            )
+        )
+        whenever(executionMock.getVariable("localDocumentVariableName"))
+            .thenReturn("localDocumentLocation")
+        whenever(virusScanService.scan(content.toByteArray()))
+            .thenReturn(byFileResult)
+        whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
+            .thenReturn(inputStream)
+        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            objectMapper,
+            mutableListOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        whenever(pluginConfiguration.id).thenReturn(pluginConfigurationId)
+        whenever(pluginConfigurationId.id).thenReturn(UUID.randomUUID())
+
+        val pluginAnnotation: Plugin = mock()
+        whenever(pluginAnnotation.key).thenReturn("documentenApiPluginKey")
+        whenever(
+            pluginService.findPluginConfiguration(
+                eq(DocumentenApiPlugin::class.java),
+                any()
+            )
+        ).thenReturn(pluginConfiguration)
+
+        assertThrows<VirusDetectedException> {
+            plugin.storeTemporaryDocument(
+                executionMock,
+                "test.ext",
+                Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+                "title",
+                "description",
+                "localDocumentVariableName",
+                "storedDocumentVariableName",
+                "type",
+                "taal",
+                IN_BEWERKING
+            )
+        }
+    }
+
+    @Test
+    fun `should call virus scan when storing file and pass scan`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val objectMapper = MapperSingleton.get()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val pluginConfiguration: PluginConfiguration = mock()
+        val pluginConfigurationId: PluginConfigurationId = mock()
+        val executionMock = mock<DelegateExecution>()
+        val content = "contentForRequest"
+        val inputStream = ByteArrayInputStream(content.toByteArray())
+        val virusScanEnabledForDocumentenApiPlugin = true
+        val result = CreateDocumentResult(
+            "returnedUrl",
+            "returnedAuthor",
+            "returnedFileName",
+            1L,
+            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            listOf(),
+            null
+        )
+
+        whenever(executionMock.getVariable("localDocumentVariableName"))
+            .thenReturn("localDocumentLocation")
+        whenever(virusScanService.scan(content.toByteArray()))
+            .thenReturn(VirusScanResult(VirusScanStatus.OK,mapOf()))
+        whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
+            .thenReturn(inputStream)
+        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            objectMapper,
+            mutableListOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        whenever(pluginConfiguration.id).thenReturn(pluginConfigurationId)
+        whenever(pluginConfigurationId.id).thenReturn(UUID.randomUUID())
+
+        val pluginAnnotation: Plugin = mock()
+        whenever(pluginAnnotation.key).thenReturn("documentenApiPluginKey")
+        whenever(
+            pluginService.findPluginConfiguration(
+                eq(DocumentenApiPlugin::class.java),
+                any()
+            )
+        ).thenReturn(pluginConfiguration)
+
+        plugin.storeTemporaryDocument(
+            executionMock,
+            "test.ext",
+            Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+            "title",
+            "description",
+            "localDocumentVariableName",
+            "storedDocumentVariableName",
+            "type",
+            "taal",
+            IN_BEWERKING
+        )
+
+        val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
+        val eventCaptor = argumentCaptor<DocumentCreated>()
+        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture())
+        verify(virusScanService, times(1)).scan(content.toByteArray())
+    }
+
+    @Test
     fun `should call client to store file after document upload`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
@@ -193,6 +362,7 @@ internal class DocumentenApiPluginTest {
         val pluginConfigurationId: PluginConfigurationId = mock()
         val executionMock = mock<DelegateExecution>()
         val content = "contentForRequest"
+        val virusScanEnabledForDocumentenApiPlugin = false
         val inputStream = ByteArrayInputStream(content.toByteArray())
         val result = CreateDocumentResult(
             "returnedUrl",
@@ -248,6 +418,8 @@ internal class DocumentenApiPluginTest {
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -287,6 +459,7 @@ internal class DocumentenApiPluginTest {
         val executionMock = mock<DelegateExecution>()
         val content = "contentForRequest"
         val inputStream = ByteArrayInputStream(content.toByteArray())
+        val virusScanEnabledForDocumentenApiPlugin = false
         val result = CreateDocumentResult(
             "returnedUrl",
             "returnedAuthor",
@@ -322,6 +495,8 @@ internal class DocumentenApiPluginTest {
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -368,6 +543,7 @@ internal class DocumentenApiPluginTest {
         val applicationEventPublisher: ApplicationEventPublisher = mock()
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val virusScanEnabledForDocumentenApiPlugin = false
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -378,6 +554,8 @@ internal class DocumentenApiPluginTest {
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -400,6 +578,7 @@ internal class DocumentenApiPluginTest {
         val applicationEventPublisher: ApplicationEventPublisher = mock()
         val authenticationMock = mock<DocumentenApiAuthentication>()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val virusScanEnabledForDocumentenApiPlugin = false
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
         val plugin = DocumentenApiPlugin(
             client,
@@ -410,6 +589,8 @@ internal class DocumentenApiPluginTest {
             documentenApiVersionService,
             pluginService,
             runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
