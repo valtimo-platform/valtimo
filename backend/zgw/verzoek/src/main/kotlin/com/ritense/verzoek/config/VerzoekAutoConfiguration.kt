@@ -26,6 +26,7 @@ import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.service.ApplicationStateService
+import com.ritense.verzoek.DocumentVerzoekPluginEventListener
 import com.ritense.verzoek.DocumentVerzoekPluginFactory
 import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
@@ -92,6 +93,16 @@ class VerzoekAutoConfiguration {
             zaaktypeUrlProvider,
             processDocumentService,
             objectMapper,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentVerzoekPluginEventListener::class)
+    fun documentVerzoekPluginEventListener(
+        pluginService: PluginService
+    ): DocumentVerzoekPluginEventListener {
+        return DocumentVerzoekPluginEventListener(
+            pluginService
         )
     }
 }
