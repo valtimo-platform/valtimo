@@ -90,7 +90,7 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
                     documentDefinitionNameTarget = "allows-all",
                     caseDefinitionIdTarget = CaseDefinitionId.of("allows-all", "1.0.0"),
                     patches = listOf(
-                        DocumentMigrationPatch(source = "/index", target = "/index"),
+                        DocumentMigrationPatch(source = "/address/streetName", target = "/address"),
                     ),
                     batchSize = 4
                 )
