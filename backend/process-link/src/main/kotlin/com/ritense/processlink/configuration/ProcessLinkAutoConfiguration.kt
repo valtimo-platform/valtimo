@@ -171,10 +171,12 @@ class ProcessLinkAutoConfiguration {
     fun processLinkImporter(
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         objectMapper: ObjectMapper
     ) = ProcessLinkImporter(
         processLinkService,
         repositoryService,
+        processDefinitionCaseDefinitionService,
         objectMapper
     )
 
@@ -183,10 +185,12 @@ class ProcessLinkAutoConfiguration {
     fun globalProcessLinkImporter(
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         objectMapper: ObjectMapper
     ) = GlobalProcessLinkImporter(
         processLinkService,
         repositoryService,
+        processDefinitionCaseDefinitionService,
         objectMapper
     )
 

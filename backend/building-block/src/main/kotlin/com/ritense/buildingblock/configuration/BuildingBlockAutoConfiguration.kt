@@ -28,6 +28,7 @@ import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
+import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
@@ -45,6 +46,7 @@ import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionLinkExporter
+import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
@@ -175,6 +177,14 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             documentService
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseDocumentResolver::class)
+    fun buildingBlockCaseDocumentResolver(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+    ): BuildingBlockCaseDocumentResolver {
+        return BuildingBlockCaseDocumentResolver(buildingBlockInstanceRepository)
     }
 
     @Bean
@@ -408,4 +418,12 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockDefinitionArtworkImporter {
         return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkImporter::class)
+    fun buildingBlockProcessLinkImporter(
+        processLinkService: ProcessLinkService,
+        objectMapper: ObjectMapper,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
+    ) = BuildingBlockProcessLinkImporter(processLinkService, objectMapper, buildingBlockDefinitionProcessDefinitionService)
 }

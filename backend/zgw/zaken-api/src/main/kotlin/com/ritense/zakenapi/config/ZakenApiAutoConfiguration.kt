@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.outbox.OutboxService
@@ -32,6 +33,7 @@ import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
@@ -272,18 +274,24 @@ class ZakenApiAutoConfiguration {
     @Primary
     @ConditionalOnMissingBean(ZaakUrlProvider::class)
     fun zaakUrlProvider(
-        zaakInstanceLinkService: ZaakInstanceLinkService
+        zaakInstanceLinkService: ZaakInstanceLinkService,
+        caseDocumentResolver: CaseDocumentResolver
     ) = DefaultZaakUrlProvider(
-        zaakInstanceLinkService
+        zaakInstanceLinkService,
+        caseDocumentResolver
     )
 
     @Bean
     @Primary
     @ConditionalOnMissingBean(ZaaktypeUrlProvider::class)
     fun zaaktypeUrlProvider(
-        zaakTypeLinkService: ZaakTypeLinkService
+        zaakTypeLinkService: ZaakTypeLinkService,
+        caseDocumentResolver: CaseDocumentResolver,
+        jsonSchemaDocumentService: JsonSchemaDocumentService,
     ) = DefaultZaaktypeUrlProvider(
-        zaakTypeLinkService
+        zaakTypeLinkService,
+        caseDocumentResolver,
+        jsonSchemaDocumentService
     )
 
     @Bean
