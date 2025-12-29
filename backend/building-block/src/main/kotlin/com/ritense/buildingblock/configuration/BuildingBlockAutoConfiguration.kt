@@ -41,6 +41,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
@@ -371,4 +372,12 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockDefinitionArtworkImporter {
         return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkImporter::class)
+    fun buildingBlockProcessLinkImporter(
+        processLinkService: ProcessLinkService,
+        objectMapper: ObjectMapper,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
+    ) = BuildingBlockProcessLinkImporter(processLinkService, objectMapper, buildingBlockDefinitionProcessDefinitionService)
 }
