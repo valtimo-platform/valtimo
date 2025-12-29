@@ -2,6 +2,7 @@ import {test} from '@playwright/test';
 import {CaseManagementPage} from './page';
 import * as ApiUtils from '../../utils/api.utils';
 import {caseConfiguration} from './case-config';
+import {expectErrorMessage} from '../../utils/ui.utils';
 
 test.use({storageState: undefined});
 
@@ -57,12 +58,56 @@ test.describe('Case management', () => {
       await caseManagementPage.uploadCase();
       await caseManagementPage.saveConfiguration();
       await caseManagementPage.assertCaseUploaded();
-      //Navigate back
-      //Restart upload
+
+      // Navigate back
+      await caseManagementPage.goToCaseManagement();
+
+      // Restart upload
+      await caseManagementPage.uploadCase();
+      await caseManagementPage.saveConfiguration();
 
       // Assert
-      //Use expectErrorMessage method from ui.utils.ts
-      // });
+      await expectErrorMessage(
+        page,
+        'This version already exists for this definition',
+        {exact: true}
+      );
+
+      await caseManagementPage.createCancelButton.click();
+    });
+
+    test('Upload an invalid file', async () => {
+      // Act
+      await caseManagementPage.uploadCase({
+        archiveName: 'test-case-import-invalid-file.zip',
+      });
+      await caseManagementPage.saveConfiguration();
+      await caseManagementPage.assertCaseUploaded();
+
+      // Assert
+      await expectErrorMessage(
+          page,
+          'entity-not-found',
+          {exact: true}
+      );
+
+      await caseManagementPage.createCancelButton.click();
+    });
+
+    test('Upload a file that exceeds the maximum size', async () => {
+      // Act
+      await caseManagementPage.uploadCase();
+      await caseManagementPage.saveConfiguration();
+      await caseManagementPage.assertCaseUploaded();
+
+      // Assert
+      await expectErrorMessage(
+          page,
+          'Maximum upload size exceeded',
+          {exact: true}
+      );
+
+      await caseManagementPage.createCancelButton.click();
     });
   });
 });

@@ -3,6 +3,12 @@ import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config'
 import {caseConfiguration, CaseManagementFieldMap} from './case-config';
 import path from 'path';
 
+const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
+
+export interface UploadCaseOptions {
+  archiveName?: string;
+}
+
 export class CaseManagementPage {
   constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
 
@@ -75,20 +81,21 @@ export class CaseManagementPage {
     await this.fillCaseForm();
   }
 
-  async uploadCase() {
+  async uploadCase(options?: UploadCaseOptions) {
+    const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
-    await this.uploadFileStep();
+    await this.uploadFileStep(archiveName);
     await this.accessControlStep();
     await this.dashboardStep();
   }
 
-  async uploadCaseConfiguration() {
+  async uploadCaseConfiguration(archiveName: string) {
     const filePath = path.resolve(
       process.cwd(),
       'assets',
       'case-import-archives',
-      'test-case-import-success_1.0.0.case.zip'
+      archiveName
     );
     await this.fileUploader.locator('input.cds--file-input[type="file"]').setInputFiles(filePath);
   }
@@ -111,13 +118,13 @@ export class CaseManagementPage {
     await this.uploadWizardNextButton.click();
   }
 
-  async uploadFileStep() {
+  async uploadFileStep(archiveName: string) {
     await expect(this.page.getByText('Upload File')).toBeVisible();
     await expect(this.page.getByRole('alert')).toBeVisible();
     await expect(
       this.page.getByText('Max file size is 500kb. Supported file types are ZIP and JSON.')
     ).toBeVisible();
-    await this.uploadCaseConfiguration();
+    await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
     await this.uploadWizardNextButton.click();
 
