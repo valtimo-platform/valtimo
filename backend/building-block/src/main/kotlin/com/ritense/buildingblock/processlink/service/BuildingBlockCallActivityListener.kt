@@ -25,6 +25,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
@@ -145,9 +146,5 @@ class BuildingBlockCallActivityListener(
         }
 
         return objectMapper.valueToTree(documentToCreate)
-    }
-
-    companion object {
-        const val BUILDING_BLOCK_INSTANCE_ID_VARIABLE = "buildingBlockInstanceId"
     }
 }
