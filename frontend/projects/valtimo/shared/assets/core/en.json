@@ -994,9 +994,10 @@
     },
     "actionButtonLabel": "Action button type",
     "externalLink": {
-      "linkLabel": "External link button",
-      "linkPlaceholder": "External link",
-      "buttonTextLabel": "External link button text"
+      "linkLabel": "Target URL (with placeholders)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Button label",
+      "buttonTextPlaceholder": "'Go to zaak'"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
   },
@@ -1380,6 +1381,16 @@
       "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?",
       "keepEditing": "Keep editing"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "The value cannot be empty.",
+        "valueMaxLength": "The BSN is too long. Maximum length is 9 characters.",
+        "valueMinLength": "The BSN is too short. Minimum length is 8 characters.",
+        "valueOnlyDigits": "Value must contain only numeric digits. Letters or symbols are not allowed.",
+        "valueAllZerosOrNines": "Value cannot consist entirely of zeros or nines.",
+        "valueElfCheck": "Value failed the 11-check rule. Please enter a valid BSN."
+      }
+    },
     "required": "required",
     "filter": "Filter...",
     "back": "Back",
@@ -1570,16 +1581,23 @@
     "downloadButtonText": "Download configuration",
     "to": "to",
     "text": "Text",
+    "textPlaceholder": "Enter text",
     "number": "Number",
+    "numberPlaceholder": "Enter a number",
     "date": "Date",
+    "datePlaceholder": "dd-mm-yyyy",
     "datetime": "Date and time",
     "time": "Time",
+    "timePlaceholder": "hh:mm",
     "boolean": "Yes / no",
+    "booleanPlaceholder": "Yes/no",
     "numberRange": "Number range",
     "dateRange": "Date range",
     "datetimeRange": "Date and time range",
     "booleanPositive": "Yes",
-    "booleanNegative": "No"
+    "booleanNegative": "No",
+    "bsn": "BSN",
+    "bsnPlaceholder": "123456789"
   },
   "searchFieldsTooltips": {
     "text": "A text field",

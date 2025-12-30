@@ -17,21 +17,172 @@
 @if (ikoSearchActions$ | async; as ikoSearchActions) {
   @if (ikoSearchActions.length === 0) {
     <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
+
   } @else {
     <h4>{{ 'iko.searchVia' | translate }}</h4>
 
-    <cds-tabs type="contained">
+    <cds-tabs class="iko-search-tabs" type="line">
       @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
         <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
           <div class="query-group__row">
             @for (field of param.searchFields; track field.key) {
-              <div class="query-group__field">
-                <input
-                  cdsText
-                  [id]="field.key"
-                  [placeholder]="field.title"
-                  [(ngModel)]="formValues[field.key]"
-                />
+              <div
+                class="query-group__field"
+                [ngClass]="{
+                  'query-group__field--time': field.dataType === 'time',
+                  'query-group__field--date': field.dataType === 'date',
+                  'query-group__field--datetime': field.dataType === 'datetime',
+                }"
+              >
+                <v-input-label *ngIf="field.title" [title]="field.title"></v-input-label>
+
+                @if (field.dataType === 'text' && field.fieldType === 'single') {
+                  <v-input
+                    [dataTestId]="'iko-search-field-' + field.key"
+                    [name]="field.key"
+                    [placeholder]="'searchFields.textPlaceholder' | translate"
+                    [defaultValue]="formValues[field.key]"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-input>
+
+                } @else if (field.dataType === 'text' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <v-input
+                      name="start"
+                      [placeholder]="'searchFields.textPlaceholder' | translate"
+                    ></v-input>
+
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+
+                    <v-input
+                      name="end"
+                      [placeholder]="'searchFields.textPlaceholder' | translate"
+                    ></v-input>
+                  </v-form>
+                }
+                @else if (field.dataType === 'number' && field.fieldType === 'single') {
+                  <v-input
+                    type="number"
+                    [hideNumberSpinBox]="true"
+                    [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-input>
+
+                } @else if (field.dataType === 'number' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <v-input
+                      type="number"
+                      name="start"
+                      [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    ></v-input>
+
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+
+                    <v-input
+                      type="number"
+                      name="end"
+                      [placeholder]="'searchFields.numberPlaceholder' | translate"
+                    ></v-input>
+                  </v-form>
+                }
+                @else if (field.dataType === 'boolean' && field.fieldType === 'single') {
+                  <v-select
+                    *ngIf="booleanItems$ | async as booleanItems"
+                    [items]="booleanItems"
+                    (selectedChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></v-select>
+                }
+
+                @else if (field.dataType === 'time' && field.fieldType === 'single') {
+                  <cds-timepicker
+                    [placeholder]="'searchFields.timePlaceholder' | translate"
+                    [ngModel]="formValues[field.key]"
+                    (ngModelChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></cds-timepicker>
+
+                } @else if (field.dataType === 'time' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_start']"></cds-timepicker>
+
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_end']"></cds-timepicker>
+                  </v-form>
+                }
+                @else if (field.dataType === 'date' && field.fieldType === 'single') {
+                  <valtimo-date-time-picker
+                    [defaultDate]="formValues[field.key] ?? ''"
+                    [enableTime]="false"
+                    [showFieldLabel]="false"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></valtimo-date-time-picker>
+
+                } @else if (field.dataType === 'date' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <valtimo-date-time-picker
+                      name="start"
+                      [enableTime]="false"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+
+                    <valtimo-date-time-picker
+                      name="end"
+                      [enableTime]="false"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                  </v-form>
+                }
+                @else if (field.dataType === 'datetime' && field.fieldType === 'single') {
+                  <valtimo-date-time-picker
+                    [enableTime]="true"
+                    [showFieldLabel]="false"
+                    (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                  ></valtimo-date-time-picker>
+
+                } @else if (field.dataType === 'datetime' && field.fieldType === 'range') {
+                  <v-form
+                    className="multiple-search-fields"
+                    (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                  >
+                    <valtimo-date-time-picker
+                      name="start"
+                      [enableTime]="true"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+
+                    <div class="to-text">
+                      <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+                    </div>
+
+                    <valtimo-date-time-picker
+                      name="end"
+                      [enableTime]="true"
+                      [showFieldLabel]="false"
+                    ></valtimo-date-time-picker>
+                  </v-form>
+                }
               </div>
             }
           </div>

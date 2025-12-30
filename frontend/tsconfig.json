@@ -96,7 +96,8 @@
       "@valtimo/logging": ["dist/valtimo/logging"],
       "@valtimo/logging/*": ["dist/valtimo/logging/*"],
       "@valtimo/iko": ["dist/valtimo/iko"],
-      "@valtimo/iko/*": ["dist/valtimo/iko/*"]
+      "@valtimo/iko/*": ["dist/valtimo/iko/*"],
+      "@e2e/constants": ["../e2e/constants"]
     }
   },
   "files": [],
