@@ -557,7 +557,7 @@ Access to the case widgets can be configured through access control. More inform
    "conditions": [
       {
          "type": "field",
-         "field": "id.caseWidgetTab.id.caseDefinitionName",
+         "field": "id.caseWidgetTab.id.caseDefinitionId.key",
          "operator": "==",
          "value": "evenementenvergunning"
       }

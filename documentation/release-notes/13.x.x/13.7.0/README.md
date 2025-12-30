@@ -39,3 +39,5 @@
 * Resolved issue where the plugin modal form remained disabled after a failed plugin creation.
 * Resolved issue where the Auto Key Input component did not correctly reset its value or the manual edit status.
 * Resolved issue where the Choice Fields pagination was not working correctly.
+* All symbols were removed from a filename after uploading. Instead, only dots and underscores are replaced by spaces.
+
