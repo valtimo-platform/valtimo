@@ -487,10 +487,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  public informatieobjecttypeSelected(event: {item: {id: string}}) {
-    if (event.item.id) {
+  public informatieobjecttypeSelected(event: {id: string}) {
+    if (event.id) {
       this.documentenApiMetadataForm.patchValue({
-        informatieobjecttype: event.item.id,
+        informatieobjecttype: event.id,
       });
     }
   }

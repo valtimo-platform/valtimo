@@ -48,7 +48,8 @@ class CatalogiResource(
                 it.url!!,
                 it.omschrijving
             )
-        }
+        }.sortedBy { it.name }
+
         return ResponseEntity.ok(zaakObjectTypes)
     }
 
