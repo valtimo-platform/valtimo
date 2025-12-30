@@ -72,7 +72,7 @@ The second service task in the Upload Document process is called 'Link uploaded 
 ## Using the Documenten API File Upload FormIO component in user tasks
 
 In the form builder you will find the Documenten API File Upload component under the advanced section.
-Drag and drop the component into your form to use it.
+To use it, simply drag and drop the component into your form and configure the properties as described below.
 
 The following properties can be configured:
 ### Documenten API File Upload dropzone
