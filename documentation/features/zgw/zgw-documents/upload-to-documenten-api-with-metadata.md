@@ -93,7 +93,8 @@ This is the dropzone that will be shown to the user in a user task, which can be
 - **Document URL**: The process variable name for saving the URL of the uploaded document.
 ### Metadata modal
 ![Documenten API Metadata Modal](../../../.gitbook/assets/documenten-api-metadata-modal.png)
-This is the modal that will be shown to the user when uploading a document, which can be customized by configuring the following properties:
+When a user uploads a document, a metadata modal is displayed.
+This modal allows additional document metadata which can be customized by configuring the following properties:
 ### Filename
 - **Default filename**: The default filename of the uploaded document without file extension.
 - **Disable filename input**: Whether to disable the filename input for the upload modal.
