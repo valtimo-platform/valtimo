@@ -78,7 +78,7 @@ The following properties can be configured:
 ### Documenten API File Upload dropzone
 ![Documenten API File Upload Component](../../../.gitbook/assets/documenten-api-file-upload.png)
 This is the dropzone that will be shown to the user in a user task, which can be customized by configuring the following properties:
-- **Label**: The label of the component. ***(required)***
+- **Label**: The label displayed for the component. ***(required)***
 - **Required**: Whether the component is required.
 - **Property Name**: The path to save the reference to the uploaded document in the case data. ***(required)***
 - **Title**: The title of the component, shown in the dropzone of the uploader.
