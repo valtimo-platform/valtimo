@@ -1,4 +1,5 @@
-name: Release
+name: Publish release
+run-name: Publish release ${{ github.ref_name }}
 
 permissions:
   contents: write
@@ -20,10 +21,10 @@ jobs:
             echo "::error::This workflow can only run on release/* branches (current: ${GITHUB_REF_NAME})."
             exit 1
           fi
-          if [[ "${GITHUB_REF_NAME}" =~ ^release/(.+)$ ]]; then
+          if [[ "${GITHUB_REF_NAME}" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
           else
-            echo "::error::Unable to derive a version from branch '${GITHUB_REF_NAME}'."
+            echo "::error::Branch must be release/<semver> (e.g. release/13.5.0). Current: ${GITHUB_REF_NAME}."
             exit 1
           fi
 
