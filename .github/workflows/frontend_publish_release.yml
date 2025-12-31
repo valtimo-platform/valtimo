@@ -48,3 +48,4 @@ jobs:
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
       push_to_dockerhub: true
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit

@@ -34,7 +34,7 @@ env:
   DOCKERHUB_IMAGE: ritense/gzac-frontend
 
 jobs:
-  build_image:
+  build_and_push_image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
