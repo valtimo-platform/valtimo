@@ -21,14 +21,11 @@ defaults:
   run:
     working-directory: frontend
 
-env:
-  PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
-
 jobs:
   build_and_test_libs:
     uses: ./.github/workflows/frontend_build_test_libraries.yml
     with:
-      project_version: ${{ github.env.PROJECT_VERSION }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
   publish_libs:
@@ -50,4 +47,4 @@ jobs:
     with:
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
       push_to_dockerhub: true
-      release_image_tag: ${{ github.env.PROJECT_VERSION }}
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
