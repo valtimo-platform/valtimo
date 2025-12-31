@@ -25,12 +25,16 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.DocumentVerzoekPluginEventListener
 import com.ritense.verzoek.DocumentVerzoekPluginFactory
 import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
+import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
+import com.ritense.zakenapi.service.ZaakTypeLinkService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -99,9 +103,21 @@ class VerzoekAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DocumentVerzoekPluginEventListener::class)
     fun documentVerzoekPluginEventListener(
+        zaakTypeLinkService: ZaakTypeLinkService,
+        caseDefinitionService: CaseDefinitionService,
+        zaakInstanceLinkService: ZaakInstanceLinkService,
+        runtimeService: RuntimeService,
+        operatonProcessJsonSchemaDocumentAssociationService: OperatonProcessJsonSchemaDocumentAssociationService,
+        documentService: DocumentService,
         pluginService: PluginService
     ): DocumentVerzoekPluginEventListener {
         return DocumentVerzoekPluginEventListener(
+            zaakTypeLinkService,
+            caseDefinitionService,
+            zaakInstanceLinkService,
+            runtimeService,
+            operatonProcessJsonSchemaDocumentAssociationService,
+            documentService,
             pluginService
         )
     }
