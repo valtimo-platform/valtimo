@@ -21,7 +21,7 @@ defaults:
     working-directory: backend
 
 env:
-  ORG_GRADLE_PROJECT_includeDev: false]
+  ORG_GRADLE_PROJECT_includeDev: false
   PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
 
 jobs:
@@ -45,7 +45,6 @@ jobs:
       - build_and_push_image
     runs-on: ubuntu-latest
     env:
-      PROVIDED_VERSION: ${{ github.env.PROJECT_VERSION }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
@@ -88,13 +87,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ github.env.PROJECT_VERSION }}"
+        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ github.env.PROJECT_VERSION }}"
+        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
 
       - name: Archive Reports
         if: always()
