@@ -98,7 +98,7 @@ jobs:
       # Computing the test matrices takes ~2 minutes in GHA, so cache them with a cache key based on all the Gradle files
       - name: Cache test definitions
         id: cache-test-definitions
-        uses: actions/cache/save@v4
+        uses: actions/cache@v4
         with:
           path: |
             ${{ env.UNIT_TESTS_MATRIX }}

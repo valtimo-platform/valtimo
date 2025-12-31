@@ -26,13 +26,11 @@ on:
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
+  DOCKERHUB_IMAGE: ritense/gzac-backend
 
 defaults:
   run:
     working-directory: backend
-
-env:
-  DOCKERHUB_IMAGE: ritense/gzac-backend
 
 jobs:
   assemble:
@@ -108,13 +106,18 @@ jobs:
         id: backend_tree
         run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
 
+      - name: Normalize branch name for tags
+        shell: bash
+        run: |
+          echo "BRANCH_NAME_SAFE=${BRANCH_NAME//\//-}" >> "$GITHUB_ENV"
+
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
+            type=raw,value=${{ env.BRANCH_NAME_SAFE }}.${{ github.run_number }}
             type=raw,value=commit-${{ github.sha }}
             type=raw,value=contents-${{ steps.backend_tree.outputs.tree }}
           flavor: |

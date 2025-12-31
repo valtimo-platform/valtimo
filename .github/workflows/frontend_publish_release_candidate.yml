@@ -52,6 +52,7 @@ jobs:
     secrets: inherit
 
   publish:
+    if: ${{ startsWith(github.ref_name, 'rc/') }}
     needs:
       - build_and_test
       - determine_version
