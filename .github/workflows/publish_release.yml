@@ -6,7 +6,7 @@ permissions:
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - release/0.0.0 # Temporarily, for testing without having to have this workflow in the default branch
 
@@ -20,19 +20,19 @@ jobs:
       - name: Validate and extract release branch
         id: version
         run: |
-          if [[ "${GITHUB_BASE_REF}" != release/* ]]; then
-            echo "::error::This workflow can only run on release/* branches (current: ${GITHUB_BASE_REF})."
+          if [[ "${GITHUB_REF_NAME}" != release/* ]]; then
+            echo "::error::This workflow can only run on release/* branches (current: ${GITHUB_REF_NAME})."
             exit 1
           fi
-          if [[ "${GITHUB_BASE_REF}" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+          if [[ "${GITHUB_REF_NAME}" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
           else
-            echo "::error::Branch must be release/<semver> (e.g. release/13.5.0). Current: ${GITHUB_BASE_REF}."
+            echo "::error::Branch must be release/<semver> (e.g. release/13.5.0). Current: ${GITHUB_REF_NAME}."
             exit 1
           fi
 
           if [[ -z "$VERSION" ]]; then
-            echo "::error::Unable to derive a version from branch '${GITHUB_BASE_REF}'."
+            echo "::error::Unable to derive a version from branch '${GITHUB_REF_NAME}'."
             exit 1
           fi
 
