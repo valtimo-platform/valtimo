@@ -6,7 +6,7 @@ permissions:
 
 on:
   workflow_dispatch:
-  pull_request:
+  pull_request_target:
     branches:
       - release/0.0.0 # Temporarily, for testing without having to have this workflow in the default branch
 
