@@ -164,6 +164,7 @@ jobs:
           npx ng build @valtimo/shared
 
       - name: Cache built frontend libraries
+        if: ${{ needs.check_cache.result != 'skipped' }}
         uses: actions/cache/save@v4
         with:
           path: frontend/dist
