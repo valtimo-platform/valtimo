@@ -32,6 +32,9 @@ jobs:
     name: Build and push Docker image
     needs:
       - build_run_tests
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/backend_build_push_docker_image.yml
     with:
       backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}

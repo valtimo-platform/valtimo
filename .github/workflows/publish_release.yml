@@ -3,6 +3,7 @@ run-name: Publish release ${{ github.ref_name }}
 
 permissions:
   contents: write
+  packages: write
 
 on:
   workflow_dispatch:
