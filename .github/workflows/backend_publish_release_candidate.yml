@@ -4,7 +4,17 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
 
 defaults:
   run:

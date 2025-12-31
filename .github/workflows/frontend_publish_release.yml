@@ -24,23 +24,7 @@ jobs:
   determine_version:
     runs-on: ubuntu-latest
     outputs:
-      project_version: ${{ steps.version.outputs.version_release }}
-    env:
-      PROVIDED_VERSION: ${{ inputs.project_version || github.event.inputs.project_version || '' }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Compute version from branch
-        id: version
-        shell: bash
-        run: |
-          if [[ -n "${PROVIDED_VERSION}" ]]; then
-            SEMVER_VERSION="${PROVIDED_VERSION}"
-          else
-            SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
-          fi
-          echo "version_release=$SEMVER_VERSION" >> "$GITHUB_OUTPUT"
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
 
   build_and_test_libs:
     needs: ["determine_version"]
