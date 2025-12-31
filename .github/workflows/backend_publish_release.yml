@@ -21,14 +21,10 @@ defaults:
     working-directory: backend
 
 env:
-  ORG_GRADLE_PROJECT_includeDev: false
+  ORG_GRADLE_PROJECT_includeDev: false]
+  PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
 
 jobs:
-  determine_version:
-    runs-on: ubuntu-latest
-    outputs:
-      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
-
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
 
@@ -47,10 +43,9 @@ jobs:
     needs:
       - build_run_tests
       - build_and_push_image
-      - determine_version
     runs-on: ubuntu-latest
     env:
-      PROVIDED_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
+      PROVIDED_VERSION: ${{ github.env.PROJECT_VERSION }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
@@ -93,13 +88,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ needs.determine_version.outputs.project_version }}"
+        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ github.env.PROJECT_VERSION }}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ needs.determine_version.outputs.project_version }}"
+        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ github.env.PROJECT_VERSION }}"
 
       - name: Archive Reports
         if: always()
