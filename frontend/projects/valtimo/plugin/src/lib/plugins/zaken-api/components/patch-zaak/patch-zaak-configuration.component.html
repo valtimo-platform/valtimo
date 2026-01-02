@@ -32,7 +32,11 @@
           <v-input
             [name]="property.name"
             [title]="property.translationKey | pluginTranslate: pluginId | async"
-            [tooltip]="property.tooltipTranslationKey !== null ? (property.tooltipTranslationKey| pluginTranslate: pluginId | async) : null"
+            [tooltip]="
+              property.tooltipTranslationKey !== null
+                ? (property.tooltipTranslationKey | pluginTranslate: pluginId | async)
+                : null
+            "
             [required]="true"
             [defaultValue]="prefillValueFor(property.name, obs.prefill)"
             [margin]="true"
