@@ -37,7 +37,7 @@
             [defaultValue]="prefillValueFor(property.name, obs.prefill)"
             [margin]="true"
             [presetOptions]="property.presetOptions"
-            (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
+            (valueChange)="onPropertyChanged(property.name, $event)"
           />
         </div>
         <div class="col-1">
