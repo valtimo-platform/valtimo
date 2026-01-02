@@ -16,3 +16,5 @@ More details can be found [here](../../../features/case/zgw/zgw-documents/README
 ## Bugfixes
 
 * Importing an existing case definition from an uploaded zip file will now overwrite the existing data.
+* It is now possible to add new search fields to a case when no search fields exist yet. Previously this resulted in an
+error because the system assumed the field already existed.
