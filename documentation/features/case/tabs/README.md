@@ -176,7 +176,7 @@ Access to the case tabs can be configured through access control. More informati
    "conditions": [
       {
          "type": "field",
-         "field": "id.caseDefinitionName",
+         "field": "id.caseDefinitionId.key",
          "operator": "==",
          "value": "evenementenvergunning"
       }
