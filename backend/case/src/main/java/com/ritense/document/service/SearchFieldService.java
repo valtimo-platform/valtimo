@@ -38,7 +38,6 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.springframework.data.domain.Sort;
@@ -175,7 +174,7 @@ public class SearchFieldService {
             .orElseGet(() -> {
                 SearchField newField = new SearchField();
                 newField.setId(
-                    SearchFieldId.existingId(UUID.randomUUID(), documentDefinitionName)
+                    SearchFieldId.newId(documentDefinitionName)
                 );
                 newField.setKey(searchFieldDto.getKey());
                 return newField;
