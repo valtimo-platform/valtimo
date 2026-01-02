@@ -28,6 +28,10 @@ interface LinkDocumentToZaakConfig {
   beschrijving: string;
 }
 
+interface GetZaakInformatieobjectenConfig {
+  resultProcessVariable: string;
+}
+
 interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
@@ -112,6 +116,7 @@ interface GetZaakbesluitenConfig {
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
+  GetZaakInformatieobjectenConfig,
   SetZaakStatusConfig,
   CreateZaakResultaatConfig,
   CreateZaakConfig,

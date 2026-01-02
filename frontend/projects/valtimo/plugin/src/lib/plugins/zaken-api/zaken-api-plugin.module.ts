@@ -47,12 +47,14 @@ import {
   GetZaakbesluitenConfigurationComponent
 } from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 
 @NgModule({
   declarations: [
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
@@ -92,6 +94,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ZakenApiConfigurationComponent,
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
+    GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,

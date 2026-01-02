@@ -10,8 +10,15 @@ defaults:
   run:
     working-directory: backend
 
+env:
+  ORG_GRADLE_PROJECT_includeDev: false
+
 jobs:
-  build_publish:
+  build_run_tests:
+    uses: ./.github/workflows/backend_build_test_libraries.yml
+
+  publish:
+    needs: [build_run_tests]
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'release/') }}
     env:
@@ -28,8 +35,14 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: gradle
+
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+          path: .
 
       - name: Compute version from branch
         id: version
@@ -40,7 +53,7 @@ jobs:
           echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Check license compliance
-        run: ./gradlew checkLicense
+        run: ./gradlew -PincludeDev=false checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
@@ -60,13 +73,13 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_release }}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew jreleaserDeploy -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
 
       - name: Archive Reports
         if: always()
