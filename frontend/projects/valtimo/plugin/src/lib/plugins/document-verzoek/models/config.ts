@@ -23,8 +23,7 @@ interface DocumentVerzoekType {
 
 interface DocumentVerzoekConfig extends PluginConfigurationData {
   notificatiesApiPluginConfiguration: string;
-  processToStart: string;
-  rsin: string;
+  eventMessage: string;
   documentVerzoekProperties: Array<DocumentVerzoekType>;
 }
 

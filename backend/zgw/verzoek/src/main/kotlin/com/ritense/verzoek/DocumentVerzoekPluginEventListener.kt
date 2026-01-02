@@ -23,6 +23,7 @@ import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEven
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.verzoek.domain.DocumentVerzoekProperties
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -40,7 +41,7 @@ class DocumentVerzoekPluginEventListener(
     private val caseDefinitionService: CaseDefinitionService,
     private val zaakInstanceLinkService: ZaakInstanceLinkService,
     private val runtimeService: RuntimeService,
-    private val operatonProcessJsonSchemaDocumentAssociationService: OperatonProcessJsonSchemaDocumentAssociationService,
+    private val processDocumentService: OperatonProcessJsonSchemaDocumentAssociationService,
     private val documentService: DocumentService,
     private val pluginService: PluginService,
 ) {
@@ -78,19 +79,35 @@ class DocumentVerzoekPluginEventListener(
             logger.info { "DocumentVerzoekPlugin is matched" }
         }
         // Find the matching CaseDefinition for the incoming zaakType
-        plugin.documentVerzoekProperties.forEach { prop ->
-            caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
-                zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
-                    if (zaakTypeLink.zaakTypeUrl == URI(zaakType)) {
-                        val zaak = zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!))
-                        val doc = documentService.get(zaak.documentId.toString())
-                        operatonProcessJsonSchemaDocumentAssociationService
-                            .findProcessDocumentInstances(doc.id()).forEach { procInst ->
-                                runtimeService.createMessageCorrelation("NEW_DOCUMENT_RECEIVED")
-                                    .processInstanceId(procInst.id.processInstanceId().toString())
-                                    .correlateAll()
-                            }
-                        return
+        plugin.documentVerzoekProperties.first {
+            findCaseDefinition(it, zaakType)
+        }.let {
+            sendMessage(event, plugin.eventMessage)
+        }
+    }
+
+    fun findCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
+        caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
+            zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
+                if (zaakTypeLink.zaakTypeUrl == URI(zaakType)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun sendMessage(
+        event: NotificatiesApiNotificationReceivedEvent,
+        eventMessage: String
+    ) {
+        zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!)).let { zaak ->
+            documentService.get(zaak.documentId.toString()).let { doc ->
+                processDocumentService.findProcessDocumentInstances(doc.id()).forEach { procInst ->
+                    procInst.id?.let {
+                        runtimeService.createMessageCorrelation(eventMessage)
+                            .processInstanceId(it.processInstanceId().toString())
+                            .correlateAll()
                     }
                 }
             }

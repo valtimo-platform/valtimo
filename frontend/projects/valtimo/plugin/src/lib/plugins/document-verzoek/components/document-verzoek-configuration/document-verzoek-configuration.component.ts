@@ -134,7 +134,6 @@ export class DocumentVerzoekConfigurationComponent
   }
 
   private setMappedPrefill(): void {
-    console.log('setMappedPrefill: ', this.prefillConfiguration$);
     this.mappedPrefill$ = this.prefillConfiguration$.pipe(
       filter(prefill => !!prefill),
       map(prefill => ({
@@ -174,13 +173,11 @@ export class DocumentVerzoekConfigurationComponent
     const validForm = !!(
       formValue.configurationTitle &&
       formValue.notificatiesApiPluginConfiguration &&
-      formValue.rsin &&
-      formValue.processToStart
+      formValue.eventMessage
     );
     const verzoekTypen = formValue.documentVerzoekProperties || [];
     const validVerzoekTypen = verzoekTypen.filter(type => !!type.caseDefinitionKey);
     const valid = validForm && verzoekTypen.length === validVerzoekTypen.length;
-    console.log('validForm: 3: ' + valid);
     this.valid$.next(valid);
     this.valid.emit(valid);
   }

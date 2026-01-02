@@ -27,8 +27,6 @@ import com.ritense.plugin.domain.EventType
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
-import com.ritense.zgw.Rsin
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 
 @Plugin(
@@ -45,11 +43,8 @@ class DocumentVerzoekPlugin(
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
     lateinit var notificatiesApiPluginConfiguration: NotificatiesApiPlugin
 
-    @PluginProperty(key = "processToStart", secret = false)
-    lateinit var processToStart: String
-
-    @PluginProperty(key = "rsin", secret = false)
-    lateinit var rsin: Rsin
+    @PluginProperty(key = "eventMessage", secret = false)
+    lateinit var eventMessage: String
 
     @Valid
     @PluginProperty(key = "documentVerzoekProperties", secret = false)
