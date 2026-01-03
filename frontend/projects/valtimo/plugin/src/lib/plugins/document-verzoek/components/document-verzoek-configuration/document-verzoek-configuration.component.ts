@@ -31,7 +31,6 @@ import {
   filter,
   map,
   Observable,
-  of,
   Subscription,
   take,
   tap,
@@ -40,9 +39,6 @@ import {DocumentVerzoekConfig, DocumentVerzoekType} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {
-  ModalService,
-  MultiInputValues,
-  RadioValue,
   SelectItem,
   ValuePathSelectorPrefix,
   VModalComponent,
