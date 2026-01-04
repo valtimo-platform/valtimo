@@ -21,6 +21,7 @@ import java.time.LocalDateTime
 data class NotificatiesApiNotificationReceivedEvent(
     val kanaal: String,
     val hoofdObject: String?,
+    val resource: String?,
     val resourceUrl: String,
     val actie: String,
     val aanmaakdatum: LocalDateTime?,

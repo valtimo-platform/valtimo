@@ -69,6 +69,36 @@ export class DocumentVerzoekConfigurationComponent
 
   mappedPrefill$: Observable<DocumentVerzoekConfig>;
 
+  readonly zakenPluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('zakenapi'),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([configurations]) =>
+      configurations.map(configuration => ({
+        id: configuration.id,
+        text: `${configuration.title} - ${this.pluginTranslationService.instant(
+          'title',
+          configuration.pluginDefinition.key
+        )}`,
+      }))
+    )
+  );
+
+  readonly documentenPluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('documentenapi'),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([configurations]) =>
+      configurations.map(configuration => ({
+        id: configuration.id,
+        text: `${configuration.title} - ${this.pluginTranslationService.instant(
+          'title',
+          configuration.pluginDefinition.key
+        )}`,
+      }))
+    )
+  );
+
   readonly notificatiePluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
     this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
     this.translateService.stream('key'),
@@ -169,6 +199,8 @@ export class DocumentVerzoekConfigurationComponent
     const validForm = !!(
       formValue.configurationTitle &&
       formValue.notificatiesApiPluginConfiguration &&
+      formValue.zakenApiPlugin &&
+      formValue.documentenApiPlugin &&
       formValue.eventMessage
     );
     const verzoekTypen = formValue.documentVerzoekProperties || [];

@@ -46,6 +46,7 @@ dependencies {
     implementation project(":zgw:objecten-api")
     implementation project(":zgw:objecttypen-api")
     implementation project(":zgw:zaken-api")
+    implementation project(":zgw:documenten-api")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter"

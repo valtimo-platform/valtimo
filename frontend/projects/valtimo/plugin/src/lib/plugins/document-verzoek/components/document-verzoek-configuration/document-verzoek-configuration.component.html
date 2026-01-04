@@ -41,13 +41,45 @@
             [items]="vars.notificatiePluginSelectItems"
             [margin]="true"
             name="notificatiesApiPluginConfiguration"
-            data-test-id="verzoekNotificatiesApiPluginConfiguration"
-            [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
+            data-test-id="documentVerzoekNotificatiesApiPlugin"
+            [title]="'notificatiesApiPlugin' | pluginTranslate: pluginId | async"
             [disabled]="obs.disabled"
             [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
             [required]="true"
             [loading]="!vars.notificatiePluginSelectItems"
-            [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+            [tooltip]="'notificatiesApiPluginTooltip' | pluginTranslate: pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container
+          *ngIf="{zakenPluginSelectItems: zakenPluginSelectItems$ | async} as vars"
+  >
+    <v-select
+            [items]="vars.zakenPluginSelectItems"
+            [margin]="true"
+            name="zakenApiPlugin"
+            data-test-id="zakenApiPlugin"
+            [title]="'zakenApiPlugin' | pluginTranslate: pluginId | async"
+            [disabled]="obs.disabled"
+            [defaultSelectionId]="obs.prefill?.zakenApiPlugin"
+            [required]="true"
+            [loading]="!vars.zakenPluginSelectItems"
+            [tooltip]="'zakenApiPluginTooltip' | pluginTranslate: pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container
+          *ngIf="{documentenPluginSelectItems: documentenPluginSelectItems$ | async} as vars"
+  >
+    <v-select
+            [items]="vars.documentenPluginSelectItems"
+            [margin]="true"
+            name="documentenApiPlugin"
+            data-test-id="documentenApiPlugin"
+            [title]="'documentenApiPlugin' | pluginTranslate: pluginId | async"
+            [disabled]="obs.disabled"
+            [defaultSelectionId]="obs.prefill?.documentenApiPlugin"
+            [required]="true"
+            [loading]="!vars.documentenPluginSelectItems"
+            [tooltip]="'documentenApiPluginTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <v-input

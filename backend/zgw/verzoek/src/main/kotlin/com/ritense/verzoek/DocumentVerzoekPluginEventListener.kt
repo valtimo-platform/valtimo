@@ -16,14 +16,20 @@
 
 package com.ritense.verzoek
 
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.DocumentService
+import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
+import com.ritense.zakenapi.ZakenApiPlugin
+import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -82,7 +88,8 @@ class DocumentVerzoekPluginEventListener(
         plugin.documentVerzoekProperties.first {
             findCaseDefinition(it, zaakType)
         }.let {
-            sendMessage(event, plugin.eventMessage)
+//            getZaakInformatieObject(event,plugin.zakenApiPluginConfiguration)
+            sendMessage(event, plugin)
         }
     }
 
@@ -99,22 +106,59 @@ class DocumentVerzoekPluginEventListener(
 
     private fun sendMessage(
         event: NotificatiesApiNotificationReceivedEvent,
-        eventMessage: String
+        plugin: DocumentVerzoekPlugin,
     ) {
         zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!)).let { zaak ->
+
+            val zaakInformatieObject = if (event.resource == "zaakinformatieobject") {
+                getZaakInformatieObject(URI(event.resourceUrl), plugin.zakenApiPlugin)
+            } else {
+                null
+            }
+
+            val informatieObject = if (event.resource == "informatieobject") {
+                getInformatieObject(URI(event.resourceUrl), plugin.documentenApiPlugin)
+            } else {
+                zaakInformatieObject?.let {
+                    getInformatieObject(zaakInformatieObject.informatieobject, plugin.documentenApiPlugin)
+                }
+            }
             documentService.get(zaak.documentId.toString()).let { doc ->
                 processDocumentService.findProcessDocumentInstances(doc.id()).forEach { procInst ->
-                    procInst.id?.let {
-                        runtimeService.createMessageCorrelation(eventMessage)
-                            .processInstanceId(it.processInstanceId().toString())
-                            .correlateAll()
+                    procInst.id?.let { procInst ->
+                        val rs = runtimeService.createMessageCorrelation(plugin.eventMessage)
+                            .processInstanceId(procInst.processInstanceId().toString())
+                        if (event.resource == "zaakinformatieobject") {
+                            rs.setVariable("zaakInformatieObject", objectMapper.convertValue(zaakInformatieObject))
+                        }
+                        informatieObject?.let {
+                            rs.setVariable("informatieObject", objectMapper.convertValue(it))
+                        }
+                        rs.correlateAll()
                     }
                 }
             }
         }
     }
 
+    private fun getZaakInformatieObject(
+        resourceUrl: URI,
+        zakenApiPlugin: ZakenApiPlugin,
+    ): ZaakInformatieObject? {
+        return zakenApiPlugin.getZaakInformatieObject2(
+            resourceUrl
+        )
+    }
+
+    private fun getInformatieObject(
+        resourceUrl: URI,
+        documentenApiPlugin: DocumentenApiPlugin
+    ): DocumentInformatieObject {
+        return documentenApiPlugin.getInformatieObject(resourceUrl)
+    }
+
     companion object {
         val logger = KotlinLogging.logger {}
+        private val objectMapper = jacksonObjectMapper().findAndRegisterModules()
     }
 }

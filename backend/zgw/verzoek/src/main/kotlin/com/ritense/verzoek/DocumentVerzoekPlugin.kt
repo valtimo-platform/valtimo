@@ -17,6 +17,7 @@
 package com.ritense.verzoek
 
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
 import com.ritense.notificatiesapi.domain.Abonnement
@@ -26,6 +27,7 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
+import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import jakarta.validation.Valid
 
@@ -42,6 +44,12 @@ class DocumentVerzoekPlugin(
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
     lateinit var notificatiesApiPluginConfiguration: NotificatiesApiPlugin
+
+    @PluginProperty(key = "zakenApiPlugin", secret = false)
+    lateinit var zakenApiPlugin: ZakenApiPlugin
+
+    @PluginProperty(key = "documentenApiPlugin", secret = false)
+    lateinit var documentenApiPlugin: DocumentenApiPlugin
 
     @PluginProperty(key = "eventMessage", secret = false)
     lateinit var eventMessage: String
