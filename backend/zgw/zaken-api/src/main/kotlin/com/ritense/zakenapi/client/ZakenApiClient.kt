@@ -242,7 +242,7 @@ class ZakenApiClient(
             .retrieve()
             .body<ZaakInformatieObject>()!!
 
-//        outboxService.send { ZaakInformatieObjectListed(objectMapper.valueToTree(result)) }
+        outboxService.send { ZaakInformatieObjectListed(objectMapper.valueToTree(result)) }
         return result
     }
 
