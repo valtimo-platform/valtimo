@@ -1,4 +1,4 @@
-# 13.9.0
+# 13.9.1
 
 {% hint style="info" %}
 **Release date 24-12-2025**
@@ -18,3 +18,4 @@ More details can be found [here](../../../features/case/zgw/zgw-documents/README
 * Importing an existing case definition from an uploaded zip file will now overwrite the existing data.
 * It is now possible to add new search fields to a case when no search fields exist yet. Previously this resulted in an
 error because the system assumed the field already existed.
+* Resolved issue where running processes were deleted when editing the BPMN.
