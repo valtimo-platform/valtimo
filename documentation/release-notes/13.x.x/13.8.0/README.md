@@ -35,11 +35,6 @@ More details can be found [here](../../../features/plugins/configure-zaken-api-p
 Plugins actions `Create Zaaknotitie` and `Patch Zaaknotitie` are available in the Zaken API plugin. 
 More details can be found [here](../../../features/plugins/configure-zaken-api-plugin.md)
 
-- **Enabling virus scanning**
-
-When enabled files uploaded to the Documenten API or in temporary file storage will be scanned for viruses.
-More details can be found [here](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
-
 ## Enhancements
 
 * **The options for the Documenttype drop-down in the Documenten API metadata modal is now alphabetically ordered and searchable.**
