@@ -11,3 +11,4 @@
 ## Bugfixes
 
 * Case list items should no longer require permissions other than `view_list` to view.
+* It is now possible to add new search fields to a case when no search fields exist yet. Previously this resulted in an error because the system assumed the field already existed.
