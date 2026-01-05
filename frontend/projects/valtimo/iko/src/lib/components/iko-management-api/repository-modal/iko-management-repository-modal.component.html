@@ -40,17 +40,15 @@
     >
     </valtimo-auto-key-input>
 
-    @if (enableIkoType) {
-      <v-select
-        [invalid]="getControlInvalid('type')"
-        formControlName="type"
-        [disabled]="!enableIkoType"
-        [items]="ikoRepositoryTypeSelectItems$ | async"
-        [title]="'ikoManagement.typeTitle' | translate"
-        [appendInline]="false"
-        [dropUp]="false"
-      ></v-select>
-    }
+    <v-select
+      [invalid]="getControlInvalid('type')"
+      formControlName="type"
+      [disabled]="!enableIkoType"
+      [items]="ikoRepositoryTypeSelectItems$ | async"
+      [title]="'ikoManagement.typeTitle' | translate"
+      [appendInline]="false"
+      [dropUp]="false"
+    ></v-select>
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
