@@ -99,14 +99,13 @@
       </cds-dropdown>
     </div>
 
-    <div class="valtimo-search-fields-modal__input">
-      <cds-toggle
-        formControlName="required"
-        [label]="'searchFieldsOverview.required' | translate"
-        [onText]="'searchFieldsOverview.requiredEnabled' | translate"
-        [offText]="'searchFieldsOverview.requiredDisabled' | translate"
-      ></cds-toggle>
-    </div>
+    <cds-toggle
+      class="valtimo-search-fields-modal__input"
+      formControlName="required"
+      [label]="'searchFieldsOverview.required' | translate"
+      [onText]="'searchFieldsOverview.requiredEnabled' | translate"
+      [offText]="'searchFieldsOverview.requiredDisabled' | translate"
+    ></cds-toggle>
 
     @if (
       dataTypeValue === SearchFieldDataType.TEXT &&

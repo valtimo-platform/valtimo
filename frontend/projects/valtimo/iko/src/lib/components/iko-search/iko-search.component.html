@@ -67,8 +67,8 @@
                 }
                 @else if (field.dataType === 'text' && (field.fieldType === 'single-select-dropdown' || field.fieldType === 'single_select_dropdown')) {
                   <v-select
-                    *ngIf="dropdownSelectItemsMap[field.key] as dropdownSelectItemsMap"
-                    [items]="dropdownSelectItemsMap"
+                    *ngIf="dropdownSelectItemsMap[field.key]"
+                    [items]="dropdownSelectItemsMap[field.key]"
                     [margin]="false"
                     [required]="false"
                     [name]="field.key"
@@ -79,8 +79,8 @@
                 }
                 @else if (field.dataType === 'text' && (field.fieldType === 'multi-select-dropdown' || field.fieldType === 'multi_select_dropdown')) {
                   <v-select
-                    *ngIf="dropdownSelectItemsMap[field.key] as dropdownSelectItemsMap"
-                    [items]="dropdownSelectItemsMap"
+                    *ngIf="dropdownSelectItemsMap[field.key]"
+                    [items]="dropdownSelectItemsMap[field.key]"
                     [margin]="false"
                     [multiple]="true"
                     [required]="false"
