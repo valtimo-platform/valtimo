@@ -43,6 +43,8 @@ import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import org.everit.json.schema.Schema
 import org.springframework.context.ApplicationContext
 import org.springframework.context.expression.MapAccessor
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.expression.common.TemplateParserContext
 import org.springframework.expression.spel.standard.SpelExpressionParser
 import org.springframework.expression.spel.support.StandardEvaluationContext
@@ -132,9 +134,12 @@ class DocumentMigrationService(
         val targetId = migrationRequest.getDocumentDefinitionIdTarget()
         val targetDefinition = documentDefinitionService.findBy(targetId).orElseThrow()
         val targetSchema = targetDefinition.schema.schema
-        val sourceDocuments = documentRepository.findAll(byDocumentDefinitionId(sourceId))
+        val sourceDocuments = documentRepository.findAll(
+            byDocumentDefinitionId(sourceId),
+            migrationRequest.batchSize?.let { PageRequest.of(0, migrationRequest.batchSize) }?: Pageable.unpaged()
+        )
 
-        return sourceDocuments.map { sourceDocument ->
+        return sourceDocuments.content.map { sourceDocument ->
             val targetJsonBuilder = JsonPatchBuilder()
             val targetJson = sourceDocument.content().asJson()
             migrationRequest.patches.forEach { patch ->
