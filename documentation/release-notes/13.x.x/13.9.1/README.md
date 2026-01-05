@@ -16,4 +16,3 @@ More details can be found [here](../../../features/case/zgw/zgw-documents/README
 ## Bugfixes
 
 * Importing an existing case definition from an uploaded zip file will now overwrite the existing data.
-* Resolved issue where running processes were deleted when editing the BPMN.
