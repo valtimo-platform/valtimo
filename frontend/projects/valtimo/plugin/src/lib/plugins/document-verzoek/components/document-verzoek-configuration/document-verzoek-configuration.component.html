@@ -42,12 +42,12 @@
             [margin]="true"
             name="notificatiesApiPluginConfiguration"
             data-test-id="documentVerzoekNotificatiesApiPlugin"
-            [title]="'notificatiesApiPlugin' | pluginTranslate: pluginId | async"
+            [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
             [disabled]="obs.disabled"
             [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
             [required]="true"
             [loading]="!vars.notificatiePluginSelectItems"
-            [tooltip]="'notificatiesApiPluginTooltip' | pluginTranslate: pluginId | async"
+            [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <ng-container
