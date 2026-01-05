@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {BaseApiService, ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
@@ -115,6 +115,10 @@ export class IkoApiService extends BaseApiService {
         type: 'error',
       });
     }
+  }
+
+  public queryApi(queryParams: HttpParams): void {
+    console.log({queryParams});
   }
 
   private navigateTo(navigateTo: string) {

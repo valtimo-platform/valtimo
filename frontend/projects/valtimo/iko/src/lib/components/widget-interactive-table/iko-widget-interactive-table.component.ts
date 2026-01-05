@@ -42,6 +42,7 @@ import {
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import {HttpParams} from '@angular/common/module.d-CnjH8Dlt';
 
 @Component({
   selector: 'valtimo-iko-widget-interactive-table',
@@ -83,8 +84,6 @@ export class IkoWidgetInteractiveTableComponent {
     this._widgetParams$.next(value);
   }
 
-  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
-
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
@@ -109,8 +108,8 @@ export class IkoWidgetInteractiveTableComponent {
     private readonly listService: CaseListService
   ) {}
 
-  public onPaginationEvent(event: PaginationModel): void {
-    this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
+  public onQueryParamsEvent(params: HttpParams): void {
+    this.ikoApiService.queryApi(params);
   }
 
   public onRowClickEvent(event: any, widgetConfiguration: InteractiveTableWidget): void {
