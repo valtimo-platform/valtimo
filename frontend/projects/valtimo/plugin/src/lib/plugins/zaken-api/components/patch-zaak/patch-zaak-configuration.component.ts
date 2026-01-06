@@ -28,7 +28,9 @@ import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-
   templateUrl: './patch-zaak-configuration.component.html',
   styleUrls: ['./patch-zaak-configuration.component.scss'],
 })
-export class PatchZaakConfigurationComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class PatchZaakConfigurationComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() save$: Observable<void>;
@@ -43,8 +45,15 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
     tooltipTranslationKey?: string;
     presetOptions?: string[];
   }> = [];
-  public readonly geometryTypes: string[] =
-    ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'GeometryCollection', 'MultiPolygon'];
+  public readonly geometryTypes: string[] = [
+    'Point',
+    'MultiPoint',
+    'LineString',
+    'MultiLineString',
+    'Polygon',
+    'GeometryCollection',
+    'MultiPolygon',
+  ];
   public readonly paymentIndicationTypes: string[] = ['nvt', 'nog_niet', 'gedeeltelijk', 'geheel'];
 
   protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
@@ -56,9 +65,7 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly iconService: IconService
-  ) {
+  constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
@@ -93,15 +100,15 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   }
 
   public prefillValueFor(property: string, prefill: PatchZaakConfig): string | null {
-    return (prefill != null) ? prefill[property] : null;
+    return prefill != null ? prefill[property] : null;
   }
 
   public translationKeyFor(property: string): string {
-    return (property === 'description' ? 'omschrijving' : property);
+    return property === 'description' ? 'omschrijving' : property;
   }
 
   public translationKeyForPropertyList(property: string): string {
-    return (property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property));
+    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
   }
 
   public addProperty(property: PatchZaakProperties): void {
@@ -109,7 +116,8 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
       return;
     }
 
-    const tooltip = property === this.CASE_GEOMETRY_COORDINATES ? 'caseGeometryCoordinatesTooltip' : undefined;
+    const tooltip =
+      property === this.CASE_GEOMETRY_COORDINATES ? 'caseGeometryCoordinatesTooltip' : undefined;
     const presetOptions =
       property === this.PAYMENT_INDICATION_TYPE
         ? this.paymentIndicationTypes
@@ -144,7 +152,7 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
   private handleValid(formValue: PatchZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property.name]);
-    const valid = !isPropertyInvalid
+    const valid = !isPropertyInvalid;
     this._valid$.next(valid);
     this.valid.emit(valid);
   }
@@ -155,8 +163,10 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            const payload: PatchZaakConfig = { };
-            this.propertyList.forEach(property => (payload[property.name] = formValue[property.name]));
+            const payload: PatchZaakConfig = {};
+            this.propertyList.forEach(
+              property => (payload[property.name] = formValue[property.name])
+            );
             this.configuration.emit(payload);
           }
         });

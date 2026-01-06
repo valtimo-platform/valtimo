@@ -31,7 +31,27 @@
             "defaultValue": "De toelichting"
         },
         {
-            "label": "Geplande einddatum",
+            "label": "Startdatum",
+            "key": "pv.startDate",
+            "type": "textfield",
+            "input": true,
+            "validate": {
+                "required": true
+            },
+            "customDefaultValue": "value = moment().subtract(7, 'day').format('YYYY-MM-DD')"
+        },
+        {
+            "label": "Uiterlijke einddatum afdoening",
+            "key": "pv.finalDeliveryDate",
+            "type": "textfield",
+            "input": true,
+            "validate": {
+                "required": true
+            },
+            "calculateValue": "value = moment(data.pv.startDate, 'YYYY-MM-DD').add(84, 'days').format('YYYY-MM-DD')"
+        },
+        {
+            "label": "Geplande eind-datum",
             "key": "pv:plannedEndDate",
             "type": "textfield",
             "input": true,

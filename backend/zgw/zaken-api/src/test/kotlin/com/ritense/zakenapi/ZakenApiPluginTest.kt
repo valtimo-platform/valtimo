@@ -434,6 +434,7 @@ internal class ZakenApiPluginTest {
         val communicationChannel = communicationChannel()
         val communicationChannelName = "Communicatiekanaal Naam"
         val nowDate = LocalDate.parse("2025-07-23")
+        val startDate = nowDate.minusDays(10).toString()
         val plannedEndDate = nowDate.plusMonths(10).toString()
         val finalDeliveryDate = nowDate.plusYears(1).toString()
         val publicationDate = nowDate.minusWeeks(2).toString()
@@ -479,6 +480,7 @@ internal class ZakenApiPluginTest {
             execution = executionMock,
             description = description,
             explanation = explantation,
+            startDate = startDate,
             plannedEndDate = plannedEndDate,
             finalDeliveryDate = finalDeliveryDate,
             publicationDate = publicationDate,
@@ -504,6 +506,7 @@ internal class ZakenApiPluginTest {
         val request = captor.firstValue
         assertThat(request.omschrijving).isEqualTo(description)
         assertThat(request.toelichting).isEqualTo(explantation)
+        assertThat(request.startdatum).isEqualTo(startDate)
         assertThat(request.einddatumGepland).isEqualTo(plannedEndDate)
         assertThat(request.uiterlijkeEinddatumAfdoening).isEqualTo(finalDeliveryDate)
         assertThat(request.publicatiedatum).isEqualTo(publicationDate)
