@@ -52,3 +52,7 @@
   max-inline-size: 100%;
   min-inline-size: 100%;
 }
+
+::ng-deep .cds--text-input__field-wrapper cds-label {
+  width: 100%;
+}
