@@ -103,6 +103,7 @@ interface DeleteZaakeigenschapConfig {
 interface PatchZaakConfig {
   description?: string;
   explanation?: string;
+  startDate?: string;
   plannedEndDate?: string;
   finalDeliveryDate?: string;
   publicationDate?: string;
