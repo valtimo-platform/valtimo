@@ -38,6 +38,7 @@ class TestWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean?,
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
@@ -45,7 +46,7 @@ class TestWidget(
     @Column(name = "properties", nullable = false)
     val properties: TestWidgetProperties
 ) : Widget(
-    id, key, title, icon,order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
@@ -55,6 +56,7 @@ class TestWidget(
         order: Int,
         width: Int,
         highContrast: Boolean,
+        isCompact: Boolean?,
         actions: List<WidgetAction>,
         displayConditions: List<Condition<*>>,
     ): Widget = TestWidget(
@@ -65,6 +67,7 @@ class TestWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties
@@ -76,6 +79,7 @@ class TestWidget(
         icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
+        isCompact = this.isCompact,
         actions = this.actions,
         properties = this.properties,
     )

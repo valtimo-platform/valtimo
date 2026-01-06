@@ -31,7 +31,7 @@ export class IkoMenuService {
     );
     if (ikoExists) return of(menuItems);
 
-    return this.ikoApiService.getIkoDataAggregates().pipe(
+    return this.ikoApiService.getIkoViews().pipe(
       map(ikoItems => {
         this.ikoApiService.setCachedMenuItems(ikoItems.content);
 

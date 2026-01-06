@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:ns0="http://camunda.org/schema/1.0/dmn" id="Definitions_0n3epdn" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" expressionLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/" typeLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.21.0">
+  <decision id="kikkers" name="Kikkers s" ns0:versionTag="CD:regression-test-june-16:1.2.4">
+    <decisionTable id="DecisionTable_05t95xn" preferredOrientation="Rule-as-Row">
+      <input id="Input_1" label="Number of kikkers">
+        <inputExpression id="InputExpression_1" typeRef="integer" expressionLanguage="feel">
+          <text>nr_of_kikkers</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Enough kikkers?" name="isEnough" typeRef="boolean" />
+      <rule id="DecisionRule_0hvgn84">
+        <inputEntry id="UnaryTests_1yv3xvq">
+          <text>&lt;3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ozghiw">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0bh8myu">
+        <inputEntry id="UnaryTests_1ju8nyw">
+          <text>&gt;=3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0fg3g7q">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="kikkers" isCollapsed="false">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

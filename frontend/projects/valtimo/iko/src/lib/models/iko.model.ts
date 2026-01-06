@@ -16,12 +16,12 @@
 
 import {Page} from '@valtimo/shared';
 
-interface IkoDataAggregate {
+interface IkoView {
   key: string;
   title: string;
 }
 
-interface IkoDataRequestUser {
+interface IkoSearchActionUser {
   key: string;
   title: string;
   searchFields: SearchFieldV2[];
@@ -71,8 +71,8 @@ interface IkoTab {
 }
 
 export {
-  IkoDataAggregate,
-  IkoDataRequestUser,
+  IkoView,
+  IkoSearchActionUser,
   SearchFieldV2,
   IkoListHeader,
   IkoListItem,

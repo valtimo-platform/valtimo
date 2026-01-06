@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-paragraph [margin]="true" [italic]="true">
+    {{ 'patchZaakNotitieInformation' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
+
+  <v-form (valueChange)="onFormValueChanged($event)">
+    <v-input
+      name="zaakNotitieUrl"
+      [title]="'zaakNotitieUrl' | pluginTranslate: pluginId | async"
+      [tooltip]="'zaakNotitieUrlTooltip' | pluginTranslate: pluginId | async"
+      [required]="true"
+      [defaultValue]="obs.prefill?.zaakNotitieUrl"
+      [disabled]="obs.disabled"
+      [margin]="true"
+      [trim]="true"
+    ></v-input>
+
+    <div class="row">
+      <div class="col-12">
+        <button
+          cdsButton="primary"
+          class="add-button"
+          [size]="'md'"
+          [cdsOverflowMenu]="addPropertyList"
+          [customPane]="true"
+          placement="bottom"
+        >
+          {{ 'addPatchZaakNotitieProperty' | pluginTranslate: pluginId | async }}
+
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @for (property of propertyList; track property) {
+      <div class="row">
+        <div class="col-11">
+          <v-input
+            [type]="property.type"
+            [name]="property.name"
+            [title]="property.translationKey | pluginTranslate: pluginId | async"
+            [required]="true"
+            [defaultValue]="prefillValueFor(property.name, obs.prefill)"
+            [margin]="true"
+            [trim]="true"
+            [presetOptions]="property.presetOptions"
+            (valueChange)="onPropertyChanged(property.name, $event)"
+          />
+        </div>
+        <div class="col-1">
+            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+        </div>
+      </div>
+    }
+  </v-form>
+</ng-container>
+
+<ng-template #addPropertyList>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    <cds-overflow-menu-option
+      *ngIf="!hasPropertyBeenAdded(propertyOption)"
+      (click)="addProperty(propertyOption)"
+    >
+      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+    </cds-overflow-menu-option>
+  }
+</ng-template>
