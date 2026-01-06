@@ -21,14 +21,12 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.DocumentService
-import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
-import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
@@ -55,15 +53,15 @@ class DocumentVerzoekPluginEventListener(
     @Transactional
     @RunWithoutAuthorization
     @EventListener(NotificatiesApiNotificationReceivedEvent::class)
-    fun createNotificatieFromEvent(event: NotificatiesApiNotificationReceivedEvent) {
+    fun handleEvent(event: NotificatiesApiNotificationReceivedEvent) {
+        if (!event.kanaal.equals("zaken", ignoreCase = true)) {
+            logger.debug { "DocumentVerzoekPlugin is ignoring Notificaties API event: Event kanaal '${event.kanaal}' doesn't match 'zaken'" }
+            return
+        }
         // Accept both 'zaakType' and 'zaaktype' as provided by the Notificaties API
         val zaakType = event.kenmerken["zaakType"] ?: event.kenmerken["zaaktype"]
         if (zaakType == null) {
             logger.debug { "DocumentVerzoekPlugin is ignoring Notificaties API event: Event 'zaakType' is null" }
-            return
-        }
-        if (!event.kanaal.equals("zaken", ignoreCase = true)) {
-            logger.debug { "DocumentVerzoekPlugin is ignoring Notificaties API event: Event kanaal '${event.kanaal}' doesn't match 'zaken'" }
             return
         }
         if (!event.actie.equals("create", ignoreCase = true)) {
@@ -71,7 +69,6 @@ class DocumentVerzoekPluginEventListener(
             return
         }
 
-        logger.info { "DocumentVerzoekPluginEventListener createNotificatieFromEvent: Received event: $event" }
         val plugin: DocumentVerzoekPlugin? = pluginService.createInstance(
             DocumentVerzoekPlugin::class.java
         ) { properties ->
@@ -79,21 +76,18 @@ class DocumentVerzoekPluginEventListener(
         }
 
         if (plugin == null) {
-            logger.info { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found matching zaakType '$zaakType' in documentVerzoekProperties" }
+            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found matching zaakType '$zaakType' in documentVerzoekProperties" }
             return
-        } else {
-            logger.info { "DocumentVerzoekPlugin is matched" }
         }
         // Find the matching CaseDefinition for the incoming zaakType
         plugin.documentVerzoekProperties.first {
-            findCaseDefinition(it, zaakType)
+            matchingCaseDefinition(it, zaakType)
         }.let {
-//            getZaakInformatieObject(event,plugin.zakenApiPluginConfiguration)
-            sendMessage(event, plugin)
+            handleNewDocumentEvent(event, plugin)
         }
     }
 
-    fun findCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
+    private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
         caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
             zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
                 if (zaakTypeLink.zaakTypeUrl == URI(zaakType)) {
@@ -104,57 +98,42 @@ class DocumentVerzoekPluginEventListener(
         return false
     }
 
-    private fun sendMessage(
+    private fun handleNewDocumentEvent(
         event: NotificatiesApiNotificationReceivedEvent,
         plugin: DocumentVerzoekPlugin,
     ) {
         zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!)).let { zaak ->
-
-            val zaakInformatieObject = if (event.resource == "zaakinformatieobject") {
-                getZaakInformatieObject(URI(event.resourceUrl), plugin.zakenApiPlugin)
-            } else {
-                null
-            }
-
-            val informatieObject = if (event.resource == "informatieobject") {
-                getInformatieObject(URI(event.resourceUrl), plugin.documentenApiPlugin)
-            } else {
-                zaakInformatieObject?.let {
-                    getInformatieObject(zaakInformatieObject.informatieobject, plugin.documentenApiPlugin)
-                }
-            }
-            documentService.get(zaak.documentId.toString()).let { doc ->
-                processDocumentService.findProcessDocumentInstances(doc.id()).forEach { procInst ->
-                    procInst.id?.let { procInst ->
-                        val rs = runtimeService.createMessageCorrelation(plugin.eventMessage)
-                            .processInstanceId(procInst.processInstanceId().toString())
-                        if (event.resource == "zaakinformatieobject") {
-                            rs.setVariable("zaakInformatieObject", objectMapper.convertValue(zaakInformatieObject))
-                        }
-                        informatieObject?.let {
-                            rs.setVariable("informatieObject", objectMapper.convertValue(it))
-                        }
-                        rs.correlateAll()
+            plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(URI(event.resourceUrl))?.let { zaakInformatieObject ->
+                plugin.documentenApiPlugin.getInformatieObject(zaakInformatieObject.informatieobject)
+                    .let { informatieObject ->
+                        sendMessage(
+                            zaak.documentId.toString(),
+                            plugin.eventMessage,
+                            zaakInformatieObject,
+                            informatieObject
+                        )
                     }
-                }
             }
         }
     }
 
-    private fun getZaakInformatieObject(
-        resourceUrl: URI,
-        zakenApiPlugin: ZakenApiPlugin,
-    ): ZaakInformatieObject? {
-        return zakenApiPlugin.getZaakInformatieObject2(
-            resourceUrl
-        )
-    }
-
-    private fun getInformatieObject(
-        resourceUrl: URI,
-        documentenApiPlugin: DocumentenApiPlugin
-    ): DocumentInformatieObject {
-        return documentenApiPlugin.getInformatieObject(resourceUrl)
+    private fun sendMessage(
+        documentId: String,
+        eventMessage: String,
+        zaakInformatieObject: ZaakInformatieObject,
+        informatieObject: DocumentInformatieObject?,
+    ) {
+        documentService.get(documentId).let { doc ->
+            processDocumentService.findProcessDocumentInstances(doc.id()).forEach { procInst ->
+                procInst.id?.let { procInst ->
+                    runtimeService.createMessageCorrelation(eventMessage)
+                        .processInstanceId(procInst.processInstanceId().toString())
+                        .setVariable("zaakInformatieObject", objectMapper.convertValue(zaakInformatieObject))
+                        .setVariable("informatieObject", objectMapper.convertValue(informatieObject))
+                        .correlateAll()
+                }
+            }
+        }
     }
 
     companion object {

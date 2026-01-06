@@ -83,7 +83,6 @@ import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
-import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
@@ -1248,11 +1247,11 @@ class ZakenApiPlugin(
         return results.singleOrNull()
     }
 
-    fun getZaakInformatieObject2(informatieobjectUrl: URI): ZaakInformatieObject? {
-        logger.debug { "Fetching zaak informatie object by '$informatieobjectUrl'" }
+    fun getZaakInformatieObjectByUrl(zaakInformatieobjectUrl: URI): ZaakInformatieObject? {
+        logger.debug { "Fetching zaak informatie object by url: '$zaakInformatieobjectUrl'" }
         val results = client.getZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
-            informatieobjectUrl = informatieobjectUrl,
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
         )
         return results
     }

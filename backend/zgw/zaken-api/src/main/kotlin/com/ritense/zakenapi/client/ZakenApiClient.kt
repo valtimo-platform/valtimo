@@ -220,7 +220,7 @@ class ZakenApiClient(
 
     fun getZaakInformatieObject(
         authentication: ZakenApiAuthentication,
-        informatieobjectUrl: URI,
+        zaakInformatieobjectUrl: URI,
     ): ZaakInformatieObject? {
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
@@ -236,7 +236,7 @@ class ZakenApiClient(
         val result = buildRestClient(authentication)
             .get()
             .uri {
-                ClientTools.baseUrlToBuilder(it, informatieobjectUrl)
+                ClientTools.baseUrlToBuilder(it, zaakInformatieobjectUrl)
                     .build()
             }
             .retrieve()
