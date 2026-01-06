@@ -17,6 +17,7 @@
 package com.ritense.zakenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valueresolver.ValueResolverService
@@ -554,7 +555,7 @@ internal class ZakenApiPluginTest {
         val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
         val platformTransactionManager: PlatformTransactionManager = mock()
         val valueResolverService: ValueResolverService = mock()
-        val objectMapper: ObjectMapper = mock()
+        val objectMapper = jacksonObjectMapper()
 
         val documentId = UUID.fromString("dff80fb1-e24e-4287-b168-7bb199be5d58")
         val zaakId = "f18146df-4b26-4a32-8e52-122cfa4475bd"
@@ -577,6 +578,8 @@ internal class ZakenApiPluginTest {
         val mainCase = zaakUrl("3a941618-b0f1-4a0e-a9d9-c9b25ef50eaf")
         val caseGeometryType = GeometryType.POINT.key
         val caseGeometryCoordinates = "[0.0, 1.0]"
+
+        whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -611,6 +614,9 @@ internal class ZakenApiPluginTest {
             valueResolverService,
             objectMapper
         )
+
+        plugin.url = URI("https://zaken.plugin.url")
+        plugin.authenticationPluginConfiguration = authenticationMock
 
         plugin.patchZaak(
             execution = executionMock,
