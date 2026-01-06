@@ -17,6 +17,7 @@
 export const PatchZaakPropertyOptions = [
   'description',
   'explanation',
+  'startDate',
   'plannedEndDate',
   'finalDeliveryDate',
   'publicationDate',

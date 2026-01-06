@@ -7,6 +7,7 @@
 ## New Features
 
 ## Enhancements
+* Added support for updating the Zaak start date through the Update-zaak plugin action in the Zaken API plugin.
 
 ## Bugfixes
 
