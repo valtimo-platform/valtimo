@@ -27,13 +27,6 @@
     align-items: flex-end;
   }
 
-  &__row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-  }
-
   &__field {
     display: flex;
     flex-direction: column;
@@ -43,6 +36,13 @@
     input {
       width: 100%;
     }
+  }
+
+  &__field--time,
+  &__field--date,
+  &__field--datetime {
+    flex: 0 0 auto;
+    max-width: none;
   }
 
   &__label {
@@ -73,4 +73,31 @@
   gap: 16px;
   outline: none !important;
   background: var(--cds-layer-01);
+}
+
+v-input {
+  width: 100%;
+}
+
+::ng-deep .multiple-search-fields {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.to-text {
+  margin-inline-start: 8px;
+  margin-inline-end: 8px;
+}
+
+.iko-datetime {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+::ng-deep .iko-search-tabs {
+  .cds--tab-content {
+    margin-top: 24px;
+  }
 }

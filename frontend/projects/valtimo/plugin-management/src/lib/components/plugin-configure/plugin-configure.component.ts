@@ -31,23 +31,23 @@ export class PluginConfigureComponent {
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
 
-  readonly save$ = this.stateService.save$;
+  public readonly save$ = this.stateService.save$;
 
-  readonly pluginDefinitionKey$ = this.stateService.selectedPluginDefinition$.pipe(
+  public readonly pluginDefinitionKey$ = this.stateService.selectedPluginDefinition$.pipe(
     map(definition => definition?.key)
   );
 
-  readonly prefillConfiguration$ = of(undefined);
+  public readonly prefillConfiguration$ = of(undefined);
 
-  readonly disabled$ = this.stateService.inputDisabled$;
+  public readonly disabled$ = this.stateService.inputDisabled$;
 
   constructor(private readonly stateService: PluginManagementStateService) {}
 
-  onValid(valid: boolean): void {
+  public onValid(valid: boolean): void {
     this.valid.emit(valid);
   }
 
-  onFunctionConfiguration(configuration: PluginConfigurationData) {
+  public onFunctionConfiguration(configuration: PluginConfigurationData): void{
     this.configuration.emit(configuration);
   }
 }

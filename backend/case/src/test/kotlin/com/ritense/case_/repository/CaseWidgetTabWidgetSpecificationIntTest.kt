@@ -64,6 +64,7 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
                             icon = "mdi-home",
                             width = 1,
                             highContrast = false,
+                            isCompact = false,
                             properties = TestCaseWidgetProperties("test123")
                         ),
                         TestCaseWidgetTabWidgetDto(
@@ -72,6 +73,7 @@ class CaseWidgetTabWidgetSpecificationIntTest @Autowired constructor(
                             icon = "mdi-home",
                             width = 2,
                             highContrast = true,
+                            isCompact = true,
                             properties = TestCaseWidgetProperties("test123")
                         ),
                     )

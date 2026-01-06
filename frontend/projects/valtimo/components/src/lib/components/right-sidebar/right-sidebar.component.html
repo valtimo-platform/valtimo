@@ -45,8 +45,6 @@
 
   <ng-container *ngTemplateOutlet="interfaceSettingsTemplate"></ng-container>
 
-  <ng-container *ngTemplateOutlet="notificationSettingsTemplate"></ng-container>
-
   @if (showValtimoVersions) {
     <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
   }
@@ -173,50 +171,6 @@
         >
           <cds-dropdown-list [items]="(languageListItems$ | async) || []"></cds-dropdown-list>
         </cds-dropdown>
-      </cds-list-column>
-    </cds-list-row>
-  </cds-structured-list>
-</ng-template>
-
-<ng-template #notificationSettingsTemplate>
-  <cds-structured-list *ngIf="emailNotificationSettingsWithSideEffects$ | async">
-    <cds-list-header>
-      <cds-list-column>{{ 'settings.notification.title' | translate }}</cds-list-column>
-    </cds-list-header>
-
-    <cds-list-row>
-      <cds-list-column>
-        <form [formGroup]="settingsForm" class="toggle-group">
-          <cds-toggle
-            [label]="'settings.notification.taskNotifications' | translate"
-            [onText]="'interface.on' | translate"
-            [offText]="'interface.off' | translate"
-            formControlName="taskNotifications"
-            [disabled]="updatingSettings$ | async"
-          >
-          </cds-toggle>
-          <span class="description">{{
-            'settings.notification.emailNotificationsIntro' | translate
-          }}</span>
-        </form>
-      </cds-list-column>
-    </cds-list-row>
-
-    <cds-list-row>
-      <cds-list-column>
-        <form [formGroup]="settingsForm" class="toggle-group">
-          <cds-toggle
-            [label]="'settings.notification.emailNotifications' | translate"
-            [onText]="'interface.on' | translate"
-            [offText]="'interface.off' | translate"
-            formControlName="emailNotifications"
-            [disabled]="updatingSettings$ | async"
-          >
-          </cds-toggle>
-          <span class="description">{{
-            'settings.notification.taskNotificationsIntro' | translate
-          }}</span>
-        </form>
       </cds-list-column>
     </cds-list-row>
   </cds-structured-list>

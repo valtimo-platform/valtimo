@@ -30,6 +30,7 @@ data class DividerWidgetDto(
     override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
+    override val isCompact: Boolean?,
 ) : WidgetDto {
     override val actions: List<WidgetAction>
         get() = emptyList()
@@ -44,5 +45,6 @@ data class DividerWidgetDto(
         width = width,
         order = order,
         highContrast = highContrast,
+        isCompact = isCompact,
     )
 }

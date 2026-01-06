@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
@@ -54,7 +54,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize),
@@ -135,7 +135,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize),
@@ -152,7 +152,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize),
@@ -173,7 +173,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize),
@@ -190,7 +190,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize).withPage(1),
@@ -208,7 +208,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(1),
@@ -227,7 +227,7 @@ class TableWidgetDataProviderTest(
         val widget = testWidget()
         val properties = mapOf(
             ID to "id",
-            IKO_DATA_AGGREGATE_KEY to "ikoDataAggregateKey",
+            IKO_VIEW_KEY to "ikoViewKey",
             TAB_KEY to "tabKey",
             WIDGET_KEY to "widgetKey",
             PAGEABLE to Pageable.ofSize(widget.properties.defaultPageSize).withPage(2),
@@ -249,6 +249,7 @@ class TableWidgetDataProviderTest(
         order = 0,
         width = 1,
         highContrast = true,
+        isCompact = true,
         actions = emptyList(),
         properties = TableWidgetProperties(
             collection = "test:someCollection",

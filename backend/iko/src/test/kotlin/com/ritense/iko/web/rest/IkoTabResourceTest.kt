@@ -52,10 +52,10 @@ internal class IkoTabResourceTest {
 
     @Test
     fun `should get tabs`() {
-        whenever(service.findAllTabsByIkoDataAggregateKey("klant"))
+        whenever(service.findAllTabsByIkoViewKey("klant"))
             .thenReturn(listOf(tab()))
 
-        mockMvc.perform(get("/api/v1/iko-data-aggregate/{dataAggregateKey}/tab", "klant"))
+        mockMvc.perform(get("/api/v1/iko-view/{ikoViewKey}/tab", "klant"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].key").value("naam"))

@@ -15,7 +15,7 @@
  */
 
 export interface IkoWidgetParams {
-  dataAggregateKey: string;
+  ikoViewKey: string;
   entryId: string;
   tabKey: string;
 }

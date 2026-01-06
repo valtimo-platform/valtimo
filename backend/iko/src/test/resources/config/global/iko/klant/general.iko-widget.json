@@ -1,5 +1,5 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoViewKey": "klant",
     "ikoTabKey": "general",
     "ikoWidgets": [
         {
@@ -9,6 +9,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -45,6 +46,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -76,6 +78,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": true,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -112,6 +115,7 @@
             "icon": "mdi-home",
             "width": 1,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
@@ -149,6 +153,7 @@
             "icon": "mdi-home",
             "width": 4,
             "highContrast": false,
+            "isCompact": null,
             "actions": [
                 {
                     "name": "Create new Verzoek",
@@ -157,7 +162,7 @@
             ],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
+                "collection": "iko:?ikoViewKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
                 "defaultPageSize": 4,
                 "columns": [
                     {
@@ -196,10 +201,11 @@
             "icon": "mdi-home",
             "width": 4,
             "highContrast": false,
+            "isCompact": null,
             "actions": [],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
+                "collection": "iko:?ikoViewKey=boom&boombeeld=Aanvaard boombeeld&id=",
                 "defaultPageSize": 4,
                 "columns": [
                     {

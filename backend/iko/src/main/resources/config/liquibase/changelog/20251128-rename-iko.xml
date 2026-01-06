@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="1" author="Ritense">
+        <renameTable oldTableName="iko_data_aggregate" newTableName="iko_view"/>
+        <renameTable oldTableName="iko_data_aggregate_list_column" newTableName="iko_view_list_column"/>
+        <renameTable oldTableName="iko_data_aggregate_tab" newTableName="iko_view_tab"/>
+        <renameTable oldTableName="iko_data_request" newTableName="iko_search_action"/>
+        <renameTable oldTableName="iko_data_request_search_field" newTableName="iko_search_field"/>
+    </changeSet>
+
+    <changeSet id="1.1" author="Ritense">
+        <dropForeignKeyConstraint
+                baseTableName="iko_view"
+                constraintName="fk_iko_data_aggregate_iko_repository_config_key"/>
+        <dropForeignKeyConstraint
+                baseTableName="iko_search_action"
+                constraintName="fk_iko_data_request_iko_data_aggregate_key"/>
+        <dropForeignKeyConstraint
+                baseTableName="iko_view_list_column"
+                constraintName="fk_iko_data_aggregate_list_column_data_aggregate_key"/>
+        <dropForeignKeyConstraint
+                baseTableName="iko_search_field"
+                constraintName="fk_iko_data_request_search_field_data_request_key"/>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <renameColumn tableName="iko_view_list_column"
+                      oldColumnName="iko_data_aggregate_key"
+                      newColumnName="iko_view_key"
+                      columnDataType="varchar(255)"/>
+        <renameColumn tableName="iko_view_tab"
+                      oldColumnName="iko_data_aggregate_key"
+                      newColumnName="iko_view_key"
+                      columnDataType="varchar(255)"/>
+        <renameColumn tableName="iko_search_action"
+                      oldColumnName="iko_data_aggregate_key"
+                      newColumnName="iko_view_key"
+                      columnDataType="varchar(255)"/>
+        <renameColumn tableName="iko_search_action"
+                      oldColumnName="iko_data_request_order"
+                      newColumnName="iko_search_action_order"
+                      columnDataType="${intType}"/>
+        <renameColumn tableName="iko_search_field"
+                      oldColumnName="iko_data_aggregate_key"
+                      newColumnName="iko_view_key"
+                      columnDataType="varchar(255)"/>
+        <renameColumn tableName="iko_search_field"
+                      oldColumnName="iko_data_request_key"
+                      newColumnName="iko_search_action_key"
+                      columnDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2.1">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists
+                    foreignKeyTableName="iko_view"
+                    foreignKeyName="fk_iko_data_aggregate_iko_repository_config_key"/>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseTableName="iko_view"
+                baseColumnNames="iko_repository_config_key"
+                referencedTableName="iko_repository_config"
+                referencedColumnNames="key"
+                constraintName="fk_iko_view_iko_repository_config_key"
+                onDelete="RESTRICT"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2.2">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists
+                    foreignKeyTableName="iko_search_action"
+                    foreignKeyName="fk_iko_data_request_iko_data_aggregate_key"/>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseTableName="iko_search_action"
+                baseColumnNames="iko_view_key"
+                referencedTableName="iko_view"
+                referencedColumnNames="key"
+                constraintName="fk_iko_search_action_iko_view_key"
+                onDelete="RESTRICT"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2.3">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists
+                    foreignKeyTableName="iko_view_list_column"
+                    foreignKeyName="fk_iko_data_aggregate_list_column_data_aggregate_key"/>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseTableName="iko_view_list_column"
+                baseColumnNames="iko_view_key"
+                referencedTableName="iko_view"
+                referencedColumnNames="key"
+                constraintName="fk_iko_view_list_column_view_key"
+                onDelete="RESTRICT"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2.4">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists
+                    foreignKeyTableName="iko_search_action"
+                    foreignKeyName="fk_iko_data_request_search_field_data_request_key"/>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseTableName="iko_search_field"
+                baseColumnNames="iko_search_action_key,iko_view_key"
+                constraintName="fk_iko_search_field_search_action_key"
+                referencedTableName="iko_search_action"
+                referencedColumnNames="key,iko_view_key"
+                onDelete="RESTRICT"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type         = replace(resource_type, 'com.ritense.iko.domain.IkoDataAggregate',
+                                                'com.ritense.iko.domain.IkoView'),
+                conditions            = replace(conditions, 'com.ritense.iko.domain.IkoDataAggregate',
+                                                'com.ritense.iko.domain.IkoView'),
+                context_resource_type = replace(context_resource_type, 'com.ritense.iko.domain.IkoDataAggregate',
+                                                'com.ritense.iko.domain.IkoView'),
+                context_conditions    = replace(context_conditions, 'com.ritense.iko.domain.IkoDataAggregate',
+                                                'com.ritense.iko.domain.IkoView')
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE permission
+            SET resource_type = replace(resource_type, 'com.ritense.iko.domain.IkoDataAggregate',
+                                        'com.ritense.iko.domain.IkoView'),
+                conditions    = replace(conditions::text, 'com.ritense.iko.domain.IkoDataAggregate',
+                                        'com.ritense.iko.domain.IkoView')::json,
+                context_resource_type = replace(context_resource_type, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView'),
+                context_conditions = replace(context_conditions::text, 'com.ritense.iko.domain.IkoDataAggregate', 'com.ritense.iko.domain.IkoView')::json
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE search_list_column
+            SET owner_id = 'ikoView:' || substring(owner_id from length('ikoDataAggregate:') + 1)
+            WHERE owner_id LIKE 'ikoDataAggregate:%';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            UPDATE search_list_column
+            SET owner_id = CONCAT('ikoView:', SUBSTRING(owner_id, CHAR_LENGTH('ikoDataAggregate:') + 1))
+            WHERE owner_id LIKE 'ikoDataAggregate:%';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="7">
+        <sql>
+            UPDATE search_field_v2
+            SET owner_type = 'IkoSearchAction'
+            WHERE owner_type = 'IkoDataRequest';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

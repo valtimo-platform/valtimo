@@ -8,6 +8,7 @@
                 "title": "Partner",
                 "width": 4,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
@@ -72,6 +73,7 @@
                 "title": "Partner2",
                 "width": 2,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
@@ -136,6 +138,7 @@
                 "title": "Partner3",
                 "width": 1,
                 "highContrast": true,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [
@@ -189,6 +192,7 @@
                 "title": "Werkgevers1",
                 "width": 4,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
                     "collection": "doc:werkgevers",
                     "defaultPageSize": 5,
@@ -220,6 +224,7 @@
                 "title": "Children1",
                 "width": 4,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
                     "collection": "doc:children",
                     "defaultPageSize": 5,

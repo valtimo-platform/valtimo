@@ -102,6 +102,7 @@ class MapWidgetDataProviderTest {
         order = 0,
         width = 1,
         highContrast = false,
+        isCompact = false,
         properties = MapWidgetProperties(listOf(MapWidgetProperties.GeoJsonSource("doc:geo"))),
         actions = listOf(NavigateToWidgetAction(null, "\${doc:action}"))
     )

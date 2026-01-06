@@ -21,32 +21,32 @@
   } as obs"
 >
   <v-paragraph [margin]="true" [italic]="true">
-    {{ 'getResultaattypenInformation' | pluginTranslate: pluginId }}
+    {{ 'getResultaattypenInformation' | pluginTranslate: pluginId  | async }}
   </v-paragraph>
 
   <v-form (valueChange)="formValueChange($event)">
     <v-input
       name="processVariable"
-      [title]="'processVariable' | pluginTranslate: pluginId"
+      [title]="'processVariable' | pluginTranslate: pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.processVariable"
       [disabled]="obs.disabled"
       [required]="true"
       [trim]="true"
-      [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId"
+      [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
     >
     </v-input>
 
     <v-input
       name="zaakTypeUrl"
-      [title]="'zaakTypeUrl' | pluginTranslate: pluginId"
+      [title]="'zaakTypeUrl' | pluginTranslate: pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.zaakTypeUrl"
       [disabled]="obs.disabled"
       [required]="false"
       [trim]="true"
-      [tooltip]="'zaakTypeUrlTooltip' | pluginTranslate: pluginId"
+      [tooltip]="'zaakTypeUrlTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
     >
     </v-input>

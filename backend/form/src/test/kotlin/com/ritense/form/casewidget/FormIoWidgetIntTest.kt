@@ -131,6 +131,7 @@ class FormIoWidgetIntTest @Autowired constructor(
                         icon = "mdi-home",
                         width = 1,
                         highContrast = true,
+                        isCompact = false,
                         actions = null,
                         displayConditions = emptyList(),
                         properties = FormIoWidgetProperties("form-example")

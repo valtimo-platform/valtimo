@@ -57,7 +57,7 @@ class CaseDefinitionProcessManagementResourceIT(
     @Test
     fun `should get a feature process`() {
         caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
-            CaseDefinitionId("house", "1.0.0"),
+            CaseDefinitionId("somecase", "1.0.0"),
             DocumentDefinitionProcessRequest(
                 "unassociated-process",
                 "DOCUMENT_UPLOAD"
@@ -65,7 +65,7 @@ class CaseDefinitionProcessManagementResourceIT(
         )
 
         mockMvc.perform(
-            get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}", "house", "1.0.0", "DOCUMENT_UPLOAD")
+            get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}", "somecase", "1.0.0", "DOCUMENT_UPLOAD")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
         .andDo(MockMvcResultHandlers.print())
@@ -82,7 +82,7 @@ class CaseDefinitionProcessManagementResourceIT(
         )
 
         mockMvc.perform(
-            put("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process", "house", "1.0.0")
+            put("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process", "somecase", "1.0.0")
                 .content(ObjectMapper().writeValueAsString(request))
                 .characterEncoding(StandardCharsets.UTF_8.name())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -93,7 +93,7 @@ class CaseDefinitionProcessManagementResourceIT(
 
 
         val documentDefinitionProcess = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(
-            CaseDefinitionId("house", "1.0.0"),
+            CaseDefinitionId("somecase", "1.0.0"),
             "test"
         )
 
@@ -103,7 +103,7 @@ class CaseDefinitionProcessManagementResourceIT(
     @Test
     fun `should delete a feature process`() {
         caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
-            CaseDefinitionId("house", "1.0.0"),
+            CaseDefinitionId("somecase", "1.0.0"),
             DocumentDefinitionProcessRequest(
                 "unassociated-process",
                 "other"
@@ -111,14 +111,14 @@ class CaseDefinitionProcessManagementResourceIT(
         )
 
         mockMvc.perform(
-            delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}", "house", "1.0.0", "other")
+            delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}", "somecase", "1.0.0", "other")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
         .andDo(MockMvcResultHandlers.print())
         .andExpect(status().isOk)
 
         val documentDefinitionProcess = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(
-            CaseDefinitionId("house", "1.0.0"),
+            CaseDefinitionId("somecase", "1.0.0"),
             "other"
         )
 

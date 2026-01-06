@@ -1,1 +1,2 @@
 com.ritense.resource.autoconfigure.ResourceAutoConfiguration
+com.ritense.resource.autoconfigure.ClamAVConfiguration

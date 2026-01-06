@@ -16,11 +16,15 @@
 
 package com.ritense.resource
 
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import org.junit.jupiter.api.Tag
+import org.mockito.Answers
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootTest
 @Tag("integration")
 abstract class BaseIntegrationTest {
-
+    @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
+    var userManagementService: UserManagementService? = null
 }
