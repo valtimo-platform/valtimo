@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.catalogiapi.CatalogiApiPlugin
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
@@ -395,8 +396,7 @@ class ZakenApiPlugin(
         if (geometryType != null && geometryCoordinates != null) {
             Geometry(
                 type = GeometryType.entries.find { it.key.equals(geometryType, ignoreCase = true) }!!,
-                coordinates = pluginService.getObjectMapper()
-                    .readValue(geometryCoordinates, object : com.fasterxml.jackson.core.type.TypeReference<List<Float>>() {})
+                coordinates = pluginService.getObjectMapper().readValue(geometryCoordinates)
             )
         } else {
             null
