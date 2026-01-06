@@ -48,6 +48,10 @@ class BuildingBlockProcessLinkExporter(
             getProcessLinkMapper(link.processLinkType).toProcessLinkExportResponseDto(link)
         }
 
+        if (exportDtos.isEmpty()) {
+            return ExportResult(null)
+        }
+
         val bytes = ByteArrayOutputStream().use {
             objectMapper.writeValue(it, exportDtos)
             it.toByteArray()
