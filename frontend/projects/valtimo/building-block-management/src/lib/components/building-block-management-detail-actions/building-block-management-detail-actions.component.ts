@@ -27,7 +27,7 @@ import {
   LayerModule,
   ModalModule,
 } from 'carbon-components-angular';
-import {ValtimoCdsModalDirective} from '@valtimo/components';
+import {ValtimoCdsModalDirective, ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
 import {BehaviorSubject, finalize, switchMap, take} from 'rxjs';
 import {
   BuildingBlockManagementApiService,
@@ -52,6 +52,7 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
     ValtimoCdsModalDirective,
     DialogModule,
     BuildingBlockManagementVersionSelectorComponent,
+    ValtimoCdsOverflowButtonDirective,
   ],
 })
 export class BuildingBlockManagementDetailActionsComponent {

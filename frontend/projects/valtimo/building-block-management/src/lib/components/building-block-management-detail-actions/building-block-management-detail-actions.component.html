@@ -14,17 +14,25 @@
   ~ limitations under the License.
   -->
 
-<div class="building-block-actions" *ngIf="{
-  isFinal: isFinal$ | async,
-} as obs"
- [ngClass]="{'--compact': obs.compactMode}"
+<div
+  class="building-block-actions"
+  *ngIf="{
+    isFinal: isFinal$ | async,
+  } as obs"
+  [ngClass]="{'--compact': obs.compactMode}"
 >
   <div class="building-block-metadata">
     <valtimo-building-block-management-version-selector></valtimo-building-block-management-version-selector>
   </div>
 
   <div class="building-block-buttons">
-    <cds-overflow-menu [customTrigger]="trigger" class="overflow-button">
+    <cds-overflow-menu
+      [customTrigger]="trigger"
+      class="overflow-button"
+      valtimoCdsOverflowButton
+      [width]="250"
+      [offset]="{y: 48, x: 37}"
+    >
       <cds-overflow-menu-option
         *ngIf="!obs.isFinal"
         [disabled]="actionInProgress$ | async"
@@ -66,7 +74,10 @@
 
   <form [formGroup]="draftForm" cdsModalContent class="bb-management-actions__modal" [cdsLayer]="1">
     <div class="cds--text-input__field-wrapper">
-      <cds-label [disabled]="draftForm.disabled" [invalid]="versionTag.touched && versionTag.invalid">
+      <cds-label
+        [disabled]="draftForm.disabled"
+        [invalid]="versionTag.touched && versionTag.invalid"
+      >
         <span class="label-with-tooltip select-label">
           {{ 'buildingBlockManagement.actions.draft.version' | translate }}
         </span>
