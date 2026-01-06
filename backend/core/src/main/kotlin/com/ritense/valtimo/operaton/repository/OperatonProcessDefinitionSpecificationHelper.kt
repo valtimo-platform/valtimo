@@ -18,6 +18,7 @@ package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
@@ -117,15 +118,28 @@ class OperatonProcessDefinitionSpecificationHelper {
         fun byNotLinkedToCaseDefinition() = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.or(
                 cb.isNull(root.get<Any>(VERSION_TAG)),
-                cb.not(
-                    cb.equal(
-                        cb.function(
-                            "left",
-                            String::class.java,
-                            root.get<String>(VERSION_TAG),
-                            cb.literal(3)
-                        ),
-                        OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+                cb.and(
+                    cb.not(
+                        cb.equal(
+                            cb.function(
+                                "left",
+                                String::class.java,
+                                root.get<String>(VERSION_TAG),
+                                cb.literal(3)
+                            ),
+                            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+                        )
+                    ),
+                    cb.not(
+                        cb.equal(
+                            cb.function(
+                                "left",
+                                String::class.java,
+                                root.get<String>(VERSION_TAG),
+                                cb.literal(DETACHED_PROCESS_DEFINITION_PREFIX.length)
+                            ),
+                            DETACHED_PROCESS_DEFINITION_PREFIX
+                        )
                     )
                 )
             )

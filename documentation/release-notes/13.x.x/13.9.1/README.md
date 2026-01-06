@@ -1,4 +1,4 @@
-# 13.9.0
+# 13.9.1
 
 {% hint style="info" %}
 **Release date 24-12-2025**
@@ -10,8 +10,6 @@
 
 When enabled, files uploaded to the Documenten API or in temporary file storage will be scanned for viruses.
 More details can be found [here](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
-
-## Enhancements
 
 ## Bugfixes
 
