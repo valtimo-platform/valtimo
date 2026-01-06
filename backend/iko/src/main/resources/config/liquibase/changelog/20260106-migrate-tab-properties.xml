@@ -23,7 +23,7 @@
     <changeSet id="1" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
-            <columnExists tableName="iko_view" columnName="properties"/>
+            <columnExists tableName="tab" columnName="properties"/>
         </preConditions>
         <sql>
             UPDATE tab
@@ -38,7 +38,7 @@
     <changeSet id="2" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
-            <columnExists tableName="iko_view" columnName="properties"/>
+            <columnExists tableName="tab" columnName="properties"/>
         </preConditions>
         <sql>
             UPDATE tab
