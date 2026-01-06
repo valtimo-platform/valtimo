@@ -124,8 +124,7 @@ export class IkoManagementTabDetailsModalComponent {
     return this.form.get('type') as AbstractControl<string>;
   }
   public get properties(): FormGroup | null {
-    const properties = this.form.get('properties');
-    return !properties ? null : (properties as FormGroup);
+    return this.form.get('properties') as FormGroup | null;
   }
 
   private readonly _ikoViewKey$: Observable<string> = this.route.params.pipe(
