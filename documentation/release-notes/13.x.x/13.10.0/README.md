@@ -8,6 +8,7 @@
 
 ## Enhancements
 * Added support for updating the Zaak start date through the Update-zaak plugin action in the Zaken API plugin.
+* The list of case definitions in the menu is sorted alphabetically.
 
 ## Bugfixes
 
