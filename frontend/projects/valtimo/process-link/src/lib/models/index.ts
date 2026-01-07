@@ -19,3 +19,4 @@ export * from './process-link.model';
 export * from './form-flow.model';
 export * from './form-custom-component.model';
 export * from './building-block-field.model';
+export * from './plugin.model';

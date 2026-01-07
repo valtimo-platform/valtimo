@@ -17,6 +17,8 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.plugin.service.PluginService
+import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -26,7 +28,8 @@ import org.springframework.stereotype.Service
 @SkipComponentScan
 class BuildingBlockPluginDefinitionService(
     private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
-    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    private val pluginService: PluginService
 ) {
     //TODO: change these method so they also take call activities to other processes and building blocks into account
     fun getPluginDefinitionKeysForBuildingBlock(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<String> {
@@ -45,5 +48,14 @@ class BuildingBlockPluginDefinitionService(
     fun getPluginDefinitionKeysForProcessDefinition(processDefinitionId: String): Set<String> {
         val keys = pluginProcessLinkRepository.findPluginDefinitionKeysByProcessDefinitionIds(listOf(processDefinitionId))
         return keys.toSet()
+    }
+
+    fun getPluginDefinitionsWithDependenciesForBuildingBlock(
+        buildingBlockId: BuildingBlockDefinitionId
+    ): PluginDefinitionsWithDependenciesDto {
+        val pluginKeys = getPluginDefinitionKeysForBuildingBlock(buildingBlockId)
+
+        return pluginService
+            .getPluginDefinitionsWithDependencies(pluginKeys)
     }
 }

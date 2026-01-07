@@ -1837,6 +1837,12 @@
         "title": "Synchroniseren",
         "continuous": "Continu",
         "end": "Aan het einde"
+      },
+      "pluginDependenciesWarning": {
+        "title": "Afhankelijkheden",
+        "zaakInstanceAndTypeLink": "Dit bouwblok heeft mogelijk zowel een zaakinstantiekoppeling als een zaaktypekoppeling nodig, die zijn geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
+        "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
+        "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
       }
     }
   },
@@ -2225,6 +2231,11 @@
     "plugins": {
       "title": "Gebruikte plugins",
       "noPluginsUsed": "Dit bouwblok gebruikt geen plugins"
+    },
+    "overflowMenu": {
+      "export": "Exporteer \"{{value}}\"",
+      "exportSuccessTitle": "Download start binnenkort",
+      "preparingDownload": "Download aan het voorbereiden"
     }
   },
   "mdiIcons": {

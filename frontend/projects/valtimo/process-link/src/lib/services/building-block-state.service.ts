@@ -38,6 +38,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _outputMappings$ = new BehaviorSubject<Array<BuildingBlockOutputMapping>>([]);
   private readonly _loadingRequirements$ = new BehaviorSubject<boolean>(false);
   private readonly _loadingFields$ = new BehaviorSubject<boolean>(false);
+  private readonly _pluginDependencies$ = new BehaviorSubject<Array<string>>([]);
 
   private _versionSubscription?: Subscription;
   private _requirementsSubscription?: Subscription;
@@ -85,6 +86,10 @@ export class BuildingBlockStateService implements OnDestroy {
 
   public get fieldsLoading$(): Observable<boolean> {
     return this._loadingFields$.asObservable();
+  }
+
+  public get pluginDependencies$(): Observable<Array<string>> {
+    return this._pluginDependencies$.asObservable();
   }
 
   public get mappingsComplete$(): Observable<boolean> {
@@ -234,12 +239,20 @@ export class BuildingBlockStateService implements OnDestroy {
     this._requirementsSubscription = this.processLinkBuildingBlockApiService
       .getPluginDefinitionsForBuildingBlock(key, versionTag)
       .subscribe({
-        next: pluginKeys => {
+        next: res => {
+          const plugins = res?.plugins ?? [];
+          const pluginKeys = plugins.map(plugin => plugin.pluginDefinitionKey).filter(Boolean);
+          const dependencies: string[] = Array.from(
+            new Set(plugins.flatMap(p => p.dependencies ?? []).map(d => d.key))
+          );
+
           this.applyPluginKeys(pluginKeys ?? []);
+          this._pluginDependencies$.next(dependencies);
           this._loadingRequirements$.next(false);
         },
         error: () => {
           this.applyPluginKeys([]);
+          this._pluginDependencies$.next([]);
           this._loadingRequirements$.next(false);
         },
       });

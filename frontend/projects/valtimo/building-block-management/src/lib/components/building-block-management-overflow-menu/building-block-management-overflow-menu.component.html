@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-template #customTrigger>
+  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
+    {{ 'caseManagement.more' | translate }}
+
+    <svg
+      class="cds--btn__icon case-management-overflow-icon"
+      cdsIcon="overflow-menu--vertical"
+      size="16"
+    ></svg>
+  </button>
+</ng-template>
+
+<cds-overflow-menu
+  valtimoCdsOverflowButton
+  [width]="250"
+  [customTrigger]="customTrigger"
+  [offset]="{y: 48, x: 37}"
+  class="overflow-button"
+>
+  <cds-overflow-menu-option
+    [id]="'exportDocumentDefinition'"
+    (selected)="export()"
+    [disabled]="(loadingDefinition$ | async) || (exporting$ | async)"
+    >{{
+      'buildingBlockManagement.overflowMenu.export' | translate: {value: buildingBlockName$ | async}
+    }}
+  </cds-overflow-menu-option>
+</cds-overflow-menu>
+
+<ng-template #exportingMessage>
+  <div class="exporting-message">
+    <span class="cds--inline-notification__title">{{
+      'buildingBlockManagement.overflowMenu.preparingDownload' | translate
+    }}</span>
+
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>

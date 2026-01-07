@@ -29,19 +29,25 @@ import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
+import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
+import com.ritense.buildingblock.service.BuildingBlockDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
+import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockProcessDefinitionLinkExporter
+import com.ritense.buildingblock.service.BuildingBlockProcessLinkExporter
 import com.ritense.buildingblock.service.BuildingBlockProcessLinkImporter
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
@@ -50,17 +56,21 @@ import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
@@ -225,12 +235,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockManagementService: BuildingBlockManagementService,
-        importService: ImportService
+        importService: ImportService,
+        exportService: ExportService,
     ): BuildingBlockManagementResource {
         return BuildingBlockManagementResource(
             buildingBlockDefinitionRepository,
             buildingBlockManagementService,
-            importService
+            importService,
+            exportService
         )
     }
 
@@ -300,6 +312,16 @@ class BuildingBlockAutoConfiguration {
             applicationEventPublisher
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
+    fun buildingBlockPluginDefinitionService(
+        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    ) = BuildingBlockPluginDefinitionService(
+        pluginProcessLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionImporter::class)
@@ -382,10 +404,12 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
     fun buildingBlockPluginDefinitionService(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        pluginService: PluginService
     ) = BuildingBlockPluginDefinitionService(
         pluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository,
+        pluginService
     )
 
     @Bean
@@ -403,4 +427,49 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
     ) = BuildingBlockProcessLinkImporter(processLinkService, objectMapper, buildingBlockDefinitionProcessDefinitionService)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionExporter::class)
+    fun buildingBlockDefinitionExporter(
+        objectMapper: ObjectMapper,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        documentDefinitionService: DocumentDefinitionService,
+    ) = BuildingBlockDefinitionExporter(objectMapper, buildingBlockDefinitionRepository, documentDefinitionService)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkExporter::class)
+    fun buildingBlockDefinitionArtworkExporter(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+    ) = BuildingBlockDefinitionArtworkExporter(buildingBlockDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockJsonSchemaDocumentDefinitionExporter::class)
+    fun buildingBlockJsonSchemaDocumentDefinitionExporter(
+        objectMapper: ObjectMapper,
+        documentDefinitionService: JsonSchemaDocumentDefinitionService
+    ) = BuildingBlockJsonSchemaDocumentDefinitionExporter(objectMapper, documentDefinitionService)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionExporter::class)
+    fun buildingBlockProcessDefinitionExporter(
+        operatonRepositoryService: OperatonRepositoryService,
+        repositoryService: RepositoryService,
+    ) = BuildingBlockProcessDefinitionExporter(operatonRepositoryService, repositoryService)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionLinkExporter::class)
+    fun buildingBlockProcessDefinitionLinkExporter(
+        objectMapper: ObjectMapper,
+        repositoryService: RepositoryService,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    ) = BuildingBlockProcessDefinitionLinkExporter(objectMapper, repositoryService, processDefinitionBuildingBlockDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkExporter::class)
+    fun buildingBlockProcessLinkExporter(
+        processLinkService: ProcessLinkService,
+        objectMapper: ObjectMapper,
+        repositoryService: RepositoryService,
+        processLinkMappers: List<ProcessLinkMapper>,
+    ) = BuildingBlockProcessLinkExporter(processLinkService, objectMapper, repositoryService, processLinkMappers)
 }

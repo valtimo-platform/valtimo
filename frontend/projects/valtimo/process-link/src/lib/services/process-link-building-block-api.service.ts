@@ -24,7 +24,7 @@ import {
   InterceptorSkip,
   Page,
 } from '@valtimo/shared';
-import {BuildingBlockField} from '../models';
+import {BuildingBlockField, PluginsWithDependencies} from '../models';
 import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
@@ -55,8 +55,8 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
   public getPluginDefinitionsForBuildingBlock(
     key: string,
     versionTag: string
-  ): Observable<string[]> {
-    return this.httpClient.get<string[]>(
+  ): Observable<PluginsWithDependencies> {
+    return this.httpClient.get<PluginsWithDependencies>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/plugin`)
     );
   }

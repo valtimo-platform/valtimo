@@ -30,6 +30,7 @@ import {
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
+import {PluginsWithDependencies} from '@valtimo/process-link';
 
 @Injectable({
   providedIn: 'root',
@@ -159,8 +160,8 @@ export class BuildingBlockManagementApiService extends BaseApiService {
   public getPluginDefinitionsForBuildingBlock(
     key: string,
     versionTag: string
-  ): Observable<string[]> {
-    return this.httpClient.get<string[]>(
+  ): Observable<PluginsWithDependencies> {
+    return this.httpClient.get<PluginsWithDependencies>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/plugin`)
     );
   }
@@ -226,6 +227,16 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       this.getApiUrl(
         `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionId}`
       )
+    );
+  }
+
+  public exportBuildingBlock(key: string, versionTag: string): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/export`),
+      {
+        responseType: 'blob',
+        observe: 'response',
+      }
     );
   }
 }
