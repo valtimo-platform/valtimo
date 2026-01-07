@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
-export * from './form-custom-component.model';
-export * from './building-block-field.model';
-export * from './plugin.model';
+package com.ritense.plugin.web.rest.result
+
+import com.ritense.plugin.domain.PluginDependency
+
+data class PluginDefinitionsWithDependenciesDto(
+    val plugins: List<PluginWithDependenciesDto>
+)
+
+data class PluginWithDependenciesDto(
+    val pluginDefinitionKey: String,
+    val dependencies: List<PluginDependency>
+)

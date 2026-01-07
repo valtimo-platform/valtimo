@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
-export * from './form-custom-component.model';
-export * from './building-block-field.model';
-export * from './plugin.model';
+package com.ritense.plugin.domain
+
+import jakarta.persistence.Column
+import jakarta.persistence.Embeddable
+
+@Embeddable
+data class PluginDependency(
+    @Column(name = "dependency")
+    val key: String = ""
+) {
+    companion object {
+        const val ZAAK_TYPE_LINK = "ZAAK_TYPE_LINK"
+        const val ZAAK_INSTANCE_LINK = "ZAAK_INSTANCE_LINK"
+
+        fun of(key: String) = PluginDependency(key)
+    }
+}

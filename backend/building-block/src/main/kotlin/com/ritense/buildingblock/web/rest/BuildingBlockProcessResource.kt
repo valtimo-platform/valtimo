@@ -21,6 +21,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitio
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
+import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -109,12 +110,13 @@ class BuildingBlockProcessResource(
     fun getPluginDefinitionsForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String
-    ): ResponseEntity<List<String>> {
+    ): ResponseEntity<PluginDefinitionsWithDependenciesDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        val pluginKeys = runWithoutAuthorization {
-            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForBuildingBlock(buildingBlockId)
+        val pluginKeysWithDependencies = runWithoutAuthorization {
+            buildingBlockPluginDefinitionService.getPluginDefinitionsWithDependenciesForBuildingBlock(buildingBlockId)
         }
-        return ResponseEntity.ok(pluginKeys.toList().sorted())
+
+        return ResponseEntity.ok(pluginKeysWithDependencies)
     }
 
     @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/plugin")
