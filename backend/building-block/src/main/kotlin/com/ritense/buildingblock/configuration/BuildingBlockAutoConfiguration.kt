@@ -291,16 +291,6 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
-    fun buildingBlockPluginDefinitionService(
-        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
-    ) = BuildingBlockPluginDefinitionService(
-        pluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository
-    )
-
-    @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionImporter::class)
     fun buildingBlockDefinitionImporter(
         objectMapper: ObjectMapper,

@@ -272,7 +272,7 @@ public class OperatonProcessService {
                 }
             });
         if (processDefinition == null) {
-            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and caseDefinitionId: '" + caseDefinitionId + "'");
+            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and solutionModuleId: '" + solutionModuleId + "'");
         }
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
