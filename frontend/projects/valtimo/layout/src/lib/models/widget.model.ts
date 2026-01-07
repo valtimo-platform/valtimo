@@ -64,6 +64,7 @@ interface FieldsWidgetValue {
   key: string;
   title: string;
   value: string;
+  filterable?: boolean;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
 }

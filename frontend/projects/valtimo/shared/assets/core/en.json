@@ -955,6 +955,7 @@
         "collectionTooltip": "A path which leads to the collection of values which you want to display. For showing properties in the document's JSON schema, follow this example: 'doc:children'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: doc:\"loans-accepted\".",
         "columns": "Columns",
         "options": "Options",
+        "filterable": "Filterable",
         "firstColumnAsTitle": "First column is the title of the row",
         "titleTooltip": "Title for the column",
         "valueTooltip": "Name of the property you wish to access within the previously filled table data path"
@@ -1328,6 +1329,9 @@
     "noItemsFound": "No items found",
     "clearAll": "Clear all",
     "clear": "Clear",
+    "filters": "Filters",
+    "from": "From",
+    "to": "To",
     "show": "Show",
     "display": "Display",
     "items": "items",
@@ -1936,6 +1940,9 @@
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {
     "noData": "No data found",
+    "filter": {
+      "multiPlaceholder": "Comma separated values"
+    },
     "emptyFields": "Nothing here",
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",

@@ -18,6 +18,7 @@
     inputTheme: inputTheme$ | async,
     params: params$ | async,
     widgetType: $widgetType() === 'interactive-table' ? 'table' : $widgetType(),
+    isInteractiveTable: $widgetType() === 'interactive-table',
   } as data"
   class="valtimo-widget-management-field-column"
   [formGroup]="formGroup"
@@ -97,6 +98,15 @@
                 />
               }
             </cds-text-label>
+
+            @if (data.isInteractiveTable) {
+              <cds-toggle
+                formControlName="filterable"
+                [label]="'widgetTabManagement.content.table.filterable' | translate"
+                [onText]="'interface.yes' | translate"
+                [offText]="'interface.no' | translate"
+              ></cds-toggle>
+            }
           </div>
 
           <div class="valtimo-widget-management-field-column__options">

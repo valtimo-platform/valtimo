@@ -59,6 +59,7 @@ import {
   InputModule,
   LayerModule,
   ListItem,
+  ToggleModule,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
@@ -97,6 +98,7 @@ import {IWidgetManagementService} from '../../../../../interfaces';
     ValuePathSelectorComponent,
     CheckboxModule,
     LayerModule,
+    ToggleModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -185,6 +187,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           Validators.pattern('[1-9][0-9]*')
         ),
         hideWhenEmpty: this.fb.control<boolean>(false),
+        filterable: this.fb.control<boolean>(false),
       })
     );
   }
@@ -236,6 +239,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       ),
       title: this.fb.control<string>(row.title, Validators.required),
       content: this.fb.control<string>(row.value, Validators.required),
+      filterable: this.fb.control<boolean>(row.filterable ?? false),
       ...((!row.displayProperties || row.displayProperties?.type === WidgetDisplayTypeKey.TEXT) && {
         ellipsisCharacterLimit: this.fb.control<number | null>(
           (row.displayProperties as WidgetTextDisplayType)?.ellipsisCharacterLimit ?? null,
@@ -316,6 +320,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
           title: row.title,
           value: row.content,
+          filterable: !!row?.filterable,
           ...(!!row?.type.id && {
             displayProperties: {
               type: row.type.id,
