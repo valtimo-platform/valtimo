@@ -38,7 +38,7 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
         createDocument(
             definitionOf(
                 JsonSchemaDocumentDefinitionId.of(
-                "referenced",
+                    "referenced",
                     CaseDefinitionId.of(
                         "referenced",
                         "1.0.0"
@@ -64,5 +64,43 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
         val targetDocument = documentRepository.findAll(byDocumentDefinitionIdName("allows-all"))[0]
         assertEquals("""{"address":"Straatnaam"}""", targetDocument.content().asJson().toString())
         assertEquals("allows-all", targetDocument.definitionId().name())
+    }
+
+    @Test
+    fun `should migrate documents in batches`() {
+        val sourceDefinition = definitionOf(
+            JsonSchemaDocumentDefinitionId.of(
+                "referenced",
+                CaseDefinitionId.of("referenced", "1.0.0")
+            )
+        )
+
+        repeat(10) { i ->
+            createDocument(
+                sourceDefinition,
+                """{"address": {"streetName": "Straatnaam $i"}}"""
+            )
+        }
+
+        runWithoutAuthorization {
+            documentMigrationService.migrateDocuments(
+                DocumentMigrationRequest(
+                    documentDefinitionNameSource = "referenced",
+                    caseDefinitionIdSource = CaseDefinitionId.of("referenced", "1.0.0"),
+                    documentDefinitionNameTarget = "allows-all",
+                    caseDefinitionIdTarget = CaseDefinitionId.of("allows-all", "1.0.0"),
+                    patches = listOf(
+                        DocumentMigrationPatch(source = "/address/streetName", target = "/address"),
+                    ),
+                    batchSize = 4
+                )
+            )
+        }
+
+        val sourceDocuments = documentRepository.findAll(byDocumentDefinitionIdName("referenced"))
+        val targetDocuments = documentRepository.findAll(byDocumentDefinitionIdName("allows-all"))
+
+        assertEquals(6, sourceDocuments.size)
+        assertEquals(4, targetDocuments.size)
     }
 }

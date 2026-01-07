@@ -24,7 +24,8 @@ data class DocumentMigrationRequest(
     val caseDefinitionIdSource: CaseDefinitionId,
     val documentDefinitionNameTarget: String,
     val caseDefinitionIdTarget: CaseDefinitionId,
-    val patches: List<DocumentMigrationPatch>
+    val patches: List<DocumentMigrationPatch>,
+    val batchSize: Int? = null
 ) {
     fun getDocumentDefinitionIdSource(): JsonSchemaDocumentDefinitionId =
         JsonSchemaDocumentDefinitionId.existingId(documentDefinitionNameSource, caseDefinitionIdSource)
