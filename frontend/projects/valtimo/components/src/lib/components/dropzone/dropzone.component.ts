@@ -54,28 +54,37 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() uploading: boolean;
   @Input() camera = false;
 
-  @Input() _maxFiles!: number;
+  _maxFiles?: number;
 
   @Input()
   set maxFiles(value: number) {
     this._maxFiles = value;
     this.initDropzone();
   }
+  get maxFiles(): number {
+    return this._maxFiles;
+  }
 
-  @Input() _maxFileSize: number = 5;
+  _maxFileSize: number = 5;
 
   @Input()
   set maxFileSize(value: number) {
     this._maxFileSize = value;
     this.initDropzone();
   }
+  get maxFileSize(): number {
+    return this._maxFileSize;
+  }
 
-  @Input() _acceptedFiles: string = '';
+  _acceptedFiles: string = '';
 
   @Input()
   set acceptedFiles(value: string) {
     this._acceptedFiles = value;
     this.initDropzone();
+  }
+  get acceptedFiles(): string {
+    return this._acceptedFiles;
   }
 
   @Output() fileSelected: EventEmitter<File> = new EventEmitter();
