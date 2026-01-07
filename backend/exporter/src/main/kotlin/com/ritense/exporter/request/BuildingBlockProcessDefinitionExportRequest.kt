@@ -14,22 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.exception
+package com.ritense.exporter.request
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
-import java.util.UUID
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 
-class UnknownBuildingBlockInstanceException(message: String?) :
-    AbstractThrowableProblem(
-        null,
-        message,
-        Status.BAD_REQUEST
-    ) {
-    constructor(id: UUID) : this("Building block instance with id $id could not be found")
-
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}
+data class BuildingBlockProcessDefinitionExportRequest(
+    val processDefinitionId: String,
+    override val buildingBlockDefinitionId: BuildingBlockDefinitionId
+) : ExportRequest()

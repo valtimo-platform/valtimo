@@ -2214,6 +2214,11 @@
     "plugins": {
       "title": "Gebruikte plugins",
       "noPluginsUsed": "Dit bouwblok gebruikt geen plugins"
+    },
+    "overflowMenu": {
+      "export": "Exporteer \"{{value}}\"",
+      "exportSuccessTitle": "Download start binnenkort",
+      "preparingDownload": "Download aan het voorbereiden"
     }
   },
   "mdiIcons": {
