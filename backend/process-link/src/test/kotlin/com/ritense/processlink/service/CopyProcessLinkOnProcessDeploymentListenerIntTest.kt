@@ -80,7 +80,7 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         val latestProcessDefinition = getLatestProcessDefinition()
         assertEquals(1, processDefinition.version)
         assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
-        assertEquals(1, latestProcessDefinition.version)
+        assertEquals(3, latestProcessDefinition.version)
         assertEquals(0, processLinkService.getProcessLinks(latestProcessDefinition.id, SERVICE_TASK_ID).count())
     }
 

@@ -14,22 +14,8 @@
  * limitations under the License.
  */
 
-export const PatchZaakPropertyOptions = [
-  'description',
-  'explanation',
-  'startDate',
-  'plannedEndDate',
-  'finalDeliveryDate',
-  'publicationDate',
-  'communicationChannel',
-  'communicationChannelName',
-  'paymentIndication',
-  'lastPaymentDate',
-  'caseGeometryType',
-  'caseGeometryCoordinates',
-  'mainCase',
-  'archiveActionDate',
-  'startDateRetentionPeriod',
-] as const;
+package com.ritense.valtimo.event
 
-export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+
+data class ProcessDefinitionDetached(val processDefinitionId: String, val caseDefinitionId: CaseDefinitionId?)
