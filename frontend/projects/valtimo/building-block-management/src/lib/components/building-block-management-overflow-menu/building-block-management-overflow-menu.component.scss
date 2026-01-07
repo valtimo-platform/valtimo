@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,23 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.ritense.buildingblock.exception
-
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
-import java.util.UUID
-
-class UnknownBuildingBlockInstanceException(message: String?) :
-    AbstractThrowableProblem(
-        null,
-        message,
-        Status.BAD_REQUEST
-    ) {
-    constructor(id: UUID) : this("Building block instance with id $id could not be found")
-
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}

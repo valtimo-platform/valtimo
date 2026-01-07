@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,10 +19,10 @@ package com.ritense.buildingblock.processlink.service
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
