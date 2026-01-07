@@ -2175,6 +2175,11 @@
     "plugins": {
       "title": "Plugins used",
       "noPluginsUsed": "This building block does not use any plugins"
+    },
+    "overflowMenu": {
+      "export": "Export \"{{value}}\"",
+      "exportSuccessTitle": "Download will start shortly",
+      "preparingDownload": "Preparing download"
     }
   },
   "mdiIcons": {
