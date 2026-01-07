@@ -25,8 +25,11 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
+import com.ritense.exporter.ExportService
+import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
+import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -34,6 +37,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -44,6 +48,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @RestController
 @SkipComponentScan
@@ -51,7 +57,8 @@ import org.springframework.web.multipart.MultipartFile
 class BuildingBlockManagementResource(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockManagementService: BuildingBlockManagementService,
-    private val importService: ImportService
+    private val importService: ImportService,
+    private val exportService: ExportService,
 ) {
     @GetMapping
     fun getBuildingBlockDefinitions(
@@ -115,6 +122,26 @@ class BuildingBlockManagementResource(
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
+    }
+
+    @GetMapping(
+        "/{key}/version/{versionTag}/export",
+        produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
+    )
+
+    @RunWithoutAuthorization
+    fun getExport(
+        @LoggableResource("buildingBlockDefinitionKey") @PathVariable key: String,
+        @LoggableResource("buildingBlockDefinitionVersionTag") @PathVariable versionTag: String,
+    ): ResponseEntity<ByteArray> {
+        val baos = exportService
+            .export(BuildingBlockDefinitionExportRequest(BuildingBlockDefinitionId.of(key, versionTag)))
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
+        val fileName = "${key}_${versionTag}_$timestamp.building-block.zip"
+        return ResponseEntity
+            .ok()
+            .header("Content-Disposition", "attachment;filename=$fileName")
+            .body(baos.toByteArray())
     }
 
     @GetMapping("/{key}/version")
