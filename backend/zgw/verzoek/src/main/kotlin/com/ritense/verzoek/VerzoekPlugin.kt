@@ -30,6 +30,7 @@ import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.CopyStrategy
@@ -45,7 +46,8 @@ import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.P
 @Plugin(
     key = "verzoek",
     title = "Verzoek",
-    description = "Handles verzoeken"
+    description = "Handles verzoeken",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK]
 )
 class VerzoekPlugin(
     private val caseDefinitionService: CaseDefinitionService,

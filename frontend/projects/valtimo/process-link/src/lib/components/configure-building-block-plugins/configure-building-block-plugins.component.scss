@@ -26,9 +26,19 @@
     display: grid;
     align-items: center;
   }
-
 }
 
 .plugin-list {
   margin-top: 30px;
+}
+
+.configure-building-block-plugins__warning {
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+
+  ::ng-deep cds-notification {
+    max-inline-size: 100%;
+    min-inline-size: 100%;
+  }
 }

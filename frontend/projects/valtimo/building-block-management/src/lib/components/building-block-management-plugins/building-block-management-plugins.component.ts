@@ -41,14 +41,17 @@ export class BuildingBlockManagementPluginsComponent {
       this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag
     ),
   ]).pipe(
-    map(([pluginDefinitions, pluginDefinitionsForBuildingBlock]) =>
-      pluginDefinitionsForBuildingBlock.map(
+    map(([pluginDefinitions, pluginsForBuildingBlock]) => {
+      const plugins = pluginsForBuildingBlock?.plugins ?? [];
+      const pluginKeys = plugins.map(plugin => plugin.pluginDefinitionKey).filter(Boolean);
+
+      return pluginKeys.map(
         pluginDefinitionForBuildingBlock =>
           pluginDefinitions.find(
             pluginDefinition => pluginDefinition.key === pluginDefinitionForBuildingBlock
           )?.title ?? pluginDefinitionForBuildingBlock
-      )
-    ),
+      );
+    }),
     tap(() => this.loading$.next(false))
   );
 

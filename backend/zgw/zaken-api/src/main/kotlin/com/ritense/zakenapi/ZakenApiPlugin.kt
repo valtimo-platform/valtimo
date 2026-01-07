@@ -29,6 +29,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
@@ -104,7 +105,8 @@ import java.util.UUID
 @Plugin(
     key = ZakenApiPlugin.PLUGIN_KEY,
     title = "Zaken API",
-    description = "Connects to the Zaken API"
+    description = "Connects to the Zaken API",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK, PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class ZakenApiPlugin(
     private val client: ZakenApiClient,

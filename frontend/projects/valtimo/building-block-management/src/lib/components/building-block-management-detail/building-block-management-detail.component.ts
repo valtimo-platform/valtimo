@@ -16,7 +16,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule, PageTitleService, RenderInPageHeaderDirective} from '@valtimo/components';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {ButtonModule, DialogModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {ActivatedRoute} from '@angular/router';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -27,6 +27,7 @@ import {BuildingBlockManagementTabKey} from '../../models';
 import {take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementVersionSelectorComponent} from '../building-block-management-version-selector/building-block-management-version-selector.component';
+import {BuildingBlockManagementOverflowMenuComponent} from '../building-block-management-overflow-menu/building-block-management-overflow-menu.component';
 
 @Component({
   standalone: true,
@@ -45,6 +46,8 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
     BuildingBlockManagementProcessesComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementVersionSelectorComponent,
+    DialogModule,
+    BuildingBlockManagementOverflowMenuComponent,
   ],
   providers: [BuildingBlockManagementDetailService],
 })
