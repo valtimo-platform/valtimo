@@ -38,6 +38,7 @@ import {combineLatest, Observable, of, shareReplay, Subscription} from 'rxjs';
 import {catchError, map, switchMap, take} from 'rxjs/operators';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {TranslateService} from '@ngx-translate/core';
+import {NotificationContent} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -47,6 +48,44 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy {
   public readonly pluginKeys$ = this.buildingBlockStateService.requiredPluginKeys$;
+  private readonly _pluginDependenciesWarningTranslationKey$: Observable<string> =
+    this.buildingBlockStateService.pluginDependencies$.pipe(
+      map(dependencies => {
+        if (!dependencies || !dependencies.length) return '';
+
+        const zaakInstanceLinkDependency = dependencies.includes('ZAAK_INSTANCE_LINK');
+        const zaakTypeLinkDependency = dependencies.includes('ZAAK_TYPE_LINK');
+
+        if (zaakInstanceLinkDependency && zaakTypeLinkDependency) {
+          return 'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.zaakInstanceAndTypeLink';
+        } else if (zaakInstanceLinkDependency) {
+          return 'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.zaakInstanceLink';
+        } else if (zaakTypeLinkDependency) {
+          return 'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.zaakTypeLink';
+        } else {
+          return '';
+        }
+      })
+    );
+
+  public readonly dependenciesNotificationObject$: Observable<NotificationContent> = combineLatest([
+    this._pluginDependenciesWarningTranslationKey$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([warningTranslationKey]) =>
+      !warningTranslationKey
+        ? null
+        : {
+            type: 'warning',
+            lowContrast: true,
+            title: this.translateService.instant(
+              'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.title'
+            ),
+            message: this.translateService.instant(warningTranslationKey),
+            showClose: false,
+          }
+    )
+  );
   public readonly loading$ = this.buildingBlockStateService.requirementsLoading$;
   public readonly versions$ = this.buildingBlockStateService.versions$;
   public readonly definitionVersionTag$ = this.buildingBlockStateService.definitionVersionTag$;

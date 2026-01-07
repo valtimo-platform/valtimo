@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-11-17 15:13:46.
+// Generated using typescript-generator version 3.2.1263 on 2026-01-07 12:03:16.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -660,23 +660,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    processLinkType: string;
+    processDefinitionId: string;
     activityId: string;
+    processLinkType: string;
 }
 
 export interface ProcessLinkExportResponseDto {
     activityType: ActivityTypeWithEventName;
-    processLinkType: string;
     activityId: string;
+    processLinkType: string;
 }
 
 export interface ProcessLinkResponseDto {
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    processLinkType: string;
+    processDefinitionId: string;
     activityId: string;
+    processLinkType: string;
     id: string;
 }
 
@@ -831,10 +831,11 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
+    width: number;
+    icon: string | null;
+    title: string;
     highContrast: boolean;
     displayConditions: Condition<any>[] | null;
-    width: number;
-    title: string;
     key: string;
     actions: WidgetAction[];
 }
@@ -858,8 +859,8 @@ export interface URI extends Comparable<URI>, Serializable {
 export interface RelatedFile {
     createdBy: string;
     createdOn: DateAsString;
-    sizeInBytes: number;
     fileId: string;
+    sizeInBytes: number;
     fileName: string;
 }
 
@@ -876,8 +877,8 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
     activityId: string;
 }
 
@@ -985,25 +986,25 @@ export interface ProcessDefinitionDto {
 
 export interface HistoricActivityInstance {
     processDefinitionKey: string;
-    processInstanceId: string;
     rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    activityType: string;
+    processDefinitionId: string;
+    activityId: string;
+    assignee: string;
+    tenantId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    processDefinitionId: string;
-    activityType: string;
-    endTime: DateAsString;
-    startTime: DateAsString;
-    taskId: string;
-    assignee: string;
-    tenantId: string;
     executionId: string;
-    activityId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
+    processInstanceId: string;
     id: string;
 }
 

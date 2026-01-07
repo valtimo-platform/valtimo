@@ -50,6 +50,7 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  NotificationModule,
   ProgressIndicatorModule,
   RadioModule as CarbonRadioModule,
   SelectModule,
@@ -133,6 +134,7 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
     CarbonRadioModule,
     ValuePathSelectorComponent,
     ConfigureBuildingBlockMappingsComponent,
+    NotificationModule,
   ],
   exports: [
     ProcessLinkComponent,

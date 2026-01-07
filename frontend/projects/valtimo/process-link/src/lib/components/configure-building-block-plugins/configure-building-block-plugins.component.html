@@ -15,6 +15,12 @@
   -->
 
 <div class="configure-building-block-plugins">
+  <div
+    *ngIf="dependenciesNotificationObject$ | async as dependenciesNotificationObject"
+    class="configure-building-block-plugins__warning"
+  >
+    <cds-notification [notificationObj]="dependenciesNotificationObject"> </cds-notification>
+  </div>
 
   @if (versionItems$ | async; as versionItems) {
     @let versionPlaceholder = versionPlaceholder$ | async;
@@ -32,20 +38,18 @@
     </div>
   }
 
-  @if (loading$ | async ) {
+  @if (loading$ | async) {
     <div class="loading-container">
       <cds-loading></cds-loading>
     </div>
   } @else {
     <div class="plugin-list">
-      @if (definitionVersionTag$ | async;) {
+      @if (definitionVersionTag$ | async) {
         @if (pluginConfigurationViewModels$ | async; as pluginConfigurationViewModels) {
           @if (pluginConfigurationViewModels.length === 0) {
-
             <div class="empty-state">
               {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
             </div>
-
           } @else {
             @let configurationPlaceholder = configurationPlaceholder$ | async;
 
@@ -64,7 +68,7 @@
             @for (plugin of pluginConfigurationViewModels; track plugin.key) {
               <div class="plugin-row">
                 <div class="plugin-label">
-                  {{plugin.label}}
+                  {{ plugin.label }}
                 </div>
 
                 <cds-dropdown
