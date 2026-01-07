@@ -19,6 +19,10 @@ package com.ritense.plugin.web.rest.result
 import com.ritense.plugin.domain.PluginDependency
 
 data class PluginDefinitionsWithDependenciesDto(
-    val pluginDefinitionKeys: List<String>,
+    val plugins: List<PluginWithDependenciesDto>
+)
+
+data class PluginWithDependenciesDto(
+    val pluginDefinitionKey: String,
     val dependencies: List<PluginDependency>
 )

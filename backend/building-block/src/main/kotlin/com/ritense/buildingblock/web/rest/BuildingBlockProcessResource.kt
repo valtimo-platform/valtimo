@@ -19,9 +19,9 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
-import com.ritense.buildingblock.web.rest.dto.BuildingBlockPluginDefinitionsWithDependenciesDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
+import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -110,17 +110,13 @@ class BuildingBlockProcessResource(
     fun getPluginDefinitionsForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String
-    ): ResponseEntity<BuildingBlockPluginDefinitionsWithDependenciesDto> {
+    ): ResponseEntity<PluginDefinitionsWithDependenciesDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val pluginKeysWithDependencies = runWithoutAuthorization {
             buildingBlockPluginDefinitionService.getPluginDefinitionsWithDependenciesForBuildingBlock(buildingBlockId)
         }
-        return ResponseEntity.ok(
-            BuildingBlockPluginDefinitionsWithDependenciesDto(
-                pluginKeysWithDependencies.pluginDefinitionKeys,
-                pluginKeysWithDependencies.dependencies
-            )
-        )
+
+        return ResponseEntity.ok(pluginKeysWithDependencies)
     }
 
     @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/plugin")

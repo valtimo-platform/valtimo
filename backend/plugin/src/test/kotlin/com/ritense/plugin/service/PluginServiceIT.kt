@@ -501,7 +501,7 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Test
     @Transactional
-    fun `should return merged and sorted plugin dependencies for plugin definitions`() {
+    fun `should return plugin dependencies for plugin definitions`() {
         val pluginKeys = listOf(
             "test-plugin",
             "test-category-plugin"
@@ -511,15 +511,21 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
         assertEquals(
             listOf("test-category-plugin", "test-plugin"),
-            result.pluginDefinitionKeys
+            result.plugins.map { it.pluginDefinitionKey }
         )
+
+        val mergedDependencyKeys = result.plugins
+            .flatMap { it.dependencies }
+            .map { it.key }
+            .distinct()
+            .sorted()
 
         assertEquals(
             listOf(
                 PluginDependency.ZAAK_INSTANCE_LINK,
                 PluginDependency.ZAAK_TYPE_LINK
-            ),
-            result.dependencies
+            ).sorted(),
+            mergedDependencyKeys
         )
     }
 

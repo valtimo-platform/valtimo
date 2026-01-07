@@ -36,6 +36,7 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginDefinition
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
@@ -54,6 +55,7 @@ import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
 import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
 import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
+import com.ritense.plugin.web.rest.result.PluginWithDependenciesDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -486,17 +488,24 @@ class PluginService(
     ): PluginDefinitionsWithDependenciesDto {
         val definitions = pluginDefinitionRepository.findAllById(pluginDefinitionKeys)
 
-        val mergedDependencies = definitions
-            .mapNotNull { definition ->
-                val pluginClass = Class.forName(definition.fullyQualifiedClassName)
-                pluginClass.getAnnotation(Plugin::class.java)
-            }
-            .flatMap { it.dependencies.asList() }
-            .toSet()
+        val pluginsWithDependencies = definitions.mapNotNull { definition ->
+            val pluginClass = Class.forName(definition.fullyQualifiedClassName)
+
+            val pluginAnnotation = pluginClass.getAnnotation(Plugin::class.java)
+                ?: return@mapNotNull null
+
+            val dependencies = pluginAnnotation.dependencies
+                .map(PluginDependency::of)
+                .sortedBy { it.key }
+
+            PluginWithDependenciesDto(
+                pluginDefinitionKey = definition.key,
+                dependencies = dependencies
+            )
+        }
 
         return PluginDefinitionsWithDependenciesDto(
-            pluginDefinitionKeys = pluginDefinitionKeys.sorted(),
-            dependencies = mergedDependencies.sortedBy { it.name }
+            plugins = pluginsWithDependencies.sortedBy { it.pluginDefinitionKey }
         )
     }
 

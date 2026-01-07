@@ -15,7 +15,6 @@
  */
 
 package com.ritense.plugin.annotation
-import com.ritense.plugin.domain.PluginDependency
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -23,5 +22,5 @@ annotation class Plugin(
     val key: String,
     val title: String,
     val description: String,
-    val dependencies: Array<PluginDependency> = []
+    val dependencies: Array<String> = []
 )

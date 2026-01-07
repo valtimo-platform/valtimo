@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-12-16 12:30:22.
+// Generated using typescript-generator version 3.2.1263 on 2026-01-07 12:03:16.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -18,11 +18,6 @@ export interface BuildingBlockDefinitionDto {
     basedOnVersionTag: string | null;
     final: boolean;
     imageBase64: string | null;
-}
-
-export interface BuildingBlockPluginDefinitionsWithDependenciesDto {
-    pluginDefinitionKeys: string[];
-    dependencies: PluginDependency[];
 }
 
 export interface BuildingBlockProcessDefinitionDto {
@@ -74,8 +69,8 @@ export interface CaseDefinitionDraftCreateRequest {
     name: string | null;
     description: string | null;
     basedOnCaseDefinitionVersion: string | null;
-    caseDefinitionId: CaseDefinitionId;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
+    caseDefinitionId: CaseDefinitionId;
 }
 
 export interface CaseDefinitionQuickSearchDto {
@@ -661,22 +656,22 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    activityId: string;
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
+    activityId: string;
     processLinkType: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityId: string;
     activityType: ActivityTypeWithEventName;
+    activityId: string;
     processLinkType: string;
 }
 
 export interface ProcessLinkResponseDto {
-    activityId: string;
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
+    activityId: string;
     processLinkType: string;
     id: string;
 }
@@ -832,11 +827,11 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    highContrast: boolean;
-    displayConditions: Condition<any>[] | null;
-    title: string;
     width: number;
     icon: string | null;
+    title: string;
+    highContrast: boolean;
+    displayConditions: Condition<any>[] | null;
     key: string;
     actions: WidgetAction[];
 }
@@ -859,9 +854,9 @@ export interface URI extends Comparable<URI>, Serializable {
 
 export interface RelatedFile {
     createdBy: string;
-    sizeInBytes: number;
     createdOn: DateAsString;
     fileId: string;
+    sizeInBytes: number;
     fileName: string;
 }
 
@@ -878,9 +873,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityId: string;
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
+    activityId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -954,9 +949,9 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    businessKey: boolean;
-    label: string;
     validationConstraints: FormFieldValidationConstraint[];
+    label: string;
+    businessKey: boolean;
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -986,26 +981,26 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    processInstanceId: string;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
-    activityId: string;
-    assignee: string;
-    processDefinitionId: string;
-    activityType: string;
-    executionId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    tenantId: string;
-    startTime: DateAsString;
     processDefinitionKey: string;
     rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    activityType: string;
+    processDefinitionId: string;
+    activityId: string;
+    assignee: string;
+    tenantId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    executionId: string;
+    processInstanceId: string;
     id: string;
 }
 
@@ -1141,8 +1136,6 @@ export interface JsonNodeCreator {
 }
 
 export type DateAsString = string;
-
-export type PluginDependency = "ZAAK_TYPE_LINK" | "ZAAK_INSTANCE_LINK";
 
 export type ColumnDefaultSort = "ASC" | "DESC";
 

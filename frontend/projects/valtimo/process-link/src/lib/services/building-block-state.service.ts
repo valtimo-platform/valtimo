@@ -23,7 +23,6 @@ import {
   ProcessLink,
 } from '../models';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
-import {PluginDependency} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +38,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _outputMappings$ = new BehaviorSubject<Array<BuildingBlockOutputMapping>>([]);
   private readonly _loadingRequirements$ = new BehaviorSubject<boolean>(false);
   private readonly _loadingFields$ = new BehaviorSubject<boolean>(false);
-  private readonly _pluginDependencies$ = new BehaviorSubject<Array<PluginDependency>>([]);
+  private readonly _pluginDependencies$ = new BehaviorSubject<Array<string>>([]);
 
   private _versionSubscription?: Subscription;
   private _requirementsSubscription?: Subscription;
@@ -89,7 +88,7 @@ export class BuildingBlockStateService implements OnDestroy {
     return this._loadingFields$.asObservable();
   }
 
-  public get pluginDependencies$(): Observable<Array<PluginDependency>> {
+  public get pluginDependencies$(): Observable<Array<string>> {
     return this._pluginDependencies$.asObservable();
   }
 
@@ -241,8 +240,14 @@ export class BuildingBlockStateService implements OnDestroy {
       .getPluginDefinitionsForBuildingBlock(key, versionTag)
       .subscribe({
         next: res => {
-          this.applyPluginKeys(res.pluginDefinitionKeys ?? []);
-          this._pluginDependencies$.next(res.dependencies);
+          const plugins = res?.plugins ?? [];
+          const pluginKeys = plugins.map(plugin => plugin.pluginDefinitionKey).filter(Boolean);
+          const dependencies: string[] = Array.from(
+            new Set(plugins.flatMap(p => p.dependencies ?? []).map(d => d.key))
+          );
+
+          this.applyPluginKeys(pluginKeys ?? []);
+          this._pluginDependencies$.next(dependencies);
           this._loadingRequirements$.next(false);
         },
         error: () => {

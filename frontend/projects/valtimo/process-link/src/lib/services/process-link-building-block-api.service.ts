@@ -19,13 +19,12 @@ import {Injectable} from '@angular/core';
 import {
   BaseApiService,
   BuildingBlockDefinitionDto,
-  BuildingBlockPluginDefinitionsWithDependenciesDto,
   BuildingBlockVersionDto,
   ConfigService,
   InterceptorSkip,
   Page,
 } from '@valtimo/shared';
-import {BuildingBlockField} from '../models';
+import {BuildingBlockField, PluginsWithDependencies} from '../models';
 import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
@@ -56,8 +55,8 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
   public getPluginDefinitionsForBuildingBlock(
     key: string,
     versionTag: string
-  ): Observable<BuildingBlockPluginDefinitionsWithDependenciesDto> {
-    return this.httpClient.get<BuildingBlockPluginDefinitionsWithDependenciesDto>(
+  ): Observable<PluginsWithDependencies> {
+    return this.httpClient.get<PluginsWithDependencies>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/plugin`)
     );
   }
