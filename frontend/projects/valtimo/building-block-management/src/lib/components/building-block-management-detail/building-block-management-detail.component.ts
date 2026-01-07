@@ -27,8 +27,6 @@ import {BuildingBlockManagementTabKey} from '../../models';
 import {take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
-import {BuildingBlockManagementVersionSelectorComponent} from '../building-block-management-version-selector/building-block-management-version-selector.component';
-import {BuildingBlockManagementOverflowMenuComponent} from '../building-block-management-overflow-menu/building-block-management-overflow-menu.component';
 
 @Component({
   standalone: true,
@@ -47,9 +45,7 @@ import {BuildingBlockManagementOverflowMenuComponent} from '../building-block-ma
     BuildingBlockManagementProcessesComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
-    BuildingBlockManagementVersionSelectorComponent,
     DialogModule,
-    BuildingBlockManagementOverflowMenuComponent,
   ],
   providers: [BuildingBlockManagementDetailService],
 })
