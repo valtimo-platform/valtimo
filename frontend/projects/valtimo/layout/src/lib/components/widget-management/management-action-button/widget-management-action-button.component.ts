@@ -29,6 +29,7 @@ import {
   ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
@@ -86,15 +87,16 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
     })
   );
 
-  public readonly formGroup = this.fb.group(
-    {
-      navigateTo: this.fb.control<string>(
-        this.widgetWizardService.$widgetActions()?.[0]?.navigateTo ?? ''
-      ),
-      name: this.fb.control<string>(this.widgetWizardService.$widgetActions()?.[0]?.name ?? ''),
-    },
-    {validators: [this.formContentValidator()]}
-  );
+  public readonly formGroup = this.fb.group({
+    navigateTo: this.fb.control<string>(
+      this.widgetWizardService.$widgetActions()?.[0]?.navigateTo ?? '',
+      Validators.required
+    ),
+    name: this.fb.control<string>(
+      this.widgetWizardService.$widgetActions()?.[0]?.name ?? '',
+      Validators.required
+    ),
+  });
 
   private readonly _subscriptions = new Subscription();
 
@@ -147,18 +149,18 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
     this._subscriptions.add(
       this.formGroup.valueChanges.pipe(debounceTime(100)).subscribe(() => {
         this.widgetWizardService.$widgetContentValid.set(this.formGroup.valid);
-        if (!this.formGroup.valid) return;
 
-        const action = this.formGroup.getRawValue();
-        if (!action.navigateTo || !action.name) {
+        if (!this.formGroup.valid) {
           this.widgetWizardService.$widgetActions.set([]);
           return;
         }
 
+        const action = this.formGroup.getRawValue();
+
         this.widgetWizardService.$widgetActions.set([
           {
-            name: action.name,
-            navigateTo: action.navigateTo,
+            name: action.name!,
+            navigateTo: action.navigateTo!,
           },
         ]);
       })

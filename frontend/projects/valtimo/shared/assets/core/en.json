@@ -1617,6 +1617,7 @@
     "path": "Path",
     "dataType": "Data type",
     "fieldType": "Field type",
+    "required": "Required",
     "matchType": "Match",
     "exact": "Exact",
     "like": "Contains",
@@ -1644,7 +1645,9 @@
     "text": "Text",
     "textContains": "Text contains",
     "noSearchfieldsTitle": "No search fields",
-    "noSearchfieldsDescription": "There are no search fields configured for this case type."
+    "noSearchfieldsDescription": "There are no search fields configured for this case type.",
+    "requiredEnabled": "Required",
+    "requiredDisabled": "Optional"
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
@@ -1656,7 +1659,8 @@
     "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
     "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
     "configFile": "Use a config file with dropdown values. The config value must be present on the server",
-    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
+    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value.",
+    "required": "Decides whether the user must enter a value before a search can be executed."
   },
   "searchFieldDataType": {"select": "Select a data type"},
   "searchFieldFieldType": {"select": "Select a field type"},
@@ -2070,7 +2074,7 @@
     "keyTitle": "Key",
     "keyPlaceholder": "Enter a key for the API configuration",
     "pluginIdTitle": "Plugin configuration",
-    "typeTitle": "type",
+    "typeTitle": "Type",
     "addColumn": "Add Column",
     "editColumn": "Edit column",
     "columnTitlePlaceholder": "Enter column title",
