@@ -8,16 +8,18 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
+import {CommonModule, DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
+import {Component, Inject, TemplateRef, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
+import {ValtimoCdsModalDirective, ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -25,10 +27,11 @@ import {
   IconModule,
   InputModule,
   LayerModule,
+  LoadingModule,
   ModalModule,
+  Notification,
 } from 'carbon-components-angular';
-import {ValtimoCdsModalDirective, ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
-import {BehaviorSubject, finalize, switchMap, take} from 'rxjs';
+import {BehaviorSubject, finalize, map, switchMap, take} from 'rxjs';
 import {
   BuildingBlockManagementApiService,
   BuildingBlockManagementDetailService,
@@ -53,13 +56,27 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
     DialogModule,
     BuildingBlockManagementVersionSelectorComponent,
     ValtimoCdsOverflowButtonDirective,
+    LoadingModule,
   ],
 })
 export class BuildingBlockManagementDetailActionsComponent {
+  @ViewChild('exportingMessage')
+  private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
+
   public readonly actionInProgress$ = new BehaviorSubject<boolean>(false);
   public readonly showDraftModal$ = new BehaviorSubject<boolean>(false);
   public readonly definition$ = this.buildingBlockManagementDetailService.buildingBlockDefinition$;
   public readonly isFinal$ = this.buildingBlockManagementDetailService.isFinal$;
+
+  public readonly buildingBlockName$ =
+    this.buildingBlockManagementDetailService.buildingBlockDefinition$.pipe(
+      map(definition => definition.name ?? definition.key)
+    );
+
+  private readonly _exporting$ = new BehaviorSubject<boolean>(false);
+  public get exporting$() {
+    return this._exporting$.asObservable();
+  }
 
   public readonly draftForm: FormGroup = this.fb.group({
     versionTag: this.fb.control('', Validators.required),
@@ -69,12 +86,15 @@ export class BuildingBlockManagementDetailActionsComponent {
     return this.draftForm.get('versionTag') as FormControl<string>;
   }
 
+  private _currentNotification!: Notification;
+
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly fb: FormBuilder,
     private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   public finalizeDraft(): void {
@@ -142,6 +162,66 @@ export class BuildingBlockManagementDetailActionsComponent {
           this.notifyError('buildingBlockManagement.actions.draft.error');
         },
       });
+  }
+
+  public export(): void {
+    if (this.actionInProgress$.value || this._exporting$.value) return;
+
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._exportMessageTemplateRef,
+    });
+
+    this._exporting$.next(true);
+
+    this.buildingBlockManagementApiService
+      .exportBuildingBlock(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag
+      )
+      .pipe(finalize(() => this._exporting$.next(false)))
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant(
+              'buildingBlockManagement.overflowMenu.exportSuccessTitle'
+            ),
+            duration: 5000,
+          });
+
+          this.downloadZip(response);
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this.notifyError('buildingBlockManagement.overflowMenu.exportErrorTitle');
+        },
+      });
+  }
+
+  private downloadZip(response: HttpResponse<Blob>): void {
+    const link = this.document.createElement('a');
+    const contentDisposition = response.headers.get('content-disposition');
+    const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
+    const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
+
+    link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
+    link.download =
+      fileName ||
+      `${this.buildingBlockManagementDetailService.buildingBlockDefinitionKey}_${this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag}.valtimo.zip`;
+    link.target = '_blank';
+    link.click();
+    link.remove();
+  }
+
+  private closeCurrentNotification(): void {
+    if (this._currentNotification) {
+      this.notificationService.close(this._currentNotification);
+    }
   }
 
   private notifySuccess(translationKey: string): void {
