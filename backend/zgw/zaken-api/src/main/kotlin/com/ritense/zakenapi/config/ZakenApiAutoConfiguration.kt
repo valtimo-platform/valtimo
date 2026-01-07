@@ -99,6 +99,7 @@ class ZakenApiAutoConfiguration {
         storageService: TemporaryResourceStorageService,
         zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
+        zaakDocumentService: ZaakDocumentService,
         platformTransactionManager: PlatformTransactionManager,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
@@ -109,6 +110,7 @@ class ZakenApiAutoConfiguration {
         storageService,
         zaakInstanceLinkRepository,
         zaakHersteltermijnRepository,
+        zaakDocumentService,
         platformTransactionManager,
         valueResolverService,
         objectMapper
