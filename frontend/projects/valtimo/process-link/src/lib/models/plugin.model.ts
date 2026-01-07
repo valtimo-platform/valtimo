@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.web.rest.dto
+interface PluginsWithDependencies {
+  plugins: {
+    pluginDefinitionKey: string;
+    dependencies: {
+      key: string;
+    }[];
+  }[];
+}
 
-import com.ritense.plugin.domain.PluginDependency
-
-data class BuildingBlockPluginDefinitionsWithDependenciesDto(
-    val pluginDefinitionKeys: List<String>,
-    val dependencies: List<PluginDependency>
-)
+export {PluginsWithDependencies};
