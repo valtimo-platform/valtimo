@@ -67,12 +67,15 @@ export class WidgetLayoutService implements OnDestroy {
 
   public get loaded$(): Observable<boolean> {
     return combineLatest([
+      this._widgetDataLoaded$,
+      this._widgets$,
       this._widgetsWithExternalData$,
       this._widgetsWithExternalDataReady$,
       this._containerWidth$,
     ]).pipe(
       map(
-        ([widgetsWithExternalData, widgetsWithExternalDataReady]) =>
+        ([widgetDataLoaded, widgets, widgetsWithExternalData, widgetsWithExternalDataReady]) =>
+          (widgetDataLoaded?.length >= 1 || widgets.length === 0) &&
           widgetsWithExternalData.length === widgetsWithExternalDataReady.length
       ),
       filter(loaded => !!loaded)
