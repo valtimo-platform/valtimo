@@ -99,6 +99,14 @@
       </cds-dropdown>
     </div>
 
+    <cds-toggle
+      class="valtimo-search-fields-modal__input"
+      formControlName="required"
+      [label]="'searchFieldsOverview.required' | translate"
+      [onText]="'searchFieldsOverview.requiredEnabled' | translate"
+      [offText]="'searchFieldsOverview.requiredDisabled' | translate"
+    ></cds-toggle>
+
     @if (
       dataTypeValue === SearchFieldDataType.TEXT &&
       (fieldTypeValue === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
