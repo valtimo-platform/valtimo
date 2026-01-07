@@ -54,7 +54,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() uploading: boolean;
   @Input() camera = false;
 
-  _maxFiles?: number;
+  private _maxFiles?: number;
 
   @Input()
   set maxFiles(value: number) {
@@ -65,7 +65,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     return this._maxFiles;
   }
 
-  _maxFileSize: number = 5;
+  private _maxFileSize: number = 5;
 
   @Input()
   set maxFileSize(value: number) {
@@ -76,7 +76,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     return this._maxFileSize;
   }
 
-  _acceptedFiles: string = '';
+  private _acceptedFiles: string = '';
 
   @Input()
   set acceptedFiles(value: string) {
