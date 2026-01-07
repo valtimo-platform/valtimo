@@ -212,6 +212,8 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public multipleValueChange(searchFieldKey: string, value: any, dataType: string): void {
+    this.formValues[searchFieldKey] = value;
+
     this.values$.pipe(take(1)).subscribe(values => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         const hasStart = value.start !== undefined && value.start !== '';

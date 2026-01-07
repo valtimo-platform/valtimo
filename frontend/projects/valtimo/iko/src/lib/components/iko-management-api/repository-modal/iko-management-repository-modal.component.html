@@ -41,9 +41,10 @@
     </valtimo-auto-key-input>
 
     <v-select
+      *ngIf="enableIkoType"
       [invalid]="getControlInvalid('type')"
       formControlName="type"
-      [disabled]="!enableIkoType"
+      [disabled]="true"
       [items]="ikoRepositoryTypeSelectItems$ | async"
       [title]="'ikoManagement.typeTitle' | translate"
       [appendInline]="false"
