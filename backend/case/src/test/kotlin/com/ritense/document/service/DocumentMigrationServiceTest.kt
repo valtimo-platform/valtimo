@@ -37,6 +37,8 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationContext
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
@@ -408,7 +410,10 @@ class DocumentMigrationServiceTest {
             sequenceGenerator,
             mock(),
         ).resultingDocument().get()
-        whenever(documentRepository.findAll(any<Specification<JsonSchemaDocument>>())).thenReturn(listOf(document))
+        whenever(documentRepository.findAll(
+            any<Specification<JsonSchemaDocument>>(),
+            any<Pageable>(),
+        )).thenReturn(PageImpl(listOf(document)))
     }
 
     private fun loadSchema(definitionName: String): JsonSchema {
