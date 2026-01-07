@@ -93,7 +93,19 @@ export class IkoApiService extends BaseApiService {
     );
   }
 
-  public handleAction(action: WidgetAction, resolved: {[key: string]: any} = null) {
+  public getDropdownData(
+    provider: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
+    return this.httpClient.get<object>(
+      this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
+    );
+  }
+
+  public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
     if (!action) return;
 
     const navigateTo = this.resolveProperty(action?.navigateTo, resolved);

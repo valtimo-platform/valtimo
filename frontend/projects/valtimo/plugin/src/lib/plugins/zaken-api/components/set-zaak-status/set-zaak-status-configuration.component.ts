@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {FunctionConfigurationComponent} from '../../../../models';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  RadioValue,
+  SelectItem,
+} from '@valtimo/components';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import flatpickr from 'flatpickr';
 import {
   BehaviorSubject,
   combineLatest,
@@ -27,19 +34,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {InputOption, SetZaakStatusConfig} from '../../models';
-import {
-  CARBON_THEME,
-  CdsThemeService,
-  CurrentCarbonTheme,
-  RadioValue,
-  SelectItem,
-} from '@valtimo/components';
 import {map} from 'rxjs/operators';
-import {ZakenApiService} from '../../services';
+
+import {FunctionConfigurationComponent} from '../../../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
-import flatpickr from 'flatpickr';
+import {InputOption, SetZaakStatusConfig} from '../../models';
+import {ZakenApiService} from '../../services';
 
 @Component({
   standalone: false,
@@ -146,8 +146,8 @@ export class SetZaakStatusConfigurationComponent
       this.datumStatusGezetSelectedInputOption$.next(updatedFormValue.inputDatumStatusGezetToggle);
     }
     if (updatedFormValue.inputDatumStatusGezetToggle === 'now') {
-        this.selectedDate = null;
-        this.selectedTime = null;
+      this.selectedDate = null;
+      this.selectedTime = null;
     }
   }
 
@@ -349,7 +349,8 @@ export class SetZaakStatusConfigurationComponent
     const dateIsNotInFuture = this.isDateNotInFuture(formValue.datumStatusGezet);
     const hasEnteredDateText = this.hasEnteredDateText(formValue.datumStatusGezet);
 
-    const valid = hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture && hasEnteredDateText;
+    const valid =
+      hasStatusType && hasValidDatumStatusGezet && dateIsNotInFuture && hasEnteredDateText;
 
     this.valid$.next(valid);
     this.valid.emit(valid);

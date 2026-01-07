@@ -84,6 +84,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   public isPassword!: boolean;
   public isDigitOnly!: boolean;
   public isCheckbox!: boolean;
+  public isBsn!: boolean;
 
   public readonly showPassword$ = new BehaviorSubject<boolean>(false);
 
@@ -157,6 +158,9 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case 'checkbox':
         this.isCheckbox = true;
+        break;
+      case 'bsn':
+        this.isBsn = true;
         break;
     }
   }

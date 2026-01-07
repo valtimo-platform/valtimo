@@ -82,7 +82,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$[0].title").value("BSN"))
             .andExpect(jsonPath("$[0].path").value("/bsn"))
             .andExpect(jsonPath("$[0].order").value(0))
-            .andExpect(jsonPath("$[0].dataType").value("text"))
+            .andExpect(jsonPath("$[0].dataType").value("bsn"))
             .andExpect(jsonPath("$[0].fieldType").value("single"))
             .andExpect(jsonPath("$[0].matchType").value("exact"))
             .andExpect(jsonPath("$[0].required").value(true))
@@ -107,7 +107,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -144,7 +144,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -183,7 +183,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -224,7 +224,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$[0].title").value("BSN"))
             .andExpect(jsonPath("$[0].path").value("/bsn"))
             .andExpect(jsonPath("$[0].order").value(0))
-            .andExpect(jsonPath("$[0].dataType").value("text"))
+            .andExpect(jsonPath("$[0].dataType").value("bsn"))
             .andExpect(jsonPath("$[0].fieldType").value("single"))
             .andExpect(jsonPath("$[0].matchType").value("exact"))
             .andExpect(jsonPath("$[0].required").value(true))
@@ -251,7 +251,7 @@ internal class IkoSearchFieldManagementResourceTest {
         title = "BSN",
         path = "/bsn",
         order = 0,
-        dataType = DataType.TEXT,
+        dataType = DataType.BSN,
         fieldType = FieldType.SINGLE,
         matchType = SearchFieldMatchType.EXACT,
         dropdownDataProvider = null,

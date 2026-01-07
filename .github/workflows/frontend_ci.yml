@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - next-minor
+      - rc/*
       - cicd/improve-pr-test-envs
     paths:
       - .github/workflows/frontend_*.yml

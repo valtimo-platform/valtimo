@@ -22,6 +22,7 @@
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
   <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
   <ng-container *ngTemplateOutlet="checkboxInput"></ng-container>
+  <ng-container *ngTemplateOutlet="bsnInput"></ng-container>
   <ng-container *ngTemplateOutlet="presets"></ng-container>
 </div>
 
@@ -135,6 +136,7 @@
     [ngModel]="inputValue$ | async"
     [step]="step"
     (ngModelChange)="onValueChange($event)"
+    [placeholder]="placeholder"
     [style.width.px]="widthPx"
     type="number"
   />
@@ -194,4 +196,26 @@
       <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
     }
   </div>
+</ng-template>
+
+<ng-template #bsnInput>
+  <input
+    *ngIf="isBsn"
+    [ngClass]="{
+      'v-input--full-width': fullWidthClass,
+      'v-input--margin': margin && presetOptions.length === 0,
+      'v-input--small-margin': smallMargin && presetOptions.length === 0,
+    }"
+    [ngModel]="inputValue$ | async"
+    cdsText
+    [attr.data-testid]="dataTestId"
+    [disabled]="disabled"
+    [maxLength]="'9'"
+    [min]="9"
+    [name]="name"
+    (ngModelChange)="onValueChange($event)"
+    [style.width.px]="widthPx"
+    [placeholder]="placeholder"
+    type="text"
+  />
 </ng-template>
