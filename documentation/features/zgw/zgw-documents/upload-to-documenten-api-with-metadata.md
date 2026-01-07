@@ -72,13 +72,13 @@ The second service task in the Upload Document process is called 'Link uploaded 
 ## Using the Documenten API File Upload FormIO component in user tasks
 
 In the form builder you will find the Documenten API File Upload component under the advanced section.
-Drag and drop the component into your form to use it.
+To use it, simply drag and drop the component into your form and configure the properties as described below.
 
 The following properties can be configured:
 ### Documenten API File Upload dropzone
 ![Documenten API File Upload Component](../../../.gitbook/assets/documenten-api-file-upload.png)
 This is the dropzone that will be shown to the user in a user task, which can be customized by configuring the following properties:
-- **Label**: The label of the component. ***(required)***
+- **Label**: The label displayed for the component. ***(required)***
 - **Required**: Whether the component is required.
 - **Property Name**: The path to save the reference to the uploaded document in the case data. ***(required)***
 - **Title**: The title of the component, shown in the dropzone of the uploader.
@@ -93,7 +93,8 @@ This is the dropzone that will be shown to the user in a user task, which can be
 - **Document URL**: The process variable name for saving the URL of the uploaded document.
 ### Metadata modal
 ![Documenten API Metadata Modal](../../../.gitbook/assets/documenten-api-metadata-modal.png)
-This is the modal that will be shown to the user when uploading a document, which can be customized by configuring the following properties:
+When a user uploads a document, a metadata modal is displayed.
+This modal allows additional document metadata which can be customized by configuring the following properties:
 ### Filename
 - **Default filename**: The default filename of the uploaded document without file extension.
 - **Disable filename input**: Whether to disable the filename input for the upload modal.
