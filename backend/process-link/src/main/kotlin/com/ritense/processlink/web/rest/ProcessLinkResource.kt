@@ -335,12 +335,14 @@ class ProcessLinkResource(
                     CaseDefinitionId.of(caseDefinitionKey, versionTag),
                     processDefinitionKey
                 )
-            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                ProcessDefinitionId(definition.id),
-                CaseDefinitionId.of(caseDefinitionKey, versionTag)
-            )
-            processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
-            operatonProcessService.deleteProcessDefinition(definition.id)
+                .forEach { definition: OperatonProcessDefinition ->
+                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                        ProcessDefinitionId(definition.id),
+                        CaseDefinitionId.of(caseDefinitionKey, versionTag)
+                    )
+                    processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
+                    operatonProcessService.deleteProcessDefinition(definition.id)
+                }
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }

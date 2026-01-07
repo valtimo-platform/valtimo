@@ -250,7 +250,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             );
 
             final String processName = runWithoutAuthorization(
-                () -> operatonProcessService.getDefinitionByKeyAndCaseDefinition(request.newDocumentRequest().caseDefinitionId(), request.processDefinitionKey()).getName());
+                () -> operatonProcessService.getLatestDefinitionByKeyAndSolutionModule(request.newDocumentRequest().solutionModuleId(), request.processDefinitionKey()).getName());
             processDocumentAssociationService.createProcessDocumentInstance(
                 request.processInstanceId(),
                 UUID.fromString(document.id().toString()),

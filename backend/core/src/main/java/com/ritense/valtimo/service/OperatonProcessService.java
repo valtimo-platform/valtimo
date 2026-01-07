@@ -23,10 +23,9 @@ import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessIns
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.NAME;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.VERSION;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byCaseDefinitionId;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.bySolutionModuleId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersionTag;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersionTag;
@@ -81,6 +80,7 @@ import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState;
 import org.operaton.bpm.engine.repository.DecisionDefinition;
+import org.operaton.bpm.engine.repository.DecisionDefinitionQuery;
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
@@ -258,9 +258,9 @@ public class OperatonProcessService {
     ) {
         final OperatonProcessDefinition processDefinition = AuthorizationContext
             .runWithoutAuthorization(() -> {
-                var pd = operatonRepositoryService.findLatestProcessDefinition(
+                var pd = operatonRepositoryService.findProcessDefinition(
                     // TODO: FIX THIS NOW
-                    byKey(processDefinitionKey).and(byCaseDefinitionId(solutionModuleId))
+                    byKey(processDefinitionKey).and(bySolutionModuleId(solutionModuleId))
                 );
                 if (pd != null) {
                     return pd;
@@ -383,7 +383,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
             byActive()
-                .and(byCaseDefinitionId(caseDefinitionId)),
+                .and(bySolutionModuleId(caseDefinitionId)),
             Sort.by(NAME)
         ));
     }
@@ -436,9 +436,8 @@ public class OperatonProcessService {
         String processDefinitionKey
     ) {
         denyAuthorization();
-        String versionTag = solutionModuleId.getTagPrefix() + solutionModuleId;
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinition(
-            byCaseDefinitionId(caseDefinitionId)
+            bySolutionModuleId(solutionModuleId)
                 .and(byKey(processDefinitionKey))
         ));
     }
@@ -538,7 +537,7 @@ public class OperatonProcessService {
                     latestProcessDefinition.getId(),
                     solutionModuleId
                 ));
-                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + caseDefinitionId);
+                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + solutionModuleId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
