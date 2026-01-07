@@ -1016,15 +1016,16 @@
     },
     "processes": {
       "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
-      "buttonTextPlaceholder": "Knop tekst",
+      "buttonTextPlaceholder": "Knoptekst",
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
-      "linkLabel": "Knop voor externe link",
-      "linkPlaceholder": "Externe link",
-      "buttonTextLabel": "Tekst van knop voor externe link"
+      "linkLabel": "Link-URL (met variabelen)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Knoptekst",
+      "buttonTextPlaceholder": "'Ga naar zaak'"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
@@ -1410,6 +1411,16 @@
       "content": "Je gaat de pagina verlaten. Alle niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je door wilt gaan?",
       "keepEditing": "Blijf bewerken"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "De waarde mag niet leeg zijn.",
+        "valueMaxLength": "Het BSN is te lang. De maximale lengte is 9 tekens.",
+        "valueMinLength": "Het BSN is te kort. De minimale lengte is 8 tekens.",
+        "valueOnlyDigits": "De waarde mag alleen cijfers bevatten. Letters of symbolen zijn niet toegestaan.",
+        "valueAllZerosOrNines": "De waarde mag niet volledig uit nullen of negens bestaan.",
+        "valueElfCheck": "De waarde voldoet niet aan de elfproef. Voer een geldig BSN in."
+      }
+    },
     "required": "vereist",
     "filter": "Filteren...",
     "back": "Terug",
@@ -1601,16 +1612,23 @@
     "downloadButtonText": "Download configuratie",
     "to": "tot",
     "text": "Tekst",
+    "textPlaceholder": "Voer tekst in",
     "number": "Nummer",
+    "numberPlaceholder": "Voer een nummer in",
     "date": "Datum",
+    "datePlaceholder": "dd-mm-yyyy",
     "datetime": "Datum en tijd",
     "time": "Tijd",
+    "timePlaceholder": "hh:mm",
     "boolean": "Ja / nee",
     "numberRange": "Nummerreeks",
     "dateRange": "Datumreeks",
     "datetimeRange": "Datum en tijd-reeks",
     "booleanPositive": "Ja",
-    "booleanNegative": "Nee"
+    "booleanNegative": "Nee",
+    "booleanPlaceholder": "Ja/nee",
+    "bsn": "BSN",
+    "bsnPlaceholder": "123456789"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",

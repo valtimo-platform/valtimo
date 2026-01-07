@@ -23,4 +23,5 @@ enum class MetadataType(val key: String) {
     FILE_PATH("filePath"),
     FILE_SIZE("fileSize"),
     USER("user"),
+    VIRUS_SCANNED_RESULT("virusScanResult"),
 }
