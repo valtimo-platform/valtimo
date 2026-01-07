@@ -23,7 +23,12 @@
 
     <cds-tabs class="iko-search-tabs" type="line">
       @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
-        <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
+        <cds-tab
+          (keyup.enter)="!searchDisabled(param.searchFields) && searchGroup(param.key, param.searchFields)"
+          class="query-group"
+          [heading]="param.title"
+          [cdsLayer]="1"
+        >
           <div class="query-group__row">
             @for (field of param.searchFields; track field.key) {
               <div
