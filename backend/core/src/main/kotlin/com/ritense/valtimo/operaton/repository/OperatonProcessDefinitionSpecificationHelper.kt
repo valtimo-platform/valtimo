@@ -16,9 +16,9 @@
 
 package com.ritense.valtimo.operaton.repository
 
+import com.ritense.valtimo.contract.SolutionModuleId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
@@ -83,23 +83,24 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun maxVersionOf(spec: Specification<OperatonProcessDefinition>) = Specification<OperatonProcessDefinition> { root, query, cb ->
-            val sub = query.subquery(Long::class.java)
-            val subRoot = sub.from(OperatonProcessDefinition::class.java)
-            sub.select(cb.max(subRoot.get(VERSION)))
-            sub.where(
-                cb.and(
-                    cb.equal(subRoot.get<Any>(KEY), root.get<Any>(KEY)),
-                    spec.toPredicate(subRoot, query, cb),
-                    cb.or(
-                        cb.equal(subRoot.get<Any>(TENANT_ID), root.get<Any>(TENANT_ID)),
-                        cb.and(subRoot.get<Any>(TENANT_ID).isNull, root.get<Any>(TENANT_ID).isNull)
+        fun maxVersionOf(spec: Specification<OperatonProcessDefinition>) =
+            Specification<OperatonProcessDefinition> { root, query, cb ->
+                val sub = query.subquery(Long::class.java)
+                val subRoot = sub.from(OperatonProcessDefinition::class.java)
+                sub.select(cb.max(subRoot.get(VERSION)))
+                sub.where(
+                    cb.and(
+                        cb.equal(subRoot.get<Any>(KEY), root.get<Any>(KEY)),
+                        spec.toPredicate(subRoot, query, cb),
+                        cb.or(
+                            cb.equal(subRoot.get<Any>(TENANT_ID), root.get<Any>(TENANT_ID)),
+                            cb.and(subRoot.get<Any>(TENANT_ID).isNull, root.get<Any>(TENANT_ID).isNull)
+                        )
                     )
                 )
-            )
-            sub.groupBy(subRoot.get<Any>(TENANT_ID), subRoot.get<Any>(KEY))
-            cb.equal(root.get<Any>(VERSION), sub)
-        }
+                sub.groupBy(subRoot.get<Any>(TENANT_ID), subRoot.get<Any>(KEY))
+                cb.equal(root.get<Any>(VERSION), sub)
+            }
 
         @JvmStatic
         fun byActive() = Specification<OperatonProcessDefinition> { root, _, cb ->
@@ -107,9 +108,9 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun byCaseDefinitionId(caseDefinitionId: CaseDefinitionId?): Specification<OperatonProcessDefinition> {
-            return if (caseDefinitionId != null) {
-                byVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+        fun bySolutionModuleId(solutionModuleId: SolutionModuleId?): Specification<OperatonProcessDefinition> {
+            return if (solutionModuleId != null) {
+                byVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId.toString())
             } else {
                 maxVersionOf(byNotLinkedToCaseDefinition())
             }
@@ -150,15 +151,28 @@ class OperatonProcessDefinitionSpecificationHelper {
         fun byNotLinkedToBuildingBlock() = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.or(
                 cb.isNull(root.get<Any>(VERSION_TAG)),
-                cb.not(
-                    cb.equal(
-                        cb.function(
-                            "left",
-                            String::class.java,
-                            root.get<String>(VERSION_TAG),
-                            cb.literal(3)
-                        ),
-                        OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+                cb.and(
+                    cb.not(
+                        cb.equal(
+                            cb.function(
+                                "left",
+                                String::class.java,
+                                root.get<String>(VERSION_TAG),
+                                cb.literal(3)
+                            ),
+                            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+                        )
+                    ),
+                    cb.not(
+                        cb.equal(
+                            cb.function(
+                                "left",
+                                String::class.java,
+                                root.get<String>(VERSION_TAG),
+                                cb.literal(DETACHED_PROCESS_DEFINITION_PREFIX.length)
+                            ),
+                            DETACHED_PROCESS_DEFINITION_PREFIX
+                        )
                     )
                 )
             )

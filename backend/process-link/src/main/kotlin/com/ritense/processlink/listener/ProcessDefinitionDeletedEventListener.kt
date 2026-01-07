@@ -60,10 +60,10 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDetached::class)
     fun handleProcessDefinitionDetachedEvent(event: ProcessDefinitionDetached) {
-        if (event.caseDefinitionId != null) {
+        if (event.solutionModuleId != null) {
             processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
                 ProcessDefinitionId(event.processDefinitionId),
-                event.caseDefinitionId!!
+                event.solutionModuleId!! as CaseDefinitionId
             )
         }
     }
