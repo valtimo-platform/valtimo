@@ -28,6 +28,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
@@ -462,4 +463,20 @@ class BuildingBlockAutoConfiguration {
         repositoryService: RepositoryService,
         processLinkMappers: List<ProcessLinkMapper>,
     ) = BuildingBlockProcessLinkExporter(processLinkService, objectMapper, repositoryService, processLinkMappers)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseDefinitionService::class)
+    fun buildingBlockCaseDefinitionService(
+        operatonProcessService: OperatonProcessService,
+        processLinkService: ProcessLinkService,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        authorizationService: AuthorizationService,
+    ): BuildingBlockCaseDefinitionService {
+        return BuildingBlockCaseDefinitionService(
+            operatonProcessService,
+            processLinkService,
+            buildingBlockDefinitionRepository,
+            authorizationService
+        )
+    }
 }

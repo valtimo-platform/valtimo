@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.b
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byFinal
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
+import com.ritense.case.service.finalization.CaseFinalizationCheckResult
 import com.ritense.case.service.validations.CreateCaseListColumnValidator
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
@@ -74,7 +76,8 @@ class CaseDefinitionService(
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val caseDefinitionChecker: CaseDefinitionChecker
+    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val caseDefinitionFinalizationCheckers: List<CaseDefinitionFinalizationChecker> = emptyList()
 ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
@@ -428,6 +431,13 @@ class CaseDefinitionService(
             .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
             .map { caseDefinition -> caseDefinition.copy(active = true) }
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
+    }
+
+    fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseFinalizationCheckResult {
+        val results = caseDefinitionFinalizationCheckers.map { it.check(caseDefinitionId) }
+
+        return results.firstOrNull { !it.finalizable }
+            ?: CaseFinalizationCheckResult(finalizable = true, code = "OK")
     }
 
     private fun getCaseDefinitionsQuery(
