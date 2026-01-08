@@ -35,7 +35,16 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import { ButtonModule, DatePickerInputModule, DatePickerModule, DialogModule, IconModule, LoadingModule, TimePickerModule, ToggleModule, } from 'carbon-components-angular';
+import {
+  ButtonModule,
+  DatePickerInputModule,
+  DatePickerModule,
+  DialogModule,
+  IconModule,
+  LoadingModule,
+  TimePickerModule,
+  ToggleModule,
+} from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
@@ -43,9 +52,7 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {
-  GetZaakbesluitenConfigurationComponent
-} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';

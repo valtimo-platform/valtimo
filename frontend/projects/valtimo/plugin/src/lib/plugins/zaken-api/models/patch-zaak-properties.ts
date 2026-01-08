@@ -29,7 +29,7 @@ export const PatchZaakPropertyOptions = [
   'caseGeometryCoordinates',
   'mainCase',
   'archiveActionDate',
-  'startDateRetentionPeriod'
+  'startDateRetentionPeriod',
 ] as const;
 
 export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];

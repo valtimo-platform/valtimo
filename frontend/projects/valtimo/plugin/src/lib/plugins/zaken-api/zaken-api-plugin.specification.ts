@@ -60,7 +60,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
-    'patch-zaak': PatchZaakConfigurationComponent
+    'patch-zaak': PatchZaakConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -219,10 +219,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Resultaat process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       'get-zaakbesluiten': 'Ophalen zaakbesluiten',
       'patch-zaak': 'Zaak bijwerken',
-      patchZaakInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
+      patchZaakInformation:
+        'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
       addPatchZaakProperty: 'Voeg parameter toe',
       omschrijving: 'Omschrijving',
       explanation: 'Toelichting',
@@ -238,7 +240,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       caseGeometryCoordinatesTooltip: 'Lijst van punten, bv [0.0, 1.0]',
       mainCase: 'Hoofdzaak',
       archiveActionDate: 'Archief actiedatum',
-      startDateRetentionPeriod: 'Startdatum bewaartermijn'
+      startDateRetentionPeriod: 'Startdatum bewaartermijn',
     },
     en: {
       title: 'Zaken API',
@@ -395,10 +397,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
-      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result is stored.',
       'get-zaakbesluiten': 'Retrieve zaakbesluiten',
       'patch-zaak': 'Update zaak',
-      patchZaakInformation: 'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
+      patchZaakInformation:
+        'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
       addPatchZaakProperty: 'Add property',
       omschrijving: 'Description',
       explanation: 'Explanation',
@@ -414,7 +418,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       caseGeometryCoordinatesTooltip: 'List of points, i.e. [0.0, 1.0]',
       mainCase: 'Main case',
       archiveActionDate: 'Archive action date',
-      startDateRetentionPeriod: 'Start date of retention period'
+      startDateRetentionPeriod: 'Start date of retention period',
     },
     de: {
       title: 'Zaken API',
@@ -570,10 +574,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Ergebnis process variable',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
+      resultProcessVariableTooltip:
+        'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       'get-zaakbesluiten': 'Zaakbesluiten abrufen',
       'patch-zaak': 'Zaak aktualisieren',
-      patchZaakInformation: 'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
+      patchZaakInformation:
+        'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
       addPatchZaakProperty: 'Parameter hinzufügen',
       omschrijving: 'Beschreibung',
       explanation: 'Erläuterung',
@@ -589,7 +595,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       caseGeometryCoordinatesTooltip: 'Liste von Punkten, zB [0.0, 1.0]',
       mainCase: 'Hauptvorgang',
       archiveActionDate: 'Archivierungsaktionsdatum',
-      startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist'
+      startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist',
     },
   },
 };

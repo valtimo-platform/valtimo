@@ -116,7 +116,7 @@ interface PatchZaakConfig {
   paymentIndication?: string;
   lastPaymentDate?: string;
   caseGeometryType?: string;
-  caseGeometryCoordinates?: string,
+  caseGeometryCoordinates?: string;
   mainCase?: string;
   archiveActionDate?: string;
   startDateRetentionPeriod?: string;

@@ -67,7 +67,7 @@ export class ZakenApiConfigurationComponent
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
   }
 
