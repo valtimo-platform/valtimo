@@ -150,7 +150,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Het burgerservicenummer van de initiator (Numeriek, max 9 tekens)',
       anpIdentificatieTooltip:
         'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon. (Max. 17 tekens)',
-      inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
+      inpA_nummerTooltip:
+        'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
@@ -326,7 +327,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: "The initiator's social security number",
       anpIdentificatieTooltip:
         'The unique number issued by the municipality for another natural person. (Max. 17 characters)',
-      inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
+      inpA_nummerTooltip:
+        'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
@@ -501,7 +503,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',
       anpIdentificatieTooltip:
         'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird. (Max. 17 Zeichen)',
-      inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
+      inpA_nummerTooltip:
+        'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',

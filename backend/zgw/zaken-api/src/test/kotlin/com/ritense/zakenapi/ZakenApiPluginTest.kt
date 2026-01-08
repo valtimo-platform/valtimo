@@ -415,13 +415,6 @@ internal class ZakenApiPluginTest {
         val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
         val executionMock: DelegateExecution = mock()
         val authenticationMock: ZakenApiAuthentication = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock()
-        val storageService: TemporaryResourceStorageService = mock()
-        val pluginService: PluginService = mock()
-        val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
-        val platformTransactionManager: PlatformTransactionManager = mock()
-        val valueResolverService: ValueResolverService = mock()
-        val objectMapper = jacksonObjectMapper()
 
         val documentId = UUID.fromString("dff80fb1-e24e-4287-b168-7bb199be5d58")
         val zaakId = "f18146df-4b26-4a32-8e52-122cfa4475bd"
@@ -445,8 +438,6 @@ internal class ZakenApiPluginTest {
         val mainCase = zaakUrl("3a941618-b0f1-4a0e-a9d9-c9b25ef50eaf")
         val caseGeometryType = GeometryType.POINT.key
         val caseGeometryCoordinates = "[0.0, 1.0]"
-
-        whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -472,6 +463,7 @@ internal class ZakenApiPluginTest {
 
         val plugin = zakenApiPlugin(
             zakenApiClient = zakenApiClient,
+            zaakInstanceLinkRepository = zaakInstanceLinkRepository,
             authenticationMock = authenticationMock,
             pluginService = pluginServiceMock()
         )

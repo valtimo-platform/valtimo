@@ -369,7 +369,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         assertEquals(requestBody.uiterlijkeEinddatumAfdoening, finalDeliveryDate)
     }
 
-
     @Test
     fun `should resolve values when creating zaak object`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
