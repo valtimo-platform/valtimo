@@ -28,8 +28,8 @@ import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.b
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byFinal
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
-import com.ritense.case.service.finalization.CaseFinalizationCheckResult
 import com.ritense.case.service.validations.CreateCaseListColumnValidator
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
@@ -433,11 +433,11 @@ class CaseDefinitionService(
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
     }
 
-    fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseFinalizationCheckResult {
+    fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
         val results = caseDefinitionFinalizationCheckers.map { it.check(caseDefinitionId) }
 
         return results.firstOrNull { !it.finalizable }
-            ?: CaseFinalizationCheckResult(finalizable = true, code = "OK")
+            ?: CaseDefinitionFinalizationCheckResult(finalizable = true)
     }
 
     private fun getCaseDefinitionsQuery(

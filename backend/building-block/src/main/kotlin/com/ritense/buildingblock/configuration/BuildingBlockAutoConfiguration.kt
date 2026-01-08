@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
-import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
@@ -56,6 +56,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
@@ -465,18 +466,15 @@ class BuildingBlockAutoConfiguration {
     ) = BuildingBlockProcessLinkExporter(processLinkService, objectMapper, repositoryService, processLinkMappers)
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockCaseDefinitionService::class)
-    fun buildingBlockCaseDefinitionService(
+    @ConditionalOnMissingBean(name = ["buildingBlockCaseDefinitionFinalizationChecker"])
+    fun buildingBlockCaseDefinitionFinalizationChecker(
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        authorizationService: AuthorizationService,
-    ): BuildingBlockCaseDefinitionService {
-        return BuildingBlockCaseDefinitionService(
+    ): CaseDefinitionFinalizationChecker =
+        BuildingBlockCaseDefinitionFinalizationChecker(
             operatonProcessService,
             processLinkService,
-            buildingBlockDefinitionRepository,
-            authorizationService
+            buildingBlockDefinitionRepository
         )
-    }
 }
