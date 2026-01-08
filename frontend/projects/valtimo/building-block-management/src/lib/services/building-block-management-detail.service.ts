@@ -104,6 +104,12 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<null>(null);
 
+  private readonly _reloadVersions$ = new BehaviorSubject<null>(null);
+
+  public get reloadVersions$(): Observable<null> {
+    return this._reloadVersions$.asObservable();
+  }
+
   private readonly _reloadProcessDefinitions$ = new BehaviorSubject<null>(null);
   public get reloadProcessDefinitions$(): Observable<null> {
     return this._reloadProcessDefinitions$.asObservable();
@@ -175,6 +181,10 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   public reload(): void {
     this._reload$.next(null);
+  }
+
+  public reloadVersions(): void {
+    this._reloadVersions$.next(null);
   }
 
   public showProcessDefinitionUploadModal(): void {
