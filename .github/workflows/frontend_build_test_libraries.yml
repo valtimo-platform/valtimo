@@ -147,7 +147,7 @@ jobs:
         run: |
           npm run libs-increment-all -- ${PROJECT_VERSION}
           npm run copy-frontend-version
-          npx ng build @valtimo/shared
+          npx ng build @valtimo/config
 
       - name: Cache built frontend libraries
         uses: actions/cache/save@v4
