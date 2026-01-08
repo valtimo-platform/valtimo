@@ -18,7 +18,7 @@ async function getContext(): Promise<APIRequestContext> {
     baseURL: process.env.qa_url ?? 'http://localhost:8080',
     extraHTTPHeaders: {
       Authorization: `Bearer ${bearer}`,
-      Accept: 'application/json',
+      Accept: 'application/json, text/plain, */*',
     },
   });
 

@@ -1,15 +1,20 @@
-// import { test, expect } from '@playwright/test';
-// import fs from 'fs';
+import path from 'path';
+import * as ApiUtils from './api.utils';
+import * as fs from 'fs';
 
-// test('upload zip file via API', async ({ request }) => {
-//   const zipBuffer = fs.readFileSync('path/to/file.zip');
-
-//   const response = await request.post('https://api.example.com/upload', {
-//     multipart: {
-//       file: {
-//         name: 'file.zip',
-//         mimeType: 'application/zip',
-//         buffer: zipBuffer,
-//       },
-//     },
-//   });
+//Gives unauthorized
+export abstract class CaseManagementUtils {
+  public static async importCase(fileName: string) {
+    const filePath = path.resolve(__dirname, `../assets/case-import-archives/${fileName}.zip`);
+    const buffer = fs.readFileSync(filePath);
+    await ApiUtils.apiPost('/api/management/v1/case/import', {
+      multipart: {
+        file: {
+          name: `${fileName}.zip`,
+          mimeType: 'application/zip',
+          buffer,
+        },
+      },
+    });
+  }
+}
