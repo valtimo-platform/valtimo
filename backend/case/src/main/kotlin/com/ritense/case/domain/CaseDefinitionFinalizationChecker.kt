@@ -18,12 +18,11 @@ package com.ritense.case.service.finalization
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-data class CaseFinalizationCheckResult(
+data class CaseDefinitionFinalizationCheckResult(
     val finalizable: Boolean,
-    val code: String,
-    val details: Map<String, Any?> = emptyMap(),
+    val code: String = "OK"
 )
 
 fun interface CaseDefinitionFinalizationChecker {
-    fun check(caseDefinitionId: CaseDefinitionId): CaseFinalizationCheckResult
+    fun check(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult
 }

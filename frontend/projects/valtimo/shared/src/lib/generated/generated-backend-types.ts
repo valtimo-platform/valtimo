@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-01-07 12:03:16.
+// Generated using typescript-generator version 3.2.1263 on 2026-01-08 14:56:45.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -39,10 +39,6 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
-export interface CreateBuildingBlockDraftDto {
-    versionTag: string;
-}
-
 export interface CreateBuildingBlockDefinitionArtworkDto {
     imageBase64: string;
 }
@@ -52,6 +48,10 @@ export interface CreateBuildingBlockDefinitionDto {
     versionTag: string;
     name: string;
     description: string | null;
+}
+
+export interface CreateBuildingBlockDraftDto {
+    versionTag: string;
 }
 
 export interface UpdateBuildingBlockDefinitionArtworkDto {
@@ -660,22 +660,22 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    activityType: ActivityTypeWithEventName;
-    processDefinitionId: string;
     activityId: string;
+    processDefinitionId: string;
+    activityType: ActivityTypeWithEventName;
     processLinkType: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityType: ActivityTypeWithEventName;
     activityId: string;
+    activityType: ActivityTypeWithEventName;
     processLinkType: string;
 }
 
 export interface ProcessLinkResponseDto {
-    activityType: ActivityTypeWithEventName;
-    processDefinitionId: string;
     activityId: string;
+    processDefinitionId: string;
+    activityType: ActivityTypeWithEventName;
     processLinkType: string;
     id: string;
 }
@@ -857,8 +857,8 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdBy: string;
     createdOn: DateAsString;
+    createdBy: string;
     fileId: string;
     sizeInBytes: number;
     fileName: string;
@@ -877,9 +877,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityType: ActivityTypeWithEventName;
-    processDefinitionId: string;
     activityId: string;
+    processDefinitionId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -985,24 +985,24 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    processDefinitionKey: string;
-    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    processDefinitionKey: string;
+    rootProcessInstanceId: string;
+    assignee: string;
     startTime: DateAsString;
     endTime: DateAsString;
     taskId: string;
-    activityType: string;
-    processDefinitionId: string;
-    activityId: string;
-    assignee: string;
     tenantId: string;
+    activityId: string;
     canceled: boolean;
     removalTime: DateAsString;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
+    processDefinitionId: string;
+    activityType: string;
     executionId: string;
     processInstanceId: string;
     id: string;
