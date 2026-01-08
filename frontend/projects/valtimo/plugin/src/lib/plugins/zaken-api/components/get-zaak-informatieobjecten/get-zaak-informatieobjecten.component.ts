@@ -16,15 +16,16 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, take, tap, withLatestFrom} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {GetZaakInformatieobjectenConfig} from '../../models';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-get-zaak-informatieobjecten-configuration',
+  selector: 'valtimo-get-zaak-document-configuration',
   templateUrl: './get-zaak-informatieobjecten.component.html',
+  styleUrls: ['./get-zaak-informatieobjecten.component.scss'],
 })
 export class GetZaakInformatieobjectenComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -44,7 +45,7 @@ export class GetZaakInformatieobjectenComponent
 
   readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
-      this.pluginManagementService.getPluginConfigurationsByCategory('get-zaak-informatieobjecten'),
+      this.pluginManagementService.getPluginConfigurationsByCategory('get-zaak-documents'),
       this.translateService.stream('key'),
     ]).pipe(
       map(([configurations]) =>
@@ -64,15 +65,15 @@ export class GetZaakInformatieobjectenComponent
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
 
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  public ngOnDestroy(): void {
+  ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: GetZaakInformatieobjectenConfig): void {
+  formValueChange(formValue: GetZaakInformatieobjectenConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
@@ -85,14 +86,14 @@ export class GetZaakInformatieobjectenComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$
-      .pipe(
-        withLatestFrom(this.formValue$, this.valid$),
-        map(([_, formValue, valid]) => valid ? formValue : null),
-        tap(formValue => {
-          if (formValue) this.configuration.emit(formValue);
-        })
-      )
-      .subscribe();
+    this.saveSubscription = this.save$?.subscribe(save => {
+      combineLatest([this.formValue$, this.valid$])
+        .pipe(take(1))
+        .subscribe(([formValue, valid]) => {
+          if (valid) {
+            this.configuration.emit(formValue);
+          }
+        });
+    });
   }
 }

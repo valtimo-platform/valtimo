@@ -1,0 +1,26 @@
+[
+  {
+    "activityId" : "st-create-zaaknotitie",
+    "activityType" : "bpmn:ServiceTask:start",
+    "pluginConfigurationId" : "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+    "pluginActionDefinitionKey" : "create-zaaknotitie",
+    "actionProperties" : {
+      "onderwerp" : "pv:noteSubject",
+      "tekst" : "pv:noteText",
+      "aangemaaktDoor" : "pv:noteCreator",
+      "notitieType" : "intern",
+      "status" : "concept"
+    },
+    "processLinkType" : "plugin"
+  },
+  {
+    "activityId" : "StartEvent_1",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-create-zaaknotitie",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : null,
+    "processLinkType" : "form"
+  }
+]

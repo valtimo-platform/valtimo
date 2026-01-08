@@ -52,6 +52,7 @@ class OperatonRepositoryService(
         return runWithoutAuthorization{ findProcessDefinition(byId(processDefinitionId)) }
     }
 
+    @Deprecated("Since 13.8.0", ReplaceWith("com.ritense.valtimo.operaton.service.OperatonRepositoryService.findProcessDefinition(byKey(...).and(bySolutionModuleId(...)))"))
     @Transactional(readOnly = true)
     fun findLatestProcessDefinition(processDefinitionKey: String): OperatonProcessDefinition? {
         denyAuthorization()

@@ -10,6 +10,10 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.bySolutionModuleId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,9 +28,15 @@ class ProcessAuthorizationService(
         document: JsonSchemaDocument? = null,
     ) {
         val processDefinition = runWithoutAuthorization {
-            operatonRepositoryService.findLatestProcessDefinition(
-                processDefinitionKey
+            operatonRepositoryService.findProcessDefinition(
+                byKey(processDefinitionKey)
+                    .and(bySolutionModuleId(document?.definitionId()?.caseDefinitionId()))
             )
+                // Needed by form-view-model
+                ?: operatonRepositoryService.findProcessDefinition(
+                    byKey(processDefinitionKey)
+                        .and(maxVersionOf(byNotLinkedToCaseDefinition()))
+                )
         }
         require(processDefinition != null)
 

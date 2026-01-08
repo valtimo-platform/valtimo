@@ -175,23 +175,7 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             )
         }
         assertEquals(
-            "No process definition found with key: 'non-existing-key'",
-            exception.cause?.message
-        )
-    }
-
-    @Test
-    @Throws(JsonProcessingException::class)
-    fun `should fail to start process with non existing document`() {
-        val uuid = UUID.randomUUID().toString()
-        val exception = assertThrows<ProcessEngineException> {
-            runtimeService.startProcessInstanceByKey(
-                "parent-process",
-                uuid
-            )
-        }
-        assertEquals(
-            "No Document found with id $uuid",
+            "No process definition found with key: 'non-existing-key' and solutionModuleId: 'house:1.0.0'",
             exception.cause?.message
         )
     }

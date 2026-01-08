@@ -18,7 +18,15 @@ package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.repository.ReadOnlyJpaSpecificationRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
-interface OperatonProcessDefinitionRepository : ReadOnlyJpaSpecificationRepository<OperatonProcessDefinition, String>
+interface OperatonProcessDefinitionRepository : ReadOnlyJpaSpecificationRepository<OperatonProcessDefinition, String> {
+
+    @Modifying
+    @Query(value = "UPDATE ACT_RE_PROCDEF SET VERSION_TAG_ = :versionTag WHERE ID_ = :id", nativeQuery = true)
+    fun setVersionTag(@Param("id") id: String, @Param("versionTag") versionTag: String?)
+}

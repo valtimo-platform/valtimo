@@ -818,7 +818,12 @@
       "save": "Opslaan",
       "form": {"tabName": "Tab naam"}
     },
-    "columns": {"highContrast": "Hoog contrast", "type": "Type", "width": "Breedte"},
+    "columns": {
+      "highContrast": "Hoog contrast",
+      "type": "Type",
+      "width": "Breedte",
+      "density": "Dichtheid"
+    },
     "list": {
       "dividerModal": {
         "addDividerTitle": "Nieuwe widget-scheiding toevoegen",
@@ -852,6 +857,7 @@
         "style": "Kies widget-stijl",
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
+        "density": "Kies widgetdichtheid",
         "displayConditions": "Weergavecondities instellen"
       }
     },
@@ -888,6 +894,14 @@
       "highContrast": {
         "title": "Hoog contrast",
         "description": "Voor inhoud met een hogere prioriteit"
+      }
+    },
+    "density": {
+      "description": "Selecteer de gewenste dichtheid voor de widget",
+      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
+      "compact": {
+        "title": "Compact",
+        "description": "Voor een overzicht met hogere gegevensdichtheid"
       }
     },
     "content": {
@@ -950,7 +964,11 @@
         "percent": "Percentage",
         "link": "Link"
       },
-      "custom": {"selectComponent": "Angular-component", "placeholder": "Selecteer een component"},
+      "custom": {
+        "selectComponent": "Angular-component",
+        "placeholder": "Selecteer een component",
+        "addCustomKeyValue": "Voeg een aangepast sleutel-waarde-paar toe"
+      },
       "formio": {
         "selectForm": "Formulierdefinitie",
         "placeholder": "Selecteer een formulierdefinitie"
@@ -998,15 +1016,16 @@
     },
     "processes": {
       "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
-      "buttonTextPlaceholder": "Knop tekst",
+      "buttonTextPlaceholder": "Knoptekst",
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
-      "linkLabel": "Knop voor externe link",
-      "linkPlaceholder": "Externe link",
-      "buttonTextLabel": "Tekst van knop voor externe link"
+      "linkLabel": "Link-URL (met variabelen)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Knoptekst",
+      "buttonTextPlaceholder": "'Ga naar zaak'"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
@@ -1392,6 +1411,16 @@
       "content": "Je gaat de pagina verlaten. Alle niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je door wilt gaan?",
       "keepEditing": "Blijf bewerken"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "De waarde mag niet leeg zijn.",
+        "valueMaxLength": "Het BSN is te lang. De maximale lengte is 9 tekens.",
+        "valueMinLength": "Het BSN is te kort. De minimale lengte is 8 tekens.",
+        "valueOnlyDigits": "De waarde mag alleen cijfers bevatten. Letters of symbolen zijn niet toegestaan.",
+        "valueAllZerosOrNines": "De waarde mag niet volledig uit nullen of negens bestaan.",
+        "valueElfCheck": "De waarde voldoet niet aan de elfproef. Voer een geldig BSN in."
+      }
+    },
     "required": "vereist",
     "filter": "Filteren...",
     "back": "Terug",
@@ -1582,16 +1611,23 @@
     "downloadButtonText": "Download configuratie",
     "to": "tot",
     "text": "Tekst",
+    "textPlaceholder": "Voer tekst in",
     "number": "Nummer",
+    "numberPlaceholder": "Voer een nummer in",
     "date": "Datum",
+    "datePlaceholder": "dd-mm-yyyy",
     "datetime": "Datum en tijd",
     "time": "Tijd",
+    "timePlaceholder": "hh:mm",
     "boolean": "Ja / nee",
     "numberRange": "Nummerreeks",
     "dateRange": "Datumreeks",
     "datetimeRange": "Datum en tijd-reeks",
     "booleanPositive": "Ja",
-    "booleanNegative": "Nee"
+    "booleanNegative": "Nee",
+    "booleanPlaceholder": "Ja/nee",
+    "bsn": "BSN",
+    "bsnPlaceholder": "123456789"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",
@@ -1611,6 +1647,7 @@
     "path": "Pad",
     "dataType": "Datatype",
     "fieldType": "Veldtype",
+    "required": "Verplicht",
     "matchType": "Overeenkomst",
     "exact": "Precies",
     "like": "Bevat",
@@ -1638,7 +1675,9 @@
     "text": "Text",
     "textContains": "Tekst bevat",
     "noSearchfieldsTitle": "Geen zoekvelden",
-    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype."
+    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype.",
+    "requiredEnabled": "Verplicht",
+    "requiredDisabled": "Optioneel"
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de key-vertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke key-waarde weergegeven).",
@@ -1650,7 +1689,8 @@
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten.",
     "dropdownDataProvider": "De dropdown-databron bepaalt waar de data voor de dropdown lijst vandaan komt.",
     "configFile": "Gebruik een configuratiebestand met dropdown-waarden",
-    "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten."
+    "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten.",
+    "required": "Bepaalt of de gebruiker een waarde moet invullen voordat er gezocht kan worden."
   },
   "searchFieldDataType": {"select": "Selecteer een datatype"},
   "searchFieldFieldType": {"select": "Selecteer een veldtype"},
