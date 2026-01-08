@@ -1,8 +1,9 @@
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 import {CaseManagementPage} from './page';
 import * as ApiUtils from '../../utils/api.utils';
 import {caseConfiguration} from './case-config';
 import {expectErrorMessage} from '../../utils/ui.utils';
+import {CaseManagementUtils} from '../../utils/case.utils';
 
 test.use({storageState: undefined});
 
@@ -25,11 +26,11 @@ test.describe('Case management', () => {
     await caseManagementPage.goToCaseManagement();
   });
 
-  test.afterAll(async () => {
-    await ApiUtils.apiDelete(
-      `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
-    );
-  });
+  // test.afterAll(async () => {
+  // await ApiUtils.apiDelete(
+  //   `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
+  // );
+  // });
 
   test.describe('Success test', () => {
     test('Add a case', async () => {
@@ -50,6 +51,17 @@ test.describe('Case management', () => {
       // Assert
       await caseManagementPage.assertCaseExists('Test case');
     });
+
+    //For testing case utils
+    test('Import case through API', async () => {
+      await CaseManagementUtils.importCase('test-case-import-invalid-file');
+    });
+
+    test('Cleanup test file', async () => {
+      await ApiUtils.apiDelete(
+        `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
+      );
+    });
   });
 
   test.describe('Error test', () => {
@@ -67,11 +79,9 @@ test.describe('Case management', () => {
       await caseManagementPage.saveConfiguration();
 
       // Assert
-      await expectErrorMessage(
-        page,
-        'This version already exists for this definition',
-        {exact: true}
-      );
+      await expectErrorMessage(page, 'This version already exists for this definition', {
+        exact: true,
+      });
 
       await caseManagementPage.createCancelButton.click();
     });
@@ -85,11 +95,7 @@ test.describe('Case management', () => {
       await caseManagementPage.assertCaseUploaded();
 
       // Assert
-      await expectErrorMessage(
-          page,
-          'entity-not-found',
-          {exact: true}
-      );
+      await expectErrorMessage(page, 'entity-not-found', {exact: true});
 
       await caseManagementPage.createCancelButton.click();
     });
@@ -101,11 +107,7 @@ test.describe('Case management', () => {
       await caseManagementPage.assertCaseUploaded();
 
       // Assert
-      await expectErrorMessage(
-          page,
-          'Maximum upload size exceeded',
-          {exact: true}
-      );
+      await expectErrorMessage(page, 'Maximum upload size exceeded', {exact: true});
 
       await caseManagementPage.createCancelButton.click();
     });

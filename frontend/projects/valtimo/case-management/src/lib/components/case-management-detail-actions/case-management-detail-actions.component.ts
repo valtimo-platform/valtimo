@@ -157,6 +157,7 @@ export class CaseManagementDetailActionsComponent {
         tagType: final ? 'green' : 'red',
         isAllVersionsOption: false,
         draft: !final,
+        'data-test-id': `caseVersion${versionTag}`,
       }));
 
       const allVersionsItem: ListItem = {
@@ -164,7 +165,10 @@ export class CaseManagementDetailActionsComponent {
         selected: false,
         active: false,
         isAllVersionsOption: true,
+        'data-test-id': 'caseSeeAllVersionsButton',
       };
+
+      console.log([...mapping, allVersionsItem]);
 
       return [...mapping, allVersionsItem];
     })

@@ -43,6 +43,7 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selector"
+    data-test-id="caseVersionSelectDropdown"
     selectionFeedback="fixed"
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
@@ -59,13 +60,16 @@
 </ng-template>
 
 <ng-template #versionItemTemplate let-item="item">
-  <ng-container *ngIf="item?.isAllVersionsOption; else regularVersionTemplate">
+  <div
+    [attr.data-test-id]="item['data-test-id']"
+    *ngIf="item?.isAllVersionsOption; else regularVersionTemplate"
+  >
     <span>{{ item?.content }}</span>
     <svg cdsIcon="version" size="16"></svg>
-  </ng-container>
+  </div>
 
   <ng-template #regularVersionTemplate>
-    <div class="version-selector-dropdown-template">
+    <div [attr.data-test-id]="item['data-test-id']" class="version-selector-dropdown-template">
       <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
         {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
       </cds-tag>
@@ -80,6 +84,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
+    data-test-id="caseVersionManagementButton"
     [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
@@ -98,6 +103,7 @@
     class="overflow-button"
   >
     <cds-overflow-menu-option
+      data-test-id="caseExportButton"
       [id]="'exportDocumentDefinition'"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
@@ -105,6 +111,7 @@
     </cds-overflow-menu-option>
 
     <cds-overflow-menu-option
+      data-test-id="caseSetActiveVersionButton"
       [id]="'setGlobalActiveVersion'"
       [disabled]="obs.selectedVersionIsGloballyActive"
       (selected)="openGlobalActiveVersionModal()"
@@ -114,7 +121,11 @@
 </ng-template>
 
 <ng-template #customTrigger>
-  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
+  <button
+    cdsButton="tertiary"
+    data-test-id="caseMoreButton"
+    [size]="(compactMode$ | async) ? 'sm' : 'md'"
+  >
     {{ 'caseManagement.more' | translate }}
 
     <svg
