@@ -18,6 +18,13 @@
   display: flex;
 }
 
+:host ::ng-deep .building-block-management-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
 :host ::ng-deep .cds--tab-content {
   margin: 0 !important;
   padding-left: 0 !important;

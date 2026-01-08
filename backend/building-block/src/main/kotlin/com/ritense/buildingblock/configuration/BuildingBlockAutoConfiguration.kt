@@ -18,6 +18,7 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
@@ -154,6 +155,26 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionEventListener::class)
+    fun buildingBlockDefinitionEventListener(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        jsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository,
+        buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
+        operatonProcessService: OperatonProcessService
+    ): BuildingBlockDefinitionEventListener {
+        return BuildingBlockDefinitionEventListener(
+            buildingBlockDefinitionRepository,
+            jsonSchemaDocumentDefinitionRepository,
+            processDefinitionBuildingBlockDefinitionRepository,
+            buildingBlockDefinitionArtworkRepository,
+            buildingBlockDocumentDefinitionService,
+            operatonProcessService
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)
     fun buildingBlockDefinitionArtworkService(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
@@ -196,14 +217,16 @@ class BuildingBlockAutoConfiguration {
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
         buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        applicationEventPublisher: ApplicationEventPublisher
     ): BuildingBlockManagementService {
         return BuildingBlockManagementService(
             buildingBlockDefinitionRepository,
             buildingBlockDocumentDefinitionService,
             buildingBlockDefinitionProcessDefinitionService,
             buildingBlockDefinitionChecker,
-            authorizationService
+            authorizationService,
+            applicationEventPublisher
         )
     }
 
@@ -289,16 +312,6 @@ class BuildingBlockAutoConfiguration {
             applicationEventPublisher
         )
     }
-
-    @Bean
-    @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
-    fun buildingBlockPluginDefinitionService(
-        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
-    ) = BuildingBlockPluginDefinitionService(
-        pluginProcessLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository
-    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionImporter::class)

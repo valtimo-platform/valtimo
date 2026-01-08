@@ -23,6 +23,7 @@ import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDraftDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
 import com.ritense.exporter.ExportService
@@ -108,6 +109,18 @@ class BuildingBlockManagementResource(
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val finalized = runWithoutAuthorization { buildingBlockManagementService.finalize(key, versionTag) }
         return ResponseEntity.ok(finalized)
+    }
+
+    @PostMapping("/{key}/version/{versionTag}/draft", consumes = [APPLICATION_JSON_UTF8_VALUE])
+    fun createDraftBuildingBlockDefinition(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestBody dto: CreateBuildingBlockDraftDto
+    ): ResponseEntity<BuildingBlockDefinitionDto> {
+        val draft = runWithoutAuthorization {
+            buildingBlockManagementService.createDraft(key, versionTag, dto.versionTag)
+        }
+        return ResponseEntity.ok(draft)
     }
 
     @PostMapping("/import")

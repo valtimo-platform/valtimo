@@ -39,6 +39,10 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
+export interface CreateBuildingBlockDraftDto {
+    versionTag: string;
+}
+
 export interface CreateBuildingBlockDefinitionArtworkDto {
     imageBase64: string;
 }
