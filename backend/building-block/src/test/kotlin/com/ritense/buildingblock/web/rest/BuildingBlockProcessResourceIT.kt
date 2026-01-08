@@ -22,6 +22,8 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitio
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
+import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
+import com.ritense.plugin.web.rest.result.PluginWithDependenciesDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -139,7 +141,11 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             jsonPath("$.bpmn20Xml") { value("<definitions/>") }
         }
 
-        verify(buildingBlockProcessService).getProcessDefinitionWithProcessLinks(eq(key), eq(version), eq(processDefinitionId))
+        verify(buildingBlockProcessService).getProcessDefinitionWithProcessLinks(
+            eq(key),
+            eq(version),
+            eq(processDefinitionId)
+        )
     }
 
     @Test
@@ -162,7 +168,11 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             status { isNotFound() }
         }
 
-        verify(buildingBlockProcessService).getProcessDefinitionWithProcessLinks(eq(key), eq(version), eq(processDefinitionId))
+        verify(buildingBlockProcessService).getProcessDefinitionWithProcessLinks(
+            eq(key),
+            eq(version),
+            eq(processDefinitionId)
+        )
     }
 
     @Test
@@ -180,12 +190,18 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
         val linksPart = MockPart("processLinks", linksJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
         val idJsonString = "\"$processDefinitionId\"".toByteArray()
-        val idPart = MockPart("processDefinitionId", idJsonString).apply { headers.contentType = MediaType.APPLICATION_JSON }
+        val idPart =
+            MockPart("processDefinitionId", idJsonString).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
         val mainJson = "true".toByteArray()
         val mainPart = MockPart("main", mainJson).apply { headers.contentType = MediaType.APPLICATION_JSON }
 
-        mockMvc.multipart("$base/{key}/version/{version}/process-definition/{processDefinitionId}", key, version, processDefinitionId) {
+        mockMvc.multipart(
+            "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
+            key,
+            version,
+            processDefinitionId
+        ) {
             file(bpmn)
             part(linksPart)
             part(idPart)
@@ -209,23 +225,25 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should return plugin definitions for building block`() {
-        val pluginKeys = setOf("plugin-a", "plugin-b")
+        val pluginDefinitionsWithDependenciesDto = PluginDefinitionsWithDependenciesDto(
+            listOf(
+                PluginWithDependenciesDto("plugin-a", emptyList()),
+                PluginWithDependenciesDto("plugin-b", emptyList())
+            )
+        )
         whenever(
-            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForBuildingBlock(
+            buildingBlockPluginDefinitionService.getPluginDefinitionsWithDependenciesForBuildingBlock(
                 eq(BuildingBlockDefinitionId.of(key, version))
             )
-        ).thenReturn(pluginKeys)
+        ).thenReturn(pluginDefinitionsWithDependenciesDto)
 
         mockMvc.get("$base/{key}/version/{version}/plugin", key, version)
             .andExpect {
                 status { isOk() }
-                jsonPath("$", hasSize<Any>(2))
-                jsonPath("$[0]") { value("plugin-a") }
-                jsonPath("$[1]") { value("plugin-b") }
+                jsonPath("$.plugins", hasSize<Any>(2))
+                jsonPath("$.plugins[0].pluginDefinitionKey") { value("plugin-a") }
+                jsonPath("$.plugins[1].pluginDefinitionKey") { value("plugin-b") }
             }
-
-        verify(buildingBlockPluginDefinitionService)
-            .getPluginDefinitionKeysForBuildingBlock(eq(BuildingBlockDefinitionId.of(key, version)))
     }
 
     @Test

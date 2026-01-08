@@ -201,6 +201,7 @@ class CaseWidgetTabResourceIntTest @Autowired constructor(
                         icon = "mdi-home",
                         width = 1,
                         highContrast = true,
+                        isCompact = true,
                         properties = TestCaseWidgetProperties(
                             displayProperties = CurrencyFieldDisplayProperties(
                                 currencyCode = "EUR"

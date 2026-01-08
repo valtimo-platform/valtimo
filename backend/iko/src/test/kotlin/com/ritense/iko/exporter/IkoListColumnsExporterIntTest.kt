@@ -35,11 +35,11 @@ class IkoListColumnsExporterIntTest @Autowired constructor(
 
     @Test
     fun `should export ikoListColumns`(): Unit = runWithoutAuthorization {
-        val ikoDataAggregateKey = "klant"
-        val request = IkoListColumnsExportRequest(ikoDataAggregateKey)
+        val ikoViewKey = "klant"
+        val request = IkoListColumnsExportRequest(ikoViewKey)
 
         val exportFiles = ikoListColumnsExporter.export(request).exportFiles
-        val expectedPath = IkoListColumnsExporter.PATH.format(ikoDataAggregateKey, ikoDataAggregateKey)
+        val expectedPath = IkoListColumnsExporter.PATH.format(ikoViewKey, ikoViewKey)
         val exportedFile = exportFiles.singleOrNull { it.path == expectedPath }
             ?: error("Exported file not found for path: $expectedPath")
 

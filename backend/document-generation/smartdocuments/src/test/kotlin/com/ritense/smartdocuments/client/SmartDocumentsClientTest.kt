@@ -17,6 +17,7 @@
 package com.ritense.smartdocuments.client
 
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
 import com.ritense.smartdocuments.BaseTest
 import com.ritense.smartdocuments.config.SmartDocumentsAuthentication
 import com.ritense.smartdocuments.domain.DocumentFormatOption
@@ -54,12 +55,13 @@ internal class SmartDocumentsClientTest : BaseTest() {
     private lateinit var temporaryResourceStorageService: TemporaryResourceStorageService
     private lateinit var repository: ResourceStorageMetadataRepository
     private lateinit var authentication: SmartDocumentsAuthentication
+    private lateinit var virusScanService: VirusScanService
 
     @BeforeAll
     fun setUp() {
         mockDocumentenApi = MockWebServer()
         mockDocumentenApi.start()
-
+        virusScanService = mock()
         repository = mock()
         authentication = SmartDocumentsAuthentication(
             url = mockDocumentenApi.url("/").toString(),
@@ -71,7 +73,8 @@ internal class SmartDocumentsClientTest : BaseTest() {
             TemporaryResourceStorageService(
                 uploadProperties = ValtimoUploadProperties(),
                 objectMapper = MapperSingleton.get(),
-                repository = repository
+                repository = repository,
+                virusScanService = virusScanService
             )
         )
 

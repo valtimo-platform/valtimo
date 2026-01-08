@@ -26,9 +26,9 @@ import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
   styleUrls: ['./plugin-add-select.component.scss'],
 })
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
-  readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
-  readonly disabled$ = this.stateService.inputDisabled$;
-  readonly pluginDefinitionsWithLogos$ = this.stateService.pluginDefinitionsWithLogos$;
+  public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
+  public readonly disabled$ = this.stateService.inputDisabled$;
+  public readonly pluginDefinitionsWithLogos$ = this.stateService.pluginDefinitionsWithLogos$;
 
   private refreshSubscription!: Subscription;
 
@@ -37,20 +37,20 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     private readonly stateService: PluginManagementStateService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openRefreshSubscription();
     this.getPluginDefinitions();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.refreshSubscription?.unsubscribe();
   }
 
-  selectPluginDefinition(event: {value: PluginDefinition}): void {
+  public selectPluginDefinition(event: {value: PluginDefinition}): void {
     this.stateService.selectPluginDefinition(event.value);
   }
 
-  deselectPluginDefinition(): void {
+  public  deselectPluginDefinition(): void {
     this.stateService.clearSelectedPluginDefinition();
   }
 

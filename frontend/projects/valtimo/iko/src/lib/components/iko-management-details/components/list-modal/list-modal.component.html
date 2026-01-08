@@ -35,6 +35,7 @@
       {{ 'ikoManagement.titleTitle' | translate }}
 
       <input
+        [mode]="modalMode"
         [invalid]="title.dirty && title.invalid"
         formControlName="title"
         cdsText
@@ -42,16 +43,14 @@
       />
     </cds-label>
 
-    <cds-label>
-      {{ 'ikoManagement.keyTitle' | translate }}
-
-      <input
-        [invalid]="key.dirty && key.invalid"
-        formControlName="key"
-        cdsText
-        placeholder="{{ 'ikoManagement.columnKeyPlaceholder' | translate }}"
-      />
-    </cds-label>
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys$ | async"
+      [sourceText]="title.value"
+      formControlName="key"
+      placeholderTranslationKey="ikoManagement.columnKeyPlaceholder"
+    >
+    </valtimo-auto-key-input>
 
     <cds-label>
       {{ 'ikoManagement.pathTitle' | translate }}

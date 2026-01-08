@@ -97,6 +97,11 @@ public class SearchField implements Persistable<SearchFieldId> {
         this.id = searchFieldId;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+
     public String getKey() {
         return key;
     }

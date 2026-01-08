@@ -30,6 +30,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
             index,
             dto.width,
             dto.highContrast,
+            dto.isCompact,
             dto.actions ?: emptyList(),
             dto.displayConditions,
             dto.properties
@@ -43,6 +44,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
             icon = entity.icon,
             width = entity.width,
             highContrast = entity.highContrast,
+            isCompact = entity.highContrast,
             properties = entity.properties,
             actions = entity.actions,
         )

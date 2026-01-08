@@ -29,6 +29,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -55,6 +56,7 @@ internal class ZakenApiPluginFactoryTest {
         val platformTransactionManager: PlatformTransactionManager = mock()
         val valueResolverService: ValueResolverService = mock()
         val objectMapper: ObjectMapper = mock()
+        val zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
 
         val factory = ZakenApiPluginFactory(
             pluginService,
@@ -66,7 +68,8 @@ internal class ZakenApiPluginFactoryTest {
             zaakDocumentService,
             platformTransactionManager,
             valueResolverService,
-            objectMapper
+            objectMapper,
+            zaakNotitieLinkRepository
         )
         val zakenApiPluginProperties: String = """
             {

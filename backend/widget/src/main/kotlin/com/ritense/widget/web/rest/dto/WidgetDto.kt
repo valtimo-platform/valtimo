@@ -36,6 +36,7 @@ interface WidgetDto {
     @get:Max(4)
     val width: Int
     val highContrast: Boolean
+    val isCompact: Boolean?
     val actions: List<WidgetAction>
     val displayConditions: List<Condition<*>>?
 

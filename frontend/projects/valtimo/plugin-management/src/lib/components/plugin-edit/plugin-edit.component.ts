@@ -30,13 +30,13 @@ export class PluginEditComponent {
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
 
-  readonly saveEdit$ = this.stateService.saveEdit$;
+  public readonly saveEdit$ = this.stateService.saveEdit$;
 
-  readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
+  public readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
     map(configuration => configuration?.pluginDefinition?.key)
   );
 
-  readonly prefillConfiguration$ = this.stateService.selectedPluginConfiguration$.pipe(
+  public readonly prefillConfiguration$ = this.stateService.selectedPluginConfiguration$.pipe(
     map(configuration =>
       configuration
         ? {
@@ -48,15 +48,15 @@ export class PluginEditComponent {
     )
   );
 
-  readonly disabled$ = this.stateService.inputDisabled$;
+  public readonly disabled$ = this.stateService.inputDisabled$;
 
   constructor(private readonly stateService: PluginManagementStateService) {}
 
-  onValid(valid: boolean): void {
+  public onValid(valid: boolean): void {
     this.valid.emit(valid);
   }
 
-  onFunctionConfiguration(configuration: PluginConfigurationData) {
+  public onFunctionConfiguration(configuration: PluginConfigurationData): void {
     this.configuration.emit(configuration);
   }
 }

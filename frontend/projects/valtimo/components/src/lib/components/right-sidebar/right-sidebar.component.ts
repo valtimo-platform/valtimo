@@ -22,12 +22,11 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {FormBuilder} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {SelectableCarbonTheme, ValtimoVersion} from '../../models';
 import {
   ConfigService,
-  EmailNotificationSettings,
   FeedbackMailTo,
   UserIdentity,
   UserSettings,
@@ -39,7 +38,7 @@ import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
-import {map, tap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {ListItem} from 'carbon-components-angular';
 
 @Component({
@@ -64,18 +63,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       });
   }
 
-  public readonly settingsForm: FormGroup = this.formBuilder.group({
-    taskNotifications: new FormControl(false),
-    emailNotifications: new FormControl(false),
-    emailNotificationOnMonday: new FormControl(false),
-    emailNotificationOnTuesday: new FormControl(false),
-    emailNotificationOnWednesday: new FormControl(false),
-    emailNotificationOnThursday: new FormControl(false),
-    emailNotificationOnFriday: new FormControl(false),
-    emailNotificationOnSaturday: new FormControl(false),
-    emailNotificationOnSunday: new FormControl(false),
-  });
-
   public readonly panelExpanded$ = this.shellService.panelExpanded$;
 
   private readonly _selectedLanguage$ = new BehaviorSubject<string>('');
@@ -98,22 +85,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   public readonly backendVersion$: Observable<ValtimoVersion> = this.versionService.getVersion();
   public readonly userSubject$: Observable<UserIdentity> =
     this.userProviderService.getUserSubject();
-  public readonly updatingSettings$ = new BehaviorSubject<boolean>(true);
   public readonly updatingUserSettings$ = new BehaviorSubject<boolean>(true);
-
-  private readonly _emailNotificationSettings$ = new BehaviorSubject<EmailNotificationSettings>(
-    undefined
-  );
-
-  public readonly emailNotificationSettingsWithSideEffects$: Observable<EmailNotificationSettings> =
-    this._emailNotificationSettings$.pipe(
-      tap(results => {
-        if (results) {
-          this.settingsForm.setValue(results);
-          this.updatingSettings$.next(false);
-        }
-      })
-    );
 
   public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
@@ -181,8 +153,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.initFrontendVersion();
     this.openShowVersionsSubscription();
     this.setLanguage();
-    this.loadEmailNotificationSettings();
-    this.openFormSubscription();
     this.getUserSettings();
   }
 
@@ -280,49 +250,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   private initFrontendVersion(): void {
     this.frontendVersion = VERSIONS?.frontendLibraries;
-  }
-
-  private openFormSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this._emailNotificationSettings$,
-        this.settingsForm.valueChanges,
-        this.updatingSettings$,
-      ])
-        .pipe(
-          tap(([settings, formValue, updatingSettings]) => {
-            if (settings && formValue) {
-              const settingsStringified = JSON.stringify(this.sortObjectAlphabetically(settings));
-              const formStringified = JSON.stringify(this.sortObjectAlphabetically(formValue));
-
-              if (settingsStringified !== formStringified && !updatingSettings) {
-                this.updatingSettings$.next(true);
-                this.userProviderService.updateEmailNotificationSettings(formValue).subscribe(
-                  results => {
-                    this._emailNotificationSettings$.next(results);
-                    this.updatingSettings$.next(false);
-                  },
-                  () => {
-                    this._emailNotificationSettings$.next(settings);
-                    this.updatingSettings$.next(false);
-                  }
-                );
-              }
-            }
-          })
-        )
-        .subscribe()
-    );
-  }
-
-  private loadEmailNotificationSettings(): void {
-    this.userProviderService.getEmailNotificationSettings().subscribe(results => {
-      if (results) {
-        this._emailNotificationSettings$.next(results);
-      } else {
-        this._emailNotificationSettings$.next(this.settingsForm.value);
-      }
-    });
   }
 
   private setLanguage(): void {

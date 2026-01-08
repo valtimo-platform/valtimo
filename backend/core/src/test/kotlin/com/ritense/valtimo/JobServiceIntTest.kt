@@ -18,14 +18,15 @@
 package com.ritense.valtimo
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.valtimo.contract.case_.CaseDefinitionId.Companion.of
 import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.ProcessEngine
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
+import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.ProcessEngine
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
 
 @Transactional
@@ -40,12 +41,17 @@ class JobServiceIntTest: BaseIntegrationTest() {
     @Autowired
     lateinit var operatonProcessService: OperatonProcessService
 
+    private val caseDefinitionId = of("everything", "1.0.0")
+
     @Test
     fun `should delay job`(){
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization{
             operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
+                testProcessDefinition,
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                null
             )
         }
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-delay")
@@ -61,7 +67,10 @@ class JobServiceIntTest: BaseIntegrationTest() {
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization {
             operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
+                testProcessDefinition,
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                null
             )
         }
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-forward")
@@ -76,7 +85,10 @@ class JobServiceIntTest: BaseIntegrationTest() {
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization {
             operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
+                testProcessDefinition,
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                null
             )
         }
         processEngine.runtimeService.createMessageCorrelation("message-start-event-change-date")

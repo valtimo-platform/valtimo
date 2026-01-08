@@ -17,14 +17,15 @@
 package com.ritense.case.service
 
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.QuickSearch
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.QuickSearchRepository
-import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
+import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
@@ -187,7 +188,9 @@ class CaseInstanceService(
         caseSupplier: () -> CaseDefinition
     ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
-        val resolvedValuesMap = valueResolverService.resolveValues(document.id().id.toString(), paths)
+        val resolvedValuesMap = runWithoutAuthorization {
+            valueResolverService.resolveValues(document.id().id.toString(), paths)
+        }
 
         val items = caseListColumns.map { caseListColumn ->
             CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])

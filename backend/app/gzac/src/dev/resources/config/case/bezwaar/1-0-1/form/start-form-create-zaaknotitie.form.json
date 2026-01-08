@@ -1,0 +1,53 @@
+{
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "pv:noteSubject",
+      "type" : "textfield",
+      "input" : true,
+      "label" : "Onderwerp",
+      "validate" : {
+        "required" : true
+      },
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "start-form-create-zaaknotitie-pv:noteSubject"
+      },
+      "applyMaskOn" : "change"
+    },
+    {
+      "key" : "pv:noteText",
+      "type" : "textarea",
+      "input" : true,
+      "label" : "Tekst",
+      "validate" : {
+        "required" : true
+      },
+      "tableView" : true,
+      "attributes" : {
+        "data-testid" : "start-form-create-zaaknotitie-pv:noteText"
+      },
+      "autoExpand" : false,
+      "applyMaskOn" : "change"
+    },
+    {
+      "key" : "pv:noteCreator",
+      "type" : "hidden",
+      "input" : true,
+      "label" : "Note creator",
+      "tableView" : false,
+      "attributes" : {
+        "data-testid" : "start-form-create-zaaknotitie-pv:noteCreator"
+      },
+      "calculateValue" : "value = token.preferred_username;"
+    },
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "Submit",
+      "tableView" : false,
+      "disableOnInvalid" : true
+    }
+  ]
+}

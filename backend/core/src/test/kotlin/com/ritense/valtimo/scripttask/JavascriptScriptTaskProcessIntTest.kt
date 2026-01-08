@@ -18,6 +18,7 @@ package com.ritense.valtimo.scripttask
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.contract.case_.CaseDefinitionId.Companion.of
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.HistoryService
 import org.junit.jupiter.api.Test
@@ -38,12 +39,15 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
     @Autowired
     lateinit var historyService: HistoryService
 
+    private val caseDefinitionId = of("everything", "1.0.0")
+
     @Test
     fun `should execute javascript in script-task`() {
         val processInstance = runWithoutAuthorization {
             operatonProcessService.startProcess(
                 "javascript-script-task-process",
                 UUID.randomUUID().toString(),
+                caseDefinitionId,
                 mapOf("a" to 1, "b" to 2)
             ).processInstanceDto
         }
@@ -64,6 +68,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
                 operatonProcessService.startProcess(
                     "javascript-script-task-process-allowed",
                     UUID.randomUUID().toString(),
+                    caseDefinitionId,
                     emptyMap()
                 ).processInstanceDto
             }
@@ -78,6 +83,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
                 operatonProcessService.startProcess(
                     "javascript-script-task-process-default-allowed",
                     UUID.randomUUID().toString(),
+                    caseDefinitionId,
                     emptyMap()
                 ).processInstanceDto
             }
@@ -91,6 +97,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
                 operatonProcessService.startProcess(
                     "javascript-script-task-process-unallowed",
                     UUID.randomUUID().toString(),
+                    caseDefinitionId,
                     emptyMap()
                 ).processInstanceDto
             }
