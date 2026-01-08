@@ -56,4 +56,35 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
         assertEquals("""{"address":"Straatnaam"}""", targetDocument.content().asJson().toString())
         assertEquals("allows-all", targetDocument.definitionId().name())
     }
+
+    @Test
+    fun `should migrate documents in batches`() {
+        repeat(10) { i ->
+            createDocument(
+                definitionOf("referenced"),
+                """{"address": {"streetName": "Straatnaam $i"}}"""
+            )
+        }
+
+        runWithoutAuthorization {
+            documentMigrationService.migrateDocuments(
+                DocumentMigrationRequest(
+                    documentDefinitionNameSource = "referenced",
+                    documentDefinitionVersionSource = 1,
+                    documentDefinitionNameTarget = "allows-all",
+                    documentDefinitionVersionTarget = 1,
+                    patches = listOf(
+                        DocumentMigrationPatch(source = "/address/streetName", target = "/address"),
+                    ),
+                    batchSize = 4
+                )
+            )
+        }
+
+        val sourceDocuments = documentRepository.findAll(byDocumentDefinitionIdName("referenced"))
+        val targetDocuments = documentRepository.findAll(byDocumentDefinitionIdName("allows-all"))
+
+        assertEquals(6, sourceDocuments.size)
+        assertEquals(4, targetDocuments.size)
+    }
 }
