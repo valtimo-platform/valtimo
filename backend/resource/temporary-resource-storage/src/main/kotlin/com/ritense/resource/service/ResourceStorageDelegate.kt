@@ -26,7 +26,7 @@ class ResourceStorageDelegate(
         return service.store(inputStream, emptyMap())
     }
 
-    fun store(inputStream: InputStream, metadata: Map<String, Any?>): String {
+    fun store(inputStream: InputStream, metadata: Map<String, Any>): String {
         return service.store(inputStream, metadata)
     }
 

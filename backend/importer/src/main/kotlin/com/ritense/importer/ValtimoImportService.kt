@@ -33,8 +33,6 @@ import org.apache.commons.lang3.StringUtils
 import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
-import java.io.InputStream
-import java.util.zip.ZipInputStream
 
 @AllOpen
 class ValtimoImportService(
@@ -186,9 +184,15 @@ class ValtimoImportService(
 
     @Transactional
     override fun importGlobal(inputStream: InputStream) {
+        val entries = readZipEntries(inputStream).map { ImportRequest(it.fileName, it.content) }
+        return importGlobal(entries)
+    }
+
+    @Transactional
+    override fun importGlobal(entries: List<ImportRequest>) {
         runImporter {
-            val entries = readZipEntries(inputStream)
-            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+            val importerEntriesList = getEntriesByImporter(entries.map { ZipFileEntry(it.fileName, it.content) })
+                .ifEmpty { return@runImporter }
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
@@ -234,7 +238,8 @@ class ValtimoImportService(
                         importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
                     }
                 }
-
+            } else {
+                caseDefinitionId = null
             }
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
@@ -246,7 +251,7 @@ class ValtimoImportService(
 
             importerEntriesList.forEach { (importer, entries) ->
                 entries.forEach { entry ->
-                    importer.afterImport(ImportRequest(entry.fileName, entry.content))
+                    importer.afterImport(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
                 }
             }
         }
@@ -319,7 +324,7 @@ class ValtimoImportService(
      * When no files are provided, an empty list value is mapped.
      * @param entries
      */
-    private fun getEntriesByImporter(entries: List<ImportRequest>): Map<Importer, List<ImportRequest>> {
+    private fun getEntriesByImporter(entries: List<ZipFileEntry>): LinkedHashMap<Importer, List<ZipFileEntry>> {
         val entryPairs = entries.mapNotNull { entry ->
             orderedImporters.filter { importer ->
                 importer.supports(entry.fileName)

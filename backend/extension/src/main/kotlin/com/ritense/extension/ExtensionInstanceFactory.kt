@@ -16,7 +16,7 @@
 
 package com.ritense.extension
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.Plugin
 import org.pf4j.PluginFactory
 import org.pf4j.PluginWrapper

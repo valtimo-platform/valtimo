@@ -20,7 +20,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import jakarta.annotation.PostConstruct
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.PluginState.FAILED
 import org.pf4j.PluginState.STARTED
 import org.pf4j.PluginState.STOPPED

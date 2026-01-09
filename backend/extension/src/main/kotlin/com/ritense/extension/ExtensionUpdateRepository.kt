@@ -18,7 +18,7 @@ package com.ritense.extension
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.update.DefaultUpdateRepository
 import org.pf4j.update.PluginInfo
 import java.net.MalformedURLException

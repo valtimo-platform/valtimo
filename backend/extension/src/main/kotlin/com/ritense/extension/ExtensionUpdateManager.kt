@@ -18,7 +18,7 @@ package com.ritense.extension
 
 import com.ritense.extension.web.rest.ExtensionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.update.PluginInfo
 import org.pf4j.update.UpdateManager
 import org.pf4j.update.UpdateRepository

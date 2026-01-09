@@ -17,9 +17,10 @@ import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {ExtensionListItem} from '../../models';
 import {ExtensionService} from '../../services';
-import {ToastrService} from 'ngx-toastr';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
+  standalone: false,
   templateUrl: './extension-overview.component.html',
   styleUrls: ['./extension-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,7 @@ export class ExtensionOverviewComponent implements OnInit {
 
   constructor(
     private readonly extensionService: ExtensionService,
-    private readonly toastrService: ToastrService
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   public ngOnInit(): void {
@@ -41,17 +42,26 @@ export class ExtensionOverviewComponent implements OnInit {
       _ => {
         this.extensionService.load(extension.id).subscribe(
           _ => {
-            this.toastrService.success(`Successfully installed extension '${extension.id}'`);
+            this.globalNotificationService.showToast({
+              title: `Successfully installed extension '${extension.id}'`,
+              type: 'success',
+            });
           },
           err => {
-            this.toastrService.error(err, `Failed to install extension '${extension.id}'`);
+            this.globalNotificationService.showToast({
+              title: `Failed to install extension '${extension.id}'`,
+              type: 'error',
+            });
             this.uninstall(extension.id);
           }
         );
         this.updateList();
       },
       err => {
-        this.toastrService.error(err, `Failed to install extension '${extension.id}'`);
+        this.globalNotificationService.showToast({
+          title: `Failed to install extension '${extension.id}'`,
+          type: 'error',
+        });
       }
     );
   }
@@ -61,17 +71,26 @@ export class ExtensionOverviewComponent implements OnInit {
       _ => {
         this.extensionService.load(extension.id).subscribe(
           _ => {
-            this.toastrService.success(`Successfully updated extension '${extension.id}'`);
+            this.globalNotificationService.showToast({
+              title: `Successfully updated extension '${extension.id}'`,
+              type: 'success',
+            });
           },
           err => {
-            this.toastrService.error(err, `Failed to update extension '${extension.id}'`);
+            this.globalNotificationService.showToast({
+              title: `Failed to update extension '${extension.id}'`,
+              type: 'error',
+            });
             this.uninstall(extension.id);
           }
         );
         this.updateList();
       },
       err => {
-        this.toastrService.error(err, `Failed to update extension '${extension.id}'`);
+        this.globalNotificationService.showToast({
+          title: `Failed to update extension '${extension.id}'`,
+          type: 'error',
+        });
       }
     );
   }

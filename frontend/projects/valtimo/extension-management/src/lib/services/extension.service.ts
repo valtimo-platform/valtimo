@@ -17,7 +17,7 @@
 import {HttpClient} from '@angular/common/http';
 import * as angularcore from '@angular/core';
 import {createNgModule, Injectable, Injector, NgModule} from '@angular/core';
-import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/config';
+import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/shared';
 import * as rxjs from 'rxjs';
 import {combineLatest, Observable, Subject, switchMap} from 'rxjs';
 import {ExtensionListItem} from '../models';
@@ -27,8 +27,8 @@ import * as angularcommon from '@angular/common';
 import * as valtimocomponents from '@valtimo/components';
 import * as tslib from 'tslib';
 import {NGXLogger} from 'ngx-logger';
-import {TabService} from '@valtimo/dossier-management';
-import { loadRemoteModule } from '@angular-architects/module-federation';
+import {TabService} from '@valtimo/case-management';
+import {loadRemoteModule} from '@angular-architects/module-federation';
 
 @Injectable({providedIn: 'root'})
 export class ExtensionService {
@@ -66,39 +66,45 @@ export class ExtensionService {
       )
     );
     this.getExtensionIds('STARTED', this.extensionFrontendCss).subscribe(extensionIds =>
-      extensionIds.forEach(extensionId =>
-        this.loadStyle(extensionId)
-      )
+      extensionIds.forEach(extensionId => this.loadStyle(extensionId))
     );
   }
 
   public load(extensionId: string): Observable<any> {
     return combineLatest([
       this.getExtensionIds('STARTED', this.extensionFrontendInitJs).pipe(
-        switchMap(extensionIds => combineLatest(extensionIds.map(id => {
-            if (id == extensionId) {
-              this.loadJs(id);
-            }
-          }
-        ).filter(o => o)))
+        switchMap(extensionIds =>
+          combineLatest(
+            extensionIds
+              .map(id => {
+                if (id == extensionId) {
+                  this.loadJs(id);
+                }
+              })
+              .filter(o => o)
+          )
+        )
       ),
       this.getExtensionIds('STARTED', this.extensionFrontendCss).pipe(
-        switchMap(extensionIds => combineLatest(extensionIds.map(id => {
-            if (id == extensionId) {
-              this.loadStyle(id);
-            }
-          }
-        ).filter(o => o)))
-      )
+        switchMap(extensionIds =>
+          combineLatest(
+            extensionIds
+              .map(id => {
+                if (id == extensionId) {
+                  this.loadStyle(id);
+                }
+              })
+              .filter(o => o)
+          )
+        )
+      ),
     ]);
   }
 
   private loadStyle(extensionId: string) {
     const head = document.getElementsByTagName('head')[0];
     const href = this.getFileUrl(extensionId, this.extensionFrontendCss);
-    let themeLink = document.getElementById(
-      `${extensionId}-theme`
-    ) as HTMLLinkElement;
+    let themeLink = document.getElementById(`${extensionId}-theme`) as HTMLLinkElement;
     if (themeLink) {
       themeLink.href = href;
     } else {
@@ -121,7 +127,8 @@ export class ExtensionService {
       type: 'module',
       remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
       exposedModule: './WeatherPluginModule',
-    }).then(m => {
+    }).then(
+      m => {
         console.log(m);
         this.loadModule(m.WeatherPluginModule);
         subject.next(true);
@@ -130,9 +137,9 @@ export class ExtensionService {
         this.logger.error(`Failed to load extension '${extensionId}'.`, err);
         subject.error(err);
       }
-    )
+    );
 
-/*    import(
+    /*    import(
       /!* webpackIgnore: true *!/ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
       ).then(
       importedFile => {
@@ -160,7 +167,7 @@ export class ExtensionService {
   private loadModule(module: any) {
     //createNgModule<NgModule>(module as any, this.injector);
     console.log(module);
-    const providers = module.__annotations__.flatMap(a => a.providers)
+    const providers = module.__annotations__.flatMap(a => a.providers);
     providers
       .filter(provider => provider.provide == PLUGINS_TOKEN)
       .flatMap(provider => provider.useValue)

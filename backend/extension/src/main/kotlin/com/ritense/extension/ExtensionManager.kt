@@ -19,7 +19,7 @@ package com.ritense.extension
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
 import jakarta.persistence.EntityManager
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.pf4j.ExtensionFactory
 import org.pf4j.PluginState
 import org.pf4j.PluginStateEvent

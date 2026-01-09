@@ -32,10 +32,10 @@ class ValtimoConfigImportExtensionResourcesListener(
 
     override fun registerResources(resources: List<Resource>) {
         runWithoutAuthorization {
-            val importRequest = resources
+            val importRequests = resources
                 .map { ImportRequest(it.uri.toString().substringAfterLast("!/"), it.contentAsByteArray) }
                 .filter { it.fileName.startsWith("config") || it.fileName.startsWith("bpmn") }
-            importService.import(importRequest)
+            importService.importGlobal(importRequests)
         }
     }
 

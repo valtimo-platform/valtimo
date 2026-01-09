@@ -27,13 +27,13 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    implementation "io.github.microutils:kotlin-logging:$kotlinLoggingVersion"
+    implementation "io.github.oshai:kotlin-logging:$kotlinLoggingVersion"
 
     implementation "org.reflections:reflections:0.10.2"
-    implementation("org.pf4j:pf4j-spring:0.9.0") {
+    implementation("org.pf4j:pf4j-spring:0.10.0") {
         exclude group: "org.pf4j", module: "pf4j"
     }
-    implementation "org.pf4j:pf4j:3.12.1"
+    implementation "org.pf4j:pf4j:3.14.1"
     implementation("org.pf4j:pf4j-update:2.3.0")
 
     implementation "org.apache.tika:tika-core:${apacheTikaVersion}"
