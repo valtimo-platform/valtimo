@@ -61,7 +61,6 @@ jobs:
       - determine_test_env
     if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
     runs-on: ubuntu-latest
-    environment: pr-test-environment
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -130,7 +129,6 @@ jobs:
     needs:
       - detect_changes
       - determine_test_env
-    environment: pr-test-environment
     if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -200,7 +198,6 @@ jobs:
     needs:
       - detect_changes
       - determine_test_env
-    environment: pr-test-environment
     if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
