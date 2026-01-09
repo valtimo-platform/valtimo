@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Test environment comment payloads",
-  "schemas": {
+  "definitions": {
     "waiting_for_images": {
       "type": "object",
       "properties": {
@@ -17,6 +17,9 @@
         "test_env_comment_id": {
           "type": "integer"
         },
+        "test_env_name": {
+          "type": "string"
+        },
         "test_env_image_tag": {
           "type": "string"
         }
@@ -26,6 +29,7 @@
         "commit_sha",
         "contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag"
       ],
       "additionalProperties": false
@@ -44,6 +48,9 @@
         },
         "test_env_comment_id": {
           "type": "integer"
+        },
+        "test_env_name": {
+          "type": "string"
         },
         "test_env_image_tag": {
           "type": "string"
@@ -66,6 +73,7 @@
         "commit_sha",
         "contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
@@ -88,6 +96,9 @@
         "test_env_comment_id": {
           "type": "integer"
         },
+        "test_env_name": {
+          "type": "string"
+        },
         "test_env_image_tag": {
           "type": "string"
         },
@@ -109,6 +120,7 @@
         "commit_sha",
         "contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
@@ -131,6 +143,9 @@
         "test_env_comment_id": {
           "type": "integer"
         },
+        "test_env_name": {
+          "type": "string"
+        },
         "test_env_image_tag": {
           "type": "string"
         },
@@ -152,6 +167,7 @@
         "commit_sha",
         "contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
@@ -174,6 +190,9 @@
         "test_env_comment_id": {
           "type": "integer"
         },
+        "test_env_name": {
+          "type": "string"
+        },
         "test_env_image_tag": {
           "type": "string"
         },
@@ -186,6 +205,7 @@
         "commit_sha",
         "contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
         "error_message"
       ],
@@ -194,19 +214,19 @@
   },
   "oneOf": [
     {
-      "$ref": "#/schemas/waiting_for_images"
+      "$ref": "#/definitions/waiting_for_images"
     },
     {
-      "$ref": "#/schemas/test_env_started"
+      "$ref": "#/definitions/test_env_started"
     },
     {
-      "$ref": "#/schemas/test_env_is_running"
+      "$ref": "#/definitions/test_env_is_running"
     },
     {
-      "$ref": "#/schemas/test_env_is_crash_looping"
+      "$ref": "#/definitions/test_env_is_crash_looping"
     },
     {
-      "$ref": "#/schemas/test_env_cannot_start"
+      "$ref": "#/definitions/test_env_cannot_start"
     }
   ]
 }

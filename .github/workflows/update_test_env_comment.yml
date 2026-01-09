@@ -1,9 +1,9 @@
-name: "Update test environment comment"
+name: "Update PR test env comment"
+run-name: "Update PR test env comment (${{ github.event.client_payload.test_env_name }}: ${{github.event.client_payload.state}})"
 
 on:
   repository_dispatch:
     types:
-      - env_being_updated
       - waiting_for_images
       - test_env_cannot_start
       - test_env_started

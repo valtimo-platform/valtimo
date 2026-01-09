@@ -83,7 +83,9 @@ jobs:
           template_file=".github/test_env_comments/waiting_for_images.md"
           export COMMIT_SHA="${{ inputs.commit_sha }}"
           export CONTENTS_SHA="pending"
-          export IMAGE_TAG="pending"
+          short_sha="${COMMIT_SHA:0:10}"
+          env_name="${{ inputs.env_name }}"
+          export IMAGE_TAG="testEnv.${env_name}_commit.<commit sha>_build.<build number>"
           message_body=$(cat "$template_file" | envsubst)
           {
             echo 'body<<EOF'
