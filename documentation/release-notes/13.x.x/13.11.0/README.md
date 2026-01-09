@@ -6,4 +6,4 @@
 
 ## Bugfixes
 
-* Updated the Keycloak Admin Client JSON deserialization to ignore unknown response fields, preventing failures when connecting to newer Keycloak server versions.
+* Prevent an error when retrieving users from Keycloak with version 26.3.0 or newer.
