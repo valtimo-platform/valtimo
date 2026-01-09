@@ -11,7 +11,7 @@ on:
         value: backend-build-output
       contents_sha:
         description: Git contents SHA for backend (git rev-parse HEAD:backend)
-        value: ${{ jobs.check_cache.outputs.contents_sha }}
+        value: ${{ jobs.compute_contents_sha.outputs.contents_sha }}
 
   workflow_dispatch:
 
@@ -20,19 +20,29 @@ defaults:
     working-directory: backend
 
 jobs:
-  check_cache:
+  compute_contents_sha:
     runs-on: ubuntu-latest
     outputs:
-      cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
-      cache-key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
-      contents_sha: ${{ steps.compute_contents_hash.outputs.contents_hash }}
+      contents_sha: ${{ steps.compute.outputs.contents_sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Compute backend contents hash
-        id: compute_contents_hash
+        id: compute
         run: |
-          echo "contents_hash=$(git rev-parse HEAD:backend)" >> $GITHUB_OUTPUT
+          echo "contents_sha=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
+
+  check_cache:
+    runs-on: ubuntu-latest
+    needs:
+      - compute_contents_sha
+    outputs:
+      cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
+      cache-key: backend-libraries-contents-${{ needs.compute_contents_sha.outputs.contents_sha }}
+      contents_sha: ${{ needs.compute_contents_sha.outputs.contents_sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Restore backend libraries from build cache
         id: restore_cache
         uses: actions/cache/restore@v4
@@ -40,7 +50,7 @@ jobs:
           path: |
             backend/.gradle
             backend/**/build
-          key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+          key: backend-libraries-contents-${{ needs.compute_contents_sha.outputs.contents_sha }}
       # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
       # the artifact registry to be available to subsequent jobs
       - name: Upload built libraries
