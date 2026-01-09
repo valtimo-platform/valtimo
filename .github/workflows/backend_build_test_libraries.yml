@@ -9,6 +9,9 @@ on:
       build_artifact_name:
         description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
         value: backend-build-output
+      contents_sha:
+        description: Git contents SHA for backend (git rev-parse HEAD:backend)
+        value: ${{ jobs.check_cache.outputs.contents_sha }}
 
   workflow_dispatch:
 
@@ -22,6 +25,7 @@ jobs:
     outputs:
       cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
       cache-key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+      contents_sha: ${{ steps.compute_contents_hash.outputs.contents_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
