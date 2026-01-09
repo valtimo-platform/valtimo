@@ -466,7 +466,7 @@ class BuildingBlockAutoConfiguration {
     ) = BuildingBlockProcessLinkExporter(processLinkService, objectMapper, repositoryService, processLinkMappers)
 
     @Bean
-    @ConditionalOnMissingBean(name = ["buildingBlockCaseDefinitionFinalizationChecker"])
+    @ConditionalOnMissingBean(CaseDefinitionFinalizationChecker::class)
     fun buildingBlockCaseDefinitionFinalizationChecker(
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,

@@ -55,6 +55,7 @@ import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.semver4j.Semver
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -77,8 +78,8 @@ class CaseDefinitionService(
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val caseDefinitionChecker: CaseDefinitionChecker,
-    private val caseDefinitionFinalizationCheckers: List<CaseDefinitionFinalizationChecker> = emptyList()
-) {
+    private val caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+    ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
             caseDefinitionListColumnRepository,
@@ -242,10 +243,17 @@ class CaseDefinitionService(
 
     fun finalizeCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
         denyManagementOperation()
+
+        val check = isCaseDefinitionFinalizable(caseDefinitionId)
+        require(check.finalizable) {
+            "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' cannot be made definitive. Reason: '${check.code}'."
+        }
+
         val caseDefinition = getCaseDefinition(caseDefinitionId)
         require(!caseDefinition.final) {
             "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' is already final."
         }
+
         return caseDefinitionRepository.save(caseDefinition.copy(final = true))
     }
 
@@ -434,10 +442,12 @@ class CaseDefinitionService(
     }
 
     fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
-        val results = caseDefinitionFinalizationCheckers.map { it.check(caseDefinitionId) }
-
-        return results.firstOrNull { !it.finalizable }
-            ?: CaseDefinitionFinalizationCheckResult(finalizable = true)
+        return caseDefinitionFinalizationCheckersProvider
+            .orderedStream()
+            .map { it.check(caseDefinitionId) }
+            .filter { !it.finalizable }
+            .findFirst()
+            .orElse(CaseDefinitionFinalizationCheckResult(finalizable = true))
     }
 
     private fun getCaseDefinitionsQuery(
