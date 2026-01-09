@@ -1,0 +1,20 @@
+name: Handle PR close/merge
+
+on:
+  pull_request:
+    branches:
+      - cicd/improve-pr-test-envs
+    types:
+      - closed
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  delete_test_env_if_labeled:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test env') }}
+    uses: ./.github/workflows/delete_test_env.yml
+    secrets: inherit
+    with:
+      env_name: pr${{ github.event.pull_request.number }}

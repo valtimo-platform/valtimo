@@ -1,33 +1,25 @@
 name: "Delete test environment"
 on:
-  pull_request:
-    branches: ["next-minor"]
-    types:
-      - closed
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      envName:
-        description: "Environment name"
+      env_name:
+        description: "Environment name. The env to delete will be <env_name>.product-development.test.k8s.ritense.com"
         required: true
         type: string
 
 # Assigns the same concurrency group to `delete_test_env` and `create_test_env`.
 # This prevents creating and deleting from running simultaneously, which could cause race conditions.
 concurrency:
-  group: setup-test-env-pr-${{ github.event.pull_request.number }}
+  group: setup-test-env-${{ inputs.env_name }}
   cancel-in-progress: false
 
 permissions:
   actions: read
   contents: read
-  packages: write
+  packages: none
 
 jobs:
-  determine_test_env:
-    uses: ./.github/workflows/determine_test_env.yml
-
   delete_test_environment:
-    needs: determine_test_env
     runs-on: ubuntu-latest
     steps:
       - name: Delete test environment
@@ -39,4 +31,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DELETE_URL }} \
-            -d '{"ref":"main","inputs":{"envName":"${{ needs.determine_test_env.outputs.name }}"}}'
+            -d '{"ref":"main","inputs":{"envName":"${{ inputs.env_name }}"}}'
