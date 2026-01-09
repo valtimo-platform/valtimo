@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,81 +31,81 @@ import java.io.Serializable
 import java.util.Objects
 
 @Embeddable
-class JsonSchemaDocumentDefinitionSolutionModuleId(
+class JsonSchemaDocumentDefinitionBlueprintId(
     @Enumerated(EnumType.STRING)
-    @Column(name = "solution_module_type", length = 40, nullable = false)
-    var solutionModuleType: JsonSchemaDocumentDefinitionSolutionModuleType,
-    @Column(name = "solution_module_key", length = 256, nullable = false)
-    var solutionModuleKey: String,
+    @Column(name = "blueprint_type", length = 40, nullable = false)
+    var blueprintType: JsonSchemaDocumentDefinitionBlueprintType,
+    @Column(name = "blueprint_key", length = 256, nullable = false)
+    var blueprintKey: String,
     @Convert(converter = SemverConverter::class)
-    @Column(name = "solution_module_version_tag", nullable = false)
+    @Column(name = "blueprint_version_tag", nullable = false)
     @JsonSerialize(using = SemverSerializer::class)
-    var solutionModuleVersionTag: Semver,
+    var blueprintVersionTag: Semver,
 ) : Serializable {
     init {
-        AssertionConcern.assertArgumentLength(solutionModuleKey,
+        AssertionConcern.assertArgumentLength(blueprintKey,
             1,
             256,
-            "solutionModuleKey must be between 1-256 characters"
+            "blueprintKey must be between 1-256 characters"
         )
     }
 
-    fun solutionModuleType(): JsonSchemaDocumentDefinitionSolutionModuleType {
-        return solutionModuleType
+    fun blueprintType(): JsonSchemaDocumentDefinitionBlueprintType {
+        return blueprintType
     }
 
-    fun solutionModuleKey(): String {
-        return solutionModuleKey
+    fun blueprintKey(): String {
+        return blueprintKey
     }
 
-    fun solutionModuleVersionTag(): Semver {
-        return solutionModuleVersionTag
+    fun blueprintVersionTag(): Semver {
+        return blueprintVersionTag
     }
 
     fun asCaseDefinitionId(): CaseDefinitionId? {
-        if (solutionModuleType != JsonSchemaDocumentDefinitionSolutionModuleType.CASE) {
+        if (blueprintType != JsonSchemaDocumentDefinitionBlueprintType.CASE) {
             return null
         }
-        return CaseDefinitionId.of(solutionModuleKey, solutionModuleVersionTag.toString())
+        return CaseDefinitionId.of(blueprintKey, blueprintVersionTag.toString())
     }
 
     fun asBuildingBlockDefinitionId(): BuildingBlockDefinitionId? {
-        if (solutionModuleType != JsonSchemaDocumentDefinitionSolutionModuleType.BUILDING_BLOCK) {
+        if (blueprintType != JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK) {
             return null
         }
-        return BuildingBlockDefinitionId.of(solutionModuleKey, solutionModuleVersionTag.toString())
+        return BuildingBlockDefinitionId.of(blueprintKey, blueprintVersionTag.toString())
     }
 
     override fun equals(o: Any?): Boolean {
         if (this === o) {
             return true
         }
-        if (o !is JsonSchemaDocumentDefinitionSolutionModuleId) {
+        if (o !is JsonSchemaDocumentDefinitionBlueprintId) {
             return false
         }
         val that = o
-        return solutionModuleType == that.solutionModuleType && solutionModuleKey == that.solutionModuleKey
-            && solutionModuleVersionTag == that.solutionModuleVersionTag
+        return blueprintType == that.blueprintType && blueprintKey == that.blueprintKey
+            && blueprintVersionTag == that.blueprintVersionTag
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(solutionModuleType, solutionModuleKey, solutionModuleVersionTag)
+        return Objects.hash(blueprintType, blueprintKey, blueprintVersionTag)
     }
 
     companion object {
-        fun forCase(caseDefinitionId: CaseDefinitionId?): JsonSchemaDocumentDefinitionSolutionModuleId {
+        fun forCase(caseDefinitionId: CaseDefinitionId?): JsonSchemaDocumentDefinitionBlueprintId {
             AssertionConcern.assertArgumentNotNull(caseDefinitionId, "caseDefinitionId is required")
-            return JsonSchemaDocumentDefinitionSolutionModuleId(
-                JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            return JsonSchemaDocumentDefinitionBlueprintId(
+                JsonSchemaDocumentDefinitionBlueprintType.CASE,
                 caseDefinitionId!!.key,
                 caseDefinitionId.versionTag
             )
         }
 
-        fun forBuildingBlock(buildingBlockDefinitionId: BuildingBlockDefinitionId?): JsonSchemaDocumentDefinitionSolutionModuleId {
+        fun forBuildingBlock(buildingBlockDefinitionId: BuildingBlockDefinitionId?): JsonSchemaDocumentDefinitionBlueprintId {
             AssertionConcern.assertArgumentNotNull(buildingBlockDefinitionId, "buildingBlockDefinitionId is required")
-            return JsonSchemaDocumentDefinitionSolutionModuleId(
-                JsonSchemaDocumentDefinitionSolutionModuleType.BUILDING_BLOCK,
+            return JsonSchemaDocumentDefinitionBlueprintId(
+                JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK,
                 buildingBlockDefinitionId!!.key,
                 buildingBlockDefinitionId.versionTag
             )

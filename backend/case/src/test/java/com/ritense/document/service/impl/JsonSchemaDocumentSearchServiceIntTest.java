@@ -37,7 +37,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.BaseIntegrationTest;
 import com.ritense.document.domain.Document;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -165,7 +165,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -184,7 +184,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -200,7 +200,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("internalStatus").ascending())
         );
         assertThat(page).isNotNull();
@@ -217,7 +217,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("internalStatus").descending())
         );
         assertThat(page).isNotNull();
@@ -239,7 +239,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -260,7 +260,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -281,7 +281,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -303,7 +303,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -325,7 +325,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -343,7 +343,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -360,7 +360,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -377,7 +377,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10)
         );
         assertThat(page).isNotNull();
@@ -402,7 +402,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 1)
         );
         assertThat(page).isNotNull();
@@ -430,7 +430,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(1, 2, Sort.by(Direction.ASC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -461,7 +461,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("$.street"))
         );
         assertThat(page).isNotNull();
@@ -490,7 +490,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -520,7 +520,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by("$.street", "$.number"))
         );
         assertThat(page).isNotNull();
@@ -552,7 +552,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "sequence"))
         );
         assertThat(page).isNotNull();
@@ -582,7 +582,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             searchRequest,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "$.street"))
         );
         assertThat(page).isNotNull();
@@ -605,7 +605,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         final Page<? extends Document> page = documentSearchService.search(
             new SearchRequest(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "assigneeFullName"))
         );
 
@@ -634,7 +634,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -661,7 +661,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -689,7 +689,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -717,7 +717,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -749,7 +749,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -781,7 +781,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:housenumber"))
         );
@@ -812,7 +812,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         assertThrows(
             ValidationException.class, () -> documentSearchService.search(
                 definition.id().name(),
-                JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+                JsonSchemaDocumentDefinitionBlueprintType.CASE,
                 searchRequest,
                 PageRequest.of(0, 10)
             )
@@ -837,7 +837,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:movedAtDate"))
         );
@@ -875,7 +875,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:movedAtDateTime"))
         );
@@ -911,7 +911,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -934,7 +934,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             new AdvancedSearchRequest(),
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "case:sequence"))
         );
@@ -963,7 +963,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -988,7 +988,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1020,7 +1020,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1052,7 +1052,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1086,7 +1086,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1120,7 +1120,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1151,7 +1151,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.DESC, "doc:street"))
         );
@@ -1178,7 +1178,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             Pageable.unpaged()
         );
@@ -1207,7 +1207,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1237,7 +1237,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1268,7 +1268,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1301,7 +1301,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1327,7 +1327,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
         var result = documentSearchService.search(
             definition.id().name(),
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
@@ -1375,7 +1375,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
             var result = documentSearchService.search(
                 definition.id().name(),
-                JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+                JsonSchemaDocumentDefinitionBlueprintType.CASE,
                 request,
                 PageRequest.of(0, 10)
             );
@@ -1429,7 +1429,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
             var result = documentSearchService.search(
                 definition.id().name(),
-                JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+                JsonSchemaDocumentDefinitionBlueprintType.CASE,
                 request,
                 PageRequest.of(0, 10)
             );

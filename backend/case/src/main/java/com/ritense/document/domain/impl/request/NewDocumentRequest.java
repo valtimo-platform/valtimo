@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.ritense.document.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.resource.Resource;
@@ -107,12 +107,12 @@ public class NewDocumentRequest {
         return buildingBlockDefinitionVersionTag;
     }
 
-    public SolutionModuleId solutionModuleId() {
+    public BlueprintId blueprintId() {
         if (hasBuildingBlockDefinition()) {
             return BuildingBlockDefinitionId.of(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag);
         }
         if (!hasCaseDefinition()) {
-            throw new IllegalStateException("Cannot determine solution module id for document request");
+            throw new IllegalStateException("Cannot determine blueprint id for document request");
         }
         return CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag);
     }

@@ -71,7 +71,7 @@ import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -265,10 +265,10 @@ public class JsonSchemaDocumentService implements DocumentService {
     ) {
         return withLoggingContext(
             "documentDefinitionName", newDocumentRequest.documentDefinitionName(), () -> {
-                final SolutionModuleId solutionModuleId = newDocumentRequest.solutionModuleId();
+                final BlueprintId blueprintId = newDocumentRequest.blueprintId();
                 final JsonSchemaDocumentDefinition definition = runWithoutAuthorization(
                     () -> documentDefinitionService
-                        .findBySolutionModuleId(solutionModuleId)
+                        .findByBlueprintId(blueprintId)
                         .orElseThrow(
                             () -> new UnknownDocumentDefinitionException(newDocumentRequest.documentDefinitionName())
                         )

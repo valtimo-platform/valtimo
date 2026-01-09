@@ -35,7 +35,7 @@ class JsonSchemaDocumentDefinitionIdJsonSerializingTest {
 
     private static final String DEFINITION_STRING = "aDefinition";
     private JacksonTester<JsonSchemaDocumentDefinitionId> jacksonTester;
-    private static final String JSON_STRING_VALUE = "{\"name\":\"aDefinition\",\"solutionModuleId\":{\"solutionModuleType\":\"CASE\",\"solutionModuleKey\":\"key\",\"solutionModuleVersionTag\":\"1.0.0\"}}";
+    private static final String JSON_STRING_VALUE = "{\"name\":\"aDefinition\",\"blueprintId\":{\"blueprintType\":\"CASE\",\"blueprintKey\":\"key\",\"blueprintVersionTag\":\"1.0.0\"}}";
 
     @BeforeEach
     void setUp() {

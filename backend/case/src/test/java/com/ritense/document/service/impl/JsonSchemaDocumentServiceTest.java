@@ -128,7 +128,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         );
 
         JsonSchemaDocumentDefinition definition = definitionOfForUnitTests("referenced-array");
-        when(documentDefinitionService.findBySolutionModuleId(eq(CaseDefinitionId.of(
+        when(documentDefinitionService.findByBlueprintId(eq(CaseDefinitionId.of(
             "case-definition",
             "1.0.0"
         )))).thenReturn(Optional.of(definition));
@@ -169,7 +169,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         documentRequest.withResources(Set.of(resource));
 
         JsonSchemaDocumentDefinition definition = definitionOfForUnitTests("referenced-array");
-        when(documentDefinitionService.findBySolutionModuleId(eq(CaseDefinitionId.of(
+        when(documentDefinitionService.findByBlueprintId(eq(CaseDefinitionId.of(
             "case-definition",
             "1.0.0"
         )))).thenReturn(Optional.of(definition));

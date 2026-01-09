@@ -24,7 +24,7 @@ import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.service.exception.ExportLimitExceedsException
 import com.ritense.case.web.rest.dto.CaseListRowDto
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
@@ -121,7 +121,7 @@ class CaseExporterTest : BaseTest() {
         whenever(
             documentSearchService.searchForExport(
                 eq(CASE_DEFINITION_NAME), eq(
-                    JsonSchemaDocumentDefinitionSolutionModuleType.CASE
+                    JsonSchemaDocumentDefinitionBlueprintType.CASE
                 ), eq(searchRequest), any()
             )
         ).thenReturn(PageImpl(docs))
@@ -185,7 +185,7 @@ class CaseExporterTest : BaseTest() {
         whenever(
             documentSearchService.searchForExport(
                 eq(CASE_DEFINITION_NAME),
-                eq(JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
+                eq(JsonSchemaDocumentDefinitionBlueprintType.CASE),
                 eq(searchRequest),
                 any<Pageable>()
             )

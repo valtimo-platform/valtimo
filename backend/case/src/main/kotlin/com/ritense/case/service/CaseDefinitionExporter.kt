@@ -68,7 +68,7 @@ class CaseDefinitionExporter(
     }
 
     private fun createDocumentDefinitionExportRequest(caseDefinitionId: CaseDefinitionId): Set<DocumentDefinitionExportRequest>  {
-        val documentDefinition = documentDefinitionService.findBySolutionModuleId(caseDefinitionId)
+        val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId)
         return if (documentDefinition.isPresent) {
             setOf(DocumentDefinitionExportRequest(documentDefinition.get().id().name(), caseDefinitionId))
         } else {
