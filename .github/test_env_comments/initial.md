@@ -2,7 +2,7 @@ Will create a test environment. This comment will be updated once it is availabl
 Closing or merging this PR will automatically delete the test environment.
 Progress:
 
-- [x] Created test environment
+- [ ] Creating test environment
 - [ ] Waiting for frontend and backend images with tag "testEnv.${TEST_ENV_NAME}\_commit.\<commit sha\>\_contents.\<contents sha\>\_build.\<build number\>"
 - [ ] Starting test environment
 - [ ] Test environment is running
