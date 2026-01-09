@@ -1,6 +1,6 @@
 package com.ritense.document.domain
 
-enum class JsonSchemaDocumentDefinitionSolutionModuleType {
+enum class JsonSchemaDocumentDefinitionBlueprintType {
     CASE,
     BUILDING_BLOCK
 }

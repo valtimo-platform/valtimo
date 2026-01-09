@@ -132,7 +132,7 @@ class DefaultFormSubmissionServiceTest {
 
         processDefinition = mock<OperatonProcessDefinition>()
         whenever(processDefinition.key).thenReturn("myProcessDefinitionKey")
-        whenever(processDefinition.getSolutionModuleId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
+        whenever(processDefinition.getBlueprintId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
         whenever(repositoryService.findProcessDefinitionById(formProcessLink.processDefinitionId))
             .thenReturn(processDefinition)
 

@@ -66,7 +66,7 @@ class BuildingBlockDefinitionExporterTest(
         whenever(documentDefinition.id()).thenReturn(documentDefinitionId)
 
         whenever(repository.findById(buildingBlockDefinitionId)).thenReturn(Optional.of(definition))
-        whenever(documentDefinitionService.findBySolutionModuleId(buildingBlockDefinitionId)).thenReturn(Optional.of(documentDefinition))
+        whenever(documentDefinitionService.findByBlueprintId(buildingBlockDefinitionId)).thenReturn(Optional.of(documentDefinition))
 
         val result = exporter.export(BuildingBlockDefinitionExportRequest(buildingBlockDefinitionId))
 
@@ -94,6 +94,6 @@ class BuildingBlockDefinitionExporterTest(
 
         assertThat(result.exportFiles).isEmpty()
         assertThat(result.relatedRequests).isEmpty()
-        verify(documentDefinitionService, never()).findBySolutionModuleId(any())
+        verify(documentDefinitionService, never()).findByBlueprintId(any())
     }
 }

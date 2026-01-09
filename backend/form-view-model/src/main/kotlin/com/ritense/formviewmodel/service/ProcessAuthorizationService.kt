@@ -10,7 +10,7 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.bySolutionModuleId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byBlueprintId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
@@ -30,7 +30,7 @@ class ProcessAuthorizationService(
         val processDefinition = runWithoutAuthorization {
             operatonRepositoryService.findProcessDefinition(
                 byKey(processDefinitionKey)
-                    .and(bySolutionModuleId(document?.definitionId()?.caseDefinitionId()))
+                    .and(byBlueprintId(document?.definitionId()?.caseDefinitionId()))
             )
                 // Needed by form-view-model
                 ?: operatonRepositoryService.findProcessDefinition(

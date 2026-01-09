@@ -21,7 +21,7 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
-import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
@@ -76,7 +76,7 @@ class ProcessDeploymentService(
     }
 
     fun deployProcessDefinitionAndProcessLinks(
-        solutionModuleId: SolutionModuleId?,
+        blueprintId: BlueprintId?,
         bpmn: MultipartFile?,
         processLinks: List<ProcessLinkCreateRequestDto>,
         processDefinitionId: String?
@@ -87,7 +87,7 @@ class ProcessDeploymentService(
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.deploy(
-                        solutionModuleId,
+                        blueprintId,
                         bpmn.originalFilename,
                         ByteArrayInputStream(bpmn.bytes),
                         true,
@@ -100,9 +100,9 @@ class ProcessDeploymentService(
                     runWithoutAuthorization {
                         val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
                         val previouslyDeployProcess =
-                            operatonProcessService.getExistingProcessForFile(solutionModuleId, model)
+                            operatonProcessService.getExistingProcessForFile(blueprintId, model)
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
-                        createProcessLinks(processLinks = processLinks, solutionModuleId = solutionModuleId)
+                        createProcessLinks(processLinks = processLinks, blueprintId = blueprintId)
                     }
                     return null
                 }
@@ -119,7 +119,7 @@ class ProcessDeploymentService(
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.duplicateProcessDefinitionById(
-                        solutionModuleId,
+                        blueprintId,
                         processDefinitionId,
                         true,
                         true
@@ -139,7 +139,7 @@ class ProcessDeploymentService(
                 throw RuntimeException("Failed to duplicate process definition. Rolling back deployment.", e)
             }
         }
-        createProcessLinks(processLinks, deployedProcessDefinitionId, solutionModuleId)
+        createProcessLinks(processLinks, deployedProcessDefinitionId, blueprintId)
 
         return ProcessDefinitionId(deployedProcessDefinitionId)
     }
@@ -147,7 +147,7 @@ class ProcessDeploymentService(
     private fun createProcessLinks(
         processLinks: List<ProcessLinkCreateRequestDto>,
         deployedProcessDefinitionId: String? = null,
-        solutionModuleId: SolutionModuleId?= null
+        blueprintId: BlueprintId?= null
     ) {
         try {
             processLinks.map { originalLink ->
@@ -158,7 +158,7 @@ class ProcessDeploymentService(
                 }
             }.forEach { link ->
                 runWithoutAuthorization {
-                    processLinkService.createProcessLink(link, solutionModuleId as? CaseDefinitionId)
+                    processLinkService.createProcessLink(link, blueprintId as? CaseDefinitionId)
                 }
             }
         } catch (e: Exception) {

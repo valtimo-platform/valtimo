@@ -247,7 +247,7 @@ class VerzoekPluginEventListener(
         verzoekObject: ObjectNode
     ): Document {
         logger.debug { "Creating document for verzoek of type '${verzoekTypeProperties.type}'" }
-        val documentDefinition = documentDefinitionService.findBySolutionModuleId(caseDefinitionId).get()
+        val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId).get()
         return AuthorizationContext.runWithoutAuthorization {
             documentService.createDocument(
                 NewDocumentRequest(
