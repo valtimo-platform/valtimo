@@ -83,7 +83,6 @@ jobs:
           template_file=".github/test_env_comments/initial.md"
           env_name="${{ inputs.env_name }}"
           export TEST_ENV_NAME="${env_name}"
-          export IMAGE_TAG="testEnv.${env_name}_commit.${short_sha}_contents.pending_build.pending"
           message_body=$(cat "$template_file" | envsubst)
           {
             echo 'body<<EOF'
