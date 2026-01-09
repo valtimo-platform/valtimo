@@ -1,5 +1,19 @@
 name: Tag test environment image
 on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Can be one of 'gzac-frontend', 'gzac-backend', (TODO:) 'valtimo-frontend' or 'valtimo-backend'"
+        required: true
+        type: choice
+        options:
+          - gzac-frontend
+          - gzac-backend
+      image_to_tag:
+        description: "Existing image tag in GHCR that will receive an additional tag for the test environment. E.g. next-minor.15"
+        required: true
+        type: string
+
   workflow_call:
     inputs:
       target:
