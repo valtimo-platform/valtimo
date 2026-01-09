@@ -1,8 +1,10 @@
-name: "Update test environment comment"
+name: "Update PR test env comment"
+run-name: "Update PR test env comment (${{ github.event.client_payload.test_env_name }}: ${{github.event.client_payload.state}})"
 
 on:
   repository_dispatch:
     types:
+      - waiting_for_images
       - test_env_cannot_start
       - test_env_started
       - test_env_is_running
@@ -37,36 +39,79 @@ jobs:
         run: |
           set -euo pipefail
           payload=${{env.PAYLOAD_FILE}}
+          comment_id=$(jq -r '.test_env_comment_id' "$payload")
           state=$(jq -r '.state' "$payload")
-          if [ "$state" = "test_env_cannot_start" ]; then
-            test_env_comment_id=$(jq -r '.test_env_comment_id' "$payload")
-            test_env_image_tag=$(jq -r '.test_env_image_tag' "$payload")
-            error_message=$(jq -r '.error_message' "$payload")
-            msg="test_env_cannot_start: comment_id=${test_env_comment_id}, image_tag=${test_env_image_tag}, error=${error_message}"
-          else
-            test_env_comment_id=$(jq -r '.test_env_comment_id' "$payload")
-            test_env_image_tag=$(jq -r '.test_env_image_tag' "$payload")
-            grafana_backend_pod_metrics_url=$(jq -r '.grafana_backend_pod_metrics_url' "$payload")
-            grafana_backend_pod_logs_url=$(jq -r '.grafana_backend_pod_logs_url' "$payload")
-            msg="${state}: comment_id=${test_env_comment_id}, image_tag=${test_env_image_tag}, grafana_metrics=${grafana_backend_pod_metrics_url}, grafana_logs=${grafana_backend_pod_logs_url}"
+          template_dir=".github/test_env_comments"
+          template_file="${template_dir}/${state}.md"
+
+          export COMMIT_SHA=$(jq -r '.commit_sha' "$payload")
+          export CONTENTS_SHA=$(jq -r '.contents_sha' "$payload")
+
+          case "$state" in
+            waiting_for_images)
+              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              ;;
+            test_env_started|test_env_is_running|test_env_is_crash_looping)
+              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              export TEST_ENV_URL=$(jq -r '.test_env_url' "$payload")
+              export METRICS_URL=$(jq -r '.grafana_backend_pod_metrics_url' "$payload")
+              export LOGS_URL=$(jq -r '.grafana_backend_pod_logs_url' "$payload")
+              ;;
+            env_being_updated)
+              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              export TEST_ENV_URL=$(jq -r '.test_env_url' "$payload")
+              export NEXT_COMMIT_SHA=$(jq -r '.next_commit_sha' "$payload")
+              export NEXT_CONTENTS_SHA=$(jq -r '.next_contents_sha' "$payload")
+              export UPDATE_STATUS=$(jq -r '.update_status' "$payload")
+              case "$UPDATE_STATUS" in
+                crash_looping) export UPDATE_STATUS_TEXT="Updating pods are crash looping" ;;
+                started) export UPDATE_STATUS_TEXT="Updating pods are starting" ;;
+                cannot_start) export UPDATE_STATUS_TEXT="Updating pods failed to start" ;;
+                *) export UPDATE_STATUS_TEXT="Updating pods status: ${UPDATE_STATUS}" ;;
+              esac
+              export NEW_METRICS_URL=$(jq -r '.grafana_backend_pod_metrics_url' "$payload")
+              export NEW_LOGS_URL=$(jq -r '.grafana_backend_pod_logs_url' "$payload")
+              current_metrics=$(jq -r '.grafana_current_backend_pod_metrics_url // ""' "$payload")
+              current_logs=$(jq -r '.grafana_current_backend_pod_logs_url // ""' "$payload")
+              if [ -z "$current_metrics" ]; then current_metrics="Not available"; fi
+              if [ -z "$current_logs" ]; then current_logs="Not available"; fi
+              export CURRENT_METRICS_URL="$current_metrics"
+              export CURRENT_LOGS_URL="$current_logs"
+              ;;
+            test_env_cannot_start)
+              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              export ERROR_MESSAGE=$(jq -r '.error_message' "$payload")
+              ;;
+            *)
+              echo "Unknown state: $state" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ ! -f "$template_file" ]; then
+            echo "Template not found for state: $state at $template_file" >&2
+            exit 1
           fi
 
-          comment_id=$(jq -r '.test_env_comment_id' "$payload")
+          message_body=$(cat "$template_file" | envsubst)
+
           {
-            printf 'message_body=%s\n' "$msg"
+            echo 'message_body<<EOF'
+            printf '%s\n' "$message_body"
+            echo 'EOF'
             printf 'comment_id=%s\n' "$comment_id"
           } >> "$GITHUB_OUTPUT"
 
-      # - name: Generate token as GitHub App
-      #   id: token
-      #   uses: tibdex/github-app-token@v2
-      #   with:
-      #     app_id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
-      #     private_key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
-      # - name: Append update to PR comment
-      #   uses: peter-evans/create-or-update-comment@v4
-      #   with:
-      #     comment-id: ${{ steps.message.outputs.comment_id }}
-      #     token: ${{ steps.token.outputs.token }}
-      #     body: ${{ steps.message.outputs.message_body }}
-      #     edit-mode: append
+      - name: Generate token as GitHub App
+        id: token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
+          private_key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
+      - name: Update PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.message.outputs.comment_id }}
+          token: ${{ steps.token.outputs.token }}
+          body: ${{ steps.message.outputs.message_body }}
+          edit-mode: replace

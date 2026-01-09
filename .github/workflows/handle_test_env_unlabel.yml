@@ -1,0 +1,19 @@
+name: Handle removed PR label
+run-name: Handle removed label "${{ github.event.label.name }}" for PR ${{ github.event.pull_request.number }}
+
+on:
+  pull_request:
+    types:
+      - unlabeled
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  trigger_test_env_deletion:
+    if: ${{ github.event.label.name == 'test env' }}
+    uses: ./.github/workflows/delete_test_env.yml
+    secrets: inherit
+    with:
+      env_name: pr${{ github.event.pull_request.number }}
