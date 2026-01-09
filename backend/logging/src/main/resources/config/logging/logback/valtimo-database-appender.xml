@@ -23,7 +23,13 @@
     <springProperty name="spring.datasource.password" source="spring.datasource.password"/>
     <springProperty name="spring.jpa.database-platform" source="spring.jpa.database-platform"/>
 
+    <property name="LOG_DB_DRIVER" value="${spring.datasource.driver-class-name}"/>
+    <property name="LOG_DB_URL" value="${spring.datasource.url}"/>
+    <property name="LOG_DB_USER" value="${spring.datasource.username}"/>
+    <property name="LOG_DB_PASS" value="${spring.datasource.password}"/>
+
     <appender name="VALTIMODB" class="ch.qos.logback.classic.db.DBAppender">
+        <filter class="com.ritense.logging.LogDbReadyFilter"/>
         <connectionSource class="ch.qos.logback.core.db.DataSourceConnectionSource">
             <dataSource class="${spring.datasource.type}">
                 <driverClassName>${spring.datasource.driver-class-name}</driverClassName>
