@@ -17,7 +17,7 @@
 package com.ritense.processdocument.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.bySolutionModuleId;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.maxVersionOf;
@@ -141,7 +141,7 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
                 var operatonProcessDefinition = runWithoutAuthorization(() -> {
                         var pd = repositoryService.findProcessDefinition(
                             byKey(operatonProcess.getProcessDefinitionKey())
-                                .and(bySolutionModuleId(document.definitionId().caseDefinitionId()))
+                                .and(byBlueprintId(document.definitionId().caseDefinitionId()))
                         );
                         if (pd != null) {
                             return pd;

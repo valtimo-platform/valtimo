@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
@@ -83,8 +83,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private static final String DOCUMENT_DEFINITION_ID = "documentDefinitionId";
-    private static final String SOLUTION_MODULE_TYPE = "solutionModuleType";
-    private static final String SOLUTION_MODULE_ID = "solutionModuleId";
+    private static final String BLUEPRINT_TYPE = "blueprintType";
+    private static final String BLUEPRINT_ID = "blueprintId";
     private static final String NAME = "name";
     private static final String CREATED_BY = "createdBy";
     private static final String SEQUENCE = "sequence";
@@ -138,7 +138,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         final SearchRequest searchRequest,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         final Pageable pageable
     ) {
         return withLoggingContext(
@@ -147,7 +147,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                     (cb, query, documentRoot) ->
                         buildQueryWhere(
                             searchRequest,
-                            solutionModuleType,
+                            blueprintType,
                             cb,
                             query,
                             documentRoot
@@ -160,43 +160,43 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, solutionModuleType, searchWithConfigRequest, pageable, VIEW_LIST);
+        return search(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable, VIEW_LIST);
     }
 
     public Page<JsonSchemaDocument> searchForExport(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, solutionModuleType, searchWithConfigRequest, pageable, EXPORT);
+        return search(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable, EXPORT);
     }
 
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable
     ) {
-        return search(documentDefinitionName, solutionModuleType, advancedSearchRequest, pageable, VIEW_LIST);
+        return search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable, VIEW_LIST);
     }
 
     @Override
     public Long count(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest
     ) {
 
         return count(
             (cb, query, documentRoot) -> buildQueryWhere(
                 documentDefinitionName,
-                solutionModuleType,
+                blueprintType,
                 advancedSearchRequest,
                 cb,
                 query,
@@ -208,7 +208,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -230,12 +230,12 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             searchCriteria
         );
 
-        return search(documentDefinitionName, solutionModuleType, advancedSearchRequest, pageable, action);
+        return search(documentDefinitionName, blueprintType, advancedSearchRequest, pageable, action);
     }
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -244,7 +244,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         return search(
             (cb, query, documentRoot) -> buildQueryWhere(
                 documentDefinitionName,
-                solutionModuleType,
+                blueprintType,
                 advancedSearchRequest,
                 cb,
                 query,
@@ -293,7 +293,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         SearchRequest searchRequest,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
         Root<JsonSchemaDocument> documentRoot
@@ -302,8 +302,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
         predicates.add(
             cb.equal(
-                documentRoot.get(DOCUMENT_DEFINITION_ID).get(SOLUTION_MODULE_ID).get(SOLUTION_MODULE_TYPE),
-                solutionModuleType
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
             )
         );
 
@@ -325,7 +325,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         String documentDefinitionName,
-        JsonSchemaDocumentDefinitionSolutionModuleType solutionModuleType,
+        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
         AdvancedSearchRequest searchRequest,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
@@ -350,8 +350,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
         predicates.add(
             cb.equal(
-                documentRoot.get(DOCUMENT_DEFINITION_ID).get(SOLUTION_MODULE_ID).get(SOLUTION_MODULE_TYPE),
-                solutionModuleType
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
             )
         );
 

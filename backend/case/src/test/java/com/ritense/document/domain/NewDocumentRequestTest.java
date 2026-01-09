@@ -48,7 +48,7 @@ public class NewDocumentRequestTest {
     }
 
     @Test
-    public void shouldExposeBuildingBlockSolutionModule() throws Exception {
+    public void shouldExposeBuildingBlockBlueprint() throws Exception {
         final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
         final JsonNode jsonData = objectMapper.readTree("{\"key\":123}");
         final String definitionName = "some-name";
@@ -61,12 +61,12 @@ public class NewDocumentRequestTest {
             jsonData
         );
 
-        assertThat(newDocRequest.solutionModuleId())
+        assertThat(newDocRequest.blueprintId())
             .isEqualTo(BuildingBlockDefinitionId.of("bb-key", "1.2.3"));
     }
 
     @Test
-    public void shouldExposeCaseSolutionModuleWhenPresent() throws Exception {
+    public void shouldExposeCaseBlueprintWhenPresent() throws Exception {
         final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
         final JsonNode jsonData = objectMapper.readTree("{\"key\":123}");
         final var newDocRequest = new NewDocumentRequest(
@@ -76,12 +76,12 @@ public class NewDocumentRequestTest {
             jsonData
         );
 
-        assertThat(newDocRequest.solutionModuleId())
+        assertThat(newDocRequest.blueprintId())
             .isEqualTo(CaseDefinitionId.of("case-key", "1.0.0"));
     }
 
     @Test
-    public void shouldRequireSolutionModuleDetails() throws Exception {
+    public void shouldRequireBlueprintDetails() throws Exception {
         final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
         final JsonNode jsonData = objectMapper.readTree("{\"key\":123}");
 
@@ -96,7 +96,7 @@ public class NewDocumentRequestTest {
     }
 
     @Test
-    public void shouldRequireOnlyOneSolutionModuleDetails() throws Exception {
+    public void shouldRequireOnlyOneBlueprintDetails() throws Exception {
         final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
         final JsonNode jsonData = objectMapper.readTree("{\"key\":123}");
 

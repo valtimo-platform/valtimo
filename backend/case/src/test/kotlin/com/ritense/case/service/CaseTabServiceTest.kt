@@ -75,7 +75,7 @@ class CaseTabServiceTest(
 
         val caseTab = CaseTab(CaseTabId(caseDefinitionId, "myKey"), "myName", 0, CaseTabType.WIDGETS, "myContentKey")
 
-        whenever(documentDefinitionService.findBySolutionModuleId(caseDefinitionId)).thenReturn(Optional.of(mock()))
+        whenever(documentDefinitionService.findByBlueprintId(caseDefinitionId)).thenReturn(Optional.of(mock()))
         val specMock = mock<AuthorizationSpecification<CaseTab>>()
         whenever(specMock.and(any())).thenReturn(specMock)
         whenever(authorizationService.getAuthorizationSpecification(any<EntityAuthorizationRequest<CaseTab>>(), anyOrNull())).thenReturn(specMock)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@
 
     <include file="changelog/20251014-add-building-block-definition-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251015-add-building-block-definition-process-definition.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20251111-json-schema-definition-solution-definition.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251111-json-schema-definition-blueprint-definition.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251110-add-building-block-definition-artwork-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251124-add-building-block-instance-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250601-create-building-block-process-link.xml" relativeToChangelogFile="true"/>

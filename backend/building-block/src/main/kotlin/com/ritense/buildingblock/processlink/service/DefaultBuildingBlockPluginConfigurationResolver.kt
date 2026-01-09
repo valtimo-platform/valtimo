@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,8 @@ class DefaultBuildingBlockPluginConfigurationResolver(
         val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId)
             ?: throw IllegalStateException("No building block instance found for documentId '$documentId'")
 
-        val processDefinitionId = findParentSolutionInstanceProcessId(execution)
-            ?: throw IllegalStateException("Parent solution instance process not found for activityId '${buildingBlockInstance.activityId}'")
+        val processDefinitionId = findParentBlueprintInstanceProcessId(execution)
+            ?: throw IllegalStateException("Parent blueprint instance process not found for activityId '${buildingBlockInstance.activityId}'")
 
         val processLinks = processLinkService.getProcessLinks(
             processDefinitionId,
@@ -71,7 +71,7 @@ class DefaultBuildingBlockPluginConfigurationResolver(
         return processLink.pluginConfigurationMappings
     }
 
-    fun findParentSolutionInstanceProcessId(execution: DelegateExecution): String? {
+    fun findParentBlueprintInstanceProcessId(execution: DelegateExecution): String? {
         var current: DelegateExecution? = execution
 
 
