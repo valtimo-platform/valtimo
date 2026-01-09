@@ -225,7 +225,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
 
   public onTypeSelected(formRow: FormGroup, event: {item: ListItem}): void {
     this.widgetFieldsService.onDisplayTypeSelected(
-      ['title', 'content', 'type', 'hideWhenEmpty'],
+      ['title', 'content', 'type', 'hideWhenEmpty', 'sortable', 'defaultSort'],
       formRow,
       event
     );
@@ -246,7 +246,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     this.formRows?.at(columnIndex).patchValue({defaultSort: null});
   }
 
-  public onSelectedDefaultSortChange(columnIndex: number): void {
+  public onSelectedDefaultSortChange(columnIndex: number, stuff): void {
     this.formRows?.at(this._$defaultSortIndex()).patchValue({defaultSort: null});
     this._$defaultSortIndex.set(columnIndex);
   }
@@ -347,7 +347,6 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       this.formRows?.push(this.getRowForm(row), {emitEvent: false});
     });
     this.columnUpdateEvent.emit({data: this.columnData, valid: true});
-    this.cdr.detectChanges();
   }
 
   private openFormSubscription(): void {
