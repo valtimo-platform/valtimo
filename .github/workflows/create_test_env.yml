@@ -80,10 +80,7 @@ jobs:
         id: comment_body
         run: |
           set -euo pipefail
-          template_file=".github/test_env_comments/waiting_for_images.md"
-          export COMMIT_SHA="${{ inputs.commit_sha }}"
-          export CONTENTS_SHA="pending"
-          short_sha="${COMMIT_SHA:0:10}"
+          template_file=".github/test_env_comments/initial.md"
           env_name="${{ inputs.env_name }}"
           export TEST_ENV_NAME="${env_name}"
           export IMAGE_TAG="testEnv.${env_name}_commit.${short_sha}_contents.pending_build.pending"
