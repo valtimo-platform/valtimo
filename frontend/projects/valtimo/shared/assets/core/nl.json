@@ -566,6 +566,10 @@
           "createdDate": "Gemaakt op",
           "description": "Beschrijving"
         }
+      },
+      "notFinalizableWarning": {
+        "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
+        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn."
       }
     },
     "processLinkNotification": {

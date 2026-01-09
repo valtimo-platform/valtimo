@@ -387,7 +387,7 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/finalizable")
+    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/finalizable")
     fun checkIfCaseDefinitionIsFinalizable(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
