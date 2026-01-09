@@ -21,9 +21,9 @@ import {
   KeycloakUserService,
   ValtimoKeycloakOptions,
 } from '@valtimo/keycloak';
-import {KeycloakConfig, KeycloakOnLoad} from 'keycloak-js';
-import {Injector} from '@angular/core';
-import {Auth, AuthProviders} from '@valtimo/shared';
+import { KeycloakConfig, KeycloakOnLoad } from 'keycloak-js';
+import { Injector } from '@angular/core';
+import { Auth, AuthProviders } from '@valtimo/shared';
 
 const keycloakAuthenticationProviders: AuthProviders = {
   guardServiceProvider: KeycloakAuthGuardService,
@@ -31,7 +31,7 @@ const keycloakAuthenticationProviders: AuthProviders = {
 };
 
 export const keycloakConfig: KeycloakConfig = {
-  url: window['env']['keycloakUrl'] || 'http://keycloak.localhost:8081/auth',
+  url: window['env']['keycloakUrl'] || 'http://localhost:8081/auth',
   realm: window['env']['keycloakRealm'] || 'valtimo',
   clientId: window['env']['keycloakClientId'] || 'valtimo-console',
 };
