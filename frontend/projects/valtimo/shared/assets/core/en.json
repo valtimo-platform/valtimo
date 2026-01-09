@@ -919,7 +919,8 @@
         "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)",
         "linkText": "Link text",
         "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
-        "linkTextPlaceholder": "Link text (optional)"
+        "linkTextPlaceholder": "Link text (optional)",
+        "defaultSortWarning": "Updating this will overwrite other default sortings."
       },
       "map": {
         "add": "Add field",

@@ -82,13 +82,14 @@ export class WidgetInteractiveTableComponent {
     return this._widgetConfiguration;
   }
 
+  private _sortInitialized = false;
   public readonly $initialSortState = signal<SortState | null>(null);
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
     this._widgetConfiguration = value;
 
     this.fields$.next(
       value.properties.columns.map((column: FieldsWidgetValue, index: number) => {
-        if (column.sortable && !!column.defaultSort) {
+        if (column.sortable && !!column.defaultSort && !this._sortInitialized) {
           this.$initialSortState.set({
             isSorting: true,
             state: {
@@ -97,6 +98,7 @@ export class WidgetInteractiveTableComponent {
             },
           });
           this.$sort.set(this.$initialSortState());
+          this._sortInitialized = true;
         }
 
         return {
@@ -166,7 +168,7 @@ export class WidgetInteractiveTableComponent {
           ? null
           : {
               page: 1,
-              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
+              collectionSize: widgetPage.totalElements,
               size: widgetPage.size,
             }
       );
@@ -178,7 +180,7 @@ export class WidgetInteractiveTableComponent {
           ? null
           : {
               ...model,
-              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
+              collectionSize: widgetPage.totalElements,
               currentPage: widgetPage.number + 1,
             }
       );

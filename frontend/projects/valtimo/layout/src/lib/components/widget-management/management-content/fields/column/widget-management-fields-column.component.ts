@@ -27,8 +27,10 @@ import {
   OnInit,
   Output,
   Signal,
+  signal,
   TemplateRef,
   ViewEncapsulation,
+  WritableSignal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -62,8 +64,9 @@ import {
   InputModule,
   LayerModule,
   ListItem,
+  TagModule,
 } from 'carbon-components-angular';
-import {debounceTime, Observable, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, startWith, Subscription, take, tap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
 import {IWidgetManagementService} from '../../../../../interfaces';
 import {
@@ -101,6 +104,7 @@ import {WidgetFieldsService, WidgetWizardService} from '../../../../../services'
     CheckboxModule,
     LayerModule,
     SelectModule,
+    TagModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -145,7 +149,13 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   public readonly $isFieldWidget: Signal<boolean> = computed(
     () => this.$widgetType() === WidgetType.FIELDS
   );
-
+  public readonly $isInteractiveTableWidget: Signal<boolean> = computed(
+    () => this.$widgetType() === WidgetType.INTERACTIVE_TABLE
+  );
+  public readonly defaultSortIndexForTemplate$ = this.formRows?.valueChanges.pipe(
+    map(() => this.formRows?.getRawValue().findIndex(column => !!column.defaultSort))
+  );
+  private readonly _$defaultSortIndex = signal<number>(-1);
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;
   public readonly DEFAULT_SORT_OPTIONS: SelectItem[] = [
     {
@@ -228,6 +238,17 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
         value: this.fb.control('', Validators.required),
       })
     );
+  }
+
+  public onSortableCheckChange(columnIndex: number, checkValue: boolean): void {
+    if (checkValue) return;
+
+    this.formRows?.at(columnIndex).patchValue({defaultSort: null});
+  }
+
+  public onSelectedDefaultSortChange(columnIndex: number): void {
+    this.formRows?.at(this._$defaultSortIndex()).patchValue({defaultSort: null});
+    this._$defaultSortIndex.set(columnIndex);
   }
 
   private typeSelectValidator(control: AbstractControl): null | {[key: string]: string} {
@@ -320,13 +341,11 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       return;
     }
 
-    const rowsControl = this.formGroup.get('rows') as FormArray;
-    if (!rowsControl) return;
+    if (!this.formRows) return;
 
     this.columnData.forEach((row: FieldsWidgetValue) => {
-      rowsControl.push(this.getRowForm(row), {emitEvent: false});
+      this.formRows?.push(this.getRowForm(row), {emitEvent: false});
     });
-
     this.columnUpdateEvent.emit({data: this.columnData, valid: true});
     this.cdr.detectChanges();
   }

@@ -944,7 +944,8 @@
         "ellipsisCharacterLimitPlaceholder": "Kies een aantal tekens (optioneel)",
         "linkText": "Link tekst",
         "linkTextTooltip": "De tekst die wordt weergegeven als een link. Als dit leeg is, wordt de URL als tekst gebruikt.",
-        "linkTextPlaceholder": "Link tekst (optioneel)"
+        "linkTextPlaceholder": "Link tekst (optioneel)",
+        "defaultSortWarning": "Het bijwerken hiervan zal andere standaardsorteringen overschrijven."
       },
       "map": {
         "add": "Veld toevoegen",

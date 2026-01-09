@@ -18,6 +18,7 @@
     inputTheme: inputTheme$ | async,
     params: params$ | async,
     widgetType: $widgetType() === 'interactive-table' ? 'table' : $widgetType(),
+    defaultSortIndex: defaultSortIndexForTemplate$ | async,
   } as data"
   class="valtimo-widget-management-field-column"
   [formGroup]="formGroup"
@@ -26,7 +27,12 @@
     @for (formRow of formRows.controls; track $index) {
       <cds-accordion-item
         [title]="fieldTitle"
-        [context]="{count: $count, index: $index, title: formRow.get('title')?.value}"
+        [context]="{
+          count: $count,
+          index: $index,
+          title: formRow.get('title')?.value,
+          defaultSortIndex: data.defaultSortIndex,
+        }"
         [expanded]="$index === 0"
         class="valtimo-widget-management-field-column__item"
       >
@@ -364,7 +370,10 @@
               *ngIf="showSortableCheckbox"
               class="valtimo-widget-management-field-column__sorting"
             >
-              <cds-checkbox formControlName="sortable">
+              <cds-checkbox
+                formControlName="sortable"
+                (checkedChange)="onSortableCheckChange($index, $event)"
+              >
                 {{ 'listColumn.sortable' | translate }}
               </cds-checkbox>
 
@@ -374,6 +383,13 @@
                 [items]="DEFAULT_SORT_OPTIONS"
                 [dropUp]="false"
                 [placeholder]="'interface.sorting.noDefault' | translate"
+                [warn]="
+                  data.defaultSortIndex !== -1 &&
+                  data.defaultSortIndex !== $index &&
+                  !!formRow.get('sortable')?.value
+                "
+                [warnText]="'widgetTabManagement.content.fields.defaultSortWarning' | translate"
+                (selectedChange)="onSelectedDefaultSortChange($index, $event)"
               ></v-select>
             </div>
           </div>
@@ -389,9 +405,21 @@
   </button>
 </form>
 
-<ng-template #fieldTitle let-count="count" let-index="index" let-title="title">
+<ng-template
+  #fieldTitle
+  let-defaultSortIndex="defaultSortIndex"
+  let-count="count"
+  let-index="index"
+  let-title="title"
+>
   <div class="valtimo-widget-management-field-column__title">
-    {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
+    <section>
+      {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
+
+      <cds-tag *ngIf="$isInteractiveTableWidget() && defaultSortIndex === index" type="blue">
+        {{ 'ikoManagement.defaultSortTitle' | translate }}
+      </cds-tag>
+    </section>
 
     <button
       cdsButton="danger"
