@@ -1,0 +1,23 @@
+name: Handle newly added PR label
+run-name: Handle newly added label "${{ github.event.label.name }}" for PR ${{ github.event.pull_request.number }}
+
+on:
+  pull_request:
+    branches:
+      - cicd/improve-pr-test-envs
+    types:
+      - labeled
+
+permissions:
+  contents: read
+  actions: write
+  packages: write
+
+jobs:
+  trigger_test_env_creation:
+    if: ${{ github.event.label.name == 'test env' }}
+    uses: ./.github/workflows/create_test_env.yml
+    secrets: inherit
+    with:
+      commit_sha: ${{ github.event.pull_request.head.sha }}
+      env_name: pr${{ github.event.pull_request.number }}
