@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.operaton.repository
 
-import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -108,9 +108,9 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun bySolutionModuleId(solutionModuleId: SolutionModuleId?): Specification<OperatonProcessDefinition> {
-            return if (solutionModuleId != null) {
-                byVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId.toString())
+        fun byBlueprintId(blueprintId: BlueprintId?): Specification<OperatonProcessDefinition> {
+            return if (blueprintId != null) {
+                byVersionTag(blueprintId.getTagPrefix() + blueprintId.toString())
             } else {
                 maxVersionOf(byNotLinkedToCaseDefinition())
             }

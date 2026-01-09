@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class BuildingBlockCaseDocumentResolverTest {
     private val resolver = BuildingBlockCaseDocumentResolver(buildingBlockInstanceRepository)
 
     @Test
-    fun `supports building block solution module`() {
+    fun `supports building block blueprint`() {
         assertEquals(true, resolver.supports("BUILDING_BLOCK"))
         assertEquals(false, resolver.supports("CASE"))
     }

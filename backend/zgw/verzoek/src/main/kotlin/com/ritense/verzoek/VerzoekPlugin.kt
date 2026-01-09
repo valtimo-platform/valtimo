@@ -91,7 +91,7 @@ class VerzoekPlugin(
                                 caseDefinitionVersionTag = property.caseDefinitionVersionTag,
                             )
                                 ?: error("No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'.")
-                            documentDefinitionService.findBySolutionModuleId(caseDefinition.id).getOrNull()
+                            documentDefinitionService.findByBlueprintId(caseDefinition.id).getOrNull()
                                 ?: error("No Document Definition found for Case Definition: ${caseDefinition.id}")
                         }
                         val documentPath = it.target.substringAfter(delimiter = ":")

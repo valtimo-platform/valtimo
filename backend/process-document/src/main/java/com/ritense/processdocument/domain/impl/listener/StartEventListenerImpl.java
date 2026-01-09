@@ -86,7 +86,7 @@ public class StartEventListenerImpl implements StartEventListener {
                 final var caseDefinitionId = processDefinitionCaseDefinitionService.findByProcessDefinitionId(processDefinitionId)
                     .getId().getCaseDefinitionId();
 
-                final var documentDefinition = documentDefinitionService.findBySolutionModuleId(caseDefinitionId);
+                final var documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId);
 
                 if (documentDefinition.isPresent()) {
                     final var jsonData = extractJsonDocumentData(execution);

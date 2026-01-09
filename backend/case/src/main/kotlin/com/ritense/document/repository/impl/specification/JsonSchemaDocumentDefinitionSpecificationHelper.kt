@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@
 package com.ritense.document.repository.impl.specification
 
 import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
-import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
 import org.springframework.data.jpa.domain.Specification
+
 class JsonSchemaDocumentDefinitionSpecificationHelper {
 
     companion object {
@@ -39,86 +40,86 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             }
         }
 
-        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
         @JvmStatic
         fun byLatestVersion(): Specification<JsonSchemaDocumentDefinition> {
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
                                    query: CriteriaQuery<*>,
                                    cb: CriteriaBuilder ->
-                val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 val subquery = query.subquery(Long::class.java)
                 val subRoot = subquery.from(CaseDefinition::class.java)
                 subquery.select(cb.max(subRoot.get<Any>(ID).get(VERSION_TAG)))
-                subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), solutionModulePath.get<String>(SOLUTION_MODULE_KEY)))
+                subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), blueprintPath.get<String>(BLUEPRINT_KEY)))
 
                 cb.and(
-                    cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
-                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG), subquery)
+                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), subquery)
                 )
             }
         }
 
-        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
         @JvmStatic
-        fun byIdSolutionModuleId(solutionModuleId: SolutionModuleId): Specification<JsonSchemaDocumentDefinition> {
-            val solutionModuleId =  if (solutionModuleId is CaseDefinitionId) {
-                JsonSchemaDocumentDefinitionSolutionModuleId.forCase(solutionModuleId)
+        fun byIdBlueprintId(blueprintId: BlueprintId): Specification<JsonSchemaDocumentDefinition> {
+            val blueprintId =  if (blueprintId is CaseDefinitionId) {
+                JsonSchemaDocumentDefinitionBlueprintId.forCase(blueprintId)
             } else {
-                JsonSchemaDocumentDefinitionSolutionModuleId.forBuildingBlock(solutionModuleId as BuildingBlockDefinitionId)
+                JsonSchemaDocumentDefinitionBlueprintId.forBuildingBlock(blueprintId as BuildingBlockDefinitionId)
             }
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
                                    _: CriteriaQuery<*>,
                                    cb: CriteriaBuilder ->
-                val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 cb.and(
-                    cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), solutionModuleId.solutionModuleType),
-                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_KEY), solutionModuleId.solutionModuleKey()),
-                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG), solutionModuleId.solutionModuleVersionTag())
+                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), blueprintId.blueprintType),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
                 )
             }
         }
 
-        // TODO: make this dynamic, solution module type should be able to be passed. Alternatively, separate methods
+        // TODO: make this dynamic, blueprint type should be able to be passed. Alternatively, separate methods
         @JvmStatic
         fun byIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocumentDefinition> {
-            val solutionModuleId = JsonSchemaDocumentDefinitionSolutionModuleId.forCase(caseDefinitionId)
+            val blueprintId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
                                    _: CriteriaQuery<*>,
                                    cb: CriteriaBuilder ->
-                val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)
+                val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 cb.and(
-                    cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
-                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_KEY), solutionModuleId.solutionModuleKey()),
-                    cb.equal(solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG), solutionModuleId.solutionModuleVersionTag())
+                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
+                    cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
                 )
             }
         }
 
-        // TODO: make this dynamic, solution module type should be able to be passed
+        // TODO: make this dynamic, blueprint type should be able to be passed
         @JvmStatic
         fun byCaseDefinitionActive() = Specification<JsonSchemaDocumentDefinition> { root, query, cb ->
-            val solutionModulePath = root.get<Any>(ID).get<Any>(SOLUTION_MODULE_ID)
+            val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
             val subquery = query.subquery(Long::class.java)
             val subRoot = subquery.from(CaseDefinition::class.java)
             subquery.select(cb.count(subRoot.get<Any>(ID).get<CaseDefinitionId>(KEY)))
             subquery.where(
                 cb.and(
                     cb.isTrue(subRoot["active"]),
-                    cb.equal(subRoot.get<Any>(ID).get<String>(KEY), solutionModulePath.get<String>(SOLUTION_MODULE_KEY)),
-                    cb.equal(subRoot.get<Any>(ID).get<Any>(VERSION_TAG), solutionModulePath.get<String>(SOLUTION_MODULE_VERSION_TAG))
+                    cb.equal(subRoot.get<Any>(ID).get<String>(KEY), blueprintPath.get<String>(BLUEPRINT_KEY)),
+                    cb.equal(subRoot.get<Any>(ID).get<Any>(VERSION_TAG), blueprintPath.get<String>(BLUEPRINT_VERSION_TAG))
                 )
             )
             cb.and(
-                cb.equal(solutionModulePath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(SOLUTION_MODULE_TYPE), JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
+                cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
                 cb.equal(subquery, 1L)
             )
         }
 
         private const val ID: String = "id"
-        private const val SOLUTION_MODULE_ID: String = "solutionModuleId"
-        private const val SOLUTION_MODULE_TYPE: String = "solutionModuleType"
-        private const val SOLUTION_MODULE_KEY: String = "solutionModuleKey"
-        private const val SOLUTION_MODULE_VERSION_TAG: String = "solutionModuleVersionTag"
+        private const val BLUEPRINT_ID: String = "blueprintId"
+        private const val BLUEPRINT_TYPE: String = "blueprintType"
+        private const val BLUEPRINT_KEY: String = "blueprintKey"
+        private const val BLUEPRINT_VERSION_TAG: String = "blueprintVersionTag"
         private const val KEY: String = "key"
         private const val VERSION_TAG: String = "versionTag"
         private const val NAME: String = "name"

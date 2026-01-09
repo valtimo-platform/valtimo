@@ -41,13 +41,13 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDeleted::class)
     fun handleProcessDefinitionDeletedEvent(event: ProcessDefinitionDeleted) {
-        if (event.solutionModuleId != null) {
-            if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == event.solutionModuleId?.getTagPrefix()) {
+        if (event.blueprintId != null) {
+            if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == event.blueprintId?.getTagPrefix()) {
                 processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
                     ProcessDefinitionId(event.processDefinitionId),
-                    event.solutionModuleId!! as CaseDefinitionId
+                    event.blueprintId!! as CaseDefinitionId
                 )
-            } else if (OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX == event.solutionModuleId?.getTagPrefix()) {
+            } else if (OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX == event.blueprintId?.getTagPrefix()) {
                 // TODO: how do we handle building blocks being deleted?
             } else {
                 // TODO Do we need to react on something still?
@@ -60,10 +60,10 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDetached::class)
     fun handleProcessDefinitionDetachedEvent(event: ProcessDefinitionDetached) {
-        if (event.solutionModuleId != null) {
+        if (event.blueprintId != null) {
             processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
                 ProcessDefinitionId(event.processDefinitionId),
-                event.solutionModuleId!! as CaseDefinitionId
+                event.blueprintId!! as CaseDefinitionId
             )
         }
     }

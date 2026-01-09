@@ -1,6 +1,6 @@
 package com.ritense.valtimo.contract
 
-interface SolutionModuleId {
+interface BlueprintId {
 
     fun getTagPrefix(): String
     fun getIdKey(): String

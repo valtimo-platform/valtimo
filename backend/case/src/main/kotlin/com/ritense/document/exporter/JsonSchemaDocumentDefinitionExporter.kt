@@ -42,7 +42,7 @@ class JsonSchemaDocumentDefinitionExporter(
             val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(request.name, request.caseDefinitionId)
             documentDefinitionService.findBy(documentDefinitionId).orElseThrow()
         } else {
-            documentDefinitionService.findBySolutionModuleId(request.caseDefinitionId).orElseThrow()
+            documentDefinitionService.findByBlueprintId(request.caseDefinitionId).orElseThrow()
         }
 
         val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
