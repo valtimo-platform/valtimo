@@ -44,6 +44,7 @@ jobs:
           template_dir=".github/test_env_comments"
           template_file="${template_dir}/${state}.md"
 
+          export TEST_ENV_NAME=$(jq -r '.test_env_name' "$payload")
           export COMMIT_SHA=$(jq -r '.commit_sha' "$payload")
           export CONTENTS_SHA=$(jq -r '.contents_sha' "$payload")
 

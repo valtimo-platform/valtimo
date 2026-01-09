@@ -85,7 +85,8 @@ jobs:
           export CONTENTS_SHA="pending"
           short_sha="${COMMIT_SHA:0:10}"
           env_name="${{ inputs.env_name }}"
-          export IMAGE_TAG="testEnv.${env_name}_commit.<commit sha>_build.<build number>"
+          export TEST_ENV_NAME="${env_name}"
+          export IMAGE_TAG="testEnv.${env_name}_commit.${short_sha}_contents.pending_build.pending"
           message_body=$(cat "$template_file" | envsubst)
           {
             echo 'body<<EOF'

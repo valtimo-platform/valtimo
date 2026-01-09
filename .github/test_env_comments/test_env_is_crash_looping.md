@@ -2,13 +2,14 @@ Will create a test environment. This comment will be updated once it is availabl
 Closing or merging this PR will automatically delete the test environment.
 Progress:
 
-- [x] Creating test environment
+- [x] Create test environment
 - [x] Images tagged ${IMAGE_TAG} available
 - [x] Starting test environment
 - [ ] Test environment is running
   - The backend is crash-looping. Look at the logs to find out why.
 
-Metadata:
+Test environment metadata:
+
 - Commit: ${COMMIT_SHA}
 - Contents: ${CONTENTS_SHA}
 - Image tag: ${IMAGE_TAG}

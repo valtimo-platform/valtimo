@@ -8,29 +8,17 @@
         "state": {
           "const": "waiting_for_images"
         },
-        "commit_sha": {
-          "type": "string"
-        },
-        "contents_sha": {
-          "type": "string"
-        },
         "test_env_comment_id": {
           "type": "integer"
         },
         "test_env_name": {
           "type": "string"
-        },
-        "test_env_image_tag": {
-          "type": "string"
         }
       },
       "required": [
         "state",
-        "commit_sha",
-        "contents_sha",
         "test_env_comment_id",
-        "test_env_name",
-        "test_env_image_tag"
+        "test_env_name"
       ],
       "additionalProperties": false
     },
