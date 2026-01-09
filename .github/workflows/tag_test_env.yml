@@ -53,7 +53,7 @@ jobs:
         env:
           IMAGE: "ghcr.io/${{ github.repository }}/${{ inputs.target }}"
           IMAGE_TO_TAG: "${{ inputs.image_to_tag }}"
-          TEST_ENV_TAG: "testEnv-${{ needs.determine_test_env.outputs.name }}_commit-${{ needs.determine_test_env.outputs.source_sha}}_build-${{ github.run_number }}"
+          TEST_ENV_TAG: "testEnv.${{ needs.determine_test_env.outputs.name }}_commit.${{ needs.determine_test_env.outputs.source_sha}}_build.${{ github.run_number }}"
         run: |
           docker buildx imagetools create \
             --tag "${IMAGE}:${TEST_ENV_TAG}" \
