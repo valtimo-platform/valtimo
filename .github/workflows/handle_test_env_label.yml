@@ -3,8 +3,6 @@ run-name: Handle newly added label "${{ github.event.label.name }}" for PR ${{ g
 
 on:
   pull_request:
-    branches:
-      - cicd/improve-pr-test-envs
     types:
       - labeled
 

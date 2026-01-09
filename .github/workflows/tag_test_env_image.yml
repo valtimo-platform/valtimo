@@ -90,7 +90,7 @@ jobs:
           fi
           SOURCE_SHA_SHORT=${SOURCE_SHA:0:10}
           CONTENTS_SHA_SHORT=${CONTENTS_SHA:0:10}
-          TEST_ENV_TAG="testEnv-${ENV_NAME}-commit:${SOURCE_SHA_SHORT}-contents:${CONTENTS_SHA_SHORT}-build:${RUN_NUMBER}"
+          TEST_ENV_TAG="testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_build.${RUN_NUMBER}"
           docker buildx imagetools create \
             --tag "${IMAGE}:${TEST_ENV_TAG}" \
             "${IMAGE}:${IMAGE_TO_TAG}"

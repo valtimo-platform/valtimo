@@ -3,8 +3,6 @@ run-name: Handle removed label "${{ github.event.label.name }}" for PR ${{ githu
 
 on:
   pull_request:
-    branches:
-      - cicd/improve-pr-test-envs
     types:
       - unlabeled
 

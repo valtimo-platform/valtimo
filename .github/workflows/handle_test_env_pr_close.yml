@@ -2,8 +2,6 @@ name: Handle PR close/merge
 
 on:
   pull_request:
-    branches:
-      - cicd/improve-pr-test-envs
     types:
       - closed
 
