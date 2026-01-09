@@ -43,6 +43,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request'}}
     needs:
       - build_and_push_image
+      - build_and_test_libraries
     uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
