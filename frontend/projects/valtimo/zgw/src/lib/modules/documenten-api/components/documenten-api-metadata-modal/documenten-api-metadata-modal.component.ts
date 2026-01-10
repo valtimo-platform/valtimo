@@ -495,7 +495,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     this.additionalDocumentDate$.next(value);
   }
 
-  public confidentialityLevelSelected(event: { id: string }) {
+  public confidentialityLevelSelected(event: {id: string}) {
     if (event.id) {
       this.documentenApiMetadataForm.patchValue({
         vertrouwelijkheidaanduiding: event.id,
