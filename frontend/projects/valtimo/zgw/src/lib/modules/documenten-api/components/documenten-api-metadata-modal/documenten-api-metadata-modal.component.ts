@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 
 import {
   AdditionalDocumentDate,
@@ -76,10 +76,10 @@ import {
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import { DocumentenApiTagService } from '../../services';
+import {DocumentenApiTagService} from '../../services';
 import moment from 'moment';
-import { DocumentenApiUploadFieldDefaultValues } from '../../models/documenten-api-upload-field.model';
-import { DocumentenApiVersionService } from '../../services';
+import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
+import {DocumentenApiVersionService} from '../../services';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -463,7 +463,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly valtimoModalService: ValtimoModalService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly formioStateService: FormIoStateService
-  ) { }
+  ) {}
 
   public ngOnInit(): void {
     this.openFileSubscription();
@@ -479,7 +479,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     this.editDisabled$.next(false);
   }
 
-  public languageSelected(event: { item: { id: string } }) {
+  public languageSelected(event: { item: {id: string} }) {
     if (event.item.id) {
       this.documentenApiMetadataForm.patchValue({
         taal: event.item.id,
@@ -503,7 +503,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  public statusSelected(event: { id: string }) {
+  public statusSelected(event: {id: string}) {
     if (event.id) {
       this.documentenApiMetadataForm.patchValue({
         status: event.id,
@@ -511,7 +511,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  public informatieobjecttypeSelected(event: { id: string }) {
+  public informatieobjecttypeSelected(event: {id: string}) {
     if (event.id) {
       this.documentenApiMetadataForm.patchValue({
         informatieobjecttype: event.id,
@@ -565,7 +565,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     const rawValue = this.documentenApiMetadataForm.getRawValue();
     const mappedRawValue = Object.keys(rawValue).reduce(
       (acc, currentKey) =>
-        rawValue[currentKey] !== undefined ? { ...acc, [currentKey]: rawValue[currentKey] } : acc,
+        rawValue[currentKey] !== undefined ? {...acc, [currentKey]: rawValue[currentKey]} : acc,
       {}
     ) as DocumentenApiMetadata;
 
@@ -646,8 +646,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
           this.prefillForm(file);
           this.editDisabled$.next(
             !support.supportsUpdatingDefinitiveDocument &&
-            file.status === 'definitief' &&
-            this.isEditMode
+              file.status === 'definitief' &&
+              this.isEditMode
           );
         }
       });
