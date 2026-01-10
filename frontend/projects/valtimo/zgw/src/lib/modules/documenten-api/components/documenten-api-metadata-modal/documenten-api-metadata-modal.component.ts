@@ -108,7 +108,7 @@ import { DocumentenApiVersionService } from '../../services';
   ],
 })
 export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
-  @ViewChild('metadataModal') metadataModal!: VModalComponent;
+  @ViewChild('metadataModal') metadataModal: VModalComponent;
 
   @Input() disabled$!: Observable<boolean>;
   @Input() file$!: Observable<any>;
@@ -179,7 +179,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       this.creatiedatum.enable();
     }
   }
-  @Input() isEditMode!: boolean;
+  @Input() isEditMode: boolean;
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
 
@@ -197,10 +197,23 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   @Output() modalClose: EventEmitter<boolean> = new EventEmitter();
 
   public filenameExtension: string = '';
-  public documentenApiMetadataForm: FormGroup;
+  public documentenApiMetadataForm: FormGroup = this.fb.group({
+    bestandsnaam: this.fb.control(''),
+    titel: this.fb.control('', Validators.required),
+    auteur: this.fb.control('', Validators.required),
+    beschrijving: this.fb.control(''),
+    taal: this.fb.control('', Validators.required),
+    informatieobjecttype: this.fb.control('', Validators.required),
+    status: this.fb.control(''),
+    vertrouwelijkheidaanduiding: this.fb.control(''),
+    creatiedatum: this.fb.control('', Validators.required),
+    ontvangstdatum: this.fb.control(''),
+    verzenddatum: this.fb.control(''),
+    trefwoorden: this.fb.control([]),
+  });
 
   public get confidentialityLevelFormControl(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('vertrouwelijkheidaanduiding') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('vertrouwelijkheidaanduiding');
   }
   public get confidentialityLevelDisabled$(): Observable<boolean> {
     return this.confidentialityLevelFormControl.valueChanges.pipe(
@@ -210,7 +223,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   public get informatieobjecttypeFormControl(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('informatieobjecttype') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('informatieobjecttype');
   }
   public get informatieobjecttypeDisabled$(): Observable<boolean> {
     return this.informatieobjecttypeFormControl.valueChanges.pipe(
@@ -220,7 +233,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   public get languageFormControl(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('taal') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('taal');
   }
 
   public get languageDisabled$(): Observable<boolean> {
@@ -231,7 +244,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   public get statusFormControl(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('status') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('status');
   }
   public get statusDisabled$(): Observable<boolean> {
     return this.statusFormControl.valueChanges.pipe(
@@ -241,27 +254,27 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   public get tagFormControl(): AbstractControl<string[]> {
-    return this.documentenApiMetadataForm.get('trefwoorden') as AbstractControl<string[]>;
+    return this.documentenApiMetadataForm.get('trefwoorden');
   }
 
   public get creatiedatum(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('creatiedatum') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('creatiedatum');
   }
 
   public get titel(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('titel') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('titel');
   }
 
   public get beschrijving(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('beschrijving') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('beschrijving');
   }
 
   public get auteur(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('auteur') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('auteur');
   }
 
   public get bestandsnaam(): AbstractControl<string> {
-    return this.documentenApiMetadataForm.get('bestandsnaam') as AbstractControl<string>;
+    return this.documentenApiMetadataForm.get('bestandsnaam');
   }
 
   public readonly editDisabled$ = new BehaviorSubject<boolean>(false);
@@ -276,7 +289,20 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     'geheim',
     'zeer_geheim',
   ];
-  public readonly confidentialityLevelItems$: Observable<Array<ListItem>>;
+  public readonly confidentialityLevelItems$: Observable<Array<ListItem>> = combineLatest([
+    this.confidentialityLevelFormControl.valueChanges.pipe(
+      startWith(this.confidentialityLevelFormControl.value)
+    ),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([currentConfidentialityLevel]) =>
+      this.CONFIDENTIALITY_LEVELS.map(confidentialityLevel => ({
+        id: confidentialityLevel,
+        content: this.translateService.instant(`document.${confidentialityLevel}`),
+        selected: currentConfidentialityLevel === confidentialityLevel,
+      }))
+    )
+  );
 
   public readonly ADDITONAL_DOCUMENT_DATE_OPTIONS: Array<{
     value: AdditionalDocumentDate;
@@ -304,20 +330,123 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     'gearchiveerd',
   ];
   public readonly RECEIPT_STATUSES: Array<DocumentStatus> = ['definitief', 'gearchiveerd'];
-  public readonly formData$ = new BehaviorSubject<DocumentenApiMetadata | null>(null);
-  public readonly statusItems$: Observable<Array<ListItem>>;
+  public readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
+  public readonly statusItems$: Observable<Array<ListItem>> = combineLatest([
+    this.additionalDocumentDate$,
+    this.statusFormControl.valueChanges.pipe(startWith(this.statusFormControl.value)),
+    this.translateService.stream('key'),
+  ]).pipe(
+    tap(([additionalDocumentDate, currentStatus]) => {
+      this.formData$
+        .pipe(
+          filter(formData => !!formData),
+          take(1)
+        )
+        .subscribe(formData => {
+          if (
+            additionalDocumentDate === 'received' &&
+            (formData.status === 'in_bewerking' || formData.status === 'ter_vaststelling')
+          ) {
+            this.clearStatusSelection$.next(null);
+          }
+        });
+    }),
+    map(([additionalDocumentDate, currentStatus]) =>
+      (additionalDocumentDate === 'received' ? this.RECEIPT_STATUSES : this.STATUSES).map(
+        status => ({
+          id: status,
+          content: this.translateService.instant(`document.${status}`),
+          selected: currentStatus === status,
+        })
+      )
+    )
+  );
 
-  public readonly tagItems$: Observable<Array<ListItem>>;
+  public readonly tagItems$: Observable<Array<ListItem>> = combineLatest([
+    this.valtimoModalService.caseDefinitionKey$,
+    this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
+  ]).pipe(
+    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
+    switchMap(([caseDefinitionKey, tagFormControlValue]) =>
+      combineLatest([
+        this.documentenApiTagService.getTags(caseDefinitionKey),
+        of(tagFormControlValue),
+      ])
+    ),
+    map(([tags, tagFormControlValue]) =>
+      tags.map(tag => ({
+        id: tag.value,
+        content: tag.value,
+        selected: !!tagFormControlValue ? tagFormControlValue.includes(tag.value) : false,
+      }))
+    )
+  );
 
   public readonly LANGUAGES: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
-  public languageItems$: Observable<Array<ListItem>>;
+  public languageItems$: Observable<Array<ListItem>> = combineLatest([
+    this.languageFormControl.valueChanges.pipe(startWith(this.languageFormControl.value)),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([currentLanguage]) => {
+      return this.LANGUAGES.map(
+        (language: any) =>
+          ({
+            content: this.translateService.instant(`document.${language}`),
+            id: language,
+            selected: currentLanguage === language,
+          }) as ListItem
+      );
+    })
+  );
 
-  public readonly documentId$: Observable<string>;
+  public readonly documentId$ = combineLatest([
+    this.formioStateService.documentId$,
+    this.route.params.pipe(map(params => params?.documentId ?? null)),
+  ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
 
-  public readonly documentTypeItems$: Observable<Array<ListItem>>;
-  public readonly userEmail$: Observable<string>;
+  public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
+    this.documentId$.pipe(startWith(null)),
+    this.valtimoModalService.caseDefinitionKey$.pipe(startWith(null)),
+    this.informatieobjecttypeFormControl.valueChanges.pipe(
+      startWith(this.informatieobjecttypeFormControl.value)
+    ),
+  ]).pipe(
+    filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
+    switchMap(([documentId, caseDefinitionKey, defaultValue]) => {
+      if (documentId) {
+        return this.documentService.getDocumentTypesForDocument(documentId).pipe(
+          map(types => [types, defaultValue])
+        );
+      }
+      if (caseDefinitionKey) {
+        return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
+          switchMap(settings => settings.caseDefinitionVersionTag
+            ? this.documentService.getDocumentTypesForCase(caseDefinitionKey, settings.caseDefinitionVersionTag)
+            : of([])
+          ),
+          map(types => [types, defaultValue])
+        );
+      }
+      return of([[], defaultValue]);
+    }),
+    map(([documentTypes, informatieobjecttypeValue]) =>
+      (documentTypes as ZgwDocumentType[]).map((type: any) => ({
+        id: type.url,
+        content: type.name,
+        selected: informatieobjecttypeValue === type.url,
+      }))
+    )
+  );
+  public readonly userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
+    map(userProfile => userProfile?.email || '')
+  );
 
-  private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures>;
+  private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
+    this.valtimoModalService.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
+      )
+    );
 
   private _subscriptions = new Subscription();
   private _fileSubscription!: Subscription;
@@ -334,169 +463,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly valtimoModalService: ValtimoModalService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly formioStateService: FormIoStateService
-  ) {
-    this.documentenApiMetadataForm = this.fb.group({
-      bestandsnaam: this.fb.control(''),
-      titel: this.fb.control('', Validators.required),
-      auteur: this.fb.control('', Validators.required),
-      beschrijving: this.fb.control(''),
-      taal: this.fb.control('', Validators.required),
-      informatieobjecttype: this.fb.control('', Validators.required),
-      status: this.fb.control(''),
-      vertrouwelijkheidaanduiding: this.fb.control(''),
-      creatiedatum: this.fb.control('', Validators.required),
-      ontvangstdatum: this.fb.control(''),
-      verzenddatum: this.fb.control(''),
-      trefwoorden: this.fb.control([]),
-    });
-
-    this.confidentialityLevelItems$ = combineLatest([
-      this.confidentialityLevelFormControl.valueChanges.pipe(
-        startWith(this.confidentialityLevelFormControl.value)
-      ),
-      this.translateService.stream('key'),
-    ]).pipe(
-      map(([currentConfidentialityLevel]) =>
-        this.CONFIDENTIALITY_LEVELS.map(confidentialityLevel => ({
-          id: confidentialityLevel,
-          content: this.translateService.instant(`document.${confidentialityLevel}`),
-          selected: currentConfidentialityLevel === confidentialityLevel,
-        }))
-      )
-    );
-
-    this.statusItems$ = combineLatest([
-      this.additionalDocumentDate$,
-      this.statusFormControl.valueChanges.pipe(startWith(this.statusFormControl.value)),
-      this.translateService.stream('key'),
-    ]).pipe(
-      tap(([additionalDocumentDate, currentStatus]) => {
-        this.formData$
-          .pipe(
-            filter(formData => !!formData),
-            take(1)
-          )
-          .subscribe(formData => {
-            if (
-              additionalDocumentDate === 'received' &&
-              (formData.status === 'in_bewerking' || formData.status === 'ter_vaststelling')
-            ) {
-              this.clearStatusSelection$.next(null);
-            }
-          });
-      }),
-      map(([additionalDocumentDate, currentStatus]) =>
-        (additionalDocumentDate === 'received' ? this.RECEIPT_STATUSES : this.STATUSES).map(
-          status => ({
-            id: status,
-            content: this.translateService.instant(`document.${status}`),
-            selected: currentStatus === status,
-          })
-        )
-      )
-    );
-
-    this.tagItems$ = combineLatest([
-      this.valtimoModalService.caseDefinitionKey$,
-      this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
-    ]).pipe(
-      filter(([caseDefinitionKey]) => !!caseDefinitionKey),
-      switchMap(([caseDefinitionKey, tagFormControlValue]) =>
-        combineLatest([
-          this.documentenApiTagService.getTags(caseDefinitionKey),
-          of(tagFormControlValue),
-        ])
-      ),
-      map(([tags, tagFormControlValue]) =>
-        tags.map(tag => ({
-          id: tag.value,
-          content: tag.value,
-          selected: !!tagFormControlValue ? tagFormControlValue.includes(tag.value) : false,
-        }))
-      )
-    );
-
-    this.languageItems$ = combineLatest([
-      this.languageFormControl.valueChanges.pipe(startWith(this.languageFormControl.value)),
-      this.translateService.stream('key'),
-    ]).pipe(
-      map(([currentLanguage]) => {
-        return this.LANGUAGES.map(
-          (language: any) =>
-            ({
-              content: this.translateService.instant(`document.${language}`),
-              id: language,
-              selected: currentLanguage === language,
-            }) as ListItem
-        );
-      })
-    );
-
-    this.documentId$ = combineLatest([
-      this.formioStateService.documentId$,
-      this.route.params.pipe(map(params => params?.documentId ?? null)),
-    ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
-
-    this.documentTypeItems$ = combineLatest([
-      this.documentId$.pipe(startWith(null)),
-      this.valtimoModalService.caseDefinitionKey$.pipe(startWith(null)),
-      this.informatieobjecttypeFormControl.valueChanges.pipe(
-        startWith(this.informatieobjecttypeFormControl.value)
-      ),
-    ]).pipe(
-      filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
-      switchMap(
-        ([documentId, caseDefinitionKey, informatieobjecttypeValue]): Observable<
-          [ZgwDocumentType[], string | null]
-        > => {
-          if (documentId) {
-            return combineLatest([
-              this.documentService.getDocumentTypesForDocument(documentId),
-              of(informatieobjecttypeValue),
-            ]) as Observable<[ZgwDocumentType[], string | null]>;
-          } else if (caseDefinitionKey) {
-            return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
-              switchMap(caseSettings => {
-                const versionTag = caseSettings.caseDefinitionVersionTag;
-                if (versionTag) {
-                  return combineLatest([
-                    this.documentService.getDocumentTypesForCase(caseDefinitionKey, versionTag),
-                    of(informatieobjecttypeValue),
-                  ]) as Observable<[ZgwDocumentType[], string | null]>;
-                }
-                return of([[] as ZgwDocumentType[], informatieobjecttypeValue] as [
-                  ZgwDocumentType[],
-                  string | null,
-                ]);
-              })
-            );
-          } else {
-            return of([[] as ZgwDocumentType[], informatieobjecttypeValue] as [
-              ZgwDocumentType[],
-              string | null,
-            ]);
-          }
-        }
-      ),
-      map(([documentTypes, informatieobjecttypeValue]) =>
-        documentTypes.map((type: any) => ({
-          id: type.url,
-          content: type.name,
-          selected: informatieobjecttypeValue === type.url,
-        }))
-      )
-    );
-
-    this.userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
-      map(userProfile => userProfile?.email || '')
-    );
-
-    this._supportedDocumentenApiFeatures$ = this.valtimoModalService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
-      )
-    );
-  }
+  ) { }
 
   public ngOnInit(): void {
     this.openFileSubscription();
@@ -552,7 +519,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  public prefillForm(file: any) {
+  public prefillForm(file) {
     this.prefillFilenameAndAuthor();
 
     if (file) {
