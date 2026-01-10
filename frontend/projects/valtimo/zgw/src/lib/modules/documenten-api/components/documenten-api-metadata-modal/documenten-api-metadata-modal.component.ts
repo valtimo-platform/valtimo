@@ -479,7 +479,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     this.editDisabled$.next(false);
   }
 
-  public languageSelected(event: { item: {id: string} }) {
+  public languageSelected(event: {item: {id: string}}) {
     if (event.item.id) {
       this.documentenApiMetadataForm.patchValue({
         taal: event.item.id,
