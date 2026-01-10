@@ -19,3 +19,4 @@ export * from './table/widget-management-table.component';
 export * from './collection/widget-management-collection.component';
 export * from './custom/widget-management-custom.component';
 export * from './map/widget-management-map.component';
+export * from './iframe/widget-management-iframe.component';

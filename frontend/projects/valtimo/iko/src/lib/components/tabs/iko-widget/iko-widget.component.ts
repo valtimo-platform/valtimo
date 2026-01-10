@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {FitPageDirective} from '@valtimo/components';
-import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
-import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
-import {IkoWidgetParams} from '../../../models';
-import {IkoApiService, IkoTabService} from '../../../services';
-import {IkoWidgetCollectionComponent} from '../../widget-collection';
-import {IkoWidgetCustomComponent} from '../../widget-custom';
-import {IkoWidgetFieldComponent} from '../../widget-field';
-import {IkoWidgetFormioComponent} from '../../widget-formio';
-import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
-import {IkoWidgetTableComponent} from '../../widget-table';
-import {IkoWidgetMapComponent} from '../../widget-map';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { FitPageDirective } from '@valtimo/components';
+import { WidgetComponentMap, WidgetContainerComponent, WidgetType } from '@valtimo/layout';
+import { NGXLogger } from 'ngx-logger';
+import { BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap } from 'rxjs';
+import { IkoWidgetParams } from '../../../models';
+import { IkoApiService, IkoTabService } from '../../../services';
+import { IkoWidgetCollectionComponent } from '../../widget-collection';
+import { IkoWidgetCustomComponent } from '../../widget-custom';
+import { IkoWidgetFieldComponent } from '../../widget-field';
+import { IkoWidgetFormioComponent } from '../../widget-formio';
+import { IkoWidgetInteractiveTableComponent } from '../../widget-interactive-table';
+import { IkoWidgetTableComponent } from '../../widget-table';
+import { IkoWidgetMapComponent } from '../../widget-map';
+import { IkoWidgetIframeComponent } from '../../widget-iframe';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -37,8 +38,8 @@ import {IkoWidgetMapComponent} from '../../widget-map';
   imports: [CommonModule, WidgetContainerComponent, FitPageDirective],
 })
 export class IkoWidgetComponent {
-  public readonly ikoViewKey$ = this.ikoTabService.ikoViewKey$;
-  public readonly entryId$ = this.ikoTabService.entryId$;
+  public readonly ikoViewKey$: Observable<string>;
+  public readonly entryId$: Observable<string>;
 
   private readonly _key$ = new BehaviorSubject<string>('');
 
@@ -51,24 +52,8 @@ export class IkoWidgetComponent {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public widgets$ = combineLatest([this.ikoViewKey$, this.key$]).pipe(
-    switchMap(([ikoViewKey, key]) => this.ikoApiService.getIkoWidget(ikoViewKey, key))
-  );
-  public widgetParams$: Observable<IkoWidgetParams> = combineLatest([
-    this.ikoViewKey$,
-    this.key$,
-    this.entryId$,
-  ]).pipe(
-    map(([ikoViewKey, tabKey, entryId]) => ({
-      ikoViewKey,
-      entryId,
-      tabKey,
-    })),
-    tap(widgets => {
-      this.logger.debug(`IKO widgets retrieved ${JSON.stringify(widgets)}`);
-      this.loading$.next(false);
-    })
-  );
+  public widgets$: Observable<any>;
+  public widgetParams$: Observable<IkoWidgetParams>;
 
   public readonly widgetComponentMap: WidgetComponentMap = {
     [WidgetType.FIELDS]: IkoWidgetFieldComponent,
@@ -78,11 +63,35 @@ export class IkoWidgetComponent {
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
     [WidgetType.MAP]: IkoWidgetMapComponent,
+    [WidgetType.IFRAME]: IkoWidgetIframeComponent,
   };
 
   constructor(
     private readonly ikoTabService: IkoTabService,
     private readonly ikoApiService: IkoApiService,
     private readonly logger: NGXLogger
-  ) {}
+  ) {
+    this.ikoViewKey$ = this.ikoTabService.ikoViewKey$;
+    this.entryId$ = this.ikoTabService.entryId$;
+
+    this.widgets$ = combineLatest([this.ikoViewKey$, this.key$]).pipe(
+      switchMap(([ikoViewKey, key]) => this.ikoApiService.getIkoWidget(ikoViewKey, key))
+    );
+
+    this.widgetParams$ = combineLatest([
+      this.ikoViewKey$,
+      this.key$,
+      this.entryId$,
+    ]).pipe(
+      map(([ikoViewKey, tabKey, entryId]) => ({
+        ikoViewKey,
+        entryId,
+        tabKey,
+      })),
+      tap(widgets => {
+        this.logger.debug(`IKO widgets retrieved ${JSON.stringify(widgets)}`);
+        this.loading$.next(false);
+      })
+    );
+  }
 }

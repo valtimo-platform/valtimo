@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE, BLOB} from 'csp-header';
-import {UrlUtils} from '@valtimo/shared';
-import {authenticationKeycloak} from '../auth/keycloak-config';
+import { CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE, BLOB } from 'csp-header';
+import { UrlUtils } from '@valtimo/shared';
+import { authenticationKeycloak } from '../auth/keycloak-config';
 
 export const cspHeaderParamsDev: CSPHeaderParams = {
   directives: {
@@ -41,5 +41,6 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/',
       'https://fonts.googleapis.com',
     ],
+    'frame-src': [SELF, 'https:', 'http://localhost:*'],
   },
 };

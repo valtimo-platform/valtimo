@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule} from '@valtimo/components';
-import {LoadingModule} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
-import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { CarbonListModule } from '@valtimo/components';
+import { LoadingModule } from 'carbon-components-angular';
+import { combineLatest, filter, map, Observable, shareReplay, startWith, switchMap } from 'rxjs';
+import { CaseTabService, CaseWidgetsApiService } from '../../../../services';
 import {
   BasicWidget,
   WidgetComponentMap,
@@ -30,16 +30,17 @@ import {
   Widget,
   WidgetGroup,
 } from '@valtimo/layout';
-import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
-import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
-import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
-import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
-import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
-import {CaseWidgetMapComponent} from './components/map/case-widget-map.component';
-import {DocumentUpdatedSseEvent} from '../../../../models';
-import {SseService} from '@valtimo/sse';
-import {WidgetsService} from './widgets.service';
-import {isEqual} from 'lodash-es';
+import { CaseWidgetFieldComponent } from './components/field/case-widget-field.component';
+import { CaseWidgetCustomComponent } from './components/custom/case-widget-custom.component';
+import { CaseWidgetFormioComponent } from './components/formio/case-widget-formio.component';
+import { CaseWidgetTableComponent } from './components/table/case-widget-table.component';
+import { CaseWidgetCollectionComponent } from './components/collection/case-widget-collection.component';
+import { CaseWidgetMapComponent } from './components/map/case-widget-map.component';
+import { CaseWidgetIframeComponent } from './components/iframe/case-widget-iframe.component';
+import { DocumentUpdatedSseEvent } from '../../../../models';
+import { SseService } from '@valtimo/sse';
+import { WidgetsService } from './widgets.service';
+import { isEqual } from 'lodash';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -59,41 +60,11 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   @HostBinding('class.tab--no-background') private readonly _noBackground = true;
   @HostBinding('class.tab--no-min-height') private readonly _noMinHeight = true;
 
-  private readonly _documentId$ = this.route.params.pipe(
-    map(params => params?.documentId),
-    filter(documentId => !!documentId)
-  );
-
-  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-
-  private readonly _documentUpdates$ = combineLatest([
-    this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
-    this._documentId$,
-  ]).pipe(
-    filter(([event, documentId]) => event.documentId === documentId),
-    map(([event]) => event),
-    startWith<DocumentUpdatedSseEvent | null>(null)
-  );
-
-  private _previousWidgetConfiguration: BasicWidget[] | null = null;
-
-  private readonly _widgetConfiguration$ = combineLatest([
-    this._documentId$,
-    this._tabKey$,
-    this._documentUpdates$,
-  ]).pipe(
-    switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
-      return this.filterDuplicateConfigurations(
-        this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey),
-        documentUpdatedEvent
-      );
-    }),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
-
-  public readonly widgetGroups$: Observable<WidgetGroup[]> = this._widgetConfiguration$.pipe(
-    map(widgets => this.toCaseWidgetGroups(widgets))
-  );
+  private readonly _documentId$: Observable<string>;
+  private readonly _tabKey$: Observable<string>;
+  private readonly _documentUpdates$: Observable<DocumentUpdatedSseEvent | null>;
+  private readonly _widgetConfiguration$: Observable<BasicWidget[]>;
+  public readonly widgetGroups$: Observable<WidgetGroup[]>;
 
   public readonly widgetComponentMap: WidgetComponentMap = {
     [WidgetType.FIELDS]: CaseWidgetFieldComponent,
@@ -102,8 +73,11 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.TABLE]: CaseWidgetTableComponent,
     [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
+    [WidgetType.IFRAME]: CaseWidgetIframeComponent,
     [WidgetType.MAP]: CaseWidgetMapComponent,
   };
+
+  private _previousWidgetConfiguration: BasicWidget[] | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -111,7 +85,41 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     private readonly widgetsApiService: CaseWidgetsApiService,
     private readonly sseService: SseService,
     private readonly widgetsService: WidgetsService
-  ) {}
+  ) {
+    this._documentId$ = this.route.params.pipe(
+      map(params => params?.documentId),
+      filter(documentId => !!documentId)
+    );
+
+    this._tabKey$ = this.caseTabService.activeTabKey$;
+
+    this._documentUpdates$ = combineLatest([
+      this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
+      this._documentId$,
+    ]).pipe(
+      filter(([event, documentId]) => event.documentId === documentId),
+      map(([event]) => event),
+      startWith<DocumentUpdatedSseEvent | null>(null)
+    );
+
+    this._widgetConfiguration$ = combineLatest([
+      this._documentId$,
+      this._tabKey$,
+      this._documentUpdates$,
+    ]).pipe(
+      switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
+        return this.filterDuplicateConfigurations(
+          this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey),
+          documentUpdatedEvent
+        );
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.widgetGroups$ = this._widgetConfiguration$.pipe(
+      map(widgets => this.toCaseWidgetGroups(widgets))
+    );
+  }
 
   public ngOnInit(): void {
     this.caseTabService.disableTabHorizontalOverflow();
@@ -124,9 +132,9 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   private toCaseWidgetGroups(widgets: BasicWidget[]): WidgetGroup[] {
     const groups = widgets.reduce<WidgetGroup[]>((acc, widget) => {
       if (widget.type === WidgetType.DIVIDER) {
-        acc.push({divider: widget as DividerWidget, widgets: []});
+        acc.push({ divider: widget as DividerWidget, widgets: [] });
       } else {
-        if (acc.length === 0) acc.push({divider: null, widgets: []});
+        if (acc.length === 0) acc.push({ divider: null, widgets: [] });
         acc[acc.length - 1].widgets.push(widget as Widget);
       }
       return acc;

@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 // import {CaseWidgetType} from '@valtimo/case';
-import {Type} from '@angular/core';
+import { Type } from '@angular/core';
 
 import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementIframeComponent,
   WidgetManagementMapComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
-import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
-import {BasicWidget, WidgetType} from './widget.model';
-import {WidgetWizardTypeStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
-import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
-import {WidgetWizardStyleStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
-import {WidgetWizardContentStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
-import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
-import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
-import {WidgetWizardDensityStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
+import { WidgetManagementInteractiveTableComponent } from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
+import { BasicWidget, WidgetType } from './widget.model';
+import { WidgetWizardTypeStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
+import { WidgetWizardWidthStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
+import { WidgetWizardStyleStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
+import { WidgetWizardContentStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
+import { WidgetWizardDisplayConditionsStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
+import { WidgetManagementWidgetFormioComponent } from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
+import { WidgetWizardDensityStepComponent } from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
@@ -130,21 +131,28 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     type: WidgetType.MAP,
     component: WidgetManagementMapComponent,
   },
+  {
+    titleKey: 'widgetTabManagement.type.iframe.title',
+    descriptionKey: 'widgetTabManagement.type.iframe.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg', // Reusing angular icon for now
+    type: WidgetType.IFRAME,
+    component: WidgetManagementIframeComponent,
+  },
 ];
 
-const WIDGET_WIDTH_LABELS: {[key: number]: string} = {
+const WIDGET_WIDTH_LABELS: { [key: number]: string } = {
   1: 'widgetTabManagement.width.small.title',
   2: 'widgetTabManagement.width.medium.title',
   3: 'widgetTabManagement.width.large.title',
   4: 'widgetTabManagement.width.xtraLarge.title',
 };
 
-const WIDGET_STYLE_LABELS: {[key: string]: string} = {
+const WIDGET_STYLE_LABELS: { [key: string]: string } = {
   [WidgetStyle.DEFAULT]: 'widgetTabManagement.style.default.title',
   [WidgetStyle.HIGH_CONTRAST]: 'widgetTabManagement.style.highContrast.title',
 };
 
-const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
+const WIDGET_DENSITY_LABELS: { [key: string]: string } = {
   [WidgetDensity.DEFAULT]: 'widgetTabManagement.density.default.title',
   [WidgetDensity.COMPACT]: 'widgetTabManagement.density.compact.title',
 };

@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Type} from '@angular/core';
-import {Condition} from '@valtimo/shared';
+import { Type } from '@angular/core';
+import { Condition } from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
+  WidgetIframeContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
   WidgetTableContent,
 } from './widget-content.model';
-import {WidgetDisplayType} from './widget-display.model';
+import { WidgetDisplayType } from './widget-display.model';
 
 enum WidgetType {
   FIELDS = 'fields',
@@ -34,6 +35,7 @@ enum WidgetType {
   COLLECTION = 'collection',
   FORMIO = 'formio',
   DIVIDER = 'divider',
+  IFRAME = 'iframe',
   MAP = 'map',
 }
 
@@ -96,11 +98,6 @@ interface InteractiveTableWidget extends BasicWidget {
   properties: WidgetInteractiveTableContent;
 }
 
-interface InteractiveTableWidget extends BasicWidget {
-  type: WidgetType.INTERACTIVE_TABLE;
-  properties: WidgetInteractiveTableContent;
-}
-
 interface CustomWidget extends BasicWidget {
   type: WidgetType.CUSTOM;
   properties: WidgetCustomContent;
@@ -117,6 +114,11 @@ interface DividerWidget extends BasicWidget {
   type: WidgetType.DIVIDER;
 }
 
+interface IframeWidget extends BasicWidget {
+  type: WidgetType.IFRAME;
+  properties: WidgetIframeContent;
+}
+
 interface MapWidget extends BasicWidget {
   type: WidgetType.MAP;
   properties: WidgetMapContent;
@@ -130,6 +132,7 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
+  | IframeWidget
   | MapWidget;
 
 type WidgetWithUuid = Widget & {
@@ -226,6 +229,7 @@ export {
   CustomWidget,
   TableWidget,
   InteractiveTableWidget,
+  IframeWidget,
   MapWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,

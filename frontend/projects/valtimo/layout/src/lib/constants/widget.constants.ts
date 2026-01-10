@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import {WidgetComponentMap, WidgetType} from '../models';
+import { WidgetComponentMap, WidgetType } from '../models';
 import {
   WidgetCollectionComponent,
   WidgetCustomComponent,
   WidgetFieldComponent,
   WidgetFormioComponent,
+  WidgetIframeComponent,
   WidgetMapComponent,
   WidgetTableComponent,
 } from '../components';
-import {WidgetInteractiveTableComponent} from '../components/widget-interactive-table';
+import { WidgetInteractiveTableComponent } from '../components/widget-interactive-table';
 
 const WIDGET_WIDTH_1X = 320;
 const WIDGET_HEIGHT_1X = 200;
@@ -35,7 +36,8 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.TABLE]: WidgetTableComponent,
   [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
+  [WidgetType.IFRAME]: WidgetIframeComponent,
   [WidgetType.MAP]: WidgetMapComponent,
 };
 
-export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};
+export { WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP };

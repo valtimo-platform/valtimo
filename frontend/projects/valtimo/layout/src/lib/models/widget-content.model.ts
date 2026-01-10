@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {WidgetDisplayType} from './widget-display.model';
-import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
+import { WidgetDisplayType } from './widget-display.model';
+import { FieldsWidgetValue, GeoJsonSource, WidgetAction } from './widget.model';
 
 interface WidgetFieldsContent {
   columns: FieldsWidgetValue[][];
@@ -53,7 +53,7 @@ interface CollectionWidgetResolvedField {
 
 interface CollectionWidgetCardData {
   title: string;
-  fields: {[key: string]: string};
+  fields: { [key: string]: string };
   hidden?: boolean;
 }
 
@@ -71,11 +71,18 @@ interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstC
 
 interface WidgetCustomContent {
   componentKey: string;
-  componentValue: {[key: string]: string};
+  componentValue: { [key: string]: string };
 }
 
 interface WidgetFormioContent {
   formDefinitionName: string;
+}
+
+interface WidgetIframeContent {
+  url: string;
+  title: string;
+  height: number;
+  variables: Array<{ key: string; value: string }>;
 }
 
 interface WidgetMapContent {
@@ -89,6 +96,7 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
+  | WidgetIframeContent
   | WidgetMapContent;
 
 export {
@@ -99,6 +107,7 @@ export {
   WidgetTableContent,
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
+  WidgetIframeContent,
   WidgetMapContent,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,

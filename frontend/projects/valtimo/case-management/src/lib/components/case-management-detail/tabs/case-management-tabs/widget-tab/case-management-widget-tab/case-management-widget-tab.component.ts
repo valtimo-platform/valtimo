@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -22,10 +22,10 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {Edit16} from '@carbon/icons';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ApiTabItem} from '@valtimo/case';
+import { ActivatedRoute } from '@angular/router';
+import { Edit16 } from '@carbon/icons';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ApiTabItem } from '@valtimo/case';
 import {
   BreadcrumbService,
   PageHeaderService,
@@ -40,13 +40,13 @@ import {
   WidgetType,
   WidgetWizardService,
 } from '@valtimo/layout';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
-import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
+import { CaseManagementParams, getCaseManagementRouteParams } from '@valtimo/shared';
+import { ButtonModule, IconModule, IconService, TabsModule } from 'carbon-components-angular';
 import moment from 'moment/moment';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap } from 'rxjs';
 
-import {TabManagementService, CaseWidgetManagementApiService} from '../../../../../../services';
-import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
+import { TabManagementService, CaseWidgetManagementApiService } from '../../../../../../services';
+import { CaseManagementWidgetTabEditModalComponent } from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
@@ -71,8 +71,7 @@ import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widg
 })
 export class CaseManagementWidgetTabComponent
   extends ManagementWidgetDetailsComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+  implements OnInit, AfterViewInit, OnDestroy {
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
     tap(params => {
       this.tabManagementService.setParams(params);
@@ -80,7 +79,7 @@ export class CaseManagementWidgetTabComponent
     }),
     map(
       (params: CaseManagementParams | undefined) =>
-        params ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}
+        params ?? { caseDefinitionKey: '', caseDefinitionVersionTag: '' }
     )
   );
 
@@ -140,6 +139,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.FORMIO,
     WidgetType.TABLE,
     WidgetType.MAP,
+    WidgetType.IFRAME,
   ];
 
   constructor(
@@ -151,7 +151,7 @@ export class CaseManagementWidgetTabComponent
     private readonly tabManagementService: TabManagementService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private readonly caseWidgetManagementApiService: IWidgetManagementService<
-      CaseManagementParams & {key: string}
+      CaseManagementParams & { key: string }
     >,
     private readonly translateService: TranslateService,
     private readonly pageHeaderService: PageHeaderService

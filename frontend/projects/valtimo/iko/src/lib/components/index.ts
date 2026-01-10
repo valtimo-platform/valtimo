@@ -20,3 +20,4 @@ export * from './widget-collection';
 export * from './widget-formio';
 export * from './widget-field';
 export * from './widget-map';
+export * from './widget-iframe';
