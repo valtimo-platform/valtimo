@@ -32,7 +32,7 @@ import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, of, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, Subscription, throwError} from 'rxjs';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService} from '../../services';
 import {
@@ -41,7 +41,7 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {IconService} from 'carbon-components-angular';
 import {DocumentService} from '@valtimo/document';
 import {GlobalNotificationService} from '@valtimo/shared';
@@ -80,6 +80,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showTaskCompletedModal$ = new BehaviorSubject<boolean>(false);
   public readonly businessKey$ = new BehaviorSubject<string>('');
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
@@ -93,6 +94,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   private readonly _subscriptions = new Subscription();
+  private _isLocalCompletion = false;
 
   constructor(
     private readonly router: Router,
@@ -166,44 +168,57 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private openTaskUpdateSseEventSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.task$,
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-      ])
+      this.sseService
+        .getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE')
         .pipe(
-          filter(([task, event]) => task?.id === event.taskId),
-          switchMap(([task]) =>
+          withLatestFrom(this.task$),
+          filter(([event, task]) => !!task && task.id === event.taskId),
+          map(([event, task]) => ({
+            event,
+            task,
+            isLocal: this._isLocalCompletion,
+          })),
+          switchMap(({task, isLocal}) =>
             this.taskService.getTask(task!.id).pipe(
-              map(response => ({oldTask: task, newTask: response.task as Task})),
+              map(response => ({
+                oldTask: task!,
+                newTask: (response?.task as Task) ?? null,
+                isLocal,
+              })),
               catchError(err => {
                 if (err.status === 404) {
-                  return of({oldTask: task, newTask: null});
+                  return of({oldTask: task!, newTask: null, isLocal});
                 }
-                throw err;
+                return throwError(() => err);
               })
             )
-          )
+          ),
+          withLatestFrom(this.task$),
+          filter(([{oldTask}, currentTask]) => oldTask.id === currentTask?.id)
         )
-        .subscribe(({oldTask, newTask}) => {
+        .subscribe(([{oldTask, newTask, isLocal}]) => {
           if (!newTask) {
-            this.globalNotificationService.showNotification({
-              title: this.translateService.instant('taskDetail.completedNotificationTitle'),
-              content: this.translateService.instant('taskDetail.completedNotificationContent'),
-              type: 'info',
-            });
-            this.closeModal();
+            this.task$.next(null);
+            if (!isLocal) {
+              this.showTaskCompletedModal$.next(true);
+            }
           } else {
-            if (oldTask?.assignee !== newTask.assignee) {
+            if (oldTask!.assignee !== newTask.assignee && !isLocal) {
               const assigneeName =
                 newTask.valtimoAssignee?.fullName || newTask.assignee || 'someone';
               this.globalNotificationService.showToast({
                 title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
-                content: `${this.translateService.instant('taskDetail.assignedNotificationContent')} ${assigneeName}`,
+                content: `${this.translateService.instant(
+                  'taskDetail.assignedNotificationContent'
+                )} ${assigneeName}`,
                 type: 'info',
               });
             }
-            this.task$.next(newTask as Task);
+
+            this.task$.next(newTask);
           }
+
+          this._isLocalCompletion = false;
         })
     );
   }
@@ -247,7 +262,17 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public onFormSubmit(): void {
+    this._isLocalCompletion = true;
     this.formSubmit.emit();
+  }
+
+  public onSubmitting(submitting: boolean): void {
+    this._isLocalCompletion = submitting;
+  }
+
+  public onAssignmentOfTaskChanged(): void {
+    this._isLocalCompletion = true;
+    this.assignmentOfTaskChanged.emit();
   }
 
   public onShowModalEvent(): void {
@@ -256,7 +281,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public closeModal(): void {
     this.modalOpen$.next(false);
+    this.task$.next(null);
     this.taskIntermediateSaveService.setSubmission({});
+    this._isLocalCompletion = false;
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
   }
 

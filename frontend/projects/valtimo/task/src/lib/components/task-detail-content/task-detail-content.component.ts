@@ -95,7 +95,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
   public formCustomComponentDynamicContainer!: ViewContainerRef;
   @Input() public set task(value: Task | null) {
-    if (!value) return;
+    if (!value) {
+      this.task$.next(null);
+      this.taskInstanceId$.next(null);
+      return;
+    }
 
     if (this.taskInstanceId$.getValue() === value.id) {
       this.task$.next(value);
@@ -114,8 +118,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   }
   @Input() public set modalClosed(closed: boolean) {
     // save form flow data on modal closed
-    if (this.formFlow) this.formFlow.saveData();
-
+    if (this.formFlow && this.task$.getValue()) {
+      this.formFlow.saveData();
+    }
     if (closed) {
       this.closeModalEvent.emit();
     }
@@ -123,6 +128,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
+  @Output() public readonly submitting = new EventEmitter<boolean>();
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
@@ -211,6 +217,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
   public onSubmit(submission: FormioSubmission): void {
     if (submission.data) {
+      this.submitting.emit(true);
       this.taskIntermediateSaveService.setFormIoFormData(submission.data);
       this.formIoFormData$.next(submission.data);
     }
@@ -227,6 +234,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
                   this.completeTask(task);
                 },
                 error: errors => {
+                  this.submitting.emit(false);
                   this.form.showErrors(errors);
                 },
               });
@@ -240,6 +248,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public completeTask(task: Task | null): void {
     if (!task) return;
 
+    this.submitting.emit(true);
     this.globalNotificationService.showToast({
       title: `${task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`,
       type: 'success',

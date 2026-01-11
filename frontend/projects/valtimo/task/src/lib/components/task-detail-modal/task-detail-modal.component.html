@@ -84,6 +84,7 @@
         [taskAndProcessLink]="taskAndProcessLink$ | async"
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
+        (submitting)="onSubmitting($event)"
         (closeModalEvent)="closeModal()"
       ></valtimo-task-detail-content>
     } @else {
@@ -91,6 +92,7 @@
         [task]="task$ | async"
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
+        (submitting)="onSubmitting($event)"
         (closeModalEvent)="closeModal()"
       ></valtimo-task-detail-content>
     }
@@ -107,6 +109,14 @@
   contentTranslationKey="formManagement.intermediateSave.clearConfirm"
 ></valtimo-confirmation-modal>
 
+<valtimo-confirmation-modal
+  [showModalSubject$]="showTaskCompletedModal$"
+  (confirmEvent)="closeModal()"
+  confirmButtonTextTranslationKey="interface.close"
+  titleTranslationKey="taskDetail.completedNotificationTitle"
+  contentTranslationKey="taskDetail.completedNotificationContent"
+></valtimo-confirmation-modal>
+
 <ng-template #assignUserToTask>
   <div
     *ngIf="{
@@ -121,7 +131,7 @@
       [taskId]="obs.task.id"
       [assigneeId]="obs.task.assignee"
       [canAssignUserToTask]="obs.canAssignUserToTask"
-      (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+      (assignmentOfTaskChanged)="onAssignmentOfTaskChanged()"
     ></valtimo-assign-user-to-task>
 
     <valtimo-set-task-due-date
