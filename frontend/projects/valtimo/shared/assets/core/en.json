@@ -369,6 +369,9 @@
   },
   "settings": {
     "title": "Settings",
+    "tabs": {
+      "ui": "UI"
+    },
     "language": {
       "title": "Language",
       "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
@@ -396,6 +399,21 @@
       "collapsibleMenu": "Navigation bar always collapsible",
       "compactMode": "Compact mode",
       "showUserName": "Show name of user"
+    },
+    "logo": {
+      "title": "Logo",
+      "description": "Upload a custom logo to replace the default logo in the header.",
+      "upload": "Upload logo",
+      "uploading": "Uploading...",
+      "delete": "Delete logo",
+      "current": "Current logo",
+      "noCustomLogo": "No custom logo set. Using default logo.",
+      "uploadSuccess": "Logo uploaded successfully.",
+      "uploadError": "Failed to upload logo.",
+      "deleteSuccess": "Logo deleted successfully.",
+      "deleteError": "Failed to delete logo.",
+      "fileTooLarge": "File is too large. Maximum size is 500KB.",
+      "requirements": "Supported formats: PNG, JPG, SVG. Maximum file size: 500KB."
     }
   },
   "decisions": {

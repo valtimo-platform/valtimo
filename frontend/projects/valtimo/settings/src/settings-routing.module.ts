@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,41 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {ROLE_ADMIN} from '@valtimo/shared';
+import {AuthGuardService} from '@valtimo/security';
+import {SettingsComponent} from './lib/components/settings/settings.component';
 
-.user-icon {
-  font-size: 30px;
-}
+const routes: Routes = [
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Settings', roles: [ROLE_ADMIN]},
+  },
+];
 
-.be-toggle-right-sidebar {
-  display: flex;
-}
-
-.user-full-name {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  margin-inline-end: var(--v-top-bar-user-name-spacing);
-  flex-shrink: 0;
-}
-
-::ng-deep .cds--header__name {
-  display: none !important;
-}
-
-.logo-link {
-  height: 100%;
-  padding-left: 16px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-link--large-margin {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-image {
-  height: 100%;
-  object-fit: contain;
-}
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+})
+export class SettingsRoutingModule {}

@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="settings-container">
+  <cds-tabs class="settings-tabs" type="inline">
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [active]="true"
+      [heading]="'settings.tabs.ui' | translate"
+    >
+      <div class="tab-content">
+        <h4 class="section-title">{{ 'settings.logo.title' | translate }}</h4>
+        <p class="section-description">{{ 'settings.logo.description' | translate }}</p>
+
+        <ng-container *ngIf="successMessage$ | async as successMessage">
+          <cds-notification
+            [notificationObj]="{
+              type: 'success',
+              title: successMessage,
+              lowContrast: true,
+              showClose: true
+            }"
+            (close)="successMessage$.next(null)"
+          ></cds-notification>
+        </ng-container>
+
+        <ng-container *ngIf="errorMessage$ | async as errorMessage">
+          <cds-notification
+            [notificationObj]="{
+              type: 'error',
+              title: errorMessage,
+              lowContrast: true,
+              showClose: true
+            }"
+            (close)="errorMessage$.next(null)"
+          ></cds-notification>
+        </ng-container>
+
+        <div class="logo-preview-container" *ngIf="!(loading$ | async)">
+          <div class="logo-preview">
+            <ng-container *ngIf="currentLogo$ | async as logo; else defaultLogo">
+              <img [src]="'data:image/png;base64,' + logo" alt="Current logo" class="logo-image" />
+            </ng-container>
+            <ng-template #defaultLogo>
+              <div class="no-logo-placeholder">
+                <span>{{ 'settings.logo.noCustomLogo' | translate }}</span>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="logo-actions" *ngIf="!(loading$ | async)">
+          <input
+            #fileInput
+            type="file"
+            accept=".png,.svg,.jpg,.jpeg"
+            (change)="onFileSelected($event)"
+            [disabled]="uploading$ | async"
+            hidden
+          />
+          <button
+            cdsButton="primary"
+            [disabled]="uploading$ | async"
+            (click)="fileInput.click()"
+          >
+            <span *ngIf="!(uploading$ | async)">{{ 'settings.logo.upload' | translate }}</span>
+            <span *ngIf="uploading$ | async">{{ 'settings.logo.uploading' | translate }}</span>
+          </button>
+
+          <button
+            cdsButton="danger"
+            *ngIf="currentLogo$ | async"
+            [disabled]="uploading$ | async"
+            (click)="deleteLogo()"
+          >
+            {{ 'settings.logo.delete' | translate }}
+          </button>
+        </div>
+
+        <p class="file-requirements">{{ 'settings.logo.requirements' | translate }}</p>
+      </div>
+    </cds-tab>
+  </cds-tabs>
+</div>

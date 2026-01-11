@@ -22,8 +22,9 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {KeycloakService} from 'keycloak-angular';
-import {map, Observable, of, switchMap} from 'rxjs';
+import {catchError, map, Observable, of, shareReplay, switchMap} from 'rxjs';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
@@ -44,16 +45,31 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   @ViewChild('headerVcr', {static: true, read: ViewContainerRef})
   private readonly _headerVcr!: ViewContainerRef;
 
-  public readonly logoBase64$: Observable<SafeResourceUrl> =
-    this.cdsThemeService.currentTheme$.pipe(
-      map(currentTheme => {
-        const base64logo = this.getBase64Logo(this.configService.config, currentTheme);
-
-        return this.sanitizer.bypassSecurityTrustResourceUrl(
-          `${base64logo.isSvg ? 'data:image/svg+xml;base64' : 'data:image/png;base64'}, ${base64logo.base64string}`
-        );
-      })
+  private readonly customLogo$: Observable<string | null> = this.http
+    .get<{logo: string}>(`${this.configService.config.valtimoApi.endpointUri}v1/settings/logo`)
+    .pipe(
+      map(response => response?.logo || null),
+      catchError(() => of(null)),
+      shareReplay(1)
     );
+
+  public readonly logoBase64$: Observable<SafeResourceUrl> = this.customLogo$.pipe(
+    switchMap(customLogo => {
+      if (customLogo) {
+        return of(
+          this.sanitizer.bypassSecurityTrustResourceUrl(`data:image/png;base64,${customLogo}`)
+        );
+      }
+      return this.cdsThemeService.currentTheme$.pipe(
+        map(currentTheme => {
+          const base64logo = this.getBase64Logo(this.configService.config, currentTheme);
+          return this.sanitizer.bypassSecurityTrustResourceUrl(
+            `${base64logo.isSvg ? 'data:image/svg+xml;base64' : 'data:image/png;base64'}, ${base64logo.base64string}`
+          );
+        })
+      );
+    })
+  );
 
   public readonly userFullName$ = of(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
@@ -69,6 +85,7 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   public readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
 
   constructor(
+    private readonly http: HttpClient,
     private readonly keyCloakService: KeycloakService,
     private readonly configService: ConfigService,
     private readonly iconService: IconService,

@@ -60,5 +60,6 @@
     <include file="changelog/20250812-operaton-migration.xml" relativeToChangelogFile="true"/>
     <include file="camunda/20251023-operaton-upgrade-1-0-0-rc-1-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251113-drop-applicationproperties.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260111-add-application-settings-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

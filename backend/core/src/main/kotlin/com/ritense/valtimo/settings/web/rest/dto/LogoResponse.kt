@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,40 +14,8 @@
  * limitations under the License.
  */
 
-.user-icon {
-  font-size: 30px;
-}
+package com.ritense.valtimo.settings.web.rest.dto
 
-.be-toggle-right-sidebar {
-  display: flex;
-}
-
-.user-full-name {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  margin-inline-end: var(--v-top-bar-user-name-spacing);
-  flex-shrink: 0;
-}
-
-::ng-deep .cds--header__name {
-  display: none !important;
-}
-
-.logo-link {
-  height: 100%;
-  padding-left: 16px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-link--large-margin {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-image {
-  height: 100%;
-  object-fit: contain;
-}
+data class LogoResponse(
+    val logo: String
+)

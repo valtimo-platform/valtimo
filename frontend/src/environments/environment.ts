@@ -151,6 +151,7 @@ export const environment: ValtimoConfig = {
           {link: ['/logging'], title: 'Logs', sequence: 16},
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
           {link: ['/process-migration'], title: 'Process migration', sequence: 18},
+          {link: ['/settings'], title: 'Settings', sequence: 19},
 
           {
             title: 'Valtimo test tools',

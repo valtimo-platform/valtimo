@@ -122,6 +122,7 @@ import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
+import {SettingsModule} from '@valtimo/settings';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {IkoModule} from '@valtimo/iko';
@@ -205,6 +206,7 @@ export function tabsFactory() {
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
+    SettingsModule,
     FormManagementModule,
     BpmnJsDiagramModule,
     MenuModule,

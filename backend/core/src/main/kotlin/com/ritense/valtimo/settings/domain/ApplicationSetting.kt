@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,40 +14,21 @@
  * limitations under the License.
  */
 
-.user-icon {
-  font-size: 30px;
-}
+package com.ritense.valtimo.settings.domain
 
-.be-toggle-right-sidebar {
-  display: flex;
-}
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 
-.user-full-name {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  margin-inline-end: var(--v-top-bar-user-name-spacing);
-  flex-shrink: 0;
-}
+@Entity
+@Table(name = "application_setting")
+data class ApplicationSetting(
 
-::ng-deep .cds--header__name {
-  display: none !important;
-}
+    @Id
+    @Column(name = "setting_key", updatable = false, nullable = false)
+    val key: String,
 
-.logo-link {
-  height: 100%;
-  padding-left: 16px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-link--large-margin {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.logo-image {
-  height: 100%;
-  object-fit: contain;
-}
+    @Column(name = "setting_value", columnDefinition = "TEXT")
+    val value: String?
+)

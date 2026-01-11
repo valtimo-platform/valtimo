@@ -372,6 +372,9 @@
   },
   "settings": {
     "title": "Instellingen",
+    "tabs": {
+      "ui": "UI"
+    },
     "language": {
       "title": "Taal",
       "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
@@ -399,6 +402,21 @@
       "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "compactMode": "Compacte modus",
       "showUserName": "Toon naam van gebruiker"
+    },
+    "logo": {
+      "title": "Logo",
+      "description": "Upload een aangepast logo om het standaard logo in de header te vervangen.",
+      "upload": "Logo uploaden",
+      "uploading": "Uploaden...",
+      "delete": "Logo verwijderen",
+      "current": "Huidig logo",
+      "noCustomLogo": "Geen aangepast logo ingesteld. Standaard logo wordt gebruikt.",
+      "uploadSuccess": "Logo succesvol geüpload.",
+      "uploadError": "Logo uploaden is mislukt.",
+      "deleteSuccess": "Logo succesvol verwijderd.",
+      "deleteError": "Logo verwijderen is mislukt.",
+      "fileTooLarge": "Bestand is te groot. Maximale grootte is 500KB.",
+      "requirements": "Ondersteunde formaten: PNG, JPG, SVG. Maximale bestandsgrootte: 500KB."
     }
   },
   "decisions": {
