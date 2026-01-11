@@ -14,25 +14,9 @@
  * limitations under the License.
  */
 
-import {Observable} from 'rxjs';
+package com.ritense.valtimo.settings.web.rest.dto
 
-enum IncludeFunction {
-  ObjectManagementEnabled,
-  CaseMigrationEnabled,
-}
-
-interface MenuItem {
-  title: string;
-  sequence: number;
-  id?: string;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Observable<number>;
-  includeFunction?: IncludeFunction;
-}
-
-export {MenuItem, IncludeFunction};
+data class BetaFeatureRequest(
+    val featureKey: String,
+    val enabled: Boolean
+)

@@ -32,8 +32,11 @@ class SettingsHttpSecurityConfigurer : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers(antMatcher(GET, "/api/v1/settings/logo")).permitAll()
+                    .requestMatchers(antMatcher(GET, "/api/v1/settings/beta-features")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/management/v1/settings/logo")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/settings/logo")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/settings/beta-features")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/settings/beta-features")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

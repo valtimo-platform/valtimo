@@ -31,6 +31,7 @@ class ApplicationSettingService(
 
     companion object {
         const val LOGO_KEY = "application.logo"
+        const val BETA_FEATURE_PREFIX = "beta.feature."
     }
 
     @Transactional(readOnly = true)
@@ -50,5 +51,29 @@ class ApplicationSettingService(
 
     fun deleteLogo() {
         applicationSettingRepository.deleteById(LOGO_KEY)
+    }
+
+    @Transactional(readOnly = true)
+    fun getBetaFeatures(): Map<String, Boolean> {
+        return applicationSettingRepository.findAll()
+            .filter { it.key.startsWith(BETA_FEATURE_PREFIX) }
+            .associate {
+                it.key.removePrefix(BETA_FEATURE_PREFIX) to (it.value?.toBoolean() ?: false)
+            }
+    }
+
+    @Transactional(readOnly = true)
+    fun isBetaFeatureEnabled(featureKey: String): Boolean {
+        return applicationSettingRepository.findById(BETA_FEATURE_PREFIX + featureKey)
+            .map { it.value?.toBoolean() ?: false }
+            .orElse(false)
+    }
+
+    fun setBetaFeature(featureKey: String, enabled: Boolean) {
+        val setting = ApplicationSetting(
+            key = BETA_FEATURE_PREFIX + featureKey,
+            value = enabled.toString()
+        )
+        applicationSettingRepository.save(setting)
     }
 }

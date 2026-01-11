@@ -93,5 +93,66 @@
         <p class="file-requirements">{{ 'settings.logo.requirements' | translate }}</p>
       </div>
     </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [heading]="'settings.tabs.betaFeatures' | translate"
+    >
+      <div class="tab-content beta-tab-content">
+        <div class="beta-main-content">
+          <h4 class="section-title">{{ 'settings.betaFeatures.title' | translate }}</h4>
+          <p class="section-description">{{ 'settings.betaFeatures.description' | translate }}</p>
+
+          <ng-container *ngIf="betaSuccessMessage$ | async as successMessage">
+            <cds-notification
+              [notificationObj]="{
+                type: 'success',
+                title: successMessage,
+                lowContrast: true,
+                showClose: true
+              }"
+              (close)="betaSuccessMessage$.next(null)"
+            ></cds-notification>
+          </ng-container>
+
+          <ng-container *ngIf="betaErrorMessage$ | async as errorMessage">
+            <cds-notification
+              [notificationObj]="{
+                type: 'error',
+                title: errorMessage,
+                lowContrast: true,
+                showClose: true
+              }"
+              (close)="betaErrorMessage$.next(null)"
+            ></cds-notification>
+          </ng-container>
+
+          <div class="beta-features-list" *ngIf="!(betaLoading$ | async)">
+            <div class="beta-feature-item">
+              <div class="beta-feature-info">
+                <span class="beta-feature-title">{{ 'settings.betaFeatures.caseMigration.title' | translate }}</span>
+                <span class="beta-feature-description">{{ 'settings.betaFeatures.caseMigration.description' | translate }}</span>
+              </div>
+              <cds-toggle
+                [checked]="(betaFeatures$ | async)?.['caseMigration'] ?? false"
+                (checkedChange)="onBetaFeatureToggle('caseMigration', $event)"
+                [disabled]="betaSaving$ | async"
+              ></cds-toggle>
+            </div>
+          </div>
+        </div>
+
+        <div class="beta-info-panel">
+          <h5 class="beta-info-title">{{ 'settings.betaFeatures.infoPanel.title' | translate }}</h5>
+          <p class="beta-info-text">{{ 'settings.betaFeatures.infoPanel.intro' | translate }}</p>
+          <ul class="beta-info-list">
+            <li>{{ 'settings.betaFeatures.infoPanel.warning1' | translate }}</li>
+            <li>{{ 'settings.betaFeatures.infoPanel.warning2' | translate }}</li>
+            <li>{{ 'settings.betaFeatures.infoPanel.warning3' | translate }}</li>
+          </ul>
+          <p class="beta-info-text">{{ 'settings.betaFeatures.infoPanel.outro' | translate }}</p>
+        </div>
+      </div>
+    </cds-tab>
   </cds-tabs>
 </div>

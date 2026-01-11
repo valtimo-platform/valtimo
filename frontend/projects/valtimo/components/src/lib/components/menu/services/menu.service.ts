@@ -153,6 +153,13 @@ export class MenuService implements OnDestroy {
           this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
       }
 
+      menuItem.children?.forEach(child => {
+        if (child.includeFunction) {
+          this.includeFunctionObservables[child.title] =
+            this.menuIncludeService.getIncludeFunction(child.includeFunction);
+        }
+      });
+
       menuItem.show = true;
 
       if (!menuItem.roles || menuItem.roles.some(role => userRoles.includes(role))) {

@@ -18,6 +18,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {PageTitleService} from '@valtimo/components';
+import {MenuIncludeService} from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,
@@ -25,9 +26,10 @@ import {
   NotificationModule,
   TabsModule,
   TilesModule,
+  ToggleModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, take} from 'rxjs';
-import {SettingsApiService} from '../../services';
+import {BetaFeatures, SettingsApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-settings',
@@ -44,6 +46,7 @@ import {SettingsApiService} from '../../services';
     NotificationModule,
     TabsModule,
     TilesModule,
+    ToggleModule,
   ],
   providers: [SettingsApiService],
 })
@@ -54,16 +57,24 @@ export class SettingsComponent implements OnInit {
   public readonly successMessage$ = new BehaviorSubject<string | null>(null);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
 
+  public readonly betaLoading$ = new BehaviorSubject<boolean>(true);
+  public readonly betaFeatures$ = new BehaviorSubject<BetaFeatures>({});
+  public readonly betaSaving$ = new BehaviorSubject<boolean>(false);
+  public readonly betaSuccessMessage$ = new BehaviorSubject<string | null>(null);
+  public readonly betaErrorMessage$ = new BehaviorSubject<string | null>(null);
+
   private readonly MAX_FILE_SIZE = 500 * 1024; // 500KB
 
   constructor(
     private readonly settingsApiService: SettingsApiService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly menuIncludeService: MenuIncludeService
   ) {}
 
   public ngOnInit(): void {
     this.pageTitleService.setCustomPageTitle('Settings');
     this.loadCurrentLogo();
+    this.loadBetaFeatures();
   }
 
   public onFileSelected(event: Event): void {
@@ -160,5 +171,49 @@ export class SettingsComponent implements OnInit {
   private clearMessages(): void {
     this.successMessage$.next(null);
     this.errorMessage$.next(null);
+  }
+
+  private loadBetaFeatures(): void {
+    this.betaLoading$.next(true);
+
+    this.settingsApiService
+      .getBetaFeatures()
+      .pipe(take(1))
+      .subscribe({
+        next: features => {
+          this.betaFeatures$.next(features);
+          this.betaLoading$.next(false);
+        },
+        error: () => {
+          this.betaLoading$.next(false);
+        },
+      });
+  }
+
+  public onBetaFeatureToggle(featureKey: string, enabled: boolean): void {
+    this.betaSaving$.next(true);
+    this.clearBetaMessages();
+
+    this.settingsApiService
+      .setBetaFeature(featureKey, enabled)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          const currentFeatures = this.betaFeatures$.getValue();
+          this.betaFeatures$.next({...currentFeatures, [featureKey]: enabled});
+          this.betaSuccessMessage$.next(enabled ? 'Feature enabled' : 'Feature disabled');
+          this.betaSaving$.next(false);
+          this.menuIncludeService.refreshBetaFeatures();
+        },
+        error: () => {
+          this.betaErrorMessage$.next('Failed to update feature');
+          this.betaSaving$.next(false);
+        },
+      });
+  }
+
+  private clearBetaMessages(): void {
+    this.betaSuccessMessage$.next(null);
+    this.betaErrorMessage$.next(null);
   }
 }

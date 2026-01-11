@@ -370,7 +370,8 @@
   "settings": {
     "title": "Settings",
     "tabs": {
-      "ui": "UI"
+      "ui": "UI",
+      "betaFeatures": "Beta features"
     },
     "language": {
       "title": "Language",
@@ -414,6 +415,22 @@
       "deleteError": "Failed to delete logo.",
       "fileTooLarge": "File is too large. Maximum size is 500KB.",
       "requirements": "Supported formats: PNG, JPG, SVG. Maximum file size: 500KB."
+    },
+    "betaFeatures": {
+      "title": "Beta features",
+      "description": "Enable or disable beta features. These features are still in development and may not work as expected.",
+      "caseMigration": {
+        "title": "Case migration",
+        "description": "Migrate cases between different case definition versions."
+      },
+      "infoPanel": {
+        "title": "Beta Features",
+        "intro": "Beta features provide early access to new functionality that is still in development. Please consider the following when enabling:",
+        "warning1": "These features may contain bugs or affect stability. Use in critical environments is not recommended.",
+        "warning2": "Functionality, settings and APIs may change or be removed at any time based on feedback and test results.",
+        "warning3": "No guarantees are given on the operation or support of these features.",
+        "outro": "By enabling a feature, you help validate new technology. Feedback about bugs or improvements is always welcome."
+      }
     }
   },
   "decisions": {

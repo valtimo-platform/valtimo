@@ -373,7 +373,8 @@
   "settings": {
     "title": "Instellingen",
     "tabs": {
-      "ui": "UI"
+      "ui": "UI",
+      "betaFeatures": "Beta functies"
     },
     "language": {
       "title": "Taal",
@@ -417,6 +418,22 @@
       "deleteError": "Logo verwijderen is mislukt.",
       "fileTooLarge": "Bestand is te groot. Maximale grootte is 500KB.",
       "requirements": "Ondersteunde formaten: PNG, JPG, SVG. Maximale bestandsgrootte: 500KB."
+    },
+    "betaFeatures": {
+      "title": "Beta functies",
+      "description": "Schakel beta functies in of uit. Deze functies zijn nog in ontwikkeling en werken mogelijk niet zoals verwacht.",
+      "caseMigration": {
+        "title": "Dossiermigratie",
+        "description": "Migreer dossiers tussen verschillende dossiertype versies."
+      },
+      "infoPanel": {
+        "title": "Beta Features",
+        "intro": "Beta-features bieden vroegtijdige toegang tot nieuwe functionaliteiten die nog in ontwikkeling zijn. Houd bij het activeren rekening met het volgende:",
+        "warning1": "Deze functies kunnen bugs bevatten of de stabiliteit beïnvloeden. Gebruik in kritieke omgevingen wordt afgeraden.",
+        "warning2": "Functionaliteiten, instellingen en API's kunnen op elk moment wijzigen of worden verwijderd op basis van feedback en testresultaten.",
+        "warning3": "Er worden geen garanties gegeven op de werking of ondersteuning van deze functies.",
+        "outro": "Door een feature in te schakelen, help je bij het valideren van nieuwe technologie. Feedback over bugs of verbeteringen is altijd welkom."
+      }
     }
   },
   "decisions": {

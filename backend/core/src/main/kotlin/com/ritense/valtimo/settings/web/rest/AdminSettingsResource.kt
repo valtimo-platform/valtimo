@@ -19,10 +19,12 @@ package com.ritense.valtimo.settings.web.rest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.settings.service.ApplicationSettingService
+import com.ritense.valtimo.settings.web.rest.dto.BetaFeatureRequest
 import com.ritense.valtimo.settings.web.rest.dto.LogoUploadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -44,5 +46,17 @@ class AdminSettingsResource(
     fun deleteLogo(): ResponseEntity<Void> {
         applicationSettingService.deleteLogo()
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/v1/settings/beta-features")
+    fun getBetaFeatures(): ResponseEntity<Map<String, Boolean>> {
+        val features = applicationSettingService.getBetaFeatures()
+        return ResponseEntity.ok(features)
+    }
+
+    @PostMapping("/v1/settings/beta-features")
+    fun setBetaFeature(@RequestBody request: BetaFeatureRequest): ResponseEntity<Void> {
+        applicationSettingService.setBetaFeature(request.featureKey, request.enabled)
+        return ResponseEntity.ok().build()
     }
 }

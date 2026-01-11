@@ -23,6 +23,10 @@ interface LogoResponse {
   logo: string;
 }
 
+export interface BetaFeatures {
+  [key: string]: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -60,5 +64,18 @@ export class SettingsApiService {
 
   public deleteLogo(): Observable<void> {
     return this.http.delete<void>(`${this.valtimoEndpointUri}management/v1/settings/logo`);
+  }
+
+  public getBetaFeatures(): Observable<BetaFeatures> {
+    return this.http.get<BetaFeatures>(`${this.valtimoEndpointUri}v1/settings/beta-features`).pipe(
+      catchError(() => of({}))
+    );
+  }
+
+  public setBetaFeature(featureKey: string, enabled: boolean): Observable<void> {
+    return this.http.post<void>(`${this.valtimoEndpointUri}management/v1/settings/beta-features`, {
+      featureKey,
+      enabled,
+    });
   }
 }

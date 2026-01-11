@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
+import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {IncludeFunction, ValtimoConfig} from '../models';
 import {ConfigService} from './config.service';
-import {Observable, of} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap} from 'rxjs';
+
+interface BetaFeatures {
+  [key: string]: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class MenuIncludeService {
   private valtimoConfig!: ValtimoConfig;
+  private readonly refreshBetaFeatures$ = new BehaviorSubject<void>(undefined);
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {
     this.valtimoConfig = this.configService.config;
   }
 
@@ -33,8 +42,26 @@ export class MenuIncludeService {
     switch (includeFunction) {
       case IncludeFunction.ObjectManagementEnabled:
         return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement || true);
+      case IncludeFunction.CaseMigrationEnabled:
+        return this.getBetaFeatures().pipe(map(features => features['caseMigration'] ?? false));
       default:
         return of(true);
     }
+  }
+
+  refreshBetaFeatures(): void {
+    this.refreshBetaFeatures$.next();
+  }
+
+  private getBetaFeatures(): Observable<BetaFeatures> {
+    return this.refreshBetaFeatures$.pipe(
+      switchMap(() =>
+        this.http
+          .get<BetaFeatures>(
+            `${this.valtimoConfig.valtimoApi.endpointUri}v1/settings/beta-features`
+          )
+          .pipe(catchError(() => of({})))
+      )
+    );
   }
 }

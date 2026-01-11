@@ -41,4 +41,10 @@ class SettingsResource(
             ResponseEntity.noContent().build()
         }
     }
+
+    @GetMapping("/v1/settings/beta-features")
+    fun getBetaFeatures(): ResponseEntity<Map<String, Boolean>> {
+        val features = applicationSettingService.getBetaFeatures()
+        return ResponseEntity.ok(features)
+    }
 }
