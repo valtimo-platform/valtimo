@@ -67,14 +67,15 @@ import {filter, map} from 'rxjs/operators';
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
-  private _taskId;
+  private _taskId!: string;
   @Input() public set taskId(value: string) {
     if (this._taskId === value) return;
     this._taskId = value;
+    this.resetState();
     this.fetchCandidateUsers(value);
   }
 
-  @Input() public readonly assigneeId: string;
+  @Input() public readonly assigneeId!: string;
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
 
   public readonly canAssignUserToTaskSet$ = new BehaviorSubject<boolean>(false);
@@ -101,13 +102,13 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public readonly candidateUsersForTask$ = combineLatest([
     this._candidateUsersForTask$,
     this._selectedUserId$,
-  ]).pipe(map(([users, selectedUserId]) => this.mapUsersForDropdown(users, selectedUserId)));
+  ]).pipe(map(([users, selectedUserId]) => this.mapUsersForDropdown(users ?? [], selectedUserId!)));
 
   public readonly mouseIsOverAssignee$ = new BehaviorSubject<boolean>(false);
   public readonly open$ = new Subject<boolean>();
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
 
-  public readonly toggletipTheme$ = this.cdsThemeService.currentTheme$;
+  public readonly toggletipTheme$: Observable<any>;
 
   private readonly _subscriptions = new Subscription();
 
@@ -119,6 +120,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     private readonly cdsThemeService: CdsThemeService
   ) {
     this.iconService.registerAll([UserFollow16]);
+    this.toggletipTheme$ = this.cdsThemeService.currentTheme$;
   }
 
   public ngOnInit(): void {
@@ -195,7 +197,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public onSubmitButtonClick(): void {
-    this.assignTask(this._selectedUserId$.getValue());
+    this.assignTask(this._selectedUserId$.getValue()!);
   }
   public onUserSelect(event: ListItem): void {
     if (!event?.id) return;
@@ -205,6 +207,12 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public clear(): void {
     this.assignedIdOnServer$.next(null);
     this._selectedUserId$.next(null);
+    this._assignedUserFullName$.next(this.getAssignedUserName([], null!));
+  }
+
+  private resetState(): void {
+    this._candidateUsersForTask$.next(undefined);
+    this.clear();
   }
 
   private mapUsersForDropdown(users: NamedUser[], selectedUserId: string): ListItem[] {
@@ -246,13 +254,11 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe(() => {
         this.taskService.getCandidateUsers(taskId).subscribe(candidateUsers => {
           this._candidateUsersForTask$.next(candidateUsers);
-          if (this.assigneeId) {
-            this.assignedIdOnServer$.next(this.assigneeId);
-            this._selectedUserId$.next(this.assigneeId);
-            this._assignedUserFullName$.next(
-              this.getAssignedUserName(candidateUsers, this.assigneeId)
-            );
-          }
+          this.assignedIdOnServer$.next(this.assigneeId || null);
+          this._selectedUserId$.next(this.assigneeId || null);
+          this._assignedUserFullName$.next(
+            this.getAssignedUserName(candidateUsers, this.assigneeId)
+          );
           this.enable();
         });
       });

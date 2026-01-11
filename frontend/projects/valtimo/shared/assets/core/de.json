@@ -37,9 +37,18 @@
       "confirm": "Seite Tab"
     },
     "noResults": {
-      "ALL": {"description": "Hier gibt es nichts zu tun.", "title": "Keine Cases gefunden"},
-      "MINE": {"description": "Kurze Pause.", "title": "Es sind Ihnen keine Cases zugewiesen"},
-      "OPEN": {"description": "Kommen Sie später wieder.", "title": "Alle cases wurden zugewiesen"},
+      "ALL": {
+        "description": "Hier gibt es nichts zu tun.",
+        "title": "Keine Cases gefunden"
+      },
+      "MINE": {
+        "description": "Kurze Pause.",
+        "title": "Es sind Ihnen keine Cases zugewiesen"
+      },
+      "OPEN": {
+        "description": "Kommen Sie später wieder.",
+        "title": "Alle cases wurden zugewiesen"
+      },
       "search": {
         "description": "Es sind keine Dateien vorhanden, die Ihren Suchkriterien entsprechen.",
         "title": "Keine Cases gefunden"
@@ -54,8 +63,14 @@
       "totalItem": "{{start}}-{{end}} von {{total}} Case",
       "totalItems": "{{start}}-{{end}} von {{total}} Cases"
     },
-    "select": {"single": "1 case ausgewählt", "multiple": "{{count}} cases ausgewählt"},
-    "title": {"single": "Case", "plural": "Cases"},
+    "select": {
+      "single": "1 case ausgewählt",
+      "multiple": "{{count}} cases ausgewählt"
+    },
+    "title": {
+      "single": "Case",
+      "plural": "Cases"
+    },
     "tabs": {
       "noResults": "Es sind keine Tabs konfiguriert",
       "noResultsDescription": "Für diesen Casetyp sind keine Tabs konfiguriert.",
@@ -75,7 +90,10 @@
       "componentNotFound": "Tab-Komponente nicht gefunden",
       "componentNotFoundMessage": "Für diese Registerkarte ist keine Komponente verfügbar. Wenden Sie sich an den Systemadministrator."
     },
-    "forms": {"globalSearchPlaceHolder": "Alles", "referenceNumberPlaceHolder": "Referenz-Nummer"},
+    "forms": {
+      "globalSearchPlaceHolder": "Alles",
+      "referenceNumberPlaceHolder": "Referenz-Nummer"
+    },
     "sendEmailExtension": {
       "buttonText": "E-Mail senden",
       "title": "Eine E-Mail senden",
@@ -101,13 +119,17 @@
       "title": "Titel",
       "noFormDefinitionComponent": "Für dieses Objekt konnte keine Formulardefinition gefunden werden",
       "noObjectType": "Keine Objekte für diesen Objekttyp gefunden.",
-      "objectType": {"viewObject": "Objekt ansehen"}
+      "objectType": {
+        "viewObject": "Objekt ansehen"
+      }
     },
     "notes": {
       "addNote": "Notiz hinzufügen",
       "modifyNote": "Notiz bearbeiten",
       "tableItemsText": "Notizen",
-      "input": {"content": "Notiz"},
+      "input": {
+        "content": "Notiz"
+      },
       "deleteConfirmation": {
         "title": "Notiz löschen",
         "description": "Möchten Sie diese Notiz wirklich löschen?",
@@ -162,7 +184,10 @@
     "rowLocked": "Kein Zugriff zu dieser Fall!"
   },
   "document": {
-    "title": {"single": "Dokument", "plural": "Dokumente"},
+    "title": {
+      "single": "Dokument",
+      "plural": "Dokumente"
+    },
     "id": "Referenz-ID",
     "createdBy": "Erstellt von",
     "createdOn": "Erstellt am",
@@ -270,23 +295,50 @@
     "of": "von"
   },
   "dashboard": {
-    "openTasks": {"title": "Alle Aufgaben"},
-    "openTask": {"title": "Offene Aufgaben"},
-    "activeProcess": {"title": "Aktiver Prozess"},
-    "activeProcesses": {"title": "Aktive Prozesse"},
-    "tasksCompleted": {"title": "Aufgaben abgeschlossen"},
-    "taskCompleted": {"title": "Aufgabe abgeschlossen"},
-    "statistics": {"title": "Statistik"},
-    "processes": {"title": "Prozesse"},
-    "process": {"title": "Prozess", "details": "Prozess-Details"},
-    "startProcess": {"title": "Start"},
-    "version": {"title": "Version"},
+    "openTasks": {
+      "title": "Alle Aufgaben"
+    },
+    "openTask": {
+      "title": "Offene Aufgaben"
+    },
+    "activeProcess": {
+      "title": "Aktiver Prozess"
+    },
+    "activeProcesses": {
+      "title": "Aktive Prozesse"
+    },
+    "tasksCompleted": {
+      "title": "Aufgaben abgeschlossen"
+    },
+    "taskCompleted": {
+      "title": "Aufgabe abgeschlossen"
+    },
+    "statistics": {
+      "title": "Statistik"
+    },
+    "processes": {
+      "title": "Prozesse"
+    },
+    "process": {
+      "title": "Prozess",
+      "details": "Prozess-Details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Version"
+    },
     "processingLeadTime": {
       "title": "Bearbeitungsdauer",
       "description": "Durchschnitt über die letzten 30 Tage"
     },
-    "tasks": {"title": "Aufgaben"},
-    "task": {"title": "Aufgabe"},
+    "tasks": {
+      "title": "Aufgaben"
+    },
+    "task": {
+      "title": "Aufgabe"
+    },
     "noDashboards": "Keine Dashboards",
     "noDashboardsDescription": "Ihr Systemadministrator hat möglicherweise noch keine Dashboards konfiguriert oder Sie verfügen möglicherweise nicht über die entsprechenden Berechtigungen zum Anzeigen von Dashboards.",
     "noWidgets": "Keine Widgets",
@@ -374,11 +426,17 @@
     "title": "Einstellungen",
     "language": {
       "title": "Sprache",
-      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+      "options": {
+        "nl": "Nederlands",
+        "en": "English",
+        "de": "Deutsch"
+      }
     },
     "notification": {
       "title": "Benachrichtigungen",
-      "frequency": {"title": "Benachrichtigungs-Frequenz"},
+      "frequency": {
+        "title": "Benachrichtigungs-Frequenz"
+      },
       "taskNotifications": "Aufgaben-Benachrichtigungen",
       "taskNotificationsIntro": "Erhalte eine E-Mail, sobald Aufgabe zugeordnet wird",
       "emailNotifications": "Tägliche Aufgabe-Übersicht",
@@ -391,11 +449,17 @@
       "emailNotificationOnSaturday": "Samstag",
       "emailNotificationOnSunday": "Sonntag"
     },
-    "version": {"title": "Versions-Information"},
+    "version": {
+      "title": "Versions-Information"
+    },
     "interface": {
       "title": "Interface",
       "themePreference": "Thema",
-      "themes": {"light": "Hell", "dark": "Dunkel (Beta)", "system": "System (Beta)"},
+      "themes": {
+        "light": "Hell",
+        "dark": "Dunkel (Beta)",
+        "system": "System (Beta)"
+      },
       "collapsibleMenu": "Navigationsleiste immer einklappbar",
       "compactMode": "Kompaktmodus",
       "showUserName": "Benutzernamen anzeigen"
@@ -415,8 +479,13 @@
     "deploySuccess": "Die Entscheidungstabelle wurde erfolgreich bereitgestellt.",
     "deployFailure": "Beim Bereitstellen Ihrer Entscheidungstabelle ist ein Fehler aufgetreten."
   },
-  "message": {"empty": "Kein Ergebnis gefunden"},
-  "cta": {"close": "Schließen", "moreDetails": "Mehr Details"},
+  "message": {
+    "empty": "Kein Ergebnis gefunden"
+  },
+  "cta": {
+    "close": "Schließen",
+    "moreDetails": "Mehr Details"
+  },
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Es ist keine Formular verknüpft. Die Verknüpfung erfolgt im Admin Menü > Prozess-Verknüpfungen.",
     "noFormDefinitionFoundUser": "Es ist keine Formular verknüpft. Nur Admin-User können die Verknüpfung vornehmen.",
@@ -434,7 +503,11 @@
     "readOnly": "Schreibgeschützt",
     "add": "Formular hinzufügen",
     "navigateToRelatedCase": "Zum Vorgang gehen (öffnet in neuem Tab)",
-    "tabs": {"formBuilder": "Formulareditor", "jsonEditor": "JSON-Editor", "output": "Output"},
+    "tabs": {
+      "formBuilder": "Formulareditor",
+      "jsonEditor": "JSON-Editor",
+      "output": "Output"
+    },
     "intermediateSave": {
       "save": "Fortschritt speichern",
       "clear": "Letzte Änderungen zurücknehmen",
@@ -486,7 +559,11 @@
     "setGlobalActiveVersionSuccessTitle": "Global aktive Version aktualisiert",
     "globallyActive": "Global aktiv",
     "unlinkProcess": "Verknüpfung aufheben",
-    "listColumns": {"name": "Name", "key": "Schlüssel", "version": "Version"},
+    "listColumns": {
+      "name": "Name",
+      "key": "Schlüssel",
+      "version": "Version"
+    },
     "globalActiveVersionModal": {
       "title": "Als global aktive Version festlegen",
       "description": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Problemen kommen kann oder nicht wie vorgesehen funktioniert.",
@@ -553,7 +630,10 @@
       },
       "releaseVersion": {
         "title": "Release-Version",
-        "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Basierend auf"},
+        "fields": {
+          "caseDefinitionVersionTag": "Version",
+          "basedOnVersionTag": "Basierend auf"
+        },
         "warning": {
           "title": "Warnung",
           "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} genaamd {{ conflictingVersions }}"
@@ -630,7 +710,10 @@
           "canHaveHandler": "Falltyp kann einen Bearbeiter haben",
           "assignUser": "Benutzeraufgaben automatisch dem Fallbearbeiter zuweisen",
           "disabledAutoAssignTooltip": "Die automatische Zuweisung einer Benutzeraufgabe an den Fallbearbeiter kann nur aktiviert werden, wenn der Fall selbst einen Bearbeiter haben kann.",
-          "toggle": {"onText": "Ja", "offText": "Nein"}
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nein"
+          }
         }
       },
       "caseListTab": {
@@ -685,13 +768,20 @@
         "formio": "FormIO Komponente auswählen",
         "standard": "Standardinhalte auswählen"
       },
-      "editModal": {"title": "Bearbeiten Tab {{name}}", "updateTab": "Aktualisieren Tab"},
+      "editModal": {
+        "title": "Bearbeiten Tab {{name}}",
+        "updateTab": "Aktualisieren Tab"
+      },
       "deleteModal": {
         "title": "Löschen Tab?",
         "description": "Sind Sie sicher, dass Sie diesen Tab löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
       }
     },
-    "tabType": {"custom": "Brauch", "formio": "FormIO", "standard": "Standard"},
+    "tabType": {
+      "custom": "Brauch",
+      "formio": "FormIO",
+      "standard": "Standard"
+    },
     "importDefinition": {
       "title": "Casedefinition importieren",
       "overwriteWarning": "Wenn Ihre Casedefinition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
@@ -797,7 +887,9 @@
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
       },
-      "noResultsFinalVersion": {"description": "Für diesen Vorgangstyp wurden keine Tags erstellt."}
+      "noResultsFinalVersion": {
+        "description": "Für diesen Vorgangstyp wurden keine Tags erstellt."
+      }
     },
     "draftWarning": {
       "title": "Nicht mit einer Version des Case verknüpft",
@@ -811,9 +903,15 @@
       "editWidgetTab": "Bearbeiten widget tab",
       "cancel": "Abbrechen",
       "save": "Speichern",
-      "form": {"tabName": "Tab name"}
+      "form": {
+        "tabName": "Tab name"
+      }
     },
-    "columns": {"highContrast": "Hoher Kontrast", "type": "Typ", "width": "Breite"},
+    "columns": {
+      "highContrast": "Hoher Kontrast",
+      "type": "Typ",
+      "width": "Breite"
+    },
     "list": {
       "dividerModal": {
         "addDividerTitle": "Neuen Widget-Teiler hinzufügen",
@@ -856,29 +954,61 @@
     },
     "type": {
       "description": "Wählen Sie den Widget-Typ aus, den Sie konfigurieren möchten.",
-      "fields": {"title": "Felder", "description": "Textdaten mit Inhalt und einer Beschriftung"},
-      "custom": {"title": "Benutzerdefinierte Komponente", "description": "Für komplexe Inhalte"},
-      "formio": {"title": "Form.io", "description": "Ausgefülltes Form.io-Formular"},
+      "fields": {
+        "title": "Felder",
+        "description": "Textdaten mit Inhalt und einer Beschriftung"
+      },
+      "custom": {
+        "title": "Benutzerdefinierte Komponente",
+        "description": "Für komplexe Inhalte"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ausgefülltes Form.io-Formular"
+      },
       "interactive-table": {
         "title": "Interaktive Tabelle",
         "description": "Erstelle eine interaktive Tabelle"
       },
-      "table": {"title": "Tabelle", "description": "Erstellen Sie eine Tabelle"},
-      "collection": {"title": "Kollektion", "description": "Erstellen Sie eine Kollektion"},
-      "divider": {"title": "Trennlinie"}
+      "table": {
+        "title": "Tabelle",
+        "description": "Erstellen Sie eine Tabelle"
+      },
+      "collection": {
+        "title": "Kollektion",
+        "description": "Erstellen Sie eine Kollektion"
+      },
+      "divider": {
+        "title": "Trennlinie"
+      }
     },
     "width": {
       "description": "Wählen Sie die gewünschte Breite für das Widget aus.",
       "fullWidth": "Gesamtbreite",
       "half": "Half",
-      "small": {"title": "Klein", "subtitle": "Enthält 1 Spalte mit Inhalt"},
-      "medium": {"title": "Medium", "subtitle": "Enthält bis zu 2 Spalten mit Inhalt"},
-      "large": {"title": "Groß", "subtitle": "Enthält bis zu 3 Spalten mit Inhalt"},
-      "xtraLarge": {"title": "Xtra Groß", "subtitle": "Enthält bis zu 4 Spalten mit Inhalt"}
+      "small": {
+        "title": "Klein",
+        "subtitle": "Enthält 1 Spalte mit Inhalt"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Enthält bis zu 2 Spalten mit Inhalt"
+      },
+      "large": {
+        "title": "Groß",
+        "subtitle": "Enthält bis zu 3 Spalten mit Inhalt"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groß",
+        "subtitle": "Enthält bis zu 4 Spalten mit Inhalt"
+      }
     },
     "style": {
       "description": "Wählen Sie den gewünschten Stil für das Widget aus",
-      "default": {"title": "Standard", "description": "Für reguläre Inhalte"},
+      "default": {
+        "title": "Standard",
+        "description": "Für reguläre Inhalte"
+      },
       "highContrast": {
         "title": "Hoher Kontrast",
         "description": "Für Inhalte mit höherer Priorität"
@@ -886,7 +1016,10 @@
     },
     "density": {
       "description": "Wählen Sie die gewünschte Dichte für das Widget aus",
-      "default": {"title": "Standard", "description": "Für reguläre Inhalte"},
+      "default": {
+        "title": "Standard",
+        "description": "Für reguläre Inhalte"
+      },
       "highContrast": {
         "title": "Kompakt",
         "description": "Für eine Übersicht mit höherer Datendichte"
@@ -1082,7 +1215,9 @@
       "add": "Schlüsselwört hinzufügen",
       "deleteText": "Sind Sie sicher, dass Sie dieses Schlüsselwört löschen möchten?",
       "deleteMultipleText": "Sind Sie sicher, dass Sie diese Schlüsselwörter löschen möchten?",
-      "addModal": {"header": "Schlüsselwört hinzufügen"},
+      "addModal": {
+        "header": "Schlüsselwört hinzufügen"
+      },
       "list": {
         "noResultsTitle": "Kein Schlüsselwörter gefunden",
         "noResultsDescription": "Fügen Sie ein Schlüsselwört hinzu"
@@ -1102,8 +1237,12 @@
       "add": "Upload-Feld hinzufügen",
       "deleteText": "Sind Sie sicher, dass Sie dieses Upload-Feld löschen möchten?",
       "deleteMultipleText": "Sind Sie sicher, dass Sie diese Upload-Felder löschen möchten?",
-      "addModal": {"header": "Upload-Feld hinzufügen"},
-      "editModal": {"header": "Upload-Feld bearbeiten"},
+      "addModal": {
+        "header": "Upload-Feld hinzufügen"
+      },
+      "editModal": {
+        "header": "Upload-Feld bearbeiten"
+      },
       "list": {
         "noResultsTitle": "Keine Upload-Felder",
         "noResultsDescription": "Fügen Sie ein Upload-Feld hinzu, um zu beginnen"
@@ -1420,7 +1559,10 @@
       "descending": "Absteigend",
       "noDefault": "Keine Standardsortierung"
     },
-    "editor": {"visualEditor": "Visuell editor", "jsonEditor": "JSON editor"},
+    "editor": {
+      "visualEditor": "Visuell editor",
+      "jsonEditor": "JSON editor"
+    },
     "jsonEditor": {
       "cancelModal": {
         "title": "Editor verlassen",
@@ -1437,7 +1579,14 @@
     "noTranslationFound": "Keine Übersetzung gefunden",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Erstellt", "taskCompleted": "erfolgreich abgeschlossen"},
+  "taskDetail": {
+    "taskCreated": "Erstellt",
+    "taskCompleted": "erfolgreich abgeschlossen",
+    "completedNotificationTitle": "Aufgabe abgeschlossen",
+    "completedNotificationContent": "Diese Aufgabe wurde von einem anderen Benutzer abgeschlossen.",
+    "assignedNotificationTitle": "Aufgabe zugewiesen",
+    "assignedNotificationContent": "Diese Aufgabe wurde zugewiesen an"
+  },
   "assignTask": {
     "assignedTo": "Zugewiesen an",
     "header": "Aufgabe einen User zuordnen",
@@ -1497,7 +1646,11 @@
     "automaticallyGenerated": "Automatisch erzeugt",
     "search": "Suche..."
   },
-  "webcam": {"takePicture": "Foto machen", "save": "Speichern", "redo": "Wiederherstellen"},
+  "webcam": {
+    "takePicture": "Foto machen",
+    "save": "Speichern",
+    "redo": "Wiederherstellen"
+  },
   "customers": {
     "name": "Name",
     "citizenServiceNumber": "Sozialversicherungsnummer",
@@ -1517,7 +1670,10 @@
     "completeButtonText": "Abschließen"
   },
   "pages": {
-    "plugins": {"title": "Plugins", "noResults": "Es sind keine Plugins konfiguriert"},
+    "plugins": {
+      "title": "Plugins",
+      "noResults": "Es sind keine Plugins konfiguriert"
+    },
     "customercases": {
       "title": "Cases",
       "description": "Auf dieser Seite können Sie die Cases eines bestimmten Kunden einsehen."
@@ -1554,7 +1710,11 @@
   },
   "customerCases": {
     "tableItemsText": "cases",
-    "labels": {"zaakNummer": "Casenummer", "zaakStatus": "Status", "zaakType": "Typ"}
+    "labels": {
+      "zaakNummer": "Casenummer",
+      "zaakStatus": "Status",
+      "zaakType": "Typ"
+    }
   },
   "processLink": {
     "create": "Prozesslink erstellen",
@@ -1653,8 +1813,12 @@
     "dropdownListValues": "Legen Sie benutzerdefinierte Werte für die Dropdown-Liste fest. Der in der Dropdown-Liste angezeigte Wert sollte in das rechte Textfeld eingegeben werden. Das linke Textfeld sollte die ID dieses Werts enthalten.",
     "required": "Legt fest, ob der Benutzer vor der Suche einen Wert eingeben muss."
   },
-  "searchFieldDataType": {"select": "Wählen Sie einen Datentyp aus"},
-  "searchFieldFieldType": {"select": "Wählen Sie einen Feldtyp aus"},
+  "searchFieldDataType": {
+    "select": "Wählen Sie einen Datentyp aus"
+  },
+  "searchFieldFieldType": {
+    "select": "Wählen Sie einen Feldtyp aus"
+  },
   "listColumn": {
     "title": "Titel",
     "titleTitle": "Titel (optional)",
@@ -1715,9 +1879,14 @@
     "createObject": "Objekt erstellen",
     "editObject": "Objekt bearbeiten",
     "deleteObject": "Objekt Löschen",
-    "labels": {"recordIndex": "Rekordindex", "objectUrl": "Objekt-URL"},
+    "labels": {
+      "recordIndex": "Rekordindex",
+      "objectUrl": "Objekt-URL"
+    },
     "header": "Objektdetails",
-    "tabs": {"general": "Allgemein"},
+    "tabs": {
+      "general": "Allgemein"
+    },
     "close": "Nahe",
     "save": "Objekt speichern",
     "delete": "Objekt löschen",
@@ -1760,7 +1929,11 @@
     "add": "Objekt hinzufügen",
     "download": "Download",
     "visibleInMenu": "Im Menü sichtbar",
-    "tabs": {"general": "Allgemein", "searchFields": "Suchfelder", "list": "Aufführen"},
+    "tabs": {
+      "general": "Allgemein",
+      "searchFields": "Suchfelder",
+      "list": "Aufführen"
+    },
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
     "select": "Wählen Sie einen Anzeigetyp aus"
   },
@@ -1777,7 +1950,9 @@
     "formioCurrencyComponent": {
       "errorMessage": "Keine gültige Dezimalzahl. Bitte geben Sie eine gültige Dezimalzahl ein."
     },
-    "formioFormViewModelComponent": {"submitError": "Ungültige Einreichung"}
+    "formioFormViewModelComponent": {
+      "submitError": "Ungültige Einreichung"
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -1830,7 +2005,10 @@
     "displayType": {
       "label": "Wählen Sie den Anzeigetyp des Formulars aus",
       "placeholder": "Wählen Sie aus, wie das Formular angezeigt werden soll",
-      "options": {"modal": "Modal", "panel": "Panel"}
+      "options": {
+        "modal": "Modal",
+        "panel": "Panel"
+      }
     },
     "formSize": {
       "label": "Wählen Sie die Modalgröße aus",
@@ -1917,7 +2095,11 @@
       "title": "Keine form flow hinzugefügt"
     }
   },
-  "taskManagement": {"columns": "Säulen", "searchFields": "Suchfelder", "caseName": "Fallname"},
+  "taskManagement": {
+    "columns": "Säulen",
+    "searchFields": "Suchfelder",
+    "caseName": "Fallname"
+  },
   "valuePathSelector": {
     "placeholder": "Wählen Sie einen Pfad",
     "dropdown": "Dropdown",
@@ -1925,7 +2107,11 @@
     "selectCaseDefPlaceholder": "Wählen Sie einen Fall"
   },
   "logging": {
-    "columns": {"timestamp": "Zeit", "formattedMessage": "Nachricht", "level": "Protokollebene"},
+    "columns": {
+      "timestamp": "Zeit",
+      "formattedMessage": "Nachricht",
+      "level": "Protokollebene"
+    },
     "search": {
       "addProperty": "Eigenschaft hinzufügen",
       "afterTimestamp": "Zeit von",
@@ -1968,8 +2154,12 @@
     "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
-    "tabs": {"title": "Tabs"},
-    "widgets": {"title": "Widgets"},
+    "tabs": {
+      "title": "Tabs"
+    },
+    "widgets": {
+      "title": "Widgets"
+    },
     "importDefinition": {
       "title": "IKO-Definition importieren",
       "overwriteWarning": "Wenn Ihre IKO-Definition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
