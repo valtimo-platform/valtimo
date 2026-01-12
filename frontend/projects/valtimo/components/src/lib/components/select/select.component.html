@@ -38,6 +38,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
+    data-test-id="v-select-container-title"
   >
   </v-input-label>
 
@@ -59,7 +60,8 @@
     [type]="multiple ? 'multi' : 'single'"
     (clear)="clear()"
     (selected)="setSelected($event)"
+    data-test-id="v-select-container-combo-box"
   >
-    <cds-dropdown-list [items]="vars?.items || []"></cds-dropdown-list>
+    <cds-dropdown-list [items]="vars?.items || []" data-test-id="v-select-container-dropdown-list"></cds-dropdown-list>
   </cds-combo-box>
 </div>

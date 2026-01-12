@@ -20,33 +20,37 @@
     widgetData: widgetData$ | async,
   } as obs"
   class="custom-widget"
+  data-test-id="custom-widget-container"
 >
-  <section class="custom-widget__header">
-    <div class="custom-widget__title-container">
+  <section class="custom-widget__header" data-test-id="custom-widget-header">
+    <div class="custom-widget__title-container" data-test-id="custom-widget-title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration?.icon"
+        data-test-id="custom-widget-icon"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="custom-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+      <h4 class="custom-widget__title" data-test-id="custom-widget-title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
     </div>
 
-    <ng-content></ng-content>
+    <ng-content data-test-id="custom-widget-content-slot"></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
+      data-test-id="custom-widget-action-button"
     ></valtimo-widget-action-button>
   </section>
 
-  <div class="custom-widget__content">
-    <ng-template #customWidgetContainer></ng-template>
+  <div class="custom-widget__content" data-test-id="custom-widget-content">
+    <ng-template #customWidgetContainer data-test-id="custom-widget-template"></ng-template>
 
     @if (noCustomComponentAvailable()) {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noCustomComponentDescription' | translate"
         [smallPadding]="true"
+        data-test-id="custom-widget-no-results"
       ></valtimo-no-results>
     }
   </div>

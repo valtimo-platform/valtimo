@@ -15,11 +15,11 @@
   -->
 
 <ng-container *ngIf="pluginConfigurations$ | async as pluginConfigurations; else loading">
-  <p class="step-description">
+  <p class="step-description" data-test-id="process-link-configuration-description">
     {{ 'processLinkConfiguration.choosePluginConfigurationDescription' | translate }}
   </p>
-  <div class="list-container">
-    <cds-structured-list (selected)="selected($event)" selection="true">
+  <div class="list-container" data-test-id="process-link-configuration-list-container">
+    <cds-structured-list (selected)="selected($event)" selection="true" data-test-id="process-link-configuration-structured-list">
       <cds-list-header>
         <cds-list-column nowrap="true"></cds-list-column>
         <cds-list-column nowrap="true">{{
@@ -30,8 +30,9 @@
         }}</cds-list-column>
       </cds-list-header>
       <cds-list-row
-        *ngFor="let pluginConfiguration of pluginConfigurations"
+        *ngFor="let pluginConfiguration of pluginConfigurations; let i = index"
         [value]="pluginConfiguration"
+        data-test-id="process-link-configuration-row-{{i}}"
       >
         <cds-list-column>
           <div *ngIf="pluginConfiguration.pluginLogoBase64">
@@ -39,10 +40,11 @@
               [src]="pluginConfiguration.pluginLogoBase64"
               [title]="'title' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async"
               class="plugin-configuration-logo"
+              data-test-id="process-link-configuration-logo-{{i}}"
             /></div
         ></cds-list-column>
-        <cds-list-column>{{ pluginConfiguration.title }}</cds-list-column>
-        <cds-list-column>
+        <cds-list-column data-test-id="process-link-configuration-name-{{i}}">{{ pluginConfiguration.title }}</cds-list-column>
+        <cds-list-column data-test-id="process-link-configuration-description-{{i}}">
           {{ 'description' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async }}
         </cds-list-column>
       </cds-list-row>
@@ -51,7 +53,7 @@
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
+  <div class="loading-container" data-test-id="process-link-configuration-loading-container">
+    <cds-loading data-test-id="process-link-configuration-loading"></cds-loading>
   </div>
 </ng-template>

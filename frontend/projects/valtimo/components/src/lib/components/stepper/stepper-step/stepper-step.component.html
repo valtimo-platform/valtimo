@@ -14,6 +14,6 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="(currentStepIndex$ | async) === (stepIndex$ | async)">
+<ng-container *ngIf="(currentStepIndex$ | async) === (stepIndex$ | async)" data-test-id="step-container">
   <ng-content></ng-content>
 </ng-container>

@@ -39,6 +39,7 @@
       [tooltip]="'statustoelichtingTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
       [placeholder]="'statustoelichting' | pluginTranslate: obs.pluginId | async"
+      data-test-id="status-explanation-input"
     >
     </v-input>
 
@@ -49,12 +50,14 @@
       [dateFormat]="'d-m-Y'"
       [value]="[selectedDate]"
       (valueChange)="onDateSelected($event)"
+      data-test-id="status-date-picker"
     ></cds-date-picker>
 
     <cds-timepicker
       [attr.data-carbon-theme]="theme$ | async"
       [value]="selectedTime"
       (valueChange)="onTimeSelected($event)"
+      data-test-id="status-time-picker"
     ></cds-timepicker>
 
     <v-radio
@@ -64,6 +67,7 @@
       [radioValues]="datePickerInputTypeOptions$ | async"
       [defaultValue]="obs.datumStatusGezetSelectedInputOption"
       [margin]="true"
+      data-test-id="status-date-input-toggle"
     ></v-radio>
 
     <div class="date-time-row" *ngIf="obs.datumStatusGezetSelectedInputOption === 'selection'">
@@ -76,6 +80,7 @@
         [invalid]="obs.datePickerInvalid"
         [invalidText]="'datumStatusGezetInvalidText' | pluginTranslate: obs.pluginId | async"
         (valueChange)="onDateSelected($event)"
+        data-test-id="status-date-picker-selection"
       ></cds-date-picker>
 
       <cds-timepicker
@@ -84,6 +89,7 @@
         [value]="selectedTime"
         [invalid]="obs.datePickerInvalid"
         (valueChange)="onTimeSelected($event)"
+        data-test-id="status-time-picker-selection"
       ></cds-timepicker>
     </div>
 
@@ -98,6 +104,7 @@
       [trim]="true"
       [tooltip]="'datumStatusGezetTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
+      data-test-id="status-date-text-input"
     ></v-input>
 
     <v-radio
@@ -108,6 +115,7 @@
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
+      data-test-id="case-status-input-toggle"
     >
     </v-radio>
 
@@ -122,6 +130,7 @@
       [trim]="true"
       [tooltip]="'statustypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
+      data-test-id="status-type-text-input"
     >
     </v-input>
 
@@ -138,6 +147,7 @@
         [loading]="!obs.statusTypeItems"
         [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
         [clearSelectionSubject$]="clearStatusSelection$"
+        data-test-id="status-type-select"
       ></v-select>
     </ng-container>
   </ng-container>
@@ -145,6 +155,6 @@
 
 <ng-template #loading>
   <div class="loading-container">
-    <cds-loading></cds-loading>
+    <cds-loading data-test-id="status-loading"></cds-loading>
   </div>
 </ng-template>

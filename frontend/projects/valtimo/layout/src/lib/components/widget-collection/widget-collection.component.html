@@ -22,14 +22,15 @@
     widgetData: widgetData$ | async,
   } as obs"
 >
-  <section class="valtimo-widget-collection__header">
+  <section class="valtimo-widget-collection__header" data-test-id="valtimo-widget-collection-header">
     <div class="valtimo-widget-collection__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
+        data-test-id="valtimo-widget-collection-icon"
       ></valtimo-mdi-icon-viewer>
 
-      <span class="valtimo-widget-collection__title">{{ $widgetTitle() }}</span>
+      <span class="valtimo-widget-collection__title" data-test-id="valtimo-widget-collection-title">{{ $widgetTitle() }}</span>
     </div>
 
     <ng-content></ng-content>
@@ -37,6 +38,7 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
+      data-test-id="valtimo-widget-collection-action-button"
     ></valtimo-widget-action-button>
   </section>
 
@@ -48,6 +50,7 @@
       'valtimo-widget-collection__render-three-columns': amountOfColumns() === 3,
       'valtimo-widget-collection__container': amountOfColumns() === 4,
     }"
+    data-test-id="valtimo-widget-collection-container"
   >
     @for (card of obs?.collectionWidgetCards; track card.key) {
       <div
@@ -56,11 +59,13 @@
         [ngClass]="{
           'valtimo-widget-collection__card--hidden': card.hidden,
         }"
+        data-test-id="valtimo-widget-collection-card-{{$index}}"
       >
-        <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
+        <span class="valtimo-widget-collection__card-title" data-test-id="valtimo-widget-collection-card-title-{{$index}}">{{ card.title }}</span>
 
         <section
           class="valtimo-widget-collection__card-content"
+          data-test-id="valtimo-widget-collection-card-content-{{$index}}"
         >
           @for (field of card.fields; track field.key) {
             <div
@@ -72,10 +77,12 @@
                 'valtimo-widget-collection__full-width-input': field?.width === 'full',
                 'valtimo-widget-collection__half-width-input': field?.width === 'half',
               }"
+              data-test-id="valtimo-widget-collection-field-container-{{$parent.index}}-{{$index}}"
             >
               <cds-label
                 class="valtimo-widget-collection__label"
                 [attr.title]="field?.value ?? field?.title"
+                data-test-id="valtimo-widget-collection-field-label-{{$parent.index}}-{{$index}}"
               >
                 {{ field?.title }}
 
@@ -84,6 +91,7 @@
                   [readonly]="true"
                   class="valtimo-widget-collection__card-input"
                   cdsText
+                  data-test-id="valtimo-widget-collection-field-input-{{$parent.index}}-{{$index}}"
                 />
               </cds-label>
             </div>
@@ -98,6 +106,7 @@
       [collapseVertically]="true"
       [description]="(obs.noVisibleFields ? 'widgets.emptyFields' : 'widgets.noData') | translate"
       [smallPadding]="true"
+      data-test-id="valtimo-widget-collection-no-results"
     ></valtimo-no-results>
   }
 
@@ -106,6 +115,7 @@
     class="valtimo-widget-collection__pagination"
     [model]="paginationModel()"
     (selectPage)="onSelectPage($event)"
+    data-test-id="valtimo-widget-collection-pagination"
   >
   </cds-pagination-nav>
 </ng-container>

@@ -20,6 +20,7 @@
   itemValueKey="contentKey"
   [label]="'processLinkSteps.uiComponent' | translate"
   (selected)="selectCustomComponent($event)"
+  data-test-id="process-link-steps-component-selector"
 >
-  <cds-dropdown-list></cds-dropdown-list>
+  <cds-dropdown-list data-test-id="process-link-steps-component-dropdown-list"></cds-dropdown-list>
 </cds-combo-box>

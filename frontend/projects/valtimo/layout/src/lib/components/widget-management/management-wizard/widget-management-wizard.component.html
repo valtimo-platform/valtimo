@@ -21,29 +21,31 @@
   valtimoCdsModal
   class="valtimo-widget-management-wizard"
   (close)="onClose()"
+  data-test-id="valtimo-widget-management-wizard-modal"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
-    <h3 cdsModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()" data-test-id="valtimo-widget-management-wizard-header">
+    <h3 cdsModalHeaderHeading data-test-id="valtimo-widget-management-wizard-title">
       {{ 'widgetTabManagement.wizard.' + (editMode ? 'edit' : 'create') | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-widget-management-wizard__content">
+  <section cdsModalContent class="valtimo-widget-management-wizard__content" data-test-id="valtimo-widget-management-wizard-content">
     <cds-progress-indicator
       [current]="$currentStepIndex()"
       [spacing]="'equal'"
       [steps]="steps$ | async"
       (stepSelected)="onStepSelected($event)"
+      data-test-id="valtimo-widget-management-wizard-progress"
     >
     </cds-progress-indicator>
 
-    <p>{{ stepLabel$ | async }}</p>
+    <p data-test-id="valtimo-widget-management-wizard-step-label">{{ stepLabel$ | async }}</p>
 
     <ng-template #wizardStepRenderer></ng-template>
   </section>
 
-  <cds-modal-footer class="valtimo-widget-management-wizard__footer">
-    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()">
+  <cds-modal-footer class="valtimo-widget-management-wizard__footer" data-test-id="valtimo-widget-management-wizard-footer">
+    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()" data-test-id="valtimo-widget-management-wizard-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -53,6 +55,7 @@
         cdsButton="secondary"
         [disabled]="$backButtonDisabled()"
         (click)="onBackButtonClick()"
+        data-test-id="valtimo-widget-management-wizard-back-button"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -63,6 +66,7 @@
       cdsButton="primary"
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
+      data-test-id="valtimo-widget-management-wizard-next-button"
     >
       {{
         'interface.' + ($currentStepIndex() === (numberOfSteps$ | async) - 1 ? 'save' : 'next')

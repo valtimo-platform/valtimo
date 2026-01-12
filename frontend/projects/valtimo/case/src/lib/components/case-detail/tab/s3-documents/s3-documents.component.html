@@ -23,6 +23,7 @@
   [showMaxFileSize]="true"
   [camera]="false"
   [uploading]="uploading$ | async"
+  data-test-id="document-upload-dropzone"
 ></valtimo-dropzone>
 
 <valtimo-widget>
@@ -32,11 +33,12 @@
     [header]="true"
     [isSearchable]="true"
     [actions]="actions"
+    data-test-id="document-upload-related-documents-list"
   >
     <div header>
-      <h3 class="list-header-title">{{ 'Related documents' | translate }}</h3>
+      <h3 class="list-header-title" data-test-id="document-upload-related-documents-title">{{ 'Related documents' | translate }}</h3>
 
-      <h5 class="list-header-description">
+      <h5 class="list-header-description" data-test-id="document-upload-related-documents-description">
         {{ 'Overview of all documents in this case' | translate }}
       </h5>
     </div>

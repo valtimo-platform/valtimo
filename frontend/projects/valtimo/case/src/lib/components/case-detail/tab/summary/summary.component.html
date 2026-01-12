@@ -25,10 +25,14 @@
   @if (!obs.loading && obs.document && obs.formDefinition) {
     <valtimo-form-io
       class="valtimo-summary-form"
+      data-test-id="valtimo-summary-form"
       [form]="obs.formDefinition"
       [options]="options"
     ></valtimo-form-io>
   } @else if (obs.notificationObj) {
-    <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+    <cds-inline-notification
+      data-test-id="valtimo-summary-notification"
+      [notificationObj]="obs.notificationObj"
+    ></cds-inline-notification>
   }
 </ng-container>

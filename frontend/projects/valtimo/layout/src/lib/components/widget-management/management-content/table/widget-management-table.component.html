@@ -31,12 +31,14 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
+      data-test-id="widget-management-table-widget-title-input"
     />
   </cds-text-label>
 
   <valtimo-mdi-icon-selector
     [cdsLayer]="1"
     formControlName="widgetIcon"
+    data-test-id="widget-management-table-icon-selector"
   ></valtimo-mdi-icon-selector>
 
   <cds-text-label [attr.data-carbon-theme]="theme">
@@ -51,6 +53,7 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.table.defaultPageSizePlaceholder' | translate"
       type="text"
+      data-test-id="widget-management-table-default-page-size-input"
     />
   </cds-text-label>
 
@@ -69,6 +72,7 @@
         [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
         [type]="ValuePathType.COLLECTION"
         (collectionSelected)="onCollectionSelected($event)"
+        data-test-id="widget-management-table-collection-selector"
       ></valtimo-value-path-selector>
     } @else {
       <input
@@ -77,6 +81,7 @@
         [attr.data-carbon-theme]="theme"
         [placeholder]="'widgetTabManagement.content.table.collection' | translate"
         type="text"
+        data-test-id="widget-management-table-collection-input"
       />
     }
   </cds-text-label>
@@ -84,7 +89,7 @@
 
 <ng-content></ng-content>
 
-<span class="valtimo-widget-management-table__subtitle">
+<span class="valtimo-widget-management-table__subtitle" data-test-id="widget-management-table-columns-subtitle">
   {{ 'widgetTabManagement.content.table.columns' | translate }}
 </span>
 
@@ -93,10 +98,11 @@
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
+  data-test-id="widget-management-table-fields-column"
 ></valtimo-widget-management-fields-column>
 
 <section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">
-  <span class="valtimo-widget-management-table__subtitle">
+  <span class="valtimo-widget-management-table__subtitle" data-test-id="widget-management-table-options-subtitle">
     {{ 'widgetTabManagement.content.table.options' | translate }}
   </span>
 
@@ -106,5 +112,6 @@
     [onText]="'interface.yes' | translate"
     [offText]="'interface.no' | translate"
     (checkedChange)="onCheckedChange($event)"
+    data-test-id="widget-management-table-first-column-toggle"
   ></cds-toggle>
 </section>

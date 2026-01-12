@@ -25,9 +25,10 @@
     <valtimo-mdi-icon-viewer
       *ngIf="widgetConfiguration?.icon"
       [mdiIcon]="widgetConfiguration.icon"
+      data-test-id="widget-interactive-table-icon"
     ></valtimo-mdi-icon-viewer>
 
-    <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+    <span class="widget-title" data-test-id="widget-interactive-table-title">{{ widgetConfiguration?.title }}</span>
   </div>
 
   <valtimo-carbon-list
@@ -38,6 +39,7 @@
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
     (rowClicked)="rowClick($event)"
+    data-test-id="widget-interactive-table-list"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
       <cds-overflow-menu
@@ -46,9 +48,10 @@
         placement="bottom"
         flip="true"
         [offset]="{x: 4, y: 44}"
+        data-test-id="widget-interactive-table-actions-menu"
       >
         @for (action of widgetConfiguration?.actions; track action.name) {
-          <cds-overflow-menu-option (click)="onActionClick(action)">
+          <cds-overflow-menu-option (click)="onActionClick(action)" data-test-id="widget-interactive-table-action-{{action.name}}">
             {{ action.name }}
           </cds-overflow-menu-option>
         }
@@ -57,11 +60,13 @@
       <cds-menu-button
         *ngIf="widgetConfiguration?.properties?.canStartCase"
         [label]="'Start Case' | translate"
+        data-test-id="widget-interactive-table-start-case-button"
       >
         @for (definition of obs.caseDefinitions; track definition.caseDefinitionKey) {
           <cds-menu-item
             [label]="definition.name"
             (click)="onCaseStart(definition)"
+            data-test-id="widget-interactive-table-case-definition-{{definition.caseDefinitionKey}}"
           ></cds-menu-item>
         }
       </cds-menu-button>
@@ -71,11 +76,12 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
+      data-test-id="widget-interactive-table-no-results"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
   <ng-template #externalLinkTrigger>
-    <button cdsButton="ghost" iconOnly="true">
+    <button cdsButton="ghost" iconOnly="true" data-test-id="widget-interactive-table-external-link-trigger">
       <svg cdsIcon="link" size="16"></svg>
     </button>
   </ng-template>

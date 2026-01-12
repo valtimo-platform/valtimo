@@ -22,15 +22,17 @@
   } as obs"
   class="valtimo-widget-table"
   [class.valtimo-widget-table--compact]="widgetConfiguration?.isCompact"
+  data-test-id="valtimo-widget-table-container"
 >
-  <section class="valtimo-widget-table__header">
-    <div class="valtimo-widget-table__title-container">
+  <section class="valtimo-widget-table__header" data-test-id="valtimo-widget-table-header">
+    <div class="valtimo-widget-table__title-container" data-test-id="valtimo-widget-table-title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="widgetConfiguration?.icon"
         [mdiIcon]="widgetConfiguration.icon"
+        data-test-id="valtimo-widget-table-icon"
       ></valtimo-mdi-icon-viewer>
 
-      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+      <span class="widget-title" data-test-id="valtimo-widget-table-title">{{ widgetConfiguration?.title }}</span>
     </div>
 
     <ng-content></ng-content>
@@ -38,16 +40,18 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="widgetConfiguration"
       [resolvedData]="obs.resolvedData"
+      data-test-id="valtimo-widget-table-action-button"
     ></valtimo-widget-action-button>
   </section>
 
   @if (obs.widgetData && obs.fields && obs.widgetData.length) {
-    <section class="valtimo-widget-table__content">
+    <section class="valtimo-widget-table__content" data-test-id="valtimo-widget-table-content">
       <valtimo-carbon-list
         [header]="false"
         [hideToolbar]="true"
         [fields]="obs.fields"
         [items]="obs.widgetData"
+        data-test-id="valtimo-widget-table-list"
       >
       </valtimo-carbon-list>
 
@@ -56,6 +60,7 @@
         class="valtimo-widget-table__pagination"
         [model]="$paginationModel()"
         (selectPage)="onSelectPage($event)"
+        data-test-id="valtimo-widget-table-pagination"
       >
       </cds-pagination-nav>
     </section>
@@ -64,6 +69,7 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
+      data-test-id="valtimo-widget-table-no-results"
     ></valtimo-no-results>
   }
 </cds-tile>

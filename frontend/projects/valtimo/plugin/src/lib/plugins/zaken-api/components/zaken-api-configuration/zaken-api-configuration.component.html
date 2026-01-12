@@ -21,6 +21,7 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     noteEventListenerEnabled: noteEventListenerEnabled$ | async
   } as obs"
+  data-test-id="configuration-form"
 >
   <v-input
     name="configurationTitle"
@@ -32,6 +33,7 @@
     [required]="true"
     [margin]="true"
     [trim]="true"
+    data-test-id="configuration-title-input"
   >
   </v-input>
 
@@ -45,6 +47,7 @@
     [required]="true"
     [trim]="true"
     [margin]="true"
+    data-test-id="url-input"
   >
   </v-input>
 
@@ -61,6 +64,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [loading]="!authObs.authenticationPluginSelectItems"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
+      data-test-id="authentication-plugin-select"
     ></v-select>
   </ng-container>
 
@@ -68,6 +72,7 @@
     <v-input-label
       [title]="'noteEventListenerEnabled' | pluginTranslate: pluginId | async"
       [tooltip]="'noteEventListenerEnabledTooltip' | pluginTranslate: pluginId | async"
+      data-test-id="note-event-listener-label"
     >
     </v-input-label>
 
@@ -77,6 +82,7 @@
       [onText]="'noteEventListenerEnabled.toggleOn' | pluginTranslate: pluginId | async"
       [offText]="'noteEventListenerEnabled.toggleOff' | pluginTranslate: pluginId | async"
       (checkedChange)="onNoteEventListenerEnabledChange($event)"
+      data-test-id="note-event-listener-toggle"
     ></cds-toggle>
   </div>
 
@@ -89,6 +95,7 @@
     [required]="true"
     [margin]="true"
     [trim]="true"
+    data-test-id="note-subject-input"
   >
   </v-input>
 </v-form>

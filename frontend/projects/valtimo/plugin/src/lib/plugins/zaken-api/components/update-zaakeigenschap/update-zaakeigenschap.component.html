@@ -25,6 +25,7 @@
     eigenschapItems: eigenschapSelectItems$ | async,
     context: context$ | async,
   } as obs"
+  data-test-id="eigenschap-form"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-radio
@@ -35,6 +36,7 @@
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
+      data-test-id="eigenschap-input-type-toggle"
     >
     </v-radio>
 
@@ -49,6 +51,7 @@
       [trim]="true"
       [tooltip]="'eigenschapUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
+      data-test-id="eigenschap-url-input"
     >
     </v-input>
 
@@ -64,6 +67,7 @@
         [required]="true"
         [loading]="!obs.eigenschapItems"
         [tooltip]="'eigenschapUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
+        data-test-id="eigenschap-url-select"
       ></v-select>
     </ng-container>
 
@@ -76,13 +80,14 @@
       [required]="false"
       [tooltip]="'eigenschapValueTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
+      data-test-id="eigenschap-value-input"
     >
     </v-input>
   </ng-container>
 </v-form>
 
 <ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
+  <div class="loading-container" data-test-id="eigenschap-loading-container">
+    <cds-loading data-test-id="eigenschap-loading-spinner"></cds-loading>
   </div>
 </ng-template>

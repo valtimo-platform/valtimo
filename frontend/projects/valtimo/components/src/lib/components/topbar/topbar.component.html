@@ -14,22 +14,24 @@
   ~ limitations under the License.
   -->
 
-<cds-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
+<cds-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()" data-test-id="cds-header">
   <a
     *ngIf="logoBase64$ | async as logoBase64"
     class="logo-link"
     [ngClass]="{'logo-link--large-margin': largeLogoMargin}"
     [routerLink]="['/']"
     [title]="applicationTitle"
+    data-test-id="cds-header-logo-link"
   >
-    <img [src]="logoBase64" class="logo-image" />
+    <img [src]="logoBase64" class="logo-image" data-test-id="cds-header-logo-image" />
   </a>
   <cds-hamburger
     *ngIf="(largeScreen$ | async) === false || (collapsibleWidescreenMenu$ | async)"
     [active]="sideBarExpanded$ | async"
     (selected)="toggleSideBar()"
+    data-test-id="cds-header-hamburger"
   ></cds-hamburger>
-  <cds-header-global>
+  <cds-header-global data-test-id="cds-header-global">
     <ng-container #headerVcr></ng-container>
 
     <ng-container *ngTemplateOutlet="userFullName"></ng-container>
@@ -38,8 +40,9 @@
       title="action"
       [active]="panelExpanded$ | async"
       (activeChange)="setPanelExpanded($event)"
+      data-test-id="cds-header-action"
     >
-      <svg cdsIcon="user" size="20"></svg>
+      <svg cdsIcon="user" size="20" data-test-id="cds-header-action-icon"></svg>
     </cds-header-action>
   </cds-header-global>
 </cds-header>
@@ -48,7 +51,8 @@
   <div
     class="user-full-name"
     *ngIf="(showUserNameInTopBar$ | async) && {userFullName: userFullName$ | async} as obs"
+    data-test-id="cds-header-user-full-name"
   >
-    <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
+    <v-paragraph [loading]="!obs.userFullName" data-test-id="cds-header-user-full-name-paragraph">{{ obs.userFullName }}</v-paragraph>
   </div>
 </ng-template>

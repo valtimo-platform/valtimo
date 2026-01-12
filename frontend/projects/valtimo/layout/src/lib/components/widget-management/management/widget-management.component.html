@@ -15,10 +15,11 @@
   -->
 
 @if (!disableJsonEditor) {
-  <cds-tabs type="contained">
+  <cds-tabs type="contained" data-test-id="widget-management-tabs">
     <cds-tab
       [heading]="'interface.editor.visualEditor' | translate"
       (selected)="switchTab(WidgetManagementTab.VISUAL)"
+      data-test-id="widget-management-visual-tab"
     >
       <ng-container *ngTemplateOutlet="widgetEditor"></ng-container>
     </cds-tab>
@@ -26,6 +27,7 @@
     <cds-tab
       [heading]="'interface.editor.jsonEditor' | translate"
       (selected)="switchTab(WidgetManagementTab.JSON)"
+      data-test-id="widget-management-json-tab"
     >
       <valtimo-json-editor
         *ngIf="$activeTab() === WidgetManagementTab.JSON"
@@ -33,6 +35,7 @@
         [fitPage]="true"
         [fitPageSpaceAdjustment]="136"
         (saveEvent)="onSaveEvent($event)"
+        data-test-id="widget-management-json-editor"
       ></valtimo-json-editor>
     </cds-tab>
   </cds-tabs>
@@ -48,5 +51,6 @@
     [enableWidgetDivider]="enableWidgetDivider"
     [singleWidget]="singleWidget"
     [defaultWidth]="defaultWidth"
+    data-test-id="widget-management-visual-editor"
   ></valtimo-widget-management-editor>
 </ng-template>

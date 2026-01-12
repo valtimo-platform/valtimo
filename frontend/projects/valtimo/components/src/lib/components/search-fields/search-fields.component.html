@@ -316,6 +316,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        data-test-id="search-field-text-range-start-input-0"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -327,6 +328,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        data-test-id="search-field-text-range-end-input-0"
       >
       </v-input>
     </v-form>
@@ -361,6 +363,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        data-test-id="search-field-number-range-start-input-0"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -374,6 +377,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        data-test-id="search-field-number-range-end-input-0"
       >
       </v-input>
     </v-form>
@@ -405,6 +409,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        data-test-id="search-field-date-range-start-input-0"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -414,6 +419,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        data-test-id="search-field-date-range-end-input-0"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -445,6 +451,7 @@
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
       [appendInline]="false"
+      data-test-id="search-field-boolean-select-0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -470,6 +477,7 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
+    data-test-id="search-field-datetime-input-0"
   ></v-date-picker>
 </ng-template>
 
@@ -499,6 +507,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        data-test-id="search-field-datetime-range-start-input-0"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -509,6 +518,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        data-test-id="search-field-datetime-range-end-input-0"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -546,6 +556,7 @@
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
       [appendInline]="false"
+      data-test-id="search-field-single-select-dropdown-0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -583,6 +594,7 @@
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
       [appendInline]="false"
+      data-test-id="search-field-multi-select-dropdown-0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -613,6 +625,7 @@
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
         id="clear"
+        data-test-id="search-fields-clear-button"
       >
         <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
 
@@ -627,6 +640,7 @@
         (click)="saveSearch()"
         type="button"
         id="save"
+        data-test-id="search-fields-save-button"
       >
         <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
 
@@ -643,6 +657,7 @@
         "
         type="button"
         id="search"
+        data-test-id="search-fields-search-button"
       >
         <svg cdsIcon="search" size="16" class="cds--btn__icon"></svg>
 

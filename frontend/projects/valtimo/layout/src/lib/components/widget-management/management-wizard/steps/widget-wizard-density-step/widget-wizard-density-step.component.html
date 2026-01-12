@@ -18,11 +18,13 @@
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
   class="valtimo-widget-wizard-step__content"
+  data-test-id="widget-wizard-step-tile-group"
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetDensity.DEFAULT"
     [selected]="$widgetDensity() === WidgetDensity.DEFAULT"
+    data-test-id="widget-wizard-step-default-tile"
   >
     <h3>{{ 'widgetTabManagement.density.default.title' | translate }}</h3>
 
@@ -38,6 +40,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetDensity.COMPACT"
     [selected]="$widgetDensity() === WidgetDensity.COMPACT"
+    data-test-id="widget-wizard-step-compact-tile"
   >
     <h3>{{ 'widgetTabManagement.density.compact.title' | translate }}</h3>
 

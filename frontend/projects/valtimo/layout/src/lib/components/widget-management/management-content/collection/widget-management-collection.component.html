@@ -28,12 +28,14 @@
         cdsText
         [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
         type="text"
+        data-test-id="valtimo-widget-management-collection-widget-title-input"
       />
     </cds-text-label>
 
     <valtimo-mdi-icon-selector
       [cdsLayer]="1"
       formControlName="widgetIcon"
+      data-test-id="valtimo-widget-management-collection-icon-selector"
     ></valtimo-mdi-icon-selector>
 
     <cds-text-label [attr.data-carbon-theme]="theme">
@@ -50,6 +52,7 @@
           'widgetTabManagement.content.collection.defaultPageSizePlaceholder' | translate
         "
         type="text"
+        data-test-id="valtimo-widget-management-collection-default-page-size-input"
       />
     </cds-text-label>
 
@@ -68,6 +71,7 @@
           [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
           [type]="ValuePathType.COLLECTION"
           (collectionSelected)="onCollectionSelected($event)"
+          data-test-id="valtimo-widget-management-collection-value-path-selector"
         ></valtimo-value-path-selector>
       } @else {
         <input
@@ -76,6 +80,7 @@
           [attr.data-carbon-theme]="theme"
           [placeholder]="'widgetTabManagement.content.collection.collection' | translate"
           type="text"
+          data-test-id="valtimo-widget-management-collection-collection-input"
         />
       }
     </div>
@@ -102,6 +107,7 @@
             [caseDefinitionKey]="obs.params?.caseDefinitionKey"
             [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
             [parentItem]="selectedCollection$ | async"
+            data-test-id="valtimo-widget-management-collection-value-path-selector"
           ></valtimo-value-path-selector>
         } @else {
           <input
@@ -110,6 +116,7 @@
             [attr.data-carbon-theme]="theme"
             [placeholder]="'widgetTabManagement.content.fields.value' | translate"
             type="text"
+            data-test-id="valtimo-widget-management-collection-value-input"
           />
         }
       </div>
@@ -121,6 +128,7 @@
         [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
         (selected)="onTypeSelected(cardForm, $event)"
         formControlName="type"
+        data-test-id="valtimo-widget-management-collection-type-dropdown"
       >
         <cds-dropdown-list [items]="getDisplayItemsSelected(cardForm)"></cds-dropdown-list>
       </cds-dropdown>
@@ -144,6 +152,7 @@
               "
               type="text"
               formControlName="currencyCode"
+              data-test-id="valtimo-widget-management-collection-currency-code-input"
             />
           </cds-text-label>
 
@@ -160,6 +169,7 @@
               [placeholder]="'widgetTabManagement.content.fields.displayPlaceholder' | translate"
               type="text"
               formControlName="display"
+              data-test-id="valtimo-widget-management-collection-display-input"
             />
           </cds-text-label>
 
@@ -179,6 +189,7 @@
               [placeholder]="'widgetTabManagement.content.fields.digitsInfoPlaceholder' | translate"
               type="text"
               formControlName="digitsInfo"
+              data-test-id="valtimo-widget-management-collection-digits-info-input"
             />
           </cds-text-label>
         }
@@ -195,6 +206,7 @@
               [placeholder]="'widgetTabManagement.content.fields.formatPlaceholder' | translate"
               type="text"
               formControlName="format"
+              data-test-id="valtimo-widget-management-collection-date-format-input"
             />
           </cds-text-label>
         }
@@ -211,6 +223,7 @@
               [placeholder]="'widgetTabManagement.content.fields.formatPlaceholder' | translate"
               type="text"
               formControlName="format"
+              data-test-id="valtimo-widget-management-collection-date-time-format-input"
             />
           </cds-text-label>
         }
@@ -231,6 +244,7 @@
                     [placeholder]="'widgetTabManagement.content.enumValue' | translate"
                     type="text"
                     formControlName="key"
+                    data-test-id="valtimo-widget-management-collection-enum-value-input-{{$index}}"
                   />
                 </cds-text-label>
 
@@ -247,6 +261,7 @@
                     [placeholder]="'widgetTabManagement.content.fields.enumDisplay' | translate"
                     type="text"
                     formControlName="value"
+                    data-test-id="valtimo-widget-management-collection-enum-display-input-{{$index}}"
                   />
                 </cds-text-label>
 
@@ -256,6 +271,7 @@
                   [iconOnly]="true"
                   class="valtimo-case-management-widget-field-column__delete-button enum"
                   (click)="onDeleteRowClick(cardForm.get('values'), $index)"
+                  data-test-id="valtimo-widget-management-collection-delete-enum-button-{{$index}}"
                 >
                   <svg cdsIcon="trash-can" size="16"></svg>
                 </button>
@@ -266,6 +282,7 @@
               cdsButton="primary"
               size="sm"
               (click)="onAddEnumValueClick(cardForm.get('values'))"
+              data-test-id="valtimo-widget-management-collection-add-enum-button"
             >
               {{ 'widgetTabManagement.content.fields.addEnum' | translate }}
 
@@ -294,6 +311,7 @@
               [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
               type="text"
               formControlName="digitsInfo"
+              data-test-id="valtimo-widget-management-collection-number-digits-info-input"
             />
           </cds-text-label>
         }
@@ -318,6 +336,7 @@
               [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
               type="text"
               formControlName="digitsInfo"
+              data-test-id="valtimo-widget-management-collection-percent-digits-info-input"
             />
           </cds-text-label>
         }
@@ -335,6 +354,7 @@
     [showHideWhenEmptyCheckbox]="true"
     (columnUpdateEvent)="onColumnUpdateEvent($event)"
     [selectedCollection]="selectedCollection$ | async"
+    data-test-id="valtimo-widget-management-collection-fields-column"
   >
   </valtimo-widget-management-fields-column>
 
@@ -344,6 +364,7 @@
       [dropUp]="false"
       [placeholder]="'widgetTabManagement.content.collection.fieldWidthPlaceholder' | translate"
       (selected)="onWidthSelected($event, index)"
+      data-test-id="valtimo-widget-management-collection-field-width-dropdown"
     >
       <cds-dropdown-list [items]="getSelectedWidthItem(index)"></cds-dropdown-list>
     </cds-dropdown>

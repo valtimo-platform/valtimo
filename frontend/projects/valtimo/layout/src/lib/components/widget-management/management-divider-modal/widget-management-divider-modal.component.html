@@ -14,15 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()">
-    <h3 cdsModalHeaderHeading>
+<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()" data-test-id="divider-modal">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()" data-test-id="divider-modal-header">
+    <h3 cdsModalHeaderHeading data-test-id="divider-modal-title">
       {{ 'widgetTabManagement.list.dividerModal.' + modalMode + 'DividerTitle' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="dividerForm" cdsModalContent>
-    <cds-label>
+  <form [formGroup]="dividerForm" cdsModalContent data-test-id="divider-modal-form">
+    <cds-label data-test-id="divider-modal-title-label">
       {{ 'widgetTabManagement.list.dividerModal.dividerTitleLabel' | translate }}
 
       <input
@@ -35,6 +35,7 @@
         [cdsLayer]="1"
         [attr.modal-primary-focus]="true"
         (keyup)="onFocusOut()"
+        data-test-id="divider-modal-title-input"
       />
     </cds-label>
 
@@ -45,16 +46,17 @@
       formControlName="key"
       labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
       placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
+      data-test-id="divider-modal-key-input"
     >
     </valtimo-auto-key-input>
   </form>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCloseModal()">
+  <cds-modal-footer data-test-id="divider-modal-footer">
+    <button cdsButton="ghost" (click)="onCloseModal()" data-test-id="divider-modal-cancel-button">
       {{ 'caseManagement.allVersionsModal.closeButton' | translate }}
     </button>
 
-    <button [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)">
+    <button [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)" data-test-id="divider-modal-submit-button">
       {{ buttonLabel | translate }}
     </button>
   </cds-modal-footer>

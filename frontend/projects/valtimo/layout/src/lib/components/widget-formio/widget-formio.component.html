@@ -27,9 +27,10 @@
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
+        data-test-id="formio-widget-icon"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="formio-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+      <h4 class="formio-widget__title" data-test-id="formio-widget-title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
     </div>
 
     <ng-content></ng-content>
@@ -37,8 +38,9 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
+      data-test-id="formio-widget-action-button"
     ></valtimo-widget-action-button>
   </section>
 
-  <valtimo-form-io [form]="obs.prefilledFormDefinition"></valtimo-form-io>
+  <valtimo-form-io [form]="obs.prefilledFormDefinition" data-test-id="formio-widget-form"></valtimo-form-io>
 </div>

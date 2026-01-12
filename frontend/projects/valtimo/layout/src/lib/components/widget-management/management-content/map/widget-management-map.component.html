@@ -31,6 +31,7 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
+      data-test-id="valtimo-widget-management-map-widget-title-input"
     />
   </cds-text-label>
 </form>
@@ -48,6 +49,7 @@
         [context]="{count: $count, index: $index, key: formGeoJsonSource.get('key')?.value}"
         [expanded]="$index === 0"
         class="valtimo-widget-management-map-layer__item"
+        data-test-id="valtimo-widget-management-map-layer-item-{{$index}}"
       >
         <form
           [formGroup]="formGeoJsonSource"
@@ -68,6 +70,7 @@
                 [placeholder]="'widgetTabManagement.content.map.keyPlaceholder' | translate"
                 type="text"
                 formControlName="key"
+                data-test-id="valtimo-widget-management-map-key-input-{{$index}}"
               />
             </cds-text-label>
           </div>
@@ -76,7 +79,7 @@
     }
   </cds-accordion>
 
-  <button cdsButton="primary" size="sm" (click)="addField()">
+  <button cdsButton="primary" size="sm" (click)="addField()" data-test-id="valtimo-widget-management-map-add-button">
     {{ 'widgetTabManagement.content.map.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -93,6 +96,7 @@
       [iconOnly]="true"
       (click)="onDeleteRowClick($event, formGeoJsonSources, index)"
       class="valtimo-widget-management-map-layer__delete-button"
+      data-test-id="valtimo-widget-management-map-delete-button-{{$index}}"
     >
       <svg cdsIcon="trash-can" size="16"></svg>
     </button>

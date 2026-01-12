@@ -15,25 +15,25 @@
   -->
 
 <cds-tile>
-  <h2 class="valtimo-zaak-type-link__title">{{ 'openZaak.links' | translate }}</h2>
+  <h2 class="valtimo-zaak-type-link__title" data-test-id="valtimo-zaak-type-link-title">{{ 'openZaak.links' | translate }}</h2>
 
   @if (loading$ | async) {
     <valtimo-spinner></valtimo-spinner>
   } @else {
     @if (zaakTypeLink$ | async; as zaakTypeLink) {
       <section class="valtimo-zaak-type-link__card-header">
-        <span class="valtimo-zaak-type-link__card-title">
+        <span class="valtimo-zaak-type-link__card-title" data-test-id="valtimo-zaak-type-link-card-title">
           {{ this.selectedZaakType?.omschrijving || '-' }}
         </span>
 
         <div class="valtimo-zaak-type-link__card-controls">
-          <button cdsButton="tertiary" (click)="openModal(zaakTypeLink)">
+          <button cdsButton="tertiary" (click)="openModal(zaakTypeLink)" data-test-id="valtimo-zaak-type-link-edit-button">
             {{ 'interface.edit' | translate }}
 
             <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
           </button>
 
-          <button cdsButton="danger" (click)="removeZaakTypeLink()">
+          <button cdsButton="danger" (click)="removeZaakTypeLink()" data-test-id="valtimo-zaak-type-link-delete-button">
             {{ 'interface.delete' | translate }}
 
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
@@ -69,6 +69,7 @@
         cdsButton="primary"
         class="valtimo-zaak-type-link__link-button"
         (click)="openModal(null)"
+        data-test-id="valtimo-zaak-type-link-add-button"
       >
         {{ 'openZaak.linkZaakType' | translate }}
 
@@ -79,17 +80,18 @@
 </cds-tile>
 
 <valtimo-render-in-body>
-  <cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()">
+  <cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()" data-test-id="valtimo-zaak-type-link-modal">
     <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
-      <h3 cdsModalHeaderHeading>Zaak types</h3>
+      <h3 cdsModalHeaderHeading data-test-id="valtimo-zaak-type-link-modal-title">Zaak types</h3>
 
-      <span> Connect Zaak type to Dossier</span>
+      <span data-test-id="valtimo-zaak-type-link-modal-subtitle"> Connect Zaak type to Dossier</span>
     </cds-modal-header>
 
     <section cdsModalContent class="valtimo-zaak-type-link-modal__content">
       <cds-select
         [label]="'openZaak.selectZaakTypeForCase' | translate"
         [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl"
+        data-test-id="valtimo-zaak-type-link-modal-zaak-type-select"
       >
         <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
 
@@ -103,6 +105,7 @@
       <cds-select
         [label]="'openZaak.selectZakenApiPluginForCase' | translate"
         [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
+        data-test-id="valtimo-zaak-type-link-modal-plugin-select"
       >
         <option value="default">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
 
@@ -122,6 +125,7 @@
           placeholder="RSIN"
           type="text"
           [(ngModel)]="this.zaakTypeLinkRequest.rsin"
+          data-test-id="valtimo-zaak-type-link-modal-rsin-input"
         />
       </cds-text-label>
 
@@ -129,12 +133,13 @@
         [label]="'openZaak.autoCreateForCase' | translate"
         [checked]="this.zaakTypeLinkRequest.createWithDossier"
         (checkedChange)="onCheckedChange($event)"
+        data-test-id="valtimo-zaak-type-link-modal-auto-create-toggle"
       >
       </cds-toggle>
     </section>
 
     <cds-modal-footer>
-      <button cdsButton="ghost" (click)="closeModal()">
+      <button cdsButton="ghost" (click)="closeModal()" data-test-id="valtimo-zaak-type-link-modal-cancel-button">
         {{ 'interface.cancel' | translate }}
       </button>
 
@@ -142,6 +147,7 @@
         cdsButton="primary"
         [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
         (click)="submit()"
+        data-test-id="valtimo-zaak-type-link-modal-save-button"
       >
         {{ 'interface.save' | translate }}
       </button>

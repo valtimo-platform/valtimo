@@ -227,7 +227,7 @@
         >
         </v-input-label>
 
-        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table">
+        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table" data-test-id="verzoekOpenMappingModal">
           <svg cdsIcon="data-table" size="16"></svg>
           {{ 'setMapping' | pluginTranslate: pluginId | async }}
         </button>
@@ -236,7 +236,7 @@
     </v-form>
     <v-modal [parentId]="uuid" (closeEvent)="closeMappingModal(uuid)" [maxWidthPx]="960">
       <div role="header">
-        <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
+        <h3 cdsModalHeaderHeading data-test-id="verzoekSetMappingHeader">{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
       </div>
 
       <div role="content">
@@ -275,6 +275,7 @@
           [attr.modal-primary-focus]="true"
           (click)="closeMappingModal(uuid)"
           [disabled]="obs.disabled"
+          data-test-id="verzoekCloseModal"
         >
           {{ 'close' | pluginTranslate: pluginId | async }}
         </button>
@@ -285,6 +286,7 @@
           [disabled]="obs.disabled"
           (click)="saveMapping(uuid)"
           [disabled]="obs.disabled"
+          data-test-id="verzoekSaveMapping"
         >
           {{ 'save' | pluginTranslate: pluginId | async }}
         </button>

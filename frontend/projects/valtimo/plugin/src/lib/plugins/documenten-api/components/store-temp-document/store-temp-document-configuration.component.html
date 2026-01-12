@@ -29,6 +29,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
+    data-test-id="document-form-file-name-input"
   ></v-input>
   <v-select
     [items]="confidentialityLevelItems$ | async"
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.confidentialityLevel || CONFIDENTIALITY_LEVEL_ITEMS[3]"
     [tooltip]="'confidentialityLevelTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="document-form-confidentiality-level-select"
   ></v-select>
   <v-input
     name="title"
@@ -48,6 +50,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'inputTitleTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
+    data-test-id="document-form-title-input"
   ></v-input>
   <v-input
     name="description"
@@ -56,6 +59,7 @@
     [defaultValue]="obs.prefill?.description"
     [disabled]="obs.disabled"
     [tooltip]="'inputDescriptionTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="document-form-description-input"
   ></v-input>
   <v-input
     name="localDocumentLocation"
@@ -66,6 +70,7 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'localDocumentLocationTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="document-form-local-document-location-input"
   >
   </v-input>
   <v-input
@@ -76,6 +81,7 @@
     [disabled]="obs.disabled"
     [trim]="true"
     [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="document-form-stored-document-url-input"
   >
   </v-input>
   <v-select
@@ -87,6 +93,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.taal || LANGUAGE_ITEMS[0]"
     [required]="true"
+    data-test-id="document-form-language-select"
   ></v-select>
   <v-select
     [items]="statusSelectItems$ | async"
@@ -97,6 +104,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.status || STATUS_ITEMS[2]"
     [required]="true"
+    data-test-id="document-form-status-select"
   ></v-select>
   <v-input
     name="informatieobjecttype"
@@ -108,6 +116,7 @@
     [trim]="true"
     [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    data-test-id="document-form-informatieobjecttype-input"
   >
   </v-input>
 </v-form>

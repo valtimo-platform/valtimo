@@ -18,12 +18,14 @@
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
   class="valtimo-widget-wizard-step__content"
+  data-test-id="widget-wizard-step-width-selection"
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="1"
     [selected]="$widgetWidth() === 1"
     [disabled]="$fieldsColumnsLength() > 1"
+    data-test-id="widget-wizard-step-width-small-tile"
   >
     <h3>{{ 'widgetTabManagement.width.small.title' | translate }}</h3>
 
@@ -32,6 +34,7 @@
     <img
       src="valtimo-layout/img/widget-management/width/quarter.svg"
       [alt]="'widgetTabManagement.width.small.title' | translate"
+      data-test-id="widget-wizard-step-width-small-image"
     />
   </cds-selection-tile>
 
@@ -40,6 +43,7 @@
     [value]="2"
     [selected]="$widgetWidth() === 2"
     [disabled]="$fieldsColumnsLength() > 2"
+    data-test-id="widget-wizard-step-width-medium-tile"
   >
     <h3>{{ 'widgetTabManagement.width.medium.title' | translate }}</h3>
 
@@ -48,6 +52,7 @@
     <img
       src="valtimo-layout/img/widget-management/width/half.svg"
       [alt]="'widgetTabManagement.width.medium.title' | translate"
+      data-test-id="widget-wizard-step-width-medium-image"
     />
   </cds-selection-tile>
 
@@ -56,6 +61,7 @@
     [value]="3"
     [selected]="$widgetWidth() === 3"
     [disabled]="$fieldsColumnsLength() > 3"
+    data-test-id="widget-wizard-step-width-large-tile"
   >
     <h3>{{ 'widgetTabManagement.width.large.title' | translate }}</h3>
 
@@ -64,6 +70,7 @@
     <img
       src="valtimo-layout/img/widget-management/width/three-quarters.svg"
       [alt]="'widgetTabManagement.width.large.title' | translate"
+      data-test-id="widget-wizard-step-width-large-image"
     />
   </cds-selection-tile>
 
@@ -71,6 +78,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="4"
     [selected]="$widgetWidth() === 4"
+    data-test-id="widget-wizard-step-width-xtra-large-tile"
   >
     <h3>{{ 'widgetTabManagement.width.xtraLarge.title' | translate }}</h3>
 
@@ -79,6 +87,7 @@
     <img
       src="valtimo-layout/img/widget-management/width/full-width.svg"
       [alt]="'widgetTabManagement.width.xtraLarge.title' | translate"
+      data-test-id="widget-wizard-step-width-xtra-large-image"
     />
   </cds-selection-tile>
 </cds-tile-group>

@@ -24,6 +24,7 @@
   } as obs"
 >
   <valtimo-carbon-list
+    data-test-id="search-fields-overview-list"
     [actionItems]="ACTION_ITEMS"
     [fields]="obs.fields"
     [items]="obs.searchFields"
@@ -36,6 +37,7 @@
     </ng-container>
 
     <valtimo-no-results
+      data-test-id="search-fields-overview-no-results"
       [action]="addButton"
       [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
       [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
@@ -43,6 +45,7 @@
   </valtimo-carbon-list>
 
   <valtimo-task-management-search-fields-modal
+    data-test-id="search-fields-overview-modal"
     [caseDefinitionKey]="caseDefinitionKey$ | async"
     [open]="obs.fieldModalOpen"
     [prefillData]="obs.prefillData"
@@ -50,6 +53,7 @@
   ></valtimo-task-management-search-fields-modal>
 
   <valtimo-confirmation-modal
+    data-test-id="search-fields-overview-confirmation-modal"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="searchFieldsOverview.deleteSearchFieldConfirmation"
@@ -61,7 +65,7 @@
 </ng-container>
 
 <ng-template #addButton>
-  <button cdsButton="primary" (click)="onAddButtonClick()">
+  <button cdsButton="primary" (click)="onAddButtonClick()" data-test-id="search-fields-overview-add-button">
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
     {{ 'searchFieldsOverview.add' | translate }}

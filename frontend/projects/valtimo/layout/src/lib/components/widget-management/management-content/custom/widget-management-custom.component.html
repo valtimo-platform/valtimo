@@ -22,6 +22,7 @@
   <div class="valtimo-widget-management-custom__title-container">
     <cds-text-label
       class="valtimo-widget-management-fields__input valtimo-widget-management-custom__title-input"
+      data-test-id="valtimo-widget-management-custom-title-input"
     >
       <v-input-label
         [title]="'widgetTabManagement.content.widgetTitle' | translate"
@@ -34,12 +35,14 @@
         cdsText
         [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
         type="text"
+        data-test-id="valtimo-widget-management-custom-widget-title-input"
       />
     </cds-text-label>
 
     <valtimo-mdi-icon-selector
       [cdsLayer]="0"
       formControlName="widgetIcon"
+      data-test-id="valtimo-widget-management-custom-icon-selector"
     ></valtimo-mdi-icon-selector>
   </div>
 
@@ -54,6 +57,7 @@
       [placeholder]="'widgetTabManagement.content.custom.placeholder' | translate"
       [disabled]="componentListItems.length === 0"
       (selected)="componentDropDownChange($event)"
+      data-test-id="valtimo-widget-management-custom-component-dropdown"
     >
       <cds-dropdown-list [items]="componentListItems"> </cds-dropdown-list>
     </cds-dropdown>
@@ -72,5 +76,6 @@
     (valueChange)="onKeyValueChange($event)"
     [keyColumnFlex]="1"
     [valueColumnFlex]="1"
+    data-test-id="valtimo-widget-management-custom-multi-input"
   ></valtimo-carbon-multi-input>
 </form>

@@ -15,6 +15,7 @@
   -->
 
 <valtimo-carbon-list
+  data-test-id="widget-tab-management-list"
   [actionItems]="actionItems$ | async"
   [fields]="fields$ | async"
   [header]="false"
@@ -26,7 +27,7 @@
   (rowClicked)="editWidget($event)"
 >
   <ng-container carbonToolbarContent>
-    <button *ngIf="enableWidgetDivider" cdsButton="ghost" (click)="openAddDividerModal()">
+    <button *ngIf="enableWidgetDivider" cdsButton="ghost" (click)="openAddDividerModal()" data-test-id="widget-tab-management-add-divider-button">
       {{ 'widgetTabManagement.list.addDivider' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="drag--vertical" size="16"></svg>
@@ -49,6 +50,7 @@
         : 'widgetTabManagement.list.noResults.title'
       ) | translate
     "
+    data-test-id="widget-tab-management-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -57,6 +59,7 @@
     cdsButton="primary"
     (click)="openAddModal()"
     [disabled]="(singleWidget$ | async) && ((widgets$ | async) || []).length === 1"
+    data-test-id="widget-tab-management-add-widget-button"
   >
     {{ 'widgetTabManagement.list.add' | translate }}
 
@@ -70,6 +73,7 @@
   [prefillData]="dividerDefinition$ | async"
   [usedKeys]="usedKeys$ | async"
   (closeEvent)="onCloseEvent($event)"
+  data-test-id="widget-tab-management-divider-modal"
 ></valtimo-widget-management-divider-modal>
 
 <valtimo-widget-management-wizard
@@ -77,6 +81,7 @@
   [open]="$isWizardOpen()"
   [disableDuplicate]="disableDuplicate$ | async"
   (closeEvent)="onCloseEvent($event)"
+  data-test-id="widget-tab-management-wizard"
 ></valtimo-widget-management-wizard>
 
 <valtimo-confirmation-modal
@@ -87,4 +92,5 @@
   [showModalSubject$]="deleteModalOpen$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDeleteConfirm($event)"
+  data-test-id="widget-tab-management-confirmation-modal"
 ></valtimo-confirmation-modal>
