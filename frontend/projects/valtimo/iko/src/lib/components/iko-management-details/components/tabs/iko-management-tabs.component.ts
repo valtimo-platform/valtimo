@@ -77,6 +77,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
       tabs.map(tab => ({
         ...tab,
         type: this.translateService.instant(`ikoManagement.tabTypes.${tab.type}`),
+        properties: this.getTabPropertiesView(tab),
       }))
     ),
     tap(() => this.$disableInput.set(false))
@@ -98,6 +99,12 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
     {
       key: 'type',
       label: 'ikoManagement.tabType',
+      viewType: 'string',
+      sortable: false,
+    },
+    {
+      key: 'properties',
+      label: 'ikoManagement.tabProperties',
       viewType: 'string',
       sortable: false,
     },
@@ -224,6 +231,18 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
           this.enableInput();
         },
       });
+  }
+
+  private getTabPropertiesView(tab: TabDto): string | null {
+    if (!tab?.properties) return null;
+    return Object.keys(tab.properties).reduce((acc, curr) => {
+      const keyValuePairString = `${curr}: ${tab.properties?.[curr]}`;
+      if (!acc) {
+        return `${keyValuePairString}`;
+      }
+
+      return `${acc}, ${keyValuePairString}`;
+    }, '');
   }
 
   private disableInput(): void {
