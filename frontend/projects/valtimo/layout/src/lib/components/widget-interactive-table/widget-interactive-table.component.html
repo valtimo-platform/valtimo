@@ -35,9 +35,12 @@
     [header]="false"
     [fields]="obs.fields"
     [items]="obs.widgetData"
+    [initialSortState]="$initialSortState()"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+    (sortChanged)="onSortChanged($event)"
     (rowClicked)="rowClick($event)"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>

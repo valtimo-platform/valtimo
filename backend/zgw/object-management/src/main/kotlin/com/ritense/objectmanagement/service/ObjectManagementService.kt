@@ -34,6 +34,7 @@ import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.domain.DataType.BOOLEAN
+import com.ritense.search.domain.DataType.BSN
 import com.ritense.search.domain.DataType.DATE
 import com.ritense.search.domain.DataType.DATETIME
 import com.ritense.search.domain.DataType.NUMBER
@@ -298,6 +299,7 @@ class ObjectManagementService(
             DATE -> parseDate(value)
             DATETIME -> parseDatetime(value, searchField)
             TIME -> parseTime(value, searchField)
+            BSN -> value as String
         }
     }
 

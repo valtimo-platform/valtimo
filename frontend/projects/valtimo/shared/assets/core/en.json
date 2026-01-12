@@ -919,7 +919,8 @@
         "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)",
         "linkText": "Link text",
         "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
-        "linkTextPlaceholder": "Link text (optional)"
+        "linkTextPlaceholder": "Link text (optional)",
+        "defaultSortWarning": "Updating this will overwrite other default sortings."
       },
       "map": {
         "add": "Add field",
@@ -995,9 +996,10 @@
     },
     "actionButtonLabel": "Action button type",
     "externalLink": {
-      "linkLabel": "External link button",
-      "linkPlaceholder": "External link",
-      "buttonTextLabel": "External link button text"
+      "linkLabel": "Target URL (with placeholders)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Button label",
+      "buttonTextPlaceholder": "'Go to zaak'"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
   },
@@ -1384,6 +1386,16 @@
       "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?",
       "keepEditing": "Keep editing"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "The value cannot be empty.",
+        "valueMaxLength": "The BSN is too long. Maximum length is 9 characters.",
+        "valueMinLength": "The BSN is too short. Minimum length is 8 characters.",
+        "valueOnlyDigits": "Value must contain only numeric digits. Letters or symbols are not allowed.",
+        "valueAllZerosOrNines": "Value cannot consist entirely of zeros or nines.",
+        "valueElfCheck": "Value failed the 11-check rule. Please enter a valid BSN."
+      }
+    },
     "required": "required",
     "filter": "Filter...",
     "back": "Back",
@@ -1452,6 +1464,7 @@
   "dropzone": {
     "drop": "Choose a file or drag it here",
     "maxFileSize": "Maximum file size: ",
+    "acceptedFiles": "Accepted files: ",
     "jsonDocDef": "The case definition must be in the JSON format",
     "formJsonDocDef": "The form definition must be in the JSON format",
     "objecttypeDef": "The objecttype definition must be in JSON format",
@@ -1574,16 +1587,23 @@
     "downloadButtonText": "Download configuration",
     "to": "to",
     "text": "Text",
+    "textPlaceholder": "Enter text",
     "number": "Number",
+    "numberPlaceholder": "Enter a number",
     "date": "Date",
+    "datePlaceholder": "dd-mm-yyyy",
     "datetime": "Date and time",
     "time": "Time",
+    "timePlaceholder": "hh:mm",
     "boolean": "Yes / no",
+    "booleanPlaceholder": "Yes/no",
     "numberRange": "Number range",
     "dateRange": "Date range",
     "datetimeRange": "Date and time range",
     "booleanPositive": "Yes",
-    "booleanNegative": "No"
+    "booleanNegative": "No",
+    "bsn": "BSN",
+    "bsnPlaceholder": "123456789"
   },
   "searchFieldsTooltips": {
     "text": "A text field",
@@ -1603,6 +1623,7 @@
     "path": "Path",
     "dataType": "Data type",
     "fieldType": "Field type",
+    "required": "Required",
     "matchType": "Match",
     "exact": "Exact",
     "like": "Contains",
@@ -1630,7 +1651,9 @@
     "text": "Text",
     "textContains": "Text contains",
     "noSearchfieldsTitle": "No search fields",
-    "noSearchfieldsDescription": "There are no search fields configured for this case type."
+    "noSearchfieldsDescription": "There are no search fields configured for this case type.",
+    "requiredEnabled": "Required",
+    "requiredDisabled": "Optional"
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
@@ -1642,7 +1665,8 @@
     "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
     "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
     "configFile": "Use a config file with dropdown values. The config value must be present on the server",
-    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
+    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value.",
+    "required": "Decides whether the user must enter a value before a search can be executed."
   },
   "searchFieldDataType": {"select": "Select a data type"},
   "searchFieldFieldType": {"select": "Select a field type"},
@@ -2028,7 +2052,7 @@
     "keyTitle": "Key",
     "keyPlaceholder": "Enter a key for the API configuration",
     "pluginIdTitle": "Plugin configuration",
-    "typeTitle": "type",
+    "typeTitle": "Type",
     "addColumn": "Add Column",
     "editColumn": "Edit column",
     "columnTitlePlaceholder": "Enter column title",

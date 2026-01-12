@@ -94,7 +94,7 @@ internal class IkoSearchActionResourceTest {
                         title = "BSN",
                         path = "/burgerservicenummer",
                         order = 0,
-                        dataType = DataType.TEXT,
+                        dataType = DataType.BSN,
                         fieldType = FieldType.SINGLE,
                     )
                 )
@@ -142,7 +142,7 @@ internal class IkoSearchActionResourceTest {
                         title = "BSN",
                         path = "/burgerservicenummer",
                         order = 0,
-                        dataType = DataType.TEXT,
+                        dataType = DataType.BSN,
                         fieldType = FieldType.SINGLE,
                         matchType = SearchFieldMatchType.EXACT,
                     )

@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {BaseApiService, ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
@@ -76,9 +76,17 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get(this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget`));
   }
 
-  public getIkoWidgetData(ikoViewKey: string, tabKey: string, widgetId: string, id: string): any {
+  public getIkoWidgetData(
+    ikoViewKey: string,
+    tabKey: string,
+    widgetId: string,
+    id: string,
+    queryParams?: HttpParams
+  ): any {
     return this.httpClient.get(
-      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}`)
+      this.getApiUrl(
+        `/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}${!queryParams ? '' : '&' + queryParams.toString()}`
+      )
     );
   }
 
@@ -93,7 +101,19 @@ export class IkoApiService extends BaseApiService {
     );
   }
 
-  public handleAction(action: WidgetAction, resolved: {[key: string]: any} = null) {
+  public getDropdownData(
+    provider: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
+    return this.httpClient.get<object>(
+      this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
+    );
+  }
+
+  public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
     if (!action) return;
 
     const navigateTo = this.resolveProperty(action?.navigateTo, resolved);

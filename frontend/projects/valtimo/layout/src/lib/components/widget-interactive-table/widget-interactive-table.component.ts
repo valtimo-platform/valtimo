@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  effect,
   EventEmitter,
   HostBinding,
   Input,
@@ -37,7 +38,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
-import {Page} from '@valtimo/shared';
+import {Page, SortState} from '@valtimo/shared';
 import {
   ButtonModule,
   ContextMenuModule,
@@ -57,6 +58,7 @@ import {
   WidgetInteractiveTableEventSearchRequest,
 } from '../../models';
 import {WidgetInteractiveTableSearchComponent} from './widget-interactive-table-search/widget-interactive-table-search.component';
+import {HttpParams} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-widget-interactive-table',
@@ -91,6 +93,8 @@ export class WidgetInteractiveTableComponent {
     return this._widgetConfiguration;
   }
 
+  private _sortInitialized = false;
+  public readonly $initialSortState = signal<SortState | null>(null);
   public readonly filters$ = new BehaviorSubject<any[]>([]);
 
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
@@ -98,26 +102,42 @@ export class WidgetInteractiveTableComponent {
     this.filters$.next(value?.properties?.filters ?? []);
 
     this.fields$.next(
-      value.properties.columns.map((column: FieldsWidgetValue, index: number) => ({
-        key: `data.${column.key}`,
-        label: column.title,
-        viewType: column.displayProperties?.type ?? ViewType.TEXT,
-        ...(!!column.displayProperties?.['format'] && {
-          format: column.displayProperties['format'],
-        }),
-        ...(!!column.displayProperties?.['digitsInfo'] && {
-          digitsInfo: column.displayProperties['digitsInfo'],
-        }),
-        ...(!!column.displayProperties?.['display'] && {
-          display: column.displayProperties['display'],
-        }),
-        ...(!!column.displayProperties?.['currencyCode'] && {
-          currencyCode: column.displayProperties['currencyCode'],
-        }),
-        ...(!!column.displayProperties?.['values'] && {
-          values: column.displayProperties['values'],
-        }),
-      }))
+      value.properties.columns.map((column: FieldsWidgetValue, index: number) => {
+        if (column.sortable && !!column.defaultSort && !this._sortInitialized) {
+          this.$initialSortState.set({
+            isSorting: true,
+            state: {
+              direction: column.defaultSort,
+              name: `data.${column.key}`,
+            },
+          });
+          this.$sort.set(this.$initialSortState());
+          this._sortInitialized = true;
+        }
+
+        return {
+          key: `data.${column.key}`,
+          label: column.title,
+          sortable: column.sortable,
+          default: column.defaultSort,
+          viewType: column.displayProperties?.type ?? ViewType.TEXT,
+          ...(!!column.displayProperties?.['format'] && {
+            format: column.displayProperties['format'],
+          }),
+          ...(!!column.displayProperties?.['digitsInfo'] && {
+            digitsInfo: column.displayProperties['digitsInfo'],
+          }),
+          ...(!!column.displayProperties?.['display'] && {
+            display: column.displayProperties['display'],
+          }),
+          ...(!!column.displayProperties?.['currencyCode'] && {
+            currencyCode: column.displayProperties['currencyCode'],
+          }),
+          ...(!!column.displayProperties?.['values'] && {
+            values: column.displayProperties['values'],
+          }),
+        };
+      })
     );
 
     this.cdr.detectChanges();
@@ -162,7 +182,7 @@ export class WidgetInteractiveTableComponent {
           ? null
           : {
               page: 1,
-              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
+              collectionSize: widgetPage.totalElements,
               size: widgetPage.size,
             }
       );
@@ -174,7 +194,7 @@ export class WidgetInteractiveTableComponent {
           ? null
           : {
               ...model,
-              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
+              collectionSize: widgetPage.totalElements,
               currentPage: widgetPage.number + 1,
             }
       );
@@ -195,12 +215,14 @@ export class WidgetInteractiveTableComponent {
   @Output() public readonly rowClickEvent = new EventEmitter<any>();
   @Output() public readonly actionEvent = new EventEmitter<WidgetAction>();
   @Output() public readonly caseStartEvent = new EventEmitter<CaseDefinition>();
+  @Output() public readonly queryParamsEvent = new EventEmitter<HttpParams>();
   @Output() public readonly searchSubmitEvent = new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly caseDefinitions$: Observable<CaseDefinition[]> =
     this.documentService.getCaseDefinitions({active: true});
 
+  public readonly $sort = signal<SortState | null>(null);
   public readonly $paginationModel = signal<Pagination | null>(null);
   public readonly $paginatorConfig = signal<CarbonPaginatorConfig>({
     itemsPerPageOptions: [5, 10, 20, 30],
@@ -213,6 +235,22 @@ export class WidgetInteractiveTableComponent {
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Filter16, Link16]);
+    effect(() => {
+      const paginationModel = this.$paginationModel();
+      const sort = this.$sort();
+      const paramsObject = {
+        ...(!!paginationModel && {
+          size: paginationModel.size,
+          collectionSize: paginationModel.collectionSize,
+          page: paginationModel.page - 1,
+        }),
+        ...(!!sort &&
+          sort.isSorting && {
+            sort: `${sort.state.name},${sort.state.direction}`,
+          }),
+      };
+      this.queryParamsEvent.emit(new HttpParams({fromObject: paramsObject}));
+    });
   }
 
   public onActionClick(action: WidgetAction): void {
@@ -226,7 +264,23 @@ export class WidgetInteractiveTableComponent {
   public onPaginationClicked(page: number): void {
     const paginationModel = this.$paginationModel();
     if (!paginationModel) return;
-    this.paginationEvent.emit({...paginationModel, page});
+    this.$paginationModel.set({
+      ...paginationModel,
+      page,
+    });
+  }
+
+  public onPaginationSet(size: number): void {
+    const paginationModel = this.$paginationModel();
+    if (!paginationModel) return;
+    this.$paginationModel.set({
+      ...paginationModel,
+      size,
+    });
+  }
+
+  public onSortChanged(sortState: SortState): void {
+    this.$sort.set(sortState);
   }
 
   public rowClick(event: any): void {

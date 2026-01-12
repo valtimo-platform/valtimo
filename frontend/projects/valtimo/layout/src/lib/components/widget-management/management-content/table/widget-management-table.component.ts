@@ -73,6 +73,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
 export class WidgetManagementTableComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-table';
   @Input() public showFirstColumnOption = true;
+  @Input() public sortableColumns = false;
 
   public readonly form: FormGroup = this.fb.group({
     title: this.fb.control<string>(

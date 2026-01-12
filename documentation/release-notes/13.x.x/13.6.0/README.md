@@ -26,9 +26,7 @@ A new case widget type has been added called the _map widget_. This widget shows
 
 All case widget types except for interactive table now allow for configuring an action button. This button can be used to either start a case or redirect to an external link.
 
-**Variable UI** **improvements**&#x20;
-
-
+**Variable UI** **improvements**
 
 ## Bugfixes
 
@@ -38,3 +36,9 @@ All case widget types except for interactive table now allow for configuring an 
 * Radio button options now display horizontally when selecting Inline Layout in Form.io. The label spacing for radio buttons is also now consistent with other form elements
 * Fixed the issue with the case version tag when exporting BPMN process
 * Provided a fix if the x-timezone-offset header is not available the application will no longer use a provided fallback zone/offset
+* Retrieving data on case tabs caused a permission error because the context was not included in the permission check.
+* The asynchronous handling of Notificatie API events would, in some scenario's, retry the same event indefinitely.
+
+## Breaking Changes
+
+* The German language files have been removed, leaving English and Dutch as the only supported languages.
