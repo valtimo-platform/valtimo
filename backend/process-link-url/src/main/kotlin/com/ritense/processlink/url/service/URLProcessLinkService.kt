@@ -38,7 +38,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.url.domain.URLProcessLink
 import com.ritense.processlink.url.domain.URLVariables
 import com.ritense.processlink.url.web.rest.dto.URLSubmissionResult
-import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
@@ -82,7 +82,7 @@ class URLProcessLinkService(
             taskInstanceId,
             documentDefinitionNameToUse,
             processDefinition.key,
-            processDefinition.getSolutionModuleId()
+            processDefinition.getBlueprintId()
         )
 
         return dispatchRequest(
@@ -126,14 +126,14 @@ class URLProcessLinkService(
         taskInstanceId: String?,
         documentDefinitionName: String,
         processDefinitionKey: String,
-        solutionModuleId: SolutionModuleId?
+        blueprintId: BlueprintId?
     ): Request {
         return if (processLink.activityType == ActivityTypeWithEventName.START_EVENT_START) {
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
                     processDefinitionKey,
-                    solutionModuleId
+                    blueprintId
                 )
             } else {
                 modifyDocumentAndStartProcessRequest(
@@ -154,16 +154,16 @@ class URLProcessLinkService(
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
         processDefinitionKey: String,
-        solutionModuleId: SolutionModuleId?,
+        blueprintId: BlueprintId?,
     ): NewDocumentAndStartProcessRequest {
-        return when (solutionModuleId) {
+        return when (blueprintId) {
             is CaseDefinitionId -> {
                 NewDocumentAndStartProcessRequest(
                     processDefinitionKey,
                     NewDocumentRequest(
                         documentDefinitionName,
-                        solutionModuleId.key,
-                        solutionModuleId.versionTag.version,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
                         objectMapper.createObjectNode()
                     )
                 )
@@ -176,8 +176,8 @@ class URLProcessLinkService(
                         documentDefinitionName,
                         null,
                         null,
-                        solutionModuleId.key,
-                        solutionModuleId.versionTag.version,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
                         objectMapper.createObjectNode()
                     )
                 )

@@ -54,7 +54,7 @@ class BuildingBlockDocumentDefinitionResource(
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val definition = runWithoutAuthorization {
             service
-                .findBySolutionModuleId(buildingBlockId)
+                .findByBlueprintId(buildingBlockId)
         }
             .getOrElse { return ResponseEntity.notFound().build() }
         return ResponseEntity.ok(definition.schema())

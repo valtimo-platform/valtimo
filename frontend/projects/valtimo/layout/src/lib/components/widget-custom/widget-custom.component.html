@@ -15,7 +15,10 @@
   -->
 
 <div
-  *ngIf="{widgetConfiguration: widgetConfig$ | async, widgetData: widgetData$ | async} as obs"
+  *ngIf="{
+    widgetConfiguration: widgetConfig$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
   class="custom-widget"
 >
   <section class="custom-widget__header">

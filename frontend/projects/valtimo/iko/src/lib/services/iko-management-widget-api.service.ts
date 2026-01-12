@@ -51,7 +51,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.get<BasicWidget[]>(
           this.getApiUrl(
-            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
+            `management/v1/iko-view/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
           )
         )
       )
@@ -64,7 +64,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.put<BasicWidget[]>(
           this.getApiUrl(
-            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
+            `management/v1/iko-view/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
           ),
           widgets
         )
@@ -78,7 +78,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.delete<void>(
           this.getApiUrl(
-            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
+            `management/v1/iko-view/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
           )
         )
       )
@@ -91,7 +91,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.put<BasicWidget>(
           this.getApiUrl(
-            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
+            `management/v1/iko-view/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
           ),
           widget
         )
@@ -105,7 +105,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.post<BasicWidget>(
           this.getApiUrl(
-            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
+            `management/v1/iko-view/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget/${widget.key}`
           ),
           widget
         )

@@ -62,7 +62,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public readonly $modalMode = signal<ModalMode>('add');
   public readonly openConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _dataAggregateKey$ = this.route.params.pipe(
+  private readonly _ikoViewKey$ = this.route.params.pipe(
     map(params => params?.key),
     filter(key => !!key)
   );
@@ -126,7 +126,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(
-      combineLatest([this._dataAggregateKey$, this._reloadTabs$])
+      combineLatest([this._ikoViewKey$, this._reloadTabs$])
         .pipe(
           tap(() => this.$disableInput.set(true)),
           switchMap(([key]) => this.ikoManagementApiService.getIkoTabs(key)),
@@ -178,7 +178,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(switchMap(key => this.ikoManagementApiService.updateIkoTabs(key, mappedItems)))
       .subscribe({
         next: () => {
@@ -213,7 +213,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public onDeleteTab(event: {key: string}): void {
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(switchMap(key => this.ikoManagementApiService.deleteIkoTab(key, event.key)))
       .subscribe({
         next: () => {

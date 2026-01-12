@@ -18,7 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byCaseDefinitionActive;
-import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdSolutionModuleId;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdBlueprintId;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byIdName;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider.CREATE;
@@ -56,7 +56,7 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResultFailed;
 import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceeded;
 import com.ritense.document.service.result.error.DocumentDefinitionError;
 import com.ritense.logging.LoggableResource;
-import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
@@ -123,7 +123,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                 ),
                 null
             );
-        return documentDefinitionRepository.findAll(spec.and(byIdSolutionModuleId(caseDefinitionId)));
+        return documentDefinitionRepository.findAll(spec.and(byIdBlueprintId(caseDefinitionId)));
     }
 
     @Override
@@ -227,11 +227,11 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
-    public Optional<JsonSchemaDocumentDefinition> findBySolutionModuleId(
-        SolutionModuleId solutionModuleId
+    public Optional<JsonSchemaDocumentDefinition> findByBlueprintId(
+        BlueprintId blueprintId
     ) {
         final var optionalDefinition = documentDefinitionRepository.findOne(
-            byIdSolutionModuleId(solutionModuleId)
+            byIdBlueprintId(blueprintId)
         );
 
         optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
@@ -283,8 +283,8 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         final var definitions = documentDefinitionRepository.findAll(
             byIdName(documentDefinitionName).and(byCaseDefinitionActive()),
             org.springframework.data.domain.Sort.by(
-                org.springframework.data.domain.Sort.Order.asc("id.solutionModuleId.solutionModuleKey"),
-                org.springframework.data.domain.Sort.Order.desc("id.solutionModuleId.solutionModuleVersionTag")
+                org.springframework.data.domain.Sort.Order.asc("id.blueprintId.blueprintKey"),
+                org.springframework.data.domain.Sort.Order.desc("id.blueprintId.blueprintVersionTag")
             )
         );
 
@@ -344,7 +344,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
 
             final var documentDefinitionExists = documentDefinitionRepository.findOne(
                 byIdName(documentDefinition.id().name())
-                    .and(byIdSolutionModuleId(documentDefinition.id().caseDefinitionId()))
+                    .and(byIdBlueprintId(documentDefinition.id().caseDefinitionId()))
             ).isPresent();
 
             authorizationService.requirePermission(

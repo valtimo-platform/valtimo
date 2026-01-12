@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
+import {Condition} from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
@@ -24,7 +25,6 @@ import {
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
-import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
@@ -55,6 +55,7 @@ interface BasicWidget {
   highContrast: boolean;
   key: string;
   properties?: WidgetContentProperties;
+  isCompact?: boolean;
   actions?: WidgetAction[];
   displayConditions: Array<Condition<string>>;
 }

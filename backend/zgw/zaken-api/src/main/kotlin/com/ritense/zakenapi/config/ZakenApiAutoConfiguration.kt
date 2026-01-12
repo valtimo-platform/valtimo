@@ -41,6 +41,7 @@ import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
 import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
+import com.ritense.zakenapi.listener.ZaakNotitieEventListener
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
 import com.ritense.zakenapi.provider.DefaultZaaktypeUrlProvider
@@ -49,18 +50,20 @@ import com.ritense.zakenapi.provider.ZaakBsnProvider
 import com.ritense.zakenapi.provider.ZaakKvkProvider
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.resolver.ZaakResultaatValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakStatusValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakValueResolverFactory
 import com.ritense.zakenapi.security.ZakenApiHttpSecurityConfigurer
 import com.ritense.zakenapi.service.DefaultZaakTypeLinkService
-import com.ritense.zakenapi.service.DocumentMetadataAvailableEventListener
+import com.ritense.zakenapi.listener.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
-import com.ritense.zakenapi.service.ZakenApiDocumentDeletedEventListener
-import com.ritense.zakenapi.service.ZakenApiEventListener
+import com.ritense.zakenapi.listener.ZakenApiDocumentDeletedEventListener
+import com.ritense.zakenapi.listener.ZakenApiEventListener
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
 import com.ritense.zakenapi.web.rest.ZaakDocumentResource
@@ -112,6 +115,7 @@ class ZakenApiAutoConfiguration {
         platformTransactionManager: PlatformTransactionManager,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository
     ) = ZakenApiPluginFactory(
         pluginService,
         zakenApiClient,
@@ -122,7 +126,8 @@ class ZakenApiAutoConfiguration {
         zaakDocumentService,
         platformTransactionManager,
         valueResolverService,
-        objectMapper
+        objectMapper,
+        zaakNotitieLinkRepository
     )
 
     @Bean
@@ -257,18 +262,14 @@ class ZakenApiAutoConfiguration {
     @ConditionalOnMissingBean(DocumentMetadataAvailableEventListener::class)
     fun documentMetadataAvailableEventListener(
         resourceStorageMetadataRepository: ResourceStorageMetadataRepository,
-    ): DocumentMetadataAvailableEventListener {
-        return DocumentMetadataAvailableEventListener(resourceStorageMetadataRepository)
-    }
+    ) = DocumentMetadataAvailableEventListener(resourceStorageMetadataRepository)
 
     @Bean
     @ProcessBean
     @ConditionalOnMissingBean(UploadProcessDelegate::class)
     fun uploadProcessDelegate(
         applicationEventPublisher: ApplicationEventPublisher
-    ): UploadProcessDelegate {
-        return UploadProcessDelegate(applicationEventPublisher)
-    }
+    ): UploadProcessDelegate = UploadProcessDelegate(applicationEventPublisher)
 
     @Bean
     @Primary
@@ -312,24 +313,20 @@ class ZakenApiAutoConfiguration {
     fun zaakTypeLinkImporter(
         objectMapper: ObjectMapper,
         zaakTypeLinkService: ZaakTypeLinkService
-    ): ZaakTypeLinkImporter {
-        return ZaakTypeLinkImporter(
-            objectMapper,
-            zaakTypeLinkService
-        )
-    }
+    ) = ZaakTypeLinkImporter(
+        objectMapper,
+        zaakTypeLinkService
+    )
 
     @Bean
     @ConditionalOnMissingBean(ZaakTypeLinkExporter::class)
     fun zaakTypeLinkExporter(
         objectMapper: ObjectMapper,
         zaakTypeLinkService: ZaakTypeLinkService
-    ): ZaakTypeLinkExporter {
-        return ZaakTypeLinkExporter(
-            objectMapper,
-            zaakTypeLinkService
-        )
-    }
+    ) = ZaakTypeLinkExporter(
+        objectMapper,
+        zaakTypeLinkService
+    )
 
     @Bean
     @ConditionalOnMissingBean(ZaakTypeLinkCaseEventListener::class)
@@ -346,10 +343,32 @@ class ZakenApiAutoConfiguration {
     fun zakenApiIkoRepository(
         pluginService: PluginService,
         objectMapper: ObjectMapper,
-    ): ZakenApiIkoRepository {
-        return ZakenApiIkoRepository(
-            pluginService,
-            objectMapper,
-        )
-    }
+    ) = ZakenApiIkoRepository(
+        pluginService,
+        objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakNotitieService::class)
+    fun zaakNotitieService(
+        zaakUrlProvider: ZaakUrlProvider,
+        pluginService: PluginService,
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository
+    ) = ZaakNotitieService(
+        zaakUrlProvider,
+        pluginService,
+        zaakNotitieLinkRepository
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakNotitieEventListener::class)
+    fun zaakNotitieEventListener(
+        zaakUrlProvider: ZaakUrlProvider,
+        pluginService: PluginService,
+        zaakNotitieService: ZaakNotitieService
+    ) = ZaakNotitieEventListener(
+        zaakUrlProvider,
+        pluginService,
+        zaakNotitieService
+    )
 }

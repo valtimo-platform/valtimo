@@ -165,6 +165,7 @@ class TableWidgetIntTest @Autowired constructor(
                         icon = "mdi-home",
                         width = 1,
                         highContrast = true,
+                        isCompact = true,
                         actions = null,
                         displayConditions = emptyList(),
                         properties = TableWidgetProperties(

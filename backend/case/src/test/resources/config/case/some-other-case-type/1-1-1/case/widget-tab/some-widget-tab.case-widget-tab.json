@@ -8,6 +8,7 @@
                 "title": "Widget 2",
                 "width": 2,
                 "highContrast": true,
+                "isCompact": null,
                 "actions": [
                     {
                         "name": "Edit",
@@ -32,6 +33,7 @@
                 "title": "Widget 1",
                 "width": 1,
                 "highContrast": false,
+                "isCompact": null,
                 "properties": {
                     "columns": [
                         [

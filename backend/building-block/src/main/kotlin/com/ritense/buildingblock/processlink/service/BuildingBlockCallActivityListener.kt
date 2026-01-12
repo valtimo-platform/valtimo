@@ -69,7 +69,10 @@ class BuildingBlockCallActivityListener(
             && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
     )
     fun onCallActivityEnd(execution: DelegateExecution) {
-        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE) as String
+
+        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)?.let {
+            it as String
+        }?: return
 
         val buildingBlockDocumentId = try {
             UUID.fromString(buildingBlockVariableString)

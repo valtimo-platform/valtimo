@@ -65,13 +65,13 @@ internal class IkoSearchFieldManagementResourceTest {
 
     @Test
     fun `should get iko searchFields`() {
-        whenever(service.findAllSearchFieldsByIkoDataRequest("klant", "bsn")).thenReturn(
+        whenever(service.findAllSearchFieldsByIkoSearchAction("klant", "bsn")).thenReturn(
             listOf(searchField())
         )
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field",
                 "klant",
                 "bsn"
             )
@@ -82,7 +82,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$[0].title").value("BSN"))
             .andExpect(jsonPath("$[0].path").value("/bsn"))
             .andExpect(jsonPath("$[0].order").value(0))
-            .andExpect(jsonPath("$[0].dataType").value("text"))
+            .andExpect(jsonPath("$[0].dataType").value("bsn"))
             .andExpect(jsonPath("$[0].fieldType").value("single"))
             .andExpect(jsonPath("$[0].matchType").value("exact"))
             .andExpect(jsonPath("$[0].required").value(true))
@@ -95,7 +95,7 @@ internal class IkoSearchFieldManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -107,7 +107,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -130,7 +130,7 @@ internal class IkoSearchFieldManagementResourceTest {
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -144,7 +144,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -169,7 +169,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .thenReturn(searchField)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -183,7 +183,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$.title").value("BSN"))
             .andExpect(jsonPath("$.path").value("/bsn"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.dataType").value("text"))
+            .andExpect(jsonPath("$.dataType").value("bsn"))
             .andExpect(jsonPath("$.fieldType").value("single"))
             .andExpect(jsonPath("$.matchType").value("exact"))
             .andExpect(jsonPath("$.required").value(true))
@@ -204,14 +204,14 @@ internal class IkoSearchFieldManagementResourceTest {
                 required = searchField.required,
             )
         )
-        whenever(service.findAllSearchFieldsByIkoDataRequest("klant", "bsn")).thenReturn(
+        whenever(service.findAllSearchFieldsByIkoSearchAction("klant", "bsn")).thenReturn(
             listOf(searchField)
         )
         whenever(service.update(eq("klant"), eq("bsn"), any()))
             .thenReturn(searchField)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field",
                 "klant",
                 "bsn"
             )
@@ -224,7 +224,7 @@ internal class IkoSearchFieldManagementResourceTest {
             .andExpect(jsonPath("$[0].title").value("BSN"))
             .andExpect(jsonPath("$[0].path").value("/bsn"))
             .andExpect(jsonPath("$[0].order").value(0))
-            .andExpect(jsonPath("$[0].dataType").value("text"))
+            .andExpect(jsonPath("$[0].dataType").value("bsn"))
             .andExpect(jsonPath("$[0].fieldType").value("single"))
             .andExpect(jsonPath("$[0].matchType").value("exact"))
             .andExpect(jsonPath("$[0].required").value(true))
@@ -234,7 +234,7 @@ internal class IkoSearchFieldManagementResourceTest {
     fun `should delete iko searchField`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/data-request/{dataRequestKey}/search-field/{searchFieldKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{searchFieldKey}",
                 "klant",
                 "bsn",
                 "bsn"
@@ -251,7 +251,7 @@ internal class IkoSearchFieldManagementResourceTest {
         title = "BSN",
         path = "/bsn",
         order = 0,
-        dataType = DataType.TEXT,
+        dataType = DataType.BSN,
         fieldType = FieldType.SINGLE,
         matchType = SearchFieldMatchType.EXACT,
         dropdownDataProvider = null,

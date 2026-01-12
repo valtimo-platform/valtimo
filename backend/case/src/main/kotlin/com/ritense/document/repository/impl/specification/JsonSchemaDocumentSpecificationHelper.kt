@@ -19,8 +19,8 @@ package com.ritense.document.repository.impl.specification
 import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -32,10 +32,10 @@ class JsonSchemaDocumentSpecificationHelper {
     companion object {
 
         const val DOCUMENT_DEFINITION_ID: String = "documentDefinitionId"
-        const val OWNER_ID: String = "solutionModuleId"
-        const val OWNER_TYPE: String = "solutionModuleType"
-        const val OWNER_KEY: String = "solutionModuleKey"
-        const val OWNER_VERSION_TAG: String = "solutionModuleVersionTag"
+        const val OWNER_ID: String = "blueprintId"
+        const val OWNER_TYPE: String = "blueprintType"
+        const val OWNER_KEY: String = "blueprintKey"
+        const val OWNER_VERSION_TAG: String = "blueprintVersionTag"
         const val NAME: String = "name"
         const val ASSIGNEE_ID: String = "assigneeId"
 
@@ -50,15 +50,15 @@ class JsonSchemaDocumentSpecificationHelper {
 
         @JvmStatic
         fun byDocumentDefinitionIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
-            val ownerId = JsonSchemaDocumentDefinitionSolutionModuleId.forCase(caseDefinitionId)
+            val ownerId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
             return Specification { root: Root<JsonSchemaDocument>,
                                    _: CriteriaQuery<*>?,
                                    cb: CriteriaBuilder ->
                 val ownerPath = root.get<Any>(DOCUMENT_DEFINITION_ID).get<Any>(OWNER_ID)
                 cb.and(
-                    cb.equal(ownerPath.get<JsonSchemaDocumentDefinitionSolutionModuleType>(OWNER_TYPE), JsonSchemaDocumentDefinitionSolutionModuleType.CASE),
-                    cb.equal(ownerPath.get<String>(OWNER_KEY), ownerId.solutionModuleKey()),
-                    cb.equal(ownerPath.get<String>(OWNER_VERSION_TAG), ownerId.solutionModuleVersionTag())
+                    cb.equal(ownerPath.get<JsonSchemaDocumentDefinitionBlueprintType>(OWNER_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(ownerPath.get<String>(OWNER_KEY), ownerId.blueprintKey()),
+                    cb.equal(ownerPath.get<String>(OWNER_VERSION_TAG), ownerId.blueprintVersionTag())
                 )
             }
         }

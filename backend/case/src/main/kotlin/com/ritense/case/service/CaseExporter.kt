@@ -24,7 +24,7 @@ import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.service.exception.ExportLimitExceedsException
 import com.ritense.case.service.exception.NoExportableColumnsException
 import com.ritense.case.web.rest.dto.CaseListRowDto
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.event.DocumentsExported
@@ -133,7 +133,7 @@ class CaseExporter(
 
         val searchResults = documentSearchService.searchForExport(
             caseDefinitionKey,
-            JsonSchemaDocumentDefinitionSolutionModuleType.CASE,
+            JsonSchemaDocumentDefinitionBlueprintType.CASE,
             searchRequest,
             newPageable
         )

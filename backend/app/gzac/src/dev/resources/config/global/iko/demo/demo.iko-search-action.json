@@ -1,0 +1,12 @@
+{
+    "ikoViewKey": "demo",
+    "ikoSearchActions": [
+        {
+            "key": "bsn",
+            "title": "Zoek op BSN",
+            "properties": {
+                "endpointQueryParameters": {}
+            }
+        }
+    ]
+}
