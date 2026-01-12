@@ -1,23 +1,54 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Test environment comment payloads",
-  "schemas": {
-    "test_env_state_changed": {
+  "definitions": {
+    "waiting_for_images": {
       "type": "object",
       "properties": {
         "state": {
-          "enum": [
-            "waiting_for_images",
-            "test_env_started",
-            "test_env_is_running",
-            "test_env_is_crash_looping"
-          ]
+          "const": "waiting_for_images"
         },
         "test_env_comment_id": {
           "type": "integer"
         },
+        "test_env_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "test_env_comment_id",
+        "test_env_name"
+      ],
+      "additionalProperties": false
+    },
+    "test_env_started": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "test_env_started"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
+          "type": "string"
+        },
+        "test_env_comment_id": {
+          "type": "integer"
+        },
+        "test_env_name": {
+          "type": "string"
+        },
         "test_env_image_tag": {
           "type": "string"
+        },
+        "test_env_url": {
+          "type": "string",
+          "format": "uri"
         },
         "grafana_backend_pod_metrics_url": {
           "type": "string",
@@ -30,8 +61,115 @@
       },
       "required": [
         "state",
+        "commit_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
+        "test_env_url",
+        "grafana_backend_pod_metrics_url",
+        "grafana_backend_pod_logs_url"
+      ],
+      "additionalProperties": false
+    },
+    "test_env_is_running": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "test_env_is_running"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
+          "type": "string"
+        },
+        "test_env_comment_id": {
+          "type": "integer"
+        },
+        "test_env_name": {
+          "type": "string"
+        },
+        "test_env_image_tag": {
+          "type": "string"
+        },
+        "test_env_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grafana_backend_pod_metrics_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grafana_backend_pod_logs_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "state",
+        "commit_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
+        "test_env_comment_id",
+        "test_env_name",
+        "test_env_image_tag",
+        "test_env_url",
+        "grafana_backend_pod_metrics_url",
+        "grafana_backend_pod_logs_url"
+      ],
+      "additionalProperties": false
+    },
+    "test_env_is_crash_looping": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "test_env_is_crash_looping"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
+          "type": "string"
+        },
+        "test_env_comment_id": {
+          "type": "integer"
+        },
+        "test_env_name": {
+          "type": "string"
+        },
+        "test_env_image_tag": {
+          "type": "string"
+        },
+        "test_env_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grafana_backend_pod_metrics_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "grafana_backend_pod_logs_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "state",
+        "commit_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
+        "test_env_comment_id",
+        "test_env_name",
+        "test_env_image_tag",
+        "test_env_url",
         "grafana_backend_pod_metrics_url",
         "grafana_backend_pod_logs_url"
       ],
@@ -43,8 +181,20 @@
         "state": {
           "const": "test_env_cannot_start"
         },
+        "commit_sha": {
+          "type": "string"
+        },
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
+          "type": "string"
+        },
         "test_env_comment_id": {
           "type": "integer"
+        },
+        "test_env_name": {
+          "type": "string"
         },
         "test_env_image_tag": {
           "type": "string"
@@ -55,11 +205,32 @@
       },
       "required": [
         "state",
+        "commit_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
+        "test_env_name",
         "test_env_image_tag",
         "error_message"
       ],
       "additionalProperties": false
     }
-  }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/waiting_for_images"
+    },
+    {
+      "$ref": "#/definitions/test_env_started"
+    },
+    {
+      "$ref": "#/definitions/test_env_is_running"
+    },
+    {
+      "$ref": "#/definitions/test_env_is_crash_looping"
+    },
+    {
+      "$ref": "#/definitions/test_env_cannot_start"
+    }
+  ]
 }

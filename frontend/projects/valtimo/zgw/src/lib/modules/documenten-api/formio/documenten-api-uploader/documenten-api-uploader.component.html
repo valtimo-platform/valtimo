@@ -29,7 +29,8 @@
   </div>
   <valtimo-dropzone
     (fileSelected)="fileSelected($event)"
-    [acceptedFiles]="null"
+    [acceptedFiles]="acceptedFiles"
+    [showAcceptedFiles]="!hideAcceptedFiles"
     [camera]="camera"
     [disabled]="disabled || obs.linked === false || obs.linked === 'loading'"
     [hideFilePreview]="true"
