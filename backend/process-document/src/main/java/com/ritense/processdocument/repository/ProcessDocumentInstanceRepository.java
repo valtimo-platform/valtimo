@@ -22,6 +22,7 @@ import com.ritense.processdocument.domain.ProcessInstanceId;
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +33,16 @@ import org.springframework.stereotype.Repository;
 public interface ProcessDocumentInstanceRepository extends JpaRepository<OperatonProcessJsonSchemaDocumentInstance, ProcessDocumentInstanceId> {
 
     List<OperatonProcessJsonSchemaDocumentInstance> findAllByProcessDocumentInstanceIdDocumentId(Document.Id documentId);
+
+    @Query(" SELECT  pdi " +
+        "    FROM    OperatonProcessJsonSchemaDocumentInstance pdi " +
+        "    LEFT JOIN    BuildingBlockInstance bbi ON bbi.documentId = pdi.processDocumentInstanceId.documentId.id " +
+        "    WHERE   pdi.processDocumentInstanceId.documentId.id = :documentId " +
+        "    OR      bbi.caseDocumentId = :documentId"
+    )
+    List<OperatonProcessJsonSchemaDocumentInstance> findAllByProcessDocumentInstanceIdDocumentIdIncludingBuildingBlocks(
+        UUID documentId
+    );
 
     @Modifying
     @Query(" DELETE " +

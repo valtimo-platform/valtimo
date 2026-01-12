@@ -84,7 +84,7 @@ spring:
     jpa:
         database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}
         database: ${SPRING_JPA_DATABASE:postgresql}
-        show_sql: false
+        show_sql: true
         open-in-view: false
         properties:
             hibernate:
