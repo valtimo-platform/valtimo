@@ -31,7 +31,10 @@
         "commit_sha": {
           "type": "string"
         },
-        "contents_sha": {
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
           "type": "string"
         },
         "test_env_comment_id": {
@@ -59,7 +62,8 @@
       "required": [
         "state",
         "commit_sha",
-        "contents_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
         "test_env_image_tag",
@@ -78,7 +82,10 @@
         "commit_sha": {
           "type": "string"
         },
-        "contents_sha": {
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
           "type": "string"
         },
         "test_env_comment_id": {
@@ -106,7 +113,8 @@
       "required": [
         "state",
         "commit_sha",
-        "contents_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
         "test_env_image_tag",
@@ -125,7 +133,10 @@
         "commit_sha": {
           "type": "string"
         },
-        "contents_sha": {
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
           "type": "string"
         },
         "test_env_comment_id": {
@@ -153,7 +164,8 @@
       "required": [
         "state",
         "commit_sha",
-        "contents_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
         "test_env_image_tag",
@@ -172,7 +184,10 @@
         "commit_sha": {
           "type": "string"
         },
-        "contents_sha": {
+        "frontend_contents_sha": {
+          "type": "string"
+        },
+        "backend_contents_sha": {
           "type": "string"
         },
         "test_env_comment_id": {
@@ -191,7 +206,8 @@
       "required": [
         "state",
         "commit_sha",
-        "contents_sha",
+        "frontend_contents_sha",
+        "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
         "test_env_image_tag",
