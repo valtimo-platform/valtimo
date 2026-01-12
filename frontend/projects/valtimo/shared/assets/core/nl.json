@@ -626,7 +626,7 @@
           "placeholder": "Documenten API document uploaden"
         },
         "caseHandler": {
-          "title": "dossierbehandelaar",
+          "title": "Dossierbehandelaar",
           "canHaveHandler": "Dossiertype kan een behandelaar hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
