@@ -25,7 +25,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import {Link16} from '@carbon/icons';
+import {Filter16, Link16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListItem,
@@ -50,7 +50,13 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../models';
+import {
+  FieldsWidgetValue,
+  InteractiveTableWidget,
+  WidgetAction,
+  WidgetInteractiveTableEventSearchRequest,
+} from '../../models';
+import {WidgetInteractiveTableSearchComponent} from './widget-interactive-table-search/widget-interactive-table-search.component';
 
 @Component({
   selector: 'valtimo-widget-interactive-table',
@@ -71,18 +77,25 @@ import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../mod
     ContextMenuModule,
     IconModule,
     MdiIconViewerComponent,
+    WidgetInteractiveTableSearchComponent,
   ],
 })
 export class WidgetInteractiveTableComponent {
   @HostBinding('class') public readonly class = 'valtimo-widget-interactive-table';
   private _widgetConfiguration: InteractiveTableWidget;
 
+  private readonly _defaultSearchRequest: WidgetInteractiveTableEventSearchRequest = {};
+  private _searchRequest: WidgetInteractiveTableEventSearchRequest = this._defaultSearchRequest;
+
   public get widgetConfiguration(): InteractiveTableWidget {
     return this._widgetConfiguration;
   }
 
+  public readonly filters$ = new BehaviorSubject<any[]>([]);
+
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
     this._widgetConfiguration = value;
+    this.filters$.next(value?.properties?.filters ?? []);
 
     this.fields$.next(
       value.properties.columns.map((column: FieldsWidgetValue, index: number) => ({
@@ -170,10 +183,19 @@ export class WidgetInteractiveTableComponent {
     this.cdr.detectChanges();
   }
 
+  @Input() public set searchRequest(value: WidgetInteractiveTableEventSearchRequest | null | undefined) {
+    this._searchRequest = value ?? this._defaultSearchRequest;
+  }
+
+  public get searchRequest(): WidgetInteractiveTableEventSearchRequest {
+    return this._searchRequest;
+  }
+
   @Output() public readonly paginationEvent = new EventEmitter<Pagination>();
   @Output() public readonly rowClickEvent = new EventEmitter<any>();
   @Output() public readonly actionEvent = new EventEmitter<WidgetAction>();
   @Output() public readonly caseStartEvent = new EventEmitter<CaseDefinition>();
+  @Output() public readonly searchSubmitEvent = new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly caseDefinitions$: Observable<CaseDefinition[]> =
@@ -190,7 +212,7 @@ export class WidgetInteractiveTableComponent {
     private readonly documentService: DocumentService,
     private readonly iconService: IconService
   ) {
-    this.iconService.register(Link16);
+    this.iconService.registerAll([Filter16, Link16]);
   }
 
   public onActionClick(action: WidgetAction): void {
@@ -209,5 +231,10 @@ export class WidgetInteractiveTableComponent {
 
   public rowClick(event: any): void {
     this.rowClickEvent.emit(event);
+  }
+
+  public onSearchSubmit(searchRequest: WidgetInteractiveTableEventSearchRequest): void {
+    this._searchRequest = searchRequest;
+    this.searchSubmitEvent.emit(searchRequest);
   }
 }

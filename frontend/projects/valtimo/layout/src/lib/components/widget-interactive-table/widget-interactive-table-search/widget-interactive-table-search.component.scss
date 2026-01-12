@@ -14,54 +14,53 @@
  * limitations under the License.
  */
 
-.valtimo-widget-interactive-table {
-  display: flex;
+.valtimo-widget-interactive-table-search {
   flex-direction: column;
-  height: 100%;
+  padding: 16px;
+  max-width: 880px;
 
-  &__header {
+  &,
+  &__property,
+  &__timestamp,
+  &__datetime {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
+    gap: 16px;
   }
 
-  &__title-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 0 0 16px;
+  &__fields {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  &__content {
+  &__filter-field {
     display: flex;
-    align-items: center;
     flex-direction: column;
+
+    input {
+      width: 100%;
+    }
   }
 
-  valtimo-carbon-list,
-  cds-table-container {
-    width: 100%;
-    height: 100%;
+  &__properties {
+    display: flex;
+    flex-direction: column;
+
+    & > *:not(:last-child):not(.valtimo-widget-interactive-table-search__label) {
+      margin-bottom: 16px;
+    }
   }
 
-  cds-table {
-    height: calc(100% - 88px);
+  &__property {
+    align-items: flex-end;
   }
 
-  .widget-title {
-    color: var(--cds-text-primary);
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 24px;
+  &__label {
+    font-size: var(--cds-label-01-font-size);
+    color: var(--cds-text-secondary);
   }
-}
 
-.cds--menu-item__label {
-  overflow: unset !important;
-}
-
-::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
-  max-width: max-content !important;
-  width: max-content !important;
+  ::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
+    inline-size: unset !important;
+  }
 }

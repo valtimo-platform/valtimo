@@ -16,6 +16,7 @@
 
 import {WidgetDisplayType} from './widget-display.model';
 import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
+import {ListItem} from 'carbon-components-angular';
 
 interface WidgetFieldsContent {
   columns: FieldsWidgetValue[][];
@@ -67,6 +68,15 @@ interface WidgetTableContent {
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
   canStartCase: boolean;
   rowClickAction: WidgetAction;
+  filters?: WidgetFilter[];
+}
+
+interface WidgetFilter {
+  dataType: string;
+  fieldType: string;
+  key: string;
+  matchType: string;
+  title: string;
 }
 
 interface WidgetCustomContent {
@@ -76,6 +86,38 @@ interface WidgetCustomContent {
 
 interface WidgetFormioContent {
   formDefinitionName: string;
+}
+
+interface  WidgetInteractiveTableEventProperty {
+  key: string;
+  value: string;
+}
+
+interface WidgetInteractiveTableEventSearchFormValue {
+  likeFormattedMessage?: string;
+  level?: ListItem;
+  beforeTimestamp?: string;
+  afterTimestamp?: string;
+  properties?: Array<WidgetInteractiveTableEventProperty>;
+}
+
+interface WidgetInteractiveTableEventSearchRequest {
+  afterTimestamp?: string;
+  beforeTimestamp?: string;
+  level?: string;
+  likeFormattedMessage?: string;
+  properties?: Array<WidgetInteractiveTableEventProperty>;
+  size?: number;
+  page?: number;
+  filters?: Record<string, string>;
+}
+
+enum WidgetInteractiveTableLevel {
+  DEBUG = 'DEBUG',
+  ERROR = 'ERROR',
+  INFO = 'INFO',
+  TRACE = 'TRACE',
+  WARN = 'WARN',
 }
 
 interface WidgetMapContent {
@@ -100,6 +142,11 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetInteractiveTableEventProperty,
+  WidgetInteractiveTableEventSearchFormValue,
+  WidgetInteractiveTableEventSearchRequest,
+  WidgetInteractiveTableLevel,
+  WidgetFilter,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,
   CollectionWidgetResolvedField,
