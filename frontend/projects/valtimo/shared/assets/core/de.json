@@ -1458,6 +1458,7 @@
   "dropzone": {
     "drop": "Datei auswählen oder hier über drag-and-drop ablegen",
     "maxFileSize": "Maximale Datei-Größe: ",
+    "acceptedFiles": "Akzeptierte Dateien: ",
     "jsonDocDef": "Die Case-Definition muss im JSON-Format sein",
     "formJsonDocDef": "Die Formular-Definition muss im JSON-Format sein",
     "objecttypeDef": "Die Objekttypdefinition muss im JSON-Format sein",
@@ -1607,6 +1608,7 @@
     "path": "Pfad",
     "dataType": "Datentyp",
     "fieldType": "Feldtyp",
+    "required": "Pflicht",
     "matchType": "Übereinstimmen",
     "exact": "Genau",
     "like": "Enthält",
@@ -1634,7 +1636,9 @@
     "text": "Text",
     "textContains": "Text enthält",
     "noSearchfieldsTitle": "Keine Suchfelder",
-    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert."
+    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert.",
+    "requiredEnabled": "Pflichtfeld",
+    "requiredDisabled": "Optional"
   },
   "searchFieldsOverviewTooltips": {
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
@@ -1646,7 +1650,8 @@
     "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten.",
     "dropdownDataProvider": "Die Dropdown-Datenquelle bestimmt, woher die Daten für die Dropdown-Liste stammen.",
     "configFile": "Eine Konfigurationsdatei mit Dropdown-Werten verwenden.",
-    "dropdownListValues": "Legen Sie benutzerdefinierte Werte für die Dropdown-Liste fest. Der in der Dropdown-Liste angezeigte Wert sollte in das rechte Textfeld eingegeben werden. Das linke Textfeld sollte die ID dieses Werts enthalten."
+    "dropdownListValues": "Legen Sie benutzerdefinierte Werte für die Dropdown-Liste fest. Der in der Dropdown-Liste angezeigte Wert sollte in das rechte Textfeld eingegeben werden. Das linke Textfeld sollte die ID dieses Werts enthalten.",
+    "required": "Legt fest, ob der Benutzer vor der Suche einen Wert eingeben muss."
   },
   "searchFieldDataType": {"select": "Wählen Sie einen Datentyp aus"},
   "searchFieldFieldType": {"select": "Wählen Sie einen Feldtyp aus"},
