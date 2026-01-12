@@ -63,6 +63,7 @@ export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak
 export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
+export * from './lib/plugins/zaken-api/components/patch-zaak/patch-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
 export * from './lib/plugins/zaken-api/components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-hersteltermijn.component';
@@ -71,7 +72,7 @@ export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-z
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
-export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component'
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 /* objecten api plugin */

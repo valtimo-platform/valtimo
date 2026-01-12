@@ -104,6 +104,24 @@ interface DeleteZaakeigenschapConfig {
   inputTypeEigenschapToggle?: InputOption;
 }
 
+interface PatchZaakConfig {
+  description?: string;
+  explanation?: string;
+  startDate?: string;
+  plannedEndDate?: string;
+  finalDeliveryDate?: string;
+  publicationDate?: string;
+  communicationChannel?: string;
+  communicationChannelName?: string;
+  paymentIndication?: string;
+  lastPaymentDate?: string;
+  caseGeometryType?: string;
+  caseGeometryCoordinates?: string;
+  mainCase?: string;
+  archiveActionDate?: string;
+  startDateRetentionPeriod?: string;
+}
+
 interface RelateerZakenConfig {
   teRelaterenZaakUri: string;
   aardRelatie: string;
@@ -128,6 +146,7 @@ export {
   CreateZaakeigenschapConfig,
   UpdateZaakeigenschapConfig,
   DeleteZaakeigenschapConfig,
+  PatchZaakConfig,
   RelateerZakenConfig,
   GetZaakbesluitenConfig,
 };

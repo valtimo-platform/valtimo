@@ -64,6 +64,7 @@ The **Patch zaak** action updates a zaak in the zaken API. When creating a proce
 
 * **Description.** A short description of the Zaak.
 * **Explanation.** An explanation of the Zaak.
+* **Start date.** The date on which the execution of the Zaak was started.
 * **Planned end-date.** The date by which the Zaak is scheduled to be completed.
 * **Final delivery-date.** The last date by which the Zaak must be completed according to law and regulations.
 * **Publication date.** Date on which (the start of) the Zaak is or will be published.

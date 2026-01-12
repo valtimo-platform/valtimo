@@ -35,6 +35,7 @@ import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -59,6 +60,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
+    'patch-zaak': PatchZaakConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -217,8 +219,31 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Resultaat process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       'get-zaakbesluiten': 'Ophalen zaakbesluiten',
+      'patch-zaak': 'Zaak bijwerken',
+      patchZaakInformation:
+        'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
+      addPatchZaakProperty: 'Voeg parameter toe',
+      omschrijving: 'Omschrijving',
+      explanation: 'Toelichting',
+      startDate: 'Startdatum',
+      publicationDate: 'Publicatiedatum',
+      communicationChannel: 'Communicatiekanaal (URL)',
+      communicationChannelName: 'Communicatiekanaal naam',
+      paymentIndication: 'Betalingsindicatie',
+      lastPaymentDate: 'Laatste betaaldatum',
+      caseGeometry: 'Zaakgeometrie',
+      caseGeometryType: 'Zaakgeometrie type',
+      caseGeometryCoordinates: 'Zaakgeometrie coördinaten',
+      caseGeometryCoordinatesTooltip: 'Lijst van punten, bv [0.0, 1.0]',
+      mainCase: 'Hoofdzaak',
+      archiveActionDate: 'Archief actiedatum',
+      startDateRetentionPeriod: 'Startdatum bewaartermijn',
+      caseGeometryTypeTooltip:
+        'Mogelijke waarden: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Mogelijke waarden: nvt | nog_niet | gedeeltelijk | geheel',
     },
     en: {
       title: 'Zaken API',
@@ -375,8 +400,31 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
-      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result is stored.',
       'get-zaakbesluiten': 'Retrieve zaakbesluiten',
+      'patch-zaak': 'Update zaak',
+      patchZaakInformation:
+        'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
+      addPatchZaakProperty: 'Add property',
+      omschrijving: 'Description',
+      explanation: 'Explanation',
+      startDate: 'Start date',
+      publicationDate: 'Publication date',
+      communicationChannel: 'Communication channel (URL)',
+      communicationChannelName: 'Communication channel name',
+      paymentIndication: 'Payment indication',
+      lastPaymentDate: 'Last payment date',
+      caseGeometry: 'Case geometry',
+      caseGeometryType: 'Case geometry type',
+      caseGeometryCoordinates: 'Case geometry coordinates',
+      caseGeometryCoordinatesTooltip: 'List of points, i.e. [0.0, 1.0]',
+      mainCase: 'Main case',
+      archiveActionDate: 'Archive action date',
+      startDateRetentionPeriod: 'Start date of retention period',
+      caseGeometryTypeTooltip:
+        'Possible values: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Possible values: nvt | nog_niet | gedeeltelijk | geheel',
     },
     de: {
       title: 'Zaken API',
@@ -532,8 +580,31 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Ergebnis process variable',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
+      resultProcessVariableTooltip:
+        'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       'get-zaakbesluiten': 'Zaakbesluiten abrufen',
+      'patch-zaak': 'Zaak aktualisieren',
+      patchZaakInformation:
+        'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
+      addPatchZaakProperty: 'Parameter hinzufügen',
+      omschrijving: 'Beschreibung',
+      explanation: 'Erläuterung',
+      startDate: 'Startdatum',
+      publicationDate: 'Veröffentlichungsdatum',
+      communicationChannel: 'Kommunikationskanal (URL)',
+      communicationChannelName: 'Name des Kommunikationskanals',
+      paymentIndication: 'Zahlungsanzeige',
+      lastPaymentDate: 'Letztes Zahlungsdatum',
+      caseGeometry: 'Vorgangsgeometrie',
+      caseGeometryType: 'Vorgangsgeometrie type',
+      caseGeometryCoordinates: 'Vorgangsgeometrie Koordinaten',
+      caseGeometryCoordinatesTooltip: 'Liste von Punkten, zB [0.0, 1.0]',
+      mainCase: 'Hauptvorgang',
+      archiveActionDate: 'Archivierungsaktionsdatum',
+      startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist',
+      caseGeometryTypeTooltip:
+        'Mögliche Werte: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Mögliche Werte: nvt | nog_niet | gedeeltelijk | geheel',
     },
   },
 };
