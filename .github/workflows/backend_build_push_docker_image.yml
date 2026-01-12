@@ -62,7 +62,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      image_tag: ${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}
+      image_tag: ${{ steps.primary_tag.outputs.tag }}
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
@@ -92,6 +92,12 @@ jobs:
             type=raw,value=contents-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
+
+      - name: Extract primary image tag
+        id: primary_tag
+        run: |
+          full_tag='${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}'
+          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
