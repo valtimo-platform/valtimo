@@ -26,7 +26,7 @@ import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-
   standalone: false,
   selector: 'valtimo-patch-zaak-configuration',
   templateUrl: './patch-zaak-configuration.component.html',
-  styleUrls: ['./patch-zaak-configuration.component.scss'],
+  styleUrl: './patch-zaak-configuration.component.scss',
 })
 export class PatchZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -38,30 +38,15 @@ export class PatchZaakConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PatchZaakConfig> = new EventEmitter<PatchZaakConfig>();
 
-  public readonly propertyOptions: string[] = [...PatchZaakPropertyOptions];
-  public readonly propertyList: Array<{
-    name: PatchZaakProperties;
-    translationKey: string;
-    tooltipTranslationKey?: string;
-    presetOptions?: string[];
-  }> = [];
-  public readonly geometryTypes: string[] = [
-    'Point',
-    'MultiPoint',
-    'LineString',
-    'MultiLineString',
-    'Polygon',
-    'GeometryCollection',
-    'MultiPolygon',
-  ];
-  public readonly paymentIndicationTypes: string[] = ['nvt', 'nog_niet', 'gedeeltelijk', 'geheel'];
+  public readonly propertyOptions: string[] = Object.values(PatchZaakPropertyOptions);
+  public readonly propertyList: Array<PatchZaakProperties> = [];
 
   protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
   private readonly _formValue$ = new BehaviorSubject<PatchZaakConfig>({});
-  private readonly _properties = new Map<PatchZaakProperties, any>();
+  private readonly _properties = new Map<PatchZaakProperties, string>();
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
@@ -74,9 +59,9 @@ export class PatchZaakConfigurationComponent
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       if (prefill) {
-        this.propertyOptions
-          .filter(propertyName => !!prefill[propertyName])
-          .forEach(propertyName => this.addProperty(propertyName as PatchZaakProperties));
+        PatchZaakPropertyOptions.filter(property => !!prefill[property]).forEach(property =>
+          this.addProperty(property)
+        );
       }
     });
   }
@@ -93,8 +78,8 @@ export class PatchZaakConfigurationComponent
   public onPropertyChanged(property: PatchZaakProperties, value: any): void {
     this._properties.set(property, value);
     const formValue = this._formValue$.value;
-    this._properties.forEach((val, key) => {
-      formValue[key] = val;
+    this._properties.forEach((value, key) => {
+      formValue[key] = value;
     });
     this.onFormValueChanged(formValue);
   }
@@ -112,46 +97,35 @@ export class PatchZaakConfigurationComponent
   }
 
   public addProperty(property: PatchZaakProperties): void {
-    if (this.hasPropertyBeenAdded(property)) {
-      return;
+    // only add the property to the list if it is not in the list
+    if (this.propertyList.indexOf(property) == -1) {
+      this.propertyList.push(property);
+      this.onPropertyChanged(property, undefined);
     }
-
-    const tooltip =
-      property === this.CASE_GEOMETRY_COORDINATES ? 'caseGeometryCoordinatesTooltip' : undefined;
-    const presetOptions =
-      property === this.PAYMENT_INDICATION_TYPE
-        ? this.paymentIndicationTypes
-        : property === this.CASE_GEOMETRY_TYPE
-          ? this.geometryTypes
-          : undefined;
-
-    this.propertyList.push({
-      name: property,
-      translationKey: this.translationKeyFor(property),
-      tooltipTranslationKey: tooltip,
-      presetOptions: presetOptions,
-    });
+    // add linked field coordinates
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.addProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
+    }
   }
 
   public removeProperty(property: PatchZaakProperties): void {
-    const index = this.propertyList.findIndex(p => p.name === property);
-    if (index !== -1) {
-      this.propertyList.splice(index, 1);
+    // only remove the property from the list if it is in the list
+    if (this.propertyList.indexOf(property) != -1) {
+      this.propertyList.splice(this.propertyList.indexOf(property), 1);
+      this.onPropertyChanged(property, undefined);
     }
-    this._properties.delete(property);
-    this.onPropertyChanged(property, undefined);
-
+    // remove linked field coordinates
     if (property === this.CASE_GEOMETRY_TYPE) {
       this.removeProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
     }
   }
 
   public hasPropertyBeenAdded(property: PatchZaakProperties): boolean {
-    return this.propertyList.some(p => p.name === property);
+    return this.propertyList.indexOf(property) !== -1;
   }
 
   private handleValid(formValue: PatchZaakConfig): void {
-    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property.name]);
+    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
     const valid = !isPropertyInvalid;
     this._valid$.next(valid);
     this.valid.emit(valid);
@@ -164,12 +138,11 @@ export class PatchZaakConfigurationComponent
         .subscribe(([formValue, valid]) => {
           if (valid) {
             const payload: PatchZaakConfig = {};
-            this.propertyList.forEach(
-              property => (payload[property.name] = formValue[property.name])
-            );
-            this.configuration.emit(payload);
+            this.propertyList.forEach(property => (payload[property] = formValue[property]));
+            this.configuration.emit(formValue);
           }
         });
     });
   }
+
 }

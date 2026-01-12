@@ -241,6 +241,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       mainCase: 'Hoofdzaak',
       archiveActionDate: 'Archief actiedatum',
       startDateRetentionPeriod: 'Startdatum bewaartermijn',
+      caseGeometryTypeTooltip:
+        'Mogelijke waarden: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Mogelijke waarden: nvt | nog_niet | gedeeltelijk | geheel',
     },
     en: {
       title: 'Zaken API',
@@ -419,6 +422,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       mainCase: 'Main case',
       archiveActionDate: 'Archive action date',
       startDateRetentionPeriod: 'Start date of retention period',
+      caseGeometryTypeTooltip:
+        'Possible values: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Possible values: nvt | nog_niet | gedeeltelijk | geheel',
     },
     de: {
       title: 'Zaken API',
@@ -596,6 +602,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       mainCase: 'Hauptvorgang',
       archiveActionDate: 'Archivierungsaktionsdatum',
       startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist',
+      caseGeometryTypeTooltip:
+        'Mögliche Werte: Point | MultiPoint | LineString | MultiLineString | Polygon | GeometryCollection | MultiPolygon',
+      paymentIndicationTooltip: 'Mögliche Werte: nvt | nog_niet | gedeeltelijk | geheel',
     },
   },
 };
