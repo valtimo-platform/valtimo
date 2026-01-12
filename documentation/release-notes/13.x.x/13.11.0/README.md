@@ -16,3 +16,7 @@
 
 ## Bugfixes
 
+* **Fixed pagination on choice field values page**
+
+  - Pagination now correctly updates and allows switching pages on the choice field values page (/choice-fields/field/{id}).
+
