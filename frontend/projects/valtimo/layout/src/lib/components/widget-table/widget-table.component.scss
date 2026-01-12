@@ -51,12 +51,7 @@
       background: transparent !important;
     }
 
-    td,
-    tr,
-    th {
-      display: flex;
-      width: 100%;
-    }
+
 
     td {
       white-space: nowrap;
@@ -68,9 +63,7 @@
       }
     }
 
-    tr {
-      gap: 16px;
-    }
+
   }
 
   &--compact .cds--data-table tr {
