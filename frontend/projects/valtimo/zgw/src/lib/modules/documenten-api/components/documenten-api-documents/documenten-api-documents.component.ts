@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
-import {Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {PermissionRequest, PermissionService} from '@valtimo/access-control';
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Filter16, TagGroup16, Upload16 } from '@carbon/icons';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { PermissionRequest, PermissionService } from '@valtimo/access-control';
 import {
   ActionItem,
   CarbonListModule,
@@ -31,7 +31,7 @@ import {
   SortState,
   ViewType,
 } from '@valtimo/components';
-import {CaseSettings, DocumentService} from '@valtimo/document';
+import { CaseSettings, DocumentService } from '@valtimo/document';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
   CAN_DELETE_RESOURCE_PERMISSION,
@@ -41,9 +41,9 @@ import {
   RESOURCE_PERMISSION_RESOURCE,
   UploadProviderService,
 } from '@valtimo/resource';
-import {UserProviderService} from '@valtimo/security';
-import {ConfigService, Direction} from '@valtimo/shared';
-import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
+import { UserProviderService } from '@valtimo/security';
+import { ConfigService, Direction } from '@valtimo/shared';
+import { ButtonModule, DialogModule, IconModule, IconService } from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -53,7 +53,7 @@ import {
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/operators';
+import { catchError, filter, map, switchMap, take, tap, shareReplay } from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
@@ -66,10 +66,10 @@ import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
-import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
-import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
-import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+import { DocumentenApiColumnService, DocumentenApiVersionService } from '../../services';
+import { DocumentenApiDocumentService } from '../../services/documenten-api-document.service';
+import { DocumentenApiFilterComponent } from '../documenten-api-filter/documenten-api-filter.component';
+import { DocumentenApiMetadataModalComponent } from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -133,7 +133,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         !sort?.sort &&
         supportedDocumentenApiFeatures.supportsSortableColumns
       ) {
-        this._sort$.next({sort: `${defaultSortColumn.key},${defaultSortColumn.defaultSort}`});
+        this._sort$.next({ sort: `${defaultSortColumn.key},${defaultSortColumn.defaultSort}` });
       }
 
       return columns.map((column: ConfiguredColumn) => ({
@@ -142,9 +142,9 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         viewType: !COLUMN_VIEW_TYPES[column.key] ? ViewType.TEXT : COLUMN_VIEW_TYPES[column.key],
         ...(COLUMN_VIEW_TYPES[column.key] === ViewType.TEMPLATE && {
           template: this.translationTemplate,
-          templateData: {key: column.key},
+          templateData: { key: column.key },
         }),
-        ...(column.key === DOCUMENTEN_COLUMN_KEYS.CREATIEDATUM && {format: 'DD-MM-YYYY'}),
+        ...(column.key === DOCUMENTEN_COLUMN_KEYS.CREATIEDATUM && { format: 'DD-MM-YYYY' }),
         sortable: column.sortable && supportedDocumentenApiFeatures.supportsSortableColumns,
       }));
     }),
@@ -204,7 +204,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly filter$ = new ReplaySubject<DocumentenApiFilterModel | null>();
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   private readonly _refetch$ = new BehaviorSubject<null>(null);
-  private readonly _sort$ = new ReplaySubject<{sort: string} | null>();
+  private readonly _sort$ = new ReplaySubject<{ sort: string } | null>();
   private readonly valtimoEndpointUri!: string;
 
   public readonly paginatorConfig = {
@@ -300,14 +300,14 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       this._itemsLoading$.next(false);
       return of([]);
     }),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
     this.configService.getFeatureToggleObservable('enablePbacDocumentenApiDocuments');
 
   public filePermissions: {
-    [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
+    [fileId: string]: { canView: boolean; canModify: boolean; canDelete: boolean };
   } = {};
 
   public readonly canCreateResource$: Observable<boolean> = this.documentId$.pipe(
@@ -364,11 +364,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         .subscribe(permissions =>
           permissions.files.map(
             file =>
-              (this.filePermissions[file.fileId] = {
-                canView: permissions.canView[file.fileId],
-                canModify: permissions.canModify[file.fileId],
-                canDelete: permissions.canDelete[file.fileId],
-              })
+            (this.filePermissions[file.fileId] = {
+              canView: permissions.canView[file.fileId],
+              canModify: permissions.canModify[file.fileId],
+              canDelete: permissions.canDelete[file.fileId],
+            })
           )
         )
     );
@@ -471,11 +471,48 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.showUploadModal$.next(false);
   }
 
+  public dragActive = false;
+
   public onFileSelected(event: any): void {
-    this.isEditMode$.next(false);
-    this.fileToBeUploaded$.next(event.target.files[0]);
-    this.showUploadModal$.next(true);
+    const file = event.target.files[0];
+    if (file) {
+      this.handleFileSelection(file);
+    }
     this.resetFileInput();
+  }
+
+  public onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragActive = true;
+  }
+
+  public onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (
+      event.relatedTarget &&
+      (event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)
+    ) {
+      return;
+    }
+    this.dragActive = false;
+  }
+
+  public onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragActive = false;
+    const file = event.dataTransfer?.files[0];
+    if (file) {
+      this.handleFileSelection(file);
+    }
+  }
+
+  private handleFileSelection(file: File): void {
+    this.isEditMode$.next(false);
+    this.fileToBeUploaded$.next(file);
+    this.showUploadModal$.next(true);
   }
 
   public onNavigateToCaseAdminClick(): void {
@@ -493,13 +530,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onPaginationClicked(page: number): void {
-    this.pagination$.next({...this.pagination$.getValue(), page});
+    this.pagination$.next({ ...this.pagination$.getValue(), page });
   }
 
   public onPaginationSet(size: number): void {
-    const {collectionSize, page} = this.pagination$.getValue();
+    const { collectionSize, page } = this.pagination$.getValue();
     const resetPage: boolean = Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
-    this.pagination$.next({...this.pagination$.getValue(), size, ...(resetPage && {page: 1})});
+    this.pagination$.next({ ...this.pagination$.getValue(), size, ...(resetPage && { page: 1 }) });
   }
 
   public onUploadButtonClick(): void {
@@ -508,15 +545,15 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public onFilterEvent(filter: DocumentenApiFilterModel | null): void {
     this.filter$.next(filter);
-    this.pagination$.next({...this.pagination$.getValue(), ...DEFAULT_PAGINATION});
+    this.pagination$.next({ ...this.pagination$.getValue(), ...DEFAULT_PAGINATION });
   }
 
   public onSortChanged(sortState: SortState): void {
     this._sort$.next(
       sortState.isSorting
         ? {
-            sort: `${sortState.state.name === 'size' ? DOCUMENTEN_COLUMN_KEYS.BESTANDSOMVANG : sortState.state.name},${sortState.state.direction}`,
-          }
+          sort: `${sortState.state.name === 'size' ? DOCUMENTEN_COLUMN_KEYS.BESTANDSOMVANG : sortState.state.name},${sortState.state.direction}`,
+        }
         : null
     );
   }
@@ -558,9 +595,9 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         this._sort$,
         this.pagination$,
       ]).subscribe(([definitionName, documentId, filter, sort, pagination]) => {
-        const {size, page} = pagination;
+        const { size, page } = pagination;
         this.router.navigate([`/cases/${definitionName}/document/${documentId}/documents`], {
-          queryParams: {...filter, ...sort, size, page: page - 1},
+          queryParams: { ...filter, ...sort, size, page: page - 1 },
         });
       })
     );
@@ -591,12 +628,12 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       .pipe(
         take(1),
         map(queryParams => {
-          const {sort, size, page, ...filter} = queryParams['params'];
-          return {sort, filter, size, page};
+          const { sort, size, page, ...filter } = queryParams['params'];
+          return { sort, filter, size, page };
         })
       )
-      .subscribe(({filter, sort, size, page}) => {
-        this._sort$.next({sort});
+      .subscribe(({ filter, sort, size, page }) => {
+        this._sort$.next({ sort });
         this.filter$.next(filter);
         this.pagination$.next({
           ...this.pagination$.getValue(),
@@ -633,10 +670,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         this.getPermission(permissionRequest, {
           resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
           identifier: file.fileId,
-        }).pipe(map(available => ({[file.fileId]: available})))
+        }).pipe(map(available => ({ [file.fileId]: available })))
       )
     ).pipe(
-      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
+      map(permissions => permissions.reduce((acc, permission) => ({ ...acc, ...permission }), {}))
     );
   }
 
