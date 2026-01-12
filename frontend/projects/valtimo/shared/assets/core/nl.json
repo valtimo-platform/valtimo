@@ -1017,15 +1017,16 @@
     },
     "processes": {
       "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
-      "buttonTextPlaceholder": "Knop tekst",
+      "buttonTextPlaceholder": "Knoptekst",
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
-      "linkLabel": "Knop voor externe link",
-      "linkPlaceholder": "Externe link",
-      "buttonTextLabel": "Tekst van knop voor externe link"
+      "linkLabel": "Link-URL (met variabelen)",
+      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "buttonTextLabel": "Knoptekst",
+      "buttonTextPlaceholder": "'Ga naar zaak'"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
@@ -1411,6 +1412,16 @@
       "content": "Je gaat de pagina verlaten. Alle niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je door wilt gaan?",
       "keepEditing": "Blijf bewerken"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "De waarde mag niet leeg zijn.",
+        "valueMaxLength": "Het BSN is te lang. De maximale lengte is 9 tekens.",
+        "valueMinLength": "Het BSN is te kort. De minimale lengte is 8 tekens.",
+        "valueOnlyDigits": "De waarde mag alleen cijfers bevatten. Letters of symbolen zijn niet toegestaan.",
+        "valueAllZerosOrNines": "De waarde mag niet volledig uit nullen of negens bestaan.",
+        "valueElfCheck": "De waarde voldoet niet aan de elfproef. Voer een geldig BSN in."
+      }
+    },
     "required": "vereist",
     "filter": "Filteren...",
     "back": "Terug",
@@ -1479,6 +1490,7 @@
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
     "maxFileSize": "Maximale bestandsgrootte: ",
+    "acceptedFiles": "Geaccepteerde bestanden: ",
     "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
     "formJsonDocDef": "De formulier-definitie moet in het JSON-formaat zijn",
     "objecttypeDef": "De objecttype-definitie moet in JSON-formaat zjn",
@@ -1601,16 +1613,23 @@
     "downloadButtonText": "Download configuratie",
     "to": "tot",
     "text": "Tekst",
+    "textPlaceholder": "Voer tekst in",
     "number": "Nummer",
+    "numberPlaceholder": "Voer een nummer in",
     "date": "Datum",
+    "datePlaceholder": "dd-mm-yyyy",
     "datetime": "Datum en tijd",
     "time": "Tijd",
+    "timePlaceholder": "hh:mm",
     "boolean": "Ja / nee",
     "numberRange": "Nummerreeks",
     "dateRange": "Datumreeks",
     "datetimeRange": "Datum en tijd-reeks",
     "booleanPositive": "Ja",
-    "booleanNegative": "Nee"
+    "booleanNegative": "Nee",
+    "booleanPlaceholder": "Ja/nee",
+    "bsn": "BSN",
+    "bsnPlaceholder": "123456789"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",
@@ -1630,6 +1649,7 @@
     "path": "Pad",
     "dataType": "Datatype",
     "fieldType": "Veldtype",
+    "required": "Verplicht",
     "matchType": "Overeenkomst",
     "exact": "Precies",
     "like": "Bevat",
@@ -1657,7 +1677,9 @@
     "text": "Text",
     "textContains": "Tekst bevat",
     "noSearchfieldsTitle": "Geen zoekvelden",
-    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype."
+    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype.",
+    "requiredEnabled": "Verplicht",
+    "requiredDisabled": "Optioneel"
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de key-vertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke key-waarde weergegeven).",
@@ -1669,7 +1691,8 @@
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten.",
     "dropdownDataProvider": "De dropdown-databron bepaalt waar de data voor de dropdown lijst vandaan komt.",
     "configFile": "Gebruik een configuratiebestand met dropdown-waarden",
-    "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten."
+    "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten.",
+    "required": "Bepaalt of de gebruiker een waarde moet invullen voordat er gezocht kan worden."
   },
   "searchFieldDataType": {"select": "Selecteer een datatype"},
   "searchFieldFieldType": {"select": "Selecteer een veldtype"},

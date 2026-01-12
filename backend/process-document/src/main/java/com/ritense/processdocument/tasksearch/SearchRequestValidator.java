@@ -31,6 +31,7 @@ import com.ritense.search.domain.DataType;
 import com.ritense.search.domain.FieldType;
 import com.ritense.search.domain.SearchFieldV2;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
+import com.ritense.valtimo.contract.validation.BsnValidator;
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter;
 import jakarta.validation.ValidationException;
 import java.time.format.DateTimeFormatter;
@@ -221,6 +222,10 @@ public class SearchRequestValidator {
             case BOOLEAN:
                 validateDataType(searchField, allValues, Boolean.class);
                 break;
+            case BSN:
+                validateDataType(searchField, allValues, String.class);
+                validateBsnFormat(allValues);
+                break;
             case DATE:
                 validateDataType(searchField, allValues, String.class, TemporalAccessor.class);
                 validateDateTimeFormatIfString(allValues, DATE_FORMATTERS, DataType.DATE);
@@ -264,6 +269,15 @@ public class SearchRequestValidator {
         }
     }
 
+    private static void validateBsnFormat(List<?> allValues) {
+        for (var value : allValues) {
+            if (!BsnValidator.INSTANCE.isValid((String) value)) {
+                throw new ValidationException(
+                    "Values '" + Arrays.toString(allValues.toArray()) + "' do not have a valid BSN format"
+                );
+            }
+        }
+    }
 
     private static void validateDataType(SearchFieldV2 searchField, List<?> allValues, Class<?>... types) {
         if (Arrays.stream(types).noneMatch(type -> hasType(allValues, type))) {
