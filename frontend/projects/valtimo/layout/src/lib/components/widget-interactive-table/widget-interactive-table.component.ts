@@ -223,8 +223,7 @@ export class WidgetInteractiveTableComponent {
         }),
         ...(!!sort &&
           sort.isSorting && {
-            name: sort.state.name,
-            direction: sort.state.direction,
+            sort: `${sort.state.name},${sort.state.direction}`,
           }),
       };
       this.queryParamsEvent.emit(new HttpParams({fromObject: paramsObject}));
