@@ -1,17 +1,19 @@
 Will create a test environment. This comment will be updated once it is available. This usually takes a few minutes.
-Closing or merging this PR will automatically delete the test environment.
+Closing or merging this PR will automatically delete the test environment. Pushing commits to this PR will update the test environment.
 Progress:
 
 - [x] Created test environment
-- [x] Images tagged ${IMAGE_TAG} available
+- [x] Images tagged `${FRONTEND_IMAGE_TAG}` (frontend) / `${BACKEND_IMAGE_TAG}` (backend) available
 - [ ] Starting test environment
   - Test environment failed to start for an unexpected reason. Please notify DevOps.
-- [ ] Test environment is running
+- [ ] Waiting for environment to run
+
+Error: ${ERROR_MESSAGE}
 
 Test environment metadata:
 
 - Commit: ${COMMIT_SHA}
-- Contents: ${CONTENTS_SHA}
-- Image tag: ${IMAGE_TAG}
-
-Error: ${ERROR_MESSAGE}
+- Frontend contents: `${FRONTEND_CONTENTS_SHA}`
+- Backend contents: `${BACKEND_CONTENTS_SHA}`
+- Frontend image: `ghcr.io/valtimo-platform/valtimo/gzac-frontend:${FRONTEND_IMAGE_TAG}`
+- Backend image: `ghcr.io/valtimo-platform/valtimo/gzac-backend:${BACKEND_IMAGE_TAG}`
