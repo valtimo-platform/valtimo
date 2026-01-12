@@ -17,12 +17,13 @@
 <cds-tile
   class="external-case-form-container"
   *ngIf="{params: params$ | async, caseSettings: caseSettings$ | async} as obs"
+  data-test-id="external-case-form-container"
 >
-  <h4 class="external-case-form-container__title">
+  <h4 class="external-case-form-container__title" data-test-id="external-case-form-container-title">
     {{ 'caseManagement.externalStartForm.title' | translate }}
   </h4>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1" data-test-id="external-case-form-container-form">
     <cds-toggle
       valtimoReadOnly
       [isReadOnly]="isReadOnly"
@@ -31,9 +32,10 @@
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
       onText="{{ 'caseManagement.externalStartForm.enabledToggleOn' | translate }}"
       offText="{{ 'caseManagement.externalStartForm.enabledToggleOff' | translate }}"
+      data-test-id="external-case-form-container-enabled-toggle"
     ></cds-toggle>
 
-    <cds-label>
+    <cds-label data-test-id="external-case-form-container-external-url-label">
       {{ 'caseManagement.externalStartForm.externalUrl' | translate }}
 
       <input
@@ -46,10 +48,11 @@
           isReadOnly ? '-' : ('caseManagement.externalStartForm.externalUrlPlaceholder' | translate)
         "
         maxlength="512"
+        data-test-id="external-case-form-container-external-url-input"
       />
     </cds-label>
 
-    <cds-label>
+    <cds-label data-test-id="external-case-form-container-description-label">
       {{ 'caseManagement.externalStartForm.description' | translate }}
 
       <input
@@ -62,6 +65,7 @@
           isReadOnly ? '-' : ('caseManagement.externalStartForm.descriptionPlaceholder' | translate)
         "
         maxlength="512"
+        data-test-id="external-case-form-container-description-input"
       />
     </cds-label>
 
@@ -70,6 +74,7 @@
       cdsButton="primary"
       type="submit"
       [disabled]="!form.valid || isReadOnly"
+      data-test-id="external-case-form-container-submit-button"
     >
       {{ 'caseManagement.externalStartForm.apply' | translate }}
     </button>

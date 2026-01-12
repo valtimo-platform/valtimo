@@ -20,7 +20,7 @@
       <valtimo-widget>
         <div>
           <div class="p-5 bg-white">
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" data-test-id="choice-field-form">
               <div class="form-group row">
                 <label class="col-12 col-sm-3 col-form-label text-sm-right" for="keyName"
                   >Key</label
@@ -38,10 +38,12 @@
                       'is-invalid': formControls.keyName.touched && formControls.keyName.errors,
                     }"
                     required
+                    data-test-id="choice-field-key-input"
                   />
                   <div
                     *ngIf="formControls.keyName.touched && formControls.keyName.errors"
                     class="invalid-feedback"
+                    data-test-id="choice-field-key-error"
                   >
                     <div *ngIf="formControls.keyName.errors.required">Key name is required</div>
                   </div>
@@ -64,10 +66,12 @@
                       'is-invalid': formControls.title.touched && formControls.title.errors,
                     }"
                     required
+                    data-test-id="choice-field-title-input"
                   />
                   <div
                     *ngIf="formControls.title.touched && formControls.title.errors"
                     class="invalid-feedback"
+                    data-test-id="choice-field-title-error"
                   >
                     <div *ngIf="formControls.title.errors.required">Title is required</div>
                   </div>
@@ -76,13 +80,13 @@
 
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default">Back</a>
+                  <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default" data-test-id="choice-field-back-button">Back</a>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="choice-field-reset-button">
                     Reset
                   </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" data-test-id="choice-field-submit-button">
                     Submit
                   </button>
                 </div>

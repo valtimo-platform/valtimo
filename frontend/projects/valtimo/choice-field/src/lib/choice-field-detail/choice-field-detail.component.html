@@ -53,10 +53,12 @@
                       'is-invalid': formControls.title.touched && formControls.title.errors,
                     }"
                     required
+                    data-test-id="choice-field-title-input"
                   />
                   <div
                     *ngIf="formControls.title.touched && formControls.title.errors"
                     class="invalid-feedback"
+                    data-test-id="choice-field-title-error"
                   >
                     <div *ngIf="formControls.title.errors.required">Title is required</div>
                   </div>
@@ -65,16 +67,16 @@
 
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default">Back</a>
-                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">
+                  <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default" data-test-id="choice-field-back-button">Back</a>
+                  <button class="btn btn-space btn-danger" type="button" (click)="delete()" data-test-id="choice-field-delete-button">
                     Delete
                   </button>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="choice-field-reset-button">
                     Reset
                   </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" data-test-id="choice-field-submit-button">
                     Submit
                   </button>
                 </div>
@@ -88,7 +90,7 @@
 </div>
 
 <div class="page-head">
-  <h2 class="page-head-title">Choice field values</h2>
+  <h2 class="page-head-title" data-test-id="choice-field-values-title">Choice field values</h2>
 </div>
 
-<valtimo-choice-field-value-list></valtimo-choice-field-value-list>
+<valtimo-choice-field-value-list data-test-id="choice-field-value-list"></valtimo-choice-field-value-list>

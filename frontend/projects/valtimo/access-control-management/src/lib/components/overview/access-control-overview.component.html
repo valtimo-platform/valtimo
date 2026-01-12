@@ -21,6 +21,7 @@
   [loading]="loading$ | async"
   [showSelectionColumn]="true"
   (rowClicked)="onRowClick($event)"
+  data-test-id="access-control-list"
 >
   <ng-container header> {{ 'accessControl.roles.title' | translate }} </ng-container>
 
@@ -29,13 +30,13 @@
   </div>
 
   <ng-container carbonToolbarActions>
-    <button cdsButton="primary" (click)="showDeleteModal()">
+    <button cdsButton="primary" (click)="showDeleteModal()" data-test-id="access-control-delete-button">
       {{ 'interface.delete' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" (click)="showExportModal()">
+    <button cdsButton="primary" (click)="showExportModal()" data-test-id="access-control-export-button">
       {{ 'interface.export' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
@@ -46,12 +47,14 @@
     [action]="addRoleButton"
     description="{{ 'accessControl.roles.noResults.description' | translate }}"
     title="{{ 'accessControl.roles.noResults.title' | translate }}"
+    data-test-id="access-control-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <valtimo-role-metadata-modal
   [open]="showAddModal$ | async"
   (closeEvent)="onAdd($event)"
+  data-test-id="access-control-add-role-modal"
 ></valtimo-role-metadata-modal>
 
 <ng-container *ngIf="{selectedRowKeys: selectedRowKeys$ | async} as obs">
@@ -59,6 +62,7 @@
     [deleteRowKeys]="obs.selectedRowKeys"
     [showDeleteModal$]="showDeleteModal$"
     (deleteEvent)="onDelete($event)"
+    data-test-id="access-control-delete-role-modal"
   >
   </valtimo-delete-role-modal>
 
@@ -69,12 +73,13 @@
     [reset$]="resetExportType$"
     (exportEvent)="onExport($event)"
     (closeEvent)="closeExportModal()"
+    data-test-id="access-control-export-role-modal"
   >
   </valtimo-export-role-modal>
 </ng-container>
 
 <ng-template #addRoleButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button cdsButton="primary" (click)="openAddModal()" data-test-id="access-control-add-role-button">
     {{ 'accessControl.roles.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

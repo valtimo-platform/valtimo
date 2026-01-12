@@ -32,6 +32,7 @@
         *ngIf="canCreateCamundaExecution$ | async"
         cdsButton="ghost"
         (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+        data-test-id="valtimo-widget-formio-start-process-button"
       >
         {{ obs.widgetConfiguration.actions[0].name }}
       </button>

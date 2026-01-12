@@ -25,7 +25,7 @@
   } as obs"
 >
   <div class="header-buttons">
-    <button cdsButton="secondary" (click)="goBack()">
+    <button cdsButton="secondary" (click)="goBack()" data-test-id="case-management-deployment-back-button">
       {{ 'caseManagement.deployment.buttons.back' | translate }}
       <svg cdsIcon="return" size="16" class="cds--btn__icon"></svg>
     </button>
@@ -36,18 +36,19 @@
             *ngIf="caseDefinitionVersions.length === 1 || !obs.isGloballyActive"
             cdsButton="danger"
             (click)="openDeleteDraftModal()"
+            data-test-id="case-management-deployment-delete-draft-button"
           >
             {{ 'caseManagement.deployment.buttons.delete' | translate }}
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
           </button>
 
-          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
+          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()" data-test-id="case-management-deployment-finalize-draft-button">
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
             <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
           </button>
         </div>
       } @else {
-        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
+        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()" data-test-id="case-management-deployment-create-draft-button">
           {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
           <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
         </button>
@@ -113,6 +114,7 @@
         showClose: false,
         lowContrast: true,
       }"
+      data-test-id="case-management-deployment-release-version-warning"
     >
     </cds-notification>
   </div>
@@ -149,6 +151,7 @@
   cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.title"
   contentTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.description"
+  data-test-id="case-management-deployment-delete-draft-confirmation-modal"
 >
 </valtimo-confirmation-modal>
 
@@ -162,12 +165,14 @@
   confirmButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.confirm"
   cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
+  data-test-id="case-management-deployment-finalize-draft-confirmation-modal"
 ></valtimo-confirmation-modal>
 
 <valtimo-case-management-create-draft-version
   [open]="showCreateDraftVersionConfirmationModal$ | async"
   [caseDefinitionPayload]="caseDefinitionPayload$ | async"
   (closeModal)="onCloseCreateDraftVersionModal($event)"
+  data-test-id="case-management-deployment-create-draft-version"
 ></valtimo-case-management-create-draft-version>
 
 <ng-template #loadingMessage let-translationKey="translationKey">

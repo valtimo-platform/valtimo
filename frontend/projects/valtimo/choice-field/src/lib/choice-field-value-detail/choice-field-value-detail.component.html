@@ -71,6 +71,7 @@
                       'is-invalid': formControls.name.touched && formControls.name.errors,
                     }"
                     required
+                    data-test-id="choice-field-key-input"
                   />
                   <div
                     *ngIf="formControls.name.touched && formControls.name.errors"
@@ -99,6 +100,7 @@
                       'is-invalid': formControls.value.touched && formControls.value.errors,
                     }"
                     required
+                    data-test-id="choice-field-value-input"
                   />
                   <div
                     *ngIf="formControls.value.touched && formControls.value.errors"
@@ -127,6 +129,7 @@
                       'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors,
                     }"
                     required
+                    data-test-id="choice-field-sequence-input"
                   />
                   <div
                     *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors"
@@ -145,7 +148,7 @@
                 >
                 <div class="col-12 col-sm-8 col-lg-6">
                   <div class="switch-button switch-button-sm switch-button-success">
-                    <input type="checkbox" formControlName="deprecated" id="deprecated" /><span>
+                    <input type="checkbox" formControlName="deprecated" id="deprecated" data-test-id="choice-field-deprecated-checkbox"/><span>
                       <label for="deprecated"></label
                     ></span>
                   </div>
@@ -154,13 +157,13 @@
 
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'../../'" class="btn btn-space btn-default">Back</a>
+                  <a [routerLink]="'../../'" class="btn btn-space btn-default" data-test-id="choice-field-back-button">Back</a>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="choice-field-reset-button">
                     Reset
                   </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" data-test-id="choice-field-submit-button">
                     Submit
                   </button>
                 </div>

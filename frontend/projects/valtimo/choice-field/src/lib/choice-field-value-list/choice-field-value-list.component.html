@@ -18,7 +18,7 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'create-value'" class="btn btn-primary btn-space mr-0">
+        <button [routerLink]="'create-value'" class="btn btn-primary btn-space mr-0" data-test-id="choice-field-values-create-button">
           <i class="icon mdi mdi-plus mr-1"></i>
           <span>{{ 'Create new Choice field value' | translate }}</span>
         </button>
@@ -36,8 +36,8 @@
         [header]="true"
       >
         <div header>
-          <h3 class="list-header-title">{{ 'Choice field values' | translate }}</h3>
-          <h5 class="list-header-description">
+          <h3 class="list-header-title" data-test-id="choice-field-values-title">{{ 'Choice field values' | translate }}</h3>
+          <h5 class="list-header-description" data-test-id="choice-field-values-description">
             {{ 'Overview of all Choice field values' | translate }}
           </h5>
         </div>

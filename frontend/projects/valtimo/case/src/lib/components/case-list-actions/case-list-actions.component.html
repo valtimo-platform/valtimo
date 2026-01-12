@@ -23,24 +23,27 @@
       associatedProcessDocumentDefinitions: associatedProcessDocumentDefinitions$ | async,
       caseSettings: caseSettings$ | async,
     } as obs"
+    data-test-id="case-process-start-modal"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
-      ><h3 cdsModalHeaderHeading>
+      ><h3 cdsModalHeaderHeading data-test-id="case-process-start-modal-title">
         {{ 'dashboard.startProcess.title' | translate }}
       </h3>
     </cds-modal-header>
 
-    <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
+    <section cdsModalContent class="start-modal-content" [cdsLayer]="1" data-test-id="case-process-start-modal-content">
       <cds-clickable-tile
         *ngIf="obs.caseSettings?.hasExternalStartForm"
         (click)="openExternalCaseStartForm(true)"
+        data-test-id="case-process-start-modal-external-form-tile"
       >
         {{ obs?.caseSettings.externalStartFormDescription || '-' }}
       </cds-clickable-tile>
 
       <cds-clickable-tile
-        *ngFor="let processDocumentDefinition of obs.associatedProcessDocumentDefinitions"
+        *ngFor="let processDocumentDefinition of obs.associatedProcessDocumentDefinitions; let i = index"
         (click)="selectProcess(processDocumentDefinition)"
+        data-test-id="case-process-start-modal-process-tile-{{i}}"
       >
         {{ processDocumentDefinition.processDefinitionName }}
       </cds-clickable-tile>
@@ -53,4 +56,5 @@
   [navigateAfterSubmit]="navigateAfterSubmit"
   (formFlowComplete)="onFormFlowComplete()"
   (noProcessLinked)="onNoProcessLinked($event)"
+  data-test-id="case-process-start-modal-component"
 ></valtimo-case-process-start-modal>

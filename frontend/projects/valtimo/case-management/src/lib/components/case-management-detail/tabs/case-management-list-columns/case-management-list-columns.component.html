@@ -83,6 +83,7 @@
     (click)="openModal('create')"
     cdsButton="primary"
     [disabled]="obs.loadingCaseListColumns || !(hasEditPermissions$ | async)"
+    data-test-id="case-management-list-columns-add-button"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -151,7 +152,7 @@
         ></v-tooltip-icon>
       </span>
 
-      <input cdsText formControlName="title" />
+      <input cdsText formControlName="title" data-test-id="case-management-list-columns-title-input" />
     </cds-label>
 
     <cds-label
@@ -168,7 +169,7 @@
         ></v-tooltip-icon>
       </span>
 
-      <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" />
+      <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" data-test-id="case-management-list-columns-key-input" />
     </cds-label>
 
     <cds-label [disabled]="modalObs.disableInput">
@@ -185,6 +186,7 @@
         formControlName="path"
         [caseDefinitionKey]="modalObs.params?.caseDefinitionKey"
         [caseDefinitionVersionTag]="modalObs.params?.caseDefinitionVersionTag"
+        data-test-id="case-management-list-columns-path-selector"
       ></valtimo-value-path-selector>
     </cds-label>
 
@@ -201,6 +203,7 @@
         formControlName="displayType"
         [disabled]="modalObs.disableInput"
         (selected)="selectedDisplayType($event)"
+        data-test-id="case-management-list-columns-display-type-dropdown"
       >
         <cds-dropdown-list [items]="(viewTypeItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
@@ -216,7 +219,7 @@
         ></v-tooltip-icon>
       </span>
 
-      <cds-number formControlName="tagAmount" [min]="1" [step]="1"></cds-number>
+      <cds-number formControlName="tagAmount" [min]="1" [step]="1" data-test-id="case-management-list-columns-tag-amount-input"></cds-number>
     </cds-label>
 
     <cds-label *ngIf="showDateFormat$ | async" [disabled]="modalObs.disableInput">
@@ -229,7 +232,7 @@
         ></v-tooltip-icon>
       </span>
 
-      <input cdsText formControlName="dateFormat" />
+      <input cdsText formControlName="dateFormat" data-test-id="case-management-list-columns-date-format-input" />
     </cds-label>
 
     <cds-label *ngIf="modalObs.showEnum || modalObs.isYesNo" [disabled]="modalObs.disableInput">
@@ -260,13 +263,15 @@
         [maxRows]="modalObs.isYesNo ? 1 : null"
         [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
         [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
+        data-test-id="case-management-list-columns-enum-input"
       ></valtimo-carbon-multi-input>
     </cds-label>
 
     <cds-checkbox
       formControlName="sortable"
       [disabled]="modalObs.showTagAmount || modalObs.disableInput"
-      >{{ 'listColumn.sortable' | translate }}
+      data-test-id="case-management-list-columns-sortable-checkbox"
+    >{{ 'listColumn.sortable' | translate }}
     </cds-checkbox>
 
     <cds-label
@@ -284,6 +289,7 @@
       <cds-dropdown
         formControlName="defaultSort"
         [disabled]="modalObs.disableInput || modalObs.disableDefaultSort || modalObs.showTagAmount"
+        data-test-id="case-management-list-columns-default-sort-dropdown"
       >
         <cds-dropdown-list [items]="(sortItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
@@ -308,6 +314,7 @@
         [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
         [required]="false"
         [size]="'sm'"
+        data-test-id="case-management-list-columns-export-toggle"
       ></cds-toggle>
     </cds-label>
   </form>
@@ -321,6 +328,7 @@
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
+        data-test-id="case-management-list-columns-close-button"
       >
         {{ 'listColumn.close' | translate }}
       </button>
@@ -333,6 +341,7 @@
         [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
+        data-test-id="case-management-list-columns-save-button"
       >
         {{ 'listColumn.save' | translate }}
       </button>
@@ -348,6 +357,7 @@
     confirmButtonTextTranslationKey="listColumn.deleteColumn"
     titleTranslationKey="listColumn.deleteColumn"
     contentTranslationKey="listColumn.deleteColumnConfirmation"
+    data-test-id="case-management-list-columns-delete-modal"
   ></valtimo-confirmation-modal>
 </ng-template>
 
@@ -376,6 +386,7 @@
       obs.disableInput ||
       obs.loadingCaseListColumns
     "
+    data-test-id="case-management-list-columns-download-button"
   >
     <svg cdsIcon="download" size="16"></svg>
   </button>

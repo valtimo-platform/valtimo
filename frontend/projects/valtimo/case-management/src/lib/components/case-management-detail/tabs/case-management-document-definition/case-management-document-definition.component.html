@@ -30,6 +30,7 @@
       (loadingDocumentDefinition$ | async) || (selectedDocumentDefinition$ | async) === null
     "
     (click)="downloadDefinition()"
+    data-test-id="document-definition-download-button"
   >
     {{ 'interface.download' | translate }}
 
@@ -37,10 +38,10 @@
   </button>
 </valtimo-json-editor>
 
-<a id="downloadAnchorElement" style="display: none"></a>
+<a id="downloadAnchorElement" style="display: none" data-test-id="document-definition-download-anchor"></a>
 
 <ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
+  <div class="loading-container" data-test-id="document-definition-loading-container">
+    <cds-loading data-test-id="document-definition-loading-spinner"></cds-loading>
   </div>
 </ng-template>

@@ -19,10 +19,10 @@
     availableProcessLinkTypes: availableProcessLinkTypes$ | async,
   } as obs"
 >
-  <p class="step-description">
+  <p class="step-description" data-test-id="process-link-configuration-description">
     {{ 'processLinkConfiguration.chooseProcessLinkTypeDescription' | translate }}
   </p>
-  <div class="process-link-grid">
+  <div class="process-link-grid" data-test-id="process-link-configuration-grid">
     <div
       class="process-link-item"
       *ngFor="let availableProcessLinkType of obs.availableProcessLinkTypes"
@@ -37,6 +37,7 @@
           [vTooltip]="'processLinkTypeDisabledTooltip.' + processLinkTypeId | translate"
           [onBottom]="true"
           [tooltipDisabled]="availableProcessLinkType.enabled"
+          data-test-id="process-link-configuration-button-{{processLinkTypeId}}"
         >
           {{ 'processLinkType.' + processLinkTypeId | translate }}
           <svg

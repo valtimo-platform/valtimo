@@ -24,15 +24,16 @@
   class="valtimo-definition-create"
   [open]="open"
   (close)="onCloseModal()"
+  data-test-id="valtimo-definition-create-modal"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading data-test-id="valtimo-definition-create-title">
       {{ 'caseManagement.createDefinition.modalTitle' | translate }}
     </h3>
   </cds-modal-header>
 
   <div cdsModalContent>
-    <p class="valtimo-definition-create__description">{{ obs.createDraftDescription }}</p>
+    <p class="valtimo-definition-create__description" data-test-id="valtimo-definition-create-description">{{ obs.createDraftDescription }}</p>
 
     <form [formGroup]="draftVersionForm" class="valtimo-definition-create__content">
       <cds-label>
@@ -51,6 +52,7 @@
           placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
           [cdsLayer]="1"
           [attr.modal-primary-focus]="true"
+          data-test-id="valtimo-definition-create-name-input"
         />
       </cds-label>
 
@@ -69,6 +71,7 @@
           cdsText
           placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
           [cdsLayer]="1"
+          data-test-id="valtimo-definition-create-key-input"
         />
       </cds-label>
 
@@ -88,6 +91,7 @@
           placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
           [cdsLayer]="1"
           [invalid]="!!obs.versionError"
+          data-test-id="valtimo-definition-create-version-input"
         />
       </cds-label>
 
@@ -108,17 +112,18 @@
           [cdsLayer]="1"
           [rows]="3"
           [cols]="150"
+          data-test-id="valtimo-definition-create-description-input"
         ></textarea>
       </cds-textarea-label>
     </form>
   </div>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCloseModal()">
+    <button cdsButton="ghost" (click)="onCloseModal()" data-test-id="valtimo-definition-create-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="draftVersionForm.invalid" (click)="onCloseModal(true)">
+    <button cdsButton="primary" [disabled]="draftVersionForm.invalid" (click)="onCloseModal(true)" data-test-id="valtimo-definition-create-save-button">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

@@ -22,6 +22,7 @@
   @if (obs.isReadOnly) {
     <cds-notification
       class="read-only-notification"
+      data-test-id="case-management-read-only-notification"
       [notificationObj]="{
         type: 'info',
         title: 'caseManagement.tabs.generalTab.readOnlyNotification.title' | translate,
@@ -41,11 +42,13 @@
         muuriItem
         [isReadOnly]="obs.isReadOnly"
         *ngIf="documentDefinition$ | async"
+        data-test-id="case-management-case-handler"
       ></valtimo-case-management-case-handler>
     </valtimo-muuri-item>
 
     <valtimo-muuri-item>
-      <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly">
+      <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly"
+        data-test-id="case-management-external-start-form">
       </valtimo-case-management-external-start-form>
     </valtimo-muuri-item>
   </div>

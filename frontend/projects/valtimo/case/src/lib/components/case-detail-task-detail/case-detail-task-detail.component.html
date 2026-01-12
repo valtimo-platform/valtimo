@@ -31,7 +31,7 @@
       (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
     ></valtimo-task-detail-intermediate-save>
 
-    <button cdsButton="ghost" [iconOnly]="true" (click)="onClose()">
+    <button cdsButton="ghost" [iconOnly]="true" (click)="onClose()" data-test-id="case-detail-task-detail-close-button">
       <svg cdsIcon="close" size="16"></svg>
     </button>
   </section>
@@ -41,11 +41,11 @@
     [class.valtimo-case-detail-task-detail__body--compact]="compactMode$ | async"
   >
     <div class="title-container">
-      <p class="valtimo-case-detail-task-detail__title">{{ pageValue()?.title }}</p>
+      <p class="valtimo-case-detail-task-detail__title" data-test-id="case-detail-task-detail-title">{{ pageValue()?.title }}</p>
 
-      <p class="cds--modal-header__label cds--type-delta">{{ pageValue()?.subtitle }}</p>
+      <p class="cds--modal-header__label cds--type-delta" data-test-id="case-detail-task-detail-subtitle">{{ pageValue()?.subtitle }}</p>
 
-      <p *ngIf="obs.intermediateSaveValue" class="cds--modal-header__label">
+      <p *ngIf="obs.intermediateSaveValue" class="cds--modal-header__label" data-test-id="case-detail-task-detail-intermediate-save-info">
         {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
 
         {{
@@ -69,10 +69,12 @@
             [canAssignUserToTask]="obs.canAssignUserToTask"
             [taskId]="obs.task.id"
             [assigneeId]="obs.task.assignee"
+            data-test-id="case-detail-task-detail-assign-user-to-task"
           ></valtimo-assign-user-to-task>
 
           <valtimo-set-task-due-date
             [canModifyTask]="obs.canModifyTask"
+            data-test-id="case-detail-task-detail-set-task-due-date"
           ></valtimo-set-task-due-date>
         }
       </div>
@@ -82,6 +84,7 @@
       [taskAndProcessLink]="obs.taskAndProcessLink"
       (activeChange)="onActiveChangeEvent($event)"
       (formSubmit)="onFormSubmitEvent()"
+      data-test-id="case-detail-task-detail-content"
     ></valtimo-task-detail-content>
   </section>
 </div>

@@ -32,6 +32,7 @@
       cdsButton="tertiary"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="editWidgetTab()"
+      data-test-id="widget-management-edit-button"
     >
       {{ 'widgetTabManagement.tab.editButton' | translate }}
 

@@ -33,6 +33,7 @@
                     type="button"
                     (click)="back()"
                     id="back-button"
+                    data-test-id="page-back-button"
                   >
                     Back
                   </button>
@@ -41,6 +42,7 @@
                     type="button"
                     (click)="reset()"
                     id="reset-button"
+                    data-test-id="page-reset-button"
                   >
                     Reset
                   </button>
@@ -49,6 +51,7 @@
                     type="button"
                     (click)="save()"
                     id="save-button"
+                    data-test-id="page-save-button"
                   >
                     Save
                   </button>
@@ -57,6 +60,7 @@
                     type="submit"
                     (click)="submit({})"
                     id="submit-button"
+                    data-test-id="page-submit-button"
                   >
                     Submit
                   </button>
@@ -70,6 +74,7 @@
             (submitted)="submit($event)"
             [formFields]="task.formFields"
             [componentName]="task.formLocation"
+            data-test-id="page-camunda-form"
           ></valtimo-camunda-form>
         </div>
       </valtimo-widget>

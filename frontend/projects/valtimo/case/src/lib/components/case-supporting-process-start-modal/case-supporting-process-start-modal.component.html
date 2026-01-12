@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480">
+<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480" data-test-id="cds-modal">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [cdsLayer]="1"
-    ><h3 cdsModalHeaderHeading>
+    ><h3 cdsModalHeaderHeading data-test-id="cds-modal-header">
       {{
         (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
           ? (processDefinitionKey$ | async | translate)
@@ -25,12 +25,12 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1">
+  <section cdsModalContent [cdsLayer]="1" data-test-id="cds-modal-content">
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
 
     @if (isLoading$ | async) {
-      <div class="loading-container">
+      <div class="loading-container" data-test-id="cds-modal-loading">
         <cds-loading size="sm"></cds-loading>
       </div>
     }
@@ -46,6 +46,7 @@
         [form]="formDefinition$ | async"
         [options]="options$ | async"
         (submit)="onSubmit($event)"
+        data-test-id="cds-modal-form-io"
       ></valtimo-form-io>
     }
 
@@ -58,6 +59,7 @@
         #formFlow
         [formFlowInstanceId]="formFlowInstanceId$ | async"
         (formFlowComplete)="formSubmitted()"
+        data-test-id="cds-modal-form-flow"
       ></valtimo-form-flow>
     }
 
@@ -67,7 +69,7 @@
       !(formFlowInstanceId$ | async) &&
       (startProcessLinkType$ | async) !== 'ui-component'
     ) {
-      <div class="bg-warning text-black mb-0 p-3 text-center">
+      <div class="bg-warning text-black mb-0 p-3 text-center" data-test-id="cds-modal-warning-message">
         {{
           isAdmin
             ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
@@ -81,6 +83,7 @@
           type="button"
           (click)="gotoFormLinkScreen()"
           id="form-link-button"
+          data-test-id="cds-modal-goto-form-link-button"
         >
           {{ 'formManagement.gotoProcessLinksButton' | translate }}
         </button>

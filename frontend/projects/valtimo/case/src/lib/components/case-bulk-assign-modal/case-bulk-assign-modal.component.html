@@ -15,11 +15,11 @@
   -->
 
 <cds-modal valtimoCdsModal [open]="open" (close)="closeModal()" showFooter="true">
-  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>{{ 'case.bulkAssign.modal.title' | translate }}</h3>
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()" data-test-id="bulk-assign-modal-header">
+    <h3 cdsModalHeaderHeading data-test-id="bulk-assign-modal-title">{{ 'case.bulkAssign.modal.title' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent data-test-id="bulk-assign-modal-content">
     <form *ngIf="candidateUsers$ | async as candidateUsers" [formGroup]="formGroup">
       <cds-combo-box
         formControlName="assignee"
@@ -27,16 +27,17 @@
         [items]="candidateUsers"
         [label]="'case.bulkAssign.modal.selectLabel' | translate"
         [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+        data-test-id="bulk-assign-modal-assignee-select"
       >
         <cds-dropdown-list></cds-dropdown-list>
       </cds-combo-box>
     </form>
   </section>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
+  <cds-modal-footer data-test-id="bulk-assign-modal-footer">
+    <button cdsButton="ghost" (click)="closeModal()" data-test-id="bulk-assign-modal-cancel-button">{{ 'interface.cancel' | translate }}</button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="closeModal(true)">
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="closeModal(true)" data-test-id="bulk-assign-modal-confirm-button">
       {{ 'case.bulkAssign.modal.confirm' | translate }}
     </button>
   </cds-modal-footer>

@@ -22,6 +22,7 @@
   paginationIdentifier="caseManagementList"
   (paginationClicked)="paginationClicked($event)"
   (paginationSet)="paginationSet($event)"
+  data-test-id="case-management-list"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
@@ -29,26 +30,29 @@
     [action]="importCaseDefinitionButton"
     [description]="'caseManagement.noResults.description' | translate"
     [title]="'caseManagement.noResults.title' | translate"
+    data-test-id="case-management-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #loading>
-  <valtimo-carbon-list loading="true"></valtimo-carbon-list>
+  <valtimo-carbon-list loading="true" data-test-id="case-management-loading-list"></valtimo-carbon-list>
 </ng-template>
 
 <valtimo-case-management-upload
   [open]="showUploadModal$ | async"
   (closeModal)="onCloseUploadModal($event)"
+  data-test-id="case-management-upload"
 ></valtimo-case-management-upload>
 
 <valtimo-case-management-create
   [open]="showCreateModal$ | async"
   (closeModal)="onCloseCreateModal($event)"
+  data-test-id="case-management-create"
 ></valtimo-case-management-create>
 
 <ng-template #importCaseDefinitionButton>
-  <div class="valtimo-case-management-list__actions">
-    <button cdsButton="ghost" (click)="showUploadModal()">
+  <div class="valtimo-case-management-list__actions" data-test-id="case-management-actions">
+    <button cdsButton="ghost" (click)="showUploadModal()" data-test-id="case-management-upload-button">
       {{ 'Upload' | translate }}
 
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
@@ -58,6 +62,7 @@
       *ngIf="canUpdateGlobalConfiguration$ | async"
       cdsButton="primary"
       (click)="showCreateModal()"
+      data-test-id="case-management-create-button"
     >
       {{ 'interface.create' | translate }}
 

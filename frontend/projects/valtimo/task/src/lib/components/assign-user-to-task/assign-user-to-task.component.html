@@ -35,6 +35,7 @@
       *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.hasSelection)"
       (mouseenter)="onMouseEnterAssignee()"
       (mouseleave)="onMouseLeaveAssignee()"
+      data-test-id="assign-user-container"
     >
       <div
         class="assignee-text element"
@@ -43,6 +44,7 @@
             ? vars.hasSelection && !obs.mouseIsOverAssignee
             : vars.hasSelection,
         }"
+        data-test-id="assign-user-container-assignee-text"
       >
         <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
 
@@ -59,6 +61,7 @@
         [disabled]="obs.disabled"
         size="sm"
         (click)="unassignTask()"
+        data-test-id="assign-user-container-remove-button"
       >
         {{ 'assignTask.remove' | translate }}
       </button>
@@ -70,6 +73,7 @@
         [isOpen]="open$ | async"
         [ngClass]="{active: !vars.hasSelection}"
         (onOpen)="clear()"
+        data-test-id="assign-user-container-toggletip"
       >
         <button
           cdsToggletipButton
@@ -77,6 +81,7 @@
           cdsButton="tertiary"
           size="sm"
           class="set-assignee-button"
+          data-test-id="assign-user-container-set-assignee-button"
         >
           {{ 'assignTask.buttonText' | translate }}
 
@@ -87,6 +92,7 @@
           cdsToggletipContent
           [attr.data-carbon-theme]="toggletipTheme$ | async"
           class="assign-task-popover-content"
+          data-test-id="assign-user-container-toggletip-content"
         >
           <cds-combo-box
             *ngIf="!vars.hasSelection"
@@ -99,6 +105,7 @@
             [disabled]="obs.disabled"
             (selected)="onUserSelect($event)"
             (clear)="clear()"
+            data-test-id="assign-user-container-combo-box"
           >
             <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
           </cds-combo-box>
@@ -108,6 +115,7 @@
             class="submit-task-button"
             [disabled]="!obs.selectedUserId || obs.disabled"
             (click)="onSubmitButtonClick()"
+            data-test-id="assign-user-container-submit-button"
           >
             {{ 'assignTask.submitButtonText' | translate }}
 
