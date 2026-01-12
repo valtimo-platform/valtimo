@@ -51,16 +51,17 @@ jobs:
 
           case "$state" in
             waiting_for_images)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
               ;;
             test_env_started|test_env_is_running|test_env_is_crash_looping)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              export FRONTEND_IMAGE_TAG=$(jq -r '.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.backend_image_tag' "$payload")
               export TEST_ENV_URL=$(jq -r '.test_env_url' "$payload")
               export METRICS_URL=$(jq -r '.grafana_backend_pod_metrics_url' "$payload")
               export LOGS_URL=$(jq -r '.grafana_backend_pod_logs_url' "$payload")
               ;;
             test_env_cannot_start)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
+              export FRONTEND_IMAGE_TAG=$(jq -r '.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.backend_image_tag' "$payload")
               export ERROR_MESSAGE=$(jq -r '.error_message' "$payload")
               ;;
             *)

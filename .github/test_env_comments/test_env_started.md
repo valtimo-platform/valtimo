@@ -3,7 +3,7 @@ Closing or merging this PR will automatically delete the test environment. Pushi
 Progress:
 
 - [x] Created test environment
-- [x] Images tagged `${IMAGE_TAG}` available
+- [x] Images tagged `${FRONTEND_IMAGE_TAG}` (frontend) / `${BACKEND_IMAGE_TAG}` (backend) available
 - [x] Started test environment
 - [ ] Waiting for environment to run
 
@@ -13,8 +13,8 @@ Test environment metadata:
 - Commit: ${COMMIT_SHA}
 - Frontend contents: `${FRONTEND_CONTENTS_SHA}`
 - Backend contents: `${BACKEND_CONTENTS_SHA}`
-- Frontend image: `ghcr.io/valtimo-platform/valtimo/gzac-frontend:${IMAGE_TAG}`
-- Backend image: `ghcr.io/valtimo-platform/valtimo/gzac-backend:${IMAGE_TAG}`
+- Frontend image: `ghcr.io/valtimo-platform/valtimo/gzac-frontend:${FRONTEND_IMAGE_TAG}`
+- Backend image: `ghcr.io/valtimo-platform/valtimo/gzac-backend:${BACKEND_IMAGE_TAG}`
 
 Observability:
 

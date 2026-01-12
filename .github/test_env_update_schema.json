@@ -43,7 +43,10 @@
         "test_env_name": {
           "type": "string"
         },
-        "test_env_image_tag": {
+        "frontend_image_tag": {
+          "type": "string"
+        },
+        "backend_image_tag": {
           "type": "string"
         },
         "test_env_url": {
@@ -66,7 +69,8 @@
         "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
-        "test_env_image_tag",
+        "frontend_image_tag",
+        "backend_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
         "grafana_backend_pod_logs_url"
@@ -94,7 +98,10 @@
         "test_env_name": {
           "type": "string"
         },
-        "test_env_image_tag": {
+        "frontend_image_tag": {
+          "type": "string"
+        },
+        "backend_image_tag": {
           "type": "string"
         },
         "test_env_url": {
@@ -117,7 +124,8 @@
         "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
-        "test_env_image_tag",
+        "frontend_image_tag",
+        "backend_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
         "grafana_backend_pod_logs_url"
@@ -145,7 +153,10 @@
         "test_env_name": {
           "type": "string"
         },
-        "test_env_image_tag": {
+        "frontend_image_tag": {
+          "type": "string"
+        },
+        "backend_image_tag": {
           "type": "string"
         },
         "test_env_url": {
@@ -168,7 +179,8 @@
         "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
-        "test_env_image_tag",
+        "frontend_image_tag",
+        "backend_image_tag",
         "test_env_url",
         "grafana_backend_pod_metrics_url",
         "grafana_backend_pod_logs_url"
@@ -196,7 +208,10 @@
         "test_env_name": {
           "type": "string"
         },
-        "test_env_image_tag": {
+        "frontend_image_tag": {
+          "type": "string"
+        },
+        "backend_image_tag": {
           "type": "string"
         },
         "error_message": {
@@ -210,7 +225,8 @@
         "backend_contents_sha",
         "test_env_comment_id",
         "test_env_name",
-        "test_env_image_tag",
+        "frontend_image_tag",
+        "backend_image_tag",
         "error_message"
       ],
       "additionalProperties": false
