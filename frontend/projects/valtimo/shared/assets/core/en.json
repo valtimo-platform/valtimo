@@ -559,6 +559,10 @@
           "createdDate": "Created on",
           "description": "Description"
         }
+      },
+      "notFinalizableWarning": {
+        "title": "This case definition cannot be finalized.",
+        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final."
       }
     },
     "processLinkNotification": {
