@@ -239,7 +239,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should link document to zaak`() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
-        val zaakUrl = URI("http://localhost:56273/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
 
         // Make a record in the database about a document that is matched to the open zaak
         setupResourceMock()
@@ -256,7 +255,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         assertEquals(4, parsedOutput.size)
         assertEquals(INFORMATIE_OBJECT_URL, parsedOutput["informatieobject"])
-        assertEquals(zaakUrl.toString(), parsedOutput["zaak"])
+        assertEquals(ZAAK_URL.toString(), parsedOutput["zaak"])
         assertEquals("titelVariableName", parsedOutput["titel"])
         assertEquals("beschrijvingVariableName", parsedOutput["beschrijving"])
 
@@ -271,7 +270,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should link uploaded document to zaak`() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
-        val zaakUrl = URI("http://localhost:56273/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
 
         // Make a record in1 the database about a document that is matched to the open zaak
         setupResourceMock()
@@ -288,7 +286,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         assertEquals(4, parsedOutput.size)
         assertEquals(INFORMATIE_OBJECT_URL, parsedOutput["informatieobject"])
-        assertEquals(zaakUrl.toString(), parsedOutput["zaak"])
+        assertEquals(ZAAK_URL.toString(), parsedOutput["zaak"])
         assertEquals("titelVariableName", parsedOutput["titel"])
         assertEquals("beschrijvingVariableName", parsedOutput["beschrijving"])
 
