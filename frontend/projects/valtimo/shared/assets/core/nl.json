@@ -37,8 +37,14 @@
       "confirm": "Tabblad wisselen"
     },
     "noResults": {
-      "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
-      "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
+      "ALL": {
+        "description": "Er is hier niets te doen.",
+        "title": "Er zijn geen dossiers"
+      },
+      "MINE": {
+        "description": "Even pauze.",
+        "title": "Er zijn geen dossiers aan jou toegewezen"
+      },
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
@@ -48,14 +54,23 @@
         "title": "Geen dossiers gevonden"
       }
     },
-    "noAccess": {"description": "Je hebt geen toegang tot dit dossier", "title": "Geen toegang"},
+    "noAccess": {
+      "description": "Je hebt geen toegang tot dit dossier",
+      "title": "Geen toegang"
+    },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
       "totalItem": "{{start}}-{{end}} van {{total}} dossier",
       "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
-    "select": {"single": "1 dossier geselecteerd", "multiple": "{{count}} dossiers geselecteerd"},
-    "title": {"single": "Dossier", "plural": "Dossiers"},
+    "select": {
+      "single": "1 dossier geselecteerd",
+      "multiple": "{{count}} dossiers geselecteerd"
+    },
+    "title": {
+      "single": "Dossier",
+      "plural": "Dossiers"
+    },
     "tabs": {
       "noResults": "Geen tabbladen geconfigureerd",
       "noResultsDescription": "Er zijn geen tabbladen geconfigureerd voor dit dossiertype.",
@@ -75,7 +90,10 @@
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
-    "forms": {"globalSearchPlaceHolder": "Alles", "referenceNumberPlaceHolder": "Referentienummer"},
+    "forms": {
+      "globalSearchPlaceHolder": "Alles",
+      "referenceNumberPlaceHolder": "Referentienummer"
+    },
     "sendEmailExtension": {
       "buttonText": "Verstuur e-mail",
       "title": "Een e-mail versturen",
@@ -101,13 +119,17 @@
       "title": "Titel",
       "noFormDefinitionComponent": "Geen formulierdefinitie voor dit object gevonden.",
       "noObjectType": "Geen objecten gevonden voor dit objecttype.",
-      "objectType": {"viewObject": "Object bekijken"}
+      "objectType": {
+        "viewObject": "Object bekijken"
+      }
     },
     "notes": {
       "addNote": "Notitie toevoegen",
       "modifyNote": "Notitie bewerken",
       "tableItemsText": "Notities",
-      "input": {"content": "Notitie"},
+      "input": {
+        "content": "Notitie"
+      },
       "deleteConfirmation": {
         "title": "Notitie verwijderen",
         "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
@@ -162,7 +184,10 @@
     "rowLocked": "Je hebt geen toegang tot dit dossier"
   },
   "document": {
-    "title": {"single": "Document", "plural": "Document's"},
+    "title": {
+      "single": "Document",
+      "plural": "Document's"
+    },
     "id": "Referentie ID",
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
@@ -270,23 +295,50 @@
     "of": "van"
   },
   "dashboard": {
-    "openTasks": {"title": "Alle taken"},
-    "openTask": {"title": "Open taak"},
-    "activeProcess": {"title": "Actieve proces"},
-    "activeProcesses": {"title": "Actieve processen"},
-    "tasksCompleted": {"title": "Afgeronde taken"},
-    "taskCompleted": {"title": "Afgeronde taak"},
-    "statistics": {"title": "Statistieken"},
-    "processes": {"title": "Processen"},
-    "process": {"title": "Proces", "details": "Proces details"},
-    "startProcess": {"title": "Start"},
-    "version": {"title": "Versie"},
+    "openTasks": {
+      "title": "Alle taken"
+    },
+    "openTask": {
+      "title": "Open taak"
+    },
+    "activeProcess": {
+      "title": "Actieve proces"
+    },
+    "activeProcesses": {
+      "title": "Actieve processen"
+    },
+    "tasksCompleted": {
+      "title": "Afgeronde taken"
+    },
+    "taskCompleted": {
+      "title": "Afgeronde taak"
+    },
+    "statistics": {
+      "title": "Statistieken"
+    },
+    "processes": {
+      "title": "Processen"
+    },
+    "process": {
+      "title": "Proces",
+      "details": "Proces details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Versie"
+    },
     "processingLeadTime": {
       "title": "Doorlooptijd verwerken",
       "description": "gemiddeld over de laatste 30 dagen"
     },
-    "tasks": {"title": "Taken"},
-    "task": {"title": "Taak"},
+    "tasks": {
+      "title": "Taken"
+    },
+    "task": {
+      "title": "Taak"
+    },
     "noDashboards": "Geen dashboards",
     "noDashboardsDescription": "Het kan zijn dat de systeembeheerder nog geen dashboards heeft geconfigureerd, of je hebt niet de juiste rechten om dashboards te zien.",
     "noWidgets": "Geen widgets",
@@ -374,11 +426,17 @@
     "title": "Instellingen",
     "language": {
       "title": "Taal",
-      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+      "options": {
+        "nl": "Nederlands",
+        "en": "English",
+        "de": "Deutsch"
+      }
     },
     "notification": {
       "title": "Notificaties",
-      "frequency": {"title": "Frequentie van notificaties"},
+      "frequency": {
+        "title": "Frequentie van notificaties"
+      },
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
       "emailNotifications": "Dagelijks taakoverzicht",
@@ -391,11 +449,17 @@
       "emailNotificationOnSaturday": "Zaterdag",
       "emailNotificationOnSunday": "Zondag"
     },
-    "version": {"title": "Versie-informatie"},
+    "version": {
+      "title": "Versie-informatie"
+    },
     "interface": {
       "title": "Interface",
       "themePreference": "Thema",
-      "themes": {"light": "Licht", "dark": "Donker (Beta)", "system": "Systeem (Beta)"},
+      "themes": {
+        "light": "Licht",
+        "dark": "Donker (Beta)",
+        "system": "Systeem (Beta)"
+      },
       "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "compactMode": "Compacte modus",
       "showUserName": "Toon naam van gebruiker"
@@ -415,8 +479,13 @@
     "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
     "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
   },
-  "message": {"empty": "Geen resultaat gevonden"},
-  "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
+  "message": {
+    "empty": "Geen resultaat gevonden"
+  },
+  "cta": {
+    "close": "Sluiten",
+    "moreDetails": "Meer details"
+  },
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
@@ -490,7 +559,11 @@
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie"},
+    "listColumns": {
+      "name": "Naam",
+      "key": "Key",
+      "version": "Versie"
+    },
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -508,7 +581,11 @@
     "allVersionsModal": {
       "title": "Alle {{value}} versies",
       "closeButton": "Sluiten",
-      "columns": {"version": "Versie", "release": "Uitgebracht op", "description": "Beschrijving"},
+      "columns": {
+        "version": "Versie",
+        "release": "Uitgebracht op",
+        "description": "Beschrijving"
+      },
       "noResults": {
         "title": "Er zijn geen dossierversies",
         "description": "Er is geen versie geconfigureerd voor dit dossier"
@@ -553,7 +630,10 @@
       },
       "releaseVersion": {
         "title": "Releaseversie",
-        "fields": {"caseDefinitionVersionTag": "Versie", "basedOnVersionTag": "Gebaseerd op"},
+        "fields": {
+          "caseDefinitionVersionTag": "Versie",
+          "basedOnVersionTag": "Gebaseerd op"
+        },
         "warning": {
           "title": "Waarschuwing",
           "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, met de versie {{ conflictingVersions }}"
@@ -630,7 +710,10 @@
           "canHaveHandler": "Dossiertype kan een behandelaar hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
-          "toggle": {"onText": "Ja", "offText": "Nee"}
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nee"
+          }
         }
       },
       "caseListTab": {
@@ -685,13 +768,20 @@
         "formio": "Kies FormIO component",
         "standard": "Kies standaard inhoud"
       },
-      "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
+      "editModal": {
+        "title": "Tabblad bewerken {{name}}",
+        "updateTab": "Tabblad updaten"
+      },
       "deleteModal": {
         "title": "Tabblad verwijderen?",
         "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
-    "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "tabType": {
+      "custom": "Inhoud",
+      "formio": "FormIO",
+      "standard": "Standaard"
+    },
     "importDefinition": {
       "title": "Case-definitie importeren",
       "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
@@ -746,8 +836,8 @@
       "namePlaceholder": "Voer hier een naam in",
       "nameTooltip": "De naam die de gebruiker te zien krijgt.",
       "version": "Versie van de dossierdefinitie",
-      "versionPlaceholder": "Voer hier een versie in",
-      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie.",
+      "versionPlaceholder": "Voer hier een versie in (bijv. 1.0.0)",
+      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie. Gebruik Semantic Versioning (bijv. 1.0.0).",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
@@ -781,7 +871,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit zaaktype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -802,7 +894,9 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen tags aangemaakt voor dit zaaktype."
+      }
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -816,7 +910,9 @@
       "editWidgetTab": "Bewerk widget tab",
       "cancel": "Annuleren",
       "save": "Opslaan",
-      "form": {"tabName": "Tab naam"}
+      "form": {
+        "tabName": "Tab naam"
+      }
     },
     "columns": {
       "highContrast": "Hoog contrast",
@@ -867,30 +963,65 @@
     },
     "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
-      "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
-      "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
-      "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
-      "table": {"title": "Tabel", "description": "Maak een tabel aan"},
+      "fields": {
+        "title": "Velden",
+        "description": "Tekstgegevens met inhoud en een label"
+      },
+      "custom": {
+        "title": "Eigen component",
+        "description": "Voor complexe inhoud"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ingevuld Form.io-formulier"
+      },
+      "table": {
+        "title": "Tabel",
+        "description": "Maak een tabel aan"
+      },
       "interactive-table": {
         "title": "Interactieve tabel",
         "description": "Maak een interactieve tabel"
       },
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
-      "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
+      "collection": {
+        "title": "Collectie",
+        "description": "Maak een collectie aan"
+      },
+      "divider": {
+        "title": "Scheidingslijn"
+      },
+      "map": {
+        "title": "Kaart",
+        "description": "Maak een kaart widget aan"
+      }
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
       "fullWidth": "Volle-breedte",
       "half": "Half",
-      "small": {"title": "Klein", "subtitle": "Bevat 1 kolom met inhoud"},
-      "medium": {"title": "Medium", "subtitle": "Bevat maximaal 2 kolommen met inhoud"},
-      "large": {"title": "Groot", "subtitle": "Bevat maximaal 3 kolommen met inhoud"},
-      "xtraLarge": {"title": "Xtra Groot", "subtitle": "Bevat maximaal 4 kolommen met inhoud"}
+      "small": {
+        "title": "Klein",
+        "subtitle": "Bevat 1 kolom met inhoud"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Bevat maximaal 2 kolommen met inhoud"
+      },
+      "large": {
+        "title": "Groot",
+        "subtitle": "Bevat maximaal 3 kolommen met inhoud"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groot",
+        "subtitle": "Bevat maximaal 4 kolommen met inhoud"
+      }
     },
     "style": {
       "description": "Selecteer de gewenste stijl voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
+      "default": {
+        "title": "Standaard",
+        "description": "Voor reguliere inhoud"
+      },
       "highContrast": {
         "title": "Hoog contrast",
         "description": "Voor inhoud met een hogere prioriteit"
@@ -898,7 +1029,10 @@
     },
     "density": {
       "description": "Selecteer de gewenste dichtheid voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
+      "default": {
+        "title": "Standaard",
+        "description": "Voor reguliere inhoud"
+      },
       "compact": {
         "title": "Compact",
         "description": "Voor een overzicht met hogere gegevensdichtheid"
@@ -1105,7 +1239,9 @@
       "add": "Trefwoord toevoegen",
       "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
-      "addModal": {"header": "Trefwoord toevoegen"},
+      "addModal": {
+        "header": "Trefwoord toevoegen"
+      },
       "list": {
         "noResultsTitle": "Geen trefwoorden",
         "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
@@ -1125,8 +1261,12 @@
       "add": "Uploadveld toevoegen",
       "deleteText": "Weet je zeker dat je dit uploadveld wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze upload-velden wilt verwijderen?",
-      "addModal": {"header": "Uploadveld toevoegen"},
-      "editModal": {"header": "Uploadveld bewerken"},
+      "addModal": {
+        "header": "Uploadveld toevoegen"
+      },
+      "editModal": {
+        "header": "Uploadveld bewerken"
+      },
       "list": {
         "noResultsTitle": "Geen upload-velden",
         "noResultsDescription": "Voeg een uploadveld toe om te beginnen"
@@ -1445,13 +1585,19 @@
       "outline": "Omlijnd",
       "orange": "Oranje"
     },
-    "labels": {"dateCreationFrom": "Aanmaakdatum van", "dateCreationTo": "Aanmaakdatum tot"},
+    "labels": {
+      "dateCreationFrom": "Aanmaakdatum van",
+      "dateCreationTo": "Aanmaakdatum tot"
+    },
     "sorting": {
       "ascending": "Oplopend",
       "descending": "Aflopend",
       "noDefault": "Geen standaardsortering"
     },
-    "editor": {"visualEditor": "Visuele editor", "jsonEditor": "JSON editor"},
+    "editor": {
+      "visualEditor": "Visuele editor",
+      "jsonEditor": "JSON editor"
+    },
     "jsonEditor": {
       "cancelModal": {
         "title": "De editor verlaten",
@@ -1468,7 +1614,10 @@
     "noTranslationFound": "Geen vertaling gevonden",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
+  "taskDetail": {
+    "taskCreated": "Aangemaakt op",
+    "taskCompleted": "is succesvol afgerond"
+  },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
     "header": "Gebruiker toewijzen aan deze taak",
@@ -1530,7 +1679,11 @@
     "automaticallyGenerated": "Automatisch gegenereerd",
     "search": "Zoeken..."
   },
-  "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
+  "webcam": {
+    "takePicture": "Foto maken",
+    "save": "Opslaan",
+    "redo": "Opnieuw"
+  },
   "customers": {
     "name": "Naam",
     "citizenServiceNumber": "Burgerservicenummer",
@@ -1550,7 +1703,10 @@
     "completeButtonText": "Voltooien"
   },
   "pages": {
-    "plugins": {"title": "Plugins", "noResults": "Er zijn geen plugins geconfigureerd"},
+    "plugins": {
+      "title": "Plugins",
+      "noResults": "Er zijn geen plugins geconfigureerd"
+    },
     "customercases": {
       "title": "Zaken",
       "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
@@ -1587,7 +1743,11 @@
   },
   "customerCases": {
     "tableItemsText": "zaken",
-    "labels": {"zaakNummer": "Zaaknummer", "zaakStatus": "Status", "zaakType": "Type"}
+    "labels": {
+      "zaakNummer": "Zaaknummer",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
+    }
   },
   "processLink": {
     "create": "Proceskoppeling aanmaken",
@@ -1693,8 +1853,12 @@
     "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten.",
     "required": "Bepaalt of de gebruiker een waarde moet invullen voordat er gezocht kan worden."
   },
-  "searchFieldDataType": {"select": "Selecteer een datatype"},
-  "searchFieldFieldType": {"select": "Selecteer een veldtype"},
+  "searchFieldDataType": {
+    "select": "Selecteer een datatype"
+  },
+  "searchFieldFieldType": {
+    "select": "Selecteer een veldtype"
+  },
   "listColumn": {
     "title": "Titel",
     "titleTitle": "Titel (optioneel)",
@@ -1755,9 +1919,14 @@
     "createObject": "Nieuw object",
     "editObject": "Wijzig object",
     "deleteObject": "Verwijder object",
-    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
     "header": "Object informatie",
-    "tabs": {"general": "Algemeen"},
+    "tabs": {
+      "general": "Algemeen"
+    },
     "close": "Sluiten",
     "save": "Object opslaan",
     "delete": "Object verwijderen",
@@ -1800,7 +1969,11 @@
     "edit": "Object wijzigen",
     "download": "Download",
     "visibleInMenu": "Zichtbaar in het menu",
-    "tabs": {"general": "Algemeen", "searchFields": "Zoekvelden", "list": "Lijst"},
+    "tabs": {
+      "general": "Algemeen",
+      "searchFields": "Zoekvelden",
+      "list": "Lijst"
+    },
     "underscoresToSpaces": "Lage streepjes naar spaties",
     "select": "Selecteer een weergavetype"
   },
@@ -1812,11 +1985,15 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige",
-    "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
+    "formioIbanComponent": {
+      "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    },
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
     },
-    "formioFormViewModelComponent": {"submitError": "Ongeldige submissie"}
+    "formioFormViewModelComponent": {
+      "submitError": "Ongeldige submissie"
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -1869,7 +2046,10 @@
     "displayType": {
       "label": "Selecteer het weergavetype van het formulier",
       "placeholder": "Selecteer hoe het formulier moet worden weergegeven",
-      "options": {"modal": "Modaal", "panel": "Panel"}
+      "options": {
+        "modal": "Modaal",
+        "panel": "Panel"
+      }
     },
     "formSize": {
       "label": "Selecteer modaal-grootte",
@@ -1968,7 +2148,11 @@
     "selectCaseDefPlaceholder": "Kies een dossier"
   },
   "logging": {
-    "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Log-niveau"},
+    "columns": {
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
+      "level": "Log-niveau"
+    },
     "search": {
       "addProperty": "Eigenschap toevoegen",
       "afterTimestamp": "Van tijd",
@@ -2016,8 +2200,12 @@
     "configureIkoServer": "IKO-server configureren",
     "dataUrl": "Gegevens-URL",
     "list": "Lijst",
-    "tabs": {"title": "Tabbladen"},
-    "widgets": {"title": "Widgets"},
+    "tabs": {
+      "title": "Tabbladen"
+    },
+    "widgets": {
+      "title": "Widgets"
+    },
     "importDefinition": {
       "title": "Importeer IKO-definitie",
       "overwriteWarning": "Als je IKO-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
