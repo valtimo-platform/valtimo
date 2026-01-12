@@ -22,10 +22,11 @@
     modalType: modalType$ | async,
     prefillObject: prefillObject$ | async,
   } as obs"
+  data-test-id="object-management-modal"
 >
   <div role="header">
     <div class="add-title">
-      <h4>
+      <h4 data-test-id="object-management-title">
         {{
           (obs.modalType === 'add'
             ? 'objectManagement.createObjecttype'
@@ -45,11 +46,11 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
+      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled" data-test-id="object-management-cancel-button">
         {{ 'objectManagement.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid">
+      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid" data-test-id="object-management-save-button">
         {{
           (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
         }}
@@ -60,13 +61,14 @@
 
 <ng-template #form let-prefillObject="prefillObject" let-modalType="modalType">
   <ng-container *ngIf="showForm$ | async">
-    <v-form (valueChange)="formValueChange($event)">
+    <v-form (valueChange)="formValueChange($event)" data-test-id="object-management-form">
       <v-input
         *ngIf="modalType === 'edit'"
         hidden
         [disabled]="true"
         [defaultValue]="prefillObject?.id"
         name="id"
+        data-test-id="object-management-id-input"
       ></v-input>
 
       <v-input
@@ -77,6 +79,7 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.title"
         name="title"
+        data-test-id="object-management-title-input"
       ></v-input>
 
       <ng-container
@@ -94,6 +97,7 @@
           [title]="'objectManagement.labels.objects' | translate"
           [defaultSelectionId]="prefillObject?.objectenApiPluginConfigurationId"
           [required]="true"
+          data-test-id="object-management-objects-select"
         ></v-select>
 
         <v-select
@@ -105,6 +109,7 @@
           [defaultSelectionId]="prefillObject?.objecttypenApiPluginConfigurationId"
           [required]="true"
           (selectedChange)="selectObjectType($event)"
+          data-test-id="object-management-objecttypes-select"
         ></v-select>
       </ng-container>
 
@@ -116,6 +121,7 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.objecttypeId"
         name="objecttypeId"
+        data-test-id="object-management-objecttype-id-input"
       ></v-input>
 
       <v-input
@@ -128,6 +134,7 @@
         [min]="1"
         type="number"
         name="objecttypeVersion"
+        data-test-id="object-management-objecttype-version-input"
       ></v-input>
 
       <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">
@@ -139,6 +146,7 @@
           [title]="'objectManagement.labels.formDefinitionView' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionView' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionView"
+          data-test-id="object-management-form-definition-view-select"
         ></v-select>
 
         <v-select
@@ -149,6 +157,7 @@
           [title]="'objectManagement.labels.formDefinitionEdit' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionEdit' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionEdit"
+          data-test-id="object-management-form-definition-edit-select"
         ></v-select>
       </ng-container>
 
@@ -159,6 +168,7 @@
         [tooltip]="'objectManagement.tooltips.showInDataMenu' | translate"
         name="showInDataMenu"
         [defaultValue]="prefillObject?.showInDataMenu"
+        data-test-id="object-management-show-in-data-menu-checkbox"
       ></v-input>
     </v-form>
   </ng-container>

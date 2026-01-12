@@ -20,32 +20,35 @@
   [disabled]="inputDisabled$ | async"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()">
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
-      <v-stepper-header></v-stepper-header>
+  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()" data-test-id="plugin-add-modal">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()" data-test-id="plugin-add-modal-header">
+      <v-stepper-header data-test-id="plugin-add-modal-header-title"></v-stepper-header>
     </cds-modal-header>
     <section cdsModalContent>
       <v-stepper-content>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
-          <valtimo-plugin-add-select></valtimo-plugin-add-select>
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0" data-test-id="plugin-add-step-0">
+          <valtimo-plugin-add-select data-test-id="plugin-add-select"></valtimo-plugin-add-select>
         </v-stepper-step>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1" data-test-id="plugin-add-step-1">
           <valtimo-plugin-configure
             (valid)="onValid($event)"
             (configuration)="onConfiguration($event)"
+            data-test-id="plugin-add-configure"
           ></valtimo-plugin-configure>
         </v-stepper-step>
       </v-stepper-content>
     </section>
-    <cds-modal-footer>
+    <cds-modal-footer data-test-id="plugin-add-modal-footer">
       <v-stepper-footer class="stepper-footer">
         <v-stepper-footer-step
           nextButtonTranslationKey="pluginManagement.addSteps.step1"
           [nextButtonEnabled]="selectedPluginDefinition$ | async"
+          data-test-id="plugin-add-footer-step-0"
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginManagement.addSteps.complete"
           [completeButtonEnabled]="configurationValid$ | async"
+          data-test-id="plugin-add-footer-step-1"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </cds-modal-footer>

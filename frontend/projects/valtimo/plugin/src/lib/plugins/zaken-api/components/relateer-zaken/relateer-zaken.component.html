@@ -21,6 +21,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="form"
 >
   <v-input
     name="teRelaterenZaakUri"
@@ -29,6 +30,7 @@
     [defaultValue]="obs.prefill?.teRelaterenZaakUri"
     [disabled]="obs.disabled"
     [required]="true"
+    data-test-id="form-te-relateren-zaak-uri-input"
   ></v-input>
   <v-select
     [items]="aardRelatieOptions$ | async"
@@ -37,5 +39,6 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.aardRelatie"
     [required]="true"
+    data-test-id="form-aard-relatie-select"
   ></v-select>
 </v-form>

@@ -20,11 +20,12 @@
         <div class="col-4">
           <label><strong>Version</strong></label
           ><br />
-          <select class="form-control" (change)="setProcessDefinitionVersion($event.target.value)">
+          <select class="form-control" (change)="setProcessDefinitionVersion($event.target.value)" data-test-id="process-diagram-version-select">
             <option
               *ngFor="let processDefinitionVersion of processDefinitionVersions"
               [value]="processDefinitionVersion.version"
               [selected]="processDefinitionVersion.version === version"
+              data-test-id="process-diagram-version-option-{{$index}}"
             >
               {{ processDefinitionVersion.version }}
             </option>
@@ -33,11 +34,12 @@
         <div class="col-4">
           <label><strong>Heatmap type</strong></label
           ><br />
-          <select class="form-control" (change)="setHeatmapOption($event.target.value)">
+          <select class="form-control" (change)="setHeatmapOption($event.target.value)" data-test-id="process-diagram-heatmap-type-select">
             <option
               *ngFor="let option of enumHeatmapOptions"
               [value]="option"
               [selected]="option === heatmapOption"
+              data-test-id="process-diagram-heatmap-option-{{$index}}"
             >
               {{ option }}
             </option>
@@ -52,6 +54,7 @@
               id="toggleHeatmap"
               [checked]="showHeatmap"
               (click)="toggleShowHeatmap()"
+              data-test-id="process-diagram-toggle-heatmap"
             /><span> <label for="toggleHeatmap"></label></span>
           </div>
         </div>
@@ -59,22 +62,22 @@
     </div>
   </div>
 
-  <div #ref (window:resize)="onWindowResize()" class="diagram-container"></div>
+  <div #ref (window:resize)="onWindowResize()" class="diagram-container" data-test-id="process-diagram-container"></div>
 
   <div *ngIf="processInstanceId" class="p-4 text-center legenda-holder">
     <span
-      ><div class="legenda highlight-overlay-past"></div>
+      ><div class="legenda highlight-overlay-past" data-test-id="process-diagram-executed-tasks-legend"></div>
       Executed tasks</span
     >
     <span class="ml-3"
-      ><div class="legenda highlight-overlay-current"></div>
+      ><div class="legenda highlight-overlay-current" data-test-id="process-diagram-current-tasks-legend"></div>
       Current tasks</span
     >
   </div>
 
   <div *ngIf="processDefinitionKey" class="p-4 text-center legenda-holder">
     <span
-      ><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active
+      ><span class="badge badge-pill badge-primary" data-test-id="process-diagram-active-instances-badge">N</span>&nbsp;&nbsp;Amount of currently active
       instances of this task.</span
     >
     <span

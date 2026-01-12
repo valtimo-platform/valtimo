@@ -14,33 +14,33 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" size="lg" (close)="onCloseSelect()">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
+<cds-modal [open]="open" size="lg" (close)="onCloseSelect()" data-test-id="log-details-modal">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" data-test-id="log-details-header">
     {{ 'logging.detailsTitle' | translate }}
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-log-details__content">
-    <h4 class="log-header">
+  <section cdsModalContent class="valtimo-log-details__content" data-test-id="log-details-content">
+    <h4 class="log-header" data-test-id="log-details-message-header">
       {{ 'logging.formattedMessage' | translate }}
     </h4>
 
-    <div class="log-text">{{ logEventFormatted?.formattedMessage || '-' }}</div>
+    <div class="log-text" data-test-id="log-details-message">{{ logEventFormatted?.formattedMessage || '-' }}</div>
 
-    <h4 class="log-header">
+    <h4 class="log-header" data-test-id="log-details-timestamp-header">
       {{ 'logging.timestamp' | translate }}
     </h4>
 
-    <div>
+    <div data-test-id="log-details-timestamp">
       {{ logEventFormatted?.timestamp || '-' }}
     </div>
 
     @if (logEventFormatted?.properties?.length > 0) {
-      <h4 class="log-header">
+      <h4 class="log-header" data-test-id="log-details-properties-header">
         {{ 'logging.properties' | translate }}
       </h4>
-      <div>
+      <div data-test-id="log-details-properties">
         @for (property of logEventFormatted.properties; track property.key) {
-          <div>
+          <div data-test-id="log-details-property-{{$index}}">
             <span class="property-key">{{ property.key }}: </span>
             <span class="property-value">{{ property.value }}</span>
           </div>
@@ -49,10 +49,10 @@
     }
 
     @if (logEventFormatted?.stacktrace) {
-      <h4 class="log-header">
+      <h4 class="log-header" data-test-id="log-details-stacktrace-header">
         {{ 'logging.stacktrace' | translate }}
       </h4>
-      <div>
+      <div data-test-id="log-details-stacktrace">
         <pre class="valtimo-log-stacktrace" [innerHtml]="logEventFormatted.stacktrace"></pre>
       </div>
     }

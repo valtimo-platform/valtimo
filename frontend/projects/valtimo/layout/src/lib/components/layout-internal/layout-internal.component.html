@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<valtimo-topbar></valtimo-topbar>
+<valtimo-topbar data-test-id="valtimo-topbar"></valtimo-topbar>
 <main
   class="cds--content"
   [ngClass]="{
@@ -22,11 +22,12 @@
       (sideBarExpanded$ | async) && (collapsibleWidescreenMenu$ | async) === false,
   }"
   #mainContent
+  data-test-id="valtimo-main-content"
 >
-  <valtimo-left-sidebar [hidden]="layoutService.isFullscreen"></valtimo-left-sidebar>
-  <valtimo-alert></valtimo-alert>
-  <valtimo-page-header [hidden]="layoutService.isFullscreen"></valtimo-page-header>
-  <router-outlet></router-outlet>
-  <valtimo-right-sidebar></valtimo-right-sidebar>
-  <v-prompt></v-prompt>
+  <valtimo-left-sidebar data-test-id="valtimo-left-sidebar" [hidden]="layoutService.isFullscreen"></valtimo-left-sidebar>
+  <valtimo-alert data-test-id="valtimo-alert"></valtimo-alert>
+  <valtimo-page-header data-test-id="valtimo-page-header" [hidden]="layoutService.isFullscreen"></valtimo-page-header>
+  <router-outlet data-test-id="valtimo-router-outlet"></router-outlet>
+  <valtimo-right-sidebar data-test-id="valtimo-right-sidebar"></valtimo-right-sidebar>
+  <v-prompt data-test-id="valtimo-prompt"></v-prompt>
 </main>

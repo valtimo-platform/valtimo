@@ -24,6 +24,7 @@
   } as obs"
   [allowExpansion]="false"
   [expanded]="obs.sideBarExpanded"
+  data-test-id="sidenav-container"
 >
   <ng-container *ngIf="obs.menuItemsLoaded; else loadingTemplate">
     <ng-container *ngFor="let menuItem of obs.menuItems">
@@ -57,6 +58,7 @@
         <cds-sidenav-menu
           [title]="menuItem | menuItemTranslate | async"
           [attr.data-testid]="'sidenav-item-' + menuItem.title"
+          data-test-id="sidenav-menu"
         >
           <ng-container *ngFor="let childMenuItem of menuItem.children">
             <ng-container
@@ -80,6 +82,7 @@
                 (click)="navigateToRoute(childMenuItem.link, $event)"
                 (contextmenu)="onRightClick(vars.sequence)"
                 (ctrl-click)="openInNewTab(childMenuItem.link)"
+                data-test-id="sidenav-item"
               >
                 <valtimo-menu-item-text
                   [accent]="!childMenuItem.link"
@@ -126,6 +129,7 @@
       (contextmenu)="onRightClick(vars.sequence)"
       (ctrl-click)="openInNewTab(menuItem.link.link)"
       href="javascript:void(0)"
+      data-test-id="sidenav-item"
     >
       <valtimo-menu-item-text
         [menuItem]="menuItem"
@@ -139,14 +143,14 @@
 
 <ng-template #countTemplate let-count="count" let-disableCaseCount="disableCaseCount">
   <ng-container *ngIf="count && !disableCaseCount">
-    <span class="case-count">
+    <span class="case-count" data-test-id="case-count">
       {{ count | caseCount }}
     </span>
   </ng-container>
 </ng-template>
 
 <ng-template #loadingTemplate>
-  <div class="loading-container">
+  <div class="loading-container" data-test-id="loading-container">
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

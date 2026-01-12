@@ -37,6 +37,7 @@
                       formControls.milestoneSet.touched && formControls.milestoneSet.errors,
                   }"
                   required
+                  data-test-id="create-milestone-milestone-set-select"
                 >
                   <option value="" selected disabled>Choose a Milestone set</option>
                   <option *ngFor="let milestoneSet of milestoneSets" [value]="milestoneSet.id">
@@ -68,6 +69,7 @@
                     'is-invalid': formControls.title.touched && formControls.title.errors,
                   }"
                   required
+                  data-test-id="create-milestone-title-input"
                 />
                 <div
                   *ngIf="formControls.title.touched && formControls.title.errors"
@@ -98,6 +100,7 @@
                       formControls.processDefinitionKey.errors,
                   }"
                   required
+                  data-test-id="create-milestone-process-select"
                 >
                   <option value="" selected disabled>Choose a process</option>
                   <option
@@ -138,6 +141,7 @@
                       formControls.taskDefinitionKey.errors,
                   }"
                   required
+                  data-test-id="create-milestone-task-select"
                 >
                   <option value="" selected disabled>Choose a task</option>
                   <option
@@ -178,6 +182,7 @@
                       formControls.plannedIntervalInDays.errors,
                   }"
                   required
+                  data-test-id="create-milestone-interval-input"
                 />
                 <div
                   *ngIf="
@@ -213,6 +218,7 @@
                     'is-invalid': formControls.color.touched && formControls.color.errors,
                   }"
                   required
+                  data-test-id="create-milestone-color-input"
                 />
                 <div
                   *ngIf="formControls.color.touched && formControls.color.errors"
@@ -226,13 +232,13 @@
 
             <div class="row pt-3 mt-1">
               <div class="col-12 col-sm-6 text-left">
-                <a [routerLink]="'/milestones'" class="btn btn-space btn-default">Back</a>
+                <a [routerLink]="'/milestones'" class="btn btn-space btn-default" data-test-id="create-milestone-back-link">Back</a>
               </div>
               <div class="col-12 col-sm-6 text-right">
-                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="create-milestone-reset-button">
                   Reset
                 </button>
-                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" data-test-id="create-milestone-submit-button">
                   Submit
                 </button>
               </div>

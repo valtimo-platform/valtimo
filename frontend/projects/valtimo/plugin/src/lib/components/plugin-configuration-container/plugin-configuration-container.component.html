@@ -21,9 +21,10 @@
   [disabled$]="disabled$"
   (valid)="onValidDefaultConfiguration($event)"
   (configuration)="onDefaultConfiguration($event)"
+  data-test-id="valtimo-default-plugin-configuration"
 >
 </valtimo-default-plugin-configuration>
-<ng-template #pluginConfigurationComponent></ng-template>
-<ng-container *ngIf="noConfigurationComponentAvailable$ | async">
-  <v-paragraph [center]="true">{{ 'plugin.noConfigurationComponent' | translate }}</v-paragraph>
+<ng-template #pluginConfigurationComponent data-test-id="valtimo-default-plugin-configuration-template"></ng-template>
+<ng-container *ngIf="noConfigurationComponentAvailable$ | async" data-test-id="valtimo-default-plugin-configuration-container">
+  <v-paragraph [center]="true" data-test-id="valtimo-default-plugin-configuration-paragraph">{{ 'plugin.noConfigurationComponent' | translate }}</v-paragraph>
 </ng-container>

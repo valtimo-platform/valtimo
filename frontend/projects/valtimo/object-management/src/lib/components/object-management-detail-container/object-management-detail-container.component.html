@@ -31,9 +31,9 @@
     <div class="bg-light dossier-header" *ngIf="object.showInDataMenu">
       <h3 class="dossier-title">
         <div *ngIf="object.showInDataMenu" class="pull-right">
-          <span class="badge badge-pill badge-info increase-size">{{
-            'objectManagement.visibleInMenu' | translate
-          }}</span>
+          <span class="badge badge-pill badge-info increase-size" data-test-id="object-management-visible-badge">
+            {{ 'objectManagement.visibleInMenu' | translate }}
+          </span>
         </div>
       </h3>
     </div>
@@ -48,6 +48,7 @@
         class="nav-link clickable active"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.GENERAL)"
+        data-test-id="object-management-general-tab"
       >
         {{ 'objectManagement.tabs.general' | translate }}
       </a>
@@ -58,6 +59,7 @@
         class="nav-link clickable"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.SEARCH)"
+        data-test-id="object-management-search-tab"
       >
         {{ 'objectManagement.tabs.searchFields' | translate }}
       </a>
@@ -68,6 +70,7 @@
         class="nav-link clickable"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.LIST)"
+        data-test-id="object-management-list-tab"
       >
         {{ 'objectManagement.tabs.list' | translate }}
       </a>
@@ -78,13 +81,13 @@
 <ng-template #tabContent>
   <div class="pt-3 bg-white position-relative tab-container">
     <div *ngIf="currentTab && currentTab === TabEnum.GENERAL">
-      <valtimo-object-management-detail [object$]="object$"></valtimo-object-management-detail>
+      <valtimo-object-management-detail [object$]="object$" data-test-id="object-management-detail"></valtimo-object-management-detail>
     </div>
     <div *ngIf="currentTab && currentTab === TabEnum.SEARCH">
-      <valtimo-object-management-list-search-fields></valtimo-object-management-list-search-fields>
+      <valtimo-object-management-list-search-fields data-test-id="object-management-search-fields"></valtimo-object-management-list-search-fields>
     </div>
     <div *ngIf="currentTab && currentTab === TabEnum.LIST">
-      <valtimo-object-management-list-columns></valtimo-object-management-list-columns>
+      <valtimo-object-management-list-columns data-test-id="object-management-list-columns"></valtimo-object-management-list-columns>
     </div>
   </div>
 </ng-template>

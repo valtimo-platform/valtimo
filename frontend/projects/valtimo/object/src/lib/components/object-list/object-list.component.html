@@ -42,6 +42,7 @@
     size="md"
     class="ml-3"
     [disabled]="obs.disableInput || obs.loading"
+    data-test-id="object-management-create-button"
   >
     {{ 'object.createObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -72,7 +73,7 @@
     (rowClicked)="redirectToDetails($event)"
   >
     <ng-container carbonToolbarContent>
-      <button cdsButton="primary" (click)="openModal()">
+      <button cdsButton="primary" (click)="openModal()" data-test-id="object-management-create-button">
         {{ 'object.createObject' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -94,7 +95,7 @@
     (close)="closeModal()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-      <h3 cdsModalHeaderHeading>
+      <h3 cdsModalHeaderHeading data-test-id="object-management-modal-title">
         {{ 'object.createObject' | translate }}
       </h3>
     </cds-modal-header>
@@ -120,6 +121,7 @@
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
+        data-test-id="object-management-close-button"
       >
         {{ 'object.close' | translate }}
       </button>
@@ -128,6 +130,7 @@
         [attr.modal-primary-focus]="true"
         (click)="addObject()"
         [disabled]="modalObs.disableInput || modalObs.formValid === false"
+        data-test-id="object-management-save-button"
       >
         {{ 'object.save' | translate }}
       </button>

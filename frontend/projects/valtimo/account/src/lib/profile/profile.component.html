@@ -38,6 +38,7 @@
                     <span
                       class="badge badge-pill badge-success mb-1 mr-1"
                       *ngFor="let role of profile.roles"
+                      data-test-id="profile-detail-role-badge-{{$index}}"
                       >{{ role }}</span
                     >
                   </div>
@@ -48,6 +49,7 @@
                   <div
                     class="col-12 col-sm-8 col-lg-6"
                     [ngClass]="{'text-danger': profile.blocked}"
+                    data-test-id="profile-detail-account-status"
                   >
                     {{ profile.blocked ? 'Blocked' : 'Activated' }}
                   </div>
@@ -71,7 +73,7 @@
           </div>
 
           <div class="card-body-contrast p-5">
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" data-test-id="profile-detail-form">
               <div class="form-group row">
                 <label class="col-12 col-sm-3 col-form-label text-sm-right" for="firstName"
                   >First name</label
@@ -89,10 +91,12 @@
                       'is-invalid': formControls.firstName.touched && formControls.firstName.errors,
                     }"
                     required
+                    data-test-id="profile-detail-first-name-input"
                   />
                   <div
                     *ngIf="formControls.firstName.touched && formControls.firstName.errors"
                     class="invalid-feedback"
+                    data-test-id="profile-detail-first-name-error"
                   >
                     <div *ngIf="formControls.firstName.errors.required">
                       Your first name is required
@@ -117,10 +121,12 @@
                       'is-invalid': formControls.lastName.touched && formControls.lastName.errors,
                     }"
                     required
+                    data-test-id="profile-detail-last-name-input"
                   />
                   <div
                     *ngIf="formControls.lastName.touched && formControls.lastName.errors"
                     class="invalid-feedback"
+                    data-test-id="profile-detail-last-name-error"
                   >
                     <div *ngIf="formControls.lastName.errors.required">
                       Your last name is required
@@ -143,6 +149,7 @@
                       'is-invalid': formControls.langKey.touched && formControls.langKey.errors,
                     }"
                     required
+                    data-test-id="profile-detail-language-select"
                   >
                     <option
                       *ngFor="let lang of translate.getLangs()"
@@ -155,6 +162,7 @@
                   <div
                     *ngIf="formControls.langKey.touched && formControls.langKey.errors"
                     class="invalid-feedback"
+                    data-test-id="profile-detail-language-error"
                   >
                     <div *ngIf="formControls.langKey.errors.required">
                       Your language is required
@@ -166,13 +174,14 @@
               <div class="row pt-3 mt-1">
                 <div class="col-12">
                   <div class="text-right">
-                    <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                    <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="profile-detail-reset-button">
                       Reset
                     </button>
                     <button
                       class="btn btn-space btn-primary"
                       type="submit"
                       [disabled]="form.invalid"
+                      data-test-id="profile-detail-submit-button"
                     >
                       Submit
                     </button>

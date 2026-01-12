@@ -52,6 +52,7 @@
       obs.disableInput ||
       obs.loading
     "
+    data-test-id="object-management-download-link"
   >
     {{ 'listColumn.downloadButtonText' | translate }}
   </a>
@@ -61,6 +62,7 @@
     size="md"
     [disabled]="obs.loading"
     class="ml-3"
+    data-test-id="object-management-add-button"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -79,11 +81,13 @@
       class="mdi mdi-delete btn btn-outline-danger mr-1"
       (click)="deleteRow(index, $event)"
       [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
+      data-test-id="object-management-delete-row-button-{{index}}"
     ></i>
     <i
       class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
       (click)="moveRow(index, true, $event, obs.objectId)"
       [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+      data-test-id="object-management-move-up-button-{{index}}"
     ></i>
     <i
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
@@ -91,6 +95,7 @@
       [ngClass]="{
         'disabled disabled-move-row-button': index === length - 1 || obs.disableInput,
       }"
+      data-test-id="object-management-move-down-button-{{index}}"
     ></i>
   </div>
 </ng-template>
@@ -104,6 +109,7 @@
     *ngIf="obs.listColumn; else loading"
     [lastColumnTemplate]="moveRowButtonsTemplateRef"
     (rowClicked)="columnRowClicked($event)"
+    data-test-id="object-management-list"
   >
   </valtimo-carbon-list>
 </ng-template>
@@ -122,6 +128,7 @@
     } as modalObs"
     [open]="modalObs.show"
     (close)="closeModal()"
+    data-test-id="object-management-modal"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
@@ -150,7 +157,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="title" />
+        <input cdsText formControlName="title" data-test-id="object-management-title-input" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -166,7 +173,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" />
+        <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" data-test-id="object-management-key-input" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -178,7 +185,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="path" />
+        <input cdsText formControlName="path" data-test-id="object-management-path-input" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -190,7 +197,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <cds-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
+        <cds-dropdown formControlName="displayType" [disabled]="modalObs.disableInput" data-test-id="object-management-display-type-dropdown">
           <cds-dropdown-list [items]="viewTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </cds-label>
@@ -204,7 +211,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="dateFormat" />
+        <input cdsText formControlName="dateFormat" data-test-id="object-management-date-format-input" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper" *ngIf="modalObs.showEnum || modalObs.isYesNo">
@@ -225,6 +232,7 @@
           type="keyValue"
           (valueChange)="enumValueChange($event)"
           [defaultValues]="defaultEnumValues$ | async"
+          data-test-id="object-management-enum-input"
         ></valtimo-carbon-multi-input>
       </cds-label>
     </div>
@@ -245,6 +253,7 @@
         <cds-dropdown
           formControlName="defaultSort"
           [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
+          data-test-id="object-management-default-sort-dropdown"
         >
           <cds-dropdown-list [items]="sortItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
@@ -261,6 +270,7 @@
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
+        data-test-id="object-management-close-button"
       >
         {{ 'listColumn.close' | translate }}
       </button>
@@ -272,6 +282,7 @@
         [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
+        data-test-id="object-management-save-button"
       >
         {{ 'listColumn.save' | translate }}
       </button>
@@ -287,6 +298,7 @@
     confirmButtonTextTranslationKey="listColumn.deleteColumn"
     titleTranslationKey="listColumn.deleteColumn"
     contentTranslationKey="listColumn.deleteColumnConfirmation"
+    data-test-id="object-management-delete-modal"
   ></valtimo-confirmation-modal>
 </ng-template>
 
@@ -298,11 +310,12 @@
         title: 'listColumn.noConfigWarningTitle' | translate,
         showClose: false,
       }"
+      data-test-id="object-management-no-config-warning"
     >
     </cds-notification>
   </div>
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><cds-loading></cds-loading></div>
+  <div class="loading-icon"><cds-loading data-test-id="object-management-loading"></cds-loading></div>
 </ng-template>

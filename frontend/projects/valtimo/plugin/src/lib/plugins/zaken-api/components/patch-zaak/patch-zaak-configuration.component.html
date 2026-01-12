@@ -17,6 +17,7 @@
         [customPane]="true"
         placement="bottom"
         class="add-button"
+        data-test-id="patch-zaak-add-property-button"
       >
         {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
 
@@ -42,11 +43,12 @@
             [margin]="true"
             [presetOptions]="property.presetOptions"
             (valueChange)="onPropertyChanged(property.name, $event)"
+            data-test-id="patch-zaak-property-input-{{$index}}"
           />
         </div>
         <div class="col-1">
           @if (property.name !== CASE_GEOMETRY_COORDINATES) {
-            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)" data-test-id="patch-zaak-remove-property-button-{{$index}}">
               <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
             </button>
           }
@@ -62,6 +64,7 @@
       <cds-overflow-menu-option
         *ngIf="!hasPropertyBeenAdded(propertyOption)"
         (click)="addProperty(propertyOption)"
+        data-test-id="patch-zaak-add-property-option-{{$index}}"
       >
         {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
       </cds-overflow-menu-option>

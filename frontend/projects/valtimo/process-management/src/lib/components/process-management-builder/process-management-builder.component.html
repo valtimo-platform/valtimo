@@ -32,18 +32,18 @@
     class="bpmn__modeler"
     [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'none' : 'flex'"
   >
-    <div class="bpmn__modeler-canvas" #modeler></div>
+    <div class="bpmn__modeler-canvas" #modeler data-test-id="bpmn-modeler-canvas"></div>
 
-    <div class="bpmn__modeler-panel" #modelerPanel></div>
+    <div class="bpmn__modeler-panel" #modelerPanel data-test-id="bpmn-modeler-panel"></div>
   </div>
 
   <div
     class="bpmn__modeler"
     [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'flex' : 'none'"
   >
-    <div class="bpmn__modeler-canvas" #viewer></div>
+    <div class="bpmn__modeler-canvas" #viewer data-test-id="bpmn-viewer-canvas"></div>
 
-    <div class="bpmn__modeler-panel" #viewerPanel></div>
+    <div class="bpmn__modeler-panel" #viewerPanel data-test-id="bpmn-viewer-panel"></div>
   </div>
 </div>
 
@@ -79,6 +79,7 @@
             (actionsObs.processDefinitionVersionsListItems || []).length === 1
           "
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
+          data-test-id="bpmn-version-dropdown"
         >
           <cds-dropdown-list
             [items]="actionsObs.processDefinitionVersionsListItems || []"
@@ -89,10 +90,11 @@
           <cds-tag
             *ngIf="actionsObs.isReadOnlyProcess || !actionsObs.hasEditPermissions"
             type="blue"
+            data-test-id="bpmn-read-only-tag"
             >{{ 'processManagement.readOnly' | translate }}</cds-tag
           >
 
-          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
+          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red" data-test-id="bpmn-system-tag">{{
             'processManagement.systemProcess' | translate
           }}</cds-tag>
         </div>
@@ -113,6 +115,7 @@
                 !actionsObs.hasEditPermissions
               "
               (checkedChange)="onProcessToggleChange('canInitializeDocument', $event)"
+              data-test-id="bpmn-can-initialize-document-toggle"
             ></cds-toggle>
           </cds-tooltip>
 
@@ -129,6 +132,7 @@
                 !actionsObs.hasEditPermissions
               "
               (checkedChange)="onProcessToggleChange('startableByUser', $event)"
+              data-test-id="bpmn-startable-by-user-toggle"
             ></cds-toggle
           ></cds-tooltip>
         }
@@ -138,6 +142,7 @@
           cdsButton="secondary"
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
           (click)="navigateBack(null)"
+          data-test-id="bpmn-back-button"
         >
           <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
 
@@ -153,16 +158,18 @@
               : deployNewProcessDefinition()
           "
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
+          data-test-id="bpmn-deploy-button"
         >
           {{ 'processManagement.deploy' | translate }}
 
           <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
 
-        <cds-overflow-menu class="overflow-button">
+        <cds-overflow-menu class="overflow-button" data-test-id="bpmn-overflow-menu">
           <cds-overflow-menu-option
             [disabled]="actionsObs.loading"
             (selected)="export(actionsObs.isReadOnlyProcess)"
+            data-test-id="bpmn-export-option"
             >{{ 'interface.export' | translate }}
           </cds-overflow-menu-option>
         </cds-overflow-menu>

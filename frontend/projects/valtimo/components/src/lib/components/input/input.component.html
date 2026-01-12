@@ -35,6 +35,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
+    data-test-id="v-input-label-title"
   >
   </v-input-label>
 </ng-template>
@@ -59,6 +60,7 @@
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
+    data-test-id="v-input-text-input"
   />
 </ng-template>
 
@@ -78,6 +80,7 @@
     [rows]="rows"
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
+    data-test-id="v-input-textarea-input"
   ></textarea>
 </ng-template>
 
@@ -107,10 +110,11 @@
         (ngModelChange)="onValueChange($event)"
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
+        data-test-id="v-input-password-input"
       />
 
       <div class="v-input__password-icon">
-        <cds-icon-button align="top" (click)="toggleShowPassword()">
+        <cds-icon-button align="top" (click)="toggleShowPassword()" data-test-id="v-input-toggle-password-button">
           <svg cdsIcon="{{ obs.showPassword ? 'view-off' : 'view' }}" size="16"></svg>
         </cds-icon-button>
       </div>
@@ -139,6 +143,7 @@
     [placeholder]="placeholder"
     [style.width.px]="widthPx"
     type="number"
+    data-test-id="v-input-number-input"
   />
 </ng-template>
 
@@ -162,17 +167,19 @@
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
     type="text"
+    data-test-id="v-input-digit-only-input"
   />
 </ng-template>
 
 <ng-template #checkboxInput>
-  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
+  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)" data-test-id="v-input-checkbox-container">
     <cds-checkbox
       [attr.data-testid]="dataTestId"
       [disabled]="disabled"
       [name]="name"
       [ngModel]="inputValue$ | async"
       (ngModelChange)="onValueChange($event)"
+      data-test-id="v-input-checkbox"
     >
     </cds-checkbox>
   </div>
@@ -186,14 +193,15 @@
       'v-input--small-margin': smallMargin,
     }"
     class="v-input--preset-options"
+    data-test-id="v-input-presets-container"
   >
-    <span>{{ presetsTitle }}:</span>
+    <span data-test-id="v-input-presets-title">{{ presetsTitle }}:</span>
 
     @for (preset of presetOptions; track $index) {
       @if (!$first) {
         |
       }
-      <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
+      <a (click)="presetWithValue(preset)" class="v-input--preset-option" data-test-id="v-input-preset-option-{{$index}}">{{ preset }}</a>
     }
   </div>
 </ng-template>
@@ -217,5 +225,6 @@
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
+    data-test-id="v-input-bsn-input"
   />
 </ng-template>

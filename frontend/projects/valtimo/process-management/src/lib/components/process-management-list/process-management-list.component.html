@@ -22,6 +22,7 @@
   [items]="processDefinitions$ | async"
   [loading]="loading$ | async"
   (rowClicked)="editProcessDefinition($event)"
+  data-test-id="process-management-list"
 >
   <ng-container carbonToolbarContent>
     <button
@@ -29,6 +30,7 @@
       cdsButton="ghost"
       iconOnly="true"
       (click)="openModal()"
+      data-test-id="process-management-upload-button"
     >
       <svg cdsIcon="upload" size="16"></svg>
     </button>
@@ -40,6 +42,7 @@
     [action]="createProcess"
     [title]="'processManagement.noResults.title' | translate"
     [description]="'processManagement.noResults.' + $context() + 'Description' | translate"
+    data-test-id="process-management-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -51,10 +54,11 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="processManagement.deleteModal.title"
   (confirmEvent)="onDeleteConfirm($event)"
+  data-test-id="process-management-delete-modal"
 ></valtimo-confirmation-modal>
 
 <ng-template #createProcess>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()" data-test-id="process-management-create-button">
     {{ 'processManagement.createProcess' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

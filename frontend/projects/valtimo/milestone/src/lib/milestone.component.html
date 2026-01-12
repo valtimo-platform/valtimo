@@ -18,16 +18,16 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'sets/create'" class="btn btn-primary btn-space">
+        <button [routerLink]="'sets/create'" class="btn btn-primary btn-space" data-test-id="milestone-create-new-milestone-set-button">
           <i class="icon mdi mdi-plus"></i> &nbsp;
           <span>{{ 'Create new Milestone Set' | translate }}</span>
         </button>
-        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
+        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0" data-test-id="milestone-create-new-milestone-button">
           <i class="icon mdi mdi-plus"></i> &nbsp;
           <span>{{ 'Create new Milestone' | translate }}</span>
         </button>
       </div>
     </div>
-    <valtimo-milestone-list></valtimo-milestone-list>
+    <valtimo-milestone-list data-test-id="milestone-list"></valtimo-milestone-list>
   </div>
 </div>

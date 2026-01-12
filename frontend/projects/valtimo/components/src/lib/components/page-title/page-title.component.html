@@ -35,8 +35,9 @@
       class="skeleton-container"
       *ngIf="obs.hasCustomPageTitle && !obs.customPageTitleSet"
       [ngClass]="{'skeleton-container--compact': isCompact}"
+      data-test-id="page-title-skeleton-container"
     >
-      <cds-skeleton-placeholder></cds-skeleton-placeholder>
+      <cds-skeleton-placeholder data-test-id="page-title-skeleton-placeholder"></cds-skeleton-placeholder>
     </div>
 
     <ng-container *ngIf="obs.hasCustomPageTitle ? obs.customPageTitleSet : obs.title !== ''">
@@ -45,6 +46,7 @@
           [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
           class="page-title"
           [ngClass]="{'page-title--small-title': smallTitle$ | async}"
+          data-test-id="page-title-title"
         >
           {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
         </h2>
@@ -52,6 +54,7 @@
         <span
           [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
           class="cds--breadcrumb compact-page-title"
+          data-test-id="page-title-compact-title"
         >
           {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
         </span>
@@ -59,5 +62,5 @@
     </ng-container>
   </ng-container>
 
-  <ng-container #subtitleVcr></ng-container>
+  <ng-container #subtitleVcr data-test-id="page-title-subtitle-container"></ng-container>
 </div>

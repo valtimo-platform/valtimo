@@ -19,7 +19,7 @@
   [ngClass]="{'--full-width': fullWidth}"
   [style.flex]="keyColumnFlex"
 >
-  <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
+  <cds-label *ngIf="index === 0 && keyColumnTitle" data-test-id="v-multi-input-key-column-label">{{ keyColumnTitle }}</cds-label>
 
   <input
     cdsText
@@ -27,6 +27,7 @@
     [defaultValue]="value.key"
     [disabled]="disabled"
     (input)="onInputChange('key', $event.target.value)"
+    data-test-id="v-multi-input-key-input"
   />
 </div>
 
@@ -37,7 +38,7 @@
   [ngClass]="{'--full-width': fullWidth}"
   [style.flex]="valueColumnFlex"
 >
-  <cds-label *ngIf="index === 0 && valueColumnTitle">{{ valueColumnTitle }}</cds-label>
+  <cds-label *ngIf="index === 0 && valueColumnTitle" data-test-id="v-multi-input-value-column-label">{{ valueColumnTitle }}</cds-label>
 
   <input
     cdsText
@@ -45,5 +46,6 @@
     [defaultValue]="value.value"
     [disabled]="disabled"
     (input)="onInputChange('value', $event.target.value)"
+    data-test-id="v-multi-input-value-input"
   />
 </div>

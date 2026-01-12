@@ -26,6 +26,7 @@
 >
   <ng-container *ngIf="loading">
     <ngx-skeleton-loader
+      data-test-id="paragraph-skeleton-loader"
       appearance="line"
       [theme]="{
         width: 'var(--v-paragraph-skeleton-loading-width)',

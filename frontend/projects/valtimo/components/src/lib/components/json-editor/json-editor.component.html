@@ -16,13 +16,13 @@
 
 <div class="cds--toolbar-content">
   @if (isEditActive()) {
-    <button cdsButton="secondary" (click)="onCancelClick()">
+    <button cdsButton="secondary" (click)="onCancelClick()" data-test-id="json-editor-cancel-button">
       {{ 'interface.cancel' | translate }}
 
       <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button cdsButton="primary" [disabled]="!isValidJson()" (click)="onSaveClick()">
+    <button cdsButton="primary" [disabled]="!isValidJson()" (click)="onSaveClick()" data-test-id="json-editor-save-button">
       {{ 'interface.save' | translate }}
 
       <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
@@ -35,6 +35,7 @@
       cdsButton="primary"
       [disabled]="disableEditButton"
       (click)="onEditClick()"
+      data-test-id="json-editor-edit-button"
     >
       {{ 'interface.edit' | translate }}
 
@@ -55,6 +56,7 @@
   [widthPx]="widthPx"
   (validEvent)="onValidEvent($event)"
   (valueChangeEvent)="onValueChangeEvent($event)"
+  data-test-id="json-editor-editor"
 >
 </valtimo-editor>
 
@@ -66,6 +68,7 @@
   titleTranslationKey="interface.save"
   (cancelEvent)="onKeepEditingDefinition()"
   (confirmEvent)="onSaveChanges()"
+  data-test-id="json-editor-save-confirmation-modal"
 ></valtimo-confirmation-modal>
 
 <valtimo-confirmation-modal
@@ -83,4 +86,5 @@
   (cancelEvent)="onKeepEditingDefinition()"
   (confirmEvent)="onDiscardChanges()"
   (optionalEvent)="onSaveChanges()"
+  data-test-id="json-editor-cancel-confirmation-modal"
 ></valtimo-confirmation-modal>

@@ -27,6 +27,7 @@
 
   <div class="process-info-row">
     <cds-dropdown
+      data-test-id="process-instance-dropdown"
       [dropUp]="false"
       [label]="'progress.process' | translate"
       [skeleton]="obs.processInstanceItems.isLoading"

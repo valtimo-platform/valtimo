@@ -21,6 +21,7 @@
     cdsToggletipButton
     [removeClassnames]="['cds--toggletip-button']"
     cdsButton="ghost"
+    data-test-id="process-link-configuration-import-button"
   >
     {{ 'processLinkConfiguration.importConfiguration' | translate }}
 
@@ -31,6 +32,7 @@
     cdsToggletipContent
     [attr.data-carbon-theme]="toggletipTheme$ | async"
     class="process-link-configuration-select"
+    data-test-id="process-link-configuration-select"
   >
     <cds-dropdown
       [label]="'processLinkConfiguration.process' | translate"
@@ -38,10 +40,12 @@
       (selected)="processSelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
+      data-test-id="process-link-configuration-process-dropdown"
     >
       <cds-dropdown-list
         [items]="processListItems$ | async"
         onclick="event.stopPropagation()"
+        data-test-id="process-link-configuration-process-dropdown-list"
       ></cds-dropdown-list>
     </cds-dropdown>
 
@@ -52,10 +56,12 @@
       (selected)="versionSelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
+      data-test-id="process-link-configuration-version-dropdown"
     >
       <cds-dropdown-list
         [items]="versionListItems$ | async"
         onclick="event.stopPropagation()"
+        data-test-id="process-link-configuration-version-dropdown-list"
       ></cds-dropdown-list>
     </cds-dropdown>
 
@@ -66,14 +72,17 @@
       (selected)="activitySelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
+      data-test-id="process-link-configuration-activity-dropdown"
     >
       <cds-dropdown-list
         [items]="activityListItems$ | async"
         onclick="event.stopPropagation()"
+        data-test-id="process-link-configuration-activity-dropdown-list"
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
+    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1"
+            data-test-id="process-link-configuration-import-submit-button">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>
