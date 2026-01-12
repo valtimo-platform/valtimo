@@ -18,16 +18,19 @@
   <valtimo-case-management-draft-warning
     *ngIf="(isDraftVersion$ | async) === true && currentTab === TabEnum.STATUSES"
     [name]="'caseManagement.tabs.caseDetailsTab.statuses' | translate | lowercase"
+    data-test-id="case-detail-draft-warning"
   ></valtimo-case-management-draft-warning>
 
-  <cds-tabs class="case-management-tabs" type="contained">
+  <cds-tabs class="case-management-tabs" type="contained" data-test-id="case-detail-tabs">
     <cds-tab
       [active]="currentTab === TabEnum.TABS"
       [heading]="'caseManagement.tabs.caseDetailsTab.tabs' | translate"
       (selected)="switchTab(TabEnum.TABS)"
+      data-test-id="case-detail-tabs-tab"
     >
       <valtimo-case-management-tabs
         *ngIf="currentTab === TabEnum.TABS"
+        data-test-id="case-detail-tabs-content"
       ></valtimo-case-management-tabs>
     </cds-tab>
 
@@ -35,9 +38,11 @@
       [active]="currentTab === TabEnum.STATUSES"
       [heading]="'caseManagement.tabs.caseDetailsTab.statuses' | translate"
       (selected)="switchTab(TabEnum.STATUSES)"
+      data-test-id="case-detail-statuses-tab"
     >
       <valtimo-case-management-statuses
         *ngIf="currentTab === TabEnum.STATUSES"
+        data-test-id="case-detail-statuses-content"
       ></valtimo-case-management-statuses>
     </cds-tab>
 
@@ -45,9 +50,11 @@
       [active]="currentTab === TabEnum.TAGS"
       [heading]="'caseManagement.tabs.caseDetailsTab.tags' | translate"
       (selected)="switchTab(TabEnum.TAGS)"
+      data-test-id="case-detail-tags-tab"
     >
       <valtimo-case-management-tags
         *ngIf="currentTab === TabEnum.TAGS"
+        data-test-id="case-detail-tags-content"
       ></valtimo-case-management-tags>
     </cds-tab>
 
@@ -55,9 +62,11 @@
       [active]="currentTab === TabEnum.HEADER"
       [heading]="'caseManagement.tabs.caseDetailsTab.header' | translate"
       (selected)="switchTab(TabEnum.HEADER)"
+      data-test-id="case-detail-header-tab"
     >
       <valtimo-case-management-header
         *ngIf="currentTab === TabEnum.HEADER"
+        data-test-id="case-detail-header-content"
       ></valtimo-case-management-header>
     </cds-tab>
   </cds-tabs>

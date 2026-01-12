@@ -19,9 +19,10 @@
     *ngIf="formFields"
     [formFields]="formFields"
     (submitted)="onSubmitted($event)"
+    data-test-id="form-generated-submit"
   >
   </valtimo-camunda-generated-form>
 </ng-container>
 <ng-container *ngIf="componentName">
-  <valtimo-custom-form [componentName]="componentName"></valtimo-custom-form>
+  <valtimo-custom-form [componentName]="componentName" data-test-id="form-custom"></valtimo-custom-form>
 </ng-container>

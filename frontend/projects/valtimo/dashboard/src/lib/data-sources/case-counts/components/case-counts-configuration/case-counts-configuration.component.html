@@ -1,3 +1,4 @@
+```html
 <!--
   ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
@@ -26,6 +27,7 @@
 >
   <div class="form__element">
     <cds-dropdown
+      data-test-id="case-counts-configuration-form-document-definition-dropdown"
       [appendInline]="true"
       formControlName="documentDefinition"
       [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
@@ -38,18 +40,19 @@
     </cds-dropdown>
   </div>
 
-  <cds-label class="conditions__label">{{
+  <cds-label class="conditions__label" data-test-id="case-counts-configuration-form-counts-label">{{
     'counts' | widgetTranslate: dataSourceKey | async
   }}</cds-label>
 
-  <p class="conditions__helper-text cds--form__helper-text">
+  <p class="conditions__helper-text cds--form__helper-text" data-test-id="case-counts-configuration-form-counts-helper-text">
     {{ 'countsHelperText' | widgetTranslate: dataSourceKey | async }}
   </p>
 
   @for (_ of queryItemsList$ | async; track $index; let i = $index) {
-    <cds-tile class="count-tile" [cdsLayer]="1">
+    <cds-tile class="count-tile" [cdsLayer]="1" data-test-id="case-counts-configuration-form-count-tile-{{i}}">
       <div class="count-tile__input" [cdsLayer]="0">
         <v-input
+          data-test-id="case-counts-configuration-form-count-title-input-{{i}}"
           [title]="'countTitle' | widgetTranslate: dataSourceKey | async"
           [margin]="true"
           [defaultValue]="obs.queryItemsValue[i]?.label"
@@ -61,6 +64,7 @@
         </v-input>
 
         <valtimo-carbon-multi-input
+          data-test-id="case-counts-configuration-form-count-conditions-input-{{i}}"
           type="valuePathSelectorDropdownValue"
           [disabled]="formDisabled"
           [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
@@ -85,6 +89,7 @@
 
       <div class="count-tile__delete-button">
         <cds-icon-button
+          data-test-id="case-counts-configuration-form-count-delete-button-{{i}}"
           [disabled]="formDisabled || i < 2"
           (click)="deleteCount(i)"
           kind="danger"
@@ -99,6 +104,7 @@
   <button
     class="add-count-button"
     cdsButton="primary"
+    data-test-id="case-counts-configuration-form-add-count-button"
     [disabled]="formDisabled"
     (click)="addQueryItem()"
   >

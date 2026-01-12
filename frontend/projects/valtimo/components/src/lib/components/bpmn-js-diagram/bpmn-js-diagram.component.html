@@ -21,26 +21,27 @@
       id="toggleHeatmap"
       [checked]="heatmapMode"
       (click)="toggleHeatmap()"
+      data-test-id="heatmap-toggle"
     /><span> <label for="toggleHeatmap"></label></span>
   </div>
 </div>
 
-<div #ref class="diagram-container"></div>
+<div #ref class="diagram-container" data-test-id="diagram-container"></div>
 
 <div *ngIf="historicActivityInstances" class="p-4 text-center legenda-holder">
   <span
-    ><div class="legenda highlight-overlay-past"></div>
+    ><div class="legenda highlight-overlay-past" data-test-id="heatmap-executed-tasks"></div>
     Executed tasks</span
   >
   <span class="ml-3"
-    ><div class="legenda highlight-overlay-current"></div>
+    ><div class="legenda highlight-overlay-current" data-test-id="heatmap-current-tasks"></div>
     Current tasks</span
   >
 </div>
 
 <div *ngIf="heatmapDuration || heatmapCount" class="p-4 text-center legenda-holder">
   <span
-    ><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active
+    ><span class="badge badge-pill badge-primary" data-test-id="heatmap-active-instances-badge">N</span>&nbsp;&nbsp;Amount of currently active
     instances of this task.</span
   >
   <span

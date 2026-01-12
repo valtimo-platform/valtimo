@@ -16,7 +16,7 @@
 
 <cds-modal valtimoCdsModal *ngIf="{selectedTabType: selectedTabType$ | async} as obs" [open]="open">
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()" [cdsLayer]="1">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading data-test-id="add-tab-modal-title">
       {{
         !obs.selectedTabType
           ? ('caseManagement.tabManagement.addModal.title'
@@ -33,7 +33,7 @@
     ></valtimo-tab-form>
 
     <ng-template #tabTypeSelection>
-      <span> {{ 'caseManagement.tabManagement.addModal.description' | translate }} </span>
+      <span data-test-id="add-tab-modal-description"> {{ 'caseManagement.tabManagement.addModal.description' | translate }} </span>
 
       <div *ngIf="tabTypes$ | async as tabTypes" class="valtimo-add-tab-modal__types">
         <cds-tooltip
@@ -49,6 +49,7 @@
             cdsButton="secondary"
             [disabled]="tabType.disabled"
             (click)="onTabTypeSelect(tabType.type)"
+            data-test-id="add-tab-modal-tab-type-button-{{$index}}"
           >
             {{ tabType.title | translate }}
 
@@ -60,16 +61,16 @@
   </section>
 
   <cds-modal-footer class="valtimo-add-tab-modal__footer" [cdsLayer]="1">
-    <button class="valtimo-add-tab-modal__cancel" cdsButton="ghost" (click)="onCloseModal()">
+    <button class="valtimo-add-tab-modal__cancel" cdsButton="ghost" (click)="onCloseModal()" data-test-id="add-tab-modal-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <div class="valtimo-add-tab-modal__actions" *ngIf="obs.selectedTabType">
-      <button cdsButton="secondary" (click)="backClick()">
+      <button cdsButton="secondary" (click)="backClick()" data-test-id="add-tab-modal-back-button">
         {{ 'interface.back' | translate }}
       </button>
 
-      <button cdsButton="primary" [disabled]="form.invalid" (click)="addTab(obs.selectedTabType)">
+      <button cdsButton="primary" [disabled]="form.invalid" (click)="addTab(obs.selectedTabType)" data-test-id="add-tab-modal-add-button">
         {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
       </button>
     </div>

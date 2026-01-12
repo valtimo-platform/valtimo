@@ -26,6 +26,7 @@
       id="{{ formField.id }}"
       autocomplete="off"
       [formControlName]="formField.id"
+      data-test-id="form-field-input"
     />
     <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>

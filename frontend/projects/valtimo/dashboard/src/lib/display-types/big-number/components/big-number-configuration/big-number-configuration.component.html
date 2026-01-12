@@ -1,3 +1,4 @@
+```html
 <!--
   ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
@@ -23,7 +24,7 @@
     >
       {{ 'formTitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" />
+      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" data-test-id="form-title-input" />
     </cds-label>
   </div>
 
@@ -35,7 +36,7 @@
     >
       {{ 'subtitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" />
+      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" data-test-id="form-subtitle-input" />
     </cds-label>
   </div>
 
@@ -47,12 +48,12 @@
     >
       {{ 'label' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" />
+      <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" data-test-id="form-label-input" />
     </cds-label>
   </div>
 
   <div class="form__element">
-    <cds-checkbox formControlName="useKPI">
+    <cds-checkbox formControlName="useKPI" data-test-id="form-use-kpi-checkbox">
       {{ 'useKPI' | widgetTranslate: displayTypeKey | async }}
     </cds-checkbox>
   </div>
@@ -67,6 +68,7 @@
           [invalid]="lowSeverityThreshold.dirty && lowSeverityThreshold.invalid"
           formControlName="lowSeverityThreshold"
           type="number"
+          data-test-id="form-low-severity-threshold-input"
         />
       </cds-label>
     </div>
@@ -82,6 +84,7 @@
           formControlName="mediumSeverityThreshold"
           [invalid]="mediumSeverityThreshold.dirty && mediumSeverityThreshold.invalid"
           type="number"
+          data-test-id="form-medium-severity-threshold-input"
         />
       </cds-label>
     </div>
@@ -97,6 +100,7 @@
           formControlName="highSeverityThreshold"
           [invalid]="highSeverityThreshold.dirty && highSeverityThreshold.invalid"
           type="number"
+          data-test-id="form-high-severity-threshold-input"
         />
       </cds-label>
     </div>

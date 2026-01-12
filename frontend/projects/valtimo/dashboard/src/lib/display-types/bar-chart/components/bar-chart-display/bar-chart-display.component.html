@@ -15,9 +15,9 @@
   -->
 
 <section class="valtimo-donut-widget__header">
-  <h3 class="valtimo-donut-widget__title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-donut-widget__title" data-test-id="valtimo-donut-widget-title">{{ displayTypeProperties.title }}</h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle">
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle" data-test-id="valtimo-donut-widget-subtitle">
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>
@@ -28,12 +28,14 @@
       <ibm-bar-chart
         [data]="barChartData"
         [options]="barChartChartOptions$ | async"
+        data-test-id="valtimo-donut-widget-bar-chart"
       ></ibm-bar-chart>
     } @else {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noData' | translate"
         [smallPadding]="true"
+        data-test-id="valtimo-donut-widget-no-results"
       ></valtimo-no-results>
     }
   </ng-container>

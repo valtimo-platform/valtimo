@@ -22,10 +22,11 @@
   } as obs"
   [invalid]="!!obs.idError"
   [invalidText]="obs.idError | translate"
+  data-test-id="edit-key-label"
 >
   {{ labelTranslationKey | translate }}
 
-  <div class="edit-key-input">
+  <div class="edit-key-input" data-test-id="edit-key-input-container">
     <input
       cdsText
       type="text"
@@ -39,6 +40,7 @@
       [invalid]="!!obs.idError"
       (input)="onInputChange($event)"
       (blur)="onTouched()"
+      data-test-id="edit-key-input"
     />
 
     <cds-icon-button
@@ -46,6 +48,7 @@
       [disabled]="$disabled()"
       (click)="enableKeyEditing()"
       kind="secondary"
+      data-test-id="edit-key-edit-button"
     >
       <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
     </cds-icon-button>
@@ -55,6 +58,7 @@
       [disabled]="$disabled()"
       (click)="disableKeyEditing()"
       kind="secondary"
+      data-test-id="edit-key-close-button"
     >
       <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
     </cds-icon-button>

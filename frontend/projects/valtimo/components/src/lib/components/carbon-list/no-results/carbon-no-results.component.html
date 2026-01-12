@@ -21,16 +21,17 @@
     'valtimo-no-results--small-padding': smallPadding,
     'valtimo-no-results--render-vertically': renderVertically() || alwaysRenderVertically,
   }"
+  data-test-id="no-results-container"
 >
-  <img [src]="illustration" alt="{{ 'interface.noResults' | translate }}" />
+  <img [src]="illustration" alt="{{ 'interface.noResults' | translate }}" data-test-id="no-results-illustration" />
 
-  <div class="valtimo-no-results__content">
-    <h4 class="valtimo-no-results__title">
+  <div class="valtimo-no-results__content" data-test-id="no-results-content">
+    <h4 class="valtimo-no-results__title" data-test-id="no-results-title">
       {{ title }}
     </h4>
 
-    <span class="valtimo-no-results__description" [innerHtml]="description"></span>
+    <span class="valtimo-no-results__description" [innerHtml]="description" data-test-id="no-results-description"></span>
 
-    <ng-container [ngTemplateOutlet]="action"></ng-container>
+    <ng-container [ngTemplateOutlet]="action" data-test-id="no-results-action"></ng-container>
   </div>
 </div>

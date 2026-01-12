@@ -18,23 +18,23 @@
   class="parsley-errors-list filled"
   *ngIf="formControl.invalid && (formControl.dirty || formControl.touched)"
 >
-  <li *ngIf="formControl.errors.required">This field is required.</li>
-  <li *ngIf="formControl.errors.minlength">
+  <li *ngIf="formControl.errors.required" data-test-id="parsley-errors-required">This field is required.</li>
+  <li *ngIf="formControl.errors.minlength" data-test-id="parsley-errors-minlength">
     This field should be more than {{ formControl.errors.minlength.requiredLength }} characters.
   </li>
-  <li *ngIf="formControl.errors.maxlength">
+  <li *ngIf="formControl.errors.maxlength" data-test-id="parsley-errors-maxlength">
     This field cannot be more than {{ formControl.errors.maxlength.requiredLength }} characters.
   </li>
-  <li *ngIf="formControl.errors.min">
+  <li *ngIf="formControl.errors.min" data-test-id="parsley-errors-min">
     This field should be more than {{ formControl.errors.min.min }}.
   </li>
-  <li *ngIf="formControl.errors.max">
+  <li *ngIf="formControl.errors.max" data-test-id="parsley-errors-max">
     This field should be less or equal to {{ formControl.errors.max.max }}.
   </li>
-  <li *ngIf="formControl.errors.minDate">
+  <li *ngIf="formControl.errors.minDate" data-test-id="parsley-errors-min-date">
     This field should be more than {{ formControl.errors.minDate.minDate }}.
   </li>
-  <li *ngIf="formControl.errors.maxDate">
+  <li *ngIf="formControl.errors.maxDate" data-test-id="parsley-errors-max-date">
     This field should be less or equal to {{ formControl.errors.maxDate.maxDate }}.
   </li>
 </ul>
