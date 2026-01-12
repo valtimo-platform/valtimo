@@ -28,6 +28,7 @@
     *ngIf="camera"
     type="button"
     class="btn btn-primary px-3 webcam-button"
+    data-test-id="dropzone-camera-button"
   >
     <i class="icon mdi mdi-camera" aria-hidden="true"></i>
   </button>
@@ -37,12 +38,12 @@
 </form>
 
 <ng-template #body>
-  <h2 *ngIf="!hideTitle" class="mb-4 mt-2">{{ title || ('dropzone.drop' | translate) }}</h2>
-  <span *ngIf="subtitle" class="note mb-3">{{ subtitle }}</span>
-  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font"
+  <h2 *ngIf="!hideTitle" class="mb-4 mt-2" data-test-id="dropzone-title">{{ title || ('dropzone.drop' | translate) }}</h2>
+  <span *ngIf="subtitle" class="note mb-3" data-test-id="dropzone-subtitle">{{ subtitle }}</span>
+  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font" data-test-id="dropzone-accepted-files"
   >{{ 'dropzone.acceptedFiles' | translate }}<b>{{ acceptedFiles }}</b></span
   >
-  <span *ngIf="showMaxFileSize" class="note mb-3 small-font"
+  <span *ngIf="showMaxFileSize" class="note mb-3 small-font" data-test-id="dropzone-max-file-size"
     >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
   >
   <ng-container *ngTemplateOutlet="preview"></ng-container>
@@ -57,7 +58,7 @@
     } as obs"
   >
     <ng-container *ngIf="obs.externalError || obs.errorMessage">
-      <div class="alert alert-danger mt-2 mb-0">
+      <div class="alert alert-danger mt-2 mb-0" data-test-id="dropzone-error-message">
         <div class="message">
           {{ obs.externalError || obs.errorMessage }}
         </div>
@@ -65,7 +66,7 @@
     </ng-container>
 
     <ng-container *ngIf="!hideFilePreview && obs.file && !obs.externalError && !obs.errorMessage">
-      <div class="file">
+      <div class="file" data-test-id="dropzone-file-preview">
         <i class="icon mdi mdi-file-text mr-2"></i>
         <span class="note">{{ obs.file.name }}</span>
         <span class="note file-size">- {{ obs.file.size | filesize: 2 }}</span>
@@ -75,11 +76,11 @@
 </ng-template>
 
 <ng-template #progressBar>
-  <div class="progress-bar-container">
+  <div class="progress-bar-container" data-test-id="dropzone-progress-bar-container">
     <valtimo-progress-bar></valtimo-progress-bar>
   </div>
 </ng-template>
 
 <ng-template #webcam>
-  <valtimo-webcam (imageSaved)="webcamImageSaved($event)"></valtimo-webcam>
+  <valtimo-webcam (imageSaved)="webcamImageSaved($event)" data-test-id="dropzone-webcam"></valtimo-webcam>
 </ng-template>

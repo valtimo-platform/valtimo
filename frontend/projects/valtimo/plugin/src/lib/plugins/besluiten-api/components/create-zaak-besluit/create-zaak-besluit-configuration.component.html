@@ -28,11 +28,11 @@
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
-    <v-paragraph [margin]="true" [italic]="true">
+    <v-paragraph [margin]="true" [italic]="true" data-test-id="create-zaak-besluit-information">
       {{ 'createZaakBesluitInformation' | pluginTranslate: obs.pluginId | async }}
     </v-paragraph>
 
-    <v-form (valueChange)="formValueChange($event)">
+    <v-form (valueChange)="formValueChange($event)" data-test-id="create-zaak-besluit-form">
       <v-radio
         *ngIf="obs.context && obs.context[0] && obs.context[0] === 'case'"
         name="inputTypeBesluitToggle"
@@ -41,6 +41,7 @@
         [radioValues]="inputTypeOptions$ | async"
         [defaultValue]="selectedInputOption$ | async"
         [margin]="true"
+        data-test-id="create-zaak-besluit-input-type-radio"
       >
       </v-radio>
 
@@ -55,6 +56,7 @@
         [trim]="true"
         [tooltip]="'besluittypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        data-test-id="create-zaak-besluit-besluittype-url-input"
       >
       </v-input>
 
@@ -71,6 +73,7 @@
           [loading]="!obs.besluitTypeItems"
           [tooltip]="'besluittypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
           [clearSelectionSubject$]="clearBesluitSelection$"
+          data-test-id="create-zaak-besluit-besluittype-select"
         ></v-select>
       </ng-container>
 
@@ -83,6 +86,7 @@
         [required]="false"
         [tooltip]="'toelichtingTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        data-test-id="create-zaak-besluit-toelichting-input"
       >
       </v-input>
 
@@ -96,6 +100,7 @@
         [trim]="true"
         [tooltip]="'bestuursorgaanTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        data-test-id="create-zaak-besluit-bestuursorgaan-input"
       >
       </v-input>
 
@@ -106,6 +111,7 @@
         [radioValues]="startDateInputTypeOptions$ | async"
         [defaultValue]="obs.prefill?.inputTypeStartingDateToggle || 'selection'"
         [margin]="true"
+        data-test-id="create-zaak-besluit-start-date-input-type-radio"
       >
       </v-radio>
 
@@ -120,6 +126,7 @@
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"
+        data-test-id="create-zaak-besluit-ingangsdatum-input"
       >
       </v-input>
 
@@ -133,6 +140,7 @@
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        data-test-id="create-zaak-besluit-ingangsdatum-date-picker"
       ></v-date-picker>
 
       <v-radio
@@ -142,6 +150,7 @@
         [radioValues]="expirationDateInputTypeOptions$ | async"
         [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle || 'selection'"
         [margin]="true"
+        data-test-id="create-zaak-besluit-expiration-date-input-type-radio"
       >
       </v-radio>
 
@@ -156,6 +165,7 @@
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"
+        data-test-id="create-zaak-besluit-vervaldatum-input"
       >
       </v-input>
 
@@ -169,6 +179,7 @@
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        data-test-id="create-zaak-besluit-vervaldatum-date-picker"
       ></v-date-picker>
 
       <v-select
@@ -181,6 +192,7 @@
         [tooltip]="'vervalredenTooltip' | pluginTranslate: obs.pluginId | async"
         [widthInPx]="350"
         [margin]="true"
+        data-test-id="create-zaak-besluit-vervalreden-select"
       ></v-select>
 
       <v-date-picker
@@ -192,6 +204,7 @@
         [tooltip]="'publicatiedatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        data-test-id="create-zaak-besluit-publicatiedatum-date-picker"
       ></v-date-picker>
 
       <v-date-picker
@@ -203,6 +216,7 @@
         [tooltip]="'verzenddatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        data-test-id="create-zaak-besluit-verzenddatum-date-picker"
       ></v-date-picker>
 
       <v-date-picker
@@ -214,6 +228,7 @@
         [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        data-test-id="create-zaak-besluit-uiterlijke-reactie-datum-date-picker"
       ></v-date-picker>
 
       <v-input
@@ -225,6 +240,7 @@
         [required]="false"
         [tooltip]="'besluitUrlProcessVariableTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        data-test-id="create-zaak-besluit-created-besluit-url-input"
       >
       </v-input>
     </v-form>
@@ -232,7 +248,7 @@
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-container">
+  <div class="loading-container" data-test-id="create-zaak-besluit-loading">
     <cds-loading></cds-loading>
   </div>
 </ng-template>

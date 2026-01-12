@@ -21,6 +21,7 @@
   [fields]="FIELDS"
   [loading]="loading$ | async"
   (rowClicked)="editFormFlowDetails($event)"
+  data-test-id="form-flow-list"
 >
   <ng-container header> {{ 'formFlow.title' | translate }} </ng-container>
 
@@ -32,16 +33,18 @@
     [action]="addFormFlowButton"
     description="{{ 'formFlow.noResults.description' | translate }}"
     title="{{ 'formFlow.noResults.title' | translate }}"
+    data-test-id="form-flow-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <valtimo-new-form-flow-modal
   [open]="showAddModal$ | async"
   (closeEvent)="onAdd($event)"
+  data-test-id="form-flow-new-modal"
 ></valtimo-new-form-flow-modal>
 
 <ng-template #addFormFlowButton>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="openAddModal()">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="openAddModal()" data-test-id="form-flow-add-button">
     {{ 'formFlow.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -56,4 +59,5 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDelete($event)"
+  data-test-id="form-flow-confirmation-modal"
 ></valtimo-confirmation-modal>

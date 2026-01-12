@@ -20,6 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="roltype-form"
 >
   <v-input
     name="roltypeUrl"
@@ -31,6 +32,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-roltype-url-input"
   >
   </v-input>
 
@@ -44,6 +46,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-rol-toelichting-input"
   >
   </v-input>
 
@@ -57,6 +60,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-identificatie-input"
   >
   </v-input>
 
@@ -70,6 +74,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-naam-input"
   >
   </v-input>
 
@@ -83,6 +88,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-is-gehuisvest-in-input"
   >
   </v-input>
 
@@ -96,6 +102,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-afwijkende-naam-betrokkene-input"
   >
   </v-input>
 
@@ -109,6 +116,7 @@
     [margin]="true"
     [fullWidth]="true"
     [radioValues]="INDICATIE_MACHTIGING_VALUES"
+    data-test-id="roltype-form-indicatie-machtiging-radio"
   >
   </v-radio>
 
@@ -122,6 +130,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="roltype-form-result-process-variable-input"
   >
   </v-input>
 </v-form>

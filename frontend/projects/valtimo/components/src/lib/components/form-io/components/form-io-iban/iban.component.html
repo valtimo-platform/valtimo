@@ -16,7 +16,7 @@
 
 <div class="ibanForm-container" [formGroup]="ibanForm">
   <div class="input-group">
-    <input cdsText id="iban" type="text" formControlName="iban" class="form-control" />
+    <input cdsText id="iban" type="text" formControlName="iban" class="form-control" data-test-id="iban-form-iban-input" />
 
     <div
       class="formio-errors invalid-feedback"
@@ -26,7 +26,7 @@
         ibanForm.controls?.iban?.errors
       "
     >
-      <div class="form-text error">
+      <div class="form-text error" data-test-id="iban-form-error-message">
         {{ 'formioTranslations.formioIbanComponent.errorMessage' | translate }}
       </div>
     </div>

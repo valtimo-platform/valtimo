@@ -16,8 +16,9 @@
 
 <cds-tile
   *ngIf="{loading: loading$ | async, documentenApiVersion: documentenApiVersion$ | async} as obs"
+  data-test-id="documenten-api-version-tile"
 >
-  <h2 class="documenten-api-version__title">{{ 'openZaak.documentenApi.title' | translate }}</h2>
+  <h2 class="documenten-api-version__title" data-test-id="documenten-api-version-title">{{ 'openZaak.documentenApi.title' | translate }}</h2>
 
   <ng-container *ngIf="obs.loading === false; else loading">
     <ng-container
@@ -30,7 +31,7 @@
         "
       >
         {{ 'openZaak.documentenApi.documentenApiVersion' | translate }}
-        <strong> {{ obs.documentenApiVersion.selectedVersion }} </strong>
+        <strong data-test-id="documenten-api-version-selected"> {{ obs.documentenApiVersion.selectedVersion }} </strong>
       </ng-container>
     </ng-container>
   </ng-container>
@@ -40,6 +41,7 @@
   <div class="pb-2">
     <cds-notification
       class="full-width-notification"
+      data-test-id="documenten-api-version-no-version-warning"
       [notificationObj]="{
         type: 'warning',
         title: 'openZaak.documentenApi.noVersionWarningTitle' | translate,
@@ -55,6 +57,7 @@
   <div class="pb-2">
     <cds-notification
       class="full-width-notification"
+      data-test-id="documenten-api-version-multiple-versions-warning"
       [notificationObj]="{
         type: 'warning',
         title: 'openZaak.documentenApi.multipleVersionsWarningTitle' | translate,
@@ -67,7 +70,7 @@
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-container pb-2">
+  <div class="loading-container pb-2" data-test-id="documenten-api-version-loading">
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

@@ -14,13 +14,13 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>{{ 'ikoManagement.configureIkoServer' | translate }}</h3>
+<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()" data-test-id="iko-api-modal">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" data-test-id="iko-api-modal-header">
+    <h3 cdsModalHeaderHeading data-test-id="iko-api-modal-title">{{ 'ikoManagement.configureIkoServer' | translate }}</h3>
   </cds-modal-header>
 
-  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form">
-    <cds-label [invalid]="getControlInvalid('title')">
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form" data-test-id="iko-api-form">
+    <cds-label [invalid]="getControlInvalid('title')" data-test-id="iko-api-title-label">
       {{ 'ikoManagement.titleTitle' | translate }}
 
       <input
@@ -28,6 +28,7 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
+        data-test-id="iko-api-title-input"
       />
     </cds-label>
 
@@ -37,6 +38,7 @@
       [sourceText]="title.value"
       formControlName="key"
       placeholderTranslationKey="interface.key"
+      data-test-id="iko-api-key-input"
     >
     </valtimo-auto-key-input>
 
@@ -49,21 +51,23 @@
       [title]="'ikoManagement.typeTitle' | translate"
       [appendInline]="false"
       [dropUp]="false"
+      data-test-id="iko-api-type-select"
     ></v-select>
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"
       [prefillData]="$prefillData()?.properties"
+      data-test-id="iko-api-properties"
     />
   </form>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCancel()">
+  <cds-modal-footer data-test-id="iko-api-modal-footer">
+    <button cdsButton="ghost" (click)="onCancel()" data-test-id="iko-api-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()" data-test-id="iko-api-save-button">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

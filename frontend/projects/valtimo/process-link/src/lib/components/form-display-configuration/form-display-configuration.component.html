@@ -27,6 +27,7 @@
 >
   @if (obs.isUserTask) {
     <cds-combo-box
+      data-test-id="process-link-steps-display-type-combo-box"
       [placeholder]="'processLinkSteps.displayType.placeholder' | translate"
       [label]="'processLinkSteps.displayType.label' | translate"
       [disabled]="obs.saving"
@@ -38,6 +39,7 @@
     <br />
 
     <cds-combo-box
+      data-test-id="process-link-steps-form-size-combo-box"
       [placeholder]="'processLinkSteps.formSize.placeholder' | translate"
       [label]="'processLinkSteps.formSize.label' | translate"
       [disabled]="obs.disableFormSizeInput || obs.saving"
@@ -49,6 +51,7 @@
     <br />
 
     <valtimo-carbon-multi-input
+      data-test-id="process-link-steps-subtitles-input"
       type="value"
       titleTranslationKey="processLinkSteps.subtitles"
       addRowTranslationKey="processLinkSteps.addSubtitle"

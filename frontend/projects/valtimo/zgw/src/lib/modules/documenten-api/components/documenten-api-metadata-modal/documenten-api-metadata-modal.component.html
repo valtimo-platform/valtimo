@@ -35,11 +35,11 @@
 >
   <div role="header">
     @if (isEditMode) {
-      <h3 cdsModalHeaderHeading>
+      <h3 cdsModalHeaderHeading data-test-id="metadata-modal-edit-title">
         {{ 'document.editMetadata' | translate }}
       </h3>
     } @else {
-      <h3 cdsModalHeaderHeading>
+      <h3 cdsModalHeaderHeading data-test-id="metadata-modal-new-title">
         {{ 'document.fillInMetadata' | translate }}
       </h3>
     }
@@ -52,7 +52,7 @@
   </div>
 
   <div role="footer" class="metadata-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled" data-test-id="metadata-modal-cancel-button">
       {{ 'document.cancel' | translate }}
     </button>
 
@@ -60,7 +60,7 @@
       cdsButton="primary"
       type="submit"
       [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.editDisabled"
-      (click)="save()"
+      (click)="save()" data-test-id="metadata-modal-save-button"
     >
       {{ 'document.save' | translate }}
     </button>
@@ -88,6 +88,7 @@
               type="text"
               id="bestandsnaam"
               formControlName="bestandsnaam"
+              data-test-id="metadata-modal-filename-input"
             />
           </cds-text-label>
         }
@@ -108,6 +109,7 @@
               cdsText
               id="auteur"
               formControlName="auteur"
+              data-test-id="metadata-modal-author-input"
             />
           </cds-text-label>
         }
@@ -129,6 +131,7 @@
               [placeholder]="'document.languagePlaceholder' | translate"
               id="language"
               (selected)="languageSelected($event)"
+              data-test-id="metadata-modal-language-dropdown"
             >
               <cds-dropdown-list [items]="obs.languageItems || []"></cds-dropdown-list>
             </cds-dropdown>
@@ -153,6 +156,7 @@
               [disabled]="obs.disabled || (confidentialityLevelDisabled$ | async)"
               (selected)="confidentialityLevelSelected($event)"
               (clear)="confidentialityLevelFormControl.setValue(null)"
+              data-test-id="metadata-modal-confidentiality-dropdown"
             >
               <cds-dropdown-list [items]="obs.confidentialityLevelItems || []"></cds-dropdown-list>
             </cds-combo-box>
@@ -177,6 +181,7 @@
               [appendInline]="true"
               (selected)="informatieobjecttypeSelected($event)"
               (clear)="informatieobjecttypeFormControl.setValue(null)"
+              data-test-id="metadata-modal-document-type-dropdown"
             >
               <cds-dropdown-list [items]="obs.documentTypeItems || []"></cds-dropdown-list>
             </cds-combo-box>
@@ -201,6 +206,7 @@
               [required]="true"
               (click)="setAdditionalDate(option.value)"
               name="radio-inline"
+              data-test-id="metadata-modal-additional-date-radio-{{option.value}}"
             >
               {{ option.translationKey | translate }}
             </cds-radio>
@@ -224,6 +230,7 @@
               [disabled]="obs.disabled || obs.tagItems?.length === 0"
               [appendInline]="true"
               (selected)="tagsSelected($event)"
+              data-test-id="metadata-modal-tags-dropdown"
             >
               <cds-dropdown-list [items]="obs.tagItems || []"></cds-dropdown-list>
             </cds-combo-box>
@@ -242,6 +249,7 @@
               class="documenten-metada-form-input"
               id="titel"
               formControlName="titel"
+              data-test-id="metadata-modal-title-input"
             />
             <cds-tooltip
               [isOpen]="false"
@@ -263,6 +271,7 @@
               class="documenten-metada-form-description-input documenten-metada-form-input"
               id="beschrijving"
               formControlName="beschrijving"
+              data-test-id="metadata-modal-description-textarea"
             ></textarea>
             <cds-tooltip
               [isOpen]="false"
@@ -289,6 +298,7 @@
                 [dateFormat]="'d-m-Y'"
                 id="creatiedatum"
                 formControlName="creatiedatum"
+                data-test-id="metadata-modal-creation-date-picker"
               >
               </cds-date-picker>
             </div>
@@ -313,6 +323,7 @@
               [appendInline]="true"
               (selected)="statusSelected($event)"
               (clear)="statusFormControl.setValue(null)"
+              data-test-id="metadata-modal-status-dropdown"
             >
               <cds-dropdown-list [items]="obs.statusItems || []"></cds-dropdown-list>
             </cds-combo-box>
@@ -326,6 +337,7 @@
             [dateFormat]="'d-m-Y'"
             id="ontvangstdatum"
             formControlName="ontvangstdatum"
+            data-test-id="metadata-modal-received-date-picker"
           ></cds-date-picker>
           <cds-date-picker
             *ngIf="obs.additionalDate === 'sent'"
@@ -334,6 +346,7 @@
             [dateFormat]="'d-m-Y'"
             id="verzenddatum"
             formControlName="verzenddatum"
+            data-test-id="metadata-modal-sent-date-picker"
           ></cds-date-picker>
         }
       </div>

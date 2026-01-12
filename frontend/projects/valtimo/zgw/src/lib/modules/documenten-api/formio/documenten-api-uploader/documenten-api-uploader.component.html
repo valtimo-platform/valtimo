@@ -20,11 +20,13 @@
       *ngIf="obs.isAdmin"
       [translate]="'case.documenten.noProcessLinked.adminRole'"
       class="bg-warning text-black mb-2 p-3 text-center"
+      data-test-id="documenten-api-uploader-admin-warning"
     ></div>
     <div
       *ngIf="!obs.isAdmin"
       [translate]="'case.documenten.noProcessLinked.regularUser'"
       class="bg-warning text-black mb-2 p-3 text-center"
+      data-test-id="documenten-api-uploader-user-warning"
     ></div>
   </div>
   <valtimo-dropzone
@@ -41,6 +43,7 @@
     [subtitle]="subtitle"
     [title]="title"
     [uploading]="uploading$ | async"
+    data-test-id="documenten-api-uploader-dropzone"
   ></valtimo-dropzone>
 </ng-container>
 
@@ -56,7 +59,7 @@
     </span>
   </div>
   <div *ngIf="!disabled" class="file-preview-delete">
-    <a (click)="deleteFile(resource.id)">
+    <a (click)="deleteFile(resource.id)" data-test-id="documenten-api-uploader-delete-link-{{resource.id}}">
       <i class="icon mdi mdi-delete"></i>
     </a>
   </div>
@@ -81,4 +84,5 @@
   [hideFields]="hideFields"
   [supportsTrefwoorden]="(supportedDocumentenApiFeatures$ | async)?.supportsTrefwoorden"
   [open]="showModal()"
+  data-test-id="documenten-api-uploader-metadata-modal"
 ></valtimo-documenten-api-metadata-modal>

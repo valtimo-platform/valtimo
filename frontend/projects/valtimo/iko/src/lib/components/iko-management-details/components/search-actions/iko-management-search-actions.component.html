@@ -16,6 +16,7 @@
 
 @if (aggregateKey$ | async; as aggregateKey) {
   <valtimo-carbon-list
+    data-test-id="iko-management-search-action-list"
     [actionItems]="ACTION_ITEMS"
     [dragAndDrop]="true"
     [fields]="FIELDS"
@@ -30,6 +31,7 @@
     </div>
 
     <valtimo-no-results
+      data-test-id="iko-management-search-action-no-results"
       [action]="addActionButton"
       [description]="'ikoManagement.searchActions.noResultsDescription' | translate"
       [title]="'ikoManagement.searchActions.noResultsTitle' | translate"
@@ -37,6 +39,7 @@
   </valtimo-carbon-list>
 
   <valtimo-iko-management-search-action-modal
+    data-test-id="iko-management-search-action-modal"
     [usedKeys]="usedKeys$ | async"
     [modalMode]="$modalMode()"
     [repositoryKey]="repositoryKey$ | async"
@@ -47,6 +50,7 @@
   ></valtimo-iko-management-search-action-modal>
 
   <valtimo-confirmation-modal
+    data-test-id="iko-management-search-action-confirmation-modal"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="ikoManagement.searchActions.deleteModalText"
@@ -57,13 +61,13 @@
   ></valtimo-confirmation-modal>
 
   <ng-template #exportButton>
-    <button [iconOnly]="true" cdsButton="ghost" (click)="exportConfiguration()">
+    <button data-test-id="iko-management-search-action-export-button" [iconOnly]="true" cdsButton="ghost" (click)="exportConfiguration()">
       <svg cdsIcon="download" size="16"></svg>
     </button>
   </ng-template>
 
   <ng-template #addActionButton>
-    <button cdsButton="primary" (click)="openAddModal()">
+    <button data-test-id="iko-management-search-action-add-button" cdsButton="primary" (click)="openAddModal()">
       {{ 'ikoManagement.searchActions.addActionTitle' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

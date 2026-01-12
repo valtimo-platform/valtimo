@@ -22,6 +22,7 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     formValue: formValue$ | async,
   } as obs"
+  data-test-id="zaak-object-form"
 >
   <v-input
     name="object"
@@ -31,6 +32,7 @@
     [disabled]="obs.disabled"
     [required]="false"
     [tooltip]="'zaakObjectObjectUrlTooltip' | pluginTranslate: obs.pluginId | async"
+    data-test-id="zaak-object-object-input"
   ></v-input>
 
   <v-select
@@ -42,6 +44,7 @@
     [required]="true"
     [tooltip]="'objectTypeTooltip' | pluginTranslate: obs.pluginId | async"
     [margin]="true"
+    data-test-id="zaak-object-object-type-select"
   ></v-select>
 
   <v-input
@@ -52,6 +55,7 @@
     [disabled]="obs.disabled"
     [required]="false"
     [tooltip]="'relatieomschrijvingTooltip' | pluginTranslate: obs.pluginId | async"
+    data-test-id="zaak-object-relatieomschrijving-input"
   ></v-input>
 
   @if (obs.formValue?.zaakObjectRequest?.objectType === 'zakelijk_recht') {
@@ -68,6 +72,7 @@
       "
       [disabled]="obs.disabled"
       [required]="false"
+      data-test-id="zaak-object-include-zakelijk-recht-object-identificatie-checkbox"
     ></v-input>
 
     @if (obs.formValue?.includeZakelijkRechtObjectIdentificatie) {
@@ -79,6 +84,7 @@
         [disabled]="obs.disabled"
         [required]="obs.formValue?.includeZakelijkRechtObjectIdentificatie"
         [tooltip]="'zakelijkRechtIdentificatieTooltip' | pluginTranslate: obs.pluginId | async"
+        data-test-id="zaak-object-zakelijk-recht-identificatie-input"
       ></v-input>
 
       <v-input
@@ -89,6 +95,7 @@
         [disabled]="obs.disabled"
         [required]="obs.formValue?.includeZakelijkRechtObjectIdentificatie"
         [tooltip]="'zakelijkRechtAvgAardTooltip' | pluginTranslate: obs.pluginId | async"
+        data-test-id="zaak-object-zakelijk-recht-avg-aard-input"
       ></v-input>
     }
   }
@@ -102,6 +109,7 @@
       [disabled]="obs.disabled"
       [required]="obs.formValue?.zaakObjectRequest?.objectType === 'overige'"
       [tooltip]="'objectTypeOverigeTooltip' | pluginTranslate: obs.pluginId | async"
+      data-test-id="zaak-object-object-type-overige-input"
     ></v-input>
 
     <v-input
@@ -118,6 +126,7 @@
       "
       [disabled]="obs.disabled"
       [required]="false"
+      data-test-id="zaak-object-include-object-type-overige-definitie-checkbox"
     ></v-input>
 
     @if (obs.formValue?.includeObjectTypeOverigeDefinitie) {
@@ -129,6 +138,7 @@
         [disabled]="obs.disabled"
         [required]="obs.formValue?.includeObjectTypeOverigeDefinitie"
         [tooltip]="'objectTypeOverigeDefinitieUrlTooltip' | pluginTranslate: obs.pluginId | async"
+        data-test-id="zaak-object-object-type-overige-definitie-url-input"
       ></v-input>
 
       <v-input
@@ -141,6 +151,7 @@
         [tooltip]="
           'objectTypeOverigeDefinitieSchemaTooltip' | pluginTranslate: obs.pluginId | async
         "
+        data-test-id="zaak-object-object-type-overige-definitie-schema-input"
       ></v-input>
 
       <v-input
@@ -153,6 +164,7 @@
         [tooltip]="
           'objectTypeOverigeDefinitieObjectDataTooltip' | pluginTranslate: obs.pluginId | async
         "
+        data-test-id="zaak-object-object-type-overige-definitie-object-data-input"
       ></v-input>
     }
   }

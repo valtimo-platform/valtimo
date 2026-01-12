@@ -24,7 +24,7 @@
     {{ 'createZaakNotitieInformation' | pluginTranslate: pluginId | async }}
   </v-paragraph>
 
-  <v-form (valueChange)="onFormValueChanged($event)">
+  <v-form (valueChange)="onFormValueChanged($event)" data-test-id="create-zaak-notitie-form">
     <v-input
       name="onderwerp"
       [title]="'onderwerp' | pluginTranslate: pluginId | async"
@@ -34,6 +34,7 @@
       [required]="true"
       [trim]="true"
       [fullWidth]="true"
+      data-test-id="create-zaak-notitie-subject-input"
     ></v-input>
 
     <v-input
@@ -46,6 +47,7 @@
       [required]="true"
       [trim]="true"
       [fullWidth]="true"
+      data-test-id="create-zaak-notitie-text-input"
     ></v-input>
 
     <v-input
@@ -57,6 +59,7 @@
       [required]="false"
       [trim]="true"
       [fullWidth]="true"
+      data-test-id="create-zaak-notitie-created-by-input"
     ></v-input>
 
     <v-input
@@ -69,6 +72,7 @@
       [trim]="true"
       [fullWidth]="true"
       [presetOptions]="notitieTypeOptions"
+      data-test-id="create-zaak-notitie-type-input"
     ></v-input>
 
     <v-input
@@ -81,6 +85,7 @@
       [trim]="true"
       [fullWidth]="true"
       [presetOptions]="statusOptions"
+      data-test-id="create-zaak-notitie-status-input"
     ></v-input>
   </v-form>
 </ng-container>

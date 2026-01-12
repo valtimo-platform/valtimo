@@ -23,6 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="resultaattype-form"
 >
   <v-input
     name="resultaattype"
@@ -34,6 +35,7 @@
     [trim]="true"
     [tooltip]="'resultaattypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    data-test-id="resultaattype-input"
   >
   </v-input>
   <v-input
@@ -46,6 +48,7 @@
     [trim]="true"
     [tooltip]="'reslutaatProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    data-test-id="resultaattype-process-variable-input"
   >
   </v-input>
 </v-form>

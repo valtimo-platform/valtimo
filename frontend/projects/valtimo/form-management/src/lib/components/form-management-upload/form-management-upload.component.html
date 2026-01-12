@@ -14,12 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm" (close)="closeModal()">
-  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>{{ 'formManagement.upload.modalTitle' | translate }}</h3>
+<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm" (close)="closeModal()" data-test-id="form-management-modal">
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()" data-test-id="form-management-modal-header">
+    <h3 cdsModalHeaderHeading data-test-id="form-management-modal-title">{{ 'formManagement.upload.modalTitle' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1" [formGroup]="form">
+  <section cdsModalContent [cdsLayer]="1" [formGroup]="form" data-test-id="form-management-modal-content">
     <cds-file-uploader
       [accept]="ACCEPTED_FILES"
       [buttonText]="'formManagement.upload.buttonText' | translate"
@@ -28,12 +28,13 @@
       [title]="'formManagement.upload.title' | translate"
       buttonType="primary"
       formControlName="file"
+      data-test-id="form-management-file-uploader"
     >
     </cds-file-uploader>
   </section>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
+  <cds-modal-footer data-test-id="form-management-modal-footer">
+    <button cdsButton="ghost" (click)="closeModal()" data-test-id="form-management-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -41,6 +42,7 @@
       cdsButton="primary"
       [disabled]="(fileSelected$ | async) === false"
       (click)="uploadFormDefinition()"
+      data-test-id="form-management-upload-button"
     >
       {{ 'interface.upload' | translate }}
     </button>

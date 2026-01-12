@@ -27,6 +27,7 @@
   } as state"
 >
   <valtimo-carbon-list
+    data-test-id="iko-management-tab-list"
     [items]="state.tabs"
     [loading]="state.loading"
     [fields]="FIELDS"
@@ -38,7 +39,7 @@
     (rowClicked)="onRowClicked($event)"
   >
     <div carbonToolbarContent>
-      <button cdsButton="primary" (click)="onCreateButtonClicked()">
+      <button cdsButton="primary" (click)="onCreateButtonClicked()" data-test-id="iko-management-add-tab-button">
         {{ 'ikoManagement.addTab' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -46,6 +47,7 @@
     </div>
 
     <valtimo-no-results
+      data-test-id="iko-management-no-results"
       [title]="'ikoManagement.noTabConfigWarningTitle' | translate"
       [description]="'ikoManagement.noTabConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
@@ -53,6 +55,7 @@
   </valtimo-carbon-list>
 
   <valtimo-confirmation-modal
+    data-test-id="iko-management-delete-tab-modal"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="ikoManagement.deleteTabModalText"
@@ -63,6 +66,7 @@
   ></valtimo-confirmation-modal>
 
   <valtimo-iko-management-tab-details-modal
+    data-test-id="iko-management-tab-details-modal"
     [openModal]="state.openModal"
     [selectedTab]="state.selectedTab"
     [modalMode]="state.modalMode"

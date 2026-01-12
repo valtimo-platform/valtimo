@@ -15,6 +15,7 @@
   -->
 
 <valtimo-carbon-list
+  data-test-id="iko-management-list"
   [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [items]="apiConfigs$ | async"
@@ -24,6 +25,7 @@
   <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
 
   <valtimo-no-results
+    data-test-id="iko-management-no-results"
     [action]="addViewButton"
     [description]="'ikoManagement.views.noResultsDescription' | translate"
     [title]="'ikoManagement.views.noResultsTitle' | translate"
@@ -31,7 +33,7 @@
 </valtimo-carbon-list>
 
 <ng-template #addViewButton>
-  <button cdsButton="primary" (click)="openModal()">
+  <button cdsButton="primary" (click)="openModal()" data-test-id="iko-management-add-button">
     {{ 'ikoManagement.addApiConfig' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -39,6 +41,7 @@
 </ng-template>
 
 <valtimo-iko-management-repository-modal
+  data-test-id="iko-management-repository-modal"
   [open]="$modalOpen()"
   [prefillData]="$prefillData()"
   [modalMode]="$modalMode()"
@@ -46,6 +49,7 @@
 ></valtimo-iko-management-repository-modal>
 
 <valtimo-confirmation-modal
+  data-test-id="iko-management-confirmation-modal"
   confirmButtonTextTranslationKey="interface.delete"
   confirmButtonType="danger"
   contentTranslationKey="ikoManagement.views.deleteContent"

@@ -20,6 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="configuration-form"
 >
   <v-input
     name="uri"
@@ -31,6 +32,7 @@
     [required]="false"
     [trim]="true"
     [widthPx]="350"
+    data-test-id="configuration-uri-input"
   ></v-input>
 
   <v-input
@@ -43,5 +45,6 @@
     [required]="false"
     [trim]="true"
     [widthPx]="350"
+    data-test-id="configuration-bean-input"
   ></v-input>
 </v-form>

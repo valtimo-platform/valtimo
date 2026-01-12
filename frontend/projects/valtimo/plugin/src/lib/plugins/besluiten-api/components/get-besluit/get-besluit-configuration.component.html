@@ -20,6 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="plugin-form"
 >
   <v-input
     name="besluitUrl"
@@ -30,6 +31,7 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="plugin-besluit-url-input"
   ></v-input>
   <v-input
     name="resultProcessVariable"
@@ -40,5 +42,6 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'resultProcessVariableTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="plugin-result-process-variable-input"
   ></v-input>
 </v-form>

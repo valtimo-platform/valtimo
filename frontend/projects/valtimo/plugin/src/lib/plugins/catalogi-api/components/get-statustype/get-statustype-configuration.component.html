@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [margin]="true" [italic]="true">
+<v-paragraph [margin]="true" [italic]="true" data-test-id="status-type-information">
   {{ 'getStatustypeInformation' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
@@ -23,6 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="status-type-form"
 >
   <v-input
     name="statustype"
@@ -34,6 +35,7 @@
     [trim]="true"
     [tooltip]="'statustypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    data-test-id="status-type-input"
   >
   </v-input>
   <v-input
@@ -46,6 +48,7 @@
     [trim]="true"
     [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    data-test-id="process-variable-input"
   >
   </v-input>
 </v-form>

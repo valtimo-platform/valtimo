@@ -20,12 +20,13 @@
     tabKey: tabKey$ | async,
   } as obs"
 >
-  <cds-tabs type="contained">
+  <cds-tabs type="contained" data-test-id="tabs-container">
     <cds-tab
       *ngFor="let tab of TABS"
       [active]="obs.tabKey === tab.key"
       [heading]="tab.title | translate"
       (selected)="onTabSelected(tab)"
+      data-test-id="tab-{{tab.key}}"
     >
     </cds-tab>
   </cds-tabs>

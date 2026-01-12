@@ -20,6 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="plugin-configuration-form"
 >
   <!-- [attr.data-test-id]="PLUGIN_CONFIGURATION_ID_TEST" -->
 
@@ -33,6 +34,7 @@
     [required]="false"
     [tooltip]="'plugin.configurationIdTooltip' | translate"
     placeholder="00000000-0000-0000-0000-000000000000"
+    data-test-id="plugin-configuration-id-input"
   >
   </v-input>
 </v-form>

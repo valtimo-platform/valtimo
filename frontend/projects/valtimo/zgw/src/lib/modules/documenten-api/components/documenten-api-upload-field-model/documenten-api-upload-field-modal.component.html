@@ -27,7 +27,7 @@
   size="sm"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading data-test-id="upload-field-modal-header">
       {{
         ('zgw.uploadFields.editModal.header' | translate) +
           ' - ' +
@@ -44,6 +44,7 @@
           [label]="'zgw.uploadFields.fields.defaultValue' | translate"
           [dropUp]="false"
           (clear)="clear()"
+          data-test-id="upload-field-language-combo-box"
         >
           <cds-dropdown-list [items]="obs.languageItems"></cds-dropdown-list>
         </cds-combo-box>
@@ -53,6 +54,7 @@
           [label]="'zgw.uploadFields.fields.defaultValue' | translate"
           [dropUp]="false"
           (clear)="clear()"
+          data-test-id="upload-field-confidentiality-combo-box"
         >
           <cds-dropdown-list [items]="obs.confidentialityLevelItems"></cds-dropdown-list>
         </cds-combo-box>
@@ -62,6 +64,7 @@
           [label]="'zgw.uploadFields.fields.defaultValue' | translate"
           [dropUp]="false"
           (clear)="clear()"
+          data-test-id="upload-field-status-combo-box"
         >
           <cds-dropdown-list [items]="obs.statusItems"></cds-dropdown-list>
         </cds-combo-box>
@@ -71,6 +74,7 @@
           [label]="'zgw.uploadFields.fields.defaultValue' | translate"
           [dropUp]="false"
           (clear)="clear()"
+          data-test-id="upload-field-document-type-combo-box"
         >
           <cds-dropdown-list [items]="obs.documentTypeItems"></cds-dropdown-list>
         </cds-combo-box>
@@ -83,7 +87,7 @@
       ) {
         <cds-label>
           {{ 'zgw.uploadFields.fields.defaultValue' | translate }}
-          <input cdsText formControlName="defaultValue" />
+          <input cdsText formControlName="defaultValue" data-test-id="upload-field-text-input" />
         </cds-label>
       }
       <div class="toggle-group">
@@ -92,23 +96,25 @@
           [label]="'zgw.uploadFields.fields.visible' | translate"
           [onText]="'interface.on' | translate"
           [offText]="'interface.off' | translate"
+          data-test-id="upload-field-visible-toggle"
         ></cds-toggle>
         <cds-toggle
           formControlName="readonly"
           [label]="'zgw.uploadFields.fields.readonly' | translate"
           [onText]="'interface.on' | translate"
           [offText]="'interface.off' | translate"
+          data-test-id="upload-field-readonly-toggle"
         ></cds-toggle>
       </div>
     </form>
   </section>
 
   <cds-modal-footer [cdsLayer]="1">
-    <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
+    <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled" data-test-id="upload-field-cancel-button">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="invalid || obs.disabled" (click)="saveUploadField()">
+    <button cdsButton="primary" [disabled]="invalid || obs.disabled" (click)="saveUploadField()" data-test-id="upload-field-save-button">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

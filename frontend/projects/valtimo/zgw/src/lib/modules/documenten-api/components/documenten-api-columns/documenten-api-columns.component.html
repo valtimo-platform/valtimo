@@ -25,6 +25,7 @@
   } as obs"
 >
   <valtimo-carbon-list
+    data-test-id="valtimo-carbon-list"
     [actionItems]="ACTION_ITEMS"
     [fields]="fields"
     [header]="false"
@@ -40,6 +41,7 @@
     </ng-container>
 
     <valtimo-no-results
+      data-test-id="valtimo-no-results"
       [action]="addButton"
       [description]="'zgw.documents.noColumns.description' | translate"
       [title]="'zgw.documents.noColumns.title' | translate"
@@ -47,6 +49,7 @@
   </valtimo-carbon-list>
 
   <valtimo-documenten-api-column-modal
+    data-test-id="valtimo-documenten-api-column-modal"
     [availableColumns]="obs.configurableColumns"
     [configuredColumns]="obs.configuredColumns"
     [definitionName]="obs.caseDefinitionKey"
@@ -56,6 +59,7 @@
   ></valtimo-documenten-api-column-modal>
 
   <valtimo-confirmation-modal
+    data-test-id="valtimo-confirmation-modal"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="zgw.columns.deleteText"
@@ -68,6 +72,7 @@
 
 <ng-template #addButton>
   <button
+    data-test-id="add-button"
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
     [disabled]="loading$ | async"

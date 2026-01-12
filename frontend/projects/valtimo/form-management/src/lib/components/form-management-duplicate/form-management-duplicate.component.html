@@ -21,15 +21,16 @@
   [cdsLayer]="0"
   [open]="true"
   (close)="closeModal()"
+  data-test-id="form-management-create-modal"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" data-test-id="form-management-create-modal-header">
+    <h3 cdsModalHeaderHeading data-test-id="form-management-create-modal-title">
       {{ 'formManagement.duplicate' | translate }}
     </h3>
   </cds-modal-header>
 
   <form [formGroup]="duplicateForm">
-    <section cdsModalContent [cdsLayer]="1">
+    <section cdsModalContent [cdsLayer]="1" data-test-id="form-management-create-modal-content">
       <cds-label
         [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
         [invalidText]="
@@ -37,6 +38,7 @@
           (duplicateFormName?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
           'Error'
         "
+        data-test-id="form-management-create-modal-name-label"
       >
         {{ 'formManagement.name' | translate }}
 
@@ -47,17 +49,18 @@
           formControlName="duplicateFormName"
           [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
           required
+          data-test-id="form-management-create-modal-name-input"
         />
       </cds-label>
     </section>
 
-    <cds-modal-footer [cdsLayer]="1">
+    <cds-modal-footer [cdsLayer]="1" data-test-id="form-management-create-modal-footer">
       <cds-modal-footer>
-        <button cdsButton="secondary" (click)="closeModal()">
+        <button cdsButton="secondary" (click)="closeModal()" data-test-id="form-management-create-modal-cancel-button">
           {{ 'interface.cancel' | translate }}
         </button>
 
-        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()">
+        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()" data-test-id="form-management-create-modal-submit-button">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>

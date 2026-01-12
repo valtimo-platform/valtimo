@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [margin]="true" [italic]="true">
+<v-paragraph [margin]="true" [italic]="true" data-test-id="delete-object-warning">
   {{ 'deleteObjectWarning' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
@@ -23,6 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  data-test-id="delete-object-form"
 >
   <v-input
     name="objectUrl"
@@ -34,5 +35,6 @@
     [required]="true"
     [trim]="true"
     [fullWidth]="true"
+    data-test-id="delete-object-url-input"
   ></v-input>
 </v-form>

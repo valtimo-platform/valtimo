@@ -21,12 +21,14 @@
   (rowClicked)="viewDecisionTable($event)"
   [header]="false"
   [isSearchable]="true"
+  data-test-id="decision-list"
 >
   <ng-container carbonToolbarContent>
     <button
       *ngIf="hasEditPermissions$ | async"
       cdsButton="primary"
       (click)="this.deploy.openModal()"
+      data-test-id="decision-list-upload-button"
     >
       {{ 'Upload' | translate }}
 
@@ -35,4 +37,4 @@
   </ng-container>
 </valtimo-carbon-list>
 
-<valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
+<valtimo-decision-deploy #decisionDeploy data-test-id="decision-list-deploy-modal"></valtimo-decision-deploy>

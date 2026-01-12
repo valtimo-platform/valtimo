@@ -30,6 +30,7 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    data-test-id="configuration-form-configuration-title-input"
   >
   </v-input>
   <v-input
@@ -40,6 +41,7 @@
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
+    data-test-id="configuration-form-client-id-input"
   ></v-input>
   <v-input
     name="clientSecret"
@@ -48,10 +50,11 @@
     [defaultValue]="obs.prefill?.clientSecret"
     [disabled]="obs.disabled"
     [required]="true"
+    data-test-id="configuration-form-client-secret-input"
   >
   </v-input>
 
-  <button cdsButton="secondary" (click)="openAuthenticationWindow()">
+  <button cdsButton="secondary" (click)="openAuthenticationWindow()" data-test-id="configuration-form-authorization-button">
     <svg cdsIcon="close" size="16"></svg>
     Give authorization
   </button>

@@ -16,6 +16,7 @@
 
 <valtimo-case-detail-tab-s3-documents
   *ngIf="(s3UploadProvider$ | async) || (openZaakUploadProvider$ | async)"
+  data-test-id="case-detail-s3-documents-tab"
 ></valtimo-case-detail-tab-s3-documents>
 
-<ng-template #externalDocumentsTab></ng-template>
+<ng-template #externalDocumentsTab data-test-id="case-detail-external-documents-tab"></ng-template>

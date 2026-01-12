@@ -1,59 +1,59 @@
 <cds-modal [open]="open" size="lg" valtimoCdsModal>
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()" data-test-id="failed-notification-detail-close-button">
     {{ 'zgw.notifications.failed.detail.title' | translate }}
   </cds-modal-header>
 
   <section cdsModalContent class="failed-notification-detail__content">
-    <h4 class="detail-heading">
+    <h4 class="detail-heading" data-test-id="failed-notification-detail-metadata-title">
       {{ 'zgw.notifications.failed.detail.metadataTitle' | translate }}
     </h4>
 
     <dl class="detail-metadata">
       <div>
-        <dt>{{ 'zgw.notifications.failed.detail.status' | translate }}</dt>
-        <dd>{{ notification?.status || '-' }}</dd>
+        <dt data-test-id="failed-notification-detail-status-label">{{ 'zgw.notifications.failed.detail.status' | translate }}</dt>
+        <dd data-test-id="failed-notification-detail-status-value">{{ notification?.status || '-' }}</dd>
       </div>
       <div>
-        <dt>{{ 'zgw.notifications.failed.detail.pendingRetries' | translate }}</dt>
-        <dd>{{ notification?.pendingRetries ?? '-' }}</dd>
+        <dt data-test-id="failed-notification-detail-pending-retries-label">{{ 'zgw.notifications.failed.detail.pendingRetries' | translate }}</dt>
+        <dd data-test-id="failed-notification-detail-pending-retries-value">{{ notification?.pendingRetries ?? '-' }}</dd>
       </div>
       <div>
-        <dt>{{ 'zgw.notifications.failed.detail.receivedAt' | translate }}</dt>
-        <dd>{{ formatDateValue(notification?.receivedAt) }}</dd>
+        <dt data-test-id="failed-notification-detail-received-at-label">{{ 'zgw.notifications.failed.detail.receivedAt' | translate }}</dt>
+        <dd data-test-id="failed-notification-detail-received-at-value">{{ formatDateValue(notification?.receivedAt) }}</dd>
       </div>
       <div>
-        <dt>{{ 'zgw.notifications.failed.detail.lastProcessedAt' | translate }}</dt>
-        <dd>{{ formatDateValue(notification?.lastProcessedAt) }}</dd>
+        <dt data-test-id="failed-notification-detail-last-processed-at-label">{{ 'zgw.notifications.failed.detail.lastProcessedAt' | translate }}</dt>
+        <dd data-test-id="failed-notification-detail-last-processed-at-value">{{ formatDateValue(notification?.lastProcessedAt) }}</dd>
       </div>
     </dl>
 
-    <h4 class="detail-heading">
+    <h4 class="detail-heading" data-test-id="failed-notification-detail-payload-title">
       {{ 'zgw.notifications.failed.detail.payloadTitle' | translate }}
     </h4>
-    <div class="detail-block" *ngIf="formattedPayload; else noPayload">
-      <pre class="detail-pre">{{ formattedPayload }}</pre>
+    <div class="detail-block" *ngIf="formattedPayload; else noPayload" data-test-id="failed-notification-detail-payload-block">
+      <pre class="detail-pre" data-test-id="failed-notification-detail-payload-content">{{ formattedPayload }}</pre>
     </div>
     <ng-template #noPayload>
-      <div class="detail-block detail-block--empty">
+      <div class="detail-block detail-block--empty" data-test-id="failed-notification-detail-no-payload-message">
         {{ 'zgw.notifications.failed.detail.noPayload' | translate }}
       </div>
     </ng-template>
 
-    <h4 class="detail-heading">
+    <h4 class="detail-heading" data-test-id="failed-notification-detail-error-title">
       {{ 'zgw.notifications.failed.detail.errorTitle' | translate }}
     </h4>
-    <div class="detail-block" *ngIf="notification?.lastErrorMessage; else noError">
-      <pre class="detail-pre">{{ notification?.lastErrorMessage }}</pre>
+    <div class="detail-block" *ngIf="notification?.lastErrorMessage; else noError" data-test-id="failed-notification-detail-error-block">
+      <pre class="detail-pre" data-test-id="failed-notification-detail-error-content">{{ notification?.lastErrorMessage }}</pre>
     </div>
     <ng-template #noError>
-      <div class="detail-block detail-block--empty">
+      <div class="detail-block detail-block--empty" data-test-id="failed-notification-detail-no-error-message">
         {{ 'zgw.notifications.failed.detail.noError' | translate }}
       </div>
     </ng-template>
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" type="button" (click)="onClose()">
+    <button cdsButton="ghost" type="button" (click)="onClose()" data-test-id="failed-notification-detail-close-button">
       {{ 'interface.close' | translate }}
     </button>
     <button
@@ -61,6 +61,7 @@
       type="button"
       (click)="onRetry()"
       [disabled]="retryInProgress || !notification"
+      data-test-id="failed-notification-detail-retry-button"
     >
       {{ 'zgw.notifications.failed.detail.retry' | translate }}
     </button>

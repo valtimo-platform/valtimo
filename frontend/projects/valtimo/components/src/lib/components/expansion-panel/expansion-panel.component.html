@@ -14,14 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-expandable-tile>
+<cds-expandable-tile data-test-id="cds-expandable-tile">
   <div
     [hidden]="hideAboveFoldWhenExpanded && (open$ | async) === true"
     class="cds--tile-content__above-the-fold above-fold"
+    data-test-id="cds-expandable-tile-above-fold"
   >
     <ng-content select="[collapsed]"></ng-content>
   </div>
-  <div class="cds--tile-content__below-the-fold below-fold">
+  <div class="cds--tile-content__below-the-fold below-fold" data-test-id="cds-expandable-tile-below-fold">
     <ng-content select="[expanded]"></ng-content>
   </div>
 </cds-expandable-tile>

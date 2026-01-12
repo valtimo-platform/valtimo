@@ -30,20 +30,22 @@
   showFooter="true"
   class="valtimo-definition-uploader"
   (close)="onCancel()"
+  data-test-id="valtimo-definition-uploader-modal"
 >
   <cds-modal-header
     [showCloseButton]="obs.showCloseButton"
     (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
+    data-test-id="valtimo-definition-uploader-header"
   >
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading data-test-id="valtimo-definition-uploader-title">
       {{ 'ikoManagement.importDefinition.title' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-definition-uploader__content">
+  <section cdsModalContent class="valtimo-definition-uploader__content" data-test-id="valtimo-definition-uploader-content">
     @switch (obs.activeStep) {
       @case (UPLOAD_STEP.FILE_SELECT) {
-        <form [formGroup]="form">
+        <form [formGroup]="form" data-test-id="valtimo-definition-uploader-form">
           <cds-file-uploader
             [accept]="acceptedFiles"
             [buttonText]="'ikoManagement.importDefinition.upload.buttonText' | translate"
@@ -53,24 +55,27 @@
             buttonType="primary"
             formControlName="file"
             class="valtimo-definition-uploader__file-uploader"
+            data-test-id="valtimo-definition-uploader-file-uploader"
           >
           </cds-file-uploader>
 
           @if (!obs.nextButtonDisabled) {
             <cds-inline-notification
               [notificationObj]="obs.notificationObj"
+              data-test-id="valtimo-definition-uploader-notification"
             ></cds-inline-notification>
 
-            <div class="valtimo-definition-uploader__checkbox">
+            <div class="valtimo-definition-uploader__checkbox" data-test-id="valtimo-definition-uploader-checkbox-container">
               <cds-checkbox
                 [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
                 (checkedChange)="onCheckedChange($event)"
+                data-test-id="valtimo-definition-uploader-checkbox"
               >
                 {{ 'ikoManagement.importDefinition.checkbox.message' | translate }}
               </cds-checkbox>
 
               @if (obs.showCheckboxError) {
-                <div class="valtimo-definition-uploader__error">
+                <div class="valtimo-definition-uploader__error" data-test-id="valtimo-definition-uploader-checkbox-error">
                   <svg cdsIcon="warning--filled" size="16"></svg>
                   {{ 'ikoManagement.importDefinition.checkbox.error' | translate }}
                 </div>
@@ -88,6 +93,7 @@
           [helperText]="
             'ikoManagement.importDefinition.progressBar.' + obs.uploadStatus | translate
           "
+          data-test-id="valtimo-definition-uploader-progress-bar"
         ></cds-progress-bar>
       }
 
@@ -98,27 +104,30 @@
           "
           [title]="'ikoManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
           [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
+          data-test-id="valtimo-definition-uploader-upload-step"
         >
         </valtimo-case-management-upload-step>
       }
     }
   </section>
 
-  <cds-modal-footer class="valtimo-definition-uploader__footer">
+  <cds-modal-footer class="valtimo-definition-uploader__footer" data-test-id="valtimo-definition-uploader-footer">
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
       (click)="onCloseModal(obs.isStepAfterUpload)"
+      data-test-id="valtimo-definition-uploader-cancel-button"
     >
       {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
     </button>
 
-    <div class="valtimo-definition-uploader__actions">
+    <div class="valtimo-definition-uploader__actions" data-test-id="valtimo-definition-uploader-actions">
       <button
         *ngIf="obs.backButtonEnabled"
         cdsButton="secondary"
         (click)="onBackClick(obs.activeStep)"
+        data-test-id="valtimo-definition-uploader-back-button"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -132,6 +141,7 @@
           obs.nextButtonDisabled || (obs.activeStep === UPLOAD_STEP.FILE_SELECT && !_checked)
         "
         (click)="onNextClick(obs.activeStep)"
+        data-test-id="valtimo-definition-uploader-next-button"
       >
         {{
           (obs.activeStep === UPLOAD_STEP.FILE_SELECT
@@ -148,6 +158,7 @@
         class="valtimo-definition-uploader__cancel"
         cdsButton="primary"
         (click)="onCloseModal(true)"
+        data-test-id="valtimo-definition-uploader-finish-button"
       >
         {{ 'interface.finish' | translate }}
       </button>

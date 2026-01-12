@@ -28,9 +28,10 @@
     optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
   } as obs"
   (close)="closeModal()"
+  data-test-id="confirmation-modal"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading data-test-id="confirmation-modal-title">
       {{
         (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
           title ||
@@ -39,25 +40,26 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent data-test-id="confirmation-modal-content">
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
 
-    <div class="modal-body-content">
+    <div class="modal-body-content" data-test-id="confirmation-modal-body">
       <ng-content></ng-content>
     </div>
   </section>
 
-  <cds-modal-footer>
+  <cds-modal-footer data-test-id="confirmation-modal-footer">
     <ng-container>
       <button
         data-testid="confirmation-modal-close"
         [attr.modal-primary-focus]="true"
         [cdsButton]="cancelButtonType"
         (click)="closeModal()"
+        data-test-id="confirmation-modal-cancel"
       >
         {{
           (cancelButtonTextTranslationKey !== obs.cancelButtonTranslation
@@ -69,11 +71,11 @@
       </button>
       <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
       <button
-        *ngIf="showOptionalButton"
         data-testid="confirmation-modal-optional"
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"
         (click)="onOptional()"
+        data-test-id="confirmation-modal-optional-button"
       >
         {{
           (optionalButtonTextTranslationKey !== obs.optionalButtonTranslation
@@ -88,6 +90,7 @@
         [attr.modal-primary-focus]="true"
         [cdsButton]="confirmButtonType"
         (click)="onConfirm()"
+        data-test-id="confirmation-modal-confirm-button"
       >
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation

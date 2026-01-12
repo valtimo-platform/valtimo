@@ -24,10 +24,12 @@
   [loading]="obs.loading"
   [hideToolbar]="true"
   (rowClicked)="onRowClicked($event)"
+  data-test-id="iko-management-list"
 >
   <valtimo-no-results
     title="{{ 'ikoManagement.search.noResultsTitle' | translate }}"
     illustration="valtimo-layout/img/emptystate-no-result.svg"
     description="{{ 'ikoManagement.search.noResultsDescription' | translate }}"
+    data-test-id="iko-management-no-results"
   ></valtimo-no-results>
 </valtimo-carbon-list>

@@ -32,7 +32,7 @@
     </ng-container>
 
     <cds-tabs type="contained">
-      <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
+      <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)" data-test-id="form-management-edit-builder-tab">
         <valtimo-form-io-builder
           *ngIf="(reloading$ | async) === false && activeTab === TABS.BUILDER"
           [form]="obs.formDefinition.formDefinition"
@@ -40,7 +40,7 @@
         ></valtimo-form-io-builder>
       </cds-tab>
 
-      <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
+      <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)" data-test-id="form-management-edit-editor-tab">
         @if (activeTab === TABS.EDITOR) {
           <ng-container
             *ngTemplateOutlet="
@@ -61,6 +61,7 @@
         [heading]="TABS.OUTPUT | translate"
         (selected)="onSelectedTab(TABS.OUTPUT)"
         class="valtimo-form-management-edit__output"
+        data-test-id="form-management-edit-output-tab"
       >
         <valtimo-form-io
           *ngIf="activeTab === TABS.OUTPUT"
@@ -81,7 +82,7 @@
       </cds-tab>
     </cds-tabs>
   } @else {
-    <cds-loading></cds-loading>
+    <cds-loading data-test-id="form-management-edit-loading"></cds-loading>
   }
 
   <valtimo-confirmation-modal
@@ -121,18 +122,19 @@
     }"
   >
     @if (obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration) {
-      <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
+      <cds-tag size="sm" type="blue" data-test-id="form-management-edit-read-only-tag">{{ 'formManagement.readOnly' | translate }}</cds-tag>
     }
 
     <div class="valtimo-form-management-edit__header">
-      <cds-overflow-menu>
-        <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
+      <cds-overflow-menu data-test-id="form-management-edit-overflow-menu">
+        <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)" data-test-id="form-management-edit-download-option">
           {{ 'Download' | translate }}
         </cds-overflow-menu-option>
 
         <cds-overflow-menu-option
           [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
           (selected)="showUploadModal()"
+          data-test-id="form-management-edit-upload-option"
         >
           {{ 'Upload' | translate }}
         </cds-overflow-menu-option>
@@ -140,6 +142,7 @@
         <cds-overflow-menu-option
           *ngIf="(obs.context === 'case' && obs.isDraftVersion) || obs.context === 'independent'"
           (selected)="showDuplicateModal(obs.formDefinition)"
+          data-test-id="form-management-edit-duplicate-option"
         >
           {{ 'formManagement.duplicate' | translate }}
         </cds-overflow-menu-option>
@@ -148,6 +151,7 @@
           [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
           type="danger"
           (selected)="delete()"
+          data-test-id="form-management-edit-delete-option"
         >
           {{ 'interface.delete' | translate }}
         </cds-overflow-menu-option>
@@ -158,6 +162,7 @@
           cdsButton="secondary"
           [size]="obs.compactMode ? 'sm' : 'md'"
           (click)="onGoBackButtonClick()"
+          data-test-id="form-management-edit-back-button"
         >
           <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
 
@@ -174,6 +179,7 @@
         [disabled]="obs.formDefinition.readOnly"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
+        data-test-id="form-management-edit-save-button"
       >
         {{ 'interface.save' | translate }}
 

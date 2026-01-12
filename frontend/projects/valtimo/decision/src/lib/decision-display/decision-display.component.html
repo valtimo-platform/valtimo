@@ -18,12 +18,12 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button (click)="download()" class="btn btn-primary btn-space mr-0">
+        <button (click)="download()" class="btn btn-primary btn-space mr-0" data-test-id="download-button">
           <i class="fa fa-save"></i> &nbsp;
           <span>{{ 'Download' | translate }}</span>
         </button>
       </div>
     </div>
-    <div id="canvas" class="canvas-dmn"></div>
+    <div id="canvas" class="canvas-dmn" data-test-id="canvas-container"></div>
   </div>
 </div>

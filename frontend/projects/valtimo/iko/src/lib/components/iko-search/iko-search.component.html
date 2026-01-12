@@ -1,3 +1,4 @@
+
 <!--
   ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
@@ -16,20 +17,21 @@
 
 @if (ikoSearchActions$ | async; as ikoSearchActions) {
   @if (ikoSearchActions.length === 0) {
-    <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
+    <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate" data-test-id="iko-search-no-results"></valtimo-no-results>
 
   } @else {
-    <h4>{{ 'iko.searchVia' | translate }}</h4>
+    <h4 data-test-id="iko-search-title">{{ 'iko.searchVia' | translate }}</h4>
 
-    <cds-tabs class="iko-search-tabs" type="line">
+    <cds-tabs class="iko-search-tabs" type="line" data-test-id="iko-search-tabs">
       @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
         <cds-tab
           (keyup.enter)="!searchDisabled(param.searchFields) && searchGroup(param.key, param.searchFields)"
           class="query-group"
           [heading]="param.title"
           [cdsLayer]="1"
+          data-test-id="iko-search-tab-{{param.key}}"
         >
-          <div class="query-group__row">
+          <div class="query-group__row" data-test-id="iko-search-group-row-{{param.key}}">
             @for (field of param.searchFields; track field.key) {
               <div
                 class="query-group__field"
@@ -38,8 +40,9 @@
                   'query-group__field--date': field.dataType === 'date',
                   'query-group__field--datetime': field.dataType === 'datetime',
                 }"
+                data-test-id="iko-search-field-container-{{field.key}}"
               >
-                <v-input-label *ngIf="field.title" [title]="field.title"></v-input-label>
+                <v-input-label *ngIf="field.title" [title]="field.title" data-test-id="iko-search-field-label-{{field.key}}"></v-input-label>
 
                 @if (field.dataType === 'text' && field.fieldType === 'single') {
                   <v-input
@@ -48,25 +51,29 @@
                     [placeholder]="'searchFields.textPlaceholder' | translate"
                     [defaultValue]="formValues[field.key]"
                     (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-text-single-input-{{field.key}}"
                   ></v-input>
 
                 } @else if (field.dataType === 'text' && field.fieldType === 'range') {
                   <v-form
                     className="multiple-search-fields"
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-text-range-form-{{field.key}}"
                   >
                     <v-input
                       name="start"
                       [placeholder]="'searchFields.textPlaceholder' | translate"
+                      data-test-id="iko-search-text-range-start-input-{{field.key}}"
                     ></v-input>
 
-                    <div class="to-text">
+                    <div class="to-text" data-test-id="iko-search-text-range-to-{{field.key}}">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
 
                     <v-input
                       name="end"
                       [placeholder]="'searchFields.textPlaceholder' | translate"
+                      data-test-id="iko-search-text-range-end-input-{{field.key}}"
                     ></v-input>
                   </v-form>
                 }
@@ -80,6 +87,7 @@
                     [clearSelectionSubject$]="clear$"
                     (selectedChange)="singleValueChange(field.key, $event, field.dataType)"
                     [appendInline]="false"
+                    data-test-id="iko-search-text-single-select-{{field.key}}"
                   ></v-select>
                 }
                 @else if (field.dataType === 'text' && (field.fieldType === 'multi-select-dropdown' || field.fieldType === 'multi_select_dropdown')) {
@@ -93,6 +101,7 @@
                     [clearSelectionSubject$]="clear$"
                     (selectedChange)="multipleValueChange(field.key, $event, field.dataType)"
                     [appendInline]="false"
+                    data-test-id="iko-search-text-multi-select-{{field.key}}"
                   ></v-select>
                 }
                 @else if (field.dataType === 'number' && field.fieldType === 'single') {
@@ -101,20 +110,23 @@
                     [hideNumberSpinBox]="true"
                     [placeholder]="'searchFields.numberPlaceholder' | translate"
                     (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-number-single-input-{{field.key}}"
                   ></v-input>
 
                 } @else if (field.dataType === 'number' && field.fieldType === 'range') {
                   <v-form
                     className="multiple-search-fields"
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-number-range-form-{{field.key}}"
                   >
                     <v-input
                       type="number"
                       name="start"
                       [placeholder]="'searchFields.numberPlaceholder' | translate"
+                      data-test-id="iko-search-number-range-start-input-{{field.key}}"
                     ></v-input>
 
-                    <div class="to-text">
+                    <div class="to-text" data-test-id="iko-search-number-range-to-{{field.key}}">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
 
@@ -122,6 +134,7 @@
                       type="number"
                       name="end"
                       [placeholder]="'searchFields.numberPlaceholder' | translate"
+                      data-test-id="iko-search-number-range-end-input-{{field.key}}"
                     ></v-input>
                   </v-form>
                 }
@@ -130,6 +143,7 @@
                     *ngIf="booleanItems$ | async as booleanItems"
                     [items]="booleanItems"
                     (selectedChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-boolean-single-select-{{field.key}}"
                   ></v-select>
                 }
 
@@ -138,20 +152,22 @@
                     [placeholder]="'searchFields.timePlaceholder' | translate"
                     [ngModel]="formValues[field.key]"
                     (ngModelChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-time-single-input-{{field.key}}"
                   ></cds-timepicker>
 
                 } @else if (field.dataType === 'time' && field.fieldType === 'range') {
                   <v-form
                     className="multiple-search-fields"
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-time-range-form-{{field.key}}"
                   >
-                    <cds-timepicker [(ngModel)]="formValues[field.key + '_start']"></cds-timepicker>
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_start']" data-test-id="iko-search-time-range-start-input-{{field.key}}"></cds-timepicker>
 
-                    <div class="to-text">
+                    <div class="to-text" data-test-id="iko-search-time-range-to-{{field.key}}">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
 
-                    <cds-timepicker [(ngModel)]="formValues[field.key + '_end']"></cds-timepicker>
+                    <cds-timepicker [(ngModel)]="formValues[field.key + '_end']" data-test-id="iko-search-time-range-end-input-{{field.key}}"></cds-timepicker>
                   </v-form>
                 }
                 @else if (field.dataType === 'date' && field.fieldType === 'single') {
@@ -160,20 +176,23 @@
                     [enableTime]="false"
                     [showFieldLabel]="false"
                     (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-date-single-input-{{field.key}}"
                   ></valtimo-date-time-picker>
 
                 } @else if (field.dataType === 'date' && field.fieldType === 'range') {
                   <v-form
                     className="multiple-search-fields"
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-date-range-form-{{field.key}}"
                   >
                     <valtimo-date-time-picker
                       name="start"
                       [enableTime]="false"
                       [showFieldLabel]="false"
+                      data-test-id="iko-search-date-range-start-input-{{field.key}}"
                     ></valtimo-date-time-picker>
 
-                    <div class="to-text">
+                    <div class="to-text" data-test-id="iko-search-date-range-to-{{field.key}}">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
 
@@ -181,6 +200,7 @@
                       name="end"
                       [enableTime]="false"
                       [showFieldLabel]="false"
+                      data-test-id="iko-search-date-range-end-input-{{field.key}}"
                     ></valtimo-date-time-picker>
                   </v-form>
                 }
@@ -189,20 +209,23 @@
                     [enableTime]="true"
                     [showFieldLabel]="false"
                     (valueChange)="singleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-datetime-single-input-{{field.key}}"
                   ></valtimo-date-time-picker>
 
                 } @else if (field.dataType === 'datetime' && field.fieldType === 'range') {
                   <v-form
                     className="multiple-search-fields"
                     (valueChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    data-test-id="iko-search-datetime-range-form-{{field.key}}"
                   >
                     <valtimo-date-time-picker
                       name="start"
                       [enableTime]="true"
                       [showFieldLabel]="false"
+                      data-test-id="iko-search-datetime-range-start-input-{{field.key}}"
                     ></valtimo-date-time-picker>
 
-                    <div class="to-text">
+                    <div class="to-text" data-test-id="iko-search-datetime-range-to-{{field.key}}">
                       <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
                     </div>
 
@@ -210,6 +233,7 @@
                       name="end"
                       [enableTime]="true"
                       [showFieldLabel]="false"
+                      data-test-id="iko-search-datetime-range-end-input-{{field.key}}"
                     ></valtimo-date-time-picker>
                   </v-form>
                 }
@@ -222,6 +246,7 @@
             class="query-group__search-button"
             [disabled]="searchDisabled(param.searchFields)"
             (click)="searchGroup(param.key, param.searchFields)"
+            data-test-id="iko-search-submit-button-{{param.key}}"
           >
             {{ 'searchFields.searchButtonText' | translate }}
             <svg cdsIcon="search" size="16"></svg>
