@@ -66,15 +66,15 @@
               "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
               "node_modules/@bpmn-io/properties-panel/dist/assets/properties-panel.css",
               "node_modules/ol/ol.css",
-              "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
-              "dist/valtimo/layout/assets/css/app.css",
+              "node_modules/@valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
+              "node_modules/@valtimo/layout/assets/css/app.css",
               "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
-              "dist/valtimo/components/assets/css/carbon.scss",
-              "dist/valtimo/components/assets/css/color.scss",
-              "dist/valtimo/components/assets/css/compatibility.scss",
-              "dist/valtimo/components/assets/css/design-tokens.css",
-              "dist/valtimo/components/assets/css/formio-carbon.scss"
+              "node_modules/@valtimo/components/assets/css/carbon.scss",
+              "node_modules/@valtimo/components/assets/css/color.scss",
+              "node_modules/@valtimo/components/assets/css/compatibility.scss",
+              "node_modules/@valtimo/components/assets/css/design-tokens.css",
+              "node_modules/@valtimo/components/assets/css/formio-carbon.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -84,7 +84,7 @@
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
-              "dist/valtimo/layout/assets/js/app.js",
+              "node_modules/@valtimo/layout/assets/js/app.js",
               "src/assets/bpmn/ValtimoBPMNModeler.js",
               "node_modules/@webcomponents/custom-elements/src/native-shim.js",
               "node_modules/dmn-js/dist/dmn-modeler.development.js"

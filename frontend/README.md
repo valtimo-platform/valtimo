@@ -27,7 +27,7 @@ Run the following command to install the dependencies: `npm install`.
 
 #### Build libraries
 
-Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
+Run the following command to build all the Valtimo libraries: `npm run build`.
 
 #### Start application
 
