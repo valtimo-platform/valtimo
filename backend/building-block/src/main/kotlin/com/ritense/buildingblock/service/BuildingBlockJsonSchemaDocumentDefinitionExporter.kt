@@ -39,7 +39,7 @@ class BuildingBlockJsonSchemaDocumentDefinitionExporter(
             val documentDefinitionId = JsonSchemaDocumentDefinitionId.forBuildingBlock(request.name, request.buildingBlockDefinitionId)
             documentDefinitionService.findBy(documentDefinitionId).orElseThrow()
         } else {
-            documentDefinitionService.findBySolutionModuleId(request.caseDefinitionId).orElseThrow()
+            documentDefinitionService.findByBlueprintId(request.caseDefinitionId).orElseThrow()
         }
 
         val formattedCaseDefinitionVersion = request.buildingBlockDefinitionId.versionTag.let {

@@ -19,5 +19,6 @@ package com.ritense.case_.widget.custom
 import jakarta.validation.constraints.NotBlank
 
 data class CustomWidgetProperties(
-    @field:NotBlank val componentKey: String
+    @field:NotBlank val componentKey: String,
+    val componentValue: Map<String, Any?> = emptyMap()
 )

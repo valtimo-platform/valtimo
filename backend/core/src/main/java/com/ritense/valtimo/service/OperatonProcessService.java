@@ -23,9 +23,9 @@ import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessIns
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.NAME;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.VERSION;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersionTag;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersionTag;
@@ -35,11 +35,11 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
-import com.ritense.valtimo.contract.SolutionModuleId;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
-import com.ritense.valtimo.event.ProcessDefinitionDeleted;
+import com.ritense.valtimo.event.ProcessDefinitionDetached;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
 import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
@@ -52,6 +52,8 @@ import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
@@ -106,6 +108,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 public class OperatonProcessService {
+    public static final String DETACHED_PROCESS_DEFINITION_PREFIX = "DETACHED:";
+
     private static final String UNDEFINED_BUSINESS_KEY = "UNDEFINED_BUSINESS_KEY";
     private static final Logger logger = LoggerFactory.getLogger(OperatonProcessService.class);
 
@@ -121,10 +125,9 @@ public class OperatonProcessService {
     private final ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
     private final OperatonByteArrayService operatonByteArrayService;
     private final ApplicationEventPublisher applicationEventPublisher;
-
     private final OperatonExecutionRepository operatonExecutionRepository;
-
     private final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
+    private final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
 
     public OperatonProcessService(
         RuntimeService runtimeService,
@@ -140,7 +143,8 @@ public class OperatonProcessService {
         ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker,
         OperatonByteArrayService operatonByteArrayService,
         ApplicationEventPublisher applicationEventPublisher,
-        OperatonDeploymentSourceHelper operatonDeploymentSourceHelper
+        OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
+        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
     ) {
         this.runtimeService = runtimeService;
         this.operatonRuntimeService = operatonRuntimeService;
@@ -156,6 +160,7 @@ public class OperatonProcessService {
         this.operatonByteArrayService = operatonByteArrayService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.operatonDeploymentSourceHelper = operatonDeploymentSourceHelper;
+        this.operatonProcessDefinitionRepository = operatonProcessDefinitionRepository;
     }
 
     public OperatonProcessDefinition findProcessDefinitionById(String processDefinitionId) {
@@ -248,26 +253,26 @@ public class OperatonProcessService {
     public ProcessInstanceWithDefinition startProcess(
         String processDefinitionKey,
         String businessKey,
-        SolutionModuleId solutionModuleId,
+        final BlueprintId blueprintId,
         Map<String, Object> variables
     ) {
         final OperatonProcessDefinition processDefinition = AuthorizationContext
             .runWithoutAuthorization(() -> {
-                if (solutionModuleId == null) {
-                    return operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey);
+                var pd = operatonRepositoryService.findProcessDefinition(
+                    // TODO: FIX THIS NOW
+                    byKey(processDefinitionKey).and(byBlueprintId(blueprintId))
+                );
+                if (pd != null) {
+                    return pd;
                 } else {
-                    // TODO: What to do if we're working on a global process definition? Currently taking latest
-                    OperatonProcessDefinition procDef = operatonRepositoryService.findProcessDefinition(
-                        byKey(processDefinitionKey).and(byLatestVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId))
+                    // Needed by the VerzoekPlugin:
+                    return operatonRepositoryService.findProcessDefinition(
+                        byKey(processDefinitionKey).and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(byNotLinkedToCaseDefinition()))
                     );
-                    if (procDef == null) {
-                        procDef = operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey);
-                    }
-                    return procDef;
                 }
             });
         if (processDefinition == null) {
-            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "'");
+            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and blueprintId: '" + blueprintId + "'");
         }
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
@@ -323,6 +328,10 @@ public class OperatonProcessService {
         return execution;
     }
 
+    /**
+     * @deprecated Please use getDefinitionByKeyAndCaseDefinition(...)
+     */
+    @Deprecated(since = "Since 13.8.0", forRemoval = true)
     public OperatonProcessDefinition getProcessDefinition(String processDefinitionKey) {
         denyAuthorization();
         return AuthorizationContext
@@ -372,10 +381,9 @@ public class OperatonProcessService {
 
     public List<OperatonProcessDefinition> getDeployedDefinitions(CaseDefinitionId caseDefinitionId) {
         denyAuthorization();
-        String versionTag = caseDefinitionId.getTagPrefix() + caseDefinitionId;
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
             byActive()
-                .and(byLatestVersionTag(versionTag)),
+                .and(byBlueprintId(caseDefinitionId)),
             Sort.by(NAME)
         ));
     }
@@ -412,27 +420,25 @@ public class OperatonProcessService {
         );
     }
 
-    public List<OperatonProcessDefinition> getDefinitionsByKeyAndSolutionModule(
-        SolutionModuleId solutionModuleId,
+    public List<OperatonProcessDefinition> getDefinitionsByKeyAndBlueprint(
+        BlueprintId blueprintId,
         String processDefinitionKey
     ) {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId)
+            byVersionTag(blueprintId.getTagPrefix() + blueprintId)
                 .and(byKey(processDefinitionKey))
         ));
     }
 
-    public OperatonProcessDefinition getLatestDefinitionByKeyAndSolutionModule(
-        SolutionModuleId solutionModuleId,
+    public OperatonProcessDefinition getLatestDefinitionByKeyAndBlueprint(
+        BlueprintId blueprintId,
         String processDefinitionKey
     ) {
         denyAuthorization();
-        String versionTag = solutionModuleId.getTagPrefix() + solutionModuleId;
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinition(
-            byVersionTag(versionTag)
+            byBlueprintId(blueprintId)
                 .and(byKey(processDefinitionKey))
-                .and(byLatestVersionTag(versionTag))
         ));
     }
 
@@ -493,7 +499,7 @@ public class OperatonProcessService {
 
     @Transactional
     public DeploymentWithDefinitions deploy(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         String fileName,
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
@@ -510,8 +516,8 @@ public class OperatonProcessService {
                 throw new ProcessNotDeployableException(fileName);
             }
 
-            updateCaseDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
-            updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, solutionModuleId);
+            updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
+            updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
 
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
@@ -520,18 +526,18 @@ public class OperatonProcessService {
             setToPropagateBusinessKeyWhenCallActivityIsNew(bpmnModel);
             setTo60SecondsWhenTimerIsEmpty(bpmnModel);
 
-            if (isProcessDefinitionPreviouslyDeployed(solutionModuleId, bpmnModel)) {
+            if (isProcessDefinitionPreviouslyDeployed(blueprintId, bpmnModel)) {
                 return null;
             }
 
-            OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(solutionModuleId, bpmnModel);
-            if (latestProcessDefinition != null && solutionModuleId != null) {
+            OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
+            if (latestProcessDefinition != null && blueprintId != null) {
                 // clean up previous process definition, can only be triggered when we're deploying a draft version
-                applicationEventPublisher.publishEvent(new ProcessDefinitionDeleted(
+                applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
                     latestProcessDefinition.getId(),
-                    solutionModuleId
+                    blueprintId
                 ));
-                repositoryService.deleteDeployment(latestProcessDefinition.getDeploymentId(), true);
+                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + blueprintId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
@@ -550,10 +556,10 @@ public class OperatonProcessService {
             DeploymentWithDefinitions deployment = deploymentBuilder.deployWithResult();
 
             // TODO: Implement linking to process definition on this level for building blocks
-            if (solutionModuleId != null
-                && (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX.equals(solutionModuleId.getTagPrefix()))) {
+            if (blueprintId != null
+                && (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX.equals(blueprintId.getTagPrefix()))) {
                 processDefinitionCaseDefinitionLinker.link(
-                    (CaseDefinitionId) solutionModuleId,
+                    (CaseDefinitionId) blueprintId,
                     deployment.getDeployedProcessDefinitions().get(0).getId()
                 );
             }
@@ -562,8 +568,8 @@ public class OperatonProcessService {
         } else if (fileName.endsWith(".dmn")) {
             DmnModelInstance dmnModel = Dmn.readModelFromStream(fileInput);
 
-            if (solutionModuleId != null) {
-                setDecisionsVersionTag(dmnModel, solutionModuleId);
+            if (blueprintId != null) {
+                setDecisionsVersionTag(dmnModel, blueprintId);
 
                 String decisionDefinitionKey = dmnModel.getDefinitions()
                     .getChildElementsByType(Decision.class)
@@ -575,8 +581,8 @@ public class OperatonProcessService {
                 DecisionDefinitionQuery decisionDefinitionQuery = repositoryService.createDecisionDefinitionQuery()
                     .decisionDefinitionKey(decisionDefinitionKey);
 
-                if (solutionModuleId != null) {
-                    decisionDefinitionQuery.versionTag(solutionModuleId.getTagPrefix() + solutionModuleId);
+                if (blueprintId != null) {
+                    decisionDefinitionQuery.versionTag(blueprintId.getTagPrefix() + blueprintId);
                 }
 
                 DecisionDefinition decisionDefinition = decisionDefinitionQuery.singleResult();
@@ -601,12 +607,12 @@ public class OperatonProcessService {
 
     @Transactional
     public DeploymentWithDefinitions deploy(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         String fileName,
         ByteArrayInputStream fileInput
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         return deploy(
-            solutionModuleId,
+            blueprintId,
             fileName,
             fileInput,
             false,
@@ -618,20 +624,20 @@ public class OperatonProcessService {
 
     @Transactional
     public DeploymentWithDefinitions deploy(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         String fileName,
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
-        return deploy(solutionModuleId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, null, null);
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, null, null);
     }
 
     private boolean isProcessDefinitionPreviouslyDeployed(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         BpmnModelInstance bpmnModel
     ) throws ProcessNotDeployableException {
-        OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(solutionModuleId, bpmnModel);
+        OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
 
         if (latestProcessDefinition != null) {
             try {
@@ -652,14 +658,14 @@ public class OperatonProcessService {
                 outputStream.close();
 
             } catch (IOException e) {
-                throw new ProcessNotDeployableException(solutionModuleId + " and process: " + latestProcessDefinition.getKey());
+                throw new ProcessNotDeployableException(blueprintId + " and process: " + latestProcessDefinition.getKey());
             }
         }
         return false;
     }
 
     public OperatonProcessDefinition getExistingProcessForFile(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         BpmnModelInstance bpmnModel
     ) {
         String processDefinitionKey = bpmnModel.getModelElementsByType(Process.class).stream()
@@ -669,16 +675,16 @@ public class OperatonProcessService {
         List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
                 .and(byActive())
-                .and(solutionModuleId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    solutionModuleId.getTagPrefix() + solutionModuleId))
+                .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
+                    blueprintId.getTagPrefix() + blueprintId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );
 
-        if (processDefinition.size() > 1 && solutionModuleId != null) {
+        if (processDefinition.size() > 1 && blueprintId != null) {
             throw new IllegalStateException(
                 "Only one process definition should be found for key: " + processDefinitionKey
-                    + " and case definition id: " + solutionModuleId
+                    + " and case definition id: " + blueprintId
             );
         } else if (processDefinition.size() > 0) {
             return processDefinition.getFirst();
@@ -710,10 +716,10 @@ public class OperatonProcessService {
 
     void updateCaseDefinitionProcessesVersionTags(
         BpmnModelInstance bpmnModel,
-        @Nullable SolutionModuleId solutionModuleId
+        @Nullable BlueprintId blueprintId
     ) {
-        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
-            setCaseDefinitionProcessesVersionTags(bpmnModel, (CaseDefinitionId) solutionModuleId);
+        if (blueprintId != null && blueprintId.getTagPrefix().equals(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
+            setCaseDefinitionProcessesVersionTags(bpmnModel, (CaseDefinitionId) blueprintId);
         } else {
             clearCaseDefinitionProcessesVersionTags(bpmnModel);
         }
@@ -721,10 +727,10 @@ public class OperatonProcessService {
 
     void updateBuildingBlockDefinitionProcessesVersionTags(
         BpmnModelInstance bpmnModel,
-        @Nullable SolutionModuleId solutionModuleId
+        @Nullable BlueprintId blueprintId
     ) {
-        if (solutionModuleId != null && solutionModuleId.getTagPrefix().equals(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) {
-            setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, (BuildingBlockDefinitionId) solutionModuleId);
+        if (blueprintId != null && blueprintId.getTagPrefix().equals(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) {
+            setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, (BuildingBlockDefinitionId) blueprintId);
         }
     }
 
@@ -817,7 +823,7 @@ public class OperatonProcessService {
 
     @Transactional
     public DeploymentWithDefinitions duplicateProcessDefinitionById(
-        SolutionModuleId solutionModuleId,
+        BlueprintId blueprintId,
         String processDefinitionId,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
@@ -852,7 +858,7 @@ public class OperatonProcessService {
 
         try (ByteArrayInputStream fileInput = new ByteArrayInputStream(
             repositoryService.getResourceAsStream(deploymentId, fileName).readAllBytes())) {
-            return deploy(solutionModuleId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck);
+            return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck);
 
         } catch (IOException e) {
             logger.error("Error reading resource stream for file: {}", fileName, e);
@@ -860,9 +866,9 @@ public class OperatonProcessService {
         }
     }
 
-    private void setDecisionsVersionTag(DmnModelInstance dmnModel, SolutionModuleId solutionModuleId) {
+    private void setDecisionsVersionTag(DmnModelInstance dmnModel, BlueprintId blueprintId) {
         dmnModel.getDefinitions().getChildElementsByType(Decision.class).forEach(
-            dmn -> dmn.setVersionTag(solutionModuleId.getTagPrefix() + solutionModuleId.toString())
+            dmn -> dmn.setVersionTag(blueprintId.getTagPrefix() + blueprintId.toString())
         );
     }
 
@@ -949,11 +955,16 @@ public class OperatonProcessService {
         model.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
                 String processDefinitionKey = process.getId();
+                String versionTag = process.getOperatonVersionTag();
                 if (processDefinitionKey == null || processDefinitionKey.isEmpty() || isSystemProcess(
                     AuthorizationContext
                         .runWithoutAuthorization(
-                            () -> operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey)))
-                ) {
+                            () -> operatonRepositoryService.findProcessDefinition(
+                                byKey(processDefinitionKey)
+                                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(versionTag != null ? byVersionTag(versionTag) : byNotLinkedToCaseDefinition()))
+                            )
+                        )
+                )) {
                     isDeployable.set(false);
                 }
             });

@@ -40,6 +40,9 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
+    implementation "io.projectreactor:reactor-core:3.8.0"
+    implementation "xyz.capybara:clamav-client:2.1.2"
+
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"

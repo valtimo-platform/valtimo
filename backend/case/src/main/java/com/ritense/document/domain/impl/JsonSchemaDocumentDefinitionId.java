@@ -24,8 +24,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ritense.document.domain.DocumentDefinition;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleId;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId;
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.domain.AbstractId;
@@ -42,22 +42,22 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     private String name;
 
     @Embedded
-    private JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId;
+    private JsonSchemaDocumentDefinitionBlueprintId blueprintId;
 
     @JsonCreator
     private JsonSchemaDocumentDefinitionId(
         @JsonProperty("name") String name,
-        @JsonProperty("solutionModuleId") JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId
+        @JsonProperty("blueprintId") JsonSchemaDocumentDefinitionBlueprintId blueprintId
     ) {
-        assertArgumentId(name, solutionModuleId);
+        assertArgumentId(name, blueprintId);
         this.name = name;
-        this.solutionModuleId = solutionModuleId;
+        this.blueprintId = blueprintId;
     }
 
     private JsonSchemaDocumentDefinitionId() {
     }
 
-    private void assertArgumentId(String name, JsonSchemaDocumentDefinitionSolutionModuleId ownerId) {
+    private void assertArgumentId(String name, JsonSchemaDocumentDefinitionBlueprintId ownerId) {
         assertArgumentNotNull(name, "name is required");
         assertArgumentLength(name, 1, 50, "name must be between 1-50 characters");
         assertArgumentTrue(name.matches("[A-z0-9-_.]+"), "name contains illegal character. For name: " + name);
@@ -69,11 +69,11 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     }
 
     public static JsonSchemaDocumentDefinitionId forCase(String name, CaseDefinitionId caseDefinitionId) {
-        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionSolutionModuleId.Companion.forCase(caseDefinitionId));
+        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionBlueprintId.Companion.forCase(caseDefinitionId));
     }
 
     public static JsonSchemaDocumentDefinitionId forBuildingBlock(String name, BuildingBlockDefinitionId buildingBlockDefinitionId) {
-        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionSolutionModuleId.Companion.forBuildingBlock(buildingBlockDefinitionId));
+        return new JsonSchemaDocumentDefinitionId(name, JsonSchemaDocumentDefinitionBlueprintId.Companion.forBuildingBlock(buildingBlockDefinitionId));
     }
 
     public static JsonSchemaDocumentDefinitionId existingId(String name, CaseDefinitionId caseDefinitionId) {
@@ -84,8 +84,8 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
         return (JsonSchemaDocumentDefinitionId) documentDefinitionId;
     }
 
-    public JsonSchemaDocumentDefinitionSolutionModuleType ownerType() {
-        return solutionModuleId.solutionModuleType();
+    public JsonSchemaDocumentDefinitionBlueprintType ownerType() {
+        return blueprintId.blueprintType();
     }
 
     @Override
@@ -97,23 +97,23 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     @Override
     @JsonIgnore
     public CaseDefinitionId caseDefinitionId() {
-        return solutionModuleId.asCaseDefinitionId();
+        return blueprintId.asCaseDefinitionId();
     }
 
     @Override
     @JsonIgnore
     public BuildingBlockDefinitionId buildingBlockDefinitionId() {
-        return solutionModuleId.asBuildingBlockDefinitionId();
+        return blueprintId.asBuildingBlockDefinitionId();
     }
 
-    @JsonProperty("solutionModuleId")
-    public JsonSchemaDocumentDefinitionSolutionModuleId solutionModuleId() {
-        return solutionModuleId;
+    @JsonProperty("blueprintId")
+    public JsonSchemaDocumentDefinitionBlueprintId blueprintId() {
+        return blueprintId;
     }
 
     @Override
     public String toString() {
-        return name + ":" + solutionModuleId.solutionModuleType() + ":" + solutionModuleId.solutionModuleKey() + ":" + solutionModuleId.solutionModuleVersionTag();
+        return name + ":" + blueprintId.blueprintType() + ":" + blueprintId.blueprintKey() + ":" + blueprintId.blueprintVersionTag();
     }
 
     @Override
@@ -125,11 +125,11 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
             return false;
         }
         JsonSchemaDocumentDefinitionId that = (JsonSchemaDocumentDefinitionId) o;
-        return Objects.equals(name, that.name) && Objects.equals(solutionModuleId, that.solutionModuleId);
+        return Objects.equals(name, that.name) && Objects.equals(blueprintId, that.blueprintId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, solutionModuleId);
+        return Objects.hash(name, blueprintId);
     }
 }

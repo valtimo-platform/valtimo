@@ -37,6 +37,7 @@ import com.ritense.valtimo.operaton.TaskCompletedListener;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
@@ -159,7 +160,8 @@ public class ValtimoAutoConfiguration {
         final ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker,
         final OperatonByteArrayService operatonByteArrayService,
         final ApplicationEventPublisher applicationEventPublisher,
-        final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper
+        final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
+        final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
     ) {
         return new OperatonProcessService(
             runtimeService,
@@ -175,7 +177,8 @@ public class ValtimoAutoConfiguration {
             processDefinitionCaseDefinitionLinker,
             operatonByteArrayService,
             applicationEventPublisher,
-            operatonDeploymentSourceHelper
+            operatonDeploymentSourceHelper,
+            operatonProcessDefinitionRepository
         );
     }
 

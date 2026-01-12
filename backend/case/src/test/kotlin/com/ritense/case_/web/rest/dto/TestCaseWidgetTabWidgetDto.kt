@@ -30,6 +30,7 @@ data class TestCaseWidgetTabWidgetDto(
     override val icon: String?,
     override val width: Int,
     override val highContrast: Boolean,
+    override val isCompact: Boolean?,
     @field:Valid val properties: TestCaseWidgetProperties = TestCaseWidgetProperties(),
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList()

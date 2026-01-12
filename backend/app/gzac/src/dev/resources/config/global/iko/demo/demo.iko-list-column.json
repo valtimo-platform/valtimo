@@ -1,0 +1,35 @@
+{
+    "ikoViewKey": "demo",
+    "ikoListColumns": [
+        {
+            "key": "naam",
+            "title": "Naam",
+            "path": "/basisgegevens/naam",
+            "displayType": {
+                "type": "text",
+                "displayTypeParameters": {}
+            },
+            "sortable": false
+        },
+        {
+            "key": "adres",
+            "title": "Adres",
+            "path": "/basisgegevens/adres",
+            "displayType": {
+                "type": "text",
+                "displayTypeParameters": {}
+            },
+            "sortable": false
+        },
+        {
+            "key": "geboortedatum",
+            "title": "Geboortedatum",
+            "path": "/basisgegevens/geboortedatum",
+            "displayType": {
+                "type": "text",
+                "displayTypeParameters": {}
+            },
+            "sortable": false
+        }
+    ]
+}

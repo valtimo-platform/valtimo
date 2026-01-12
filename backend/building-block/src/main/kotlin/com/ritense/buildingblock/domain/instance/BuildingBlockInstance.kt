@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ open class BuildingBlockInstance(
 
     // TODO: if we only link to document IDs then this could be document id.
     //  This is easier for supporting nested building blocks in the future, but ideally we have
-    //  case instance as well so we can use solution module instance id instead.
+    //  case instance as well so we can use blueprint instance id instead.
     @Column(name = "case_document_id", nullable = false)
     val caseDocumentId: UUID,
 

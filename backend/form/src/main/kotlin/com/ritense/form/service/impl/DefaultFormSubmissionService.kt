@@ -59,7 +59,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_STAR
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.contract.SolutionModuleId
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -122,7 +122,7 @@ class DefaultFormSubmissionService(
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
                 ?: getProcessDocumentDefinition(processDefinition, document).run {
-                    documentDefinitionService.findBySolutionModuleId(this.id.caseDefinitionId).orElseThrow().id?.name()
+                    documentDefinitionService.findByBlueprintId(this.id.caseDefinitionId).orElseThrow().id?.name()
                         ?: throw ProcessDocumentDefinitionNotFoundException("DocumentDefinition not found for processDefinitionId: ${processDefinition.id}")
                 }
             val processVariables = getProcessVariables(taskInstanceId)
@@ -141,7 +141,7 @@ class DefaultFormSubmissionService(
                 taskInstanceId,
                 documentDefinitionNameToUse,
                 processDefinition.key,
-                processDefinition.getSolutionModuleId(),
+                processDefinition.getBlueprintId(),
                 categorizedKeyValues.createDocumentWithContent,
                 categorizedKeyValues.withProcessVars,
                 modifyDocumentWithJsonPatch
@@ -400,7 +400,7 @@ class DefaultFormSubmissionService(
         taskInstanceId: String?,
         documentDefinitionName: String,
         processDefinitionKey: String,
-        solutionModuleId: SolutionModuleId?,
+        blueprintId: BlueprintId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
         modifyDocumentWithJsonPatch: JsonPatch
@@ -414,7 +414,7 @@ class DefaultFormSubmissionService(
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
                     processDefinitionKey,
-                    solutionModuleId,
+                    blueprintId,
                     documentContent,
                     withProcessVars
                 )
@@ -446,18 +446,18 @@ class DefaultFormSubmissionService(
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
         processDefinitionKey: String,
-        solutionModuleId: SolutionModuleId?,
+        blueprintId: BlueprintId?,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
     ): NewDocumentAndStartProcessRequest {
-        return when (solutionModuleId) {
+        return when (blueprintId) {
             is CaseDefinitionId -> {
                 NewDocumentAndStartProcessRequest(
                     processDefinitionKey,
                     NewDocumentRequest(
                         documentDefinitionName,
-                        solutionModuleId.key,
-                        solutionModuleId.versionTag.version,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
                         documentContent
                     )
                 ).withProcessVars(withProcessVars)
@@ -470,8 +470,8 @@ class DefaultFormSubmissionService(
                         documentDefinitionName,
                         null,
                         null,
-                        solutionModuleId.key,
-                        solutionModuleId.versionTag.version,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
                         documentContent
                     )
                 ).withProcessVars(withProcessVars)

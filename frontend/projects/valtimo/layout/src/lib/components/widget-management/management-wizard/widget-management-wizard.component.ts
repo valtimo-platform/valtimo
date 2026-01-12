@@ -25,7 +25,6 @@ import {
   OnDestroy,
   Output,
   Signal,
-  signal,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
@@ -33,15 +32,10 @@ import {
 import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
+import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
+import {combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {
-  ButtonModule,
-  ModalModule,
-  ProgressIndicatorModule,
-  Step,
-  TilesModule,
-} from 'carbon-components-angular';
-import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
-import {
+  WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
@@ -81,11 +75,18 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   @Input() public set editMode(value: boolean) {
     this.widgetWizardService.$editMode.set(value);
     if (!value) return;
-    this.$currentStepIndex.set(
-      this.widgetWizardService
-        .$widgetWizardSteps()
-        .findIndex((step: WidgetWizardStep) => step === WidgetWizardStep.CONTENT)
-    );
+    this.widgetWizardService.$currentStep.set(WidgetWizardStep.CONTENT);
+    this.steps$
+      .pipe(
+        map((steps: (Step & {stepId: string})[]) =>
+          steps.findIndex(step => step.stepId === WidgetWizardStep.CONTENT)
+        ),
+        filter(index => index !== -1),
+        take(1)
+      )
+      .subscribe(index => {
+        this.widgetWizardService.$currentStepIndex.set(index);
+      });
   }
   public get editMode(): boolean {
     return this._editMode;
@@ -97,48 +98,80 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     toObservable(this.widgetWizardService.$selectedWidget),
     toObservable(this.widgetWizardService.$widgetWidth),
     toObservable(this.widgetWizardService.$widgetStyle),
+    toObservable(this.widgetWizardService.$widgetDensity),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedStyle]) => {
+    map(([selectedWidget, selectedWidth, selectedStyle, selectedDensity]) => {
       const type = selectedWidget?.type ?? '';
-      const width = selectedWidth ?? '';
-      const style = selectedStyle ?? '';
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
-        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[width] ?? '',
-        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[style] ?? '',
+        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
+        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle ?? ''] ?? '',
+        [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
       };
     })
   );
 
-  public readonly steps$: Observable<Step[]> = combineLatest([
+  public readonly steps$: Observable<(Step & {stepId: string})[]> = combineLatest([
     toObservable(this.widgetWizardService.$widgetWizardSteps),
     toObservable(this.widgetWizardService.$widgetWizardStepProperties),
+    toObservable(this.widgetWizardService.$widgetWizardStepEnableCondition),
     this.secondaryLabels$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([steps, stepProperties, secondaryLabels]) =>
-      steps.map((step: WidgetWizardStep) => ({
-        label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
-        ...(!!secondaryLabels[step] && {
-          secondaryLabel: this.translateService.instant(secondaryLabels[step]),
-        }),
-        disabled: stepProperties[step]?.disabled,
-        complete: stepProperties[step]?.complete,
-      }))
-    )
+    map(([steps, stepProperties, stepEnableConditions, secondaryLabels]) => {
+      return steps.reduce<(Step & {stepId: string})[] & {__blocked?: boolean}>(
+        (acc, step) => {
+          if (acc.__blocked) return acc;
+
+          const enableMeta = stepEnableConditions[step];
+
+          if (enableMeta) {
+            const {dependingStep, condition} = enableMeta;
+            const dependingComplete = !!stepProperties[dependingStep]?.complete;
+
+            if (!dependingComplete) {
+              acc.push({label: '', disabled: true, complete: false, stepId: ''});
+              acc.__blocked = true;
+              return acc;
+            }
+            if (!condition()) return acc;
+          }
+
+          const stepConfig: Step & {stepId: string} = {
+            label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
+            disabled: stepProperties[step]?.disabled,
+            complete: stepProperties[step]?.complete,
+            ...(!!secondaryLabels[step] && {
+              secondaryLabel: this.translateService.instant(secondaryLabels[step]),
+            }),
+            stepId: step,
+            onClick: () => {
+              this.widgetWizardService.$currentStep.set(step);
+              this.renderStep(WIZARD_STEP_COMPONENTS[step]);
+            },
+          };
+
+          acc.push(stepConfig);
+          return acc;
+        },
+        [] as (Step & {stepId: string})[] & {__blocked?: boolean}
+      );
+    })
   );
 
   public readonly $currentStepIndex = this.widgetWizardService.$currentStepIndex;
-  public readonly $numberOfSteps = computed(
-    () => this.widgetWizardService.$widgetWizardSteps().length
+  private _numberOfSteps = 0;
+  public readonly numberOfSteps$ = this.steps$.pipe(
+    map((steps: Step[]) => {
+      this._numberOfSteps = steps.length;
+      return this._numberOfSteps;
+    })
   );
 
-  public readonly stepLabel$ = toObservable(this.$currentStepIndex).pipe(
-    switchMap((stepIndex: number) =>
-      this.translateService.stream(
-        `widgetTabManagement.${this.widgetWizardService.$widgetWizardSteps()[stepIndex]}.description`
-      )
+  public readonly stepLabel$ = toObservable(this.widgetWizardService.$currentStep).pipe(
+    switchMap((step: WidgetWizardStep) =>
+      this.translateService.stream(`widgetTabManagement.${step}.description`)
     )
   );
 
@@ -158,7 +191,10 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   ) {
     effect(() => {
       this.cdr.detectChanges();
-      this.renderStep(this.$currentStepIndex());
+      const stepIndex = this.$currentStepIndex();
+      this.steps$.pipe(take(1)).subscribe(steps => {
+        steps[stepIndex]?.onClick?.();
+      });
     });
   }
 
@@ -171,7 +207,7 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   }
 
   public onNextButtonClick(): void {
-    if (this.$currentStepIndex() === this.$numberOfSteps() - 1) {
+    if (this.$currentStepIndex() === this._numberOfSteps - 1) {
       const isDuplicateMode =
         this.editMode && !this.disableDuplicate && !this.widgetWizardService.$widgetKey();
 
@@ -215,12 +251,10 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  private renderStep(stepIndex: number): void {
+  private renderStep(stepComponent): void {
     this._vcr.clear();
 
-    const componentRef = this._vcr.createComponent(
-      WIZARD_STEP_COMPONENTS[this.widgetWizardService.$widgetWizardSteps()[stepIndex]]
-    );
+    const componentRef = this._vcr.createComponent(stepComponent);
 
     componentRef.location.nativeElement.classList.add('valtimo-widget-wizard-step');
 

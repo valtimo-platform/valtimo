@@ -59,6 +59,7 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -200,7 +201,7 @@ class CaseDefinitionService(
                 active = active,
                 final = final,
             )
-        return caseDefinitionRepository.findAll(spec)
+        return caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name")))
     }
 
     fun getCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {

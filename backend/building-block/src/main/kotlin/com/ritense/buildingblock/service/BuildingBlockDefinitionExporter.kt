@@ -67,7 +67,7 @@ class BuildingBlockDefinitionExporter(
     }
 
     private fun createDocumentDefinitionExportRequest(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDocumentDefinitionExportRequest> {
-        val documentDefinition = documentDefinitionService.findBySolutionModuleId(buildingBlockDefinitionId)
+        val documentDefinition = documentDefinitionService.findByBlueprintId(buildingBlockDefinitionId)
         return if (documentDefinition.isPresent) {
             setOf(
                 BuildingBlockDocumentDefinitionExportRequest(

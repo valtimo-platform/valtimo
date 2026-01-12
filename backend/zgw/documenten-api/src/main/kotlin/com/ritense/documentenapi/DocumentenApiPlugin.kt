@@ -45,7 +45,10 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.resource.service.VirusScanService
+import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.temporaryresource.domain.StorageMetadataKeys
+import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.domain.Vertrouwelijkheid
@@ -57,6 +60,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.util.UriComponentsBuilder
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
@@ -77,6 +81,8 @@ class DocumentenApiPlugin(
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
+    private val virusScanService: VirusScanService,
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -313,32 +319,54 @@ class DocumentenApiPlugin(
         informatieobjecttype: String? = null,
         storedDocumentKey: String,
     ): CreateDocumentResult {
+        // Optional virus scan of the incoming content stream. Since InputStream is one-shot, buffer to bytes
+        // when scanning and rebuild an InputStream for the actual upload.
+        val (contentInputStream, augmentedMetadata) = virusScanService.takeIf { virusScanEnabledForDocumentenApiPlugin }?.let { svc ->
+            val existingScanFlag = metadata[MetadataType.VIRUS_SCANNED_RESULT.key]?.toString()
+            if (existingScanFlag == VirusScanStatus.OK.toString()) {
+                // Already scanned and marked OK in metadata; skip scanning
+                inhoudAsInputStream to metadata
+            } else {
+                val bytes = inhoudAsInputStream.readBytes()
+                val scanResult = svc.scan(bytes)
+                if (scanResult.status == VirusScanStatus.VIRUS_FOUND) {
+                    throw VirusDetectedException(
+                        "virus detected, found viruses: " +
+                            scanResult.foundViruses.entries.joinToString("; ") { (k, v) -> "$k=${v.joinToString(",")}" }
+                    )
+                }
+                ByteArrayInputStream(bytes) to (metadata + mapOf(
+                    MetadataType.VIRUS_SCANNED_RESULT.key to scanResult.status.toString()
+                ))
+            }
+        } ?: (inhoudAsInputStream to metadata)
+
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
-                metadata,
+                augmentedMetadata,
                 VERTROUWELIJKHEIDAANDUIDING_FIELD
             )
         )
-        val trefwoorden = (getUploadField(metadata, TREFWOORDEN_FIELD) as String?)
+        val trefwoorden = (getUploadField(augmentedMetadata, TREFWOORDEN_FIELD) as String?)
             ?.split(',')
             ?.filter { it.isNotBlank() }
 
         val request = CreateDocumentRequest(
             bronorganisatie = bronorganisatie,
-            creatiedatum = getLocalDateFromMetaData(metadata, CREATIEDATUM_FIELD) ?: LocalDate.now(),
-            titel = titel ?: getUploadField(metadata, TITEL_FIELD)!!,
+            creatiedatum = getLocalDateFromMetaData(augmentedMetadata, CREATIEDATUM_FIELD) ?: LocalDate.now(),
+            titel = titel ?: getUploadField(augmentedMetadata, TITEL_FIELD)!!,
             vertrouwelijkheidaanduiding = vertrouwelijkheidaanduidingEnum,
-            auteur = getUploadField(metadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
-            status = status ?: getStatusFromMetaData(metadata),
-            taal = taal ?: getUploadField(metadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
-            bestandsnaam = bestandsnaam ?: getUploadField(metadata, BESTANDSNAAM_FIELD),
-            bestandsomvang = (metadata[MetadataType.FILE_SIZE.key] as String?)?.toLong(),
-            inhoud = inhoudAsInputStream,
-            beschrijving = beschrijving ?: getUploadField(metadata, BESCHRIJVING_FIELD),
-            ontvangstdatum = getLocalDateFromMetaData(metadata, ONTVANGSTDATUM_FIELD),
-            verzenddatum = getLocalDateFromMetaData(metadata, VERZENDDATUM_FIELD),
-            informatieobjecttype = informatieobjecttype ?: getUploadField(metadata, INFORMATIEOBJECTTYPE_FIELD),
-            formaat = getUploadField(metadata, FORMAAT_FIELD),
+            auteur = getUploadField(augmentedMetadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
+            status = status ?: getStatusFromMetaData(augmentedMetadata),
+            taal = taal ?: getUploadField(augmentedMetadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
+            bestandsnaam = bestandsnaam ?: getUploadField(augmentedMetadata, BESTANDSNAAM_FIELD),
+            bestandsomvang = (augmentedMetadata[MetadataType.FILE_SIZE.key] as String?)?.toLong(),
+            inhoud = contentInputStream,
+            beschrijving = beschrijving ?: getUploadField(augmentedMetadata, BESCHRIJVING_FIELD),
+            ontvangstdatum = getLocalDateFromMetaData(augmentedMetadata, ONTVANGSTDATUM_FIELD),
+            verzenddatum = getLocalDateFromMetaData(augmentedMetadata, VERZENDDATUM_FIELD),
+            informatieobjecttype = informatieobjecttype ?: getUploadField(augmentedMetadata, INFORMATIEOBJECTTYPE_FIELD),
+            formaat = getUploadField(augmentedMetadata, FORMAAT_FIELD),
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }

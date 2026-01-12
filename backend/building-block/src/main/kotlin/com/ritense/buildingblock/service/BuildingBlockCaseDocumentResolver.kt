@@ -17,19 +17,19 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionSolutionModuleType
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
-import com.ritense.valtimo.contract.document.SolutionModuleCaseDocumentResolver
+import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver
 import java.util.UUID
 
 @AllOpen
 class BuildingBlockCaseDocumentResolver(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository
-) : SolutionModuleCaseDocumentResolver {
+) : BlueprintCaseDocumentResolver {
 
-    override fun supports(solutionModuleType: String): Boolean {
-        return JsonSchemaDocumentDefinitionSolutionModuleType.BUILDING_BLOCK.name == solutionModuleType
+    override fun supports(blueprintType: String): Boolean {
+        return JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK.name == blueprintType
     }
 
     override fun resolveCaseDocumentId(documentId: UUID): UUID {

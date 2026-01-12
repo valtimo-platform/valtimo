@@ -39,6 +39,7 @@ class FieldsWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
+    isCompact: Boolean? = null,
     actions: List<WidgetAction> = emptyList(),
     displayConditions: List<Condition<*>> = emptyList(),
 
@@ -46,7 +47,7 @@ class FieldsWidget(
     @Column(name = "properties", nullable = false)
     val properties: FieldsWidgetProperties
 ) : Widget(
-    id, key, title, icon,order, width, highContrast, actions, displayConditions
+    id, key, title, icon,order, width, highContrast, isCompact, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
@@ -56,6 +57,7 @@ class FieldsWidget(
         order: Int,
         width: Int,
         highContrast: Boolean,
+        isCompact: Boolean?,
         actions: List<WidgetAction>,
         displayConditions: List<Condition<*>>,
     ) = FieldsWidget(
@@ -66,6 +68,7 @@ class FieldsWidget(
         order = order,
         width = width,
         highContrast = highContrast,
+        isCompact = isCompact,
         actions = actions,
         displayConditions = displayConditions,
         properties = properties,
@@ -77,6 +80,7 @@ class FieldsWidget(
         icon = this.icon,
         width = this.width,
         highContrast = this.highContrast,
+        isCompact = this.isCompact,
         actions = this.actions,
         displayConditions = this.displayConditions,
         properties = this.properties,

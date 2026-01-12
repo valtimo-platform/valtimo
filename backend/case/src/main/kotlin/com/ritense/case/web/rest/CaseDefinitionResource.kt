@@ -367,7 +367,8 @@ class CaseDefinitionResource(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         return try {
-            importService.import(file.inputStream, caseDefinitionRepository.findAll().map { it.id })
+            val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
+            importService.import(file.inputStream, skipImportOfCaseDefinitions)
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok().build()
         } catch (exception: ImportServiceException) {

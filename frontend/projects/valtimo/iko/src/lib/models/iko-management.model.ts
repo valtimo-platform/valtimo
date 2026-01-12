@@ -15,39 +15,38 @@
  */
 
 import {Type} from '@angular/core';
-import {ViewType} from '@valtimo/components';
 
-interface IkoDataAggregateCreateRequest {
+interface IkoViewCreateRequest {
   ikoRepositoryConfigKey: string;
   title: string;
   properties: Record<string, any | null>;
 }
 
-interface IkoDataAggregateUpdateRequest {
+interface IkoViewUpdateRequest {
   ikoRepositoryConfigKey: string;
   title: string;
   properties: Record<string, any | null>;
 }
 
-interface IkoDataAggregateListResponse {
+interface IkoViewListResponse {
   key: string;
   title: string;
 }
 
-interface IkoDataAggregateResponse {
+interface IkoViewResponse {
   key: string;
   title: string;
   properties: Record<string, any | null>;
 }
 
-interface IkoDataRequestCreateRequest {
+interface IkoSearchActionCreateRequest {
   title: string;
   properties: Record<string, any | null>;
 }
 
-interface IkoDataRequestUpdateRequest {
+interface IkoSearchActionUpdateRequest {
   key: string;
-  ikoDataAggregateKey: string;
+  ikoViewKey: string;
   title: string;
   properties: Record<string, any | null>;
 }
@@ -60,9 +59,9 @@ interface IkoManagementParams {
   widgetTabKey?: string;
 }
 
-interface IkoDataRequestResponse {
+interface IkoSearchActionResponse {
   key: string;
-  ikoDataAggregateKey: string;
+  ikoViewKey: string;
   title: string;
   properties: Record<string, any | null>;
 }
@@ -158,8 +157,8 @@ interface IkoSearchField {
   title: string;
   fieldType: string;
   order: number;
-  ikoDataAggregateKey: string;
-  ikoDataRequestKey: string;
+  ikoViewKey: string;
+  ikoSearchActionKey: string;
   dropdownList?: [string, string][];
   required?: boolean;
   visible?: boolean;
@@ -179,13 +178,13 @@ enum IkoTabType {
 }
 
 export {
-  IkoDataAggregateCreateRequest,
-  IkoDataAggregateListResponse,
-  IkoDataAggregateResponse,
-  IkoDataAggregateUpdateRequest,
-  IkoDataRequestCreateRequest,
-  IkoDataRequestResponse,
-  IkoDataRequestUpdateRequest,
+  IkoViewCreateRequest,
+  IkoViewListResponse,
+  IkoViewResponse,
+  IkoViewUpdateRequest,
+  IkoSearchActionCreateRequest,
+  IkoSearchActionResponse,
+  IkoSearchActionUpdateRequest,
   IkoManagementParams,
   IkoManagementTab,
   IkoManagementTabType,

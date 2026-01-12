@@ -25,7 +25,8 @@ enum class DataType(@JsonValue val key: String) {
     DATE("date"),
     DATETIME("datetime"),
     TIME("time"),
-    BOOLEAN("boolean");
+    BOOLEAN("boolean"),
+    BSN("bsn");
 
     companion object {
         /**

@@ -46,11 +46,13 @@ import {
 import {
   ButtonModule,
   DropdownModule,
+  IconModule,
   IconService,
   InputModule,
   LayerModule,
   ListItem,
   ModalModule,
+  ToggleModule,
 } from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -61,13 +63,11 @@ import {
   of,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 import {
   IkoSearchField,
   SearchDropdownDataProvider,
   SearchDropdownValue,
-  SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
@@ -84,6 +84,7 @@ import {ModalMode} from '@valtimo/shared';
     ButtonModule,
     CommonModule,
     DropdownModule,
+    IconModule,
     InputLabelModule,
     InputModule,
     LayerModule,
@@ -92,6 +93,7 @@ import {ModalMode} from '@valtimo/shared';
     TranslateModule,
     ValtimoCdsModalDirective,
     AutoKeyInputComponent,
+    ToggleModule,
   ],
 })
 export class IkoManagementSearchFieldModalComponent implements OnInit {
@@ -133,6 +135,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
     fieldType: this.fb.control<ListItem | null>(null, Validators.required),
     dropdownDataProvider: this.fb.control<ListItem | null>(null),
     dropdownValues: this.fb.array<{key: string; value: string}>([]),
+    required: this.fb.control<boolean>(false),
   });
 
   public get dataType(): AbstractControl<ListItem | null> | null {
@@ -254,6 +257,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
           content: this.translateService.instant('searchFields.time'),
           id: SearchFieldDataType.TIME,
         },
+        {
+          content: this.translateService.instant('searchFields.bsn'),
+          id: SearchFieldDataType.BSN,
+        },
       ].map(item => ({...item, selected: item.id === dataTypeValue?.id}))
     )
   );
@@ -304,12 +311,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
               'searchFieldsOverview.dropdownDatabaseDataProvider'
             ),
             id: SearchDropdownDataProvider.DATABASE,
-          },
-          {
-            content: this.translateService.instant(
-              'searchFieldsOverview.dropdownJsonFileDataProvider'
-            ),
-            id: SearchDropdownDataProvider.JSON,
           },
         ].map(item => ({...item, selected: item.id === dataProviderValue?.id}))
       )
@@ -390,6 +391,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
           {}
         ),
       }),
+      required: groupValue.required ?? false,
     });
 
     this.resetForm();
@@ -429,6 +431,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
             selected: true,
           },
       dropdownValues: [],
+      required: !!prefillData.required,
     });
 
     if (prefillData.dropdownDataProvider && prefillData.dropdownValues)
@@ -499,6 +502,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
         this.dropdownValuesArray.removeAt(0);
       }
       this.formGroup.reset();
+      this.formGroup.patchValue({required: false});
       this.formGroup.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }

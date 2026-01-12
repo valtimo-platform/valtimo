@@ -18,6 +18,7 @@ package com.ritense.case_.widget.collection
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.CaseWidgetMapper
+import java.util.Collections.emptyList
 
 class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, CollectionCaseWidgetDto> {
     override fun supportedEntityType() = CollectionCaseWidget::class.java
@@ -32,6 +33,7 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
         actions = entity.actions,
         displayConditions = entity.displayConditions,
         highContrast = entity.highContrast,
+        isCompact = entity.isCompact,
         properties = entity.properties
     )
 
@@ -41,6 +43,7 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
         icon = dto.icon,
         width = dto.width,
         highContrast = dto.highContrast,
+        isCompact = dto.isCompact,
         actions = dto.actions ?: emptyList(),
         displayConditions = dto.displayConditions ?: emptyList(),
         properties = dto.properties,

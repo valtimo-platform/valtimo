@@ -56,6 +56,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import java.util.Optional
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -476,6 +477,29 @@ class CaseDefinitionServiceTest : BaseTest() {
         whenever(spec.and(any())).thenReturn(spec)
 
         service.deleteCaseDefinition(caseDefinitionId)
+    }
+
+    @Test
+    fun `should return case definitions sorted by name`() {
+        val spec = mock<AuthorizationSpecification<CaseDefinition>>()
+        whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
+            .thenReturn(spec)
+        whenever(spec.and(any())).thenReturn(spec)
+
+        val caseDefinitions = listOf(
+            caseDefinition(name = "Alpha"),
+            caseDefinition(name = "Mike"),
+            caseDefinition(name = "Zulu")
+        )
+        whenever(caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"))))
+            .thenReturn(caseDefinitions)
+
+        val result = service.getCaseDefinitions()
+
+        // since the result is mocked, this does not actually test the sorting (we rely on spring for that),
+        // but it does verify that nothing else changes the order.
+        assertEquals(listOf("Alpha", "Mike", "Zulu"), result.map { it.name })
+        verify(caseDefinitionRepository).findAll(spec, Sort.by(Sort.Order.asc("name")))
     }
 
     private fun getListColumnDtoToFirstName(displayType: DisplayType): CaseListColumnDto {

@@ -42,6 +42,21 @@
     >
     </v-input>
 
+    <cds-date-picker
+      [attr.data-carbon-theme]="theme$ | async"
+      [label]="'logging.search.afterTimestamp' | translate"
+      placeholder="DD-MM-YYYY"
+      [dateFormat]="'d-m-Y'"
+      [value]="[selectedDate]"
+      (valueChange)="onDateSelected($event)"
+    ></cds-date-picker>
+
+    <cds-timepicker
+      [attr.data-carbon-theme]="theme$ | async"
+      [value]="selectedTime"
+      (valueChange)="onTimeSelected($event)"
+    ></cds-timepicker>
+
     <v-radio
       name="inputDatumStatusGezetToggle"
       [disabled]="obs.disabled"

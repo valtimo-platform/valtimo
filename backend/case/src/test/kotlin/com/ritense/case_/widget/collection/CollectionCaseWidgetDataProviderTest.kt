@@ -263,6 +263,7 @@ class CollectionCaseWidgetDataProviderTest(
         order = 0,
         width = 1,
         highContrast = true,
+        isCompact = true,
         actions = emptyList(),
         displayConditions = emptyList(),
         properties = CollectionWidgetProperties(

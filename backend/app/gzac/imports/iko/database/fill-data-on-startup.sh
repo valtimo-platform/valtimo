@@ -11,7 +11,7 @@ do
             for file in /docker-entrypoint-initdb.d/database/*.sql
             do
                 echo "Running $file"
-                psql -U iko iko -f $file
+                psql -U iko -f $file
             done
             break
         else
