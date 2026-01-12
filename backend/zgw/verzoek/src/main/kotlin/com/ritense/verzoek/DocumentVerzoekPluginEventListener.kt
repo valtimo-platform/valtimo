@@ -80,11 +80,11 @@ class DocumentVerzoekPluginEventListener(
             return
         }
         // Find the matching CaseDefinition for the incoming zaakType
-        plugin.documentVerzoekProperties.first {
+        plugin.documentVerzoekProperties.firstOrNull() {
             matchingCaseDefinition(it, zaakType)
-        }.let {
+        }?.let {
             handleNewDocumentEvent(event, plugin)
-        }
+        }?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No matching CaseDefinition found for zaakType '$zaakType'" }
     }
 
     private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
@@ -113,7 +113,7 @@ class DocumentVerzoekPluginEventListener(
                             informatieObject
                         )
                     }
-            }
+            }?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
         }
     }
 
