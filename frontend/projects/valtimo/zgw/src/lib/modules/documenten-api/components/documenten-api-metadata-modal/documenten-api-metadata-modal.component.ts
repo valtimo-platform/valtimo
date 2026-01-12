@@ -38,12 +38,12 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute } from '@angular/router';
-import { DocumentService, DocumentType as ZgwDocumentType } from '@valtimo/document';
-import { KeycloakService } from 'keycloak-angular';
-import { tap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {ActivatedRoute} from '@angular/router';
+import {DocumentService, DocumentType as ZgwDocumentType} from '@valtimo/document';
+import {KeycloakService} from 'keycloak-angular';
+import {tap} from 'rxjs/operators';
+import {CommonModule} from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
@@ -308,19 +308,19 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     value: AdditionalDocumentDate;
     translationKey: string;
   }> = [
-      {
-        value: 'neither',
-        translationKey: 'document.noAdditionalDate',
-      },
-      {
-        value: 'sent',
-        translationKey: 'document.sendDate',
-      },
-      {
-        value: 'received',
-        translationKey: 'document.receiptDate',
-      },
-    ];
+    {
+      value: 'neither',
+      translationKey: 'document.noAdditionalDate',
+    },
+    {
+      value: 'sent',
+      translationKey: 'document.sendDate',
+    },
+    {
+      value: 'received',
+      translationKey: 'document.receiptDate',
+    },
+  ];
   public readonly clearStatusSelection$ = new Subject<null>();
   public readonly additionalDocumentDate$ = new BehaviorSubject<AdditionalDocumentDate>('neither');
   public readonly STATUSES: Array<DocumentStatus> = [
@@ -414,15 +414,19 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
     switchMap(([documentId, caseDefinitionKey, defaultValue]) => {
       if (documentId) {
-        return this.documentService.getDocumentTypesForDocument(documentId).pipe(
-          map(types => [types, defaultValue])
-        );
+        return this.documentService
+          .getDocumentTypesForDocument(documentId)
+          .pipe(map(types => [types, defaultValue]));
       }
       if (caseDefinitionKey) {
         return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
-          switchMap(settings => settings.caseDefinitionVersionTag
-            ? this.documentService.getDocumentTypesForCase(caseDefinitionKey, settings.caseDefinitionVersionTag)
-            : of([])
+          switchMap(settings =>
+            settings.caseDefinitionVersionTag
+              ? this.documentService.getDocumentTypesForCase(
+                  caseDefinitionKey,
+                  settings.caseDefinitionVersionTag
+                )
+              : of([])
           ),
           map(types => [types, defaultValue])
         );
