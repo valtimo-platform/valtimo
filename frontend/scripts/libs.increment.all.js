@@ -31,7 +31,7 @@ fs.readdirSync(libDir).forEach(dir => {
 
 updateGradleProperties();
 
-const distDir = './dist/valtimo';
+const distDir = './node_modules/@valtimo';
 fs.readdirSync(distDir).forEach(dir => {
   let cwd = process.cwd();
   process.chdir(path.resolve(`${distDir}/${dir}`));
