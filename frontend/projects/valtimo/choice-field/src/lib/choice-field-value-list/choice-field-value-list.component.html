@@ -30,9 +30,10 @@
         [fields]="fields"
         [isSearchable]="true"
         (rowClicked)="rowClick($event)"
-        [pagination]="pagination"
+        [pagination]="$pagination()"
         paginationIdentifier="choiceFieldValueList"
         (paginationClicked)="paginationClicked($event)"
+        (paginationSet)="paginationSet($event)"
         [header]="true"
       >
         <div header>
