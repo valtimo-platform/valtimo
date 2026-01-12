@@ -55,10 +55,10 @@ class LogDbReadyFilterTest {
         val driver = FakeDriver { fakeConnection() }
         DriverManager.registerDriver(driver)
         try {
-            val context = LoggerContext().apply {
-                putProperty("LOG_DB_URL", FAKE_URL)
+            val filter = LogDbReadyFilter().apply {
+                this.context = LoggerContext()
+                this.jdbcUrl = FAKE_URL
             }
-            val filter = LogDbReadyFilter().apply { this.context = context }
 
             val reply = filter.decide(null)
 
@@ -72,10 +72,13 @@ class LogDbReadyFilterTest {
     @Test
     fun `decide returns deny when driver class is missing`() {
         val context = LoggerContext().apply {
-            putProperty("LOG_DB_URL", "jdbc:missing:db")
-            putProperty("LOG_DB_DRIVER", "com.ritense.logging.MissingDriver")
+            putProperty("unused", "unused")
         }
-        val filter = LogDbReadyFilter().apply { this.context = context }
+        val filter = LogDbReadyFilter().apply {
+            this.context = context
+            this.jdbcUrl = "jdbc:missing:db"
+            this.driverClassName = "com.ritense.logging.MissingDriver"
+        }
 
         val reply = filter.decide(null)
 

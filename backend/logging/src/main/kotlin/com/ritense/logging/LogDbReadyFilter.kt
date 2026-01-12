@@ -27,6 +27,11 @@ import java.util.concurrent.atomic.AtomicLong
 class LogDbReadyFilter : Filter<ILoggingEvent>() {
     private val lastCheck = AtomicLong(0)
 
+    var jdbcUrl: String? = null
+    var username: String? = null
+    var password: String? = null
+    var driverClassName: String? = null
+
     override fun decide(event: ILoggingEvent?): FilterReply {
         if (ready.get()) {
             return FilterReply.NEUTRAL
@@ -50,10 +55,10 @@ class LogDbReadyFilter : Filter<ILoggingEvent>() {
     }
 
     private fun tableExists(): Boolean {
-        val url = context.getProperty("LOG_DB_URL") ?: return false
-        val user = context.getProperty("LOG_DB_USER") ?: ""
-        val pass = context.getProperty("LOG_DB_PASS") ?: ""
-        val driver = context.getProperty("LOG_DB_DRIVER")
+        val url = jdbcUrl ?: return false
+        val user = username ?: ""
+        val pass = password ?: ""
+        val driver = driverClassName
 
         if (!driver.isNullOrBlank()) {
             try {
