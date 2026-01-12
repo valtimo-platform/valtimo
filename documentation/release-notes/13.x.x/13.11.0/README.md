@@ -14,11 +14,6 @@
   - The file extension will now always reflect the actual file type of the uploaded file even when we set the filename 
   programmatically from within the documenten API uploader component.
 
-* **Clarified Semver requirement for case definition versions**
-
-  - The creation modal for case definitions now explicitly states that the version must adhere to Semantic Versioning.
-
-
 ## Bugfixes
 
 * **Fixed pagination on choice field values page**
