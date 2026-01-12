@@ -51,10 +51,9 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public readonly $disableInput = signal<boolean>(true);
   public readonly $ikoTabDtos = signal<TabDto[]>([]);
   public readonly $usedKeys = computed(() =>
-    this.$ikoTabDtos().reduce(
-      (acc, curr) => [...acc, ...(curr.key === this.$selectedTab()?.key ? [] : [curr.key])],
-      [] as string[]
-    )
+    this.$ikoTabDtos()
+      .filter(tab => tab.key !== this.$selectedTab()?.key)
+      .map(tab => tab.key)
   );
   public readonly $loading = signal<boolean>(true);
   public readonly $selectedTab = signal<TabDto | null>(null);
@@ -234,15 +233,13 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   }
 
   private getTabPropertiesView(tab: TabDto): string | null {
-    if (!tab?.properties) return null;
-    return Object.keys(tab.properties).reduce((acc, curr) => {
-      const keyValuePairString = `${curr}: ${tab.properties?.[curr]}`;
-      if (!acc) {
-        return `${keyValuePairString}`;
-      }
+    if (!tab?.properties || Object.keys(tab.properties).length === 0) {
+      return null;
+    }
 
-      return `${acc}, ${keyValuePairString}`;
-    }, '');
+    return Object.entries(tab.properties)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ');
   }
 
   private disableInput(): void {
