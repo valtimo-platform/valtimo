@@ -17,162 +17,76 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
+import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
-import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
-import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
-import java.util.concurrent.Callable
 
+@Transactional
 class BuildingBlockCallActivityListenerIT @Autowired constructor(
-    private val listener: BuildingBlockCallActivityListener,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
-    private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,
+    private val processDocumentService: ProcessDocumentService,
+    private val processLinkRepository: ProcessLinkRepository,
     private val objectMapper: ObjectMapper,
+    private val repositoryService: RepositoryService,
+    private val runtimeService: RuntimeService,
 ) : BaseIntegrationTest() {
 
     @Test
     fun `should create building block document with resolved case data`() {
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
-            "test-bb",
-            "1.0.0"
-        )
-        buildingBlockDefinitionRepository.save(
-            BuildingBlockDefinition(
-                id = buildingBlockDefinitionId,
-                name = "Test Building Block",
-                description = "integration test block",
-                createdBy = "tester",
-                createdDate = LocalDateTime.now(),
-            )
-        )
-
-        val caseDefinitionId = CaseDefinitionId.of(
-            "test-case",
-            "1.0.0"
-        )
-        val caseDocumentDefinitionName = "test-case"
-        val caseSchema = """
-            {
-              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
-              "${'$'}id": "$caseDocumentDefinitionName.schema",
-              "type": "object",
-              "properties": {
-                "contact": {
-                  "type": "object",
-                  "properties": {
-                    "email": {"type": "string"},
-                    "age": {"type": "integer"}
-                  }
-                }
-              }
-            }
-        """.trimIndent()
-        documentDefinitionRepository.saveAndFlush(
-            JsonSchemaDocumentDefinition(
-                JsonSchemaDocumentDefinitionId.forCase(caseDocumentDefinitionName, caseDefinitionId),
-                JsonSchema.fromString(caseSchema)
-            )
-        )
-
-        val buildingBlockDocumentDefinitionName = "test-bb"
-        val buildingBlockSchema = """
-            {
-              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
-              "${'$'}id": "$buildingBlockDocumentDefinitionName.schema",
-              "type": "object",
-              "properties": {
-                "emailCopy": {"type": "string"},
-                "ageCopy": {"type": "integer"}
-              }
-            }
-        """.trimIndent()
-        documentDefinitionRepository.saveAndFlush(
-            JsonSchemaDocumentDefinition(
-                JsonSchemaDocumentDefinitionId.forBuildingBlock(
-                    buildingBlockDocumentDefinitionName,
-                    buildingBlockDefinitionId
-                ),
-                JsonSchema.fromString(buildingBlockSchema)
-            )
-        )
+        val processDefinitionId = processDefinitionId()
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
 
         val caseContent = objectMapper.createObjectNode().apply {
             putObject("contact").apply {
-                put("email", "henk@example.com")
-                put("age", 84)
+                put("firstName", "Ada")
+                put("lastName", "Lovelace")
             }
-        }
-
-        val caseDocumentId = runWithoutAuthorization {
-            val result = documentService.createDocument(
-                NewDocumentRequest(
-                    caseDocumentDefinitionName,
-                    caseDefinitionId.key,
-                    caseDefinitionId.versionTag.toString(),
-                    caseContent
-                )
-            )
-            result.resultingDocument()
-                .orElseThrow { IllegalStateException("Case document not created") }
-                .id()
-                .getId()
         }
 
         val inputMappings = listOf(
             BuildingBlockInputMapping(
-                source = "doc:/contact/email",
-                target = "emailCopy"
+                source = "doc:/contact/firstName",
+                target = "voornaam"
             ),
             BuildingBlockInputMapping(
-                source = "doc:/contact/age",
-                target = "ageCopy"
+                source = "doc:/contact/lastName",
+                target = "achternaam"
             ),
         )
-        val processLink = BuildingBlockProcessLink(
-            id = UUID.randomUUID(),
-            processDefinitionId = "case-process",
-            activityId = "callActivity",
-            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
-            buildingBlockDefinitionId = buildingBlockDefinitionId,
-            pluginConfigurationMappings = emptyMap(),
-            inputMappings = inputMappings
+        processLinkRepository.save(
+            BuildingBlockProcessLink(
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = CALL_ACTIVITY_ID,
+                activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                pluginConfigurationMappings = emptyMap(),
+                inputMappings = inputMappings
+            )
         )
-        whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(listOf(processLink))
 
-        val execution = mock<DelegateExecution> {
-            on { currentActivityId } doReturn "callActivity"
-            on { processDefinitionId } doReturn "case-process"
-            on { businessKey } doReturn caseDocumentId.toString()
-        }
-
-        AuthorizationContext.runWithoutAuthorization(Callable {
-            listener.onCallActivityStart(execution)
-        })
+        val caseDocumentId = startCase(caseContent)
 
         val instances = buildingBlockInstanceRepository.findAll()
         assertThat(instances).hasSize(1)
@@ -180,11 +94,100 @@ class BuildingBlockCallActivityListenerIT @Autowired constructor(
         assertThat(instance.caseDocumentId).isEqualTo(caseDocumentId)
         assertThat(instance.definition.id).isEqualTo(buildingBlockDefinitionId)
 
-        val buildingBlockDocument = AuthorizationContext.runWithoutAuthorization(Callable {
+        val buildingBlockDocument = runWithoutAuthorization {
             documentService.get(instance.documentId.toString())
-        }) as JsonSchemaDocument
+        } as JsonSchemaDocument
         val content = buildingBlockDocument.content().asJson()
-        assertThat(content.get("emailCopy").asText()).isEqualTo("henk@example.com")
-        assertThat(content.get("ageCopy").asInt()).isEqualTo(84)
+        assertThat(content.get("voornaam").asText()).isEqualTo("Ada")
+        assertThat(content.get("achternaam").asText()).isEqualTo("Lovelace")
+
+        runtimeService.correlateMessage("test-ready", instance.documentId.toString())
+    }
+
+    @Test
+    fun `should write output mappings to case document on call activity end`() {
+        val processDefinitionId = processDefinitionId()
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+        val caseContent = objectMapper.createObjectNode()
+
+        val outputMappings = listOf(
+            BuildingBlockOutputMapping(
+                source = "beslissingBezwaar",
+                target = "doc:/resultFromBb",
+                syncTiming = BuildingBlockSyncTiming.END
+            ),
+        )
+        processLinkRepository.save(
+            BuildingBlockProcessLink(
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = CALL_ACTIVITY_ID,
+                activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                pluginConfigurationMappings = emptyMap(),
+                inputMappings = emptyList(),
+                outputMappings = outputMappings
+            )
+        )
+
+        val caseDocumentId = startCase(caseContent)
+
+        val instances = buildingBlockInstanceRepository.findAll()
+        assertThat(instances).hasSize(1)
+        val instance = instances.first()
+
+        runWithoutAuthorization {
+            val buildingBlockDocument = documentService.get(instance.documentId.toString()) as JsonSchemaDocument
+            val updatedContent = buildingBlockDocument.content().asJson().deepCopy<ObjectNode>()
+            updatedContent.put("beslissingBezwaar", "approved")
+            documentService.modifyDocument(buildingBlockDocument, updatedContent)
+        }
+
+        runtimeService.correlateMessage("test-ready", instance.documentId.toString())
+
+        val updatedCaseDocument = runWithoutAuthorization {
+            documentService.get(caseDocumentId.toString())
+        } as JsonSchemaDocument
+        val content = updatedCaseDocument.content().asJson()
+        assertThat(content.get("resultFromBb").asText()).isEqualTo("approved")
+    }
+
+    private fun startCase(caseContent: ObjectNode): UUID {
+        val request = NewDocumentAndStartProcessRequest(
+            MAIN_PROCESS_KEY,
+            NewDocumentRequest(
+                CASE_DOCUMENT_DEFINITION_NAME,
+                CASE_DEFINITION_KEY,
+                CASE_DEFINITION_VERSION,
+                caseContent
+            )
+        )
+        val result = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(request)
+        }
+        return result.resultingDocument()
+            .orElseThrow { IllegalStateException("Case document not created") }
+            .id()
+            .getId()
+    }
+
+    private fun processDefinitionId(): String {
+        val definition = repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(MAIN_PROCESS_KEY)
+            .latestVersion()
+            .singleResult()
+            ?: throw IllegalStateException("Process definition '$MAIN_PROCESS_KEY' not deployed")
+        return definition.id
+    }
+
+    companion object {
+        private const val BUILDING_BLOCK_KEY = "bezwaar"
+        private const val BUILDING_BLOCK_VERSION = "1.0.0"
+        private const val CASE_DEFINITION_KEY = "bb-case"
+        private const val CASE_DEFINITION_VERSION = "1.0.0"
+        private const val CASE_DOCUMENT_DEFINITION_NAME = "bb-case"
+        private const val MAIN_PROCESS_KEY = "building-block-call-activity-main"
+        private const val SUB_PROCESS_KEY = "building-block-process"
+        private const val CALL_ACTIVITY_ID = "callActivity"
     }
 }
