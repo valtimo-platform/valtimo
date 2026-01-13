@@ -1339,6 +1339,7 @@
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
     "maxFileSize": "Maximale bestandsgrootte: ",
+    "acceptedFiles": "Geaccepteerde bestanden: ",
     "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
     "formJsonDocDef": "De formulier-definitie moet in het JSON-formaat zijn",
     "objecttypeDef": "De objecttype-definitie moet in JSON-formaat zjn",

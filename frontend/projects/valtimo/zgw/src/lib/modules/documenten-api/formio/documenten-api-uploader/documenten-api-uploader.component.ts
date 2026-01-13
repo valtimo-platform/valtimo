@@ -52,6 +52,8 @@ export class DocumentenApiUploaderComponent
   @Input() subtitle: string;
   @Input() maxFileSize: number;
   @Input() hideMaxFileSize: boolean;
+  @Input() acceptedFiles: string;
+  @Input() hideAcceptedFiles: boolean;
   @Input() camera: boolean;
 
   @Input() set documentTitle(defaultValue: string) {

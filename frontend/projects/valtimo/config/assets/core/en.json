@@ -1341,6 +1341,7 @@
   "dropzone": {
     "drop": "Choose a file or drag it here",
     "maxFileSize": "Maximum file size: ",
+    "acceptedFiles": "Accepted files: ",
     "jsonDocDef": "The case definition must be in the JSON format",
     "formJsonDocDef": "The form definition must be in the JSON format",
     "objecttypeDef": "The objecttype definition must be in JSON format",
