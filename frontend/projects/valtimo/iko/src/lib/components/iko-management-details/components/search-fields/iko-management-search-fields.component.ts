@@ -212,6 +212,8 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public editSearchField(field: IkoSearchField): void {
+    this.$modalMode.set('edit');
+
     if (!!field.dropdownDataProvider) {
       this.params$
         .pipe(
@@ -233,7 +235,6 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
 
       return;
     }
-    this.$modalMode.set('edit');
     this.prefillData$.next(field);
     this.fieldModalOpen$.next(true);
   }

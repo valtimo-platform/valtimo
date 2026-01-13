@@ -65,7 +65,6 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     TabsModule,
     LayerModule,
     AsyncPipe,
-    SelectModule,
     DatePickerModule,
     NgIf,
     NgClass,
@@ -75,6 +74,7 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
     InputLabelModule,
     InputModule,
     FormModule,
+    SelectModule,
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
@@ -168,7 +168,12 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
 
         if (value === null) continue;
 
-        if (typeof value === 'object' && value.start !== null && value.end !== null) {
+        if (
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          value.start !== null &&
+          value.end !== null
+        ) {
           queryParams[param.key] = JSON.stringify({
             rangeFrom: value.start,
             rangeTo: value.end,
@@ -207,6 +212,8 @@ export class IkoSearchComponent implements OnInit, OnDestroy {
   }
 
   public multipleValueChange(searchFieldKey: string, value: any, dataType: string): void {
+    this.formValues[searchFieldKey] = value;
+
     this.values$.pipe(take(1)).subscribe(values => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         const hasStart = value.start !== undefined && value.start !== '';
