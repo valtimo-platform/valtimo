@@ -50,7 +50,12 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
 
+    testImplementation(project(":building-block")) {
+        exclude(group: "com.ritense.valtimo", module: "plugin")
+    }
     testImplementation(project(":core"))
+    testImplementation(project(":case"))
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
