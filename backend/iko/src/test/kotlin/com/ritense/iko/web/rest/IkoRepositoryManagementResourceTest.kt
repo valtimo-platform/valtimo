@@ -16,7 +16,7 @@
 
 package com.ritense.iko.web.rest
 
-import com.ritense.iko.IkoServerRepository.Companion.PLUGIN_CONFIGURATION
+import com.ritense.iko.IkoServerRepository.Companion.IKO_SERVER_URL
 import com.ritense.iko.domain.IkoRepositoryConfig
 import com.ritense.iko.service.IkoRepositoryService
 import com.ritense.iko.web.rest.request.IkoRepositoryConfigCreateRequest
@@ -83,7 +83,7 @@ internal class IkoRepositoryManagementResourceTest {
         whenever(service.getIkoRepositoryConfigPropertyFields("iko")).thenReturn(
             listOf(
                 PropertyField(
-                    key = PLUGIN_CONFIGURATION,
+                    key = IKO_SERVER_URL,
                     type = PROPERTY_FIELD_TYPE_DROPDOWN,
                     dropdownList = listOf("1234" to "My Plugin")
                 )
