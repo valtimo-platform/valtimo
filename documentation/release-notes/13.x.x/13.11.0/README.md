@@ -20,4 +20,6 @@
 
   - Pagination now correctly updates and allows switching pages on the choice field values page (/choice-fields/field/{id}).
 
-* Prevent an error when retrieving users from Keycloak with version 26.3.0 or newer.
+* **Prevent an error when retrieving users from Keycloak with version 26.3.0 or newer.**
+* **Fixed document type dropdown of the Documenten API upload field in start forms**
+    - The document type dropdown in the Documenten API metadata modal is now correctly populated when uploading documents in start forms by using the case context as a fallback.
