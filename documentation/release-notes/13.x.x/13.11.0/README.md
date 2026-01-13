@@ -14,6 +14,9 @@
   - The file extension will now always reflect the actual file type of the uploaded file even when we set the filename 
   programmatically from within the documenten API uploader component.
 
+* **Lazy loading for case widgets**
+  - The case widgets are now loaded lazily to improve the performance of the case widget page.
+
 ## Bugfixes
 
 * **Fixed pagination on choice field values page**
