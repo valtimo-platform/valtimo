@@ -1,5 +1,5 @@
 name: "Update PR test env comment"
-run-name: "Update PR test env comment (${{ github.event.client_payload.test_env_name }}: ${{github.event.client_payload.state}})"
+run-name: "Update PR test env comment (${{ github.event.client_payload.data.test_env_name }}: ${{github.event.client_payload.state}})"
 
 on:
   repository_dispatch:
@@ -39,29 +39,30 @@ jobs:
         run: |
           set -euo pipefail
           payload=${{env.PAYLOAD_FILE}}
-          comment_id=$(jq -r '.test_env_comment_id' "$payload")
+          comment_id=$(jq -r '.data.test_env_comment_id' "$payload")
           state=$(jq -r '.state' "$payload")
           template_dir=".github/test_env_comments"
           template_file="${template_dir}/${state}.md"
 
-          export TEST_ENV_NAME=$(jq -r '.test_env_name' "$payload")
-          export COMMIT_SHA=$(jq -r '.commit_sha' "$payload")
-          export FRONTEND_CONTENTS_SHA=$(jq -r '.frontend_contents_sha' "$payload")
-          export BACKEND_CONTENTS_SHA=$(jq -r '.backend_contents_sha' "$payload")
+          export TEST_ENV_NAME=$(jq -r '.data.test_env_name' "$payload")
+          export COMMIT_SHA=$(jq -r '.data.commit_sha' "$payload")
+          export FRONTEND_CONTENTS_SHA=$(jq -r '.data.frontend_contents_sha' "$payload")
+          export BACKEND_CONTENTS_SHA=$(jq -r '.data.backend_contents_sha' "$payload")
 
           case "$state" in
             waiting_for_images)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
               ;;
             test_env_started|test_env_is_running|test_env_is_crash_looping)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
-              export TEST_ENV_URL=$(jq -r '.test_env_url' "$payload")
-              export METRICS_URL=$(jq -r '.grafana_backend_pod_metrics_url' "$payload")
-              export LOGS_URL=$(jq -r '.grafana_backend_pod_logs_url' "$payload")
+              export FRONTEND_IMAGE_TAG=$(jq -r '.data.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.data.backend_image_tag' "$payload")
+              export TEST_ENV_URL=$(jq -r '.data.test_env_url' "$payload")
+              export METRICS_URL=$(jq -r '.data.grafana_backend_pod_metrics_url' "$payload")
+              export LOGS_URL=$(jq -r '.data.grafana_backend_pod_logs_url' "$payload")
               ;;
             test_env_cannot_start)
-              export IMAGE_TAG=$(jq -r '.test_env_image_tag' "$payload")
-              export ERROR_MESSAGE=$(jq -r '.error_message' "$payload")
+              export FRONTEND_IMAGE_TAG=$(jq -r '.data.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.data.backend_image_tag' "$payload")
+              export ERROR_MESSAGE=$(jq -r '.data.error_message' "$payload")
               ;;
             *)
               echo "Unknown state: $state" >&2
