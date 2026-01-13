@@ -187,7 +187,7 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
         when(document.definitionId()).thenReturn(mock());
 
         // Mock process document instance repository
-        when(processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId))
+        when(processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentIdIncludingBuildingBlocks(documentId.getId()))
                 .thenReturn(List.of(processDocumentInstance));
         when(processDocumentInstance.getId()).thenReturn(processDocumentInstanceId);
         when(processDocumentInstance.processName()).thenReturn("Test Process");

@@ -45,6 +45,10 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
+    testImplementation(project(":building-block")) {
+        exclude(group: "com.ritense.valtimo", module: "plugin-valtimo")
+    }
+
     testImplementation project(":test-utils-common")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
