@@ -34,14 +34,14 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":contract")
+    implementation project(":backend:contract")
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "io.github.oshai:kotlin-logging:$kotlinLoggingVersion"
 
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
 

@@ -162,11 +162,6 @@ allprojects {
 
     group = projectGroup
     version = projectVersion
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
 }
 
 apply from: "gradle/deployment.gradle"
@@ -190,7 +185,7 @@ subprojects { subproject ->
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
 
-        apply from: "$rootProject.projectDir/gradle/test.gradle"
+        apply from: "${rootProject.projectDir}/backend/gradle/test.gradle"
 
         tasks.register("allDeps", DependencyReportTask) {}
         tasks.register("allDepInsight", DependencyInsightReportTask) {
@@ -231,7 +226,7 @@ subprojects { subproject ->
 
         checkstyle {
             //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
-            config project.resources.text.fromFile(rootProject.file("ritense_valtimo_only_checks.xml"))
+            config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false
             showViolations = true
         }
@@ -253,7 +248,7 @@ subprojects { subproject ->
         }
     }
     if(project.name != "app" && project.name != "gradle" && project.name != "dependencies") {
-        apply from: "$rootProject.projectDir/gradle/publishing-module.gradle"
+        apply from: "${rootProject.projectDir}/backend/gradle/publishing-module.gradle"
     }
 }
 
