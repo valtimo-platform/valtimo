@@ -61,7 +61,10 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     fun `should prefill form with resultaat data from the Zaken API`() {
         runWithoutAuthorization {
             val documentId = documentService.createDocument(
-                NewDocumentRequest("profile", objectMapper.createObjectNode())
+                NewDocumentRequest(
+                    "profile",
+                    objectMapper.createObjectNode()
+                )
             ).resultingDocument().get().id.id
             val formDefinition = formDefinitionRepository.findByName("form-with-zaakresultaat-fields").get()
             val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
@@ -84,9 +87,9 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
             @Throws(InterruptedException::class)
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val response = when (request.requestLine) {
-                    "GET /zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
-                    "GET /zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9 HTTP/1.1" -> getZaakResultaatRequest()
-                    "GET /catalogi/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381 HTTP/1.1" -> getResultaatTypeRequest()
+                    "GET $ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
+                    "GET $ZAKEN_API_PATH/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9 HTTP/1.1" -> getZaakResultaatRequest()
+                    "GET $CATALOGI_API_PATH/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381 HTTP/1.1" -> getResultaatTypeRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -97,13 +100,13 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getZaakRequest(): MockResponse {
         val body = """
             {
-                "url": "http://localhost:56273/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+                "url": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "uuid": "a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "identificatie": "ZK2023-00001",
                 "bronorganisatie": "104978119",
                 "omschrijving": "Test",
                 "toelichting": "",
-                "zaaktype": "http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002",
+                "zaaktype": "${CATALOGI_API_URL}/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002",
                 "registratiedatum": "2023-03-22",
                 "verantwoordelijkeOrganisatie": "104978119",
                 "startdatum": "2023-03-22",
@@ -129,14 +132,14 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
                 "relevanteAndereZaken": [],
                 "eigenschappen": [],
                 "rollen": [],
-                "status": "http://localhost:56273/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
+                "status": "${ZAKEN_API_URL}/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
                 "zaakinformatieobjecten": [],
                 "zaakobjecten": [],
                 "kenmerken": [],
                 "archiefnominatie": "blijvend_bewaren",
                 "archiefstatus": "nog_te_archiveren",
                 "archiefactiedatum": null,
-                "resultaat": "http://localhost:56273/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
+                "resultaat": "${ZAKEN_API_URL}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
                 "opdrachtgevendeOrganisatie": "",
                 "processobjectaard": "",
                 "resultaattoelichting": "",
@@ -149,10 +152,10 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getZaakResultaatRequest(): MockResponse {
         val body = """
         {
-            "url": "http://localhost:56273/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
+            "url": "${ZAKEN_API_URL}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
             "uuid": "2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
-            "zaak": "http://localhost:56273/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
-            "resultaattype": "http://localhost:56273/catalogi/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "zaak": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+            "resultaattype": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
             "toelichting": "Toelichting"
         }
         """.trimIndent()
@@ -162,14 +165,20 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getResultaatTypeRequest(): MockResponse {
         val body = """
         {
-            "url": "http://localhost:56273/catalogi/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "url": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
             "omschrijving": "Toegekend",
-            "resultaattypeomschrijving": "http://localhost:56273/catalogi/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
-            "zaaktype": "http://localhost:56273/catalogi/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
+            "resultaattypeomschrijving": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "zaaktype": "${CATALOGI_API_URL}/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
             "selectielijstklasse": ""
         }
         """.trimIndent()
         return mockResponse(body)
     }
 
+    companion object {
+        private const val CATALOGI_API_PATH = "/catalogi/api/v1"
+        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
+        private const val ZAKEN_API_PATH = "/zaken/api/v1"
+        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+    }
 }
