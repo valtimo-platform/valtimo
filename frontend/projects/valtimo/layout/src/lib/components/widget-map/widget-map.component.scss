@@ -48,5 +48,19 @@
       flex: 1;
     }
   }
+
+  &__skeleton {
+    width: 100%;
+
+    cds-skeleton-placeholder {
+      height: 296px;
+      width: 100%;
+
+      .cds--skeleton__placeholder {
+        height: 296px;
+        width: 100%;
+      }
+    }
+  }
 }
 
