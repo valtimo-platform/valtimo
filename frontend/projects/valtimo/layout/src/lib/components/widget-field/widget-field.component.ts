@@ -36,7 +36,7 @@ import {
   ViewContentService,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, SkeletonModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
@@ -59,6 +59,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
     LayerModule,
+    SkeletonModule,
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
@@ -89,7 +90,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   public readonly widgetPropertyValue$: Observable<
     {
       title: string;
-      value: string;
+      value: string | null;
       ellipsisCharacterLimit: number | null;
       hideWhenEmpty: boolean | false;
       isRawValue: boolean | false;
@@ -100,19 +101,23 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
         column.reduce(
           (columnFields, property) => [
             ...columnFields,
-            ...(widgetData?.hasOwnProperty(property.key)
+            ...(widgetData === null || widgetData?.hasOwnProperty(property.key)
               ? [
                   {
                     title: property.title,
                     ellipsisCharacterLimit:
                       (property.displayProperties as WidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
-                    hideWhenEmpty:
-                      (property.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false,
-                    value: this.viewContentService.get(widgetData[property.key], {
-                      ...property.displayProperties,
-                      viewType: property.displayProperties?.type ?? ViewType.TEXT,
-                    }),
+                    hideWhenEmpty: widgetData
+                      ? ((property.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ??
+                        false)
+                      : false,
+                    value: widgetData
+                      ? this.viewContentService.get(widgetData[property.key], {
+                          ...property.displayProperties,
+                          viewType: property.displayProperties?.type ?? ViewType.TEXT,
+                        })
+                      : null,
                     isRawValue: this.viewContentService.isRawValue({
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,

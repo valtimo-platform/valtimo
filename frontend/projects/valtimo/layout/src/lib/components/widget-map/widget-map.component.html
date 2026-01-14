@@ -33,13 +33,21 @@
     ></valtimo-widget-action-button>
   </section>
 
+  <div
+    class="widget-map__render"
+    #widgetMap
+    [hidden]="obs?.isEmptyWidgetData || obs.widgetData === null"
+  ></div>
+
   @if (obs?.isEmptyWidgetData) {
     <valtimo-no-results
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
-  } @else {
-    <div class="widget-map__render" #widgetMap></div>
+  } @else if (obs.widgetData === null) {
+    <div class="widget-map__skeleton">
+      <cds-skeleton-placeholder></cds-skeleton-placeholder>
+    </div>
   }
 </ng-container>

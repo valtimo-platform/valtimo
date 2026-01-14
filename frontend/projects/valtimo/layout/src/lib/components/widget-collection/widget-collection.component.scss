@@ -21,6 +21,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+
+    cds-skeleton-text {
+      margin: 16px 0 0 0;
+      display: block;
+    }
   }
 
   &__header {
@@ -71,6 +76,10 @@
       line-height: 22px;
       font-style: italic;
       width: 100%;
+
+      cds-skeleton-text {
+        display: block;
+      }
     }
 
     &-content {
