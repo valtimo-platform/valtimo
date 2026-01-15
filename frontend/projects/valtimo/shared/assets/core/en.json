@@ -1348,8 +1348,6 @@
     "clearAll": "Clear all",
     "clear": "Clear",
     "filters": "Filters",
-    "from": "From",
-    "to": "To",
     "show": "Show",
     "display": "Display",
     "items": "items",
@@ -1980,9 +1978,6 @@
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {
     "noData": "No data found",
-    "filter": {
-      "multiPlaceholder": "Comma separated values"
-    },
     "emptyFields": "Nothing here",
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",

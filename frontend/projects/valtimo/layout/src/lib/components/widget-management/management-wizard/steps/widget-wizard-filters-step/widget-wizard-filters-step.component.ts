@@ -227,15 +227,13 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   }
 
   private getDataTypeControlValue(dataType?: string): ListItem {
-    const normalized = (dataType ?? 'text').toLowerCase();
-    return this.getDataTypeItems(normalized)[0];
+    return this.getDataTypeItems(dataType)[0];
   }
 
   private getFieldTypeControlValue(fieldType?: string): ListItem | null {
     if (!fieldType) return null;
-    const normalized = fieldType?.toLowerCase();
 
-    return this.getFieldTypeItems(normalized ?? '').find(item => item.id === normalized) ?? null;
+    return this.getFieldTypeItems(fieldType).find(item => item.id === fieldType) ?? null;
   }
 
   private reorderFilters(fromIndex: number, toIndex: number): void {

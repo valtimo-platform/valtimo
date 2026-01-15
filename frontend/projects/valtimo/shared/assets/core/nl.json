@@ -1379,8 +1379,6 @@
     "clearAll": "Alles wissen",
     "clear": "Wissen",
     "filters": "Filters",
-    "from": "Van",
-    "to": "Tot",
     "show": "Toon",
     "display": "Weergave",
     "items": "items",
@@ -2016,9 +2014,6 @@
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
     "noData": "Geen data gevonden",
-    "filter": {
-      "multiPlaceholder": "Waarden gescheiden door komma's"
-    },
     "emptyFields": "Niets hier",
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",

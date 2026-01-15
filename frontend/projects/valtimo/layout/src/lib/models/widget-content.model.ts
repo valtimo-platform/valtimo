@@ -88,19 +88,6 @@ interface WidgetFormioContent {
   formDefinitionName: string;
 }
 
-interface  WidgetInteractiveTableEventProperty {
-  key: string;
-  value: string;
-}
-
-interface WidgetInteractiveTableEventSearchFormValue {
-  likeFormattedMessage?: string;
-  level?: ListItem;
-  beforeTimestamp?: string;
-  afterTimestamp?: string;
-  properties?: Array<WidgetInteractiveTableEventProperty>;
-}
-
 interface WidgetInteractiveTableEventSearchRequest {
   size?: number;
   page?: number;
@@ -139,8 +126,6 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
-  WidgetInteractiveTableEventProperty,
-  WidgetInteractiveTableEventSearchFormValue,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
   CollectionWidgetField,
