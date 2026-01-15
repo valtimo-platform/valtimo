@@ -122,44 +122,41 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   }
 
   private getDefaultFilterValues(): Record<string, string> {
-    return this.filters.reduce(
-      (acc: Record<string, string>, filter: WidgetFilter) => ({
-        ...acc,
-        [filter.key]: '',
-      }),
-      {}
+    return Object.fromEntries(
+      this.filters.map(filter => [filter.key, ''])
     );
   }
 
   private mapFormValueToWidgetInteractiveTableSearch(): WidgetInteractiveTableEventSearchRequest {
-    const {filters} = this.formGroup.getRawValue();
-    const cleanedFilters = Object.entries(filters ?? {}).reduce(
-      (acc: Record<string, string>, [key, value]) => {
-        if (typeof value === 'string' && value.trim().length) {
-          acc[key] = value;
-        }
+    const formValue = this.formGroup.getRawValue();
+    const filters: Record<string, string> = {};
 
-        return acc;
-      },
-      {}
-    );
+    for (const key in formValue.filters) {
+      if (formValue.filters[key]) {
+        filters[key] = formValue.filters[key];
+      }
+    }
 
     return {
-      ...(!!Object.keys(cleanedFilters).length && {filters: cleanedFilters}),
+      ...(Object.keys(filters).length && {filters}),
+    };
+  }
+
+  private mapSearchRequestToFormValue(
+    searchRequest: WidgetInteractiveTableEventSearchRequest
+  ): { filters?: Record<string, string> } {
+    return {
+      ...(searchRequest.filters && { filters: searchRequest.filters }),
     };
   }
 
   private setInitialForm(): void {
+    const mappedFormValue = this.mapSearchRequestToFormValue(this._initSearchRequest);
+
     this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
 
-    if (!this._initSearchRequest?.filters) return;
-
-    const mappedFilters = Object.entries(this._initSearchRequest.filters).reduce(
-      (acc: Record<string, string>, [key, value]) =>
-        this.filtersFormGroup.get(key) ? {...acc, [key]: value} : acc,
-      {}
-    );
-
-    this.filtersFormGroup.patchValue(mappedFilters, {emitEvent: false});
+    if (mappedFormValue.filters) {
+      this.filtersFormGroup.patchValue(this.mapSearchRequestToFormValue(this._initSearchRequest).filters, {emitEvent: false});
+    }
   }
 }

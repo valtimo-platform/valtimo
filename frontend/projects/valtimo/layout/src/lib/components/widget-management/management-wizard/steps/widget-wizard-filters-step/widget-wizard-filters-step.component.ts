@@ -200,10 +200,11 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   }
 
   private getListItemId(value: ListItem): string {
-    if (!value) return null;
-    if (typeof value === 'string') return value;
+    if (!value) {
+      return null;
+    }
 
-    return value.id ?? null;
+    return value.id;
   }
 
   private getDataTypeItems(selectedId: string): ListItem[] {
@@ -230,7 +231,7 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     return this.getDataTypeItems(dataType)[0];
   }
 
-  private getFieldTypeControlValue(fieldType?: string): ListItem | null {
+  private getFieldTypeControlValue(fieldType?: string): ListItem {
     if (!fieldType) return null;
 
     return this.getFieldTypeItems(fieldType).find(item => item.id === fieldType) ?? null;
