@@ -1,0 +1,41 @@
+{
+    "$id": "data-transformer.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Data Transformer Document",
+    "type": "object",
+    "properties": {
+        "inputText": {
+            "type": "string",
+            "description": "The input text to transform"
+        },
+        "inputNumber": {
+            "type": "integer",
+            "description": "The input number to process"
+        },
+        "transformedText": {
+            "type": "string",
+            "description": "The transformed text result"
+        },
+        "processedNumber": {
+            "type": "integer",
+            "description": "The processed number result"
+        },
+        "aggregatedResult": {
+            "type": "string",
+            "description": "Final aggregated result from nested building blocks"
+        },
+        "transformationStatus": {
+            "type": "string",
+            "description": "Current status of the transformation"
+        },
+        "transformationSummary": {
+            "type": "string",
+            "description": "Summary of the transformation results"
+        },
+        "finalScore": {
+            "type": "integer",
+            "description": "Calculated final score based on processed number"
+        }
+    },
+    "required": ["inputText", "inputNumber"]
+}

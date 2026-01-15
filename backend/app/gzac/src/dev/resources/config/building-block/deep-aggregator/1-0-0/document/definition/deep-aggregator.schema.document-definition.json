@@ -1,0 +1,29 @@
+{
+    "$id": "deep-aggregator.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Deep Aggregator Document",
+    "type": "object",
+    "properties": {
+        "aggregationInput": {
+            "type": "string",
+            "description": "Input data for aggregation from parent building block"
+        },
+        "aggregationNumber": {
+            "type": "integer",
+            "description": "Input number for aggregation from parent building block"
+        },
+        "aggregatedOutput": {
+            "type": "string",
+            "description": "Final aggregated output"
+        },
+        "aggregationStatus": {
+            "type": "string",
+            "description": "Status of the aggregation process"
+        },
+        "processingTimestamp": {
+            "type": "string",
+            "description": "Timestamp when deep aggregation was performed"
+        }
+    },
+    "required": ["aggregationInput", "aggregationNumber"]
+}

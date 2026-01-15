@@ -1,0 +1,36 @@
+[
+    {
+        "activityId": "CallSubProcessorActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "sub-processor",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:inputText",
+                "target": "dataToProcess"
+            },
+            {
+                "source": "doc:inputNumber",
+                "target": "numberToProcess"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "processedData",
+                "target": "doc:transformedText",
+                "syncTiming": "END"
+            },
+            {
+                "source": "computedNumber",
+                "target": "doc:processedNumber",
+                "syncTiming": "END"
+            },
+            {
+                "source": "deepAggregationResult",
+                "target": "doc:aggregatedResult",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

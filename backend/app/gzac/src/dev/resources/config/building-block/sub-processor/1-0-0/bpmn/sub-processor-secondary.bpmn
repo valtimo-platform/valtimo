@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SubProcessorSecondary" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_SubProcessorSecondary">
+    <bpmn:participant id="SecondaryParticipant" name="Sub-Processor Secondary" processRef="sub-processor-secondary" />
+  </bpmn:collaboration>
+  <bpmn:process id="sub-processor-secondary" name="Sub-Processor Secondary Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start Secondary Processing">
+      <bpmn:outgoing>Flow_Start_To_Enrich</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="EnrichDataTask" name="Enrich Data with External Info" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/enrichedData', '[ENRICHED] '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/dataToProcess')))}">
+      <bpmn:incoming>Flow_Start_To_Enrich</bpmn:incoming>
+      <bpmn:outgoing>Flow_Enrich_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent" name="Secondary Processing Complete">
+      <bpmn:incoming>Flow_Enrich_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Enrich" sourceRef="StartEvent" targetRef="EnrichDataTask" />
+    <bpmn:sequenceFlow id="Flow_Enrich_To_End" sourceRef="EnrichDataTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubProcessorSecondary">
+      <bpmndi:BPMNShape id="Participant_Secondary_di" bpmnElement="SecondaryParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="430" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="199" y="185" width="83" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EnrichDataTask_di" bpmnElement="EnrichDataTask">
+        <dc:Bounds x="320" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="482" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="456" y="185" width="89" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Enrich_di" bpmnElement="Flow_Start_To_Enrich">
+        <di:waypoint x="258" y="160" />
+        <di:waypoint x="320" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Enrich_To_End_di" bpmnElement="Flow_Enrich_To_End">
+        <di:waypoint x="420" y="160" />
+        <di:waypoint x="482" y="160" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

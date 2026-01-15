@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SubProcessor" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_SubProcessor">
+    <bpmn:participant id="SubProcessorParticipant" name="Sub-Processor" processRef="sub-processor-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="sub-processor-process" name="Sub-Processor Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start Sub-Processing">
+      <bpmn:outgoing>Flow_Start_To_Transform</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="TransformDataTask" name="Transform Input Data" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/transformedInput', valueResolverDelegateService.resolveValue(execution, 'doc:/dataToProcess').toUpperCase())}">
+      <bpmn:incoming>Flow_Start_To_Transform</bpmn:incoming>
+      <bpmn:outgoing>Flow_Transform_To_CallSecondary</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallSecondaryProcessActivity" name="Call Secondary Process" camunda:asyncAfter="true" calledElement="sub-processor-secondary" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:sub-processor:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Transform_To_CallSecondary</bpmn:incoming>
+      <bpmn:outgoing>Flow_CallSecondary_To_CallDeep</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallDeepAggregatorActivity" name="Call Deep Aggregator Building Block" camunda:asyncAfter="true" calledElement="deep-aggregator-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:deep-aggregator:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_CallSecondary_To_CallDeep</bpmn:incoming>
+      <bpmn:outgoing>Flow_CallDeep_To_Finalize</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="FinalizeProcessingTask" name="Finalize Processing" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/processedData', 'Processed: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/enrichedData')))}">
+      <bpmn:incoming>Flow_CallDeep_To_Finalize</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetComputedNumber</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetComputedNumberTask" name="Compute Doubled Number" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/computedNumber', valueResolverDelegateService.resolveValue(execution, 'doc:/numberToProcess') * 2)}">
+      <bpmn:incoming>Flow_SetComputedNumber</bpmn:incoming>
+      <bpmn:outgoing>Flow_ComputedNumber_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_SetComputedNumber" sourceRef="FinalizeProcessingTask" targetRef="SetComputedNumberTask" />
+    <bpmn:endEvent id="EndEvent" name="Sub-Processing Complete">
+      <bpmn:incoming>Flow_ComputedNumber_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_ComputedNumber_To_End" sourceRef="SetComputedNumberTask" targetRef="EndEvent" />
+    <bpmn:sequenceFlow id="Flow_Start_To_Transform" sourceRef="StartEvent" targetRef="TransformDataTask" />
+    <bpmn:sequenceFlow id="Flow_Transform_To_CallSecondary" sourceRef="TransformDataTask" targetRef="CallSecondaryProcessActivity" />
+    <bpmn:sequenceFlow id="Flow_CallSecondary_To_CallDeep" sourceRef="CallSecondaryProcessActivity" targetRef="CallDeepAggregatorActivity" />
+    <bpmn:sequenceFlow id="Flow_CallDeep_To_Finalize" sourceRef="CallDeepAggregatorActivity" targetRef="FinalizeProcessingTask" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubProcessor">
+      <bpmndi:BPMNShape id="Participant_SubProcessor_di" bpmnElement="SubProcessorParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="1050" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="202" y="202" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TransformDataTask_di" bpmnElement="TransformDataTask">
+        <dc:Bounds x="310" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallSecondaryProcessActivity_di" bpmnElement="CallSecondaryProcessActivity">
+        <dc:Bounds x="470" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallDeepAggregatorActivity_di" bpmnElement="CallDeepAggregatorActivity">
+        <dc:Bounds x="630" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FinalizeProcessingTask_di" bpmnElement="FinalizeProcessingTask">
+        <dc:Bounds x="790" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SetComputedNumberTask_di" bpmnElement="SetComputedNumberTask">
+        <dc:Bounds x="950" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="1112" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1090" y="202" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Transform_di" bpmnElement="Flow_Start_To_Transform">
+        <di:waypoint x="258" y="177" />
+        <di:waypoint x="310" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Transform_To_CallSecondary_di" bpmnElement="Flow_Transform_To_CallSecondary">
+        <di:waypoint x="410" y="177" />
+        <di:waypoint x="470" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CallSecondary_To_CallDeep_di" bpmnElement="Flow_CallSecondary_To_CallDeep">
+        <di:waypoint x="570" y="177" />
+        <di:waypoint x="630" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CallDeep_To_Finalize_di" bpmnElement="Flow_CallDeep_To_Finalize">
+        <di:waypoint x="730" y="177" />
+        <di:waypoint x="790" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SetComputedNumber_di" bpmnElement="Flow_SetComputedNumber">
+        <di:waypoint x="890" y="177" />
+        <di:waypoint x="950" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ComputedNumber_To_End_di" bpmnElement="Flow_ComputedNumber_To_End">
+        <di:waypoint x="1050" y="177" />
+        <di:waypoint x="1112" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

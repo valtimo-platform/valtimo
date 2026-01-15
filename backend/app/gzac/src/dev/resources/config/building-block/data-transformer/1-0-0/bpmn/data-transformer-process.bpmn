@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_DataTransformer" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_DataTransformer">
+    <bpmn:participant id="DataTransformerParticipant" name="Data Transformer" processRef="data-transformer-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="data-transformer-process" name="Data Transformer Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start Data Transformation">
+      <bpmn:outgoing>Flow_Start_To_Log</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="LogTransformationStartedTask" name="Initialize Transformation" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/transformationStatus', 'STARTED')}">
+      <bpmn:incoming>Flow_Start_To_Log</bpmn:incoming>
+      <bpmn:outgoing>Flow_Log_To_CallSubProcessor</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallSubProcessorActivity" name="Call Sub-Processor Building Block" camunda:asyncAfter="true" calledElement="sub-processor-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:sub-processor:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Log_To_CallSubProcessor</bpmn:incoming>
+      <bpmn:outgoing>Flow_CallSubProcessor_To_Aggregate</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="AggregateResultsTask" name="Generate Summary" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/transformationSummary', 'Text: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/transformedText')).concat(' | Number: ').concat(valueResolverDelegateService.resolveValue(execution, 'doc:/processedNumber')))}">
+      <bpmn:incoming>Flow_CallSubProcessor_To_Aggregate</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetProcessedNumber</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetProcessedNumberTask" name="Calculate Final Score" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/finalScore', valueResolverDelegateService.resolveValue(execution, 'doc:/processedNumber') + 100)}">
+      <bpmn:incoming>Flow_SetProcessedNumber</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetAggregatedResult</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetAggregatedResultTask" name="Mark Transformation Complete" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/transformationStatus', 'COMPLETED')}">
+      <bpmn:incoming>Flow_SetAggregatedResult</bpmn:incoming>
+      <bpmn:outgoing>Flow_Aggregate_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_SetProcessedNumber" sourceRef="AggregateResultsTask" targetRef="SetProcessedNumberTask" />
+    <bpmn:sequenceFlow id="Flow_SetAggregatedResult" sourceRef="SetProcessedNumberTask" targetRef="SetAggregatedResultTask" />
+    <bpmn:endEvent id="EndEvent" name="Transformation Complete">
+      <bpmn:incoming>Flow_Aggregate_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Log" sourceRef="StartEvent" targetRef="LogTransformationStartedTask" />
+    <bpmn:sequenceFlow id="Flow_Log_To_CallSubProcessor" sourceRef="LogTransformationStartedTask" targetRef="CallSubProcessorActivity" />
+    <bpmn:sequenceFlow id="Flow_CallSubProcessor_To_Aggregate" sourceRef="CallSubProcessorActivity" targetRef="AggregateResultsTask" />
+    <bpmn:sequenceFlow id="Flow_Aggregate_To_End" sourceRef="SetAggregatedResultTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_DataTransformer">
+      <bpmndi:BPMNShape id="Participant_DataTransformer_di" bpmnElement="DataTransformerParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="750" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="202" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LogTransformationStartedTask_di" bpmnElement="LogTransformationStartedTask">
+        <dc:Bounds x="310" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallSubProcessorActivity_di" bpmnElement="CallSubProcessorActivity">
+        <dc:Bounds x="470" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AggregateResultsTask_di" bpmnElement="AggregateResultsTask">
+        <dc:Bounds x="630" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="792" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="772" y="202" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Log_di" bpmnElement="Flow_Start_To_Log">
+        <di:waypoint x="258" y="177" />
+        <di:waypoint x="310" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Log_To_CallSubProcessor_di" bpmnElement="Flow_Log_To_CallSubProcessor">
+        <di:waypoint x="410" y="177" />
+        <di:waypoint x="470" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CallSubProcessor_To_Aggregate_di" bpmnElement="Flow_CallSubProcessor_To_Aggregate">
+        <di:waypoint x="570" y="177" />
+        <di:waypoint x="630" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aggregate_To_End_di" bpmnElement="Flow_Aggregate_To_End">
+        <di:waypoint x="730" y="177" />
+        <di:waypoint x="792" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

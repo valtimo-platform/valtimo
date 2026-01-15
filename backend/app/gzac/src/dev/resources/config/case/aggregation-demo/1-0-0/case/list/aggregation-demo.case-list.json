@@ -1,0 +1,45 @@
+[
+  {
+    "key": "createdOn",
+    "path": "case:createdOn",
+    "displayType": {
+      "type": "date",
+      "displayTypeParameters": {
+        "dateFormat": null
+      }
+    },
+    "sortable": true,
+    "defaultSort": "DESC",
+    "order": 0
+  },
+  {
+    "key": "inputText",
+    "path": "doc:inputText",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 1
+  },
+  {
+    "key": "inputNumber",
+    "path": "doc:inputNumber",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 2
+  },
+  {
+    "key": "assigneeFullName",
+    "path": "case:assigneeFullName",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 3
+  }
+]

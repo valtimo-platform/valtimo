@@ -154,22 +154,14 @@ const applyBuildingBlockCalledElement = (
   }
 
   extensionElements.values = (extensionElements.values || []).filter(
-    (val: any) =>
-      !(val.$type === 'camunda:In' && val.businessKey) &&
-      !(val.$type === 'camunda:In' && val.source === 'buildingBlockInstanceId')
+    (val: any) => !(val.$type === 'camunda:In' && val.businessKey)
   );
 
   const inWithBusinessKey = moddle.create('camunda:In', {
     businessKey: '#{buildingBlockInstanceId}',
   });
 
-  const inWithBuildingBlockInstanceId = moddle.create('camunda:In', {
-    source: 'buildingBlockInstanceId',
-    target: 'buildingBlockInstanceId',
-  });
-
   extensionElements.values.push(inWithBusinessKey);
-  extensionElements.values.push(inWithBuildingBlockInstanceId);
 
   modeling.updateProperties(element, {
     extensionElements,
@@ -205,9 +197,8 @@ const clearBuildingBlockCalledElement = (
   if (extensionElements && Array.isArray(extensionElements.values)) {
     extensionElements.values = extensionElements.values.filter((val: any) => {
       if (val.$type !== 'camunda:In') return true;
-      // Remove both businessKey and buildingBlockInstanceId variable mappings
+      // Remove businessKey mapping for building block call activities
       if (val.businessKey) return false;
-      if (val.source === 'buildingBlockInstanceId') return false;
       return true;
     });
 

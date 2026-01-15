@@ -73,9 +73,9 @@ class BuildingBlockCallActivityListener(
                 activityId = activityId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
+            // Set as local variable on the call activity execution - this is read by StartEventFromCallActivityListenerImpl
+            // to automatically propagate to the child process
             execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
-            // Also set as non-local so it can be passed to the child process via camunda:in
-            execution.setVariable(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
     }
 

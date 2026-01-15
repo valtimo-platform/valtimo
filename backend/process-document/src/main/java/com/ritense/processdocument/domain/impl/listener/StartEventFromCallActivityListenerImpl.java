@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,10 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
         "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
     public void notify(DelegateExecution execution) {
+        // Propagate buildingBlockInstanceId from parent call activity to child process
+        // This ensures building block processes use the correct document even without camunda:in configuration
+        propagateBuildingBlockInstanceId(execution);
+
         Document.Id documentId = getDocumentId(execution);
         if (documentId != null) {
             processDocumentAssociationService.createProcessDocumentInstance(
@@ -53,6 +57,21 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
                 documentId.getId(),
                 getProcessNameFrom(execution)
             );
+        }
+    }
+
+    /**y
+     * Propagates the buildingBlockInstanceId variable from the parent call activity execution
+     * to the child process. This allows building block processes to use the correct document
+     * without requiring explicit camunda:in configuration in every BPMN.
+     */
+    private void propagateBuildingBlockInstanceId(DelegateExecution execution) {
+        DelegateExecution parentExecution = execution.getSuperExecution();
+        if (parentExecution != null && parentExecution.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
+            Object buildingBlockInstanceId = parentExecution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE);
+            if (buildingBlockInstanceId != null) {
+                execution.setVariable(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstanceId);
+            }
         }
     }
 
