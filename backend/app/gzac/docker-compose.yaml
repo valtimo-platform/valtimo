@@ -570,8 +570,20 @@ services:
         volumes:
             - ./imports/iko:/docker-entrypoint-initdb.d
 
+    iko-redis:
+        image: redis:8.4.0-alpine
+        ports:
+            - "6379:6379"
+        container_name: iko-redis
+        healthcheck:
+            test: [ "CMD", "redis-cli", "ping" ]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
+
     iko:
-        image: ghcr.io/integraal-klant-en-objectbeeld/iko:0.5.1
+        image: ghcr.io/integraal-klant-en-objectbeeld/iko:0.6.0
         container_name: gzac-docker-compose-iko
         platform: linux/amd64
         profiles:
@@ -579,6 +591,9 @@ services:
         ports:
             - "8012:8080"
         environment:
+            SPRING_CACHE_TYPE: redis
+            SPRING_DATA_REDIS_HOST: iko-redis
+            SPRING_DATA_REDIS_PORT: 6379
             SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
             SPRING_DATASOURCE_URL: jdbc:postgresql://iko-postgres:5432/iko
             SPRING_DATASOURCE_USERNAME: iko
@@ -589,6 +604,7 @@ services:
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET: ThisIsNotASecret
             SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
             LOGGING_LEVEL_COM_RITENSE_IKO: debug
+            DEBUG: true
         depends_on:
             gzac-keycloak:
                 condition: service_healthy
