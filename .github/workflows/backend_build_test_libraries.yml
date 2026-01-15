@@ -15,10 +15,6 @@ on:
 
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: backend
-
 jobs:
   compute_contents_sha:
     runs-on: ubuntu-latest
@@ -80,7 +76,7 @@ jobs:
           java-version: "21"
           cache: gradle
       - name: Build libraries
-        run: ./gradlew assemble
+        run: ./gradlew :backend:assemble
 
       - name: Upload built libraries
         uses: actions/upload-artifact@v4
@@ -118,7 +114,7 @@ jobs:
             ${{ env.UNIT_TESTS_MATRIX }}
             ${{ env.INTEGRATION_TESTS_MATRIX }}
             ${{ env.SECURITY_TESTS_MATRIX }}
-          key: testdefinitions-${{ hashFiles('backend/**/build.gradle', 'backend/**/build.gradle.kts', 'backend/**/settings.gradle', 'backend/**/settings.gradle.kts', 'backend/**/gradle.properties') }}
+          key: testdefinitions-${{ hashFiles('build.gradle', 'settings.gradle', 'gradle.properties', 'backend/**/build.gradle', 'backend/**/build.gradle.kts', 'backend/**/settings.gradle', 'backend/**/settings.gradle.kts', 'backend/**/gradle.properties') }}
       - name: Make test matrices
         id: make_test_matrices
         if: steps.cache-test-definitions.outputs.cache-hit != 'true'
@@ -126,7 +122,7 @@ jobs:
           UNIT_TESTS_FILE='/tmp/unit_tests'
           INTEGRATION_TESTS_FILE='/tmp/integration_tests'
           SECURITY_TESTS_FILE='/tmp/security_tests'
-          DRY_RUN=$(./gradlew test securityTesting integrationTesting --dry-run)
+          DRY_RUN=$(./gradlew :backend:test :backend:securityTesting :backend:integrationTesting --dry-run)
           touch $UNIT_TESTS_FILE $INTEGRATION_TESTS_FILE $SECURITY_TESTS_FILE
           while IFS= read -r line; do
             if [[ $line =~ (:[^[:space:]]+:test)\  ]]; then
@@ -228,7 +224,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build-output
-          path: backend
+          path: .
       - name: Cache built backend libraries
         uses: actions/cache/save@v4
         with:
