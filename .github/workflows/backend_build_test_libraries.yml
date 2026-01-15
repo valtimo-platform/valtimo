@@ -122,7 +122,7 @@ jobs:
           UNIT_TESTS_FILE='/tmp/unit_tests'
           INTEGRATION_TESTS_FILE='/tmp/integration_tests'
           SECURITY_TESTS_FILE='/tmp/security_tests'
-          DRY_RUN=$(./gradlew :backend:test :backend:securityTesting :backend:integrationTesting --dry-run)
+          DRY_RUN=$(./gradlew :backend:testAll :backend:securityTestingAll :backend:integrationTestingAll --dry-run)
           touch $UNIT_TESTS_FILE $INTEGRATION_TESTS_FILE $SECURITY_TESTS_FILE
           while IFS= read -r line; do
             if [[ $line =~ (:[^[:space:]]+:test)\  ]]; then
