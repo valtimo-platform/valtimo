@@ -1,0 +1,45 @@
+[
+  {
+    "key": "createdOn",
+    "path": "case:createdOn",
+    "displayType": {
+      "type": "date",
+      "displayTypeParameters": {
+        "dateFormat": null
+      }
+    },
+    "sortable": true,
+    "defaultSort": "DESC",
+    "order": 0
+  },
+  {
+    "key": "applicantName",
+    "path": "doc:applicantName",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 1
+  },
+  {
+    "key": "householdSize",
+    "path": "doc:householdSize",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 2
+  },
+  {
+    "key": "assigneeFullName",
+    "path": "case:assigneeFullName",
+    "displayType": {
+      "type": "text",
+      "displayTypeParameters": {}
+    },
+    "sortable": true,
+    "order": 3
+  }
+]
