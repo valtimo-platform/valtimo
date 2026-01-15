@@ -6,10 +6,6 @@ permissions:
 on:
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: backend
-
 env:
   ORG_GRADLE_PROJECT_includeDev: false
 
@@ -53,12 +49,12 @@ jobs:
           echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Check license compliance
-        run: ./gradlew -PincludeDev=false checkLicense
+        run: ./gradlew -PincludeDev=false :backend:checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
           sudo apt-get update -qq && sudo apt-get install -y jq
-          FILE="build/reports/dependency-license/dependencies-without-allowed-license.json"
+          FILE="backend/build/reports/dependency-license/dependencies-without-allowed-license.json"
           if [[ -f "$FILE" ]]; then
             COUNT=$(jq '.dependenciesWithoutAllowedLicenses | length' "$FILE" 2>/dev/null || echo 0)
             if [[ "$COUNT" -gt 0 ]]; then
@@ -79,7 +75,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
 
       - name: Archive Reports
         if: always()
