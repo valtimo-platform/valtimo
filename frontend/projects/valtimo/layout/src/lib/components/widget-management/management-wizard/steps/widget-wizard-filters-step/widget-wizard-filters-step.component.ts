@@ -70,6 +70,23 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
 
   private readonly _subscriptions = new Subscription();
 
+  private readonly DATA_TYPE_ITEMS: ListItem[] = [
+    {
+      id: 'text',
+      content: this.translateService.instant('searchFields.text'),
+      selected: false,
+    },
+  ];
+
+  private readonly FIELD_TYPE_ITEMS: ListItem[] = [
+    {
+      id: 'single',
+      content: this.translateService.instant('searchFieldsOverview.single'),
+      selected: false,
+    },
+  ];
+
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly widgetWizardService: WidgetWizardService,
@@ -134,11 +151,11 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       title: this.fb.control<string>(filter?.title ?? '', Validators.required),
       key: this.fb.control<string>(filter?.key ?? '', Validators.required),
       dataType: this.fb.control<ListItem | null>(
-        this.getDataTypeControlValue(filter?.dataType),
+        this.getDataTypeControlValue(),
         Validators.required
       ),
       fieldType: this.fb.control<ListItem | null>(
-        this.getFieldTypeControlValue(filter?.fieldType),
+        this.getFieldTypeControlValue(),
         Validators.required
       ),
       matchType: this.fb.control<string | null>(filter?.matchType ?? null),
@@ -187,12 +204,12 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
 
   public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
     const selectedId = this.getListItemId(filterRow.get('dataType')?.value) ?? 'text';
-    return this.getDataTypeItems(selectedId);
+    return this.selectItem(this.DATA_TYPE_ITEMS, selectedId);
   }
 
   public getFieldTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const selectedId = this.getListItemId(filterRow.get('fieldType')?.value) ?? '';
-    return this.getFieldTypeItems(selectedId);
+    const selectedId = this.getListItemId(filterRow.get('fieldType')?.value) ?? 'single';
+    return this.selectItem(this.FIELD_TYPE_ITEMS, selectedId);
   }
 
   public onFilterAccordionSelection(expanded: boolean, index: number): void {
@@ -207,34 +224,12 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     return value.id;
   }
 
-  private getDataTypeItems(selectedId: string): ListItem[] {
-    return [
-      {
-        content: this.translateService.instant('searchFields.text'),
-        id: 'text',
-        selected: selectedId === 'text',
-      },
-    ];
+  private getDataTypeControlValue(): ListItem {
+    return {...this.DATA_TYPE_ITEMS[0], selected: true};
   }
 
-  private getFieldTypeItems(selectedId: string): ListItem[] {
-    return [
-      {
-        content: this.translateService.instant('searchFieldsOverview.single'),
-        id: 'single',
-        selected: selectedId === 'single',
-      },
-    ];
-  }
-
-  private getDataTypeControlValue(dataType?: string): ListItem {
-    return this.getDataTypeItems(dataType)[0];
-  }
-
-  private getFieldTypeControlValue(fieldType?: string): ListItem {
-    if (!fieldType) return null;
-
-    return this.getFieldTypeItems(fieldType).find(item => item.id === fieldType) ?? null;
+  private getFieldTypeControlValue(): ListItem {
+    return {...this.FIELD_TYPE_ITEMS[0], selected: true};
   }
 
   private reorderFilters(fromIndex: number, toIndex: number): void {
@@ -252,6 +247,13 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     } else if (this.expandedFilterIndex === toIndex) {
       this.expandedFilterIndex = fromIndex;
     }
+  }
+
+  private selectItem(items: ListItem[], selectedId: string): ListItem[] {
+    return items.map(item => ({
+      ...item,
+      selected: item.id === selectedId,
+    }));
   }
 
   private swapItems<T>(items: T[], index1: number, index2: number): T[] {
