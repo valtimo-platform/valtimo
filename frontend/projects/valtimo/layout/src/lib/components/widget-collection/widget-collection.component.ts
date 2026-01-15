@@ -37,6 +37,7 @@ import {
   InputModule,
   PaginationModel,
   PaginationModule,
+  SkeletonModule,
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, tap} from 'rxjs';
@@ -67,6 +68,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     ButtonModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
+    SkeletonModule,
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
@@ -83,8 +85,8 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
 
   private readonly _widgetData$ = new BehaviorSubject<Page<CollectionWidgetCardData> | null>(null);
 
-  public get widgetData$(): Observable<Page<CollectionWidgetCardData>> {
-    return this._widgetData$.pipe(filter(data => !!data));
+  public get widgetData$(): Observable<Page<CollectionWidgetCardData> | null> {
+    return this._widgetData$.asObservable();
   }
 
   private _paginationInitialized = false;
@@ -92,7 +94,10 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   private _initialNumberOfElements!: number;
 
   @Input() public set widgetData(value: Page<CollectionWidgetCardData> | null) {
-    if (!value) return;
+    if (!value) {
+      this._widgetData$.next(null);
+      return;
+    }
 
     if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
@@ -146,12 +151,29 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   public readonly collectionWidgetCards$: Observable<
     {title: string; fields: CollectionWidgetResolvedField[]; key: number; hidden: boolean}[]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
-    filter(([widgetConfig, widgetData]) => !!widgetConfig && !!widgetData),
+    filter(([widgetConfig]) => !!widgetConfig),
     tap(([widgetConfig]) => {
       this.$widgetTitle.set(widgetConfig.title);
     }),
-    map(([widgetConfig, widgetData]) =>
-      widgetData.content.map((cardData, index) => ({
+    map(([widgetConfig, widgetData]) => {
+      if (!widgetData) {
+        return new Array(widgetConfig?.properties?.defaultPageSize || 0)
+          .fill(null)
+          .map((_, index) => ({
+            hidden: false,
+            key: index,
+            title: '',
+            fields: widgetConfig?.properties.fields.map(field => ({
+              key: field.key,
+              title: field.title,
+              width: field.width,
+              value: null,
+              hideWhenEmpty: false,
+            })),
+          }));
+      }
+
+      return widgetData.content.map((cardData, index) => ({
         hidden: cardData.hidden,
         key: index,
         title: this.getCardTitle({
@@ -165,8 +187,8 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
           ],
           []
         ),
-      }))
-    ),
+      }));
+    }),
     tap(card => this.checkEmptyFields(card))
   );
 
@@ -253,9 +275,15 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   }
 
   private checkEmptyFields(card): void {
+    this.noVisibleFields$.next(true);
+
     card.forEach(collection => {
       collection.fields.forEach(field => {
-        if (!field.hideWhenEmpty || (field.hideWhenEmpty && field.value && field.value !== '-'))
+        if (
+          field.value === null ||
+          !field.hideWhenEmpty ||
+          (field.hideWhenEmpty && field.value && field.value !== '-')
+        )
           this.noVisibleFields$.next(false);
       });
     });

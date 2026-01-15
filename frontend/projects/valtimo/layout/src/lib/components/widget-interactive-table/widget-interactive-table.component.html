@@ -33,7 +33,8 @@
   <valtimo-carbon-list
     [header]="false"
     [fields]="obs.fields"
-    [items]="obs.widgetData"
+    [items]="obs.widgetData || []"
+    [loading]="obs.widgetData === null"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
@@ -68,6 +69,7 @@
     </section>
 
     <valtimo-no-results
+      *ngIf="obs.widgetData !== null"
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"

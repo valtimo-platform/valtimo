@@ -13,15 +13,15 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(project(":dependencies:valtimo-dependency-versions")))
+    implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
 
-    implementation(project(":dependencies:valtimo-gzac-dependencies"))
-    implementation(project(":mail:local-mail"))
-    implementation(project(":document-generation:smartdocuments"))
-    implementation(project(":iko"))
-    implementation(project(":zgw:portaaltaak"))
-    implementation(project(":outbox:outbox-rabbitmq"))
-    implementation(project(":process-link-url"))
+    implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":backend:mail:local-mail"))
+    implementation(project(":backend:document-generation:smartdocuments"))
+    implementation(project(":backend:iko"))
+    implementation(project(":backend:zgw:portaaltaak"))
+    implementation(project(":backend:outbox:outbox-rabbitmq"))
+    implementation(project(":backend:process-link-url"))
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"

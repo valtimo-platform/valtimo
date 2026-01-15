@@ -59,6 +59,12 @@
       titleTranslationKey="ikoManagement.tabTypeTitle"
       [appendInline]="false"
     ></v-select>
+
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="properties?.value"
+    />
   </form>
 
   <cds-modal-footer>

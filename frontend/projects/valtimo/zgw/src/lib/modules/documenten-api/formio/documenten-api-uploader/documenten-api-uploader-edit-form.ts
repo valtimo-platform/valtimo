@@ -123,6 +123,24 @@ export const documentenApiUploaderEditForm = () => ({
       },
     },
     {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.acceptedFiles',
+      label: 'Accepted file types (leave blank for no restrictions)',
+      placeholder: '.png, .docx, .pdf',
+      defaultValue: ''
+    },
+    {
+      type: 'checkbox',
+      input: true,
+      inputType: 'checkbox',
+      key: 'customOptions.hideAcceptedFiles',
+      label: 'Hide accepted file types',
+      validate: {
+        required: false,
+      },
+    },
+    {
       label: 'HTML',
       tag: 'div',
       content: '<h3>Process variables</h3>',
