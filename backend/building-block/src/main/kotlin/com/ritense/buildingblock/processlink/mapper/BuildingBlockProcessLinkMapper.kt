@@ -131,8 +131,15 @@ class BuildingBlockProcessLinkMapper(
         caseDefinitionId: CaseDefinitionId?
     ): ProcessLink {
         createRequestDto as BuildingBlockProcessLinkCreateRequestDto
-        requireNotNull(caseDefinitionId) {
-            "CaseDefinitionId is required for building-block process links"
+        // CaseDefinitionId is only required for building-block process links in case processes.
+        // Building block processes can also have building-block process links (nested building blocks),
+        // which don't have a CaseDefinitionId.
+        val isNestedBuildingBlockLink = processDefinitionBuildingBlockDefinitionRepository
+            .existsByIdProcessDefinitionIdId(createRequestDto.processDefinitionId)
+        if (!isNestedBuildingBlockLink) {
+            requireNotNull(caseDefinitionId) {
+                "CaseDefinitionId is required for building-block process links in case processes"
+            }
         }
         val buildingBlockDefinitionId = toDefinitionId(
             createRequestDto.buildingBlockDefinitionKey,
@@ -144,10 +151,12 @@ class BuildingBlockProcessLinkMapper(
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
-            pluginConfigurationMappings = ensureMappings(
-                createRequestDto.pluginConfigurationMappings,
-                buildingBlockDefinitionId
-            ),
+            // For nested building blocks, plugin configurations are inherited from the root process link at runtime
+            pluginConfigurationMappings = if (isNestedBuildingBlockLink) {
+                createRequestDto.pluginConfigurationMappings
+            } else {
+                ensureMappings(createRequestDto.pluginConfigurationMappings, buildingBlockDefinitionId)
+            },
             inputMappings = createRequestDto.inputMappings.toInputDomain(),
             outputMappings = createRequestDto.outputMappings.toOutputDomain()
         )
@@ -160,8 +169,15 @@ class BuildingBlockProcessLinkMapper(
     ): ProcessLink {
         processLinkToUpdate as BuildingBlockProcessLink
         updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
-        requireNotNull(caseDefinitionId) {
-            "CaseDefinitionId is required for building-block process links"
+        // CaseDefinitionId is only required for building-block process links in case processes.
+        // Building block processes can also have building-block process links (nested building blocks),
+        // which don't have a CaseDefinitionId.
+        val isNestedBuildingBlockLink = processDefinitionBuildingBlockDefinitionRepository
+            .existsByIdProcessDefinitionIdId(processLinkToUpdate.processDefinitionId)
+        if (!isNestedBuildingBlockLink) {
+            requireNotNull(caseDefinitionId) {
+                "CaseDefinitionId is required for building-block process links in case processes"
+            }
         }
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             val buildingBlockDefinitionId = toDefinitionId(
@@ -174,10 +190,12 @@ class BuildingBlockProcessLinkMapper(
                 activityId = processLinkToUpdate.activityId,
                 activityType = processLinkToUpdate.activityType,
                 buildingBlockDefinitionId = buildingBlockDefinitionId,
-                pluginConfigurationMappings = ensureMappings(
-                    updateRequestDto.pluginConfigurationMappings,
-                    buildingBlockDefinitionId
-                ),
+                // For nested building blocks, plugin configurations are inherited from the root process link at runtime
+                pluginConfigurationMappings = if (isNestedBuildingBlockLink) {
+                    updateRequestDto.pluginConfigurationMappings
+                } else {
+                    ensureMappings(updateRequestDto.pluginConfigurationMappings, buildingBlockDefinitionId)
+                },
                 inputMappings = updateRequestDto.inputMappings.toInputDomain(),
                 outputMappings = updateRequestDto.outputMappings.toOutputDomain()
             )

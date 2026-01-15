@@ -99,4 +99,14 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       }
     );
   }
+
+  public isBuildingBlockProcess(processDefinitionId: string): Observable<boolean> {
+    return this.httpClient
+      .get<boolean>(
+        this.getApiUrl(
+          `management/v1/building-block/process-definition/${processDefinitionId}/is-building-block`
+        )
+      )
+      .pipe(catchError(() => of(false)));
+  }
 }

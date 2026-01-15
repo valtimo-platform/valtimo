@@ -92,7 +92,8 @@ class BuildingBlockCallActivityListenerTest {
             buidingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),
-                eq("callActivity")
+                eq("callActivity"),
+                eq(null)
             )
         )
         .thenReturn(buildingBlockInstance)
@@ -114,7 +115,7 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityStart(execution)
 
-        verify(buidingBlockInstanceService, never()).create(any(), any(), any())
+        verify(buidingBlockInstanceService, never()).create(any(), any(), any(), any())
     }
 
     @Test

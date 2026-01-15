@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,13 +54,59 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
+            // Check if we're inside a parent building block (nested building block scenario)
+            val parentBuildingBlockInstance = findParentBuildingBlockInstance(execution)
+
+            // For nested building blocks, use the root case document ID from the parent chain
+            // For top-level building blocks, use the execution's business key (which is the case document ID)
+            val rootCaseDocumentId = parentBuildingBlockInstance?.caseDocumentId
+                ?: UUID.fromString(execution.businessKey)
+
+            // The source document for input mappings: parent building block document or case document
+            val sourceDocumentId = parentBuildingBlockInstance?.documentId
+                ?: UUID.fromString(execution.businessKey)
+
             val buildingBlockInstance = this.createBuildingBlock(
-                it,
-                UUID.fromString(execution.businessKey),
-                activityId
+                buildingBlockProcessLink = it,
+                rootCaseDocumentId = rootCaseDocumentId,
+                sourceDocumentId = sourceDocumentId,
+                activityId = activityId,
+                parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
             execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
+            // Also set as non-local so it can be passed to the child process via camunda:in
+            execution.setVariable(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
+    }
+
+    /**
+     * Find the parent building block instance by walking up the execution hierarchy.
+     * Returns null if this is a top-level building block (called from a case process).
+     *
+     * The key insight is that for a call activity within a process, execution.superExecution
+     * might be null (if the call activity is at the top level of the process).
+     * We need to navigate via the process instance's superExecution, which correctly points
+     * to the call activity that started the current process.
+     */
+    private fun findParentBuildingBlockInstance(execution: DelegateExecution): BuildingBlockInstance? {
+        // Get the process instance (root execution) of the current process
+        val processInstance = execution.processInstance ?: return null
+
+        // Navigate to the parent process's call activity that started this process
+        var current: DelegateExecution? = processInstance.superExecution
+
+        while (current != null) {
+            val buildingBlockDocumentIdString = current.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE) as? String
+            if (buildingBlockDocumentIdString != null) {
+                val buildingBlockDocumentId = UUID.fromString(buildingBlockDocumentIdString)
+                return buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
+            }
+            // Navigate up to the parent process's super execution
+            val parentProcessInstance = current.processInstance
+            current = parentProcessInstance?.superExecution
+        }
+
+        return null
     }
 
     @EventListener(
@@ -100,22 +146,62 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        val resolvedValues = valueResolverService.resolveValues(
-            buildingBlockInstance.documentId.toString(),
-            endSyncOutputMappings.map { "doc:/${it.source}" }
-        )
+        // Resolve values from building block document or process variables
+        // Source can be:
+        // - pv:variableName - reads from execution variables (set by called process via camunda:out variables="all")
+        // - doc:/path - reads from building block document
+        // - path (no prefix) - defaults to doc:/path for backward compatibility
+        val valuesToHandle = mutableMapOf<String, Any?>()
+        val docSourcesToResolve = mutableListOf<Pair<String, String>>() // Pair of (sourceKey, target)
 
-        val valuesToHandle = endSyncOutputMappings.associate { mapping ->
-            mapping.target to resolvedValues["doc:/${mapping.source}"]
+        for (mapping in endSyncOutputMappings) {
+            when {
+                mapping.source.startsWith("pv:") -> {
+                    // Read from execution variables (variables copied from called process)
+                    val variableName = mapping.source.removePrefix("pv:")
+                    val value = execution.getVariable(variableName)
+                    valuesToHandle[mapping.target] = value
+                }
+                mapping.source.startsWith("doc:") -> {
+                    docSourcesToResolve.add(mapping.source to mapping.target)
+                }
+                else -> {
+                    // Default to doc:/ for backward compatibility
+                    docSourcesToResolve.add("doc:/${mapping.source}" to mapping.target)
+                }
+            }
         }
 
-        valueResolverService.handleValues(buildingBlockInstance.caseDocumentId, valuesToHandle)
+        // Resolve doc: sources from building block document
+        if (docSourcesToResolve.isNotEmpty()) {
+            val docSourceKeys = docSourcesToResolve.map { it.first }
+            val resolvedValues = valueResolverService.resolveValues(
+                buildingBlockInstance.documentId.toString(),
+                docSourceKeys
+            )
+            for ((sourceKey, target) in docSourcesToResolve) {
+                valuesToHandle[target] = resolvedValues[sourceKey]
+            }
+        }
+
+        // Determine target document: parent building block doc if nested, otherwise case doc
+        val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
+            val parentInstance = buidingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
+                ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
+            parentInstance.documentId
+        } else {
+            buildingBlockInstance.caseDocumentId
+        }
+
+        valueResolverService.handleValues(targetDocumentId, valuesToHandle)
     }
 
-    private fun createBuildingBlock(
+    private fun  createBuildingBlock(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID,
-        activityId: String
+        rootCaseDocumentId: UUID,
+        sourceDocumentId: UUID,
+        activityId: String,
+        parentBuildingBlockInstanceId: UUID?
     ): BuildingBlockInstance {
         val documentRequest = NewDocumentRequest(
             null,
@@ -123,22 +209,23 @@ class BuildingBlockCallActivityListener(
             null,
             buildingBlockProcessLink.buildingBlockDefinitionId.key,
             buildingBlockProcessLink.buildingBlockDefinitionId.versionTag.toString(),
-            buildDocumentContent(buildingBlockProcessLink, caseDocumentId),
+            buildDocumentContent(buildingBlockProcessLink, sourceDocumentId),
         )
 
         return buidingBlockInstanceService.create(
             documentRequest,
-            caseDocumentId,
-            activityId
+            rootCaseDocumentId,
+            activityId,
+            parentBuildingBlockInstanceId
         )
     }
 
     private fun buildDocumentContent(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID
+        sourceDocumentId: UUID
     ): JsonNode {
         val resolvedValues = valueResolverService.resolveValues(
-            caseDocumentId.toString(),
+            sourceDocumentId.toString(),
             buildingBlockProcessLink.inputMappings.map {
                 it.source
             }
