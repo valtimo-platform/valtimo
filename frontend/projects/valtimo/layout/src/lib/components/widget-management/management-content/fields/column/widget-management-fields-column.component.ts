@@ -248,7 +248,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     this.formRows?.at(columnIndex).patchValue({defaultSort: null});
   }
 
-  public onSelectedDefaultSortChange(columnIndex: number, stuff): void {
+  public onSelectedDefaultSortChange(columnIndex: number): void {
     this.formRows?.at(this._$defaultSortIndex()).patchValue({defaultSort: null});
     this._$defaultSortIndex.set(columnIndex);
   }
