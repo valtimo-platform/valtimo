@@ -205,6 +205,7 @@ export class WidgetInteractiveTableComponent {
 
   @Input() public set searchRequest(value: WidgetInteractiveTableEventSearchRequest | null | undefined) {
     this._searchRequest = value ?? this._defaultSearchRequest;
+    this.$searchRequest.set(this._searchRequest);
   }
 
   public get searchRequest(): WidgetInteractiveTableEventSearchRequest {
@@ -222,6 +223,7 @@ export class WidgetInteractiveTableComponent {
   public readonly caseDefinitions$: Observable<CaseDefinition[]> =
     this.documentService.getCaseDefinitions({active: true});
 
+  public readonly $searchRequest = signal<WidgetInteractiveTableEventSearchRequest>({});
   public readonly $sort = signal<SortState | null>(null);
   public readonly $paginationModel = signal<Pagination | null>(null);
   public readonly $paginatorConfig = signal<CarbonPaginatorConfig>({
@@ -238,7 +240,9 @@ export class WidgetInteractiveTableComponent {
     effect(() => {
       const paginationModel = this.$paginationModel();
       const sort = this.$sort();
-      const paramsObject = {
+      const searchRequest = this.$searchRequest();
+
+      const paramsObject: Record<string, string | number> = {
         ...(!!paginationModel && {
           size: paginationModel.size,
           collectionSize: paginationModel.collectionSize,
@@ -248,6 +252,7 @@ export class WidgetInteractiveTableComponent {
           sort.isSorting && {
             sort: `${sort.state.name},${sort.state.direction}`,
           }),
+        ...(searchRequest.filters ?? {}),
       };
       this.queryParamsEvent.emit(new HttpParams({fromObject: paramsObject}));
     });
@@ -289,6 +294,13 @@ export class WidgetInteractiveTableComponent {
 
   public onSearchSubmit(searchRequest: WidgetInteractiveTableEventSearchRequest): void {
     this._searchRequest = searchRequest;
+    this.$searchRequest.set(searchRequest);
+
+    const paginationModel = this.$paginationModel();
+    if (paginationModel) {
+      this.$paginationModel.set({...paginationModel, page: 1});
+    }
+
     this.searchSubmitEvent.emit(searchRequest);
   }
 }

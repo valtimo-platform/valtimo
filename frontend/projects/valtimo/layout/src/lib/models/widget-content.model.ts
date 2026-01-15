@@ -75,7 +75,7 @@ interface WidgetFilter {
   dataType: string;
   fieldType: string;
   key: string;
-  matchType: string;
+  matchType?: string;
   title: string;
 }
 
@@ -102,22 +102,19 @@ interface WidgetInteractiveTableEventSearchFormValue {
 }
 
 interface WidgetInteractiveTableEventSearchRequest {
-  afterTimestamp?: string;
-  beforeTimestamp?: string;
-  level?: string;
-  likeFormattedMessage?: string;
-  properties?: Array<WidgetInteractiveTableEventProperty>;
   size?: number;
   page?: number;
   filters?: Record<string, string>;
 }
 
-enum WidgetInteractiveTableLevel {
-  DEBUG = 'DEBUG',
-  ERROR = 'ERROR',
-  INFO = 'INFO',
-  TRACE = 'TRACE',
-  WARN = 'WARN',
+enum MoveRowDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+interface MoveRowEvent {
+  direction: MoveRowDirection;
+  index: number;
 }
 
 interface WidgetMapContent {
@@ -145,7 +142,6 @@ export {
   WidgetInteractiveTableEventProperty,
   WidgetInteractiveTableEventSearchFormValue,
   WidgetInteractiveTableEventSearchRequest,
-  WidgetInteractiveTableLevel,
   WidgetFilter,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,

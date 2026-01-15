@@ -19,7 +19,7 @@
     fields: fields$ | async,
     widgetData: widgetData$ | async,
     caseDefinitions: caseDefinitions$ | async,
-     filters: filters$ | async,
+    filters: filters$ | async,
   } as obs"
 >
   <div class="valtimo-widget-interactive-table__title-container">
@@ -45,6 +45,7 @@
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
       <button
+        *ngIf="!!obs.filters.length"
         carbonToolbarContent
         [cdsOverflowMenu]="widgetInteractiveTableSearch"
         [customPane]="true"

@@ -104,15 +104,6 @@
                 />
               }
             </cds-text-label>
-
-            @if (data.isInteractiveTable) {
-              <cds-toggle
-                formControlName="filterable"
-                [label]="'widgetTabManagement.content.table.filterable' | translate"
-                [onText]="'interface.yes' | translate"
-                [offText]="'interface.no' | translate"
-              ></cds-toggle>
-            }
           </div>
 
           <div class="valtimo-widget-management-field-column__options">
@@ -393,6 +384,7 @@
                 [items]="DEFAULT_SORT_OPTIONS"
                 [dropUp]="false"
                 [placeholder]="'interface.sorting.noDefault' | translate"
+                [defaultSelectionId]="formRow.get('defaultSort')?.value"
                 [warn]="
                   data.defaultSortIndex !== -1 &&
                   data.defaultSortIndex !== $index &&

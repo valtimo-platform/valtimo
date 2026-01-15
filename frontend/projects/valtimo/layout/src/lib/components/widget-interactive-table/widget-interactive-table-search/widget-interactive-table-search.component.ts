@@ -79,6 +79,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   public readonly formGroup = this.fb.group({
     filters: this.fb.group({}),
   });
+
   private readonly _subscriptions = new Subscription();
 
   public get filtersFormGroup(): FormGroup {
@@ -98,7 +99,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this.setInitialForm();
 
     this._subscriptions.add(
-      this.formGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
+      this.filtersFormGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
         this.searchSubmitEvent.emit(this.mapFormValueToWidgetInteractiveTableSearch());
       })
     );

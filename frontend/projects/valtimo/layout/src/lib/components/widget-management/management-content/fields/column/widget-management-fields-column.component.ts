@@ -214,7 +214,6 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
         hideWhenEmpty: this.fb.control<boolean>(false),
         sortable: this.fb.control<boolean>(false),
         defaultSort: this.fb.control<Direction | ''>({value: '', disabled: true}),
-        filterable: this.fb.control<boolean>(false),
       })
     );
   }
@@ -277,7 +276,6 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       ),
       title: this.fb.control<string>(row.title, Validators.required),
       content: this.fb.control<string>(row.value, Validators.required),
-      filterable: this.fb.control<boolean>(row.filterable ?? false),
       ...((!row.displayProperties || row.displayProperties?.type === WidgetDisplayTypeKey.TEXT) && {
         ellipsisCharacterLimit: this.fb.control<number | null>(
           (row.displayProperties as WidgetTextDisplayType)?.ellipsisCharacterLimit ?? null,
@@ -286,7 +284,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       }),
       sortable: this.fb.control<boolean>(row.sortable ?? false),
       defaultSort: this.fb.control<Direction | null>({
-        value: row.defaultSort ?? null,
+        value: row.defaultSort,
         disabled: !row.sortable,
       }),
       hideWhenEmpty: this.fb.control(
@@ -362,7 +360,6 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           value: row.content,
           ...(row.sortable !== undefined && {sortable: row.sortable}),
           ...(row.defaultSort !== '' && row.sortable && {defaultSort: row.defaultSort}),
-          filterable: !!row?.filterable,
           ...(!!row?.type.id && {
             displayProperties: {
               type: row.type.id,
