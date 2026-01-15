@@ -25,16 +25,17 @@
   @if (versionItems$ | async; as versionItems) {
     @let versionPlaceholder = versionPlaceholder$ | async;
     <div class="version-select">
-      <cds-dropdown
+      <cds-combo-box
         cdsLayer
         size="lg"
         [appendInline]="true"
         [label]="'processLinkConfiguration.buildingBlock.versionLabel' | translate"
         [placeholder]="versionPlaceholder || ''"
-        (selected)="onVersionChange($event?.item?.id || '')"
+        (selected)="onVersionChange($event?.id || '')"
+        (clear)="onVersionChange('')"
       >
         <cds-dropdown-list [items]="versionItems"></cds-dropdown-list>
-      </cds-dropdown>
+      </cds-combo-box>
     </div>
   }
 
@@ -71,15 +72,16 @@
                   {{ plugin.label }}
                 </div>
 
-                <cds-dropdown
+                <cds-combo-box
                   cdsLayer
                   size="lg"
                   [appendInline]="true"
                   [placeholder]="configurationPlaceholder || ''"
-                  (selected)="onMappingChange(plugin.key, $event?.item?.id || '')"
+                  (selected)="onMappingChange(plugin.key, $event?.id || '')"
+                  (clear)="onMappingChange(plugin.key, '')"
                 >
                   <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
-                </cds-dropdown>
+                </cds-combo-box>
               </div>
             }
           }
