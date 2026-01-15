@@ -31,6 +31,7 @@ include(
     ":backend:app:gzac",
     ":backend:audit",
     ":backend:authorization",
+    ":backend:building-block",
     ":backend:case",
     ":backend:changelog",
     ":backend:command-handling",

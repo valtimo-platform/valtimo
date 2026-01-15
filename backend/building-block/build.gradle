@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,25 +36,25 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":core")
-    implementation project(":authorization")
-    implementation project(":changelog")
-    api project(":contract")
-    implementation project(":data-provider")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
-    implementation project(":outbox")
-    implementation project(":resource")
-    implementation project(":search")
-    implementation project(":value-resolver")
-    implementation project(":web")
-    implementation project(":widget")
-    implementation project(":process-document")
-    implementation project(":case")
-    implementation project(":process-link")
-    implementation project(":plugin")
-    implementation project(":plugin-valtimo")
+    implementation project(":backend:core")
+    implementation project(":backend:authorization")
+    implementation project(":backend:changelog")
+    api project(":backend:contract")
+    implementation project(":backend:data-provider")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:logging")
+    implementation project(":backend:outbox")
+    implementation project(":backend:resource")
+    implementation project(":backend:search")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:web")
+    implementation project(":backend:widget")
+    implementation project(":backend:process-document")
+    implementation project(":backend:case")
+    implementation project(":backend:process-link")
+    implementation project(":backend:plugin")
+    implementation project(":backend:plugin-valtimo")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -95,7 +95,7 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
