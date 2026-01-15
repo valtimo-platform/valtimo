@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.importer
+package com.ritense.case.web.rest.dto
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import java.io.InputStream
 
-interface ImportService {
-    fun importGlobal(inputStream: InputStream)
-    fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
-}
+data class CaseDefinitionImportResponse(
+    val caseDefinitionId: CaseDefinitionId?,
+)
