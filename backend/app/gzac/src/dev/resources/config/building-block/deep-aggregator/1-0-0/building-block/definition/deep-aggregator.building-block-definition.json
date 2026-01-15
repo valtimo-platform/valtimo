@@ -1,0 +1,7 @@
+{
+    "key": "deep-aggregator",
+    "name": "Deep Aggregator",
+    "description": "Third level deeply nested building block that performs final aggregation. This is the deepest level in the nested building block chain, demonstrating that nesting can work at multiple levels.",
+    "versionTag": "1.0.0",
+    "final": false
+}

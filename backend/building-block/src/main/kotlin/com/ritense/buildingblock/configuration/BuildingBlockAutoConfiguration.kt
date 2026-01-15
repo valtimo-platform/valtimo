@@ -484,10 +484,12 @@ class BuildingBlockAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
     ): CaseDefinitionFinalizationChecker =
         BuildingBlockCaseDefinitionFinalizationChecker(
             operatonProcessService,
             processLinkService,
-            buildingBlockDefinitionRepository
+            buildingBlockDefinitionRepository,
+            processDefinitionBuildingBlockDefinitionRepository
         )
 }

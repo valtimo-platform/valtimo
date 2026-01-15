@@ -1,0 +1,56 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Aggregation Demo - Building Block Test",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "This case demonstrates nested building blocks. Enter some text and a number to process through the data-transformer building block chain.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Input Text",
+            "placeholder": "Enter text to transform...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "minLength": 1
+            },
+            "key": "inputText",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "label": "Input Number",
+            "placeholder": "Enter a number to process...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "min": 1
+            },
+            "key": "inputNumber",
+            "type": "number",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Start Processing",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

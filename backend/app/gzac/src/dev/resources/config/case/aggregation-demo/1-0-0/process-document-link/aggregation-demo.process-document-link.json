@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "aggregation-demo",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

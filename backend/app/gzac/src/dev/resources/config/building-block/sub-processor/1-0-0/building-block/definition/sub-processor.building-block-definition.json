@@ -1,0 +1,7 @@
+{
+    "key": "sub-processor",
+    "name": "Sub-Processor",
+    "description": "Second level nested building block that processes data from the parent building block. It has an internal sub-process and calls a third level building block for deep aggregation.",
+    "versionTag": "1.0.0",
+    "final": false
+}

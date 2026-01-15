@@ -16,6 +16,7 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
+import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_INSTANCE_ID_VARIABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -107,8 +108,9 @@ class StartEventFromCallActivityListenerImplTest {
     void notifyShouldFallbackToCurrentProcessWhenSuperExecutionHasBuildingBlockId() {
         String processInstanceId = UUID.randomUUID().toString();
         String superProcessInstanceId = UUID.randomUUID().toString();
-        DelegateExecution superExecution = superExecution(superProcessInstanceId, true);
-        DelegateExecution execution = execution(processInstanceId, superExecution);
+        String buildingBlockDocumentId = UUID.randomUUID().toString();
+        DelegateExecution superExecution = superExecution(superProcessInstanceId, true, buildingBlockDocumentId);
+        DelegateExecution execution = executionWithVariableCapture(processInstanceId, superExecution);
 
         UUID documentUuid = UUID.randomUUID();
         Document.Id documentId = documentId(documentUuid);
@@ -129,19 +131,75 @@ class StartEventFromCallActivityListenerImplTest {
         verifyNoMoreInteractions(processDocumentService);
     }
 
+    @Test
+    void notifyShouldPropagateBuildingBlockInstanceIdFromParentToChild() {
+        String processInstanceId = UUID.randomUUID().toString();
+        String superProcessInstanceId = UUID.randomUUID().toString();
+        String buildingBlockDocumentId = UUID.randomUUID().toString();
+        DelegateExecution superExecution = superExecution(superProcessInstanceId, true, buildingBlockDocumentId);
+
+        // Track what variable gets set on the child execution
+        final String[] capturedVariableName = new String[1];
+        final Object[] capturedVariableValue = new Object[1];
+
+        DelegateExecution execution = (DelegateExecution) Proxy.newProxyInstance(
+            getClass().getClassLoader(),
+            new Class[] {DelegateExecution.class},
+            (proxy, method, args) -> switch (method.getName()) {
+                case "getProcessInstanceId" -> processInstanceId;
+                case "getSuperExecution" -> superExecution;
+                case "getBpmnModelInstance" -> bpmnModelInstance();
+                case "hasVariableLocal" -> false;
+                case "setVariable" -> {
+                    capturedVariableName[0] = (String) args[0];
+                    capturedVariableValue[0] = args[1];
+                    yield null;
+                }
+                case "getVariable" -> {
+                    if (BUILDING_BLOCK_INSTANCE_ID_VARIABLE.equals(args[0])) {
+                        yield capturedVariableValue[0];
+                    }
+                    yield null;
+                }
+                default -> null;
+            }
+        );
+
+        UUID documentUuid = UUID.randomUUID();
+        Document.Id documentId = documentId(documentUuid);
+        OperatonProcessInstanceId expectedProcessId = new OperatonProcessInstanceId(processInstanceId);
+
+        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(documentId);
+
+        listener.notify(execution);
+
+        // Verify the buildingBlockInstanceId was propagated to the child execution
+        assertEquals(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, capturedVariableName[0]);
+        assertEquals(buildingBlockDocumentId, capturedVariableValue[0]);
+    }
+
     private DelegateExecution execution(String processInstanceId, DelegateExecution superExecution) {
-        return delegateExecution(processInstanceId, superExecution, bpmnModelInstance(), false);
+        return delegateExecution(processInstanceId, superExecution, bpmnModelInstance(), false, null);
+    }
+
+    private DelegateExecution executionWithVariableCapture(String processInstanceId, DelegateExecution superExecution) {
+        return delegateExecution(processInstanceId, superExecution, bpmnModelInstance(), false, null);
     }
 
     private DelegateExecution superExecution(String processInstanceId, boolean hasBuildingBlockVariable) {
-        return delegateExecution(processInstanceId, null, null, hasBuildingBlockVariable);
+        return delegateExecution(processInstanceId, null, null, hasBuildingBlockVariable, null);
+    }
+
+    private DelegateExecution superExecution(String processInstanceId, boolean hasBuildingBlockVariable, String buildingBlockDocumentId) {
+        return delegateExecution(processInstanceId, null, null, hasBuildingBlockVariable, buildingBlockDocumentId);
     }
 
     private DelegateExecution delegateExecution(
         String processInstanceId,
         DelegateExecution superExecution,
         BpmnModelInstance modelInstance,
-        boolean hasBuildingBlockVariable
+        boolean hasBuildingBlockVariable,
+        String buildingBlockDocumentId
     ) {
         return (DelegateExecution) Proxy.newProxyInstance(
             getClass().getClassLoader(),
@@ -151,6 +209,13 @@ class StartEventFromCallActivityListenerImplTest {
                 case "getSuperExecution" -> superExecution;
                 case "getBpmnModelInstance" -> modelInstance;
                 case "hasVariableLocal" -> hasBuildingBlockVariable;
+                case "getVariableLocal" -> {
+                    if (hasBuildingBlockVariable && BUILDING_BLOCK_INSTANCE_ID_VARIABLE.equals(args[0])) {
+                        yield buildingBlockDocumentId;
+                    }
+                    yield null;
+                }
+                case "setVariable" -> null;
                 default -> null;
             }
         );
