@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.iko.web.rest.request
+package com.ritense.case.web.rest.dto
 
-import com.ritense.tab.domain.Tab
-import java.util.UUID
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-data class IkoTabUpdateRequest(
-    val key: String,
-    val title: String?,
-    val type: String,
-    val properties: Map<String, Any?> = emptyMap(),
-) {
-    fun toEntity(id: UUID, order: Int) = Tab(
-        id = id,
-        key = this.key,
-        title = this.title,
-        type = this.type,
-        order = order,
-        properties = properties,
-    )
-}
+data class CaseDefinitionImportResponse(
+    val caseDefinitionId: CaseDefinitionId?,
+)

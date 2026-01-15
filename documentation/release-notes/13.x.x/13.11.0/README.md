@@ -26,3 +26,4 @@
 * **Prevent an error when retrieving users from Keycloak with version 26.3.0 or newer.**
 * **Fixed document type dropdown of the Documenten API upload field in start forms**
     - The document type dropdown in the Documenten API metadata modal is now correctly populated when uploading documents in start forms by using the case context as a fallback.
+* **Fixed logging_event errors when the application was started with an empty database**

@@ -2062,6 +2062,7 @@
     "tabType": "Tab type",
     "tabTypeTitle": "Tab type",
     "tabTypePlaceholder": "Enter tab type",
+    "tabProperties": "Properties",
     "addTab": "Add tab",
     "editTab": "Edit tab",
     "rowAction": "Row action",

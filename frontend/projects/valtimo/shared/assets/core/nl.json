@@ -2098,6 +2098,7 @@
     "tabType": "Tabtype",
     "tabTypeTitle": "Tabtype",
     "tabTypePlaceholder": "Voer tabtype in",
+    "tabProperties": "Properties",
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
