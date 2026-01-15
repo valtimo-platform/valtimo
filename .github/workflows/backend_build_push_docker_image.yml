@@ -22,7 +22,7 @@ on:
     outputs:
       tagged_image:
         description: "Tag of the Docker image that was built"
-        value: ${{ jobs.build_image.outputs.image_tag }}
+        value: ${{ jobs.build_and_push_image.outputs.image_tag }}
 
 env:
   ORG_GRADLE_PROJECT_includeDev: false
