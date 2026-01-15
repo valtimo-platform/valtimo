@@ -92,8 +92,12 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
     from:
       uri: "direct:iko:connector:demo"
       steps:
+        - delay:
+           asyncDelayed: true
+           expression:
+             simple: "${random(0,1000)}"
         - setBody:
-            constant: ''{
+           constant: ''{
    "content":[
       {
          "basisgegevens":{
