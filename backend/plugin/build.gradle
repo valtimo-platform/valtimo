@@ -34,12 +34,12 @@ dockerCompose {
 }
 
 dependencies {
-    api(project(":process-link")) {
+    api(project(":backend:process-link")) {
         exclude(group: "com.ritense.valtimo", module: "core")
     }
-    implementation project(":contract")
-    implementation project(":logging")
-    implementation project(":value-resolver")
+    implementation project(":backend:contract")
+    implementation project(":backend:logging")
+    implementation project(":backend:value-resolver")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -50,17 +50,17 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
 
-    testImplementation(project(":building-block")) {
+    testImplementation(project(":backend:building-block")) {
         exclude(group: "com.ritense.valtimo", module: "plugin")
     }
-    testImplementation(project(":core"))
-    testImplementation(project(":case"))
+    testImplementation(project(":backend:core"))
+    testImplementation(project(":backend:case"))
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 
     jar {
         enabled = true

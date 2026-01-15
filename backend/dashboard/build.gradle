@@ -35,9 +35,9 @@ dockerCompose {
 
 dependencies {
 
-    implementation(project(":authorization"))
-    implementation(project(":contract"))
-    implementation(project(":changelog"))
+    implementation(project(":backend:authorization"))
+    implementation(project(":backend:contract"))
+    implementation(project(":backend:changelog"))
 
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -46,10 +46,10 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "io.github.classgraph:classgraph:${classgraphVersion}"
 
-    testImplementation project(":core")
-    testImplementation project(":case")
-    testImplementation project(":resource:local-resource")
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:case")
+    testImplementation project(":backend:resource:local-resource")
+    testImplementation project(":backend:test-utils-common")
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"

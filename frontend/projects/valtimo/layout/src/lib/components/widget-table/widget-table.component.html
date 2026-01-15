@@ -41,13 +41,14 @@
     ></valtimo-widget-action-button>
   </section>
 
-  @if (obs.widgetData && obs.fields && obs.widgetData.length) {
+  @if (obs.fields && (obs.widgetData === null || obs.widgetData.length > 0)) {
     <section class="valtimo-widget-table__content">
       <valtimo-carbon-list
         [header]="false"
         [hideToolbar]="true"
         [fields]="obs.fields"
-        [items]="obs.widgetData"
+        [items]="obs.widgetData || []"
+        [loading]="obs.widgetData === null"
       >
       </valtimo-carbon-list>
 
@@ -59,7 +60,7 @@
       >
       </cds-pagination-nav>
     </section>
-  } @else {
+  } @else if (obs.widgetData !== null) {
     <valtimo-no-results
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"

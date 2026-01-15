@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ChoiceFieldService, ChoiceField, ChoiceFieldValue} from '@valtimo/components';
+import {ChoiceFieldService, ChoiceField, ChoiceFieldValue, Pagination} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -30,11 +30,11 @@ export class ChoiceFieldValueListComponent implements OnInit {
   public form: FormGroup;
   public choiceField: ChoiceField;
   public choiceFieldValues: Array<ChoiceFieldValue> = [];
-  public pagination = {
+  public readonly $pagination = signal<Pagination>({
     collectionSize: 0,
     page: 1,
     size: 10,
-  };
+  });
   public pageParam = 0;
   public fields: Array<any> = [
     {
@@ -70,10 +70,14 @@ export class ChoiceFieldValueListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.paginationSet();
+    this.initData(this.id);
   }
 
-  paginationSet() {
+  public paginationSet(size: string): void {
+    this.$pagination.update(pagination => ({
+      ...pagination,
+      size: +size,
+    }));
     this.initData(this.id);
   }
 
@@ -83,10 +87,14 @@ export class ChoiceFieldValueListComponent implements OnInit {
       this.service
         .queryValuesPage(this.choiceField.keyName, {
           page: this.pageParam,
-          size: this.pagination.size,
+          size: this.$pagination().size,
         })
         .subscribe(page => {
-          this.pagination.collectionSize = page.totalElements;
+          this.$pagination.update(pagination => ({
+            ...pagination,
+            page: this.pageParam + 1,
+            collectionSize: page.totalElements,
+          }));
           this.choiceFieldValues = page.content;
           this.choiceFieldValues.forEach(choiceFieldValue => {
             choiceFieldValue.deprecatedDisplayString = choiceFieldValue.deprecated ? 'Yes' : 'No';
