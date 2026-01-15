@@ -273,6 +273,7 @@ tasks.register("cleanAll") {
 
 [
     "test",
+    "integrationTesting",
     "integrationTestingPostgresql",
     "integrationTestingMysql",
     "securityTesting"
