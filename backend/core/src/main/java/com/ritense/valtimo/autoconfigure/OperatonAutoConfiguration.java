@@ -20,6 +20,9 @@ import com.ritense.valtimo.OperatonBeansPlugin;
 import com.ritense.valtimo.config.OperatonConfiguration;
 import com.ritense.valtimo.operaton.ProcessDefinitionDeployedEventPublisher;
 import com.ritense.valtimo.operaton.command.ValtimoSchemaOperationsCommand;
+import com.ritense.valtimo.operaton.incident.OperatonIncidentAlertLogProperties;
+import com.ritense.valtimo.operaton.incident.OperatonIncidentHandlerConfig;
+import com.ritense.valtimo.operaton.incident.OperatonIncidentHandlerDecorator;
 import com.ritense.valtimo.operaton.processaudit.HistoryEventAuditProcessEnginePlugin;
 import com.ritense.valtimo.operaton.processaudit.TaskEventHandler;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
@@ -47,6 +50,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -55,6 +59,7 @@ import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
 @AutoConfigureAfter(OperatonBpmAutoConfiguration.class)
+@EnableConfigurationProperties(OperatonIncidentAlertLogProperties.class)
 public class OperatonAutoConfiguration {
 
     @Bean
@@ -170,5 +175,12 @@ public class OperatonAutoConfiguration {
     @Order(Ordering.DEFAULT_ORDER - 2)
     public OperatonBeansPlugin operatonBeansPlugin() {
         return new OperatonBeansPlugin();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonIncidentHandlerConfig.class)
+    @ConditionalOnProperty("operaton.incident.alert-log.enabled")
+    public OperatonIncidentHandlerConfig operatonIncidentHandlerConfig(OperatonIncidentAlertLogProperties props)  {
+        return new OperatonIncidentHandlerConfig(props);
     }
 }
