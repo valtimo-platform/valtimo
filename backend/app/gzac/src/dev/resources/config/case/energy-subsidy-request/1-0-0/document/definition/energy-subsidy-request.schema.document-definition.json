@@ -1,0 +1,29 @@
+{
+    "$id": "energy-subsidy-request.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Energietoeslag Aanvraag",
+    "type": "object",
+    "properties": {
+        "applicantName": {
+            "type": "string",
+            "description": "Naam van de aanvrager"
+        },
+        "householdSize": {
+            "type": "integer",
+            "description": "Aantal personen in het huishouden"
+        },
+        "verifiedApplicant": {
+            "type": "string",
+            "description": "Geverifieerde aanvragergegevens vanuit building block"
+        },
+        "calculatedSubsidy": {
+            "type": "integer",
+            "description": "Berekend subsidiebedrag in EUR"
+        },
+        "eligibilityResult": {
+            "type": "string",
+            "description": "Resultaat van de geschiktheidsbeoordeling"
+        }
+    },
+    "required": ["applicantName", "householdSize"]
+}

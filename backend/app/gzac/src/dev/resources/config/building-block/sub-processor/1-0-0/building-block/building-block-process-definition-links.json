@@ -1,6 +1,0 @@
-[
-    {
-        "processDefinitionKey": "sub-processor-secondary",
-        "main": false
-    }
-]

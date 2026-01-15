@@ -1,7 +1,0 @@
-{
-    "key": "data-transformer",
-    "name": "Data Transformer",
-    "description": "First level building block that transforms input data and uses a nested building block for further processing. Demonstrates nested building blocks with ZGW plugin integration.",
-    "versionTag": "1.0.0",
-    "final": false
-}

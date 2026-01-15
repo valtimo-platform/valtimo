@@ -158,7 +158,7 @@ class ProcessDeploymentService(
                 }
             }.forEach { link ->
                 runWithoutAuthorization {
-                    processLinkService.createProcessLink(link, blueprintId as? CaseDefinitionId)
+                    processLinkService.createProcessLink(link, blueprintId)
                 }
             }
         } catch (e: Exception) {

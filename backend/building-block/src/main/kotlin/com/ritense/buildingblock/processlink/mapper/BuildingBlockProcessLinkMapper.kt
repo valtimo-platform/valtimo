@@ -37,6 +37,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -128,16 +129,21 @@ class BuildingBlockProcessLinkMapper(
 
     override fun toNewProcessLink(
         createRequestDto: ProcessLinkCreateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         createRequestDto as BuildingBlockProcessLinkCreateRequestDto
+        // Determine if this is a nested building block link:
+        // 1. If blueprintId is a BuildingBlockDefinitionId, we're in a building block context
+        // 2. Otherwise, check the repository to see if the process is part of a building block
+        val isNestedBuildingBlockLink = blueprintId is BuildingBlockDefinitionId ||
+            processDefinitionBuildingBlockDefinitionRepository
+                .existsByIdProcessDefinitionIdId(createRequestDto.processDefinitionId)
+
         // CaseDefinitionId is only required for building-block process links in case processes.
         // Building block processes can also have building-block process links (nested building blocks),
-        // which don't have a CaseDefinitionId.
-        val isNestedBuildingBlockLink = processDefinitionBuildingBlockDefinitionRepository
-            .existsByIdProcessDefinitionIdId(createRequestDto.processDefinitionId)
+        // which don't require a CaseDefinitionId.
         if (!isNestedBuildingBlockLink) {
-            requireNotNull(caseDefinitionId) {
+            require(blueprintId is CaseDefinitionId) {
                 "CaseDefinitionId is required for building-block process links in case processes"
             }
         }
@@ -165,17 +171,22 @@ class BuildingBlockProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         processLinkToUpdate as BuildingBlockProcessLink
         updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
+        // Determine if this is a nested building block link:
+        // 1. If blueprintId is a BuildingBlockDefinitionId, we're in a building block context
+        // 2. Otherwise, check the repository to see if the process is part of a building block
+        val isNestedBuildingBlockLink = blueprintId is BuildingBlockDefinitionId ||
+            processDefinitionBuildingBlockDefinitionRepository
+                .existsByIdProcessDefinitionIdId(processLinkToUpdate.processDefinitionId)
+
         // CaseDefinitionId is only required for building-block process links in case processes.
         // Building block processes can also have building-block process links (nested building blocks),
-        // which don't have a CaseDefinitionId.
-        val isNestedBuildingBlockLink = processDefinitionBuildingBlockDefinitionRepository
-            .existsByIdProcessDefinitionIdId(processLinkToUpdate.processDefinitionId)
+        // which don't require a CaseDefinitionId.
         if (!isNestedBuildingBlockLink) {
-            requireNotNull(caseDefinitionId) {
+            require(blueprintId is CaseDefinitionId) {
                 "CaseDefinitionId is required for building-block process links in case processes"
             }
         }
