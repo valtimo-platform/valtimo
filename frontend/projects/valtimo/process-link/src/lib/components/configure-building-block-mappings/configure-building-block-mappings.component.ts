@@ -67,7 +67,7 @@ import {
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {getCaseManagementRouteParams, getBuildingBlockManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -179,6 +179,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   ];
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
+  public readonly buildingBlockParams$ = getBuildingBlockManagementRouteParams(this.route);
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   private readonly _subscriptions = new Subscription();

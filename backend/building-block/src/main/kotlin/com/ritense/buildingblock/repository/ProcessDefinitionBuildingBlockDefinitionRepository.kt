@@ -35,4 +35,5 @@ interface ProcessDefinitionBuildingBlockDefinitionRepository :
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         main: Boolean
     ): ProcessDefinitionBuildingBlockDefinition?
+    fun existsByIdProcessDefinitionIdId(processDefinitionIdId: String): Boolean
 }

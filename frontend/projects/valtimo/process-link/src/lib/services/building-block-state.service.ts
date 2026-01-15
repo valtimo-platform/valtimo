@@ -39,6 +39,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _loadingRequirements$ = new BehaviorSubject<boolean>(false);
   private readonly _loadingFields$ = new BehaviorSubject<boolean>(false);
   private readonly _pluginDependencies$ = new BehaviorSubject<Array<string>>([]);
+  private readonly _isNestedBuildingBlock$ = new BehaviorSubject<boolean>(false);
 
   private _versionSubscription?: Subscription;
   private _requirementsSubscription?: Subscription;
@@ -92,12 +93,26 @@ export class BuildingBlockStateService implements OnDestroy {
     return this._pluginDependencies$.asObservable();
   }
 
+  public get isNestedBuildingBlock$(): Observable<boolean> {
+    return this._isNestedBuildingBlock$.asObservable();
+  }
+
+  public setIsNestedBuildingBlock(isNested: boolean): void {
+    this._isNestedBuildingBlock$.next(isNested);
+  }
+
   public get mappingsComplete$(): Observable<boolean> {
     return combineLatest([
       this.requiredPluginKeys$,
       this.pluginMappings$,
       this.definitionVersionTag$,
-    ]).pipe(map(([keys, mappings, version]) => !!version && keys.every(key => !!mappings[key])));
+      this.isNestedBuildingBlock$,
+    ]).pipe(
+      map(
+        ([keys, mappings, version, isNested]) =>
+          !!version && (isNested || keys.every(key => !!mappings[key]))
+      )
+    );
   }
 
   public setDefinitionKey(key: string | null, initialVersionTag?: string): void {
@@ -222,6 +237,7 @@ export class BuildingBlockStateService implements OnDestroy {
     this._definitionVersionTag$.next(null);
     this._versions$.next([]);
     this._pluginMappings$.next({});
+    this._isNestedBuildingBlock$.next(false);
     this.clearFields();
     this.clearMappings();
     this.clearPluginRequirements();

@@ -694,24 +694,78 @@ public class OperatonProcessService {
     }
 
      public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
+        String currentBuildingBlockVersionTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString();
+
+        // Set version tag on all processes in this building block
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
-                process.setOperatonVersionTag(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString());
+                process.setOperatonVersionTag(currentBuildingBlockVersionTag);
             }
         );
 
-        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
-            callActivity.setOperatonCalledElementBinding("versionTag");
-            callActivity.setOperatonCalledElementVersionTag(
-                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
-            );
-        });
+        // Collect all process keys defined in this building block
+        Set<String> processKeysInBuildingBlock = bpmnModel.getDefinitions().getChildElementsByType(Process.class).stream()
+            .map(Process::getId)
+            .collect(Collectors.toSet());
 
+        // Only update call activities that call processes within this building block
+        // or don't already have a BB: version tag pointing to a different building block
         bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            String calledElement = callActivity.getCalledElement();
+            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+
+            // If calling a process within this building block, set the version tag
+            if (calledElement != null && processKeysInBuildingBlock.contains(calledElement)) {
+                callActivity.setOperatonCalledElementBinding("versionTag");
+                callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
+                ensureBuildingBlockInstanceIdVariableMapping(bpmnModel, callActivity);
+                return;
+            }
+
+            // If already has a BB: version tag pointing to a different building block, preserve it
+            // (this is a call to another building block and should not be modified)
+            BuildingBlockDefinitionId existingBuildingBlockId = BuildingBlockDefinitionId.fromProcessVersionTag(existingVersionTag);
+            if (existingBuildingBlockId != null && !existingBuildingBlockId.equals(buildingBlockDefinitionId)) {
+                // Keep the existing version tag - this call activity targets a different building block
+                // But still ensure the buildingBlockInstanceId variable is passed
+                ensureBuildingBlockInstanceIdVariableMapping(bpmnModel, callActivity);
+                return;
+            }
+
+            // Otherwise, set to this building block's version tag (default behavior for processes
+            // within this building block that weren't caught by the process key check above)
             callActivity.setOperatonCalledElementBinding("versionTag");
-            callActivity.setOperatonCalledElementVersionTag(
-                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()            );
+            callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
+            ensureBuildingBlockInstanceIdVariableMapping(bpmnModel, callActivity);
         });
+    }
+
+    /**
+     * Ensures the buildingBlockInstanceId variable is passed to child processes via camunda:in mapping.
+     * This is necessary for nested building blocks to correctly resolve document values from their
+     * building block document rather than the case document.
+     */
+    private void ensureBuildingBlockInstanceIdVariableMapping(BpmnModelInstance bpmnModel, CallActivity callActivity) {
+        ExtensionElements extensionElements = callActivity.getExtensionElements();
+        if (extensionElements == null) {
+            extensionElements = bpmnModel.newInstance(ExtensionElements.class);
+            callActivity.addChildElement(extensionElements);
+        }
+
+        // Check if buildingBlockInstanceId mapping already exists
+        boolean hasBuildingBlockInstanceIdMapping = extensionElements.getElementsQuery()
+            .filterByType(OperatonIn.class)
+            .list()
+            .stream()
+            .anyMatch(in -> "buildingBlockInstanceId".equals(in.getOperatonSource())
+                && "buildingBlockInstanceId".equals(in.getOperatonTarget()));
+
+        if (!hasBuildingBlockInstanceIdMapping) {
+            OperatonIn buildingBlockInstanceIdIn = bpmnModel.newInstance(OperatonIn.class);
+            buildingBlockInstanceIdIn.setOperatonSource("buildingBlockInstanceId");
+            buildingBlockInstanceIdIn.setOperatonTarget("buildingBlockInstanceId");
+            extensionElements.addChildElement(buildingBlockInstanceIdIn);
+        }
     }
 
     void updateCaseDefinitionProcessesVersionTags(

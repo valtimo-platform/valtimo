@@ -42,20 +42,49 @@ class DefaultBuildingBlockPluginConfigurationResolver(
     }
 
     private fun findMappings(execution: DelegateExecution): Map<String, UUID> {
-        val businessKey = execution.businessKey
-            ?: throw IllegalStateException("Execution businessKey is required to resolve plugin configuration mappings")
+        // Walk up to find the ROOT building block process link (the one in a case process)
+        // which contains the actual plugin configuration mappings
+        return findRootBuildingBlockMappings(execution)
+            ?: throw IllegalStateException("Could not find root building block process link with plugin configuration mappings")
+    }
 
-        val documentId = try {
-            UUID.fromString(businessKey)
-        } catch(_: IllegalArgumentException) {
-            throw IllegalStateException("BusinessKey for building block instance document must be a UUID, but was '$businessKey'")
+    /**
+     * Walks up the execution hierarchy to find the root building block process link.
+     * For nested building blocks (Case -> BB-A -> BB-B -> BB-C), this finds the process link
+     * from the case to BB-A, which contains the plugin configuration mappings.
+     */
+    private fun findRootBuildingBlockMappings(execution: DelegateExecution): Map<String, UUID>? {
+        var current: DelegateExecution? = execution
+        var lastBuildingBlockDocumentId: UUID? = null
+        var lastProcessDefinitionId: String? = null
+
+        // Walk up to find the topmost building block instance (the root)
+        // The BUILDING_BLOCK_INSTANCE_ID_VARIABLE contains the document ID of the building block instance
+        // The variable is set on the call activity execution in the PARENT process (by BuildingBlockCallActivityListener)
+        while (current != null) {
+            if (current.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
+                val variableValue = current.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)
+                lastBuildingBlockDocumentId = when (variableValue) {
+                    is UUID -> variableValue
+                    is String -> UUID.fromString(variableValue)
+                    else -> throw IllegalStateException("Unexpected type for $BUILDING_BLOCK_INSTANCE_ID_VARIABLE: ${variableValue?.javaClass}")
+                }
+                // current is the call activity execution in the parent process, so its processDefinitionId
+                // is the parent process definition (the one that contains the building block process link)
+                lastProcessDefinitionId = current.processDefinitionId
+            }
+            current = current.superExecution
         }
 
-        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId)
-            ?: throw IllegalStateException("No building block instance found for documentId '$documentId'")
+        if (lastBuildingBlockDocumentId == null) {
+            return null
+        }
 
-        val processDefinitionId = findParentBlueprintInstanceProcessId(execution)
-            ?: throw IllegalStateException("Parent blueprint instance process not found for activityId '${buildingBlockInstance.activityId}'")
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(lastBuildingBlockDocumentId)
+            ?: throw IllegalStateException("No building block instance found for documentId '$lastBuildingBlockDocumentId'")
+
+        val processDefinitionId = lastProcessDefinitionId
+            ?: throw IllegalStateException("Parent process definition not found for building block with documentId '$lastBuildingBlockDocumentId'")
 
         val processLinks = processLinkService.getProcessLinks(
             processDefinitionId,
@@ -64,24 +93,10 @@ class DefaultBuildingBlockPluginConfigurationResolver(
 
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
-                "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
+                "Expected a single building block process link for processDefinitionId '$processDefinitionId' " +
                     "and activityId '${buildingBlockInstance.activityId}', but found ${processLinks.size}"
             )
 
         return processLink.pluginConfigurationMappings
-    }
-
-    fun findParentBlueprintInstanceProcessId(execution: DelegateExecution): String? {
-        var current: DelegateExecution? = execution
-
-
-        while (current != null ) {
-            if (current.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
-                return current.processDefinitionId
-            }
-            current = current.superExecution
-        }
-
-        return null
     }
 }

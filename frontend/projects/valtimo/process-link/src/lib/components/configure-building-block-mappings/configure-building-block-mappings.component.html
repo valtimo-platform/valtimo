@@ -3,6 +3,7 @@
     fields: (buildingBlockFields$ | async),
     fieldItems: (buildingBlockFieldItems$ | async),
     params: (params$ | async),
+    buildingBlockParams: (buildingBlockParams$ | async),
   };
 
 <div class="mapping-step">
@@ -27,8 +28,10 @@
               <valtimo-value-path-selector
                 [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
                 [appendInline]="false"
                 [dropUp]="false"
                 [formControl]="group.get('source')"
@@ -137,8 +140,10 @@
               <valtimo-value-path-selector
                 [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
                 [formControl]="group.get('target')"
                 [appendInline]="false"
                 [filterItems]="getUsedCaseTargetsForRow$(group) | async"

@@ -56,6 +56,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
@@ -291,6 +292,14 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockValueResolverResource::class)
+    fun buildingBlockValueResolverResource(
+        valueResolverService: ValueResolverService
+    ): BuildingBlockValueResolverResource {
+        return BuildingBlockValueResolverResource(valueResolverService)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionChecker::class)
     fun buildingBlockDefinitionChecker(
         repository: BuildingBlockDefinitionRepository,
@@ -306,12 +315,14 @@ class BuildingBlockAutoConfiguration {
         valtimoImportService: ValtimoImportService,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         applicationEventPublisher: ApplicationEventPublisher,
+        objectMapper: ObjectMapper,
     ): BuildingBlockDefinitionDeploymentService {
         return BuildingBlockDefinitionDeploymentService(
             resourceLoader,
             valtimoImportService,
             buildingBlockDefinitionRepository,
-            applicationEventPublisher
+            applicationEventPublisher,
+            objectMapper
         )
     }
 
@@ -397,11 +408,13 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockPluginDefinitionService(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-        pluginService: PluginService
+        pluginService: PluginService,
+        processLinkService: ProcessLinkService
     ) = BuildingBlockPluginDefinitionService(
         pluginProcessLinkRepository,
         processDefinitionBuildingBlockDefinitionRepository,
-        pluginService
+        pluginService,
+        processLinkService
     )
 
     @Bean

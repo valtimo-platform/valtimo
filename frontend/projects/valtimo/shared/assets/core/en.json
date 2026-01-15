@@ -1826,6 +1826,7 @@
       "selectLabel": "Building block",
       "emptyState": "No building blocks available. Create a building block first.",
       "noRequirements": "This building block does not require any plugin configurations.",
+      "nestedBuildingBlockInfo": "Plugin configurations are inherited from the parent building block.",
       "configurationLabel": "Plugin configuration",
       "pluginLabel": "Plugin",
       "configurationPlaceholder": "Select a configuration",

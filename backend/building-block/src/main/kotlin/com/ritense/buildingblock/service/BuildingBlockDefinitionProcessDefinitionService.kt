@@ -243,6 +243,12 @@ class BuildingBlockDefinitionProcessDefinitionService(
     }
 
     @Transactional(readOnly = true)
+    fun isBuildingBlockProcess(processDefinitionId: String): Boolean {
+        return processDefinitionBuildingBlockDefinitionRepository
+            .existsByIdProcessDefinitionIdId(processDefinitionId)
+    }
+
+    @Transactional(readOnly = true)
     fun getMainProcessDefinitionKey(
         buildingBlockDefinitionKey: String,
         buildingBlockDefinitionVersionTag: String

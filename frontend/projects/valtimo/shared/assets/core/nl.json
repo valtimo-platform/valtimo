@@ -1862,6 +1862,7 @@
       "selectLabel": "Bouwblok",
       "emptyState": "Geen bouwblokken beschikbaar. Maak eerst een bouwblok aan.",
       "noRequirements": "Dit bouwblok vereist geen pluginconfiguraties.",
+      "nestedBuildingBlockInfo": "Pluginconfiguraties worden overgenomen van het bovenliggende bouwblok.",
       "configurationLabel": "Pluginconfiguratie",
       "pluginLabel": "Plugin",
       "configurationPlaceholder": "Selecteer een configuratie",

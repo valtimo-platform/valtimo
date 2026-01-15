@@ -355,12 +355,18 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
-    // TODO: Fix this for building blocks
     public JsonSchemaDocumentId getDocumentId(
         ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
     ) {
         denyAuthorization();
+
+        // Check if we're inside a building block process - if so, use the building block document ID
+        var buildingBlockDocumentId = getBuildingBlockDocumentId(variableScope);
+        if (buildingBlockDocumentId != null) {
+            return JsonSchemaDocumentId.existingId(buildingBlockDocumentId);
+        }
+
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)
             .orElse(null);
@@ -377,6 +383,23 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 return null;
             }
         }
+    }
+
+    /**
+     * Get the building block document ID from the variable scope if we're inside a building block process.
+     * Returns null if not in a building block context.
+     */
+    @Nullable
+    private String getBuildingBlockDocumentId(@Nullable VariableScope variableScope) {
+        if (variableScope == null) {
+            return null;
+        }
+        var buildingBlockInstanceId = variableScope.getVariable("buildingBlockInstanceId");
+        if (buildingBlockInstanceId instanceof String documentId
+            && documentId.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
+            return documentId;
+        }
+        return null;
     }
 
     public JsonSchemaDocument getDocument(ProcessInstanceId processInstanceId, VariableScope variableScope) {
