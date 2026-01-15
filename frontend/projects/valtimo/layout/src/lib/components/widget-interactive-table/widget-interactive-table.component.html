@@ -34,8 +34,8 @@
   <valtimo-carbon-list
     [header]="false"
     [fields]="obs.fields"
-    [initialSortState]="$initialSortState()"
     [items]="obs.widgetData || []"
+    [initialSortState]="$initialSortState()"
     [loading]="obs.widgetData === null"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
