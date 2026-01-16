@@ -23,7 +23,9 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
+import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.impl.JsonSchema
@@ -40,10 +42,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -311,6 +310,190 @@ class NestedBuildingBlockIT @Autowired constructor(
         assertThat(processedValue.asText()).isEqualTo("test-data")
     }
 
+    @Test
+    fun `should write output mappings to parent building block document when nested BB completes`() {
+        // Setup: Case -> BB1, then we'll complete BB2 which writes to BB1's document
+        val bb1ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb1DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/initialValue", target = "processedValue")
+            )
+        )
+
+        // BB2 has output mappings that should write to BB1's document (not case document)
+        val bb2ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "bb-level-1-process",
+            activityId = "callBB2",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb2DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/processedValue", target = "processedValue")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/processedValue",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+
+        whenever(processLinkService.getProcessLinks("case-process", "callBB1")).thenReturn(listOf(bb1ProcessLink))
+        whenever(processLinkService.getProcessLinks("bb-level-1-process", "callBB2")).thenReturn(listOf(bb2ProcessLink))
+
+        // Create BB1 (from case)
+        val bb1Execution = createMockExecution(
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            businessKey = caseDocumentId.toString(),
+            parentCallActivityExecution = null
+        )
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(bb1Execution)
+        })
+
+        val bb1Instance = buildingBlockInstanceRepository.findAll().first()
+
+        // Create BB2 (from BB1)
+        val bb2Execution = createMockExecution(
+            processDefinitionId = "bb-level-1-process",
+            activityId = "callBB2",
+            businessKey = bb1Instance.documentId.toString(),
+            parentCallActivityExecution = createParentCallActivityExecution(bb1Instance.documentId)
+        )
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(bb2Execution)
+        })
+
+        val bb2Instance = buildingBlockInstanceRepository.findAll().find { it.definition.id == bb2DefinitionId }!!
+
+        // Update BB2 document with a result value
+        val bb2UpdatedValue = "processed-by-bb2"
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            val bb2Document = documentService.get(bb2Instance.documentId.toString())
+            documentService.modifyDocument(
+                bb2Document,
+                objectMapper.createObjectNode().apply { put("processedValue", bb2UpdatedValue) }
+            )
+        })
+
+        // Now complete BB2 - should write to BB1's document (not case document)
+        val bb2EndExecution = createCallActivityEndExecution(
+            processDefinitionId = "bb-level-1-process",
+            buildingBlockDocumentId = bb2Instance.documentId
+        )
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityEnd(bb2EndExecution)
+        })
+
+        // Verify BB1's document was updated (not the case document)
+        val bb1Document = AuthorizationContext.runWithoutAuthorization(Callable {
+            documentService.get(bb1Instance.documentId.toString())
+        }) as JsonSchemaDocument
+        assertThat(bb1Document.content().asJson().get("processedValue").asText()).isEqualTo(bb2UpdatedValue)
+
+        // Verify case document was NOT updated
+        val caseDocument = AuthorizationContext.runWithoutAuthorization(Callable {
+            documentService.get(caseDocumentId.toString())
+        }) as JsonSchemaDocument
+        assertThat(caseDocument.content().asJson().get("initialValue").asText()).isEqualTo("test-data")
+    }
+
+    @Test
+    fun `should write output mappings to case document when top-level BB completes`() {
+        // Create a case schema that can receive the output
+        val updatedCaseSchema = """
+            {
+              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+              "${'$'}id": "nested-test-case.schema",
+              "type": "object",
+              "properties": {
+                "initialValue": {"type": "string"},
+                "level": {"type": "integer"},
+                "resultFromBB": {"type": "string"}
+              }
+            }
+        """.trimIndent()
+        documentDefinitionRepository.saveAndFlush(
+            JsonSchemaDocumentDefinition(
+                JsonSchemaDocumentDefinitionId.forCase("nested-test-case", caseDefinitionId),
+                JsonSchema.fromString(updatedCaseSchema)
+            )
+        )
+
+        // BB1 has output mappings that should write to case document
+        val bb1ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb1DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/initialValue", target = "processedValue")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/resultFromBB",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+
+        whenever(processLinkService.getProcessLinks("case-process", "callBB1")).thenReturn(listOf(bb1ProcessLink))
+
+        // Create BB1 (from case)
+        val bb1Execution = createMockExecution(
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            businessKey = caseDocumentId.toString(),
+            parentCallActivityExecution = null
+        )
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(bb1Execution)
+        })
+
+        val bb1Instance = buildingBlockInstanceRepository.findAll().first()
+
+        // Update BB1 document with a result value
+        val bb1ResultValue = "result-from-bb1"
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            val bb1Document = documentService.get(bb1Instance.documentId.toString())
+            documentService.modifyDocument(
+                bb1Document,
+                objectMapper.createObjectNode().apply { put("processedValue", bb1ResultValue) }
+            )
+        })
+
+        // Now complete BB1 - should write to case document
+        val bb1EndExecution = createCallActivityEndExecution(
+            processDefinitionId = "case-process",
+            buildingBlockDocumentId = bb1Instance.documentId
+        )
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityEnd(bb1EndExecution)
+        })
+
+        // Verify case document was updated
+        val caseDocument = AuthorizationContext.runWithoutAuthorization(Callable {
+            documentService.get(caseDocumentId.toString())
+        }) as JsonSchemaDocument
+        assertThat(caseDocument.content().asJson().get("resultFromBB").asText()).isEqualTo(bb1ResultValue)
+    }
+
     private fun createMockExecution(
         processDefinitionId: String,
         activityId: String,
@@ -327,7 +510,20 @@ class NestedBuildingBlockIT @Autowired constructor(
             on { this.currentActivityId } doReturn activityId
             on { this.processDefinitionId } doReturn processDefinitionId
             on { this.businessKey } doReturn businessKey
+            on { this.processBusinessKey } doReturn businessKey  // Used by findParentBuildingBlockInstance
             on { this.processInstance } doReturn processInstance
+        }
+    }
+
+    private fun createCallActivityEndExecution(
+        processDefinitionId: String,
+        buildingBlockDocumentId: UUID
+    ): DelegateExecution {
+        // This represents the call activity execution when the building block process ends
+        // The local variable was set when the building block started
+        return mock {
+            on { this.processDefinitionId } doReturn processDefinitionId
+            on { getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE) } doReturn buildingBlockDocumentId.toString()
         }
     }
 
