@@ -48,11 +48,6 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
-/* iko plugin */
-export * from './lib/plugins/iko/iko-plugin.module';
-export * from './lib/plugins/iko/iko-plugin.specification';
-export * from './lib/plugins/iko/models/config';
-export * from './lib/plugins/iko/components/iko-configuration/iko-configuration.component';
 /* klantinteracties api plugin */
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin-module';
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin.specification';
@@ -90,7 +85,7 @@ export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-z
 export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
 export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
-export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component'
+export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/delete-zaak-rol/delete-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 export * from './lib/plugins/zaken-api/components/create-zaaknotitie/create-zaaknotitie-configuration.component';
