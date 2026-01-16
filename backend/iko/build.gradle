@@ -40,7 +40,6 @@ dependencies {
     implementation project(':backend:core')
     implementation project(':backend:exporter')
     implementation project(':backend:importer')
-    implementation project(':backend:plugin')
     implementation project(':backend:process-document')
     implementation project(':backend:search')
     implementation project(':backend:value-resolver')
