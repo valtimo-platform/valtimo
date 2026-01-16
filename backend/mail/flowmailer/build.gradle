@@ -30,10 +30,10 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":mail")
-    implementation project(":authorization")
-    implementation project(":case")
-    implementation project(":resource")
+    api project(":backend:mail")
+    implementation project(":backend:authorization")
+    implementation project(":backend:case")
+    implementation project(":backend:resource")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -67,11 +67,11 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(":core")
-    testImplementation(project(':building-block'))
-    testImplementation project(":test-utils-common")
-    testImplementation project(":mail")
-    testImplementation project(':resource')
+    testImplementation project(":backend:core")
+    testImplementation(project(':backend:building-block'))
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:mail")
+    testImplementation project(':backend:resource')
     testImplementation "org.springframework.security:spring-security-test"
 
     //Kotlin

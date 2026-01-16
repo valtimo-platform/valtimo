@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoSearchFieldService
+import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.service.IkoViewService
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valueresolver.ValueResolverFactory
@@ -31,13 +32,14 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_SEARCH_A
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
 import java.util.function.Function
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.data.domain.Pageable
 
 class IkoValueResolverFactory(
-    private val ikoViewService: IkoViewService,
+    private val ikoTabService: IkoTabService,
     private val ikoSearchActionService: IkoSearchActionService,
     private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
@@ -63,9 +65,10 @@ class IkoValueResolverFactory(
 
     private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
         val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
+        val tabKey = properties[TAB_KEY]?.toString()
         val id = properties[ID]?.toString()
         if (ikoViewKey != null && id != null) {
-            val data = ikoViewService.getDataById(ikoViewKey, id)
+            val data = ikoTabService.getDataById(ikoViewKey, tabKey, id)
             return toValueFunction(data)
         }
         return null
