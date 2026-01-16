@@ -36,7 +36,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
-  DropdownModule,
+  ComboBoxModule,
   InputModule,
   LayerModule,
   ListItem,
@@ -76,7 +76,7 @@ import {ActivatedRoute} from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    DropdownModule,
+    ComboBoxModule,
     LoadingModule,
     ReactiveFormsModule,
     ToggleModule,
@@ -345,7 +345,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
           ...(!!option.children && {children: option.children}),
         };
 
-        if (mappedOption.selected) this.onPathSelected({item: mappedOption});
+        if (mappedOption.selected) this.onPathSelected(mappedOption);
         return mappedOption;
       });
     }),
@@ -396,13 +396,17 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string} & ValuePathItem}): void {
-    const selectedPath = event?.item?.content;
+  public onPathSelected(event: {content: string} & ValuePathItem): void {
+    const selectedPath = event?.content;
     if (!selectedPath) return;
 
-    if (this.collectionSelected.observed) this.collectionSelected.emit(event.item);
+    if (this.collectionSelected.observed) this.collectionSelected.emit(event);
 
     this.selectedPath.setValue(selectedPath);
+  }
+
+  public onPathCleared(): void {
+    this.selectedPath.setValue('');
   }
 
   public onCaseDefinitionSelected(event: {item: {id: string}}): void {
