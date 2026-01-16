@@ -108,7 +108,7 @@ class CaseWidgetService(
     }
 
     fun getCaseWidget(documentId: JsonSchemaDocumentId, tabKey: String, widgetKey: String): CaseWidgetTabWidgetDto? {
-        return getWidgetTab(documentId, tabKey)?.widgets?.single { it.key == widgetKey }
+        return getWidgetTab(documentId, tabKey)?.widgets?.singleOrNull { it.key == widgetKey }
     }
 
     @Transactional

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.case_.service.CaseWidgetService
+import com.ritense.case_.widget.collection.CollectionCaseWidget
 import com.ritense.case_.widget.table.TableCaseWidgetDto
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
@@ -158,6 +159,12 @@ class IkoValueResolverFactory(
         val pageable = properties[PAGEABLE] as Pageable?
         return when (val widget = caseWidgetService.getCaseWidget(documentId, tabKey, widgetKey)) {
             is TableCaseWidgetDto -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            is CollectionCaseWidget -> ContainerParam(
                 containerId = widget.key,
                 pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
                 filters = emptyMap()
