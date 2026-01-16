@@ -60,7 +60,7 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         }
     }
 
-    /**y
+    /**
      * Propagates the buildingBlockInstanceId variable from the parent call activity execution
      * to the child process. This allows building block processes to use the correct document
      * without requiring explicit camunda:in configuration in every BPMN.

@@ -196,7 +196,7 @@ class BuildingBlockCallActivityListener(
         valueResolverService.handleValues(targetDocumentId, valuesToHandle)
     }
 
-    private fun  createBuildingBlock(
+    private fun createBuildingBlock(
         buildingBlockProcessLink: BuildingBlockProcessLink,
         rootCaseDocumentId: UUID,
         sourceDocumentId: UUID,
