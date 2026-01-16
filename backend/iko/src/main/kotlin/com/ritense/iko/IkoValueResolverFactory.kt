@@ -30,7 +30,7 @@ import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_QUERY_PARAMETERS
 import com.ritense.iko.IkoServerRepository.Companion.PLUGIN_CONFIGURATION
 import com.ritense.iko.dto.ContainerParam
 import com.ritense.iko.plugin.IkoPlugin
-import com.ritense.iko.service.IkoViewService
+import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valueresolver.ValueResolverFactory
@@ -43,6 +43,7 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INST
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
+import com.ritense.widget.collection.CollectionWidget
 import com.ritense.widget.interactivetable.InteractiveTableWidget
 import com.ritense.widget.table.TableWidget
 import java.util.function.Function
@@ -51,7 +52,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 
 class IkoValueResolverFactory(
-    private val ikoViewService: IkoViewService,
+    private val ikoTabService: IkoTabService,
     private val objectMapper: ObjectMapper,
     private val pluginService: PluginService,
     private val ikoWidgetService: IkoWidgetService,
@@ -78,8 +79,9 @@ class IkoValueResolverFactory(
 
     private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
         val ikoViewKey = properties[IKO_VIEW_KEY]?.toString() ?: return null
+        val tabKey = properties[TAB_KEY]?.toString()
         val id = properties[ID]?.toString() ?: return null
-        val config = ikoViewService.getIkoViewConfig(ikoViewKey)
+        val config = ikoTabService.getIkoTabConfig(ikoViewKey, tabKey)
         val plugin = pluginService.createInstance<IkoPlugin>(config[PLUGIN_CONFIGURATION].toString())
         val adp = properties[IKO_ADP]?.toString() ?: config[AGGREGATED_DATA_PROFILE_NAME]?.toString()
         val data = if (adp != null) {
@@ -134,6 +136,12 @@ class IkoValueResolverFactory(
             )
 
             is TableWidget -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            is CollectionWidget -> ContainerParam(
                 containerId = widget.key,
                 pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
                 filters = emptyMap()

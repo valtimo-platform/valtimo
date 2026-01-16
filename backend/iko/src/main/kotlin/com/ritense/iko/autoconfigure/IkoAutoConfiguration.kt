@@ -297,14 +297,14 @@ class IkoAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
-        ikoViewService: IkoViewService,
+        ikoTabService: IkoTabService,
         objectMapper: ObjectMapper,
         pluginService: PluginService,
         ikoWidgetService: IkoWidgetService,
         caseWidgetService: CaseWidgetService,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
-            ikoViewService,
+            ikoTabService,
             objectMapper,
             pluginService,
             ikoWidgetService,
@@ -503,12 +503,14 @@ class IkoAutoConfiguration {
         ikoViewTabRepository: IkoViewTabRepository,
         ikoViewService: IkoViewService,
         applicationEventPublisher: ApplicationEventPublisher,
+        ikoRepositories: List<IkoRepository>,
     ): IkoTabService {
         return IkoTabService(
             tabService,
             ikoViewTabRepository,
             ikoViewService,
             applicationEventPublisher,
+            ikoRepositories,
         )
     }
 

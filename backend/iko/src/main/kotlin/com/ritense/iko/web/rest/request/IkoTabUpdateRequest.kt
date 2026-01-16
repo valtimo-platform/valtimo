@@ -23,12 +23,14 @@ data class IkoTabUpdateRequest(
     val key: String,
     val title: String?,
     val type: String,
+    val properties: Map<String, Any?> = emptyMap(),
 ) {
     fun toEntity(id: UUID, order: Int) = Tab(
         id = id,
         key = this.key,
         title = this.title,
         type = this.type,
-        order = order
+        order = order,
+        properties = properties,
     )
 }
