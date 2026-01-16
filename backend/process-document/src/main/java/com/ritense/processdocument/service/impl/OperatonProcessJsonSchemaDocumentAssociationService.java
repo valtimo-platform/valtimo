@@ -189,136 +189,34 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             )
         );
 
-        // Get case processes via ProcessDocumentInstance associations
-        var caseProcessDtos = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId)
-            .stream()
-            .map(process -> mapToProcessDocumentInstanceDto(process, document))
-            .filter(Objects::nonNull)
-            .toList();
+        return processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentIdIncludingBuildingBlocks(
+                documentId.getId()).stream()
+            .map(process -> {
+                var operatonProcess = historyService.createHistoricProcessInstanceQuery()
+                    .processInstanceId(process.getId().processInstanceId().toString())
+                    .singleResult();
 
-        // Get building block processes by traversing subprocess hierarchy from case processes
-        var buildingBlockProcessDtos = findBuildingBlockProcesses(documentId.getId().toString(), caseProcessDtos);
-
-        // Combine results, case processes first, then building block processes
-        var allProcessIds = caseProcessDtos.stream()
-            .map(dto -> dto.processDocumentInstanceId().processInstanceId().toString())
-            .collect(java.util.stream.Collectors.toSet());
-
-        var combinedResults = new java.util.ArrayList<>(caseProcessDtos);
-        for (var bbDto : buildingBlockProcessDtos) {
-            if (!allProcessIds.contains(bbDto.processDocumentInstanceId().processInstanceId().toString())) {
-                combinedResults.add(bbDto);
-            }
-        }
-
-        return combinedResults;
-    }
-
-    private ProcessDocumentInstanceDto mapToProcessDocumentInstanceDto(
-        OperatonProcessJsonSchemaDocumentInstance process,
-        Document document
-    ) {
-        var operatonProcess = historyService.createHistoricProcessInstanceQuery()
-            .processInstanceId(process.getId().processInstanceId().toString())
-            .singleResult();
-
-        if (operatonProcess == null) {
-            return null;
-        }
-
-        process.setActive(operatonProcess.getEndTime() == null);
-        var operatonProcessDefinition = runWithoutAuthorization(() -> {
-            var pd = repositoryService.findProcessDefinition(
-                byKey(operatonProcess.getProcessDefinitionKey())
-                    .and(byBlueprintId(document.definitionId().caseDefinitionId()))
-            );
-            if (pd != null) {
-                return pd;
-            } else {
-                // Needed for system-processes:
-                return repositoryService.findProcessDefinition(
-                    byKey(operatonProcess.getProcessDefinitionKey())
-                        .and(maxVersionOf(byNotLinkedToCaseDefinition()))
-                );
-            }
-        });
-        var startDateTime = LocalDateTime.ofInstant(
-            operatonProcess.getStartTime().toInstant(),
-            ZoneId.systemDefault()
-        );
-        var startedBy = operatonProcess.getStartUserId() == null ? null :
-            userManagementService.findByEmail(operatonProcess.getStartUserId())
-                .map(ManageableUser::getFullName)
-                .orElse(null);
-
-        return new ProcessDocumentInstanceDto(
-            process.getId(),
-            process.processName(),
-            process.isActive(),
-            operatonProcess.getProcessDefinitionVersion(),
-            operatonProcessDefinition.getVersion(),
-            startedBy,
-            startDateTime
-        );
-    }
-
-    private List<ProcessDocumentInstanceDto> findBuildingBlockProcesses(
-        String caseDocumentId,
-        List<ProcessDocumentInstanceDto> caseProcessDtos
-    ) {
-        // Get all case process instance IDs as roots for subprocess search
-        var rootProcessInstanceIds = caseProcessDtos.stream()
-            .map(dto -> dto.processDocumentInstanceId().processInstanceId().toString())
-            .toList();
-
-        if (rootProcessInstanceIds.isEmpty()) {
-            return List.of();
-        }
-
-        // Find all subprocesses (call activity children) recursively, filtering for BB: version tag
-        var buildingBlockProcesses = new java.util.ArrayList<org.operaton.bpm.engine.history.HistoricProcessInstance>();
-        var processedIds = new java.util.HashSet<String>();
-        var toProcess = new java.util.ArrayDeque<>(rootProcessInstanceIds);
-
-        while (!toProcess.isEmpty()) {
-            var parentId = toProcess.poll();
-            if (processedIds.contains(parentId)) {
-                continue;
-            }
-            processedIds.add(parentId);
-
-            // Find all direct subprocesses of this parent
-            var subprocesses = historyService.createHistoricProcessInstanceQuery()
-                .superProcessInstanceId(parentId)
-                .list();
-
-            for (var subprocess : subprocesses) {
-                var processDefinition = runWithoutAuthorization(() ->
-                    repositoryService.findProcessDefinitionById(subprocess.getProcessDefinitionId())
-                );
-
-                if (processDefinition != null) {
-                    var versionTag = processDefinition.getVersionTag();
-                    if (versionTag != null && versionTag.startsWith("BB:")) {
-                        buildingBlockProcesses.add(subprocess);
-                    }
-                }
-
-                // Add to queue for recursive search (building blocks can call other building blocks)
-                toProcess.add(subprocess.getId());
-            }
-        }
-
-        return buildingBlockProcesses.stream()
-            .map(operatonProcess -> {
-                var processDefinition = runWithoutAuthorization(() ->
-                    repositoryService.findProcessDefinitionById(operatonProcess.getProcessDefinitionId())
-                );
-
-                if (processDefinition == null) {
+                if (operatonProcess == null) {
                     return null;
                 }
 
+                process.setActive(operatonProcess.getEndTime() == null);
+                var operatonProcessDefinition = runWithoutAuthorization(() -> {
+                        var pd = repositoryService.findProcessDefinition(
+                            byKey(operatonProcess.getProcessDefinitionKey())
+                                .and(byBlueprintId(document.definitionId().caseDefinitionId()))
+                        );
+                        if (pd != null) {
+                            return pd;
+                        } else {
+                            // Needed for system-processes:
+                            return repositoryService.findProcessDefinition(
+                                byKey(operatonProcess.getProcessDefinitionKey())
+                                    .and(maxVersionOf(byNotLinkedToCaseDefinition()))
+                            );
+                        }
+                    }
+                );
                 var startDateTime = LocalDateTime.ofInstant(
                     operatonProcess.getStartTime().toInstant(),
                     ZoneId.systemDefault()
@@ -328,18 +226,12 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
                         .map(ManageableUser::getFullName)
                         .orElse(null);
 
-                // Create a synthetic ID for building block processes
-                var syntheticId = OperatonProcessJsonSchemaDocumentInstanceId.newId(
-                    new OperatonProcessInstanceId(operatonProcess.getId()),
-                    JsonSchemaDocumentId.existingId(UUID.fromString(caseDocumentId))
-                );
-
                 return new ProcessDocumentInstanceDto(
-                    syntheticId,
-                    processDefinition.getName() != null ? processDefinition.getName() : processDefinition.getKey(),
-                    operatonProcess.getEndTime() == null,
+                    process.getId(),
+                    process.processName(),
+                    process.isActive(),
                     operatonProcess.getProcessDefinitionVersion(),
-                    processDefinition.getVersion(),
+                    operatonProcessDefinition.getVersion(),
                     startedBy,
                     startDateTime
                 );
