@@ -46,7 +46,7 @@ interface WidgetCollectionContent {
 interface CollectionWidgetResolvedField {
   key: string;
   title: string;
-  value: string;
+  value: string | null;
   width: CollectionWidgetFieldWidth;
   hideWhenEmpty: boolean;
 }

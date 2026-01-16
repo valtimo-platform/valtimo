@@ -630,7 +630,7 @@
           "placeholder": "Documenten API document uploaden"
         },
         "caseHandler": {
-          "title": "dossierbehandelaar",
+          "title": "Dossierbehandelaar",
           "canHaveHandler": "Dossiertype kan een behandelaar hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
@@ -1493,6 +1493,7 @@
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
     "maxFileSize": "Maximale bestandsgrootte: ",
+    "acceptedFiles": "Geaccepteerde bestanden: ",
     "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
     "formJsonDocDef": "De formulier-definitie moet in het JSON-formaat zijn",
     "objecttypeDef": "De objecttype-definitie moet in JSON-formaat zjn",
@@ -2138,6 +2139,7 @@
     "tabType": "Tabtype",
     "tabTypeTitle": "Tabtype",
     "tabTypePlaceholder": "Voer tabtype in",
+    "tabProperties": "Properties",
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",

@@ -46,13 +46,7 @@ class IkoTabsExporter(
         }
         val ikoTabsDto = IkoTabsDto(
             ikoViewKey = request.ikoViewKey,
-            ikoTabs = ikoTabs.map { ikoTab ->
-                TabDto(
-                    key = ikoTab.key,
-                    title = ikoTab.title,
-                    type = ikoTab.type,
-                )
-            }
+            ikoTabs = ikoTabs.map { ikoTab -> TabDto.from(ikoTab) }
         )
 
         val ikoTabsExport = ExportFile(
