@@ -16,7 +16,7 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_INSTANCE_ID_VARIABLE;
+import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE;
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization;
 import com.ritense.document.domain.Document;
@@ -46,9 +46,9 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
         "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
     public void notify(DelegateExecution execution) {
-        // Propagate buildingBlockInstanceId from parent call activity to child process
+        // Propagate buildingBlockDocumentId from parent call activity to child process
         // This ensures building block processes use the correct document even without camunda:in configuration
-        propagateBuildingBlockInstanceId(execution);
+        propagateBuildingBlockDocumentId(execution);
 
         Document.Id documentId = getDocumentId(execution);
         if (documentId != null) {
@@ -61,23 +61,23 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
     }
 
     /**
-     * Propagates the buildingBlockInstanceId variable from the parent call activity execution
+     * Propagates the buildingBlockDocumentId variable from the parent call activity execution
      * to the child process. This allows building block processes to use the correct document
      * without requiring explicit camunda:in configuration in every BPMN.
      */
-    private void propagateBuildingBlockInstanceId(DelegateExecution execution) {
+    private void propagateBuildingBlockDocumentId(DelegateExecution execution) {
         DelegateExecution parentExecution = execution.getSuperExecution();
-        if (parentExecution != null && parentExecution.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
-            Object buildingBlockInstanceId = parentExecution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE);
-            if (buildingBlockInstanceId != null) {
-                execution.setVariable(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstanceId);
+        if (parentExecution != null && parentExecution.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
+            Object buildingBlockDocumentId = parentExecution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE);
+            if (buildingBlockDocumentId != null) {
+                execution.setVariable(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockDocumentId);
             }
         }
     }
 
     private Document.Id getDocumentId(DelegateExecution execution) {
         DelegateExecution parentExecution = execution.getSuperExecution();
-        if (parentExecution != null && !parentExecution.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
+        if (parentExecution != null && !parentExecution.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
             var processId = new OperatonProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
             var documentId = processDocumentService.getDocumentId(processId, execution);
             if (documentId != null) {

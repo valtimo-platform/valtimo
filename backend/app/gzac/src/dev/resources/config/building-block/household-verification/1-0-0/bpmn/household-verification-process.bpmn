@@ -13,7 +13,7 @@
     </bpmn:serviceTask>
     <bpmn:callActivity id="CallBrpLookupActivity" name="BRP Opvraging" camunda:asyncAfter="true" calledElement="brp-lookup" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:household-verification:1.0.0">
       <bpmn:extensionElements>
-        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
         <camunda:out variables="all" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Format_To_BRP</bpmn:incoming>
@@ -21,7 +21,7 @@
     </bpmn:callActivity>
     <bpmn:callActivity id="CallIncomeCheckActivity" name="Inkomenstoets" camunda:asyncAfter="true" calledElement="income-check-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:income-check:1.0.0">
       <bpmn:extensionElements>
-        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
         <camunda:out variables="all" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_BRP_To_IncomeCheck</bpmn:incoming>

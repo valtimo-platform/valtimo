@@ -13,7 +13,7 @@
     </bpmn:serviceTask>
     <bpmn:callActivity id="CallHouseholdVerificationActivity" name="Huishouden Verificatie" camunda:asyncAfter="true" calledElement="household-verification-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:household-verification:1.0.0">
       <bpmn:extensionElements>
-        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
         <camunda:out variables="all" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Init_To_CallHousehold</bpmn:incoming>

@@ -25,7 +25,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
@@ -75,7 +75,7 @@ class BuildingBlockCallActivityListener(
             )
             // Set as local variable on the call activity execution - this is read by StartEventFromCallActivityListenerImpl
             // to automatically propagate to the child process
-            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
+            execution.setVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
     }
 
@@ -94,7 +94,7 @@ class BuildingBlockCallActivityListener(
         var current: DelegateExecution? = processInstance.superExecution
 
         while (current != null) {
-            val buildingBlockDocumentIdString = current.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE) as? String
+            val buildingBlockDocumentIdString = current.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE) as? String
             if (buildingBlockDocumentIdString != null) {
                 val buildingBlockDocumentId = UUID.fromString(buildingBlockDocumentIdString)
                 return buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
@@ -114,14 +114,14 @@ class BuildingBlockCallActivityListener(
     )
     fun onCallActivityEnd(execution: DelegateExecution) {
 
-        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)?.let {
+        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)?.let {
             it as String
         }?: return
 
         val buildingBlockDocumentId = try {
             UUID.fromString(buildingBlockVariableString)
         } catch(_: IllegalArgumentException) {
-            throw IllegalStateException("Execution variable '$BUILDING_BLOCK_INSTANCE_ID_VARIABLE' should be a UUID " +
+            throw IllegalStateException("Execution variable '$BUILDING_BLOCK_DOCUMENT_ID_VARIABLE' should be a UUID " +
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
@@ -144,42 +144,24 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        // Resolve values from building block document or process variables
-        // Source can be:
-        // - pv:variableName - reads from execution variables (set by called process via camunda:out variables="all")
-        // - doc:/path - reads from building block document
-        // - path (no prefix) - defaults to doc:/path for backward compatibility
-        val valuesToHandle = mutableMapOf<String, Any?>()
-        val docSourcesToResolve = mutableListOf<Pair<String, String>>() // Pair of (sourceKey, target)
-
-        for (mapping in endSyncOutputMappings) {
-            when {
-                mapping.source.startsWith("pv:") -> {
-                    // Read from execution variables (variables copied from called process)
-                    val variableName = mapping.source.removePrefix("pv:")
-                    val value = execution.getVariable(variableName)
-                    valuesToHandle[mapping.target] = value
-                }
-                mapping.source.startsWith("doc:") -> {
-                    docSourcesToResolve.add(mapping.source to mapping.target)
-                }
-                else -> {
-                    // Default to doc:/ for backward compatibility
-                    docSourcesToResolve.add("doc:/${mapping.source}" to mapping.target)
-                }
+        // Resolve values from building block document
+        // Source format: doc:/path or just /path (defaults to doc:)
+        val sourceMappings = endSyncOutputMappings.map { mapping ->
+            val sourceKey = if (mapping.source.startsWith("doc:")) {
+                mapping.source
+            } else {
+                "doc:/${mapping.source}"
             }
+            sourceKey to mapping.target
         }
 
-        // Resolve doc: sources from building block document
-        if (docSourcesToResolve.isNotEmpty()) {
-            val docSourceKeys = docSourcesToResolve.map { it.first }
-            val resolvedValues = valueResolverService.resolveValues(
-                buildingBlockInstance.documentId.toString(),
-                docSourceKeys
-            )
-            for ((sourceKey, target) in docSourcesToResolve) {
-                valuesToHandle[target] = resolvedValues[sourceKey]
-            }
+        val resolvedValues = valueResolverService.resolveValues(
+            buildingBlockInstance.documentId.toString(),
+            sourceMappings.map { it.first }
+        )
+
+        val valuesToHandle = sourceMappings.associate { (sourceKey, target) ->
+            target to resolvedValues[sourceKey]
         }
 
         // Determine target document: parent building block doc if nested, otherwise case doc

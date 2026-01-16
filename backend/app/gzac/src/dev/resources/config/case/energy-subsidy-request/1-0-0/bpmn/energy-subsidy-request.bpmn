@@ -9,7 +9,7 @@
     </bpmn:startEvent>
     <bpmn:callActivity id="CallSubsidyCalculatorActivity" name="Bereken Energietoeslag" camunda:asyncAfter="true" calledElement="subsidy-calculator-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:subsidy-calculator:1.0.0">
       <bpmn:extensionElements>
-        <camunda:in businessKey="${execution.processBusinessKey}" />
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
         <camunda:out variables="all" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Start_To_CallSubsidyCalculator</bpmn:incoming>
