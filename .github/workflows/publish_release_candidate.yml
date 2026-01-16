@@ -6,9 +6,6 @@ permissions:
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - rc/0.0.0 # Temporarily, for testing without having to have this workflow in the default branch
 
 jobs:
   prepare:
