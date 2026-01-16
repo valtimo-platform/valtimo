@@ -185,6 +185,11 @@ subprojects { subproject ->
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
 
+        dependencyCheck {
+            analyzers.ossIndex.username = System.getenv('SONATYPE_OSS_INDEX_USERNAME')
+            analyzers.ossIndex.password = System.getenv('SONATYPE_OSS_INDEX_API_TOKEN')            
+        }
+
         apply from: "${rootProject.projectDir}/backend/gradle/test.gradle"
 
         tasks.register("allDeps", DependencyReportTask) {}
