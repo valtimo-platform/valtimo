@@ -73,38 +73,37 @@ class BuildingBlockCallActivityListener(
                 activityId = activityId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
-            // Set as local variable on the call activity execution - this is read by StartEventFromCallActivityListenerImpl
-            // to automatically propagate to the child process
+            // Set as local variable on the call activity execution for two purposes:
+            // 1. The BPMN expression #{buildingBlockDocumentId} reads this to set the child process's business key
+            // 2. onCallActivityEnd reads this to perform output mappings when the building block completes
             execution.setVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
     }
 
     /**
-     * Finds the parent building block instance by walking up the execution hierarchy.
+     * Finds the parent building block instance if the current process is a building block.
      * Returns null if this is a top-level building block (called from a case process).
      *
-     * Uses processInstance.superExecution to navigate up, as this reliably points to
-     * the call activity in the parent process that started the current process.
+     * Uses the current process's business key to determine if we're inside a building block.
+     * If the business key matches a building block document ID, the current process is a BB
+     * and that BB instance becomes the parent of the new nested BB being created.
      */
     private fun findParentBuildingBlockInstance(execution: DelegateExecution): BuildingBlockInstance? {
-        // Get the process instance (root execution) of the current process
-        val processInstance = execution.processInstance ?: return null
+        // The current process's business key is set to the document ID
+        // For case processes: business key = case document ID
+        // For building block processes: business key = building block document ID
+        val businessKey = execution.processBusinessKey ?: return null
 
-        // Navigate to the parent process's call activity that started this process
-        var current: DelegateExecution? = processInstance.superExecution
-
-        while (current != null) {
-            val buildingBlockDocumentIdString = current.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE) as? String
-            if (buildingBlockDocumentIdString != null) {
-                val buildingBlockDocumentId = UUID.fromString(buildingBlockDocumentIdString)
-                return buidingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
-            }
-            // Navigate up to the parent process's super execution
-            val parentProcessInstance = current.processInstance
-            current = parentProcessInstance?.superExecution
+        // Check if this is a valid UUID
+        val documentId = try {
+            UUID.fromString(businessKey)
+        } catch (_: IllegalArgumentException) {
+            return null
         }
 
-        return null
+        // Try to find a building block instance with this document ID
+        // If found, the current process is a building block, and this instance is the parent
+        return buidingBlockInstanceService.getByDocumentId(documentId)
     }
 
     @EventListener(
