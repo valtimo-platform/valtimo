@@ -67,6 +67,16 @@
       padding: 8px 16px;
       border-bottom: 1px solid var(--cds-border-subtle-01);
       font-size: 14px;
+
+      cds-skeleton-text {
+        font-size: 14px;
+
+        .cds--skeleton__text {
+          margin-bottom: 0;
+          height: 14px;
+          min-height: 14px;
+        }
+      }
     }
   }
 

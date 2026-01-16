@@ -37,6 +37,7 @@ import {
   ButtonModule,
   PaginationModel,
   PaginationModule,
+  SkeletonModule,
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
@@ -59,6 +60,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     ButtonModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
+    SkeletonModule,
   ],
 })
 export class WidgetTableComponent {
@@ -108,7 +110,10 @@ export class WidgetTableComponent {
   private _initialNumberOfElements!: number;
 
   @Input({required: true}) set widgetData(value: Page<CarbonListItem> | null) {
-    if (!value) return;
+    if (!value) {
+      this.widgetData$.next(null);
+      return;
+    }
 
     this.$showPagination.set(value.totalElements > value.size);
 

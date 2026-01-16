@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(':backend:case')
-    implementation project(':backend:contract')
-    implementation project(':backend:core')
-    implementation project(':backend:process-document')
-    implementation project(':backend:resource')
+package com.ritense.case.web.rest.dto
 
-    testImplementation "org.springframework.security:spring-security-test"
-}
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-apply from: "gradle/publishing.gradle"
+data class CaseDefinitionImportResponse(
+    val caseDefinitionId: CaseDefinitionId?,
+)

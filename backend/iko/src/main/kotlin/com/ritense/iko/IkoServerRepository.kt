@@ -60,12 +60,6 @@ class IkoServerRepository(
             tooltip = "The endpoint-reference or the endpoint-operation as defined in IKO"
         ),
         PropertyField(
-            key = AGGREGATED_DATA_PROFILE_NAME,
-            title = "Aggregated Data Profile Name (Optional)",
-            tooltip = "The name of the aggregated data profile. i.e. 'personen'",
-            required = false,
-        ),
-        PropertyField(
             key = ENDPOINT_QUERY_PARAMETERS,
             type = PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,
             tooltip = "Additional query parameters for the IKO API URL. i.e. 'type=ZoekMetGeslachtsnaamEnGeboortedatum'",
@@ -78,6 +72,15 @@ class IkoServerRepository(
             ENDPOINT_QUERY_PARAMETERS,
             PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,
             tooltip = "Additional query parameters for the IKO API URL. i.e. 'type=ZoekMetGeslachtsnaamEnGeboortedatum'",
+            required = false,
+        ),
+    )
+
+    override fun getIkoTabPropertyFields(): List<PropertyField> = listOf(
+        PropertyField(
+            key = AGGREGATED_DATA_PROFILE_NAME,
+            title = "Aggregated Data Profile Name (Optional)",
+            tooltip = "The name of the aggregated data profile. i.e. 'personen'",
             required = false,
         ),
     )

@@ -58,7 +58,7 @@
         'valtimo-widget-field__container': renderVertically() === 4,
       }"
     >
-      @if (obs.noVisibleFields) {
+      @if (obs.widgetData && obs.noVisibleFields) {
         <valtimo-no-results
           [collapseVertically]="true"
           [description]="'widgets.emptyFields' | translate"
@@ -82,10 +82,14 @@
                 >
 
                 <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
-                  @if (property?.isRawValue) {
-                    <div [innerHTML]="property?.value"></div>
+                  @if (!obs.widgetData) {
+                    <cds-skeleton-text [lines]="1" [maxLineWidth]="100"></cds-skeleton-text>
                   } @else {
-                    {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                    @if (property?.isRawValue) {
+                      <div [innerHTML]="property?.value"></div>
+                    } @else {
+                      {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                    }
                   }
                 </div>
               </div>

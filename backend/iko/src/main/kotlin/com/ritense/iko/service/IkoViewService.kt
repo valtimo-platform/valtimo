@@ -47,18 +47,6 @@ class IkoViewService(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
-    fun getDataById(key: String, id: String): JsonNode {
-        val ikoView = runWithoutAuthorization { getByKey(key) }
-        requirePermission(ikoView, IkoViewActionProvider.VIEW)
-        val ikoRepository = ikoRepositories.first {
-            it.getType() == ikoView.ikoRepositoryConfig.type
-        }
-        return ikoRepository.findById(
-            config = ikoView.ikoRepositoryConfig.properties.deepMerge(ikoView.properties),
-            id = id
-        )
-    }
-
     fun getIkoViewPropertyFields(type: Any): List<PropertyField> {
         denyAuthorization()
         return ikoRepositories.single { it.getType() == type }.getIkoViewPropertyFields()

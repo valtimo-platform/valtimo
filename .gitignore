@@ -3,6 +3,7 @@
 /build/
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
+.claude
 
 ### IntelliJ IDEA ###
 .idea
