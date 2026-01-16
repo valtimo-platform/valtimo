@@ -22,7 +22,7 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -58,7 +58,7 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             on { businessKey } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
             on { superExecution } doReturn this.mock
-            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE))} doReturn true
         }
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
@@ -134,7 +134,7 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             on { businessKey } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
             on { superExecution } doReturn this.mock
-            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE))} doReturn true
         }
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(

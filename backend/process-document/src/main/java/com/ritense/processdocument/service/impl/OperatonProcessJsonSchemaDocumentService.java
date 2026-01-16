@@ -394,8 +394,8 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         if (variableScope == null) {
             return null;
         }
-        var buildingBlockInstanceId = variableScope.getVariable("buildingBlockInstanceId");
-        if (buildingBlockInstanceId instanceof String documentId
+        var buildingBlockDocumentId = variableScope.getVariable("buildingBlockDocumentId");
+        if (buildingBlockDocumentId instanceof String documentId
             && documentId.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
             return documentId;
         }

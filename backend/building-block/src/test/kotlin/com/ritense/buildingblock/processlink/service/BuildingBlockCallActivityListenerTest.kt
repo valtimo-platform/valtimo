@@ -127,7 +127,7 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { businessKey } doReturn caseDocumentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { getVariableLocal("buildingBlockInstanceId") } doReturn buildingBlockDocumentId.toString()
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")

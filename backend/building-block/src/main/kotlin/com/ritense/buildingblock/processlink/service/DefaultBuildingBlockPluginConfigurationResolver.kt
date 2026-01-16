@@ -21,7 +21,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.stereotype.Component
@@ -59,15 +59,15 @@ class DefaultBuildingBlockPluginConfigurationResolver(
         var lastProcessDefinitionId: String? = null
 
         // Walk up to find the topmost building block instance (the root)
-        // The BUILDING_BLOCK_INSTANCE_ID_VARIABLE contains the document ID of the building block instance
+        // The BUILDING_BLOCK_DOCUMENT_ID_VARIABLE contains the document ID of the building block
         // The variable is set on the call activity execution in the PARENT process (by BuildingBlockCallActivityListener)
         while (current != null) {
-            if (current.hasVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)) {
-                val variableValue = current.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)
+            if (current.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
+                val variableValue = current.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)
                 lastBuildingBlockDocumentId = when (variableValue) {
                     is UUID -> variableValue
                     is String -> UUID.fromString(variableValue)
-                    else -> throw IllegalStateException("Unexpected type for $BUILDING_BLOCK_INSTANCE_ID_VARIABLE: ${variableValue?.javaClass}")
+                    else -> throw IllegalStateException("Unexpected type for $BUILDING_BLOCK_DOCUMENT_ID_VARIABLE: ${variableValue?.javaClass}")
                 }
                 // current is the call activity execution in the parent process, so its processDefinitionId
                 // is the parent process definition (the one that contains the building block process link)

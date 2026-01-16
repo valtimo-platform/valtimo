@@ -16,7 +16,7 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_INSTANCE_ID_VARIABLE;
+import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -156,7 +156,7 @@ class StartEventFromCallActivityListenerImplTest {
                     yield null;
                 }
                 case "getVariable" -> {
-                    if (BUILDING_BLOCK_INSTANCE_ID_VARIABLE.equals(args[0])) {
+                    if (BUILDING_BLOCK_DOCUMENT_ID_VARIABLE.equals(args[0])) {
                         yield capturedVariableValue[0];
                     }
                     yield null;
@@ -173,8 +173,8 @@ class StartEventFromCallActivityListenerImplTest {
 
         listener.notify(execution);
 
-        // Verify the buildingBlockInstanceId was propagated to the child execution
-        assertEquals(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, capturedVariableName[0]);
+        // Verify the buildingBlockDocumentId was propagated to the child execution
+        assertEquals(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, capturedVariableName[0]);
         assertEquals(buildingBlockDocumentId, capturedVariableValue[0]);
     }
 
@@ -210,7 +210,7 @@ class StartEventFromCallActivityListenerImplTest {
                 case "getBpmnModelInstance" -> modelInstance;
                 case "hasVariableLocal" -> hasBuildingBlockVariable;
                 case "getVariableLocal" -> {
-                    if (hasBuildingBlockVariable && BUILDING_BLOCK_INSTANCE_ID_VARIABLE.equals(args[0])) {
+                    if (hasBuildingBlockVariable && BUILDING_BLOCK_DOCUMENT_ID_VARIABLE.equals(args[0])) {
                         yield buildingBlockDocumentId;
                     }
                     yield null;

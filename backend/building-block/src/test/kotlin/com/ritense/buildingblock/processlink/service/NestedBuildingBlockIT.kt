@@ -34,7 +34,7 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -333,12 +333,12 @@ class NestedBuildingBlockIT @Autowired constructor(
 
     private fun createParentCallActivityExecution(buildingBlockDocumentId: UUID): DelegateExecution {
         // This represents the call activity execution in the parent process
-        // It has the BUILDING_BLOCK_INSTANCE_ID_VARIABLE set as a local variable
+        // It has the BUILDING_BLOCK_DOCUMENT_ID_VARIABLE set as a local variable
         val parentProcessInstance: DelegateExecution = mock {
             on { superExecution } doReturn null
         }
         return mock {
-            on { getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE) } doReturn buildingBlockDocumentId.toString()
+            on { getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE) } doReturn buildingBlockDocumentId.toString()
             on { processInstance } doReturn parentProcessInstance
         }
     }
