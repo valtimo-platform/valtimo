@@ -22,14 +22,12 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.iko.dto.ContainerParam
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
+import java.util.Base64
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
-import java.net.URI
-import java.util.Base64
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 class IkoClient(
     private val restClientBuilder: RestClient.Builder,
@@ -116,46 +114,50 @@ class IkoClient(
         baseUrl: URI,
         aggregatedDataProfileName: String,
         id: String,
-        containerParams: List<ContainerParam> = listOf(),
+        containerParams: List<ContainerParam> = emptyList(),
+        additionalQueryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
-        try {
-            val base64UrlEncoder = Base64.getUrlEncoder()
-            val result = restClientBuilder
+        val encoder = Base64.getUrlEncoder().withoutPadding()
+
+        val encodedContainerParams = containerParams.map { param ->
+            encoder.encodeToString(objectMapper.writeValueAsBytes(param))
+        }
+
+        val queryParams = LinkedMultiValueMap<String, String>().apply {
+            additionalQueryParams.forEach { (k, v) -> add(k, v) }
+            if (encodedContainerParams.isNotEmpty()) {
+                addAll("containerParam", encodedContainerParams)
+            }
+        }
+
+        return runCatching {
+            restClientBuilder
                 .clone()
                 .build()
                 .get()
-                .uri { uriBuilder ->
-                    uriBuilder
-                        .scheme(baseUrl.scheme)
+                .uri { b ->
+                    b.scheme(baseUrl.scheme)
                         .host(baseUrl.host)
-                        .path(baseUrl.path)
                         .port(baseUrl.port)
+                        .path(baseUrl.path)
                         .pathSegment("aggregated-data-profiles")
-                        .path(aggregatedDataProfileName)
+                        .pathSegment(aggregatedDataProfileName)
                         .pathSegment(id)
-                        .queryParams(
-                            LinkedMultiValueMap(
-                                mapOf(
-                                    "containerParam" to containerParams.map {
-                                        base64UrlEncoder.encodeToString(
-                                            objectMapper.writeValueAsString(it).toByteArray()
-                                        )
-                                    }
-                                )
-                            )
-                        )
+                        .queryParams(queryParams)
                         .build()
                 }
                 .header(AUTHORIZATION, "Bearer ${SecurityUtils.getCurrentJwtTokenValue()}")
                 .retrieve()
-                .body<JsonNode>()!!
-
-            return result
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to get data for aggregatedDataProfile='$aggregatedDataProfileName', id='$id'" }
-            return jacksonObjectMapper().createObjectNode()
+                .body<JsonNode>()
+                ?: objectMapper.createObjectNode()
+        }.getOrElse { e ->
+            logger.error(e) {
+                "Failed to get data for aggregatedDataProfile='$aggregatedDataProfileName', id='$id'"
+            }
+            objectMapper.createObjectNode()
         }
     }
+
 
     companion object {
         private val logger = KotlinLogging.logger {}

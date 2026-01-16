@@ -104,23 +104,23 @@ data class SearchFieldV2(
     fun toDataFilters(value: Any?): List<DataFilter> {
         val dataFilters = mutableListOf<DataFilter>()
         if (matchType == SearchFieldMatchType.LIKE) {
-            dataFilters.add(DataFilter(key, STRING_CONTAINS, value))
+            dataFilters.add(DataFilter(path, STRING_CONTAINS, value))
         } else if (fieldType == FieldType.RANGE) {
             if (value is Map<*, *>) {
                 value["rangeFrom"]?.let {
-                    dataFilters.add(DataFilter(key, GREATER_THAN_OR_EQUAL_TO, it))
+                    dataFilters.add(DataFilter(path, GREATER_THAN_OR_EQUAL_TO, it))
                 }
                 value["rangeTo"]?.let {
-                    dataFilters.add(DataFilter(key, LESS_THAN, it))
+                    dataFilters.add(DataFilter(path, LESS_THAN, it))
                 }
             } else {
                 error("Unsupported configuration of search field '$this'")
             }
         } else if (fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
             val listValue = value as? Collection<*> ?: listOf(value)
-            dataFilters.add(DataFilter(key, IN, listValue))
+            dataFilters.add(DataFilter(path, IN, listValue))
         } else if (matchType == SearchFieldMatchType.EXACT) {
-            dataFilters.add(DataFilter(key, value))
+            dataFilters.add(DataFilter(path, value))
         } else {
             error("Unsupported configuration of search field '$this'")
         }

@@ -24,16 +24,12 @@ import com.ritense.case_.widget.collection.CollectionCaseWidget
 import com.ritense.case_.widget.table.TableCaseWidgetDto
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
-import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_INSTANCE_TAG
-import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_TAG
-import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_OPERATION
-import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_QUERY_PARAMETERS
-import com.ritense.iko.IkoServerRepository.Companion.PLUGIN_CONFIGURATION
+import com.ritense.iko.IkoServerRepository.Companion.IKO_SERVER_URL
 import com.ritense.iko.dto.ContainerParam
-import com.ritense.iko.plugin.IkoPlugin
+import com.ritense.iko.repository.IkoRepositoryConfigRepository
+import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.all
 import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.service.IkoWidgetService
-import com.ritense.plugin.service.PluginService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
@@ -51,13 +47,15 @@ import java.util.function.Function
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import kotlin.jvm.optionals.getOrNull
 
 class IkoValueResolverFactory(
     private val ikoTabService: IkoTabService,
     private val objectMapper: ObjectMapper,
-    private val pluginService: PluginService,
     private val ikoWidgetService: IkoWidgetService,
     private val caseWidgetService: CaseWidgetService,
+    private val ikoServerRepository: IkoServerRepository,
+    private val ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -83,37 +81,25 @@ class IkoValueResolverFactory(
         val tabKey = properties[TAB_KEY]?.toString()
         val id = properties[ID]?.toString() ?: return null
         val config = ikoTabService.getIkoTabConfig(ikoViewKey, tabKey)
-        val plugin = pluginService.createInstance<IkoPlugin>(config[PLUGIN_CONFIGURATION].toString())
-        val adp = properties[IKO_ADP]?.toString() ?: config[AGGREGATED_DATA_PROFILE_NAME]?.toString()
-        val data = if (adp != null) {
-            plugin.getByAggregatedDataProfileId(
-                aggregatedDataProfileName = adp,
-                id = id,
-                containerParams = getContainerParams(properties),
-            )
-        } else {
-            val queryParams = config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?
-            plugin.getByEndpointId(
-                connectorTag = config[CONNECTOR_TAG].toString(),
-                connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
-                endpointOperation = config[ENDPOINT_OPERATION].toString(),
-                id = id,
-                queryParams = queryParams ?: emptyMap(),
-            )
-        }
+        val data = ikoServerRepository.findById(
+            config = config,
+            id = id,
+            containerParams = getContainerParams(properties)
+        )
         return toValueFunction(data)
     }
 
     private fun getIkoAdpDataById(properties: Map<String, Any>): Function<String, Any?>? {
         val adp = properties[IKO_ADP]?.toString() ?: return null
         val id = properties[ID]?.toString() ?: return null
-        val plugin = checkNotNull(pluginService.createInstance(IkoPlugin::class.java) { true }) {
-            "Could not find ${IkoPlugin::class.simpleName} configuration"
-        }
-        val data = plugin.getByAggregatedDataProfileId(
-            aggregatedDataProfileName = adp,
+        val ikoServerUrl = properties[IKO_SERVER_URL]
+            ?: ikoRepositoryConfigRepository.findOne(all()).getOrNull()?.properties?.get(IKO_SERVER_URL)
+        val config = mutableMapOf<String, Any?>(AGGREGATED_DATA_PROFILE_NAME to adp)
+        config[IKO_SERVER_URL] = ikoServerUrl
+        val data = ikoServerRepository.findById(
+            config = config,
             id = id,
-            containerParams = getContainerParams(properties),
+            containerParams = getContainerParams(properties)
         )
         return toValueFunction(data)
     }

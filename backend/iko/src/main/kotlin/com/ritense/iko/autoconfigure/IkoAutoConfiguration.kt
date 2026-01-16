@@ -297,16 +297,18 @@ class IkoAutoConfiguration {
     fun ikoValueResolverFactory(
         ikoTabService: IkoTabService,
         objectMapper: ObjectMapper,
-        pluginService: PluginService,
         ikoWidgetService: IkoWidgetService,
         caseWidgetService: CaseWidgetService,
+        ikoServerRepository: IkoServerRepository,
+        ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoTabService,
             objectMapper,
-            pluginService,
             ikoWidgetService,
             caseWidgetService,
+            ikoServerRepository,
+            ikoRepositoryConfigRepository,
         )
     }
 
