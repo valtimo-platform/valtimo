@@ -36,6 +36,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -78,13 +79,15 @@ class ProcessLinkAutoConfiguration {
         processLinkTypes: List<SupportedProcessLinkTypeHandler>,
         operatonRepositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): ProcessLinkService {
         return ProcessLinkService(
             processLinkRepository,
             processLinkMappers,
             processLinkTypes,
             operatonRepositoryService,
-            caseDefinitionChecker
+            caseDefinitionChecker,
+            buildingBlockDefinitionChecker
         )
     }
 

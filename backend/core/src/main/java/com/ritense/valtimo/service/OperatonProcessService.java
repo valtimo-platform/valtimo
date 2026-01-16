@@ -694,23 +694,44 @@ public class OperatonProcessService {
     }
 
      public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
+        String currentBuildingBlockVersionTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString();
+
+        // Set version tag on all processes in this building block
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
-                process.setOperatonVersionTag(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString());
+                process.setOperatonVersionTag(currentBuildingBlockVersionTag);
             }
         );
 
-        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
-            callActivity.setOperatonCalledElementBinding("versionTag");
-            callActivity.setOperatonCalledElementVersionTag(
-                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
-            );
-        });
+        // Collect all process keys defined in this building block
+        Set<String> processKeysInBuildingBlock = bpmnModel.getDefinitions().getChildElementsByType(Process.class).stream()
+            .map(Process::getId)
+            .collect(Collectors.toSet());
 
+        // Only update call activities that call processes within this building block
+        // or don't already have a BB: version tag pointing to a different building block
         bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
+            String calledElement = callActivity.getCalledElement();
+            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+
+            // If calling a process within this building block, set the version tag
+            if (calledElement != null && processKeysInBuildingBlock.contains(calledElement)) {
+                callActivity.setOperatonCalledElementBinding("versionTag");
+                callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
+                return;
+            }
+
+            // If already has a BB: version tag pointing to a different building block, preserve it
+            // (this is a call to another building block and should not be modified)
+            BuildingBlockDefinitionId existingBuildingBlockId = BuildingBlockDefinitionId.fromProcessVersionTag(existingVersionTag);
+            if (existingBuildingBlockId != null && !existingBuildingBlockId.equals(buildingBlockDefinitionId)) {
+                return;
+            }
+
+            // Otherwise, set to this building block's version tag (default behavior for processes
+            // within this building block that weren't caught by the process key check above)
             callActivity.setOperatonCalledElementBinding("versionTag");
-            callActivity.setOperatonCalledElementVersionTag(
-                OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()            );
+            callActivity.setOperatonCalledElementVersionTag(currentBuildingBlockVersionTag);
         });
     }
 

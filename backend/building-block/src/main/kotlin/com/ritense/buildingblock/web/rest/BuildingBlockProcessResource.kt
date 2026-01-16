@@ -48,6 +48,16 @@ class BuildingBlockProcessResource(
     private val buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
 ) {
 
+    @GetMapping("/process-definition/{processDefinitionId}/is-building-block")
+    fun isBuildingBlockProcess(
+        @PathVariable processDefinitionId: String
+    ): ResponseEntity<Boolean> {
+        val result = runWithoutAuthorization {
+            buildingBlockDefinitionProcessDefinitionService.isBuildingBlockProcess(processDefinitionId)
+        }
+        return ResponseEntity.ok(result)
+    }
+
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
         @PathVariable key: String,

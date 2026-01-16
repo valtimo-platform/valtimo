@@ -99,4 +99,42 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       }
     );
   }
+
+  public isBuildingBlockProcess(processDefinitionId: string): Observable<boolean> {
+    return this.httpClient
+      .get<boolean>(
+        this.getApiUrl(
+          `management/v1/building-block/process-definition/${processDefinitionId}/is-building-block`
+        )
+      )
+      .pipe(catchError(() => of(false)));
+  }
+
+  public getBuildingBlockDefinition(
+    key: string,
+    versionTag: string
+  ): Observable<BuildingBlockDefinitionDto | null> {
+    return this.httpClient
+      .get<BuildingBlockDefinitionDto>(
+        this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}`),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '404'),
+        }
+      )
+      .pipe(catchError(() => of(null)));
+  }
+
+  public getCaseDefinition(
+    key: string,
+    versionTag: string
+  ): Observable<{name: string} | null> {
+    return this.httpClient
+      .get<{name: string}>(
+        this.getApiUrl(`management/v1/case-definition/${key}/version/${versionTag}`),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '404'),
+        }
+      )
+      .pipe(catchError(() => of(null)));
+  }
 }

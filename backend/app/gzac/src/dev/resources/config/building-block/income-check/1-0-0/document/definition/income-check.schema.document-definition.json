@@ -1,0 +1,25 @@
+{
+    "$id": "income-check.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Inkomenstoets Document",
+    "type": "object",
+    "properties": {
+        "applicantName": {
+            "type": "string",
+            "description": "Naam van de aanvrager voor de inkomenstoets"
+        },
+        "householdSize": {
+            "type": "integer",
+            "description": "Aantal personen in het huishouden"
+        },
+        "eligibilityResult": {
+            "type": "string",
+            "description": "Resultaat van de geschiktheidsbeoordeling"
+        },
+        "checkStatus": {
+            "type": "string",
+            "description": "Status van de inkomenstoets"
+        }
+    },
+    "required": ["applicantName", "householdSize"]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -58,13 +59,14 @@ class BuildingBlockCallActivityListenerTest {
     )
 
     @Test
-    fun `should create instance when process link is available`() {
+    fun `should create instance when process link is available from case process`() {
         val caseDocumentId = UUID.randomUUID()
         val buildingBlockInstance: BuildingBlockInstance = mock()
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
             on { businessKey } doReturn caseDocumentId.toString()
+            on { processBusinessKey } doReturn caseDocumentId.toString()
         }
         val inputMappings = listOf(
             BuildingBlockInputMapping(
@@ -87,12 +89,16 @@ class BuildingBlockCallActivityListenerTest {
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
+        // No parent building block instance because we're calling from a case process
+        whenever(buidingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
+
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(
             buidingBlockInstanceService.create(
                 requestCaptor.capture(),
                 eq(caseDocumentId),
-                eq("callActivity")
+                eq("callActivity"),
+                isNull()
             )
         )
         .thenReturn(buildingBlockInstance)
@@ -101,6 +107,81 @@ class BuildingBlockCallActivityListenerTest {
 
         val capturedContent = requestCaptor.firstValue.content()
         assertThat(capturedContent.get("name").asText()).isEqualTo("Ada Lovelace")
+    }
+
+    @Test
+    fun `should create nested instance when called from building block process`() {
+        val caseDocumentId = UUID.randomUUID()
+        val parentBBDocumentId = UUID.randomUUID()
+        val parentBBInstanceId = UUID.randomUUID()
+        val newBBDocumentId = UUID.randomUUID()
+
+        val parentBBDefinition = BuildingBlockDefinition(
+            BuildingBlockDefinitionId.of("parent-bb", "1.0.0"),
+            "Parent BB",
+            "desc",
+            "tester",
+            LocalDateTime.now(),
+            null,
+            false
+        )
+        val parentBBInstance = BuildingBlockInstance(
+            id = parentBBInstanceId,
+            documentId = parentBBDocumentId,
+            caseDocumentId = caseDocumentId,
+            activityId = "parentCallActivity",
+            definition = parentBBDefinition
+        )
+
+        val newBBInstance: BuildingBlockInstance = mock {
+            on { documentId } doReturn newBBDocumentId
+        }
+
+        // Execution is in the parent BB process calling a new BB
+        val execution = mock<DelegateExecution> {
+            on { currentActivityId } doReturn "nestedCallActivity"
+            on { processDefinitionId } doReturn "parent-bb-process"
+            on { businessKey } doReturn parentBBDocumentId.toString()
+            on { processBusinessKey } doReturn parentBBDocumentId.toString()
+        }
+
+        val inputMappings = listOf(
+            BuildingBlockInputMapping(
+                source = "doc:/data",
+                target = "input"
+            )
+        )
+        val link = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "parent-bb-process",
+            activityId = "nestedCallActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = BuildingBlockDefinitionId.of("nested-bb", "1.0.0"),
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = inputMappings
+        )
+        whenever(processLinkService.getProcessLinks("parent-bb-process", "nestedCallActivity")).thenReturn(listOf(link))
+        whenever(valueResolverService.resolveValues(parentBBDocumentId.toString(), inputMappings.map { it.source }))
+            .thenReturn(mapOf("doc:/data" to "parent data"))
+
+        // Parent BB instance is found because we're calling from a BB process
+        whenever(buidingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
+
+        val requestCaptor = argumentCaptor<NewDocumentRequest>()
+        whenever(
+            buidingBlockInstanceService.create(
+                requestCaptor.capture(),
+                eq(caseDocumentId),  // Root case document ID from parent chain
+                eq("nestedCallActivity"),
+                eq(parentBBInstanceId)  // Parent building block instance ID
+            )
+        )
+        .thenReturn(newBBInstance)
+
+        listener.onCallActivityStart(execution)
+
+        val capturedContent = requestCaptor.firstValue.content()
+        assertThat(capturedContent.get("input").asText()).isEqualTo("parent data")
     }
 
     @Test
@@ -114,7 +195,7 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityStart(execution)
 
-        verify(buidingBlockInstanceService, never()).create(any(), any(), any())
+        verify(buidingBlockInstanceService, never()).create(any(), any(), any(), any())
     }
 
     @Test
@@ -126,7 +207,7 @@ class BuildingBlockCallActivityListenerTest {
         val execution = mock<DelegateExecution> {
             on { businessKey } doReturn caseDocumentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { getVariableLocal("buildingBlockInstanceId") } doReturn buildingBlockDocumentId.toString()
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")

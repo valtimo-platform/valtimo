@@ -18,6 +18,7 @@ package com.ritense.valueresolver
 
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
@@ -70,6 +71,17 @@ class ValueResolverServiceImpl(
         val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
         return prefixes.fold(emptyList()) { list, prefix ->
             val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
+            list + newOptions.filter { option -> request.type.equals(option.type) }
+        }
+    }
+
+    override fun getResolvableKeys(
+        request: ValueResolverOptionRequest,
+        blueprintId: BlueprintId
+    ): List<ValueResolverOption> {
+        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
+        return prefixes.fold(emptyList()) { list, prefix ->
+            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(blueprintId) ?: emptyList()
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }

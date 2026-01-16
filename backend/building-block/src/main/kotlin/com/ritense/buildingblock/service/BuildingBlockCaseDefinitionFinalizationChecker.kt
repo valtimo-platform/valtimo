@@ -18,9 +18,11 @@ package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import org.springframework.data.repository.findByIdOrNull
@@ -32,11 +34,15 @@ class BuildingBlockCaseDefinitionFinalizationChecker(
     private val operatonProcessService: OperatonProcessService,
     private val processLinkService: ProcessLinkService,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
 ) : CaseDefinitionFinalizationChecker {
 
     @Transactional(readOnly = true)
     override fun check(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
-        val hasNonFinalBuildingBlock = referencedBuildingBlockDefinitionIds(caseDefinitionId)
+        // Get all building blocks including nested ones
+        val allBuildingBlockIds = getAllReferencedBuildingBlockIds(caseDefinitionId)
+
+        val hasNonFinalBuildingBlock = allBuildingBlockIds
             .any { id -> buildingBlockDefinitionRepository.findByIdOrNull(id)?.final != true }
 
         return if (hasNonFinalBuildingBlock) {
@@ -44,6 +50,54 @@ class BuildingBlockCaseDefinitionFinalizationChecker(
         } else {
             CaseDefinitionFinalizationCheckResult(true)
         }
+    }
+
+    /**
+     * Gets all building block definition IDs referenced by a case, including nested building blocks.
+     */
+    private fun getAllReferencedBuildingBlockIds(caseDefinitionId: CaseDefinitionId): Set<BuildingBlockDefinitionId> {
+        val directlyReferenced = referencedBuildingBlockDefinitionIds(caseDefinitionId).toSet()
+        return collectAllNestedBuildingBlocks(directlyReferenced)
+    }
+
+    /**
+     * Recursively collects all nested building block IDs from a set of building blocks.
+     */
+    private fun collectAllNestedBuildingBlocks(
+        buildingBlockIds: Set<BuildingBlockDefinitionId>,
+        visited: MutableSet<BuildingBlockDefinitionId> = mutableSetOf()
+    ): Set<BuildingBlockDefinitionId> {
+        val result = mutableSetOf<BuildingBlockDefinitionId>()
+
+        for (bbId in buildingBlockIds) {
+            if (bbId in visited) continue
+            visited.add(bbId)
+            result.add(bbId)
+
+            // Get nested building blocks from this building block's processes
+            val nestedIds = getNestedBuildingBlockIds(bbId)
+            result.addAll(collectAllNestedBuildingBlocks(nestedIds, visited))
+        }
+
+        return result
+    }
+
+    /**
+     * Gets building block IDs referenced by processes within a building block.
+     */
+    private fun getNestedBuildingBlockIds(buildingBlockId: BuildingBlockDefinitionId): Set<BuildingBlockDefinitionId> {
+        // Get all process definitions for this building block
+        val processDefinitionLinks = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockId)
+
+        return processDefinitionLinks
+            .asSequence()
+            .flatMap { link ->
+                processLinkService.getProcessLinks(link.id.processDefinitionId.id).asSequence()
+            }
+            .filter { it.processLinkType == BuildingBlockProcessLink.PROCESS_LINK_TYPE }
+            .map { (it as BuildingBlockProcessLink).buildingBlockDefinitionId }
+            .toSet()
     }
 
     private fun referencedBuildingBlockDefinitionIds(caseDefinitionId: CaseDefinitionId) =

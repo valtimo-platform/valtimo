@@ -32,7 +32,10 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -51,6 +54,7 @@ class ProcessLinkService(
     private val processLinkTypes: List<SupportedProcessLinkTypeHandler>,
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
 ) {
 
     fun <T : ProcessLink> getProcessLink(
@@ -96,10 +100,10 @@ class ProcessLinkService(
 
     @Transactional(noRollbackFor = [ProcessLinkExistsException::class])
     @Throws(ProcessLinkExistsException::class)
-    fun createProcessLink(createRequest: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
+    fun createProcessLink(createRequest: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         return withLoggingContext(OperatonProcessDefinition::class, createRequest.processDefinitionId) {
             val mapper = getProcessLinkMapper(createRequest.processLinkType)
-            val newProcessLink = mapper.toNewProcessLink(createRequest, caseDefinitionId)
+            val newProcessLink = mapper.toNewProcessLink(createRequest, blueprintId)
 
             val currentProcessLinks = getProcessLinks(createRequest.processDefinitionId, createRequest.activityId)
             if (currentProcessLinks.isNotEmpty()) {
@@ -114,22 +118,24 @@ class ProcessLinkService(
                 )
             }
 
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, caseDefinitionId))
+            processLinkRepository.save(mapper.toNewProcessLink(createRequest, blueprintId))
         }
     }
 
     @Transactional
-    fun updateProcessLink(updateRequest: ProcessLinkUpdateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
+    fun updateProcessLink(updateRequest: ProcessLinkUpdateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         return withLoggingContext(ProcessLink::class, updateRequest.id) {
-            if (caseDefinitionId != null) {
-                caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-            } else {
+            if (blueprintId is CaseDefinitionId) {
+                caseDefinitionChecker.assertCanUpdateCaseDefinition(blueprintId)
+            } else if (blueprintId is BuildingBlockDefinitionId) {
+                buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(blueprintId)
+            } else if (blueprintId == null) {
                 caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
             }
             val processLinkToUpdate = processLinkRepository.findById(updateRequest.id)
                 .getOrElse { throw IllegalStateException("No ProcessLink found with id ${updateRequest.id}") }
             val mapper = getProcessLinkMapper(updateRequest.processLinkType)
-            val processLinkUpdated = mapper.toUpdatedProcessLink(processLinkToUpdate, updateRequest, caseDefinitionId)
+            val processLinkUpdated = mapper.toUpdatedProcessLink(processLinkToUpdate, updateRequest, blueprintId)
             if (processLinkToUpdate::class != processLinkUpdated::class) {
                 // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
                 processLinkRepository.delete(processLinkToUpdate)
