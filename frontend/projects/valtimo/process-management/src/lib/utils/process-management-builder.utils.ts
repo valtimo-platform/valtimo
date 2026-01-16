@@ -195,12 +195,10 @@ const clearBuildingBlockCalledElement = (
 
   const extensionElements = bo.extensionElements;
   if (extensionElements && Array.isArray(extensionElements.values)) {
-    extensionElements.values = extensionElements.values.filter((val: any) => {
-      if (val.$type !== 'camunda:In') return true;
-      // Remove businessKey mapping for building block call activities
-      if (val.businessKey) return false;
-      return true;
-    });
+    // Keep all elements except camunda:In with businessKey (building block mapping)
+    extensionElements.values = extensionElements.values.filter(
+      (val: any) => val.$type !== 'camunda:In' || !val.businessKey
+    );
 
     if (extensionElements.values.length === 0) {
       props.extensionElements = undefined;

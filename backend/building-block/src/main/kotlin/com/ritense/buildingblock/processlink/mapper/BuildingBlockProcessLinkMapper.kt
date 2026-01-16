@@ -74,13 +74,13 @@ class BuildingBlockProcessLinkMapper(
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-            buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
-            buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
-            pluginConfigurationMappings = processLink.pluginConfigurationMappings,
-            inputMappings = processLink.inputMappings.toInputDto(),
-            outputMappings = processLink.outputMappings.toOutputDto()
-        )
-    }
+                buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
+                buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
+                pluginConfigurationMappings = processLink.pluginConfigurationMappings,
+                inputMappings = processLink.inputMappings.toInputDto(),
+                outputMappings = processLink.outputMappings.toOutputDto()
+            )
+        }
     }
 
     override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
@@ -132,21 +132,7 @@ class BuildingBlockProcessLinkMapper(
         blueprintId: BlueprintId?
     ): ProcessLink {
         createRequestDto as BuildingBlockProcessLinkCreateRequestDto
-        // Determine if this is a nested building block link:
-        // 1. If blueprintId is a BuildingBlockDefinitionId, we're in a building block context
-        // 2. Otherwise, check the repository to see if the process is part of a building block
-        val isNestedBuildingBlockLink = blueprintId is BuildingBlockDefinitionId ||
-            processDefinitionBuildingBlockDefinitionRepository
-                .existsByIdProcessDefinitionIdId(createRequestDto.processDefinitionId)
-
-        // CaseDefinitionId is only required for building-block process links in case processes.
-        // Building block processes can also have building-block process links (nested building blocks),
-        // which don't require a CaseDefinitionId.
-        if (!isNestedBuildingBlockLink) {
-            require(blueprintId is CaseDefinitionId) {
-                "CaseDefinitionId is required for building-block process links in case processes"
-            }
-        }
+        val isNestedBuildingBlockLink = isNestedBuildingBlockLink(blueprintId, createRequestDto.processDefinitionId)
         val buildingBlockDefinitionId = toDefinitionId(
             createRequestDto.buildingBlockDefinitionKey,
             createRequestDto.buildingBlockDefinitionVersionTag
@@ -157,12 +143,11 @@ class BuildingBlockProcessLinkMapper(
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
-            // For nested building blocks, plugin configurations are inherited from the root process link at runtime
-            pluginConfigurationMappings = if (isNestedBuildingBlockLink) {
-                createRequestDto.pluginConfigurationMappings
-            } else {
-                ensureMappings(createRequestDto.pluginConfigurationMappings, buildingBlockDefinitionId)
-            },
+            pluginConfigurationMappings = resolvePluginMappings(
+                isNestedBuildingBlockLink,
+                createRequestDto.pluginConfigurationMappings,
+                buildingBlockDefinitionId
+            ),
             inputMappings = createRequestDto.inputMappings.toInputDomain(),
             outputMappings = createRequestDto.outputMappings.toOutputDomain()
         )
@@ -175,21 +160,7 @@ class BuildingBlockProcessLinkMapper(
     ): ProcessLink {
         processLinkToUpdate as BuildingBlockProcessLink
         updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
-        // Determine if this is a nested building block link:
-        // 1. If blueprintId is a BuildingBlockDefinitionId, we're in a building block context
-        // 2. Otherwise, check the repository to see if the process is part of a building block
-        val isNestedBuildingBlockLink = blueprintId is BuildingBlockDefinitionId ||
-            processDefinitionBuildingBlockDefinitionRepository
-                .existsByIdProcessDefinitionIdId(processLinkToUpdate.processDefinitionId)
-
-        // CaseDefinitionId is only required for building-block process links in case processes.
-        // Building block processes can also have building-block process links (nested building blocks),
-        // which don't require a CaseDefinitionId.
-        if (!isNestedBuildingBlockLink) {
-            require(blueprintId is CaseDefinitionId) {
-                "CaseDefinitionId is required for building-block process links in case processes"
-            }
-        }
+        val isNestedBuildingBlockLink = isNestedBuildingBlockLink(blueprintId, processLinkToUpdate.processDefinitionId)
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             val buildingBlockDefinitionId = toDefinitionId(
                 updateRequestDto.buildingBlockDefinitionKey,
@@ -201,15 +172,48 @@ class BuildingBlockProcessLinkMapper(
                 activityId = processLinkToUpdate.activityId,
                 activityType = processLinkToUpdate.activityType,
                 buildingBlockDefinitionId = buildingBlockDefinitionId,
-                // For nested building blocks, plugin configurations are inherited from the root process link at runtime
-                pluginConfigurationMappings = if (isNestedBuildingBlockLink) {
-                    updateRequestDto.pluginConfigurationMappings
-                } else {
-                    ensureMappings(updateRequestDto.pluginConfigurationMappings, buildingBlockDefinitionId)
-                },
+                pluginConfigurationMappings = resolvePluginMappings(
+                    isNestedBuildingBlockLink,
+                    updateRequestDto.pluginConfigurationMappings,
+                    buildingBlockDefinitionId
+                ),
                 inputMappings = updateRequestDto.inputMappings.toInputDomain(),
                 outputMappings = updateRequestDto.outputMappings.toOutputDomain()
             )
+        }
+    }
+
+    /**
+     * Determines if this is a nested building block link (a building block referencing another building block).
+     * Nested building block links don't require a CaseDefinitionId since they inherit plugin configurations
+     * from the root process link at runtime.
+     */
+    private fun isNestedBuildingBlockLink(blueprintId: BlueprintId?, processDefinitionId: String): Boolean {
+        val isNested = blueprintId is BuildingBlockDefinitionId ||
+            processDefinitionBuildingBlockDefinitionRepository.existsByIdProcessDefinitionIdId(processDefinitionId)
+
+        if (!isNested) {
+            require(blueprintId is CaseDefinitionId) {
+                "CaseDefinitionId is required for building-block process links in case processes"
+            }
+        }
+        return isNested
+    }
+
+    /**
+     * Resolves plugin configuration mappings. For nested building blocks, plugin configurations
+     * are inherited from the root process link at runtime, so mappings are passed through as-is.
+     * For top-level building blocks, mappings are validated against required plugins.
+     */
+    private fun resolvePluginMappings(
+        isNestedBuildingBlockLink: Boolean,
+        mappings: Map<String, UUID>,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Map<String, UUID> {
+        return if (isNestedBuildingBlockLink) {
+            mappings
+        } else {
+            ensureMappings(mappings, buildingBlockDefinitionId)
         }
     }
 
