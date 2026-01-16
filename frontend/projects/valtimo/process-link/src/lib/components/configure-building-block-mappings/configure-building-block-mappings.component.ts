@@ -30,8 +30,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {combineLatest, Observable, startWith, Subscription} from 'rxjs';
-import {map, take} from 'rxjs/operators';
+import {combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
+import {map, switchMap, take} from 'rxjs/operators';
 import {
   BuildingBlockInputMapping,
   BuildingBlockOutputMapping,
@@ -46,6 +46,7 @@ import {
 } from '../../models';
 import {
   BuildingBlockStateService,
+  ProcessLinkBuildingBlockApiService,
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
@@ -67,7 +68,7 @@ import {
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {getCaseManagementRouteParams, getBuildingBlockManagementRouteParams} from '@valtimo/shared';
+import {getBuildingBlockManagementRouteParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -182,6 +183,51 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   public readonly buildingBlockParams$ = getBuildingBlockManagementRouteParams(this.route);
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
+  /**
+   * Returns the name of the source/target context in mappings.
+   * When in a building block context, shows the parent building block name.
+   * When in a case context, shows the case name.
+   */
+  public readonly sourceContextName$: Observable<string> = combineLatest([
+    this.params$,
+    this.buildingBlockParams$,
+  ]).pipe(
+    switchMap(([caseParams, bbParams]) => {
+      if (bbParams?.buildingBlockDefinitionKey && bbParams?.buildingBlockDefinitionVersionTag) {
+        // We're in a building block context - fetch the parent building block name
+        return this.buildingBlockApiService
+          .getBuildingBlockDefinition(
+            bbParams.buildingBlockDefinitionKey,
+            bbParams.buildingBlockDefinitionVersionTag
+          )
+          .pipe(map(def => def?.name ?? bbParams.buildingBlockDefinitionKey));
+      } else if (caseParams?.caseDefinitionKey && caseParams?.caseDefinitionVersionTag) {
+        // We're in a case context - fetch the case name
+        return this.buildingBlockApiService
+          .getCaseDefinition(caseParams.caseDefinitionKey, caseParams.caseDefinitionVersionTag)
+          .pipe(map(def => def?.name ?? caseParams.caseDefinitionKey));
+      }
+      return of(this.translateService.instant('processLinkConfiguration.buildingBlock.case'));
+    })
+  );
+
+  /**
+   * Returns the name of the building block being configured.
+   */
+  public readonly targetBuildingBlockName$: Observable<string> = combineLatest([
+    this.buildingBlockStateService.definitionKey$,
+    this.buildingBlockStateService.definitionVersionTag$,
+  ]).pipe(
+    switchMap(([key, versionTag]) => {
+      if (key && versionTag) {
+        return this.buildingBlockApiService
+          .getBuildingBlockDefinition(key, versionTag)
+          .pipe(map(def => def?.name ?? key));
+      }
+      return of(this.translateService.instant('processLinkConfiguration.buildingBlock.buildingBlock'));
+    })
+  );
+
   private readonly _subscriptions = new Subscription();
   private _syncingFromState = false;
   private _suppressValidation = false;
@@ -219,7 +265,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     private readonly processLinkStateService: ProcessLinkStateService,
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
-    private readonly changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {}
 
   ngOnInit(): void {
