@@ -34,6 +34,8 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecific
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -52,6 +54,7 @@ class ProcessLinkService(
     private val processLinkTypes: List<SupportedProcessLinkTypeHandler>,
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
 ) {
 
     fun <T : ProcessLink> getProcessLink(
@@ -124,10 +127,11 @@ class ProcessLinkService(
         return withLoggingContext(ProcessLink::class, updateRequest.id) {
             if (blueprintId is CaseDefinitionId) {
                 caseDefinitionChecker.assertCanUpdateCaseDefinition(blueprintId)
+            } else if (blueprintId is BuildingBlockDefinitionId) {
+                buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(blueprintId)
             } else if (blueprintId == null) {
                 caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
             }
-            // For BuildingBlockDefinitionId, authorization is handled elsewhere
             val processLinkToUpdate = processLinkRepository.findById(updateRequest.id)
                 .getOrElse { throw IllegalStateException("No ProcessLink found with id ${updateRequest.id}") }
             val mapper = getProcessLinkMapper(updateRequest.processLinkType)
