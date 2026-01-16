@@ -48,6 +48,9 @@ open class BuildingBlockInstance(
     @Column(name = "activity_id", nullable = false)
     val activityId: String,
 
+    @Column(name = "parent_building_block_instance_id", nullable = true)
+    val parentBuildingBlockInstanceId: UUID? = null,
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
         JoinColumn(

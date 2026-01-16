@@ -1,0 +1,36 @@
+[
+    {
+        "activityId": "CallHouseholdVerificationActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "household-verification",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            },
+            {
+                "source": "doc:householdSize",
+                "target": "householdSize"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "verifiedApplicant",
+                "target": "doc:verifiedApplicant",
+                "syncTiming": "END"
+            },
+            {
+                "source": "baseSubsidyAmount",
+                "target": "doc:baseSubsidyAmount",
+                "syncTiming": "END"
+            },
+            {
+                "source": "incomeEligibilityResult",
+                "target": "doc:eligibilityResult",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

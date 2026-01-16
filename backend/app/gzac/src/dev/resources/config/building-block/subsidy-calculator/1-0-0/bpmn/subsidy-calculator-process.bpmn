@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SubsidyCalculator" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_SubsidyCalculator">
+    <bpmn:participant id="SubsidyCalculatorParticipant" name="Subsidie Berekening" processRef="subsidy-calculator-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="subsidy-calculator-process" name="Subsidie Berekening Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start Berekening">
+      <bpmn:outgoing>Flow_Start_To_Init</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="InitializeCalculationTask" name="Initialiseer Berekening" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'GESTART')}">
+      <bpmn:incoming>Flow_Start_To_Init</bpmn:incoming>
+      <bpmn:outgoing>Flow_Init_To_CallHousehold</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallHouseholdVerificationActivity" name="Huishouden Verificatie" camunda:asyncAfter="true" calledElement="household-verification-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:household-verification:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Init_To_CallHousehold</bpmn:incoming>
+      <bpmn:outgoing>Flow_CallHousehold_To_Summary</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="GenerateSummaryTask" name="Genereer Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationSummary', 'Aanvrager: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/verifiedApplicant')).concat(' | Basisbedrag: EUR ').concat(valueResolverDelegateService.resolveValue(execution, 'doc:/baseSubsidyAmount')))}">
+      <bpmn:incoming>Flow_CallHousehold_To_Summary</bpmn:incoming>
+      <bpmn:outgoing>Flow_Summary_To_Calculate</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CalculateFinalAmountTask" name="Bereken Eindtotaal" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/finalSubsidyAmount', valueResolverDelegateService.resolveValue(execution, 'doc:/baseSubsidyAmount') + 100)}">
+      <bpmn:incoming>Flow_Summary_To_Calculate</bpmn:incoming>
+      <bpmn:outgoing>Flow_Calculate_To_Complete</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="MarkCalculationCompleteTask" name="Markeer Voltooid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'VOLTOOID')}">
+      <bpmn:incoming>Flow_Calculate_To_Complete</bpmn:incoming>
+      <bpmn:outgoing>Flow_Complete_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_Summary_To_Calculate" sourceRef="GenerateSummaryTask" targetRef="CalculateFinalAmountTask" />
+    <bpmn:sequenceFlow id="Flow_Calculate_To_Complete" sourceRef="CalculateFinalAmountTask" targetRef="MarkCalculationCompleteTask" />
+    <bpmn:endEvent id="EndEvent" name="Berekening Afgerond">
+      <bpmn:incoming>Flow_Complete_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Init" sourceRef="StartEvent" targetRef="InitializeCalculationTask" />
+    <bpmn:sequenceFlow id="Flow_Init_To_CallHousehold" sourceRef="InitializeCalculationTask" targetRef="CallHouseholdVerificationActivity" />
+    <bpmn:sequenceFlow id="Flow_CallHousehold_To_Summary" sourceRef="CallHouseholdVerificationActivity" targetRef="GenerateSummaryTask" />
+    <bpmn:sequenceFlow id="Flow_Complete_To_End" sourceRef="MarkCalculationCompleteTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubsidyCalculator">
+      <bpmndi:BPMNShape id="Participant_SubsidyCalculator_di" bpmnElement="SubsidyCalculatorParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="910" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="202" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="InitializeCalculationTask_di" bpmnElement="InitializeCalculationTask">
+        <dc:Bounds x="310" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallHouseholdVerificationActivity_di" bpmnElement="CallHouseholdVerificationActivity">
+        <dc:Bounds x="470" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GenerateSummaryTask_di" bpmnElement="GenerateSummaryTask">
+        <dc:Bounds x="630" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalculateFinalAmountTask_di" bpmnElement="CalculateFinalAmountTask">
+        <dc:Bounds x="790" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MarkCalculationCompleteTask_di" bpmnElement="MarkCalculationCompleteTask">
+        <dc:Bounds x="950" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="1112" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1092" y="202" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Init_di" bpmnElement="Flow_Start_To_Init">
+        <di:waypoint x="258" y="177" />
+        <di:waypoint x="310" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Init_To_CallHousehold_di" bpmnElement="Flow_Init_To_CallHousehold">
+        <di:waypoint x="410" y="177" />
+        <di:waypoint x="470" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CallHousehold_To_Summary_di" bpmnElement="Flow_CallHousehold_To_Summary">
+        <di:waypoint x="570" y="177" />
+        <di:waypoint x="630" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Summary_To_Calculate_di" bpmnElement="Flow_Summary_To_Calculate">
+        <di:waypoint x="730" y="177" />
+        <di:waypoint x="790" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_Complete_di" bpmnElement="Flow_Calculate_To_Complete">
+        <di:waypoint x="890" y="177" />
+        <di:waypoint x="950" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Complete_To_End_di" bpmnElement="Flow_Complete_To_End">
+        <di:waypoint x="1050" y="177" />
+        <di:waypoint x="1112" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

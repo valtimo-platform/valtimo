@@ -1,0 +1,42 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-energy-subsidy-request"
+    },
+    {
+        "activityId": "CallSubsidyCalculatorActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "subsidy-calculator",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            },
+            {
+                "source": "doc:householdSize",
+                "target": "householdSize"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "verifiedApplicant",
+                "target": "doc:verifiedApplicant",
+                "syncTiming": "END"
+            },
+            {
+                "source": "finalSubsidyAmount",
+                "target": "doc:calculatedSubsidy",
+                "syncTiming": "END"
+            },
+            {
+                "source": "eligibilityResult",
+                "target": "doc:eligibilityResult",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

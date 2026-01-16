@@ -16,10 +16,12 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.stereotype.Service
@@ -29,10 +31,27 @@ import org.springframework.stereotype.Service
 class BuildingBlockPluginDefinitionService(
     private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-    private val pluginService: PluginService
+    private val pluginService: PluginService,
+    private val processLinkService: ProcessLinkService
 ) {
-    //TODO: change these method so they also take call activities to other processes and building blocks into account
+    /**
+     * Get all plugin definition keys required by a building block, including plugins required by
+     * nested building blocks (building blocks referenced within this building block's processes).
+     */
     fun getPluginDefinitionKeysForBuildingBlock(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<String> {
+        return getPluginDefinitionKeysForBuildingBlockRecursive(buildingBlockDefinitionId, mutableSetOf())
+    }
+
+    private fun getPluginDefinitionKeysForBuildingBlockRecursive(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        visitedBuildingBlocks: MutableSet<BuildingBlockDefinitionId>
+    ): Set<String> {
+        // Prevent infinite loops in case of circular references
+        if (visitedBuildingBlocks.contains(buildingBlockDefinitionId)) {
+            return emptySet()
+        }
+        visitedBuildingBlocks.add(buildingBlockDefinitionId)
+
         val processDefinitionIds = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
             .map { it.id.processDefinitionId.id }
@@ -41,8 +60,24 @@ class BuildingBlockPluginDefinitionService(
             return emptySet()
         }
 
-        val keys = pluginProcessLinkRepository.findPluginDefinitionKeysByProcessDefinitionIds(processDefinitionIds)
-        return keys.toSet()
+        // Get direct plugin requirements from this building block's processes
+        val directPluginKeys = pluginProcessLinkRepository
+            .findPluginDefinitionKeysByProcessDefinitionIds(processDefinitionIds)
+            .toSet()
+
+        // Find all nested building block process links in this building block's processes
+        val nestedBuildingBlockDefinitionIds = processDefinitionIds.flatMap { processDefinitionId ->
+            processLinkService.getProcessLinks(processDefinitionId)
+                .filterIsInstance<BuildingBlockProcessLink>()
+                .map { it.buildingBlockDefinitionId }
+        }.toSet()
+
+        // Recursively get plugin requirements from nested building blocks
+        val nestedPluginKeys = nestedBuildingBlockDefinitionIds.flatMap { nestedBuildingBlockId ->
+            getPluginDefinitionKeysForBuildingBlockRecursive(nestedBuildingBlockId, visitedBuildingBlocks)
+        }.toSet()
+
+        return directPluginKeys + nestedPluginKeys
     }
 
     fun getPluginDefinitionKeysForProcessDefinition(processDefinitionId: String): Set<String> {

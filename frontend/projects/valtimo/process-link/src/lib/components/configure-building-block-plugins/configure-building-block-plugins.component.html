@@ -46,43 +46,49 @@
   } @else {
     <div class="plugin-list">
       @if (definitionVersionTag$ | async) {
-        @if (pluginConfigurationViewModels$ | async; as pluginConfigurationViewModels) {
-          @if (pluginConfigurationViewModels.length === 0) {
-            <div class="empty-state">
-              {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
-            </div>
-          } @else {
-            @let configurationPlaceholder = configurationPlaceholder$ | async;
-
-            <div class="plugin-row">
-              <v-input-label
-                [title]="'processLinkConfiguration.buildingBlock.pluginLabel' | translate"
-              >
-              </v-input-label>
-              <v-input-label
-                [title]="'processLinkConfiguration.buildingBlock.configurationLabel' | translate"
-                required="true"
-              >
-              </v-input-label>
-            </div>
-
-            @for (plugin of pluginConfigurationViewModels; track plugin.key) {
-              <div class="plugin-row">
-                <div class="plugin-label">
-                  {{ plugin.label }}
-                </div>
-
-                <cds-combo-box
-                  cdsLayer
-                  size="lg"
-                  [appendInline]="true"
-                  [placeholder]="configurationPlaceholder || ''"
-                  (selected)="onMappingChange(plugin.key, $event?.id || '')"
-                  (clear)="onMappingChange(plugin.key, '')"
-                >
-                  <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
-                </cds-combo-box>
+        @if (isNestedBuildingBlock$ | async) {
+          <div class="empty-state">
+            {{ 'processLinkConfiguration.buildingBlock.nestedBuildingBlockInfo' | translate }}
+          </div>
+        } @else {
+          @if (pluginConfigurationViewModels$ | async; as pluginConfigurationViewModels) {
+            @if (pluginConfigurationViewModels.length === 0) {
+              <div class="empty-state">
+                {{ 'processLinkConfiguration.buildingBlock.noRequirements' | translate }}
               </div>
+            } @else {
+              @let configurationPlaceholder = configurationPlaceholder$ | async;
+
+              <div class="plugin-row">
+                <v-input-label
+                  [title]="'processLinkConfiguration.buildingBlock.pluginLabel' | translate"
+                >
+                </v-input-label>
+                <v-input-label
+                  [title]="'processLinkConfiguration.buildingBlock.configurationLabel' | translate"
+                  required="true"
+                >
+                </v-input-label>
+              </div>
+
+              @for (plugin of pluginConfigurationViewModels; track plugin.key) {
+                <div class="plugin-row">
+                  <div class="plugin-label">
+                    {{ plugin.label }}
+                  </div>
+
+                  <cds-combo-box
+                    cdsLayer
+                    size="lg"
+                    [appendInline]="true"
+                    [placeholder]="configurationPlaceholder || ''"
+                    (selected)="onMappingChange(plugin.key, $event?.id || '')"
+                    (clear)="onMappingChange(plugin.key, '')"
+                  >
+                    <cds-dropdown-list [items]="plugin.dropdownItems"></cds-dropdown-list>
+                  </cds-combo-box>
+                </div>
+              }
             }
           }
         }

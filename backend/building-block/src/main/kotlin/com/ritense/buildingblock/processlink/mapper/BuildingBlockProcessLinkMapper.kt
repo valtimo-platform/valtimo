@@ -37,6 +37,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -73,13 +74,13 @@ class BuildingBlockProcessLinkMapper(
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
-            buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
-            buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
-            pluginConfigurationMappings = processLink.pluginConfigurationMappings,
-            inputMappings = processLink.inputMappings.toInputDto(),
-            outputMappings = processLink.outputMappings.toOutputDto()
-        )
-    }
+                buildingBlockDefinitionKey = processLink.buildingBlockDefinitionId.key,
+                buildingBlockDefinitionVersionTag = processLink.buildingBlockDefinitionId.versionTag.toString(),
+                pluginConfigurationMappings = processLink.pluginConfigurationMappings,
+                inputMappings = processLink.inputMappings.toInputDto(),
+                outputMappings = processLink.outputMappings.toOutputDto()
+            )
+        }
     }
 
     override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
@@ -128,12 +129,10 @@ class BuildingBlockProcessLinkMapper(
 
     override fun toNewProcessLink(
         createRequestDto: ProcessLinkCreateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         createRequestDto as BuildingBlockProcessLinkCreateRequestDto
-        requireNotNull(caseDefinitionId) {
-            "CaseDefinitionId is required for building-block process links"
-        }
+        val isNestedBuildingBlockLink = isNestedBuildingBlockLink(blueprintId, createRequestDto.processDefinitionId)
         val buildingBlockDefinitionId = toDefinitionId(
             createRequestDto.buildingBlockDefinitionKey,
             createRequestDto.buildingBlockDefinitionVersionTag
@@ -144,7 +143,8 @@ class BuildingBlockProcessLinkMapper(
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
             buildingBlockDefinitionId = buildingBlockDefinitionId,
-            pluginConfigurationMappings = ensureMappings(
+            pluginConfigurationMappings = resolvePluginMappings(
+                isNestedBuildingBlockLink,
                 createRequestDto.pluginConfigurationMappings,
                 buildingBlockDefinitionId
             ),
@@ -156,13 +156,11 @@ class BuildingBlockProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         processLinkToUpdate as BuildingBlockProcessLink
         updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
-        requireNotNull(caseDefinitionId) {
-            "CaseDefinitionId is required for building-block process links"
-        }
+        val isNestedBuildingBlockLink = isNestedBuildingBlockLink(blueprintId, processLinkToUpdate.processDefinitionId)
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             val buildingBlockDefinitionId = toDefinitionId(
                 updateRequestDto.buildingBlockDefinitionKey,
@@ -174,13 +172,48 @@ class BuildingBlockProcessLinkMapper(
                 activityId = processLinkToUpdate.activityId,
                 activityType = processLinkToUpdate.activityType,
                 buildingBlockDefinitionId = buildingBlockDefinitionId,
-                pluginConfigurationMappings = ensureMappings(
+                pluginConfigurationMappings = resolvePluginMappings(
+                    isNestedBuildingBlockLink,
                     updateRequestDto.pluginConfigurationMappings,
                     buildingBlockDefinitionId
                 ),
                 inputMappings = updateRequestDto.inputMappings.toInputDomain(),
                 outputMappings = updateRequestDto.outputMappings.toOutputDomain()
             )
+        }
+    }
+
+    /**
+     * Determines if this is a nested building block link (a building block referencing another building block).
+     * Nested building block links don't require a CaseDefinitionId since they inherit plugin configurations
+     * from the root process link at runtime.
+     */
+    private fun isNestedBuildingBlockLink(blueprintId: BlueprintId?, processDefinitionId: String): Boolean {
+        val isNested = blueprintId is BuildingBlockDefinitionId ||
+            processDefinitionBuildingBlockDefinitionRepository.existsByIdProcessDefinitionIdId(processDefinitionId)
+
+        if (!isNested) {
+            require(blueprintId is CaseDefinitionId) {
+                "CaseDefinitionId is required for building-block process links in case processes"
+            }
+        }
+        return isNested
+    }
+
+    /**
+     * Resolves plugin configuration mappings. For nested building blocks, plugin configurations
+     * are inherited from the root process link at runtime, so mappings are passed through as-is.
+     * For top-level building blocks, mappings are validated against required plugins.
+     */
+    private fun resolvePluginMappings(
+        isNestedBuildingBlockLink: Boolean,
+        mappings: Map<String, UUID>,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Map<String, UUID> {
+        return if (isNestedBuildingBlockLink) {
+            mappings
+        } else {
+            ensureMappings(mappings, buildingBlockDefinitionId)
         }
     }
 
