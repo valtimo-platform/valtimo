@@ -16,10 +16,6 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
 
-defaults:
-  run:
-    working-directory: backend
-
 env:
   ORG_GRADLE_PROJECT_includeDev: false
   PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
@@ -71,11 +67,12 @@ jobs:
           path: .
 
       - name: Check license compliance
-        run: ./gradlew -PincludeDev=false checkLicense
+        run: ./gradlew -PincludeDev=false :backend:checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
-          FILE="build/reports/dependency-license/dependencies-without-allowed-license.json"
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          FILE="backend/build/reports/dependency-license/dependencies-without-allowed-license.json"
           if [[ -f "$FILE" ]]; then
             COUNT=$(jq '.dependenciesWithoutAllowedLicenses | length' "$FILE" 2>/dev/null || echo 0)
             if [[ "$COUNT" -gt 0 ]]; then
@@ -96,7 +93,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}"
+        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
 
       - name: Archive Reports
         if: always()

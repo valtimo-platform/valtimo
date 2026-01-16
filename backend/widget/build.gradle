@@ -35,11 +35,11 @@ dockerCompose {
 
 dependencies {
 
-    implementation project(":authorization")
-    implementation project(":contract")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":value-resolver")
+    implementation project(":backend:authorization")
+    implementation project(":backend:contract")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:value-resolver")
 
     implementation "org.springframework.boot:spring-boot"
     implementation "org.springframework.boot:spring-boot-starter"

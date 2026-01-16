@@ -28,9 +28,7 @@ env:
   ORG_GRADLE_PROJECT_includeDev: false
   DOCKERHUB_IMAGE: ritense/gzac-backend
 
-defaults:
-  run:
-    working-directory: backend
+# Defaults removed as gradlew is now in root
 
 jobs:
   assemble:
@@ -51,12 +49,12 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew -PincludeDev=false app:gzac:assemble
+      - run: ./gradlew -PincludeDev=false :backend:app:gzac:assemble
 
       - name: Prepare deployment folder
         run: |
-          mkdir deployment
-          mv app/gzac/build/ app/gzac/Dockerfile deployment/
+          mkdir backend/deployment
+          mv backend/app/gzac/build/ backend/app/gzac/Dockerfile backend/deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
