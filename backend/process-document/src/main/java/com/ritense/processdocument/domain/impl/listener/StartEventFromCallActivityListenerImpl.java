@@ -16,8 +16,6 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import static com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE;
-
 import com.ritense.authorization.annotation.RunWithoutAuthorization;
 import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
@@ -46,14 +44,10 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
         "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
     public void notify(DelegateExecution execution) {
-        // Propagate buildingBlockDocumentId from parent call activity to child process
-        // This ensures building block processes use the correct document even without camunda:in configuration
-        propagateBuildingBlockDocumentId(execution);
-
         Document.Id documentId = getDocumentId(execution);
         if (documentId != null) {
             processDocumentAssociationService.createProcessDocumentInstance(
-                execution.getProcessInstanceId(), //processInstance from new process
+                execution.getProcessInstanceId(),
                 documentId.getId(),
                 getProcessNameFrom(execution)
             );
@@ -61,29 +55,12 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
     }
 
     /**
-     * Propagates the buildingBlockDocumentId variable from the parent call activity execution
-     * to the child process. This allows building block processes to use the correct document
-     * without requiring explicit camunda:in configuration in every BPMN.
+     * Gets the document ID for this process instance.
+     * The document is determined by the process's business key, which is set to:
+     * - Case document ID for case processes and their sub-processes
+     * - Building block document ID for building block processes and their sub-processes
      */
-    private void propagateBuildingBlockDocumentId(DelegateExecution execution) {
-        DelegateExecution parentExecution = execution.getSuperExecution();
-        if (parentExecution != null && parentExecution.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
-            Object buildingBlockDocumentId = parentExecution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE);
-            if (buildingBlockDocumentId != null) {
-                execution.setVariable(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockDocumentId);
-            }
-        }
-    }
-
     private Document.Id getDocumentId(DelegateExecution execution) {
-        DelegateExecution parentExecution = execution.getSuperExecution();
-        if (parentExecution != null && !parentExecution.hasVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) {
-            var processId = new OperatonProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
-            var documentId = processDocumentService.getDocumentId(processId, execution);
-            if (documentId != null) {
-                return documentId;
-            }
-        }
         var processId = new OperatonProcessInstanceId(execution.getProcessInstanceId());
         return processDocumentService.getDocumentId(processId, execution);
     }

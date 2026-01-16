@@ -355,17 +355,20 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
+    /**
+     * Gets the document ID for the given process instance.
+     * The document is determined by:
+     * 1. Looking up the ProcessDocumentInstance association (if it exists)
+     * 2. Falling back to the process's business key (which is set to the document ID)
+     *
+     * This works for both case processes (business key = case document ID) and
+     * building block processes (business key = building block document ID).
+     */
     public JsonSchemaDocumentId getDocumentId(
         ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
     ) {
         denyAuthorization();
-
-        // Check if we're inside a building block process - if so, use the building block document ID
-        var buildingBlockDocumentId = getBuildingBlockDocumentId(variableScope);
-        if (buildingBlockDocumentId != null) {
-            return JsonSchemaDocumentId.existingId(buildingBlockDocumentId);
-        }
 
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)
@@ -375,7 +378,8 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             return JsonSchemaDocumentId.existingId(jsonSchemaDocumentId);
         } else {
             // In case a process has no token wait state ProcessDocumentInstance is not yet created,
-            // therefore out business-key is our last chance which is populated with the documentId also.
+            // therefore the business-key is our fallback which is populated with the documentId.
+            // This works for both case processes and building block processes.
             var businessKey = getBusinessKey(processInstanceId, variableScope);
             if (businessKey != null && businessKey.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
                 return JsonSchemaDocumentId.existingId(businessKey);
@@ -383,23 +387,6 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 return null;
             }
         }
-    }
-
-    /**
-     * Get the building block document ID from the variable scope if we're inside a building block process.
-     * Returns null if not in a building block context.
-     */
-    @Nullable
-    private String getBuildingBlockDocumentId(@Nullable VariableScope variableScope) {
-        if (variableScope == null) {
-            return null;
-        }
-        var buildingBlockDocumentId = variableScope.getVariable("buildingBlockDocumentId");
-        if (buildingBlockDocumentId instanceof String documentId
-            && documentId.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
-            return documentId;
-        }
-        return null;
     }
 
     public JsonSchemaDocument getDocument(ProcessInstanceId processInstanceId, VariableScope variableScope) {
