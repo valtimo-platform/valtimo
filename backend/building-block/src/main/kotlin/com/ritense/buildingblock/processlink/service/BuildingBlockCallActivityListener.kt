@@ -80,13 +80,11 @@ class BuildingBlockCallActivityListener(
     }
 
     /**
-     * Find the parent building block instance by walking up the execution hierarchy.
+     * Finds the parent building block instance by walking up the execution hierarchy.
      * Returns null if this is a top-level building block (called from a case process).
      *
-     * The key insight is that for a call activity within a process, execution.superExecution
-     * might be null (if the call activity is at the top level of the process).
-     * We need to navigate via the process instance's superExecution, which correctly points
-     * to the call activity that started the current process.
+     * Uses processInstance.superExecution to navigate up, as this reliably points to
+     * the call activity in the parent process that started the current process.
      */
     private fun findParentBuildingBlockInstance(execution: DelegateExecution): BuildingBlockInstance? {
         // Get the process instance (root execution) of the current process
