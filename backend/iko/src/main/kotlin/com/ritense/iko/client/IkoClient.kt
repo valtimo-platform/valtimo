@@ -128,6 +128,7 @@ class IkoClient(
             if (encodedContainerParams.isNotEmpty()) {
                 addAll("containerParam", encodedContainerParams)
             }
+            put("id", listOf(id))
         }
 
         return runCatching {
@@ -142,7 +143,6 @@ class IkoClient(
                         .path(baseUrl.path)
                         .pathSegment("aggregated-data-profiles")
                         .pathSegment(aggregatedDataProfileName)
-                        .pathSegment(id)
                         .queryParams(queryParams)
                         .build()
                 }
