@@ -14,6 +14,6 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [center]="true" [fullWidth]="true" data-test-id="paragraph-message">
+<v-paragraph [center]="true" [fullWidth]="true" [attr.data-test-id]="TEST_IDS.PARAGRAPH_MESSAGE">
   {{ 'linkUploadedDocumentToZaakMessage' | pluginTranslate: pluginId | async }}
 </v-paragraph>

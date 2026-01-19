@@ -22,11 +22,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {
-  EditPermissionsService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import { EditPermissionsService, EnvironmentService, getCaseManagementRouteParams, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
 import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
@@ -40,6 +36,10 @@ import {CaseManagementService} from '../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementStatusesComponent implements AfterViewInit {
+  readonly TEST_IDS = {
+    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
+  };
+
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);

@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="verzoekConfigurationTitle"
+    [attr.data-test-id]="TEST_IDS.VERZOEKCONFIGURATIONTITLE"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -41,7 +41,7 @@
       [items]="vars.notificatiePluginSelectItems"
       [margin]="true"
       name="notificatiesApiPluginConfiguration"
-      data-test-id="verzoekNotificatiesApiPluginConfiguration"
+      [attr.data-test-id]="TEST_IDS.VERZOEKNOTIFICATIESAPIPLUGINCONFIGURATION"
       [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
@@ -55,7 +55,7 @@
       [items]="vars.processSelectItems"
       [margin]="true"
       name="processToStart"
-      data-test-id="verzoekProcessToStart"
+      [attr.data-test-id]="TEST_IDS.VERZOEKPROCESSTOSTART"
       [title]="'processToStart' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.processToStart"
@@ -66,7 +66,7 @@
   </ng-container>
   <v-input
     name="rsin"
-    data-test-id="verzoekRsin"
+    [attr.data-test-id]="TEST_IDS.VERZOEKRSIN"
     [title]="'rsin' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -79,7 +79,7 @@
   </v-input>
   <v-multi-input-form
     name="verzoekProperties"
-    data-test-id="verzoekProperties"
+    [attr.data-test-id]="TEST_IDS.VERZOEKPROPERTIES"
     [title]="'verzoekProperties' | pluginTranslate: pluginId | async"
     [formTemplate]="mappingForm"
     [addRowText]="'addVerzoekType' | pluginTranslate: pluginId | async"
@@ -108,7 +108,7 @@
     <v-form (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)">
       <v-input
         name="type"
-        data-test-id="verzoekType"
+        [attr.data-test-id]="TEST_IDS.VERZOEKTYPE"
         [title]="'type' | pluginTranslate: pluginId | async"
         [margin]="false"
         [disabled]="obs.disabled"
@@ -125,7 +125,7 @@
           [items]="vars.caseSelectItems"
           [smallMargin]="true"
           name="caseDefinitionKey"
-          data-test-id="verzoekCaseDefinitionKey"
+          [attr.data-test-id]="TEST_IDS.VERZOEKCASEDEFINITIONKEY"
           [title]="'caseDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.caseDefinitionKey"
@@ -142,7 +142,7 @@
           "
           [smallMargin]="true"
           name="caseDefinitionVersionTag"
-          data-test-id="verzoekCaseDefinitionVersionTag"
+          [attr.data-test-id]="TEST_IDS.VERZOEKCASEDEFINITIONVERSIONTAG"
           [title]="'caseDefinitionVersionTag' | pluginTranslate: pluginId | async"
           [disabled]="
             obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey
@@ -159,7 +159,7 @@
           [items]="vars.objectManagementSelectItems"
           [smallMargin]="true"
           name="objectManagementId"
-          data-test-id="verzoekObjectManagementId"
+          [attr.data-test-id]="TEST_IDS.VERZOEKOBJECTMANAGEMENTID"
           [title]="'objectManagementId' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.objectManagementId"
@@ -175,7 +175,7 @@
         "
         [smallMargin]="true"
         name="initiatorRoltypeUrl"
-        data-test-id="verzoekInitiatorRoltypeUrl"
+        [attr.data-test-id]="TEST_IDS.VERZOEKINITIATORROLTYPEURL"
         [title]="'initiatorRoltypeUrl' | pluginTranslate: pluginId | async"
         [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionId"
         [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
@@ -184,7 +184,7 @@
       ></v-select>
       <v-input
         name="initiatorRolDescription"
-        data-test-id="verzoekInitiatorRolDescription"
+        [attr.data-test-id]="TEST_IDS.VERZOEKINITIATORROLDESCRIPTION"
         [title]="'initiatorRolDescription' | pluginTranslate: pluginId | async"
         [margin]="false"
         [disabled]="obs.disabled"
@@ -200,7 +200,7 @@
           [items]="vars.processSelectItems"
           [smallMargin]="true"
           name="processDefinitionKey"
-          data-test-id="verzoekProcessDefinitionKey"
+          [attr.data-test-id]="TEST_IDS.VERZOEKPROCESSDEFINITIONKEY"
           [title]="'processDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.processDefinitionKey"
@@ -211,7 +211,7 @@
       </ng-container>
       <v-radio
         name="copyStrategy"
-        data-test-id="verzoekCopyStrategy"
+        [attr.data-test-id]="TEST_IDS.VERZOEKCOPYSTRATEGY"
         [disabled]="obs.disabled"
         [title]="'copyStrategy' | pluginTranslate: pluginId | async"
         [tooltip]="'copyStrategyTooltip' | pluginTranslate: pluginId | async"
@@ -227,7 +227,7 @@
         >
         </v-input-label>
 
-        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table" data-test-id="verzoekOpenMappingModal">
+        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table" [attr.data-test-id]="TEST_IDS.VERZOEKOPENMAPPINGMODAL">
           <svg cdsIcon="data-table" size="16"></svg>
           {{ 'setMapping' | pluginTranslate: pluginId | async }}
         </button>
@@ -236,7 +236,7 @@
     </v-form>
     <v-modal [parentId]="uuid" (closeEvent)="closeMappingModal(uuid)" [maxWidthPx]="960">
       <div role="header">
-        <h3 cdsModalHeaderHeading data-test-id="verzoekSetMappingHeader">{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
+        <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VERZOEKSETMAPPINGHEADER">{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
       </div>
 
       <div role="content">
@@ -275,7 +275,7 @@
           [attr.modal-primary-focus]="true"
           (click)="closeMappingModal(uuid)"
           [disabled]="obs.disabled"
-          data-test-id="verzoekCloseModal"
+          [attr.data-test-id]="TEST_IDS.VERZOEKCLOSEMODAL"
         >
           {{ 'close' | pluginTranslate: pluginId | async }}
         </button>
@@ -286,7 +286,7 @@
           [disabled]="obs.disabled"
           (click)="saveMapping(uuid)"
           [disabled]="obs.disabled"
-          data-test-id="verzoekSaveMapping"
+          [attr.data-test-id]="TEST_IDS.VERZOEKSAVEMAPPING"
         >
           {{ 'save' | pluginTranslate: pluginId | async }}
         </button>

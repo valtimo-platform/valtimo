@@ -19,10 +19,10 @@
     availableProcessLinkTypes: availableProcessLinkTypes$ | async,
   } as obs"
 >
-  <p class="step-description" data-test-id="process-link-configuration-description">
+  <p class="step-description" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_DESCRIPTION">
     {{ 'processLinkConfiguration.chooseProcessLinkTypeDescription' | translate }}
   </p>
-  <div class="process-link-grid" data-test-id="process-link-configuration-grid">
+  <div class="process-link-grid" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_GRID">
     <div
       class="process-link-item"
       *ngFor="let availableProcessLinkType of obs.availableProcessLinkTypes"

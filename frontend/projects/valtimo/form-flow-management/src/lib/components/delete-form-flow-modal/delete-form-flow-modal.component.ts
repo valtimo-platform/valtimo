@@ -16,6 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Observable} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -24,6 +25,10 @@ import {Observable} from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteFormFlowModalComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() deleteFormFlowDefinitionKey: string;
   @Input() showDeleteModal$: Observable<boolean>;
   @Output() deleteEvent = new EventEmitter<string>();

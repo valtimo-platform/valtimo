@@ -31,6 +31,7 @@ import {FormControl, FormGroup} from '@angular/forms';
 import {FormioCustomComponent} from '../../../../modules';
 import Currency from '@tadashi/currency';
 import {Subscription} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 /**
  * Custom formio component for currency number.
@@ -43,6 +44,10 @@ import {Subscription} from 'rxjs';
 export class FormIoCurrencyComponent
   implements FormioCustomComponent<number>, OnInit, AfterViewInit, OnChanges, OnDestroy
 {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @ViewChild('currencyElement') currencyElement!: ElementRef<HTMLInputElement>;
 
   public readonly currencyForm = new FormGroup({

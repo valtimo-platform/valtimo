@@ -26,10 +26,10 @@
   valtimoCdsModal
   class="valtimo-definition-create"
   (close)="onCloseModal()"
-  data-test-id="valtimo-definition-create-modal"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_MODAL"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
-    <h3 cdsModalHeaderHeading data-test-id="valtimo-definition-create-title">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_TITLE">
       {{ 'caseManagement.createDefinition.modalTitle' | translate }}
     </h3>
   </cds-modal-header>
@@ -51,7 +51,7 @@
         placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        data-test-id="valtimo-definition-create-name-input"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_NAME_INPUT"
       />
     </cds-label>
 
@@ -72,7 +72,7 @@
           [invalid]="!!obs.idError"
           [placeholder]="'caseManagement.createDefinition.keyPlaceholder' | translate"
           [attr.modal-primary-focus]="true"
-          data-test-id="valtimo-definition-create-key-input"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_KEY_INPUT"
         />
 
         <button
@@ -82,7 +82,7 @@
           [iconOnly]="true"
           size="md"
           (click)="enableEdit()"
-          data-test-id="valtimo-definition-create-edit-button"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_EDIT_BUTTON"
         >
           <svg cdsIcon="edit" size="16"></svg>
         </button>
@@ -106,7 +106,7 @@
         [invalid]="!!obs.versionError"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        data-test-id="valtimo-definition-create-version-input"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_VERSION_INPUT"
       />
     </cds-label>
 
@@ -128,17 +128,17 @@
         [cols]="150"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        data-test-id="valtimo-definition-create-description-textarea"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_DESCRIPTION_TEXTAREA"
       ></textarea>
     </cds-textarea-label>
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCloseModal()" data-test-id="valtimo-definition-create-cancel-button">
+    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)" data-test-id="valtimo-definition-create-save-button">
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_SAVE_BUTTON">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

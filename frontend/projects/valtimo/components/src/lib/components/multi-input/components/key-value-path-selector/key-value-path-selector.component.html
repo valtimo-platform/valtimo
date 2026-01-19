@@ -26,7 +26,7 @@
     [defaultValue]="value.key"
     [disabled]="disabled"
     (input)="onInputChange('key', $event.target.value)"
-    data-test-id="v-multi-input-key-input"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_KEY_INPUT"
   />
 </div>
 
@@ -47,6 +47,6 @@
     [defaultValue]="value?.value"
     [notation]="notation"
     (valueChangeEvent)="onInputChange('value', $event)"
-    data-test-id="v-multi-input-path-selector"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_PATH_SELECTOR"
   ></valtimo-value-path-selector>
 </div>

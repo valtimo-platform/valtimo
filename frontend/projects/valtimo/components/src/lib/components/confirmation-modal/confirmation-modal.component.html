@@ -28,10 +28,10 @@
     optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
   } as obs"
   (close)="closeModal()"
-  data-test-id="confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading data-test-id="confirmation-modal-title">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_TITLE">
       {{
         (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
           title ||
@@ -40,26 +40,26 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent data-test-id="confirmation-modal-content">
+  <section cdsModalContent [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CONTENT">
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
 
-    <div class="modal-body-content" data-test-id="confirmation-modal-body">
+    <div class="modal-body-content" [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_BODY">
       <ng-content></ng-content>
     </div>
   </section>
 
-  <cds-modal-footer data-test-id="confirmation-modal-footer">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_FOOTER">
     <ng-container>
       <button
         data-testid="confirmation-modal-close"
         [attr.modal-primary-focus]="true"
         [cdsButton]="cancelButtonType"
         (click)="closeModal()"
-        data-test-id="confirmation-modal-cancel"
+        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CANCEL"
       >
         {{
           (cancelButtonTextTranslationKey !== obs.cancelButtonTranslation
@@ -75,7 +75,7 @@
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"
         (click)="onOptional()"
-        data-test-id="confirmation-modal-optional-button"
+        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_OPTIONAL_BUTTON"
       >
         {{
           (optionalButtonTextTranslationKey !== obs.optionalButtonTranslation
@@ -90,7 +90,7 @@
         [attr.modal-primary-focus]="true"
         [cdsButton]="confirmButtonType"
         (click)="onConfirm()"
-        data-test-id="confirmation-modal-confirm-button"
+        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CONFIRM_BUTTON"
       >
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation

@@ -16,6 +16,7 @@
 import {Component, signal} from '@angular/core';
 import {Router} from '@angular/router';
 import {ChoiceField, ChoiceFieldService, Pagination} from '@valtimo/components';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -23,6 +24,10 @@ import {ChoiceField, ChoiceFieldService, Pagination} from '@valtimo/components';
   templateUrl: './choice-field-list.component.html',
 })
 export class ChoiceFieldListComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public choiceFields: Array<ChoiceField> = [];
   public readonly $pagination = signal<Pagination>({
     collectionSize: 0,

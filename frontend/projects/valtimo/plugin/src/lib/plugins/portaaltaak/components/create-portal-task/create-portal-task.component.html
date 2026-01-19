@@ -22,7 +22,7 @@
     formTypeIsUrl: formTypeIsUrl$ | async,
     receiverIsOther: receiverIsOther$ | async,
   } as obs"
-  data-test-id="form-configuration-form"
+  [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_FORM"
 >
   <v-select
     [items]="formTypeSelectItems$ | async"
@@ -35,7 +35,7 @@
     [tooltip]="'formTypeTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
     [clearable]="false"
-    data-test-id="form-configuration-form-type-select"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_FORM_TYPE_SELECT"
   ></v-select>
 
   <v-input
@@ -48,7 +48,7 @@
     [trim]="true"
     [tooltip]="'formTypeIdTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
-    data-test-id="form-configuration-form-type-id-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_FORM_TYPE_ID_INPUT"
   ></v-input>
 
   <v-input
@@ -61,7 +61,7 @@
     [tooltip]="'formTypeUrlTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
     [trim]="true"
-    data-test-id="form-configuration-form-type-url-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_FORM_TYPE_URL_INPUT"
   ></v-input>
 
   <valtimo-carbon-multi-input
@@ -83,7 +83,7 @@
     [valueColumnFlex]="2"
     [keyColumnTitle]="'destinationInObject' | pluginTranslate: pluginId | async"
     [valueColumnTitle]="'value' | pluginTranslate: pluginId | async"
-    data-test-id="form-configuration-send-data-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_SEND_DATA_INPUT"
   ></valtimo-carbon-multi-input>
 
   <valtimo-carbon-multi-input
@@ -105,7 +105,7 @@
     [valueColumnFlex]="1"
     [keyColumnTitle]="'destination' | pluginTranslate: pluginId | async"
     [valueColumnTitle]="'source' | pluginTranslate: pluginId | async"
-    data-test-id="form-configuration-receive-data-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_RECEIVE_DATA_INPUT"
   ></valtimo-carbon-multi-input>
 
   <v-select
@@ -119,7 +119,7 @@
     [tooltip]="'receiverTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
     [clearable]="false"
-    data-test-id="form-configuration-receiver-select"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_RECEIVER_SELECT"
   ></v-select>
 
   <v-input
@@ -132,7 +132,7 @@
     [tooltip]="'identificationKeyTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
     [trim]="true"
-    data-test-id="form-configuration-identification-key-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_IDENTIFICATION_KEY_INPUT"
   ></v-input>
 
   <v-input
@@ -145,7 +145,7 @@
     [tooltip]="'identificationValueTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
     [trim]="true"
-    data-test-id="form-configuration-identification-value-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_IDENTIFICATION_VALUE_INPUT"
   ></v-input>
 
   <v-input
@@ -156,6 +156,6 @@
     [disabled]="obs.disabled"
     [tooltip]="'verloopDurationInDaysTooltip' | pluginTranslate: pluginId | async"
     [required]="false"
-    data-test-id="form-configuration-verloop-duration-input"
+    [attr.data-test-id]="TEST_IDS.FORM_CONFIGURATION_VERLOOP_DURATION_INPUT"
   ></v-input>
 </v-form>

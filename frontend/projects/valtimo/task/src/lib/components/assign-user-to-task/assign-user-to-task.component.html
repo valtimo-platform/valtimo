@@ -35,7 +35,7 @@
       *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.hasSelection)"
       (mouseenter)="onMouseEnterAssignee()"
       (mouseleave)="onMouseLeaveAssignee()"
-      data-test-id="assign-user-container"
+      [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER"
     >
       <div
         class="assignee-text element"
@@ -44,7 +44,7 @@
             ? vars.hasSelection && !obs.mouseIsOverAssignee
             : vars.hasSelection,
         }"
-        data-test-id="assign-user-container-assignee-text"
+        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_ASSIGNEE_TEXT"
       >
         <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
 
@@ -61,7 +61,7 @@
         [disabled]="obs.disabled"
         size="sm"
         (click)="unassignTask()"
-        data-test-id="assign-user-container-remove-button"
+        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_REMOVE_BUTTON"
       >
         {{ 'assignTask.remove' | translate }}
       </button>
@@ -73,7 +73,7 @@
         [isOpen]="open$ | async"
         [ngClass]="{active: !vars.hasSelection}"
         (onOpen)="clear()"
-        data-test-id="assign-user-container-toggletip"
+        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_TOGGLETIP"
       >
         <button
           cdsToggletipButton
@@ -81,7 +81,7 @@
           cdsButton="tertiary"
           size="sm"
           class="set-assignee-button"
-          data-test-id="assign-user-container-set-assignee-button"
+          [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_SET_ASSIGNEE_BUTTON"
         >
           {{ 'assignTask.buttonText' | translate }}
 
@@ -92,7 +92,7 @@
           cdsToggletipContent
           [attr.data-carbon-theme]="toggletipTheme$ | async"
           class="assign-task-popover-content"
-          data-test-id="assign-user-container-toggletip-content"
+          [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_TOGGLETIP_CONTENT"
         >
           <cds-combo-box
             *ngIf="!vars.hasSelection"
@@ -105,7 +105,7 @@
             [disabled]="obs.disabled"
             (selected)="onUserSelect($event)"
             (clear)="clear()"
-            data-test-id="assign-user-container-combo-box"
+            [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_COMBO_BOX"
           >
             <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
           </cds-combo-box>
@@ -115,7 +115,7 @@
             class="submit-task-button"
             [disabled]="!obs.selectedUserId || obs.disabled"
             (click)="onSubmitButtonClick()"
-            data-test-id="assign-user-container-submit-button"
+            [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_SUBMIT_BUTTON"
           >
             {{ 'assignTask.submitButtonText' | translate }}
 

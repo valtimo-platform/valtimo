@@ -37,7 +37,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
-import {Page} from '@valtimo/shared';
+import { Page, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   ContextMenuModule,
@@ -74,6 +74,10 @@ import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../mod
   ],
 })
 export class WidgetInteractiveTableComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @HostBinding('class') public readonly class = 'valtimo-widget-interactive-table';
   private _widgetConfiguration: InteractiveTableWidget;
 

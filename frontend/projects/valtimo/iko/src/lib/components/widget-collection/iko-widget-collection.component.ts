@@ -33,6 +33,7 @@ import {
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-collection',
@@ -52,6 +53,10 @@ import {IkoApiService} from '../../services';
   ],
 })
 export class IkoWidgetCollectionComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public set widgetConfiguration(value: CollectionWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);

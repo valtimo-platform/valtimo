@@ -66,7 +66,7 @@
       #taskDetail
       (formSubmit)="reload()"
       (assignmentOfTaskChanged)="reload()"
-      data-test-id="task-list-task-detail-modal"
+      [attr.data-test-id]="TEST_IDS.TASK_LIST_TASK_DETAIL_MODAL"
     ></valtimo-task-detail-modal>
   </div>
 </div>
@@ -92,7 +92,7 @@
         href="javascript:void(0)"
         ngbTooltip="{{ 'task-list.caseLocked' | translate }}"
         (click)="$event.stopPropagation()"
-        data-test-id="task-list-case-locked-link"
+        [attr.data-test-id]="TEST_IDS.TASK_LIST_CASE_LOCKED_LINK"
       >
         {{ 'task-list.goToCase' | translate }}
       </a>
@@ -103,7 +103,7 @@
         cdsLink
         href="javascript:void(0)"
         (click)="openRelatedCase($event, data.index)"
-        data-test-id="task-list-case-link"
+        [attr.data-test-id]="TEST_IDS.TASK_LIST_CASE_LINK"
       >
         {{ 'task-list.goToCase' | translate }}
       </a>
@@ -126,7 +126,7 @@
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"
     (sortChanged)="sortChanged($event)"
-    data-test-id="task-list-list"
+    [attr.data-test-id]="TEST_IDS.TASK_LIST_LIST"
   >
     <div tabs>
       <ng-container *ngIf="obs.visibleTabs">
@@ -142,34 +142,34 @@
     <valtimo-no-results
       [description]="obs.noResultsMessage.description | translate"
       [title]="obs.noResultsMessage.title | translate"
-      data-test-id="task-list-no-results"
+      [attr.data-test-id]="TEST_IDS.TASK_LIST_NO_RESULTS"
     >
     </valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>
 
 <ng-template #tasksListLoading let-obs="obs">
-  <valtimo-carbon-list *ngIf="obs.loading" [loading]="true" data-test-id="task-list-loading">
+  <valtimo-carbon-list *ngIf="obs.loading" [loading]="true" [attr.data-test-id]="TEST_IDS.TASK_LIST_LOADING">
     <div tabs>
       <cds-tabs *ngIf="!obs.visibleTabs" type="contained" class="valtimo-carbon-list__tabs">
         <cds-tab
           [heading]="'task-list.mine.title' | translate"
           [active]="obs.selectedTaskType === 'mine'"
-          data-test-id="task-list-mine-tab"
+          [attr.data-test-id]="TEST_IDS.TASK_LIST_MINE_TAB"
         >
         </cds-tab>
 
         <cds-tab
           [heading]="'task-list.open.title' | translate"
           [active]="obs.selectedTaskType === 'open'"
-          data-test-id="task-list-open-tab"
+          [attr.data-test-id]="TEST_IDS.TASK_LIST_OPEN_TAB"
         >
         </cds-tab>
 
         <cds-tab
           [heading]="'task-list.all.title' | translate"
           [active]="obs.selectedTaskType === 'all'"
-          data-test-id="task-list-all-tab"
+          [attr.data-test-id]="TEST_IDS.TASK_LIST_ALL_TAB"
         >
         </cds-tab>
       </cds-tabs>
@@ -195,7 +195,7 @@
       [setValuesSubject$]="setSearchFieldValuesSubject$"
       [clearValuesSubject$]="clearSearchFieldValuesSubject$"
       (doSearch)="search($event)"
-      data-test-id="task-list-search-fields"
+      [attr.data-test-id]="TEST_IDS.TASK_LIST_SEARCH_FIELDS"
     >
     </valtimo-search-fields>
   </div>
@@ -213,7 +213,7 @@
       [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"
       [skeleton]="obs.loadingCaseListItems"
       (selected)="setCaseDefinition($event)"
-      data-test-id="task-list-case-dropdown"
+      [attr.data-test-id]="TEST_IDS.TASK_LIST_CASE_DROPDOWN"
     >
       <cds-dropdown-list [items]="obs.caseListItems || []"></cds-dropdown-list>
     </cds-dropdown>

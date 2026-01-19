@@ -21,6 +21,7 @@ import {Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {Milestone, MilestoneSet} from '../models';
 import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import { MILESTONE_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,6 +30,10 @@ import {ProcessService, ProcessDefinition} from '@valtimo/process';
   styleUrls: ['./milestone-create.component.scss'],
 })
 export class MilestoneCreateComponent implements OnInit {
+  readonly TEST_IDS = {
+    MILESTONE_TEST_IDS: MILESTONE_TEST_IDS
+  };
+
   public form: FormGroup;
   public milestoneSets: MilestoneSet[] = [];
   public processDefinitions: ProcessDefinition[] = [];

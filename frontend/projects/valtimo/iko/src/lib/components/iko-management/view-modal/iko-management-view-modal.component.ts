@@ -32,7 +32,7 @@ import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
 import {PropertyField, IkoViewResponse, IkoRepositoryConfigResponse} from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
-import {ModalMode} from '@valtimo/shared';
+import { ModalMode, IKO_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-view-modal',
@@ -55,6 +55,10 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementViewModalComponent {
+  readonly TEST_IDS = {
+    IKO_TEST_IDS: IKO_TEST_IDS
+  };
+
   private readonly _open$ = new BehaviorSubject<boolean>(false);
 
   @Input() public set open(value: boolean) {

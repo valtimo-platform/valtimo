@@ -18,7 +18,7 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
-import {GlobalNotificationService, Page} from '@valtimo/shared';
+import { GlobalNotificationService, Page, CASE_TEST_IDS } from '@valtimo/shared';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
@@ -37,6 +37,10 @@ import {NotesService} from '../../../../services/notes.service';
   styleUrls: ['./notes.component.scss'],
 })
 export class CaseDetailTabNotesComponent implements OnInit {
+  readonly TEST_IDS = {
+    CASE_TEST_IDS: CASE_TEST_IDS
+  };
+
   @HostBinding('class.tab--no-margin') noMargin = true;
 
   public timelineItems: TimelineItem[] = [];

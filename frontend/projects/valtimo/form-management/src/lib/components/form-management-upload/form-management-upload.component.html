@@ -14,12 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm" (close)="closeModal()" data-test-id="form-management-modal">
-  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()" data-test-id="form-management-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="form-management-modal-title">{{ 'formManagement.upload.modalTitle' | translate }}</h3>
+<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm" (close)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_MODAL">
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_MODAL_TITLE">{{ 'formManagement.upload.modalTitle' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1" [formGroup]="form" data-test-id="form-management-modal-content">
+  <section cdsModalContent [cdsLayer]="1" [formGroup]="form" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_MODAL_CONTENT">
     <cds-file-uploader
       [accept]="ACCEPTED_FILES"
       [buttonText]="'formManagement.upload.buttonText' | translate"
@@ -28,13 +28,13 @@
       [title]="'formManagement.upload.title' | translate"
       buttonType="primary"
       formControlName="file"
-      data-test-id="form-management-file-uploader"
+      [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_FILE_UPLOADER"
     >
     </cds-file-uploader>
   </section>
 
-  <cds-modal-footer data-test-id="form-management-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" data-test-id="form-management-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -42,7 +42,7 @@
       cdsButton="primary"
       [disabled]="(fileSelected$ | async) === false"
       (click)="uploadFormDefinition()"
-      data-test-id="form-management-upload-button"
+      [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_UPLOAD_BUTTON"
     >
       {{ 'interface.upload' | translate }}
     </button>

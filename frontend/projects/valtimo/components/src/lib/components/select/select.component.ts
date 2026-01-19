@@ -33,6 +33,7 @@ import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {map, take} from 'rxjs/operators';
 import {NG_VALUE_ACCESSOR} from '@angular/forms';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-select',
@@ -49,6 +50,10 @@ import {NG_VALUE_ACCESSOR} from '@angular/forms';
   ],
 })
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public set items(value: Array<SelectItem>) {
     this._listItems$.next(
       Array.isArray(value)

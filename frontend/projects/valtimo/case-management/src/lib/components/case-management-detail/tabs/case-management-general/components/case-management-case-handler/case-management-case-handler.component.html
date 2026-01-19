@@ -25,7 +25,7 @@
   class="case-handler-process"
   [cdsLayer]="0"
 >
-  <p class="case-handler-process__title" data-test-id="case-handler-process-title">
+  <p class="case-handler-process__title" [attr.data-test-id]="TEST_IDS.CASE_HANDLER_PROCESS_TITLE">
     {{ 'caseManagement.tabs.generalTab.caseHandler.title' | translate }}
   </p>
 
@@ -41,7 +41,7 @@
       [label]="'caseManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
       [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
       [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-      data-test-id="case-handler-process-can-have-assignee-toggle"
+      [attr.data-test-id]="TEST_IDS.CASE_HANDLER_PROCESS_CAN_HAVE_ASSIGNEE_TOGGLE"
     ></cds-toggle>
 
     <cds-tooltip
@@ -66,7 +66,7 @@
         [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
         [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
         [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-        data-test-id="case-handler-process-auto-assign-tasks-toggle"
+        [attr.data-test-id]="TEST_IDS.CASE_HANDLER_PROCESS_AUTO_ASSIGN_TASKS_TOGGLE"
       ></cds-toggle>
     </cds-tooltip>
   </div>

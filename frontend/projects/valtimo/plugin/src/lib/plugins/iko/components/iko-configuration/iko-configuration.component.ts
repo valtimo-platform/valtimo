@@ -26,6 +26,7 @@ import {
   take,
 } from 'rxjs';
 import {IkoConfig} from '../../models';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -33,6 +34,10 @@ import {IkoConfig} from '../../models';
   templateUrl: './iko-configuration.component.html',
 })
 export class IkoConfigurationComponent implements PluginConfigurationComponent, OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

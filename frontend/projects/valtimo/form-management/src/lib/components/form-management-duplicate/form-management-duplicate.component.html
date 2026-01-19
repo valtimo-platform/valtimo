@@ -21,16 +21,16 @@
   [cdsLayer]="0"
   [open]="true"
   (close)="closeModal()"
-  data-test-id="form-management-create-modal"
+  [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" data-test-id="form-management-create-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="form-management-create-modal-title">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_TITLE">
       {{ 'formManagement.duplicate' | translate }}
     </h3>
   </cds-modal-header>
 
   <form [formGroup]="duplicateForm">
-    <section cdsModalContent [cdsLayer]="1" data-test-id="form-management-create-modal-content">
+    <section cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_CONTENT">
       <cds-label
         [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
         [invalidText]="
@@ -38,7 +38,7 @@
           (duplicateFormName?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
           'Error'
         "
-        data-test-id="form-management-create-modal-name-label"
+        [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_NAME_LABEL"
       >
         {{ 'formManagement.name' | translate }}
 
@@ -49,18 +49,18 @@
           formControlName="duplicateFormName"
           [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
           required
-          data-test-id="form-management-create-modal-name-input"
+          [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_NAME_INPUT"
         />
       </cds-label>
     </section>
 
-    <cds-modal-footer [cdsLayer]="1" data-test-id="form-management-create-modal-footer">
+    <cds-modal-footer [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_FOOTER">
       <cds-modal-footer>
-        <button cdsButton="secondary" (click)="closeModal()" data-test-id="form-management-create-modal-cancel-button">
+        <button cdsButton="secondary" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_CANCEL_BUTTON">
           {{ 'interface.cancel' | translate }}
         </button>
 
-        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()" data-test-id="form-management-create-modal-submit-button">
+        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_SUBMIT_BUTTON">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>

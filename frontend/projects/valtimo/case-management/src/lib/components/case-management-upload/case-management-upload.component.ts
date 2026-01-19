@@ -31,6 +31,7 @@ import {FileItem, IconService, NotificationContent} from 'carbon-components-angu
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.constants';
 import {CaseManagementService} from '../../services';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -40,6 +41,10 @@ import {CaseManagementService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementUploadComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() open = false;
   @Output() closeModal = new EventEmitter<boolean>();
 

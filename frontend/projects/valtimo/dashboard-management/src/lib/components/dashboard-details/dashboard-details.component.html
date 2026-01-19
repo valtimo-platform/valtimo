@@ -38,7 +38,7 @@
         [dragAndDropDisabled]="obs.dragAndDropDisabled"
         (itemsReordered)="updateWidgetData($event)"
         (rowClicked)="editWidget($event)"
-        data-test-id="dashboard-detail-widget-list"
+        [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_WIDGET_LIST"
       >
         <div carbonToolbarContent>
           <ng-container [ngTemplateOutlet]="viewToggle"></ng-container>
@@ -50,7 +50,7 @@
           [action]="addWidgetButton"
           description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
           title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
-          data-test-id="dashboard-detail-no-results"
+          [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_NO_RESULTS"
         ></valtimo-no-results>
       </valtimo-carbon-list>
     } @else {
@@ -59,7 +59,7 @@
         [fitPage]="true"
         [fitPageSpaceAdjustment]="56"
         (saveEvent)="updateWidgetData($event)"
-        data-test-id="dashboard-detail-json-editor"
+        [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_JSON_EDITOR"
       >
         <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
       </valtimo-json-editor>
@@ -73,14 +73,14 @@
     [type]="modalType"
     [widgetKey]="obs.editWidgetConfiguration?.key"
     (saveEvent)="refreshWidgets()"
-    data-test-id="dashboard-detail-widget-modal"
+    [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_WIDGET_MODAL"
   ></valtimo-widget-modal>
 
   <valtimo-edit-dashboard-modal
     [dashboard]="obs.currentDashboard"
     [showModal$]="showEditDashboardModal$"
     (saveEvent)="refreshDashboard()"
-    data-test-id="dashboard-detail-edit-dashboard-modal"
+    [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_EDIT_DASHBOARD_MODAL"
   >
   </valtimo-edit-dashboard-modal>
 </ng-container>
@@ -91,7 +91,7 @@
       cdsButton="tertiary"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="editDashboard()"
-      data-test-id="dashboard-detail-edit-button"
+      [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_EDIT_BUTTON"
     >
       {{ 'dashboardManagement.widgets.editButton' | translate }}
 
@@ -101,7 +101,7 @@
 </ng-container>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()" data-test-id="dashboard-detail-add-widget-button">
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()" [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_ADD_WIDGET_BUTTON">
     {{ 'dashboardManagement.widgets.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

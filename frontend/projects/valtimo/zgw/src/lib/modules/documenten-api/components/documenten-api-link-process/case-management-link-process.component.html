@@ -5,10 +5,10 @@
     isReadOnly: isReadOnly$ | async,
   } as obs"
   class="link-upload-process"
-  data-test-id="link-upload-process-container"
+  [attr.data-test-id]="TEST_IDS.LINK_UPLOAD_PROCESS_CONTAINER"
 >
   <p class="link-upload-process__title"
-     data-test-id="link-upload-process-title">
+     [attr.data-test-id]="TEST_IDS.LINK_UPLOAD_PROCESS_TITLE">
     {{ 'caseManagement.tabs.generalTab.linkUploadProcess.title' | translate }}
   </p>
 
@@ -24,7 +24,7 @@
     "
     [disabled]="obs.disabled || !obs.processItems || obs.isReadOnly"
     (selected)="selectProcess($event)"
-    data-test-id="link-upload-process-combo-box"
+    [attr.data-test-id]="TEST_IDS.LINK_UPLOAD_PROCESS_COMBO_BOX"
   >
     <cds-dropdown-list [items]="obs.processItems || []"></cds-dropdown-list>
   </cds-combo-box>

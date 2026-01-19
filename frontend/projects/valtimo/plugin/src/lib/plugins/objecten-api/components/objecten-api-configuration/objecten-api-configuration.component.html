@@ -20,11 +20,11 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  data-test-id="objecten-api-configuration-form"
+  [attr.data-test-id]="TEST_IDS.OBJECTEN_API_CONFIGURATION_FORM"
 >
   <v-input
     name="configurationTitle"
-    data-test-id="objectenApiConfigurationTitle"
+    [attr.data-test-id]="TEST_IDS.OBJECTENAPICONFIGURATIONTITLE"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +37,7 @@
   </v-input>
   <v-input
     name="url"
-    data-test-id="objectenApiUrl"
+    [attr.data-test-id]="TEST_IDS.OBJECTENAPIURL"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -55,7 +55,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      data-test-id="objectenApiAuthenticationPluginConfiguration"
+      [attr.data-test-id]="TEST_IDS.OBJECTENAPIAUTHENTICATIONPLUGINCONFIGURATION"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

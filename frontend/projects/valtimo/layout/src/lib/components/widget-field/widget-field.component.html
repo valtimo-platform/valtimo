@@ -23,15 +23,15 @@
     noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <section *ngIf="obs?.widgetConfiguration?.title" class="valtimo-widget-field__header" data-test-id="widget-field-header">
+  <section *ngIf="obs?.widgetConfiguration?.title" class="valtimo-widget-field__header" [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_HEADER">
     <div class="valtimo-widget-field__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
-        data-test-id="widget-field-icon"
+        [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="valtimo-widget-field__title" data-test-id="widget-field-title">{{ obs?.widgetConfiguration?.title }}</h4>
+      <h4 class="valtimo-widget-field__title" [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_TITLE">{{ obs?.widgetConfiguration?.title }}</h4>
     </div>
 
     <ng-content></ng-content>
@@ -39,7 +39,7 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      data-test-id="widget-field-action-button"
+      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
@@ -48,7 +48,7 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
-      data-test-id="widget-field-no-results"
+      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_NO_RESULTS"
     ></valtimo-no-results>
   } @else {
     <div
@@ -60,14 +60,14 @@
         'valtimo-widget-field__render-three-columns': renderVertically() === 3,
         'valtimo-widget-field__container': renderVertically() === 4,
       }"
-      data-test-id="widget-field-container"
+      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_CONTAINER"
     >
       @if (obs.noVisibleFields) {
         <valtimo-no-results
           [collapseVertically]="true"
           [description]="'widgets.emptyFields' | translate"
           [smallPadding]="true"
-          data-test-id="widget-field-empty-fields"
+          [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_EMPTY_FIELDS"
         ></valtimo-no-results>
       } @else {
         @for (column of obs?.widgetPropertyValue; track column.key) {

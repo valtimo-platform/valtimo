@@ -15,6 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -26,6 +27,10 @@ declare var $;
   standalone: false,
 })
 export class FilterSidebarComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public filterSidebar: string;
 
   constructor() {

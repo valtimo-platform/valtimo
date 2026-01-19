@@ -17,19 +17,19 @@
   <valtimo-case-management-draft-warning
     *ngIf="isDraftVersion$ | async"
     [name]="DRAFT_WARNING_MESSAGE[currentTab] | translate | lowercase"
-    data-test-id="case-management-draft-warning"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DRAFT_WARNING"
   ></valtimo-case-management-draft-warning>
 
-  <cds-tabs class="case-management-tabs" type="contained" data-test-id="case-management-tabs">
+  <cds-tabs class="case-management-tabs" type="contained" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TABS">
     <cds-tab
       [active]="currentTab === TabEnum.LIST"
       [heading]="'caseManagement.tabs.caseListTab.columns' | translate"
       (selected)="switchTab(TabEnum.LIST)"
-      data-test-id="case-management-list-tab"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST_TAB"
     >
       <valtimo-case-management-list-columns
         *ngIf="currentTab === TabEnum.LIST"
-        data-test-id="case-management-list-columns"
+        [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST_COLUMNS"
       ></valtimo-case-management-list-columns>
     </cds-tab>
 
@@ -37,11 +37,11 @@
       [active]="currentTab === TabEnum.SEARCH"
       [heading]="'caseManagement.tabs.caseListTab.searchFields' | translate"
       (selected)="switchTab(TabEnum.SEARCH)"
-      data-test-id="case-management-search-tab"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_SEARCH_TAB"
     >
       <valtimo-case-management-search-fields
         *ngIf="currentTab === TabEnum.SEARCH"
-        data-test-id="case-management-search-fields"
+        [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_SEARCH_FIELDS"
       ></valtimo-case-management-search-fields>
     </cds-tab>
   </cds-tabs>

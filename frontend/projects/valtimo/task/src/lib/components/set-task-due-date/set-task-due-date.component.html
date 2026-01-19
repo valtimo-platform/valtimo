@@ -30,14 +30,14 @@
     class="due-date-container"
     (mouseenter)="onMouseEnterDueDate()"
     (mouseleave)="onMouseLeaveDueDate()"
-    data-test-id="set-task-due-date-container"
+    [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_CONTAINER"
   >
     <div
       class="due-date-text element"
       [ngClass]="{
         active: obs.canModifyTask ? obs.hasDueDate && !obs.mouseIsOverDueDate : obs.hasDueDate,
       }"
-      data-test-id="set-task-due-date-text"
+      [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_TEXT"
     >
       <span class="bold">{{ 'setTaskDueDate.dueDateText' | translate }}</span>
 
@@ -54,7 +54,7 @@
       [disabled]="obs.disabled"
       size="sm"
       (click)="onRemoveButtonClick()"
-      data-test-id="set-task-due-date-remove-button"
+      [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_REMOVE_BUTTON"
     >
       {{ 'setTaskDueDate.removeButtonText' | translate }}
     </button>
@@ -65,7 +65,7 @@
       [autoAlign]="true"
       [isOpen]="open$ | async"
       [ngClass]="{active: !obs.hasDueDate}"
-      data-test-id="set-task-due-date-toggletip"
+      [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_TOGGLETIP"
     >
       <button
         cdsToggletipButton
@@ -73,7 +73,7 @@
         cdsButton="tertiary"
         size="sm"
         class="set-task-due-date-button"
-        data-test-id="set-task-due-date-button"
+        [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_BUTTON"
       >
         {{ 'setTaskDueDate.buttonText' | translate }}
 
@@ -84,7 +84,7 @@
         cdsToggletipContent
         [attr.data-carbon-theme]="toggletipTheme$ | async"
         class="assign-due-date-popover-content"
-        data-test-id="set-task-due-date-popover-content"
+        [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_POPOVER_CONTENT"
       >
         <cds-date-picker
           *ngIf="!obs.hasDueDate"
@@ -94,7 +94,7 @@
           dateFormat="d/m/Y"
           [disabled]="obs.disabled"
           (valueChange)="onDateValueChange($event)"
-          data-test-id="set-task-due-date-picker"
+          [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_PICKER"
         ></cds-date-picker>
 
         <button
@@ -102,7 +102,7 @@
           class="submit-due-date-button"
           [disabled]="!obs.selectedDateString || obs.disabled"
           (click)="onSubmitButtonClick()"
-          data-test-id="set-task-due-date-submit-button"
+          [attr.data-test-id]="TEST_IDS.SET_TASK_DUE_DATE_SUBMIT_BUTTON"
         >
           {{ 'setTaskDueDate.submitButtonText' | translate }}
 

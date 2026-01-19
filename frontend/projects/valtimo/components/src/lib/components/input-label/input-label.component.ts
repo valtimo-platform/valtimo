@@ -17,6 +17,7 @@
 import {Component, Input} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-input-label',
@@ -25,6 +26,10 @@ import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
   standalone: false,
 })
 export class InputLabelComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public name = '';
   @Input() public tooltip = '';
   @Input() public tooltipTranslationKey = '';

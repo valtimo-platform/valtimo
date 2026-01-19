@@ -72,7 +72,7 @@ import {
   SearchFieldFieldType,
   SearchFieldMatchType,
 } from '../../../../../models';
-import {ModalMode} from '@valtimo/shared';
+import { ModalMode, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-field-modal',
@@ -97,6 +97,10 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchFieldModalComponent implements OnInit {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input({required: true}) open: boolean;
 
   @Input() public usedKeys: string[] = [];

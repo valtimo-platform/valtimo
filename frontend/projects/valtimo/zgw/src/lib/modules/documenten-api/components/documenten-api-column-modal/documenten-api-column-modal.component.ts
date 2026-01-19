@@ -44,6 +44,7 @@ import {
 } from '../../models';
 import {DocumentenApiColumnService} from '../../services';
 import {CARBON_CONSTANTS} from '@valtimo/components';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-documenten-api-column-modal',
@@ -65,6 +66,10 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   ],
 })
 export class DocumentenApiColumnModalComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public definitionName: string;
 
   private _prefillColumn!: ListItem[] | null;

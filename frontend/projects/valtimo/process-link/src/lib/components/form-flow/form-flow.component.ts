@@ -28,7 +28,7 @@ import {FormFlowService} from '../../services';
 import {FormFlowInstance, FormFlowStepType} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {Step} from 'carbon-components-angular';
-import {ConfigService} from '@valtimo/shared';
+import { ConfigService, FORM_TEST_IDS } from '@valtimo/shared';
 import {map} from 'rxjs/operators';
 
 @Component({
@@ -38,6 +38,10 @@ import {map} from 'rxjs/operators';
   styleUrls: ['./form-flow.component.scss'],
 })
 export class FormFlowComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    FORM_TEST_IDS: FORM_TEST_IDS
+  };
+
   @ViewChild('form') public readonly form: FormioComponent;
 
   @Input() public readonly formIoFormData: BehaviorSubject<any | null> = new BehaviorSubject<any>(

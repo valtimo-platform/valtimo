@@ -25,7 +25,7 @@
     eigenschapItems: eigenschapSelectItems$ | async,
     context: context$ | async,
   } as obs"
-  data-test-id="eigenschap-form"
+  [attr.data-test-id]="TEST_IDS.EIGENSCHAP_FORM"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-radio
@@ -36,7 +36,7 @@
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
-      data-test-id="eigenschap-input-type-toggle"
+      [attr.data-test-id]="TEST_IDS.EIGENSCHAP_INPUT_TYPE_TOGGLE"
     >
     </v-radio>
 
@@ -51,7 +51,7 @@
       [trim]="true"
       [tooltip]="'eigenschapUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
-      data-test-id="eigenschap-url-input"
+      [attr.data-test-id]="TEST_IDS.EIGENSCHAP_URL_INPUT"
     >
     </v-input>
 
@@ -67,7 +67,7 @@
         [required]="true"
         [loading]="!obs.eigenschapItems"
         [tooltip]="'eigenschapUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
-        data-test-id="eigenschap-url-select"
+        [attr.data-test-id]="TEST_IDS.EIGENSCHAP_URL_SELECT"
       ></v-select>
     </ng-container>
 
@@ -80,14 +80,14 @@
       [required]="false"
       [tooltip]="'eigenschapValueTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
-      data-test-id="eigenschap-value-input"
+      [attr.data-test-id]="TEST_IDS.EIGENSCHAP_VALUE_INPUT"
     >
     </v-input>
   </ng-container>
 </v-form>
 
 <ng-template #loading>
-  <div class="loading-container" data-test-id="eigenschap-loading-container">
-    <cds-loading data-test-id="eigenschap-loading-spinner"></cds-loading>
+  <div class="loading-container" [attr.data-test-id]="TEST_IDS.EIGENSCHAP_LOADING_CONTAINER">
+    <cds-loading [attr.data-test-id]="TEST_IDS.EIGENSCHAP_LOADING_SPINNER"></cds-loading>
   </div>
 </ng-template>

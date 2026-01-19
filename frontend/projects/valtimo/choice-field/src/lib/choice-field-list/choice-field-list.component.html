@@ -18,7 +18,7 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0" data-test-id="choice-fields-create-button">
+        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0" [attr.data-test-id]="TEST_IDS.CHOICE_FIELDS_CREATE_BUTTON">
           <i class="icon mdi mdi-plus mr-1"></i>
 
           <span>{{ 'Create new Choice field' | translate }}</span>
@@ -39,9 +39,9 @@
         [header]="true"
       >
         <div header>
-          <h3 class="list-header-title" data-test-id="choice-fields-title">{{ 'Choice fields' | translate }}</h3>
+          <h3 class="list-header-title" [attr.data-test-id]="TEST_IDS.CHOICE_FIELDS_TITLE">{{ 'Choice fields' | translate }}</h3>
 
-          <h5 class="list-header-description" data-test-id="choice-fields-description">{{ 'Overview of all Choice fields' | translate }}</h5>
+          <h5 class="list-header-description" [attr.data-test-id]="TEST_IDS.CHOICE_FIELDS_DESCRIPTION">{{ 'Overview of all Choice fields' | translate }}</h5>
         </div>
       </valtimo-carbon-list>
     </valtimo-widget>

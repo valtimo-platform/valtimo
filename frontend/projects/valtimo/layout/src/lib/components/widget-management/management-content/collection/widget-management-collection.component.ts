@@ -69,6 +69,7 @@ import {
 import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
 import {toObservable} from '@angular/core/rxjs-interop';
+import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-collection.component.html',
@@ -91,6 +92,10 @@ import {toObservable} from '@angular/core/rxjs-interop';
   ],
 })
 export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
+  };
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-collection';
 
   public readonly widgetForm = this.fb.group({

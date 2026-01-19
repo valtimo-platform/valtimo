@@ -29,7 +29,7 @@
       (click)="showAddModal()"
       aria-expanded="false"
       aria-haspopup="true"
-      data-test-id="case-detail-add-note-button"
+      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_ADD_NOTE_BUTTON"
     >
       {{ 'case.notes.addNote' | translate }}
 
@@ -42,7 +42,7 @@
       *ngIf="timelineItems.length > 0"
       [actions]="actions"
       [items]="timelineItems"
-      data-test-id="case-detail-timeline"
+      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TIMELINE"
     ></valtimo-timeline>
 
     <valtimo-no-results
@@ -50,7 +50,7 @@
       [description]="'case.notes.noResults.description' | translate"
       [title]="'case.notes.noResults.title' | translate"
       illustration="valtimo-layout/img/emptystate-no-result.svg"
-      data-test-id="case-detail-no-results"
+      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_NO_RESULTS"
     ></valtimo-no-results>
   </div>
 
@@ -60,7 +60,7 @@
     bdColor="rgba(125, 125, 125, 0.35)"
     color="#264251"
     type="square-jelly-box"
-    data-test-id="case-detail-spinner"
+    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_SPINNER"
   >
   </valtimo-spinner>
 
@@ -73,7 +73,7 @@
       [rotate]="true"
       [(page)]="obs.pagination.page"
       (pageChange)="paginationClicked($event)"
-      data-test-id="case-detail-pagination"
+      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_PAGINATION"
     ></ngb-pagination>
   </div>
 </ng-container>
@@ -83,7 +83,7 @@
   [modalType]="modalType$ | async"
   [open]="modalOpen$ | async"
   (modalClosed)="onModalClosed($event)"
-  data-test-id="case-detail-note-modal"
+  [attr.data-test-id]="TEST_IDS.CASE_DETAIL_NOTE_MODAL"
 ></valtimo-note-modal>
 
 <valtimo-confirmation-modal
@@ -94,5 +94,5 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="case.notes.deleteConfirmation.title"
   (confirmEvent)="onDeleteConfirm($event)"
-  data-test-id="case-detail-confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.CASE_DETAIL_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>

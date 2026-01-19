@@ -24,13 +24,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  CaseManagementParams,
-  ConfigService,
-  getCaseManagementRouteParams,
-  UploadProvider,
-  ValtimoConfig,
-} from '@valtimo/shared';
+import { CaseManagementParams, ConfigService, getCaseManagementRouteParams, UploadProvider, ValtimoConfig, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -53,6 +47,10 @@ import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../.
   imports: [CommonModule, TranslateModule, ComboBoxModule, LayerModule],
 })
 export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() isReadOnly$: Observable<boolean>;
   //Necessary to trigger outside click detection for combo-box
   @HostListener('document:click', ['$event'])

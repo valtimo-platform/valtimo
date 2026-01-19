@@ -32,7 +32,7 @@ import {
 } from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
-import {NamedUser} from '@valtimo/shared';
+import { NamedUser, TASK_TEST_IDS } from '@valtimo/shared';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -67,6 +67,10 @@ import {filter, map} from 'rxjs/operators';
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
+  readonly TEST_IDS = {
+    TASK_TEST_IDS: TASK_TEST_IDS
+  };
+
   private _taskId;
   @Input() public set taskId(value: string) {
     if (this._taskId === value) return;

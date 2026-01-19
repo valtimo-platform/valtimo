@@ -43,12 +43,7 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {
-  ConfigService,
-  FORM_VIEW_MODEL_TOKEN,
-  FormViewModel,
-  GlobalNotificationService,
-} from '@valtimo/shared';
+import { ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel, GlobalNotificationService, FORM_TEST_IDS } from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -88,6 +83,10 @@ import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../..
   imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly TEST_IDS = {
+    FORM_TEST_IDS: FORM_TEST_IDS
+  };
+
   @ViewChild('form') form: FormioComponent;
   @ViewChild('formViewModelComponent', {static: false, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;

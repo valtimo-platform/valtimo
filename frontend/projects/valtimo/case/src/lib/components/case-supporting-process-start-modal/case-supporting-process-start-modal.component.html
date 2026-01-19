@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480" data-test-id="cds-modal">
+<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480" [attr.data-test-id]="TEST_IDS.CDS_MODAL">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [cdsLayer]="1"
-    ><h3 cdsModalHeaderHeading data-test-id="cds-modal-header">
+    ><h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.CDS_MODAL_HEADER">
       {{
         (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
           ? (processDefinitionKey$ | async | translate)
@@ -25,12 +25,12 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1" data-test-id="cds-modal-content">
+  <section cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.CDS_MODAL_CONTENT">
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
 
     @if (isLoading$ | async) {
-      <div class="loading-container" data-test-id="cds-modal-loading">
+      <div class="loading-container" [attr.data-test-id]="TEST_IDS.CDS_MODAL_LOADING">
         <cds-loading size="sm"></cds-loading>
       </div>
     }
@@ -46,7 +46,7 @@
         [form]="formDefinition$ | async"
         [options]="options$ | async"
         (submit)="onSubmit($event)"
-        data-test-id="cds-modal-form-io"
+        [attr.data-test-id]="TEST_IDS.CDS_MODAL_FORM_IO"
       ></valtimo-form-io>
     }
 
@@ -59,7 +59,7 @@
         #formFlow
         [formFlowInstanceId]="formFlowInstanceId$ | async"
         (formFlowComplete)="formSubmitted()"
-        data-test-id="cds-modal-form-flow"
+        [attr.data-test-id]="TEST_IDS.CDS_MODAL_FORM_FLOW"
       ></valtimo-form-flow>
     }
 
@@ -69,7 +69,7 @@
       !(formFlowInstanceId$ | async) &&
       (startProcessLinkType$ | async) !== 'ui-component'
     ) {
-      <div class="bg-warning text-black mb-0 p-3 text-center" data-test-id="cds-modal-warning-message">
+      <div class="bg-warning text-black mb-0 p-3 text-center" [attr.data-test-id]="TEST_IDS.CDS_MODAL_WARNING_MESSAGE">
         {{
           isAdmin
             ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
@@ -83,7 +83,7 @@
           type="button"
           (click)="gotoFormLinkScreen()"
           id="form-link-button"
-          data-test-id="cds-modal-goto-form-link-button"
+          [attr.data-test-id]="TEST_IDS.CDS_MODAL_GOTO_FORM_LINK_BUTTON"
         >
           {{ 'formManagement.gotoProcessLinksButton' | translate }}
         </button>

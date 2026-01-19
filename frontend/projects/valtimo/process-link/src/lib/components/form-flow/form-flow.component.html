@@ -30,7 +30,7 @@
         [current]="obs.currentStepIndex"
         [steps]="obs.breadcrumbs"
         (stepSelected)="onStepSelected($event)"
-        data-test-id="form-flow-progress-indicator"
+        [attr.data-test-id]="TEST_IDS.FORM_FLOW_PROGRESS_INDICATOR"
       >
       </cds-progress-indicator>
     </div>
@@ -42,7 +42,7 @@
       (change)="onChange($event)"
       (event)="onEvent($event)"
       [options]="formioOptions"
-      data-test-id="form-flow-form-io"
+      [attr.data-test-id]="TEST_IDS.FORM_FLOW_FORM_IO"
     ></valtimo-form-io>
   </div>
 
@@ -53,7 +53,7 @@
       [disabled]="disabled$ | async"
       (submitEvent)="onSubmit($event)"
       (changeEvent)="onChange($event)"
-      data-test-id="form-flow-configuration-container"
+      [attr.data-test-id]="TEST_IDS.FORM_FLOW_CONFIGURATION_CONTAINER"
     >
     </valtimo-form-flow-configuration-container>
   </div>

@@ -31,7 +31,7 @@
     [dragAndDrop]="true"
     [dragAndDropDisabled]="dragAndDropDisabled() || !(hasEditPermissions$ | async)"
     (itemsReordered)="onItemsReorderedEvent($event)"
-    data-test-id="case-management-list"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST"
   >
     <ng-container carbonToolbarContent>
       <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
@@ -41,7 +41,7 @@
       [action]="addTabButton"
       [description]="'case.tabs.noResultsDescription' | translate"
       [title]="'case.tabs.noResults' | translate"
-      data-test-id="case-management-no-results"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
@@ -62,7 +62,7 @@
   </ng-template>
 
   <ng-template #addTabButton>
-    <button cdsButton="primary" *ngIf="obs.hasEditPermissions" (click)="openAddTabModal()" data-test-id="case-management-add-tab-button">
+    <button cdsButton="primary" *ngIf="obs.hasEditPermissions" (click)="openAddTabModal()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ADD_TAB_BUTTON">
       {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -74,7 +74,7 @@
     [params]="obs.routeParams"
     [open]="openAddModal$ | async"
     (closeModalEvent)="onCloseAddModalEvent($event)"
-    data-test-id="case-management-add-tab-modal"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ADD_TAB_MODAL"
   ></valtimo-case-management-add-tab-modal>
 
   <valtimo-case-management-edit-tab-modal
@@ -82,7 +82,7 @@
     [tab]="tab$ | async"
     (closeModalEvent)="onCloseEditModalEvent($event)"
     [open]="openEditModal$ | async"
-    data-test-id="case-management-edit-tab-modal"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_EDIT_TAB_MODAL"
   ></valtimo-case-management-edit-tab-modal>
 
   <valtimo-confirmation-modal
@@ -93,6 +93,6 @@
     [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="caseManagement.tabManagement.deleteModal.title"
     (confirmEvent)="onConfirmEvent($event)"
-    data-test-id="case-management-confirmation-modal"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_CONFIRMATION_MODAL"
   ></valtimo-confirmation-modal>
 </ng-container>

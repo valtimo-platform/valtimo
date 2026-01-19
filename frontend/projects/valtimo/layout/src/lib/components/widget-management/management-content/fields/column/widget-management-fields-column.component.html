@@ -384,7 +384,7 @@
     }
   </cds-accordion>
 
-  <button cdsButton="primary" size="sm" (click)="addField()" data-test-id="valtimo-widget-management-field-column-add-field-button">
+  <button cdsButton="primary" size="sm" (click)="addField()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELD_COLUMN_ADD_FIELD_BUTTON">
     {{ addTranslateKey | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

@@ -15,8 +15,8 @@
   -->
 
 <ng-container *ngIf="{items: items$ | async} as obs">
-  <div class="v-table-container" data-test-id="v-table-container">
-    <table class="v-table" data-test-id="v-table">
+  <div class="v-table-container" [attr.data-test-id]="TEST_IDS.V_TABLE_CONTAINER">
+    <table class="v-table" [attr.data-test-id]="TEST_IDS.V_TABLE">
       <ng-container *ngTemplateOutlet="tableHead"></ng-container>
       <ng-container *ngTemplateOutlet="tableBody; context: {tableItems: obs.items}"></ng-container>
       <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
@@ -122,7 +122,7 @@
 </ng-template>
 
 <ng-template #paginationContainer let-tableItems="tableItems">
-  <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container" data-test-id="v-table-pagination-container">
+  <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_CONTAINER">
     <div class="v-table__pagination-size-container">
       <ng-container
         *ngTemplateOutlet="paginationSizeSelect; context: {paginationObject: paginationObject}"
@@ -149,7 +149,7 @@
       [defaultSelection]="(defaultPaginationSize$ | async) || paginationOptions[0]"
       [disabled]="loading"
       (selectedChange)="setPaginationSize($event)"
-      data-test-id="v-table-pagination-size-select"
+      [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_SIZE_SELECT"
     ></v-select>
   </span>
   <span class="v-table__pagination-size-text">{{
@@ -166,7 +166,7 @@
   <span
     class="v-table__pagination-amount-text"
     *ngIf="!loading && tableItems && paginationObject"
-    data-test-id="v-table-pagination-size-amount-text"
+    [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_SIZE_AMOUNT_TEXT"
   >{{
       tableItems.length +
         ' ' +
@@ -201,16 +201,16 @@
   <div
     class="v-table__pagination-navigation-container"
     *ngIf="paginationObject && paginationObject.collectionSize > paginationObject.size"
-    data-test-id="v-table-pagination-navigation-container"
+    [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_NAVIGATION_CONTAINER"
   >
     <span *ngIf="paginationObject.page > 1">
-      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading" data-test-id="v-table-pagination-previous-button">
+      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_PREVIOUS_BUTTON">
         {{ 'interface.previous' | translate }}
       </button>
     </span>
 
     <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
-      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading" data-test-id="v-table-pagination-next-button">
+      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_NEXT_BUTTON">
         {{ 'interface.nextArrow' | translate }}
       </button>
     </span>

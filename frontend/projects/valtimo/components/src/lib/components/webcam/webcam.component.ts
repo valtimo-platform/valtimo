@@ -17,6 +17,7 @@
 import {AfterViewInit, Component, EventEmitter, Output} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {take} from 'rxjs/operators';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-webcam',
@@ -25,6 +26,10 @@ import {take} from 'rxjs/operators';
   standalone: false,
 })
 export class WebcamComponent implements AfterViewInit {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Output() imageSaved = new EventEmitter<File>();
 
   readonly showing$ = new BehaviorSubject<boolean>(false);

@@ -14,15 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()" data-test-id="iko-management-modal">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" data-test-id="iko-management-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="iko-management-modal-title">
+<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE">
       {{ 'ikoManagement.views.' + modalMode | translate }}
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent data-test-id="iko-management-modal-form">
-    <cds-label data-test-id="iko-management-modal-title-label">
+  <form [formGroup]="formGroup" cdsModalContent [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_FORM">
+    <cds-label [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE_LABEL">
       {{ 'interface.title' | translate }}
 
       <input
@@ -31,7 +31,7 @@
         cdsLayer
         placeholder="{{ 'interface.title' | translate }}"
         [attr.modal-primary-focus]="true"
-        data-test-id="iko-management-modal-title-input"
+        [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE_INPUT"
       />
     </cds-label>
 
@@ -41,7 +41,7 @@
       [sourceText]="title.value"
       formControlName="key"
       placeholderTranslationKey="interface.key"
-      data-test-id="iko-management-modal-key-input"
+      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -49,16 +49,16 @@
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"
       [prefillData]="$prefillData()?.properties"
-      data-test-id="iko-management-modal-properties"
+      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_PROPERTIES"
     />
   </form>
 
-  <cds-modal-footer data-test-id="iko-management-modal-footer">
-    <button cdsButton="ghost" (click)="onCancel()" data-test-id="iko-management-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()" data-test-id="iko-management-modal-save-button">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_SAVE_BUTTON">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

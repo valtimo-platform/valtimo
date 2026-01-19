@@ -21,14 +21,14 @@
   } as obs"
 >
   <valtimo-form-management-list
-    data-test-id="form-management-list"
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_LIST"
     (navigateToCreateEvent)="onNavigateToCreateEvent()"
     (navigateToUploadEvent)="onNavigateToUploadEvent()"
     (navigateToEditEvent)="onFormDefinitionEditEvent($event)"
   ></valtimo-form-management-list>
 
   <valtimo-form-management-create
-    data-test-id="form-management-create"
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE"
     *ngIf="obs.create"
     [upload]="obs.upload"
     (goBackEvent)="onGoBackFromCreateEvent()"

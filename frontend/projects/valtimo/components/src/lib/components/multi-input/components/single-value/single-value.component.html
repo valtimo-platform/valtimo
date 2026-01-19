@@ -20,6 +20,6 @@
     [defaultValue]="value?.value"
     [disabled]="disabled"
     (input)="onInputChange($event.target.value)"
-    data-test-id="multi-input-input"
+    [attr.data-test-id]="TEST_IDS.MULTI_INPUT_INPUT"
   />
 </div>

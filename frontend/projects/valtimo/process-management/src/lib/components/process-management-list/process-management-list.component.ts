@@ -24,12 +24,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  EditPermissionsService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-  GlobalNotificationService,
-} from '@valtimo/shared';
+import { EditPermissionsService, EnvironmentService, getCaseManagementRouteParams, GlobalNotificationService, PROCESS_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
@@ -55,6 +50,10 @@ import {getContextObservable} from '../../utils';
   ],
 })
 export class ProcessManagementListComponent {
+  readonly TEST_IDS = {
+    PROCESS_MANAGEMENT_TEST_IDS: PROCESS_MANAGEMENT_TEST_IDS
+  };
+
   @Output() public readonly processSelected = new EventEmitter<
     ProcessDefinitionResult | 'create'
   >();

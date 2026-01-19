@@ -15,9 +15,9 @@
   -->
 
 <section class="valtimo-donut-widget__header">
-  <h3 class="valtimo-donut-widget__title" data-test-id="valtimo-donut-widget-title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-donut-widget__title" [attr.data-test-id]="TEST_IDS.VALTIMO_DONUT_WIDGET_TITLE">{{ displayTypeProperties.title }}</h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle" data-test-id="valtimo-donut-widget-subtitle">
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle" [attr.data-test-id]="TEST_IDS.VALTIMO_DONUT_WIDGET_SUBTITLE">
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>
@@ -25,13 +25,13 @@
 <section class="valtimo-donut-widget__content">
   <ng-container *ngIf="meterData$ | async as meterData">
     @if (meterData.length > 0) {
-      <ibm-meter-chart [data]="meterData" [options]="meterChartOptions$ | async" data-test-id="valtimo-donut-widget-meter-chart"></ibm-meter-chart>
+      <ibm-meter-chart [data]="meterData" [options]="meterChartOptions$ | async" [attr.data-test-id]="TEST_IDS.VALTIMO_DONUT_WIDGET_METER_CHART"></ibm-meter-chart>
     } @else {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noData' | translate"
         [smallPadding]="true"
-        data-test-id="valtimo-donut-widget-no-results"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DONUT_WIDGET_NO_RESULTS"
       ></valtimo-no-results>
     }
   </ng-container>

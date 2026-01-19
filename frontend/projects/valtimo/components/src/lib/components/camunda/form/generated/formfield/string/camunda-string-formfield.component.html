@@ -25,7 +25,7 @@
       type="text"
       [attr.placeholder]="formField.defaultValue"
       [formControlName]="formField.id"
-      data-test-id="form-field-input"
+      [attr.data-test-id]="TEST_IDS.FORM_FIELD_INPUT"
     />
     <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>

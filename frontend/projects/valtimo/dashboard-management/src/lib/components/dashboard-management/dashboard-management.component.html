@@ -23,9 +23,9 @@
     [fields]="fields"
     (rowClicked)="onRowClick($event)"
     class="valtimo-dashboard-management__table"
-    data-test-id="dashboard-management-table"
+    [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_TABLE"
   >
-    <div carbonToolbarContent data-test-id="dashboard-management-toolbar">
+    <div carbonToolbarContent [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_TOOLBAR">
       <ng-container [ngTemplateOutlet]="addDashboardButton"></ng-container>
     </div>
 
@@ -33,7 +33,7 @@
       [action]="addDashboardButton"
       description="{{ 'dashboardManagement.noResults.description' | translate }}"
       title="{{ 'dashboardManagement.noResults.title' | translate }}"
-      data-test-id="dashboard-management-no-results"
+      [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-container>
@@ -44,17 +44,17 @@
   showFooter="true"
   title="{{ 'dashboardManagement.addDashboard' | translate }}"
   (close)="closeModal()"
-  data-test-id="dashboard-management-modal"
+  [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" data-test-id="dashboard-management-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="dashboard-management-modal-title">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_MODAL_TITLE">
       {{ 'dashboardManagement.addDashboard' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent data-test-id="dashboard-management-modal-content">
+  <section cdsModalContent [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_MODAL_CONTENT">
     <form [formGroup]="form" class="valtimo-dashboard-management__form">
-      <cds-label [invalid]="getControlInvalid('title')" data-test-id="dashboard-management-name-label">
+      <cds-label [invalid]="getControlInvalid('title')" [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_NAME_LABEL">
         {{ 'dashboardManagement.addModal.name' | translate }}
 
         <input
@@ -63,14 +63,14 @@
           formControlName="title"
           cdsText
           placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
-          data-test-id="dashboard-management-name-input"
+          [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_NAME_INPUT"
         />
       </cds-label>
 
       <cds-label
         [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate"
         [invalid]="getControlInvalid('description')"
-        data-test-id="dashboard-management-description-label"
+        [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_DESCRIPTION_LABEL"
       >
         {{ 'dashboardManagement.description' | translate }}
 
@@ -79,18 +79,18 @@
           formControlName="description"
           cdsText
           placeholder="{{ 'dashboardManagement.addModal.descriptionPlaceholder' | translate }}"
-          data-test-id="dashboard-management-description-input"
+          [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_DESCRIPTION_INPUT"
         />
       </cds-label>
     </form>
   </section>
 
-  <cds-modal-footer data-test-id="dashboard-management-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" data-test-id="dashboard-management-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_CANCEL_BUTTON">
       {{ 'dashboardManagement.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createDashboard()" data-test-id="dashboard-management-create-button">
+    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createDashboard()" [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_CREATE_BUTTON">
       {{ 'dashboardManagement.create' | translate }}
     </button>
   </cds-modal-footer>
@@ -104,11 +104,11 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="dashboardManagement.delete"
   (confirmEvent)="onConfirmEvent($event)"
-  data-test-id="dashboard-management-confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-template #addDashboardButton>
-  <button cdsButton="primary" (click)="openModal()" data-test-id="dashboard-management-add-button">
+  <button cdsButton="primary" (click)="openModal()" [attr.data-test-id]="TEST_IDS.DASHBOARD_MANAGEMENT_ADD_BUTTON">
     {{ 'dashboardManagement.addDashboard' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

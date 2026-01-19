@@ -17,12 +17,12 @@
 
 @if (ikoSearchActions$ | async; as ikoSearchActions) {
   @if (ikoSearchActions.length === 0) {
-    <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate" data-test-id="iko-search-no-results"></valtimo-no-results>
+    <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate" [attr.data-test-id]="TEST_IDS.IKO_SEARCH_NO_RESULTS"></valtimo-no-results>
 
   } @else {
-    <h4 data-test-id="iko-search-title">{{ 'iko.searchVia' | translate }}</h4>
+    <h4 [attr.data-test-id]="TEST_IDS.IKO_SEARCH_TITLE">{{ 'iko.searchVia' | translate }}</h4>
 
-    <cds-tabs class="iko-search-tabs" type="line" data-test-id="iko-search-tabs">
+    <cds-tabs class="iko-search-tabs" type="line" [attr.data-test-id]="TEST_IDS.IKO_SEARCH_TABS">
       @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
         <cds-tab
           (keyup.enter)="!searchDisabled(param.searchFields) && searchGroup(param.key, param.searchFields)"

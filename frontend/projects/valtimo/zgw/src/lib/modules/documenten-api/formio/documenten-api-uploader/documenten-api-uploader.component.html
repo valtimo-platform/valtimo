@@ -20,13 +20,13 @@
       *ngIf="obs.isAdmin"
       [translate]="'case.documenten.noProcessLinked.adminRole'"
       class="bg-warning text-black mb-2 p-3 text-center"
-      data-test-id="documenten-api-uploader-admin-warning"
+      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_UPLOADER_ADMIN_WARNING"
     ></div>
     <div
       *ngIf="!obs.isAdmin"
       [translate]="'case.documenten.noProcessLinked.regularUser'"
       class="bg-warning text-black mb-2 p-3 text-center"
-      data-test-id="documenten-api-uploader-user-warning"
+      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_UPLOADER_USER_WARNING"
     ></div>
   </div>
   <valtimo-dropzone
@@ -43,7 +43,7 @@
     [subtitle]="subtitle"
     [title]="title"
     [uploading]="uploading$ | async"
-    data-test-id="documenten-api-uploader-dropzone"
+    [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_UPLOADER_DROPZONE"
   ></valtimo-dropzone>
 </ng-container>
 
@@ -84,5 +84,5 @@
   [hideFields]="hideFields"
   [supportsTrefwoorden]="(supportedDocumentenApiFeatures$ | async)?.supportsTrefwoorden"
   [open]="showModal()"
-  data-test-id="documenten-api-uploader-metadata-modal"
+  [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_UPLOADER_METADATA_MODAL"
 ></valtimo-documenten-api-metadata-modal>

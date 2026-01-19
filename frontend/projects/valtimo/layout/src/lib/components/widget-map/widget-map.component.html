@@ -22,15 +22,15 @@
     noVisibleMap: noVisibleMap$ | async,
   } as obs"
 >
-  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-map__header" data-test-id="widget-map-header">
-    <h4 class="widget-map__title" data-test-id="widget-map-title">{{ obs?.widgetConfiguration?.title }}</h4>
+  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-map__header" [attr.data-test-id]="TEST_IDS.WIDGET_MAP_HEADER">
+    <h4 class="widget-map__title" [attr.data-test-id]="TEST_IDS.WIDGET_MAP_TITLE">{{ obs?.widgetConfiguration?.title }}</h4>
 
     <ng-content></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      data-test-id="widget-map-action-button"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MAP_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
@@ -39,9 +39,9 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
-      data-test-id="widget-map-no-results"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MAP_NO_RESULTS"
     ></valtimo-no-results>
   } @else {
-    <div class="widget-map__render" #widgetMap data-test-id="widget-map-render"></div>
+    <div class="widget-map__render" #widgetMap [attr.data-test-id]="TEST_IDS.WIDGET_MAP_RENDER"></div>
   }
 </ng-container>

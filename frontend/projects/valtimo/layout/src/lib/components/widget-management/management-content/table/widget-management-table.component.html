@@ -31,14 +31,14 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
-      data-test-id="widget-management-table-widget-title-input"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_WIDGET_TITLE_INPUT"
     />
   </cds-text-label>
 
   <valtimo-mdi-icon-selector
     [cdsLayer]="1"
     formControlName="widgetIcon"
-    data-test-id="widget-management-table-icon-selector"
+    [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_ICON_SELECTOR"
   ></valtimo-mdi-icon-selector>
 
   <cds-text-label [attr.data-carbon-theme]="theme">
@@ -53,7 +53,7 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.table.defaultPageSizePlaceholder' | translate"
       type="text"
-      data-test-id="widget-management-table-default-page-size-input"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_DEFAULT_PAGE_SIZE_INPUT"
     />
   </cds-text-label>
 
@@ -72,7 +72,7 @@
         [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
         [type]="ValuePathType.COLLECTION"
         (collectionSelected)="onCollectionSelected($event)"
-        data-test-id="widget-management-table-collection-selector"
+        [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_COLLECTION_SELECTOR"
       ></valtimo-value-path-selector>
     } @else {
       <input
@@ -81,7 +81,7 @@
         [attr.data-carbon-theme]="theme"
         [placeholder]="'widgetTabManagement.content.table.collection' | translate"
         type="text"
-        data-test-id="widget-management-table-collection-input"
+        [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_COLLECTION_INPUT"
       />
     }
   </cds-text-label>
@@ -89,7 +89,7 @@
 
 <ng-content></ng-content>
 
-<span class="valtimo-widget-management-table__subtitle" data-test-id="widget-management-table-columns-subtitle">
+<span class="valtimo-widget-management-table__subtitle" [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_COLUMNS_SUBTITLE">
   {{ 'widgetTabManagement.content.table.columns' | translate }}
 </span>
 
@@ -98,11 +98,11 @@
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
-  data-test-id="widget-management-table-fields-column"
+  [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_FIELDS_COLUMN"
 ></valtimo-widget-management-fields-column>
 
 <section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">
-  <span class="valtimo-widget-management-table__subtitle" data-test-id="widget-management-table-options-subtitle">
+  <span class="valtimo-widget-management-table__subtitle" [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_OPTIONS_SUBTITLE">
     {{ 'widgetTabManagement.content.table.options' | translate }}
   </span>
 
@@ -112,6 +112,6 @@
     [onText]="'interface.yes' | translate"
     [offText]="'interface.no' | translate"
     (checkedChange)="onCheckedChange($event)"
-    data-test-id="widget-management-table-first-column-toggle"
+    [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_FIRST_COLUMN_TOGGLE"
   ></cds-toggle>
 </section>

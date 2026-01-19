@@ -27,13 +27,13 @@
     renderOptions: renderOptions$ | async,
   } as obs"
 >
-  <div *ngIf="obs.loading" class="overlay" data-test-id="form-container-spinner">
+  <div *ngIf="obs.loading" class="overlay" [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_SPINNER">
     <div class="spinner">
       <i class="fa fa-spinner fa-spin"></i>
     </div>
   </div>
 
-  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2" data-test-id="form-container-error-alert">
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2" [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_ERROR_ALERT">
     <ol>
       <li *ngFor="let error of obs.errors" class="pl-2" data-test-id="form-container-error-item-{{$index}}">
         {{ error }}
@@ -54,6 +54,6 @@
     (focusout)="onBlur($event)"
     (nextPage)="onNextPage()"
     (prevPage)="onPreviousPage()"
-    data-test-id="form-container-formio"
+    [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_FORMIO"
   ></formio>
 </div>

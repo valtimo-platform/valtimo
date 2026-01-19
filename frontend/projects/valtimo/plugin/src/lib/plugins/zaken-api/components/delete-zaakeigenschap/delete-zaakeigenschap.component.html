@@ -35,7 +35,7 @@
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
-      data-test-id="eigenschap-input-type-radio"
+      [attr.data-test-id]="TEST_IDS.EIGENSCHAP_INPUT_TYPE_RADIO"
     >
     </v-radio>
 
@@ -50,7 +50,7 @@
       [trim]="true"
       [tooltip]="'eigenschapUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
-      data-test-id="eigenschap-text-input"
+      [attr.data-test-id]="TEST_IDS.EIGENSCHAP_TEXT_INPUT"
     >
     </v-input>
 
@@ -66,7 +66,7 @@
         [required]="true"
         [loading]="!obs.eigenschapItems"
         [tooltip]="'eigenschapUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
-        data-test-id="eigenschap-select-input"
+        [attr.data-test-id]="TEST_IDS.EIGENSCHAP_SELECT_INPUT"
       ></v-select>
     </ng-container>
   </ng-container>
@@ -74,6 +74,6 @@
 
 <ng-template #loading>
   <div class="loading-container">
-    <cds-loading data-test-id="eigenschap-loading-spinner"></cds-loading>
+    <cds-loading [attr.data-test-id]="TEST_IDS.EIGENSCHAP_LOADING_SPINNER"></cds-loading>
   </div>
 </ng-template>

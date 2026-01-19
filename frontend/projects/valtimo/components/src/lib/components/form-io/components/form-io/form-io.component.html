@@ -27,7 +27,7 @@
     tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
   } as obs"
 >
-  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2" data-test-id="formio-carbon-error-alert">
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2" [attr.data-test-id]="TEST_IDS.FORMIO_CARBON_ERROR_ALERT">
     <ol>
       <li *ngFor="let error of obs.errors" data-test-id="formio-carbon-error-item-{{$index}}">
         {{ error }}
@@ -49,6 +49,6 @@
     (ready)="formReady($event)"
     (submit)="onSubmit($event)"
     (customEvent)="onCustomEvent($event)"
-    data-test-id="formio-carbon-form"
+    [attr.data-test-id]="TEST_IDS.FORMIO_CARBON_FORM"
   ></formio>
 </div>

@@ -80,7 +80,7 @@
       ></ng-container>
 
       <valtimo-no-results
-        data-test-id="case-management-search-no-results"
+        [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_SEARCH_NO_RESULTS"
         [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
         [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
       ></valtimo-no-results>

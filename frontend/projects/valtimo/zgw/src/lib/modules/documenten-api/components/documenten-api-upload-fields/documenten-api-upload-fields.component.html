@@ -24,7 +24,7 @@
   } as obs"
 >
   <valtimo-carbon-list
-    data-test-id="document-upload-fields-list"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_FIELDS_LIST"
     [items]="obs.documentUploadFields"
     [fields]="FIELDS"
     [header]="false"
@@ -33,14 +33,14 @@
     (rowClicked)="openEditModal($event)"
   >
     <valtimo-no-results
-      data-test-id="document-upload-fields-no-results"
+      [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_FIELDS_NO_RESULTS"
       title="{{ 'zgw.uploadFields.list.noResultsTitle' | translate }}"
       description="{{ 'zgw.uploadFields.list.noResultsDescription' | translate }}"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
   <valtimo-documenten-api-upload-field-modal
-    data-test-id="document-upload-fields-modal"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_FIELDS_MODAL"
     [prefill]="obs.prefill"
     [caseDefinitionKey]="obs.caseDefinitionKey"
     [type]="obs.uploadFieldModalType"

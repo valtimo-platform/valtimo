@@ -36,6 +36,7 @@ import {InputModule, LayerModule, LoadingModule} from 'carbon-components-angular
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentUpdatedSseEvent} from '../../models';
 import {SseService} from '@valtimo/sse';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -45,6 +46,10 @@ import {SseService} from '@valtimo/sse';
   imports: [CommonModule, WidgetFieldComponent, LoadingModule, LayerModule, InputModule],
 })
 export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private readonly _documentId$ = this.route.params.pipe(
     map(params => params?.documentId),
     filter(documentId => !!documentId),

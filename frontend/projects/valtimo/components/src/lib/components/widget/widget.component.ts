@@ -15,6 +15,7 @@
  */
 
 import {Component, Input, OnInit} from '@angular/core';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 /**
  * Component used to display a widget element
@@ -26,6 +27,10 @@ import {Component, Input, OnInit} from '@angular/core';
   standalone: false,
 })
 export class WidgetComponent implements OnInit {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() type?: string;
   @Input() name?: string;
   @Input() icon?: string;

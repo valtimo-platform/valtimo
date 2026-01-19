@@ -18,11 +18,11 @@
   <valtimo-case-management-draft-warning
     *ngIf="(isDraftVersion$ | async) === true && currentTab !== ZgwTabEnum.GENERAL"
     [name]="DRAFT_WARNING_MESSAGE[currentTab] | translate | lowercase"
-    data-test-id="case-management-draft-warning"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DRAFT_WARNING"
   ></valtimo-case-management-draft-warning>
 }
 
-<cds-tabs class="case-management-tabs" type="contained" data-test-id="case-management-tabs">
+<cds-tabs class="case-management-tabs" type="contained" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TABS">
   @for (zgwTab of (zgwTabs$ | async) || []; track zgwTab.tab) {
     <cds-tab
       [class]="zgwTab.class"
@@ -34,4 +34,4 @@
   }
 </cds-tabs>
 
-<ng-template #zgwTabContent data-test-id="case-management-tab-content"></ng-template>
+<ng-template #zgwTabContent [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAB_CONTENT"></ng-template>

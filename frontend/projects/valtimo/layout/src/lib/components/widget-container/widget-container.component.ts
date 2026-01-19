@@ -34,6 +34,7 @@ import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
 import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WidgetBlockComponent} from '../widget-block';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-container',
@@ -45,6 +46,10 @@ import {WidgetBlockComponent} from '../widget-block';
   providers: [WidgetLayoutService],
 })
 export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
 
   public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);

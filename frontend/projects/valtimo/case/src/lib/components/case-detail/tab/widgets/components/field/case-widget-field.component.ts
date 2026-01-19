@@ -38,6 +38,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
 
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetsService} from '../../widgets.service';
@@ -60,6 +61,10 @@ import {WidgetProcess} from '../widget-process/widget-process';
   ],
 })
 export class CaseWidgetFieldComponent extends WidgetProcess {
+  readonly TEST_IDS = {
+    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
+  };
+
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {

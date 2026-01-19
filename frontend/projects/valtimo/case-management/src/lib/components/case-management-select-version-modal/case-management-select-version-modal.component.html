@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()" data-test-id="all-versions-modal">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()" data-test-id="all-versions-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="all-versions-modal-title">
+<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()" [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()" [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_TITLE">
       {{
         'caseManagement.allVersionsModal.title'
           | translate: {value: (caseDefinitionTitle$ | async) ?? ''}
@@ -24,7 +24,7 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent data-test-id="all-versions-modal-content">
+  <section cdsModalContent [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_CONTENT">
     <valtimo-carbon-list
       [hideToolbar]="true"
       [items]="versionItems$ | async"
@@ -35,18 +35,18 @@
       (paginationClicked)="paginationClicked($event)"
       (paginationSet)="paginationSet($event)"
       cdsLayer="1"
-      data-test-id="all-versions-modal-list"
+      [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_LIST"
     >
       <valtimo-no-results
         [title]="'caseManagement.allVersionsModal.noResults.description' | translate"
         [description]="'caseManagement.allVersionsModal.noResults.title' | translate"
-        data-test-id="all-versions-modal-no-results"
+        [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_NO_RESULTS"
       ></valtimo-no-results>
     </valtimo-carbon-list>
   </section>
 
-  <cds-modal-footer data-test-id="all-versions-modal-footer">
-    <button cdsButton="ghost" (click)="onCloseModal()" data-test-id="all-versions-modal-close-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_CLOSE_BUTTON">
       {{ 'caseManagement.allVersionsModal.closeButton' | translate }}
     </button>
   </cds-modal-footer>

@@ -52,7 +52,7 @@
         cdsButton="secondary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="navigateBack(null)"
-        data-test-id="dmn-editor-back-button"
+        [attr.data-test-id]="TEST_IDS.DMN_EDITOR_BACK_BUTTON"
       >
         <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
 
@@ -65,20 +65,20 @@
           cdsButton="primary"
           (click)="deploy()"
           [size]="obs.compactMode ? 'sm' : 'md'"
-          data-test-id="dmn-editor-deploy-button"
+          [attr.data-test-id]="TEST_IDS.DMN_EDITOR_DEPLOY_BUTTON"
         >
           {{ 'decisions.deploy' | translate }}
 
           <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
 
-        <cds-overflow-menu class="overflow-button" data-test-id="dmn-editor-export-menu">
+        <cds-overflow-menu class="overflow-button" [attr.data-test-id]="TEST_IDS.DMN_EDITOR_EXPORT_MENU">
           <cds-overflow-menu-option (selected)="download()"
             >{{ 'interface.export' | translate }}
           </cds-overflow-menu-option>
         </cds-overflow-menu>
       } @else {
-        <button class="btn btn-success btn-space" (click)="deploy()" data-test-id="dmn-editor-deploy-button-alt">
+        <button class="btn btn-success btn-space" (click)="deploy()" [attr.data-test-id]="TEST_IDS.DMN_EDITOR_DEPLOY_BUTTON_ALT">
           <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
         </button>
       }
@@ -106,7 +106,7 @@
       [defaultSelectionId]="obs.selectionId"
       [widthInPx]="120"
       (selectedChange)="switchVersion($event)"
-      data-test-id="dmn-editor-version-select"
+      [attr.data-test-id]="TEST_IDS.DMN_EDITOR_VERSION_SELECT"
     ></v-select>
   </ng-container>
 </ng-template>

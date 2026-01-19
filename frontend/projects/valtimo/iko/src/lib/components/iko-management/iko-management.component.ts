@@ -34,7 +34,7 @@ import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-
 import {TranslateModule} from '@ngx-translate/core';
 import {Upload16} from '@carbon/icons';
 import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-upload-modal.component';
-import {ModalMode} from '@valtimo/shared';
+import { ModalMode, IKO_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -52,6 +52,10 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    IKO_TEST_IDS: IKO_TEST_IDS
+  };
+
   public readonly $loading = signal<boolean>(true);
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly apiKey$ = this.route.params.pipe(

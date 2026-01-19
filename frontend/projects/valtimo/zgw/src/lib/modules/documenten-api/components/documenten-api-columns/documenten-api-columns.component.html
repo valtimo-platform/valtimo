@@ -25,7 +25,7 @@
   } as obs"
 >
   <valtimo-carbon-list
-    data-test-id="valtimo-carbon-list"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST"
     [actionItems]="ACTION_ITEMS"
     [fields]="fields"
     [header]="false"
@@ -41,7 +41,7 @@
     </ng-container>
 
     <valtimo-no-results
-      data-test-id="valtimo-no-results"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_NO_RESULTS"
       [action]="addButton"
       [description]="'zgw.documents.noColumns.description' | translate"
       [title]="'zgw.documents.noColumns.title' | translate"
@@ -49,7 +49,7 @@
   </valtimo-carbon-list>
 
   <valtimo-documenten-api-column-modal
-    data-test-id="valtimo-documenten-api-column-modal"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_COLUMN_MODAL"
     [availableColumns]="obs.configurableColumns"
     [configuredColumns]="obs.configuredColumns"
     [definitionName]="obs.caseDefinitionKey"
@@ -59,7 +59,7 @@
   ></valtimo-documenten-api-column-modal>
 
   <valtimo-confirmation-modal
-    data-test-id="valtimo-confirmation-modal"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CONFIRMATION_MODAL"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="zgw.columns.deleteText"
@@ -72,7 +72,7 @@
 
 <ng-template #addButton>
   <button
-    data-test-id="add-button"
+    [attr.data-test-id]="TEST_IDS.ADD_BUTTON"
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
     [disabled]="loading$ | async"

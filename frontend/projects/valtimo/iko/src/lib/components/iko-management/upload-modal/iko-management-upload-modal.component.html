@@ -30,22 +30,22 @@
   showFooter="true"
   class="valtimo-definition-uploader"
   (close)="onCancel()"
-  data-test-id="valtimo-definition-uploader-modal"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_MODAL"
 >
   <cds-modal-header
     [showCloseButton]="obs.showCloseButton"
     (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
-    data-test-id="valtimo-definition-uploader-header"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_HEADER"
   >
-    <h3 cdsModalHeaderHeading data-test-id="valtimo-definition-uploader-title">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_TITLE">
       {{ 'ikoManagement.importDefinition.title' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-definition-uploader__content" data-test-id="valtimo-definition-uploader-content">
+  <section cdsModalContent class="valtimo-definition-uploader__content" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CONTENT">
     @switch (obs.activeStep) {
       @case (UPLOAD_STEP.FILE_SELECT) {
-        <form [formGroup]="form" data-test-id="valtimo-definition-uploader-form">
+        <form [formGroup]="form" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FORM">
           <cds-file-uploader
             [accept]="acceptedFiles"
             [buttonText]="'ikoManagement.importDefinition.upload.buttonText' | translate"
@@ -55,27 +55,27 @@
             buttonType="primary"
             formControlName="file"
             class="valtimo-definition-uploader__file-uploader"
-            data-test-id="valtimo-definition-uploader-file-uploader"
+            [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FILE_UPLOADER"
           >
           </cds-file-uploader>
 
           @if (!obs.nextButtonDisabled) {
             <cds-inline-notification
               [notificationObj]="obs.notificationObj"
-              data-test-id="valtimo-definition-uploader-notification"
+              [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_NOTIFICATION"
             ></cds-inline-notification>
 
-            <div class="valtimo-definition-uploader__checkbox" data-test-id="valtimo-definition-uploader-checkbox-container">
+            <div class="valtimo-definition-uploader__checkbox" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CHECKBOX_CONTAINER">
               <cds-checkbox
                 [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
                 (checkedChange)="onCheckedChange($event)"
-                data-test-id="valtimo-definition-uploader-checkbox"
+                [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CHECKBOX"
               >
                 {{ 'ikoManagement.importDefinition.checkbox.message' | translate }}
               </cds-checkbox>
 
               @if (obs.showCheckboxError) {
-                <div class="valtimo-definition-uploader__error" data-test-id="valtimo-definition-uploader-checkbox-error">
+                <div class="valtimo-definition-uploader__error" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CHECKBOX_ERROR">
                   <svg cdsIcon="warning--filled" size="16"></svg>
                   {{ 'ikoManagement.importDefinition.checkbox.error' | translate }}
                 </div>
@@ -93,7 +93,7 @@
           [helperText]="
             'ikoManagement.importDefinition.progressBar.' + obs.uploadStatus | translate
           "
-          data-test-id="valtimo-definition-uploader-progress-bar"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_PROGRESS_BAR"
         ></cds-progress-bar>
       }
 
@@ -104,30 +104,30 @@
           "
           [title]="'ikoManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
           [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
-          data-test-id="valtimo-definition-uploader-upload-step"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_UPLOAD_STEP"
         >
         </valtimo-case-management-upload-step>
       }
     }
   </section>
 
-  <cds-modal-footer class="valtimo-definition-uploader__footer" data-test-id="valtimo-definition-uploader-footer">
+  <cds-modal-footer class="valtimo-definition-uploader__footer" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FOOTER">
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
       (click)="onCloseModal(obs.isStepAfterUpload)"
-      data-test-id="valtimo-definition-uploader-cancel-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CANCEL_BUTTON"
     >
       {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
     </button>
 
-    <div class="valtimo-definition-uploader__actions" data-test-id="valtimo-definition-uploader-actions">
+    <div class="valtimo-definition-uploader__actions" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_ACTIONS">
       <button
         *ngIf="obs.backButtonEnabled"
         cdsButton="secondary"
         (click)="onBackClick(obs.activeStep)"
-        data-test-id="valtimo-definition-uploader-back-button"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_BACK_BUTTON"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -141,7 +141,7 @@
           obs.nextButtonDisabled || (obs.activeStep === UPLOAD_STEP.FILE_SELECT && !_checked)
         "
         (click)="onNextClick(obs.activeStep)"
-        data-test-id="valtimo-definition-uploader-next-button"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_NEXT_BUTTON"
       >
         {{
           (obs.activeStep === UPLOAD_STEP.FILE_SELECT
@@ -158,7 +158,7 @@
         class="valtimo-definition-uploader__cancel"
         cdsButton="primary"
         (click)="onCloseModal(true)"
-        data-test-id="valtimo-definition-uploader-finish-button"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FINISH_BUTTON"
       >
         {{ 'interface.finish' | translate }}
       </button>

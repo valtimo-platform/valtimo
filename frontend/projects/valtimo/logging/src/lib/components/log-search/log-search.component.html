@@ -28,7 +28,7 @@
         [attr.data-carbon-theme]="theme"
         formControlName="likeFormattedMessage"
         [placeholder]="'logging.columns.formattedMessage' | translate"
-        data-test-id="valtimo-log-search-message-input"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_MESSAGE_INPUT"
       />
     </cds-text-label>
 
@@ -39,7 +39,7 @@
       [appendInline]="true"
       [label]="'logging.columns.level' | translate"
       [placeholder]="'logging.columns.level' | translate"
-      data-test-id="valtimo-log-search-level-dropdown"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_LEVEL_DROPDOWN"
     >
       <cds-dropdown-list [items]="logLevelItems"></cds-dropdown-list>
     </cds-dropdown>
@@ -53,10 +53,10 @@
           placeholder="DD-MM-YYYY"
           [dateFormat]="'d-m-Y'"
           (valueChange)="onDateSelected('afterTimestamp', $event)"
-          data-test-id="valtimo-log-search-after-date-picker"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_AFTER_DATE_PICKER"
         ></cds-date-picker>
 
-        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="afterTime" data-test-id="valtimo-log-search-after-time-picker">
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="afterTime" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_AFTER_TIME_PICKER">
         </cds-timepicker>
       </div>
 
@@ -68,10 +68,10 @@
           placeholder="DD-MM-YYYY"
           [dateFormat]="'d-m-Y'"
           (valueChange)="onDateSelected('beforeTimestamp', $event)"
-          data-test-id="valtimo-log-search-before-date-picker"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_BEFORE_DATE_PICKER"
         ></cds-date-picker>
 
-        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="beforeTime" data-test-id="valtimo-log-search-before-time-picker">
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="beforeTime" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_BEFORE_TIME_PICKER">
         </cds-timepicker>
       </div>
     </div>
@@ -115,14 +115,14 @@
       </form>
     }
 
-    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()" data-test-id="valtimo-log-search-add-property-button">
+    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_ADD_PROPERTY_BUTTON">
       {{ 'logging.search.addProperty' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
   </section>
 
-  <button cdsButton="tertiary" type="button" (click)="onClearFilter()" data-test-id="valtimo-log-search-clear-button">
+  <button cdsButton="tertiary" type="button" (click)="onClearFilter()" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_CLEAR_BUTTON">
     {{ 'interface.clear' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

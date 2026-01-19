@@ -22,17 +22,17 @@
   } as obs"
   class="valtimo-widget-table"
   [class.valtimo-widget-table--compact]="widgetConfiguration?.isCompact"
-  data-test-id="valtimo-widget-table-container"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_CONTAINER"
 >
-  <section class="valtimo-widget-table__header" data-test-id="valtimo-widget-table-header">
-    <div class="valtimo-widget-table__title-container" data-test-id="valtimo-widget-table-title-container">
+  <section class="valtimo-widget-table__header" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_HEADER">
+    <div class="valtimo-widget-table__title-container" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_TITLE_CONTAINER">
       <valtimo-mdi-icon-viewer
         *ngIf="widgetConfiguration?.icon"
         [mdiIcon]="widgetConfiguration.icon"
-        data-test-id="valtimo-widget-table-icon"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <span class="widget-title" data-test-id="valtimo-widget-table-title">{{ widgetConfiguration?.title }}</span>
+      <span class="widget-title" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_TITLE">{{ widgetConfiguration?.title }}</span>
     </div>
 
     <ng-content></ng-content>
@@ -40,18 +40,18 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="widgetConfiguration"
       [resolvedData]="obs.resolvedData"
-      data-test-id="valtimo-widget-table-action-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
   @if (obs.widgetData && obs.fields && obs.widgetData.length) {
-    <section class="valtimo-widget-table__content" data-test-id="valtimo-widget-table-content">
+    <section class="valtimo-widget-table__content" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_CONTENT">
       <valtimo-carbon-list
         [header]="false"
         [hideToolbar]="true"
         [fields]="obs.fields"
         [items]="obs.widgetData"
-        data-test-id="valtimo-widget-table-list"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_LIST"
       >
       </valtimo-carbon-list>
 
@@ -60,7 +60,7 @@
         class="valtimo-widget-table__pagination"
         [model]="$paginationModel()"
         (selectPage)="onSelectPage($event)"
-        data-test-id="valtimo-widget-table-pagination"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_PAGINATION"
       >
       </cds-pagination-nav>
     </section>
@@ -69,7 +69,7 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
-      data-test-id="valtimo-widget-table-no-results"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_NO_RESULTS"
     ></valtimo-no-results>
   }
 </cds-tile>

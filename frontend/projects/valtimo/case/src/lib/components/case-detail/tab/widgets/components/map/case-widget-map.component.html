@@ -30,7 +30,7 @@
     <button
       cdsButton="ghost"
       (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-      data-test-id="valtimo-widget-map-start-process-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MAP_START_PROCESS_BUTTON"
     >
       {{ obs.widgetConfiguration.actions[0].name }}
     </button>

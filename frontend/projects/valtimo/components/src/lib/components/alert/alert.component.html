@@ -21,7 +21,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-body p-0">
-            <button class="close" type="button" (click)="removeAlert(alert)" data-test-id="alert-close-button">
+            <button class="close" type="button" (click)="removeAlert(alert)" [attr.data-test-id]="TEST_IDS.ALERT_CLOSE_BUTTON">
               <span class="mdi mdi-close" aria-hidden="true"></span>
             </button>
             <div class="icon">
@@ -59,7 +59,7 @@
         </button>
       </div>
     </div>
-    <button class="close" type="button" (click)="removeAlert(alert)" data-test-id="alert-close-button">
+    <button class="close" type="button" (click)="removeAlert(alert)" [attr.data-test-id]="TEST_IDS.ALERT_CLOSE_BUTTON">
       <span class="mdi mdi-close" aria-hidden="true"></span>
     </button>
   </div>

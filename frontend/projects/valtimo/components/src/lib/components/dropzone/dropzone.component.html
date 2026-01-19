@@ -28,7 +28,7 @@
     *ngIf="camera"
     type="button"
     class="btn btn-primary px-3 webcam-button"
-    data-test-id="dropzone-camera-button"
+    [attr.data-test-id]="TEST_IDS.DROPZONE_CAMERA_BUTTON"
   >
     <i class="icon mdi mdi-camera" aria-hidden="true"></i>
   </button>
@@ -38,12 +38,12 @@
 </form>
 
 <ng-template #body>
-  <h2 *ngIf="!hideTitle" class="mb-4 mt-2" data-test-id="dropzone-title">{{ title || ('dropzone.drop' | translate) }}</h2>
-  <span *ngIf="subtitle" class="note mb-3" data-test-id="dropzone-subtitle">{{ subtitle }}</span>
-  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font" data-test-id="dropzone-accepted-files"
+  <h2 *ngIf="!hideTitle" class="mb-4 mt-2" [attr.data-test-id]="TEST_IDS.DROPZONE_TITLE">{{ title || ('dropzone.drop' | translate) }}</h2>
+  <span *ngIf="subtitle" class="note mb-3" [attr.data-test-id]="TEST_IDS.DROPZONE_SUBTITLE">{{ subtitle }}</span>
+  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font" [attr.data-test-id]="TEST_IDS.DROPZONE_ACCEPTED_FILES"
   >{{ 'dropzone.acceptedFiles' | translate }}<b>{{ acceptedFiles }}</b></span
   >
-  <span *ngIf="showMaxFileSize" class="note mb-3 small-font" data-test-id="dropzone-max-file-size"
+  <span *ngIf="showMaxFileSize" class="note mb-3 small-font" [attr.data-test-id]="TEST_IDS.DROPZONE_MAX_FILE_SIZE"
     >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
   >
   <ng-container *ngTemplateOutlet="preview"></ng-container>
@@ -58,7 +58,7 @@
     } as obs"
   >
     <ng-container *ngIf="obs.externalError || obs.errorMessage">
-      <div class="alert alert-danger mt-2 mb-0" data-test-id="dropzone-error-message">
+      <div class="alert alert-danger mt-2 mb-0" [attr.data-test-id]="TEST_IDS.DROPZONE_ERROR_MESSAGE">
         <div class="message">
           {{ obs.externalError || obs.errorMessage }}
         </div>
@@ -66,7 +66,7 @@
     </ng-container>
 
     <ng-container *ngIf="!hideFilePreview && obs.file && !obs.externalError && !obs.errorMessage">
-      <div class="file" data-test-id="dropzone-file-preview">
+      <div class="file" [attr.data-test-id]="TEST_IDS.DROPZONE_FILE_PREVIEW">
         <i class="icon mdi mdi-file-text mr-2"></i>
         <span class="note">{{ obs.file.name }}</span>
         <span class="note file-size">- {{ obs.file.size | filesize: 2 }}</span>
@@ -76,11 +76,11 @@
 </ng-template>
 
 <ng-template #progressBar>
-  <div class="progress-bar-container" data-test-id="dropzone-progress-bar-container">
+  <div class="progress-bar-container" [attr.data-test-id]="TEST_IDS.DROPZONE_PROGRESS_BAR_CONTAINER">
     <valtimo-progress-bar></valtimo-progress-bar>
   </div>
 </ng-template>
 
 <ng-template #webcam>
-  <valtimo-webcam (imageSaved)="webcamImageSaved($event)" data-test-id="dropzone-webcam"></valtimo-webcam>
+  <valtimo-webcam (imageSaved)="webcamImageSaved($event)" [attr.data-test-id]="TEST_IDS.DROPZONE_WEBCAM"></valtimo-webcam>
 </ng-template>

@@ -19,5 +19,5 @@
   [ngClass]="{'v-input-label__tooltip--disabled': disabled}"
   placement="right"
   vTooltip="{{ tooltip }}"
-  data-test-id="tooltip-icon"
+  [attr.data-test-id]="TEST_IDS.TOOLTIP_ICON"
 ></i>

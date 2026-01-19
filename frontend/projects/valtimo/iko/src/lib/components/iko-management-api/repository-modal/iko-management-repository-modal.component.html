@@ -14,13 +14,13 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()" data-test-id="iko-api-modal">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" data-test-id="iko-api-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="iko-api-modal-title">{{ 'ikoManagement.configureIkoServer' | translate }}</h3>
+<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_API_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_API_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.IKO_API_MODAL_TITLE">{{ 'ikoManagement.configureIkoServer' | translate }}</h3>
   </cds-modal-header>
 
-  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form" data-test-id="iko-api-form">
-    <cds-label [invalid]="getControlInvalid('title')" data-test-id="iko-api-title-label">
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form" [attr.data-test-id]="TEST_IDS.IKO_API_FORM">
+    <cds-label [invalid]="getControlInvalid('title')" [attr.data-test-id]="TEST_IDS.IKO_API_TITLE_LABEL">
       {{ 'ikoManagement.titleTitle' | translate }}
 
       <input
@@ -28,7 +28,7 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
-        data-test-id="iko-api-title-input"
+        [attr.data-test-id]="TEST_IDS.IKO_API_TITLE_INPUT"
       />
     </cds-label>
 
@@ -38,7 +38,7 @@
       [sourceText]="title.value"
       formControlName="key"
       placeholderTranslationKey="interface.key"
-      data-test-id="iko-api-key-input"
+      [attr.data-test-id]="TEST_IDS.IKO_API_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -51,23 +51,23 @@
       [title]="'ikoManagement.typeTitle' | translate"
       [appendInline]="false"
       [dropUp]="false"
-      data-test-id="iko-api-type-select"
+      [attr.data-test-id]="TEST_IDS.IKO_API_TYPE_SELECT"
     ></v-select>
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"
       [prefillData]="$prefillData()?.properties"
-      data-test-id="iko-api-properties"
+      [attr.data-test-id]="TEST_IDS.IKO_API_PROPERTIES"
     />
   </form>
 
-  <cds-modal-footer data-test-id="iko-api-modal-footer">
-    <button cdsButton="ghost" (click)="onCancel()" data-test-id="iko-api-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_API_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_API_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()" data-test-id="iko-api-save-button">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()" [attr.data-test-id]="TEST_IDS.IKO_API_SAVE_BUTTON">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

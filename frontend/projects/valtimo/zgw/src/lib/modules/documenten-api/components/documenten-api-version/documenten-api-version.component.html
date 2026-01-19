@@ -16,9 +16,9 @@
 
 <cds-tile
   *ngIf="{loading: loading$ | async, documentenApiVersion: documentenApiVersion$ | async} as obs"
-  data-test-id="documenten-api-version-tile"
+  [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_TILE"
 >
-  <h2 class="documenten-api-version__title" data-test-id="documenten-api-version-title">{{ 'openZaak.documentenApi.title' | translate }}</h2>
+  <h2 class="documenten-api-version__title" [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_TITLE">{{ 'openZaak.documentenApi.title' | translate }}</h2>
 
   <ng-container *ngIf="obs.loading === false; else loading">
     <ng-container
@@ -31,7 +31,7 @@
         "
       >
         {{ 'openZaak.documentenApi.documentenApiVersion' | translate }}
-        <strong data-test-id="documenten-api-version-selected"> {{ obs.documentenApiVersion.selectedVersion }} </strong>
+        <strong [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_SELECTED"> {{ obs.documentenApiVersion.selectedVersion }} </strong>
       </ng-container>
     </ng-container>
   </ng-container>
@@ -41,7 +41,7 @@
   <div class="pb-2">
     <cds-notification
       class="full-width-notification"
-      data-test-id="documenten-api-version-no-version-warning"
+      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_NO_VERSION_WARNING"
       [notificationObj]="{
         type: 'warning',
         title: 'openZaak.documentenApi.noVersionWarningTitle' | translate,
@@ -57,7 +57,7 @@
   <div class="pb-2">
     <cds-notification
       class="full-width-notification"
-      data-test-id="documenten-api-version-multiple-versions-warning"
+      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_MULTIPLE_VERSIONS_WARNING"
       [notificationObj]="{
         type: 'warning',
         title: 'openZaak.documentenApi.multipleVersionsWarningTitle' | translate,
@@ -70,7 +70,7 @@
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-container pb-2" data-test-id="documenten-api-version-loading">
+  <div class="loading-container pb-2" [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_VERSION_LOADING">
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

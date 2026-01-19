@@ -21,31 +21,31 @@
   valtimoCdsModal
   class="valtimo-widget-management-wizard"
   (close)="onClose()"
-  data-test-id="valtimo-widget-management-wizard-modal"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()" data-test-id="valtimo-widget-management-wizard-header">
-    <h3 cdsModalHeaderHeading data-test-id="valtimo-widget-management-wizard-title">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_TITLE">
       {{ 'widgetTabManagement.wizard.' + (editMode ? 'edit' : 'create') | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-widget-management-wizard__content" data-test-id="valtimo-widget-management-wizard-content">
+  <section cdsModalContent class="valtimo-widget-management-wizard__content" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_CONTENT">
     <cds-progress-indicator
       [current]="$currentStepIndex()"
       [spacing]="'equal'"
       [steps]="steps$ | async"
       (stepSelected)="onStepSelected($event)"
-      data-test-id="valtimo-widget-management-wizard-progress"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_PROGRESS"
     >
     </cds-progress-indicator>
 
-    <p data-test-id="valtimo-widget-management-wizard-step-label">{{ stepLabel$ | async }}</p>
+    <p [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_STEP_LABEL">{{ stepLabel$ | async }}</p>
 
     <ng-template #wizardStepRenderer></ng-template>
   </section>
 
-  <cds-modal-footer class="valtimo-widget-management-wizard__footer" data-test-id="valtimo-widget-management-wizard-footer">
-    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()" data-test-id="valtimo-widget-management-wizard-cancel-button">
+  <cds-modal-footer class="valtimo-widget-management-wizard__footer" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_FOOTER">
+    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -55,7 +55,7 @@
         cdsButton="secondary"
         [disabled]="$backButtonDisabled()"
         (click)="onBackButtonClick()"
-        data-test-id="valtimo-widget-management-wizard-back-button"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_BACK_BUTTON"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -66,7 +66,7 @@
       cdsButton="primary"
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
-      data-test-id="valtimo-widget-management-wizard-next-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_NEXT_BUTTON"
     >
       {{
         'interface.' + ($currentStepIndex() === (numberOfSteps$ | async) - 1 ? 'save' : 'next')

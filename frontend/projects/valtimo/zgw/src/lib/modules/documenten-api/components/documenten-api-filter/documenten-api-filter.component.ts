@@ -56,7 +56,7 @@ import {
 import {DocumentenApiFilterModel} from '../../models';
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagService} from '../../services';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import { getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-filter',
@@ -77,6 +77,10 @@ import {getCaseManagementRouteParams} from '@valtimo/shared';
   ],
 })
 export class DocumentenApiFilterComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @ViewChild('creationDateFrom') public readonly creationDateFromPicker: DatePicker;
   @ViewChild('creationDateTo') public readonly creationDateToPicker: DatePicker;
   @Output() public filterEvent = new EventEmitter<DocumentenApiFilterModel>();

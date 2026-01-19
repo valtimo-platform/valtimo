@@ -15,6 +15,7 @@
  */
 
 import {Component} from '@angular/core';
+import { MILESTONE_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -22,4 +23,8 @@ import {Component} from '@angular/core';
   templateUrl: './milestone.component.html',
   styleUrls: ['./milestone.component.scss'],
 })
-export class MilestoneComponent {}
+export class MilestoneComponent {
+  readonly TEST_IDS = {
+    MILESTONE_TEST_IDS: MILESTONE_TEST_IDS
+  };
+}

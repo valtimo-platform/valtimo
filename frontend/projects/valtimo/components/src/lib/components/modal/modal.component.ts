@@ -26,6 +26,7 @@ import {
 } from '@angular/core';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {BehaviorSubject, Subscription} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -37,6 +38,10 @@ declare var $;
   standalone: false,
 })
 export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() elementId: string;
   @Input() title = '';
   @Input() subtitle = '';

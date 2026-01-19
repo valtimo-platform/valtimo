@@ -29,6 +29,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -37,6 +38,10 @@ import {
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
+  };
+
   readonly pluginConfigurations$: Observable<Array<PluginConfigurationWithLogo>> =
     this.stateService.modalParams$.pipe(
       switchMap(modalData =>

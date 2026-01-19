@@ -34,7 +34,7 @@ import {
   SelectModule,
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
-import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
+import { ModalCloseEvent, ModalMode, IKO_TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -73,6 +73,10 @@ import {IkoManagementApiService} from '../../../../services';
   ],
 })
 export class IkoManagementTabDetailsModalComponent {
+  readonly TEST_IDS = {
+    IKO_TEST_IDS: IKO_TEST_IDS
+  };
+
   public readonly $openModal = signal<boolean>(false);
   @Input() public set openModal(value: boolean) {
     this.$openModal.set(value);

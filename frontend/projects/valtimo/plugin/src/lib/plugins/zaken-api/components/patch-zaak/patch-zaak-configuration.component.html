@@ -17,7 +17,7 @@
         [customPane]="true"
         placement="bottom"
         class="add-button"
-        data-test-id="patch-zaak-add-property-button"
+        [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_ADD_PROPERTY_BUTTON"
       >
         {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
 

@@ -16,7 +16,7 @@
 
 <ng-container *ngIf="{loaded: loaded$ | async} as obs">
   <div *ngIf="!obs.loaded" class="loading-container">
-    <cds-loading data-test-id="widget-container-loading"></cds-loading>
+    <cds-loading [attr.data-test-id]="TEST_IDS.WIDGET_CONTAINER_LOADING"></cds-loading>
   </div>
 </ng-container>
 
@@ -24,7 +24,7 @@
   #widgetContainer
   class="widget-container"
   [ngClass]="{'widget-container__visible': loaded$ | async}"
-  data-test-id="widget-container"
+  [attr.data-test-id]="TEST_IDS.WIDGET_CONTAINER"
 >
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations; let i = index">
@@ -47,7 +47,7 @@
       [title]="'dashboard.noWidgets' | translate"
       [description]="'dashboard.noWidgetsDescription' | translate"
       illustration="valtimo-layout/img/no-widgets.svg"
-      data-test-id="widget-container-no-results"
+      [attr.data-test-id]="TEST_IDS.WIDGET_CONTAINER_NO_RESULTS"
     ></valtimo-no-results>
   </ng-container>
 </div>

@@ -23,6 +23,7 @@ import {map} from 'rxjs/operators';
 import {CaseListItem} from '../../models';
 import {Page} from '@valtimo/document';
 import {CaseVersionListItem} from '../../models/case-version-list.model';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,6 +32,10 @@ import {CaseVersionListItem} from '../../models/case-version-list.model';
   styleUrls: ['./case-management-select-version-modal.component.scss'],
 })
 export class CaseManagementSelectVersionModalComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() open = false;
   @Input() previousSelectedVersion = '';
 

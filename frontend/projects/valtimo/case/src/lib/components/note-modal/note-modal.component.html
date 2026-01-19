@@ -14,15 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open" size="sm" showFooter="true" (close)="onCancel()" data-test-id="note-modal">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" data-test-id="note-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="note-modal-title">
+<cds-modal valtimoCdsModal [open]="open" size="sm" showFooter="true" (close)="onCancel()" [attr.data-test-id]="TEST_IDS.NOTE_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.NOTE_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.NOTE_MODAL_TITLE">
       {{ 'case.notes.' + modalType + 'Note' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent data-test-id="note-modal-form">
-    <cds-textarea-label data-test-id="note-modal-content-label">
+  <form [formGroup]="formGroup" cdsModalContent [attr.data-test-id]="TEST_IDS.NOTE_MODAL_FORM">
+    <cds-textarea-label [attr.data-test-id]="TEST_IDS.NOTE_MODAL_CONTENT_LABEL">
       {{ 'case.notes.input.content' | translate }}
 
       <textarea
@@ -31,17 +31,17 @@
         class="valtimo-note-modal__textarea"
         formControlName="content"
         [rows]="10"
-        data-test-id="note-modal-content-textarea"
+        [attr.data-test-id]="TEST_IDS.NOTE_MODAL_CONTENT_TEXTAREA"
       ></textarea>
     </cds-textarea-label>
   </form>
 
-  <cds-modal-footer data-test-id="note-modal-footer">
-    <button cdsButton="ghost" (click)="onCancel()" data-test-id="note-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.NOTE_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.NOTE_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="!formGroup.valid" cdsButton="primary" (click)="onConfirm()" data-test-id="note-modal-confirm-button">
+    <button [disabled]="!formGroup.valid" cdsButton="primary" (click)="onConfirm()" [attr.data-test-id]="TEST_IDS.NOTE_MODAL_CONFIRM_BUTTON">
       {{ 'case.notes.' + modalType + 'Note' | translate }}
     </button>
   </cds-modal-footer>

@@ -25,15 +25,7 @@ import {
 import {FormBuilder} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {SelectableCarbonTheme, ValtimoVersion} from '../../models';
-import {
-  ConfigService,
-  FeedbackMailTo,
-  UserIdentity,
-  UserSettings,
-  UserSettingsService,
-  ValtimoConfig,
-  VERSIONS,
-} from '@valtimo/shared';
+import { ConfigService, FeedbackMailTo, UserIdentity, UserSettings, UserSettingsService, ValtimoConfig, VERSIONS, COMPONENTS_TEST_IDS, ACCOUNT_TEST_IDS } from '@valtimo/shared';
 import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
@@ -49,6 +41,11 @@ import {ListItem} from 'carbon-components-angular';
   standalone: false,
 })
 export class RightSidebarComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
+    ACCOUNT_TEST_IDS: ACCOUNT_TEST_IDS
+  };
+
   @HostListener('document:click', ['$event.target'])
   public onPageClick(targetElement) {
     combineLatest([this.shellService.panelExpanded$, this.shellService.mouseOnTopBar$])

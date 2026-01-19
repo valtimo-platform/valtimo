@@ -18,9 +18,9 @@
   <div class="container-fluid">
     <valtimo-form-link-process-diagram
       (bpmnElementModalOpen)="openModal($event)"
-      data-test-id="valtimo-form-link-process-diagram-container"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_FORM_LINK_PROCESS_DIAGRAM_CONTAINER"
     ></valtimo-form-link-process-diagram>
   </div>
 </div>
 
-<valtimo-process-link-modal data-test-id="valtimo-process-link-modal"></valtimo-process-link-modal>
+<valtimo-process-link-modal [attr.data-test-id]="TEST_IDS.VALTIMO_PROCESS_LINK_MODAL"></valtimo-process-link-modal>

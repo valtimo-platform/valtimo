@@ -20,14 +20,14 @@
   size="xs"
   [open]="open"
   (close)="onCloseSelect()"
-  data-test-id="valtimo-tags-modal"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_TAGS_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" data-test-id="valtimo-tags-modal-header">
-    <h3 cdsModalHeading>{{ 'interface.tags' | translate }} data-test-id="valtimo-tags-modal-title"></h3>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [attr.data-test-id]="TEST_IDS.VALTIMO_TAGS_MODAL_HEADER">
+    <h3 cdsModalHeading>{{ 'interface.tags' | translate }} [attr.data-test-id]="TEST_IDS.VALTIMO_TAGS_MODAL_TITLE"></h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-tags-modal__content" data-test-id="valtimo-tags-modal-content">
-    <div class="valtimo-tags-modal__container" data-test-id="valtimo-tags-modal-container">
+  <section cdsModalContent class="valtimo-tags-modal__content" [attr.data-test-id]="TEST_IDS.VALTIMO_TAGS_MODAL_CONTENT">
+    <div class="valtimo-tags-modal__container" [attr.data-test-id]="TEST_IDS.VALTIMO_TAGS_MODAL_CONTAINER">
       @for (tag of tags; track tag.content) {
         <cds-tag [type]="tag.type" data-test-id="valtimo-tags-modal-tag-{{$index}}">
           {{ tag.content }}

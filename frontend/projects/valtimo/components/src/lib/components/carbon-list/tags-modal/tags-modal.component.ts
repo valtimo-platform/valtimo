@@ -17,6 +17,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {CarbonTag} from '../../../models';
 import {cloneDeep} from 'lodash';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-tags-modal',
@@ -26,6 +27,10 @@ import {cloneDeep} from 'lodash';
   standalone: false,
 })
 export class CarbonTagsModalComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() open = false;
 
   private _tags: CarbonTag[];

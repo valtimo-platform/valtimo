@@ -34,6 +34,7 @@ import {
 } from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-table',
@@ -52,6 +53,10 @@ import {IkoApiService} from '../../services';
   ],
 })
 export class IkoWidgetTableComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private _widgetConfiguration: TableWidget;
   public readonly widgetConfiguration$ = new BehaviorSubject<TableWidget | null>(null);
   @Input({required: true}) public set widgetConfiguration(value: TableWidget) {

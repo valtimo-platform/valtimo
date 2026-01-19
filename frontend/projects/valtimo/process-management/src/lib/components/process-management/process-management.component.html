@@ -22,15 +22,15 @@
   @if (obs.paramsAreSet) {
     <valtimo-process-management-list
       (processSelected)="onProcessSelected($event)"
-      data-test-id="process-management-list"
+      [attr.data-test-id]="TEST_IDS.PROCESS_MANAGEMENT_LIST"
     ></valtimo-process-management-list>
 
     <valtimo-process-management-upload
-      data-test-id="process-management-upload"
+      [attr.data-test-id]="TEST_IDS.PROCESS_MANAGEMENT_UPLOAD"
     ></valtimo-process-management-upload>
   } @else {
     <cds-loading
-      data-test-id="process-management-loading"
+      [attr.data-test-id]="TEST_IDS.PROCESS_MANAGEMENT_LOADING"
     ></cds-loading>
   }
 </ng-container>

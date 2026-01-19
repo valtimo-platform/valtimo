@@ -22,17 +22,17 @@
     noFormSpecified: noFormSpecified$ | async,
   } as obs"
 >
-  <div *ngIf="obs.loading" class="loading-container" data-test-id="formio-container-loading">
+  <div *ngIf="obs.loading" class="loading-container" [attr.data-test-id]="TEST_IDS.FORMIO_CONTAINER_LOADING">
     <cds-loading></cds-loading>
   </div>
 
-  <p *ngIf="obs.formNotFound" class="error-message" data-test-id="formio-container-form-not-found">
+  <p *ngIf="obs.formNotFound" class="error-message" [attr.data-test-id]="TEST_IDS.FORMIO_CONTAINER_FORM_NOT_FOUND">
     {{ 'case.formio.formNotFound' | translate: {formDefinitionName: obs.formNotFound} }}
   </p>
 
-  <p *ngIf="obs.noFormSpecified" class="error-message" data-test-id="formio-container-no-form-specified">
+  <p *ngIf="obs.noFormSpecified" class="error-message" [attr.data-test-id]="TEST_IDS.FORMIO_CONTAINER_NO_FORM_SPECIFIED">
     {{ 'case.formio.noFormSpecified' | translate }}
   </p>
 
-  <valtimo-form-io *ngIf="obs.prefilledForm" [form]="obs.prefilledForm" data-test-id="formio-container-form"> </valtimo-form-io>
+  <valtimo-form-io *ngIf="obs.prefilledForm" [form]="obs.prefilledForm" [attr.data-test-id]="TEST_IDS.FORMIO_CONTAINER_FORM"> </valtimo-form-io>
 </ng-container>

@@ -33,7 +33,7 @@
   <ng-container>
     <div class="pb-2">
       <cds-notification
-        data-test-id="case-count-configuration-form-warning-notification"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_WARNING_NOTIFICATION"
         [notificationObj]="{
           type: 'warning',
           title: 'caseMigration.warningBeta' | translate,
@@ -47,13 +47,13 @@
   <ng-container>
     <div class="input-group mt-4 mb-2 align-items-center">
       <div>
-        <h2 data-test-id="case-count-configuration-form-case-definition-title">{{ 'caseMigration.caseDefinition' | translate }}</h2>
+        <h2 [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_CASE_DEFINITION_TITLE">{{ 'caseMigration.caseDefinition' | translate }}</h2>
       </div>
     </div>
 
     <div class="row m-0">
       <cds-dropdown
-        data-test-id="case-count-configuration-form-source-case-definition-key-dropdown"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_SOURCE_CASE_DEFINITION_KEY_DROPDOWN"
         class="pr-2 pb-2"
         [label]="'caseMigration.sourceCaseDefinitionKey' | translate"
         [style.width.px]="350"
@@ -67,7 +67,7 @@
         ></cds-dropdown-list>
       </cds-dropdown>
       <cds-dropdown
-        data-test-id="case-count-configuration-form-source-case-definition-version-tag-dropdown"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_SOURCE_CASE_DEFINITION_VERSION_TAG_DROPDOWN"
         class="pr-2 pb-2"
         [label]="'caseMigration.sourceCaseDefinitionVersionTag' | translate"
         [style.width.px]="300"
@@ -88,7 +88,7 @@
   <ng-container>
     <div class="row m-0">
       <cds-dropdown
-        data-test-id="case-count-configuration-form-target-case-definition-key-dropdown"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_TARGET_CASE_DEFINITION_KEY_DROPDOWN"
         class="pr-2 pb-2"
         [label]="'caseMigration.targetCaseDefinitionKey' | translate"
         [style.width.px]="350"
@@ -102,7 +102,7 @@
         ></cds-dropdown-list>
       </cds-dropdown>
       <cds-dropdown
-        data-test-id="case-count-configuration-form-target-case-definition-version-tag-dropdown"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_TARGET_CASE_DEFINITION_VERSION_TAG_DROPDOWN"
         class="pr-2 pb-2"
         [label]="'caseMigration.targetCaseDefinitionVersionTag' | translate"
         [style.width.px]="300"
@@ -124,11 +124,11 @@
     <div class="pt-2 pb-2">
       <div class="input-group mt-4 mb-2 align-items-center">
         <div>
-          <h2 data-test-id="case-count-configuration-form-patches-title">{{ 'caseMigration.patches' | translate }}</h2>
+          <h2 [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_PATCHES_TITLE">{{ 'caseMigration.patches' | translate }}</h2>
         </div>
       </div>
       <valtimo-carbon-multi-input
-        data-test-id="case-count-configuration-form-patches-input"
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_PATCHES_INPUT"
         type="keyValue"
         (valueChange)="mappingValueChange($event)"
         [title]="' '"
@@ -144,13 +144,13 @@
   <ng-container>
     <div class="pt-2">
       <div *ngIf="obs.errors?.length === 0" class="input-group mt-4 mb-2 align-items-center">
-        <div data-test-id="case-count-configuration-form-no-errors-message">
+        <div [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_NO_ERRORS_MESSAGE">
           {{ 'caseMigration.noErrors' | translate }}
         </div>
       </div>
       <div *ngIf="obs.errors?.length >= 1" class="input-group mt-4 mb-2 align-items-center">
         <div>
-          <h2 data-test-id="case-count-configuration-form-errors-title">{{ 'caseMigration.errors' | translate }}</h2>
+          <h2 [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_ERRORS_TITLE">{{ 'caseMigration.errors' | translate }}</h2>
         </div>
       </div>
 
@@ -170,7 +170,7 @@
 
   <ng-container>
     <button
-      data-test-id="case-count-configuration-form-check-patches-button"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_CHECK_PATCHES_BUTTON"
       class="mt-2 mb-2 mr-2"
       cdsButton="secondary"
       size="md"
@@ -185,7 +185,7 @@
       {{ 'caseMigration.checkPatches' | translate }}
     </button>
     <button
-      data-test-id="case-count-configuration-form-migrate-button"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_MIGRATE_BUTTON"
       class="mt-2 mb-2 ml-2"
       cdsButton="primary"
       size="md"
@@ -203,7 +203,7 @@
   </ng-container>
 
   <valtimo-confirmation-modal
-    data-test-id="case-count-configuration-form-confirmation-modal"
+    [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_CONFIRMATION_MODAL"
     [showModalSubject$]="obs.showConfirmationModal"
     (confirmEvent)="migrate()"
     (cancelEvent)="showConfirmationModal$.next(false)"

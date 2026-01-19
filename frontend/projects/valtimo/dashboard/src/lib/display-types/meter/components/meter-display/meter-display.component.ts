@@ -19,6 +19,7 @@ import {MeterData, MeterDisplayTypeProperties} from '../../models';
 import {type ChartTabularData, MeterChartOptions} from '@carbon/charts-angular';
 import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
+import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,6 +29,10 @@ import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MeterDisplayComponent implements DisplayComponent {
+  readonly TEST_IDS = {
+    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
+  };
+
   @Input() public readonly displayTypeKey: string;
   @Input() public set data(value: MeterData) {
     if (!value) return;

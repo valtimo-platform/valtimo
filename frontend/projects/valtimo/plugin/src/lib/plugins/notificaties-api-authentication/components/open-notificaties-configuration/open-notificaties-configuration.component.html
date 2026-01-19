@@ -20,11 +20,11 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  data-test-id="openNotificaties-form"
+  [attr.data-test-id]="TEST_IDS.OPENNOTIFICATIES_FORM"
 >
   <v-input
     name="configurationTitle"
-    data-test-id="openNotificatiesConfigurationTitle"
+    [attr.data-test-id]="TEST_IDS.OPENNOTIFICATIESCONFIGURATIONTITLE"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +37,7 @@
   </v-input>
   <v-input
     name="clientId"
-    data-test-id="openNotificatiesClientId"
+    [attr.data-test-id]="TEST_IDS.OPENNOTIFICATIESCLIENTID"
     [title]="'clientId' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +49,7 @@
   </v-input>
   <v-input
     name="clientSecret"
-    data-test-id="openNotificatiesClientSecret"
+    [attr.data-test-id]="TEST_IDS.OPENNOTIFICATIESCLIENTSECRET"
     type="password"
     [title]="'clientSecret' | pluginTranslate: pluginId | async"
     [margin]="true"

@@ -25,8 +25,8 @@
   (paginationEvent)="onPaginationEvent($event)"
   (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
-  data-test-id="valtimo-widget-interactive-table"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_INTERACTIVE_TABLE"
 >
 </valtimo-widget-interactive-table>
 
-<valtimo-case-list-actions [navigateAfterSubmit]="false" data-test-id="valtimo-case-list-actions"></valtimo-case-list-actions>
+<valtimo-case-list-actions [navigateAfterSubmit]="false" [attr.data-test-id]="TEST_IDS.VALTIMO_CASE_LIST_ACTIONS"></valtimo-case-list-actions>

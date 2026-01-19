@@ -53,7 +53,7 @@ import {
   UrlResolverService,
 } from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
-import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
+import { ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel, COMPONENTS_TEST_IDS, PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
 import {DialogModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -79,6 +79,11 @@ import {CaseListService, StartModalService} from '../../services';
   ],
 })
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
+    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
+  };
+
   public processDefinitionKey: string;
   public processDefinitionId: string;
   public caseDefinitionKey: string;

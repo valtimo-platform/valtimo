@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {GetStatustypenConfig} from '../../models';
+import { COMPONENTS_TEST_IDS, ZGW_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,6 +28,11 @@ import {GetStatustypenConfig} from '../../models';
 export class GetStatustypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
+    ZGW_TEST_IDS: ZGW_TEST_IDS
+  };
+
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<GetStatustypenConfig>;

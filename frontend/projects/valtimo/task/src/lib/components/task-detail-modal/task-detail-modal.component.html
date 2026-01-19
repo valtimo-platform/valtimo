@@ -21,18 +21,18 @@
   (close)="closeModal()"
   valtimoCdsModal
   [minContentHeight]="480"
-  data-test-id="task-detail-modal"
+  [attr.data-test-id]="TEST_IDS.TASK_DETAIL_MODAL"
 >
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">
-      <p class="cds--modal-header__heading cds--type-beta" data-test-id="task-detail-title">{{ (page$ | async)?.title }}</p>
+      <p class="cds--modal-header__heading cds--type-beta" [attr.data-test-id]="TEST_IDS.TASK_DETAIL_TITLE">{{ (page$ | async)?.title }}</p>
 
-      <p class="cds--modal-header__label cds--type-delta" data-test-id="task-detail-subtitle">{{ (page$ | async)?.subtitle }}</p>
+      <p class="cds--modal-header__label cds--type-delta" [attr.data-test-id]="TEST_IDS.TASK_DETAIL_SUBTITLE">{{ (page$ | async)?.subtitle }}</p>
 
       <p
         class="cds--modal-header__label cds--type-delta"
         *ngIf="currentIntermediateSave$ | async as currentIntermediateSave"
-        data-test-id="task-detail-last-saved"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_LAST_SAVED"
       >
         {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
 
@@ -62,7 +62,7 @@
         cdsIcon="folder--details--reference"
         [vTooltip]="'formManagement.navigateToRelatedCase' | translate"
         (click)="openRelatedCase()"
-        data-test-id="task-detail-related-case-button"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_RELATED_CASE_BUTTON"
       ></button>
 
       @if (processLinkPreloaded$ | async) {
@@ -70,14 +70,14 @@
           [taskAndProcessLink]="taskAndProcessLink$ | async"
           (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
           (showModalEvent)="onShowModalEvent()"
-          data-test-id="task-detail-intermediate-save-with-link"
+          [attr.data-test-id]="TEST_IDS.TASK_DETAIL_INTERMEDIATE_SAVE_WITH_LINK"
         ></valtimo-task-detail-intermediate-save>
       } @else {
         <valtimo-task-detail-intermediate-save
           [task]="task$ | async"
           (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
           (showModalEvent)="onShowModalEvent()"
-          data-test-id="task-detail-intermediate-save-without-link"
+          [attr.data-test-id]="TEST_IDS.TASK_DETAIL_INTERMEDIATE_SAVE_WITHOUT_LINK"
         ></valtimo-task-detail-intermediate-save>
       }
     </div>
@@ -90,7 +90,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
-        data-test-id="task-detail-content-with-link"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONTENT_WITH_LINK"
       ></valtimo-task-detail-content>
     } @else {
       <valtimo-task-detail-content
@@ -98,7 +98,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
-        data-test-id="task-detail-content-without-link"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONTENT_WITHOUT_LINK"
       ></valtimo-task-detail-content>
     }
   </div>
@@ -112,7 +112,7 @@
   confirmButtonTextTranslationKey="interface.confirm"
   titleTranslationKey="formManagement.intermediateSave.clear"
   contentTranslationKey="formManagement.intermediateSave.clearConfirm"
-  data-test-id="task-detail-confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
@@ -123,7 +123,7 @@
       canModifyTask: canModifyTask$ | async,
     } as obs"
     class="task-actions"
-    data-test-id="task-detail-assign-user-container"
+    [attr.data-test-id]="TEST_IDS.TASK_DETAIL_ASSIGN_USER_CONTAINER"
   >
     <valtimo-assign-user-to-task
       *ngIf="obs.task && assignmentOfTaskChanged"
@@ -131,13 +131,13 @@
       [assigneeId]="obs.task.assignee"
       [canAssignUserToTask]="obs.canAssignUserToTask"
       (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
-      data-test-id="task-detail-assign-user-to-task"
+      [attr.data-test-id]="TEST_IDS.TASK_DETAIL_ASSIGN_USER_TO_TASK"
     ></valtimo-assign-user-to-task>
 
     <valtimo-set-task-due-date
       [task]="obs.task"
       [canModifyTask]="obs.canModifyTask"
-      data-test-id="task-detail-set-task-due-date"
+      [attr.data-test-id]="TEST_IDS.TASK_DETAIL_SET_TASK_DUE_DATE"
     ></valtimo-set-task-due-date>
   </div>
 </ng-template>

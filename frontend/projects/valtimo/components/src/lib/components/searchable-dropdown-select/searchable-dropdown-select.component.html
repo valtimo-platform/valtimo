@@ -25,7 +25,7 @@
     [style]="style"
     [width]="width"
     (itemSelected)="onSelect($event)"
-    data-test-id="valtimo-searchable-dropdown"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_SEARCHABLE_DROPDOWN"
   >
   </valtimo-searchable-dropdown>
 </ng-container>
@@ -34,9 +34,9 @@
   <div
     class="d-flex flex-row align-items-center"
     [style.height.px]="style === 'button' ? 34 : null"
-    data-test-id="valtimo-searchable-dropdown-selection-container"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_SEARCHABLE_DROPDOWN_SELECTION_CONTAINER"
   >
-    <h5 class="selected-text" data-test-id="valtimo-searchable-dropdown-selected-text">
+    <h5 class="selected-text" [attr.data-test-id]="TEST_IDS.VALTIMO_SEARCHABLE_DROPDOWN_SELECTED_TEXT">
       {{ selectedText }} <b>{{ selectedTextValue }}</b>
     </h5>
     <button
@@ -46,9 +46,9 @@
       aria-label="Close"
       class="close p-0 m-0 ml-2 text-danger"
       type="button"
-      data-test-id="valtimo-searchable-dropdown-clear-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_SEARCHABLE_DROPDOWN_CLEAR_BUTTON"
     >
-      <i class="clear-icon mdi mdi-close text-danger" data-test-id="valtimo-searchable-dropdown-clear-icon"></i>
+      <i class="clear-icon mdi mdi-close text-danger" [attr.data-test-id]="TEST_IDS.VALTIMO_SEARCHABLE_DROPDOWN_CLEAR_ICON"></i>
     </button>
   </div>
 </ng-template>

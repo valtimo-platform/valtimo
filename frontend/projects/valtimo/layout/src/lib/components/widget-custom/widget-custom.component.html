@@ -20,37 +20,37 @@
     widgetData: widgetData$ | async,
   } as obs"
   class="custom-widget"
-  data-test-id="custom-widget-container"
+  [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTAINER"
 >
-  <section class="custom-widget__header" data-test-id="custom-widget-header">
-    <div class="custom-widget__title-container" data-test-id="custom-widget-title-container">
+  <section class="custom-widget__header" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_HEADER">
+    <div class="custom-widget__title-container" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TITLE_CONTAINER">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration?.icon"
-        data-test-id="custom-widget-icon"
+        [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="custom-widget__title" data-test-id="custom-widget-title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+      <h4 class="custom-widget__title" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TITLE">{{ obs.widgetConfiguration?.title || '-' }}</h4>
     </div>
 
-    <ng-content data-test-id="custom-widget-content-slot"></ng-content>
+    <ng-content [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTENT_SLOT"></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      data-test-id="custom-widget-action-button"
+      [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
-  <div class="custom-widget__content" data-test-id="custom-widget-content">
-    <ng-template #customWidgetContainer data-test-id="custom-widget-template"></ng-template>
+  <div class="custom-widget__content" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTENT">
+    <ng-template #customWidgetContainer [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TEMPLATE"></ng-template>
 
     @if (noCustomComponentAvailable()) {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noCustomComponentDescription' | translate"
         [smallPadding]="true"
-        data-test-id="custom-widget-no-results"
+        [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_NO_RESULTS"
       ></valtimo-no-results>
     }
   </div>

@@ -15,6 +15,7 @@
  */
 
 import {Component, Input} from '@angular/core';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -26,6 +27,10 @@ import {Component, Input} from '@angular/core';
   standalone: false,
 })
 export class ParagraphComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() center = false;
   @Input() fullWidth = false;
   @Input() margin = false;

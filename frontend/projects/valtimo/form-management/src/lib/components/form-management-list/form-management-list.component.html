@@ -34,9 +34,9 @@
   (paginationSet)="paginationSet($event)"
   (rowClicked)="editFormDefinition($event)"
   (search)="searchTermEntered($event)"
-  data-test-id="form-management-list">
+  [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_LIST">
   <ng-container *ngIf="obs.hasEditPermissions" carbonToolbarContent>
-    <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()" data-test-id="form-management-upload-button">
+    <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_UPLOAD_BUTTON">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
@@ -47,7 +47,7 @@
     [action]="createFormButton"
     [description]="'formManagement.noResults.' + obs.context + 'Description' | translate"
     [title]="'formManagement.noResults.title' | translate"
-    data-test-id="form-management-no-results">
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_NO_RESULTS">
   </valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -60,11 +60,11 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="dashboardManagement.delete"
   (confirmEvent)="deleteFormDefinition($event)"
-  data-test-id="form-management-delete-modal">
+  [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_DELETE_MODAL">
 </valtimo-confirmation-modal>
 
 <ng-template #createFormButton>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="navigateToCreateRoute()" data-test-id="form-management-create-button">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="navigateToCreateRoute()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_BUTTON">
     {{ 'Create Form' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

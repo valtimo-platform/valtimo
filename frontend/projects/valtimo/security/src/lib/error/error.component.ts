@@ -17,6 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Error} from './error';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-error',
@@ -25,6 +26,10 @@ import {Error} from './error';
   standalone: false,
 })
 export class ErrorComponent implements OnInit {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public err: Error;
 
   constructor(private activatedRoute: ActivatedRoute) {}

@@ -20,7 +20,7 @@
     viewInitialized: viewInitialized$ | async,
   } as obs"
   class="valtimo-carbon-list"
-  data-test-id="valtimo-carbon-list-container"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_CONTAINER"
 >
   <cds-table-header *ngIf="header">
     <ng-content select="[header]"></ng-content>
@@ -33,7 +33,7 @@
     class="valtimo-carbon-list__toolbar"
     [model]="obs.model"
     [batchText]="batchText$ | async"
-    data-test-id="valtimo-carbon-list-toolbar"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_TOOLBAR"
   >
     <cds-table-toolbar-actions>
       <ng-content select="[carbonToolbarActions]"> </ng-content>
@@ -44,7 +44,7 @@
         *ngIf="isSearchable"
         [expandable]="true"
         [formControl]="searchFormControl"
-        data-test-id="valtimo-carbon-list-search"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_SEARCH"
       ></cds-table-toolbar-search>
 
       <ng-content select="[carbonToolbarContent]"> </ng-content>
@@ -64,7 +64,7 @@
     [striped]="striped"
     (sort)="onSort(obs.model.header[$event])"
     (rowClick)="onRowClick($event)"
-    data-test-id="valtimo-carbon-list-table"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_TABLE"
   >
     <tbody cdsTableBody>
       <tr class="valtimo-carbon-list__no-results">
@@ -87,7 +87,7 @@
     [skeleton]="loading"
     [translations]="paginationTranslations$ | async"
     (selectPage)="onSelectPage($event)"
-    data-test-id="valtimo-carbon-list-pagination"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_PAGINATION"
   ></cds-pagination>
 </cds-table-container>
 
@@ -96,7 +96,7 @@
     class="clickable"
     [ngClass]="data.iconClass"
     (click)="$event.stopPropagation(); data.callback(data.item)"
-    data-test-id="valtimo-carbon-list-action-icon"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_ACTION_ICON"
   ></i>
 </ng-template>
 
@@ -114,7 +114,7 @@
     placement="bottom"
     role="menu"
     (click)="$event.stopPropagation()"
-    data-test-id="valtimo-carbon-list-actions-menu"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_ACTIONS_MENU"
   >
     @for (action of data.actions; track action.label) {
       <cds-overflow-menu-option
@@ -136,7 +136,7 @@
     <span
       class="float-right badge badge-pill badge-secondary bg-grey"
       ngbTooltip="{{ lockedTooltipTranslationKey | translate }}"
-      data-test-id="valtimo-carbon-list-locked-badge"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_LOCKED_BADGE"
     >
       <i class="icon mdi mdi-lock"></i>
     </span>
@@ -151,7 +151,7 @@
       [iconOnly]="true"
       size="sm"
       (click)="onMoveUpClick($event, data)"
-      data-test-id="valtimo-carbon-list-move-up-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_MOVE_UP_BUTTON"
     >
       <svg cdsIcon="arrow--up" size="16"></svg>
     </button>
@@ -162,7 +162,7 @@
       [iconOnly]="true"
       size="sm"
       (click)="onMoveDownClick($event, data)"
-      data-test-id="valtimo-carbon-list-move-down-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_MOVE_DOWN_BUTTON"
     >
       <svg cdsIcon="arrow--down" size="16"></svg>
     </button>
@@ -177,7 +177,7 @@
       [iconOnly]="true"
       size="sm"
       (mousedown)="onDragStart($event, data)"
-      data-test-id="valtimo-carbon-list-drag-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_DRAG_BUTTON"
     >
       <svg cdsIcon="draggable" size="16"></svg>
     </button>
@@ -203,7 +203,7 @@
           class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
           type="high-contrast"
           (click)="onTagClick($event, data.tags)"
-          data-test-id="valtimo-carbon-list-expand-tag"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_EXPAND_TAG"
         >
           {{ data.tags.length - data.tagAmount }} <svg cdsIcon="add" size="16"></svg>
         </cds-tag>
@@ -220,5 +220,5 @@
   [open]="tagModalOpen$ | async"
   [tags]="tagModalData$ | async"
   (closeEvent)="onCloseEvent()"
-  data-test-id="valtimo-carbon-list-tags-modal"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_CARBON_LIST_TAGS_MODAL"
 ></valtimo-tags-modal>

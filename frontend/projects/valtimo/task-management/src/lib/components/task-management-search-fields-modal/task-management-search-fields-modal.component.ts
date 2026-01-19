@@ -71,6 +71,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
+import { TASK_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields-modal',
@@ -94,6 +95,10 @@ import {
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
+  readonly TEST_IDS = {
+    TASK_MANAGEMENT_TEST_IDS: TASK_MANAGEMENT_TEST_IDS
+  };
+
   @Input({required: true}) open: boolean;
 
   public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');

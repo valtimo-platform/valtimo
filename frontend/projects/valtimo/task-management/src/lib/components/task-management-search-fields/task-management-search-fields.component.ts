@@ -44,7 +44,7 @@ import {
 } from 'rxjs';
 import {TaskManagementSearchFieldsService} from '../../services';
 import {TaskManagementSearchFieldsModalComponent} from '../task-management-search-fields-modal/task-management-search-fields-modal.component';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields',
@@ -62,6 +62,10 @@ import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/share
   ],
 })
 export class TaskManagementSearchFieldsComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
     this.route
   ).pipe(

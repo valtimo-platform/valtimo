@@ -30,7 +30,7 @@
       'page-actions--compact': (hasPageActions$ | async) && (compactMode$ | async),
     }"
     class="page-actions"
-    data-test-id="page-actions-container"
+    [attr.data-test-id]="TEST_IDS.PAGE_ACTIONS_CONTAINER"
   >
     <ng-container #pageActionsVcr></ng-container>
   </div>

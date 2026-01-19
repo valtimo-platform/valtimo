@@ -20,7 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  data-test-id="roltype-form"
+  [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM"
 >
   <v-input
     name="roltypeUrl"
@@ -32,7 +32,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-roltype-url-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROLTYPE_URL_INPUT"
   >
   </v-input>
 
@@ -46,7 +46,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-rol-toelichting-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROL_TOELICHTING_INPUT"
   >
   </v-input>
 
@@ -60,7 +60,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-identificatie-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IDENTIFICATIE_INPUT"
   >
   </v-input>
 
@@ -74,7 +74,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-naam-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_NAAM_INPUT"
   >
   </v-input>
 
@@ -88,7 +88,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-is-gehuisvest-in-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IS_GEHUISVEST_IN_INPUT"
   >
   </v-input>
 
@@ -102,7 +102,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-afwijkende-naam-betrokkene-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_AFWIJKENDE_NAAM_BETROKKENE_INPUT"
   >
   </v-input>
 
@@ -116,7 +116,7 @@
     [margin]="true"
     [fullWidth]="true"
     [radioValues]="INDICATIE_MACHTIGING_VALUES"
-    data-test-id="roltype-form-indicatie-machtiging-radio"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_INDICATIE_MACHTIGING_RADIO"
   >
   </v-radio>
 
@@ -130,7 +130,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-form-result-process-variable-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_RESULT_PROCESS_VARIABLE_INPUT"
   >
   </v-input>
 </v-form>

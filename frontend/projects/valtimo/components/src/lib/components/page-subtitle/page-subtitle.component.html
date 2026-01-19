@@ -31,9 +31,9 @@
         *ngIf="obs.hasCustomPageSubtitle && !obs.customPageSubtitleSet"
         class="subtitle-skeleton-container"
         [ngClass]="{'--compact': obs.compactMode}"
-        data-test-id="render-page-subtitle-skeleton-container"
+        [attr.data-test-id]="TEST_IDS.RENDER_PAGE_SUBTITLE_SKELETON_CONTAINER"
       >
-        <cds-skeleton-placeholder data-test-id="render-page-subtitle-skeleton-placeholder"></cds-skeleton-placeholder>
+        <cds-skeleton-placeholder [attr.data-test-id]="TEST_IDS.RENDER_PAGE_SUBTITLE_SKELETON_PLACEHOLDER"></cds-skeleton-placeholder>
       </div>
 
       <span
@@ -42,7 +42,7 @@
         [title]="obs.customPageSubtitle"
         class="page-subtitle"
         [ngClass]="{'--compact': obs.compactMode}"
-        data-test-id="render-page-subtitle-text"
+        [attr.data-test-id]="TEST_IDS.RENDER_PAGE_SUBTITLE_TEXT"
       >
       </span>
     </div>

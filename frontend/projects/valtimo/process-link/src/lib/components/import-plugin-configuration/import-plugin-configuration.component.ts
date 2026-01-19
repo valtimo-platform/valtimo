@@ -22,6 +22,7 @@ import {ProcessLinkService} from '../../services';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
 import {CdsThemeService} from '@valtimo/components';
+import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,6 +31,10 @@ import {CdsThemeService} from '@valtimo/components';
   styleUrls: ['./import-plugin-configuration.component.scss'],
 })
 export class ImportPluginConfigurationComponent {
+  readonly TEST_IDS = {
+    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
+  };
+
   @Input() public set pluginActionKey(value: string) {
     this.importPluginForm.reset();
     this.fetchCompatiblePluginProcessLinks(value);

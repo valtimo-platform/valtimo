@@ -37,6 +37,7 @@ import {BehaviorSubject, debounceTime, map, Observable, Subscription, take, tap}
 import {WidgetAction} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {WidgetManagementProcessSelectorComponent} from '../management-process-selector/widget-management-process-selector.component';
+import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management-action-button',
@@ -55,6 +56,10 @@ import {WidgetManagementProcessSelectorComponent} from '../management-process-se
   ],
 })
 export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
+  };
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-action-button';
 
   public readonly $widgetContext = this.widgetWizardService.$widgetContext;

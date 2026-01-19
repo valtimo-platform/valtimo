@@ -39,7 +39,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
-    data-test-id="v-multi-input-label"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_LABEL"
   >
   </v-input-label>
 
@@ -186,7 +186,7 @@
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
-        data-test-id="v-multi-input-add-button"
+        [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_ADD_BUTTON"
       >
         {{ vars.addRowText }}
 

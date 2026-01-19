@@ -22,7 +22,7 @@
   <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
 
   <valtimo-value-path-selector
-    data-test-id="valtimo-value-path-selector-key"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_VALUE_PATH_SELECTOR_KEY"
     [caseDefinitionKey]="caseDefinitionKey"
     [prefixes]="prefixes"
     [showCaseDefinitionSelector]="showCaseDefinitionSelector"
@@ -43,7 +43,7 @@
 >
   <cds-label *ngIf="index === 0 && dropdownColumnTitle">{{ dropdownColumnTitle }}</cds-label>
 
-  <cds-dropdown data-test-id="valtimo-value-path-selector-dropdown" (selected)="onInputChange('dropdown', $event.item.id)" [appendInline]="true">
+  <cds-dropdown [attr.data-test-id]="TEST_IDS.VALTIMO_VALUE_PATH_SELECTOR_DROPDOWN" (selected)="onInputChange('dropdown', $event.item.id)" [appendInline]="true">
     <cds-dropdown-list [items]="dropdownItems$ | async" type="multi"></cds-dropdown-list>
   </cds-dropdown>
 </div>
@@ -59,7 +59,7 @@
 
   <input
     cdsText
-    data-test-id="valtimo-value-path-selector-value-input"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_VALUE_PATH_SELECTOR_VALUE_INPUT"
     [defaultValue]="value.value"
     [disabled]="disabled"
     (input)="onInputChange('value', $event.target.value)"

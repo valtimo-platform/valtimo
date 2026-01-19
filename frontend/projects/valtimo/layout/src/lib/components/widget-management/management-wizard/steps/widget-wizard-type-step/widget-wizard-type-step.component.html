@@ -18,7 +18,7 @@
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
   class="valtimo-widget-wizard-step__content"
-  data-test-id="widget-wizard-tile-group"
+  [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_TILE_GROUP"
 >
   @for (widgetType of $availableWidgetTypes(); track widgetType.titleKey) {
     <cds-selection-tile

@@ -15,6 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import { ZGW_TEST_IDS } from '@valtimo/shared';
 
 import {
   AdditionalDocumentDate,
@@ -108,6 +109,10 @@ import {DocumentenApiVersionService} from '../../services';
   ],
 })
 export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    ZGW_TEST_IDS: ZGW_TEST_IDS
+  };
+
   @ViewChild('metadataModal') metadataModal: VModalComponent;
 
   @Input() disabled$!: Observable<boolean>;

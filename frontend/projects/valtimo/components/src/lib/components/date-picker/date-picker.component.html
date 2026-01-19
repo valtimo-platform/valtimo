@@ -28,7 +28,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
-    data-test-id="v-date-picker-title-label"
+    [attr.data-test-id]="TEST_IDS.V_DATE_PICKER_TITLE_LABEL"
   >
   </v-input-label>
 </ng-template>
@@ -46,6 +46,6 @@
     [disabled]="disabled"
     [style.width.px]="widthPx + 20"
     type="text"
-    data-test-id="v-date-picker-input"
+    [attr.data-test-id]="TEST_IDS.V_DATE_PICKER_INPUT"
   />
 </ng-template>

@@ -32,7 +32,7 @@
           id="sourceDef"
           [ngModel]="fields.source.definition"
           (ngModelChange)="loadProcessDefinitionVersions($event, 'source')"
-          data-test-id="migration-process-source-definition-select"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_DEFINITION_SELECT"
         >
           <option [ngValue]="null" selected>- Source Definition -</option>
           <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
@@ -47,7 +47,7 @@
           id="sourceVer"
           [ngModel]="fields.source.version"
           (ngModelChange)="loadProcess($event, 'source')"
-          data-test-id="migration-process-source-version-select"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_VERSION_SELECT"
         >
           <option [ngValue]="null" selected>- Source Version -</option>
           <option *ngFor="let processVer of selectedVersions.source" [ngValue]="processVer.id">
@@ -62,7 +62,7 @@
           id="targetDef"
           [ngModel]="fields.target.definition"
           (ngModelChange)="loadProcessDefinitionVersions($event, 'target')"
-          data-test-id="migration-process-target-definition-select"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_DEFINITION_SELECT"
         >
           <option [ngValue]="null" selected>- Target Definition -</option>
           <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
@@ -77,7 +77,7 @@
           id="targetVer"
           [ngModel]="fields.target.version"
           (ngModelChange)="loadProcess($event, 'target')"
-          data-test-id="migration-process-target-version-select"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_VERSION_SELECT"
         >
           <option [ngValue]="null" selected>- Target Version -</option>
           <option *ngFor="let processVer of selectedVersions.target" [ngValue]="processVer.id">
@@ -93,7 +93,7 @@
           name="source"
           (loaded)="diagramLoaded($event)"
           #sourceDiagram
-          data-test-id="migration-process-source-diagram"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_DIAGRAM"
         ></valtimo-migration-process-diagram>
       </div>
       <div class="col-6">
@@ -101,7 +101,7 @@
           name="target"
           (loaded)="diagramLoaded($event)"
           #targetDiagram
-          data-test-id="migration-process-target-diagram"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_DIAGRAM"
         ></valtimo-migration-process-diagram>
       </div>
     </div>
@@ -131,7 +131,7 @@
         "
         (click)="migrateProcess()"
         class="btn btn-primary"
-        data-test-id="migration-process-migrate-button"
+        [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_MIGRATE_BUTTON"
       >
         Migrate
         <span *ngIf="processCount !== null" class="badge badge-pill badge-secondary">{{

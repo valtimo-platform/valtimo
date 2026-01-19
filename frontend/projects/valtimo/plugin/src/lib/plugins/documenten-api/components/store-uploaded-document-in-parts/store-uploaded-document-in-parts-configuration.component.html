@@ -14,6 +14,6 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [center]="true" [fullWidth]="true" data-test-id="store-uploaded-document-in-parts-message">
+<v-paragraph [center]="true" [fullWidth]="true" [attr.data-test-id]="TEST_IDS.STORE_UPLOADED_DOCUMENT_IN_PARTS_MESSAGE">
   {{ 'storeUploadedDocumentInPartsMessage' | pluginTranslate: pluginId | async }}
 </v-paragraph>

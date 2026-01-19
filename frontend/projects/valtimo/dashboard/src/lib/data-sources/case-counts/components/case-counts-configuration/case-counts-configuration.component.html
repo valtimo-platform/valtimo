@@ -26,7 +26,7 @@
 >
   <div class="form__element">
     <cds-dropdown
-      data-test-id="case-counts-configuration-form-document-definition-dropdown"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_DOCUMENT_DEFINITION_DROPDOWN"
       [appendInline]="true"
       formControlName="documentDefinition"
       [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
@@ -39,11 +39,11 @@
     </cds-dropdown>
   </div>
 
-  <cds-label class="conditions__label" data-test-id="case-counts-configuration-form-counts-label">{{
+  <cds-label class="conditions__label" [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_COUNTS_LABEL">{{
     'counts' | widgetTranslate: dataSourceKey | async
   }}</cds-label>
 
-  <p class="conditions__helper-text cds--form__helper-text" data-test-id="case-counts-configuration-form-counts-helper-text">
+  <p class="conditions__helper-text cds--form__helper-text" [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_COUNTS_HELPER_TEXT">
     {{ 'countsHelperText' | widgetTranslate: dataSourceKey | async }}
   </p>
 
@@ -103,7 +103,7 @@
   <button
     class="add-count-button"
     cdsButton="primary"
-    data-test-id="case-counts-configuration-form-add-count-button"
+    [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_ADD_COUNT_BUTTON"
     [disabled]="formDisabled"
     (click)="addQueryItem()"
   >

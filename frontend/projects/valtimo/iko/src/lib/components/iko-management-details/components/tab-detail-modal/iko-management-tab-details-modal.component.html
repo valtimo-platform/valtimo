@@ -23,14 +23,14 @@
   [title]="state.title"
   valtimoCdsModal
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" data-test-id="iko-tab-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="iko-tab-modal-title">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE">
       {{ state.title }}
     </h3>
   </cds-modal-header>
 
-  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-tab-form" data-test-id="iko-tab-modal-form">
-    <cds-label data-test-id="iko-tab-modal-title-label">
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-tab-form" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_FORM">
+    <cds-label [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE_LABEL">
       {{ 'ikoManagement.tabTitle' | translate }}
 
       <input
@@ -38,7 +38,7 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.tabTitlePlaceholder' | translate }}"
-        data-test-id="iko-tab-modal-title-input"
+        [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE_INPUT"
       />
     </cds-label>
 
@@ -49,7 +49,7 @@
       [usedKeys]="usedKeys"
       [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
-      data-test-id="iko-tab-modal-key-input"
+      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -60,12 +60,12 @@
       [items]="tabTypeSelectItems"
       titleTranslationKey="ikoManagement.tabTypeTitle"
       [appendInline]="false"
-      data-test-id="iko-tab-modal-type-select"
+      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TYPE_SELECT"
     ></v-select>
   </form>
 
-  <cds-modal-footer data-test-id="iko-tab-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" data-test-id="iko-tab-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -73,7 +73,7 @@
       [disabled]="form.invalid || form.disabled || !form.dirty"
       cdsButton="primary"
       (click)="addTab()"
-      data-test-id="iko-tab-modal-save-button"
+      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_SAVE_BUTTON"
     >
       {{ 'interface.save' | translate }}
     </button>

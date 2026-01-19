@@ -17,6 +17,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtimo/plugin';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 import {
   PluginStateService,
@@ -32,6 +33,10 @@ import {
   styleUrls: ['./select-plugin-action.component.scss'],
 })
 export class SelectPluginActionComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> = combineLatest([
     this.stateService.selectedPluginDefinition$,
     this.processLinkStateService.modalParams$,

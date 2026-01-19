@@ -21,6 +21,7 @@ import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, take, tap} from 'rxjs';
 import * as semver from 'semver';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,6 +31,10 @@ import * as semver from 'semver';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementCreateComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() open = false;
   @Output() closeModal = new EventEmitter<TemplatePayload | null>();
 

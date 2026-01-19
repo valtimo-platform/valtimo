@@ -27,10 +27,10 @@
       class="header-widget-container"
       [attr.data-carbon-theme]="obs.theme"
       [style.display]="$noVisibleFields() && 'none'"
-      data-test-id="case-header-widget-container"
+      [attr.data-test-id]="TEST_IDS.CASE_HEADER_WIDGET_CONTAINER"
     >
       @if (!obs.headerWidgetData) {
-        <div class="header-widget-container__loader"><cds-loading size="sm" data-test-id="case-header-widget-loader"></cds-loading></div>
+        <div class="header-widget-container__loader"><cds-loading size="sm" [attr.data-test-id]="TEST_IDS.CASE_HEADER_WIDGET_LOADER"></cds-loading></div>
       } @else {
         <valtimo-widget-field
           class="valtimo-widget-field--compact"
@@ -38,7 +38,7 @@
           [widgetConfiguration]="obs.headerWidget"
           [widgetData]="obs.headerWidgetData"
           (noVisibleFieldsEvent)="onNoVisibleFields($event)"
-          data-test-id="case-header-widget-field"
+          [attr.data-test-id]="TEST_IDS.CASE_HEADER_WIDGET_FIELD"
         ></valtimo-widget-field>
       }
     </div>

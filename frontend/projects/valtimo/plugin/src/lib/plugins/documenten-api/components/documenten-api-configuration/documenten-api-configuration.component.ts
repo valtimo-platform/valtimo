@@ -21,6 +21,7 @@ import {DocumentenApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentenApiService} from '../../services';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-documenten-api-configuration',
@@ -30,6 +31,10 @@ import {DocumentenApiService} from '../../services';
 export class DocumentenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

@@ -40,7 +40,7 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.columnTitlePlaceholder' | translate }}"
-        data-test-id="iko-column-form-title-input"
+        [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_TITLE_INPUT"
       />
     </cds-label>
 
@@ -50,7 +50,7 @@
       [sourceText]="title.value"
       formControlName="key"
       placeholderTranslationKey="ikoManagement.columnKeyPlaceholder"
-      data-test-id="iko-column-form-key-input"
+      [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -62,7 +62,7 @@
         formControlName="path"
         cdsText
         placeholder="{{ 'ikoManagement.columnPathPlaceholder' | translate }}"
-        data-test-id="iko-column-form-path-input"
+        [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_PATH_INPUT"
       />
     </cds-label>
 
@@ -71,7 +71,7 @@
       [label]="'ikoManagement.sortableTitle' | translate"
       [onText]="'ikoManagement.sortingEnabled' | translate"
       [offText]="'ikoManagement.sortingDisabled' | translate"
-      data-test-id="iko-column-form-sortable-toggle"
+      [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_SORTABLE_TOGGLE"
     ></cds-toggle>
 
     <v-select
@@ -80,7 +80,7 @@
       [items]="sortSelectItems"
       titleTranslationKey="ikoManagement.defaultSortTitle"
       [appendInline]="false"
-      data-test-id="iko-column-form-default-sort-select"
+      [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_DEFAULT_SORT_SELECT"
     ></v-select>
 
     <v-select
@@ -89,7 +89,7 @@
       [items]="displayTypeSelectItems"
       titleTranslationKey="ikoManagement.displayType"
       [appendInline]="false"
-      data-test-id="iko-column-form-display-type-select"
+      [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_DISPLAY_TYPE_SELECT"
     ></v-select>
 
     <v-input-label
@@ -97,7 +97,7 @@
       titleTranslationKey="listColumn.dateFormat"
       tooltipTranslationKey="listColumn.dateFormatTooltip"
     >
-      <input cdsText formControlName="dateFormat" data-test-id="iko-column-form-date-format-input" />
+      <input cdsText formControlName="dateFormat" [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_DATE_FORMAT_INPUT" />
     </v-input-label>
 
     <v-input-label
@@ -113,7 +113,7 @@
         [maxRows]="1"
         [keyColumnTitle]="'viewTypeConverter.Yes' | translate"
         [valueColumnTitle]="'viewTypeConverter.No' | translate"
-        data-test-id="iko-column-form-boolean-display-type-parameters-input"
+        [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_BOOLEAN_DISPLAY_TYPE_PARAMETERS_INPUT"
       ></valtimo-carbon-multi-input>
     </v-input-label>
 
@@ -125,7 +125,7 @@
       <valtimo-carbon-multi-input
         type="keyValue"
         formControlName="enumDisplayTypeParameters"
-        data-test-id="iko-column-form-enum-display-type-parameters-input"
+        [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_ENUM_DISPLAY_TYPE_PARAMETERS_INPUT"
       ></valtimo-carbon-multi-input>
     </v-input-label>
 
@@ -134,12 +134,12 @@
       titleTranslationKey="listColumn.tagAmount"
       tooltipTranslationKey="listColumn.tagAmountTooltip"
     >
-      <cds-number formControlName="tagAmount" [min]="1" [step]="1" data-test-id="iko-column-form-tag-amount-input"></cds-number>
+      <cds-number formControlName="tagAmount" [min]="1" [step]="1" [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_TAG_AMOUNT_INPUT"></cds-number>
     </v-input-label>
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()" data-test-id="iko-column-form-cancel-button">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -147,7 +147,7 @@
       [disabled]="form.invalid || form.disabled || !form.dirty"
       cdsButton="primary"
       (click)="addColumn()"
-      data-test-id="iko-column-form-save-button"
+      [attr.data-test-id]="TEST_IDS.IKO_COLUMN_FORM_SAVE_BUTTON"
     >
       {{ 'interface.save' | translate }}
     </button>

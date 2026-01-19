@@ -21,14 +21,14 @@
   size="sm"
   showFooter="true"
   (close)="closeModal()"
-  data-test-id="quick-search-modal"
+  [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" data-test-id="quick-search-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="quick-search-modal-title">{{ 'quickSearch.addItem' | translate }}</h3>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE">{{ 'quickSearch.addItem' | translate }}</h3>
   </cds-modal-header>
 
-  <form cdsModalContent class="valtimo-qiuck-search-modal__content" [formGroup]="formGroup" data-test-id="quick-search-modal-form">
-    <cds-text-label data-test-id="quick-search-modal-title-label">
+  <form cdsModalContent class="valtimo-qiuck-search-modal__content" [formGroup]="formGroup" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_FORM">
+    <cds-text-label [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE_LABEL">
       {{ 'interface.title' | translate }}
 
       <input
@@ -38,11 +38,11 @@
         maxlength="50"
         [placeholder]="'interface.title' | translate"
         [attr.modal-primary-focus]="true"
-        data-test-id="quick-search-modal-title-input"
+        [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE_INPUT"
       />
     </cds-text-label>
 
-    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error" data-test-id="quick-search-modal-error">
+    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_ERROR">
       <svg cdsIcon="warning--filled" size="16"></svg>
 
       {{ 'quickSearch.duplicateError' | translate }}
@@ -55,16 +55,16 @@
         showClose: false,
         lowContrast: true,
       }"
-      data-test-id="quick-search-modal-info-notification"
+      [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_INFO_NOTIFICATION"
     ></cds-inline-notification>
   </form>
 
-  <cds-modal-footer data-test-id="quick-search-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" data-test-id="quick-search-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)" data-test-id="quick-search-modal-save-button">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_SAVE_BUTTON">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

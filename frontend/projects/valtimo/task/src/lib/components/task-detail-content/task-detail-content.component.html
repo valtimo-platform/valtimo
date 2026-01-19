@@ -48,7 +48,7 @@
     (submit)="onSubmit($event)"
     (change)="onChange($event)"
     [options]="obs.formioOptions"
-    data-test-id="form-management-form-io"
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_FORM_IO"
   ></valtimo-form-io>
 
   <valtimo-form-flow
@@ -58,10 +58,10 @@
     [formFlowInstanceId]="obs.formFlowInstanceId"
     (formFlowComplete)="completeTask(obs.task)"
     (formFlowChange)="onFormFlowChangeEvent()"
-    data-test-id="form-management-form-flow"
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_FORM_FLOW"
   ></valtimo-form-flow>
 
-  <div *ngIf="obs.loading" class="text-black mb-0 p-3 text-center" data-test-id="form-management-loading-message">
+  <div *ngIf="obs.loading" class="text-black mb-0 p-3 text-center" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_LOADING_MESSAGE">
     {{ 'formManagement.loading' | translate }}
   </div>
 
@@ -74,7 +74,7 @@
       !obs.processLinkIsUiComponent
     "
     class="bg-warning text-black mb-0 p-3 text-center"
-    data-test-id="form-management-no-form-definition-message"
+    [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_NO_FORM_DEFINITION_MESSAGE"
   >
     {{
       (isAdmin$ | async)
@@ -83,7 +83,7 @@
     }}
   </div>
 
-  <div *ngIf="obs.errorMessage" class="bg-danger text-black mb-0 p-3 text-center" data-test-id="form-management-error-message">
+  <div *ngIf="obs.errorMessage" class="bg-danger text-black mb-0 p-3 text-center" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_ERROR_MESSAGE">
     {{ obs.errorMessage }}
   </div>
 

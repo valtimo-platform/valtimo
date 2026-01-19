@@ -22,7 +22,7 @@
   <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
 
   <valtimo-value-path-selector
-    data-test-id="valtimo-value-path-selector"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_VALUE_PATH_SELECTOR"
     [caseDefinitionKey]="caseDefinitionKey"
     [prefixes]="prefixes"
     [showCaseDefinitionSelector]="showCaseDefinitionSelector"
@@ -44,7 +44,7 @@
 
   <input
     cdsText
-    data-test-id="valtimo-value-path-selector-value-input"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_VALUE_PATH_SELECTOR_VALUE_INPUT"
     [defaultValue]="value.value"
     [disabled]="disabled"
     (input)="onInputChange('value', $event.target.value)"

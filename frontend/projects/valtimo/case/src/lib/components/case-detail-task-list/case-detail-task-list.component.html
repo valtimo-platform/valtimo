@@ -23,10 +23,10 @@
   } @else if (obs.tasks?.myTasks?.length === 0 && obs.tasks?.otherTasks?.length === 0) {
     <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
   } @else {
-    <h2 class="task-list__title" data-test-id="task-list-title">{{ 'summary.tasks' | translate }}</h2>
+    <h2 class="task-list__title" [attr.data-test-id]="TEST_IDS.TASK_LIST_TITLE">{{ 'summary.tasks' | translate }}</h2>
 
     <div class="task-list__tasks-container" cdsLayer="1">
-      <h3 class="task-list__subtitle" data-test-id="task-list-my-tasks-title">{{ 'summary.myTasks' | translate }}</h3>
+      <h3 class="task-list__subtitle" [attr.data-test-id]="TEST_IDS.TASK_LIST_MY_TASKS_TITLE">{{ 'summary.myTasks' | translate }}</h3>
 
       @if (obs.tasks?.myTasks.length === 0) {
         {{ 'summary.noResultsMyTasks' | translate }}
@@ -40,7 +40,7 @@
     </div>
 
     <div class="task-list__tasks-container" cdsLayer="1">
-      <h3 class="task-list__subtitle" data-test-id="task-list-other-tasks-title">{{ 'summary.otherTasks' | translate }}</h3>
+      <h3 class="task-list__subtitle" [attr.data-test-id]="TEST_IDS.TASK_LIST_OTHER_TASKS_TITLE">{{ 'summary.otherTasks' | translate }}</h3>
 
       @if (obs.tasks?.otherTasks.length === 0) {
         {{ 'summary.noResultsOtherTasks' | translate }}
@@ -64,10 +64,10 @@
 </div>
 
 <ng-template #taskTemplate let-taskWithProcessLink="taskWithProcessLink">
-  <cds-clickable-tile [href]="null" (click)="rowTaskClick(taskWithProcessLink)" data-test-id="task-list-task-row">
+  <cds-clickable-tile [href]="null" (click)="rowTaskClick(taskWithProcessLink)" [attr.data-test-id]="TEST_IDS.TASK_LIST_TASK_ROW">
     <div class="task">
       <div class="task__header">
-        <span class="task__title" data-test-id="task-list-task-title">{{ taskWithProcessLink.task.name }}</span>
+        <span class="task__title" [attr.data-test-id]="TEST_IDS.TASK_LIST_TASK_TITLE">{{ taskWithProcessLink.task.name }}</span>
 
         @if (!!taskWithProcessLink.task.assignee) {
           <cds-tag

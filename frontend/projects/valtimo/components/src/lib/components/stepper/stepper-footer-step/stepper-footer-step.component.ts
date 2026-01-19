@@ -17,6 +17,7 @@
 import {Component, Input} from '@angular/core';
 import {StepperService} from '../../../services/stepper.service';
 import {BehaviorSubject, Observable} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -28,6 +29,10 @@ import {BehaviorSubject, Observable} from 'rxjs';
   standalone: false,
 })
 export class StepperFooterStepComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() nextButtonEnabled = false;
   @Input() completeButtonEnabled = false;
   @Input() nextButtonTranslationKey = '';

@@ -20,21 +20,21 @@
     [title]="'dashboard.noDashboards' | translate"
     [description]="'dashboard.noDashboardsDescription' | translate"
     illustration="valtimo-layout/img/no-dashboards.svg"
-    data-test-id="dashboards-no-results"
+    [attr.data-test-id]="TEST_IDS.DASHBOARDS_NO_RESULTS"
   ></valtimo-no-results>
 
   <div *ngIf="dashboards.length === 1">
-    <h4 data-test-id="dashboards-single-dashboard-title">{{ dashboards[0].title }}</h4>
+    <h4 [attr.data-test-id]="TEST_IDS.DASHBOARDS_SINGLE_DASHBOARD_TITLE">{{ dashboards[0].title }}</h4>
 
     <valtimo-widget-dashboard-content
       [dashboard]="dashboards[0]"
       [widgetData]="activeWidgetData$ | async"
-      data-test-id="dashboards-single-dashboard-content"
+      [attr.data-test-id]="TEST_IDS.DASHBOARDS_SINGLE_DASHBOARD_CONTENT"
     ></valtimo-widget-dashboard-content>
   </div>
 
   <div *ngIf="dashboards.length > 1">
-    <cds-tabs data-test-id="dashboards-tabs">
+    <cds-tabs [attr.data-test-id]="TEST_IDS.DASHBOARDS_TABS">
       <cds-tab
         *ngFor="let dashboard of dashboards; trackBy: trackByIndex"
         [heading]="dashboard.title"

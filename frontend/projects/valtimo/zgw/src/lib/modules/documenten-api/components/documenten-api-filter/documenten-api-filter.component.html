@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div class="valtimo-documenten-api-filter" (click)="$event.stopImmediatePropagation()" data-test-id="valtimo-documenten-api-filter-container">
+<div class="valtimo-documenten-api-filter" (click)="$event.stopImmediatePropagation()" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_CONTAINER">
   <form
     *ngIf="{
       confidentialityLevels: confidentialityLevels$ | async,
@@ -23,12 +23,12 @@
     } as obs"
     class="valtimo-documenten-api-filter__form"
     [formGroup]="formGroup"
-    data-test-id="valtimo-documenten-api-filter-form"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_FORM"
   >
-    <cds-text-label data-test-id="valtimo-documenten-api-filter-title-label">
+    <cds-text-label [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_TITLE_LABEL">
       {{ 'zgw.documentColumns.titel' | translate }}
 
-      <input cdsText formControlName="titel" data-test-id="valtimo-documenten-api-filter-title-input" />
+      <input cdsText formControlName="titel" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_TITLE_INPUT" />
     </cds-text-label>
 
     <cds-dropdown
@@ -36,19 +36,19 @@
       [dropUp]="false"
       [label]="'zgw.documentColumns.informatieobjecttype' | translate"
       formControlName="informatieObjectType"
-      data-test-id="valtimo-documenten-api-filter-information-object-type-dropdown"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_INFORMATION_OBJECT_TYPE_DROPDOWN"
     >
-      <cds-dropdown-list [items]="obs.informationObjectTypes" data-test-id="valtimo-documenten-api-filter-information-object-type-dropdown-list"></cds-dropdown-list>
+      <cds-dropdown-list [items]="obs.informationObjectTypes" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_INFORMATION_OBJECT_TYPE_DROPDOWN_LIST"></cds-dropdown-list>
     </cds-dropdown>
 
-    <div class="valtimo-documenten-api-filter__dates" data-test-id="valtimo-documenten-api-filter-dates-container">
+    <div class="valtimo-documenten-api-filter__dates" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_DATES_CONTAINER">
       <cds-date-picker
         #creationDateFrom
         [label]="'interface.labels.dateCreationFrom' | translate"
         placeholder="DD-MM-YYYY"
         [dateFormat]="'d-m-Y'"
         (valueChange)="onDateSelected('createdFrom', $event)"
-        data-test-id="valtimo-documenten-api-filter-creation-date-from"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_CREATION_DATE_FROM"
       ></cds-date-picker>
 
       <cds-date-picker
@@ -57,37 +57,37 @@
         placeholder="DD-MM-YYYY"
         [dateFormat]="'d-m-Y'"
         (valueChange)="onDateSelected('createdTo', $event)"
-        data-test-id="valtimo-documenten-api-filter-creation-date-to"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_CREATION_DATE_TO"
       ></cds-date-picker>
     </div>
 
-    <cds-text-label data-test-id="valtimo-documenten-api-filter-author-label">
+    <cds-text-label [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_AUTHOR_LABEL">
       {{ 'zgw.documentColumns.auteur' | translate }}
 
-      <input cdsText formControlName="auteur" data-test-id="valtimo-documenten-api-filter-author-input" />
+      <input cdsText formControlName="auteur" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_AUTHOR_INPUT" />
     </cds-text-label>
 
     <cds-dropdown
       [dropUp]="false"
       [label]="'zgw.documentColumns.vertrouwelijkheidaanduiding' | translate"
       formControlName="vertrouwelijkHeidaanduiding"
-      data-test-id="valtimo-documenten-api-filter-confidentiality-level-dropdown"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_CONFIDENTIALITY_LEVEL_DROPDOWN"
     >
-      <cds-dropdown-list [items]="obs.confidentialityLevels" data-test-id="valtimo-documenten-api-filter-confidentiality-level-dropdown-list"></cds-dropdown-list>
+      <cds-dropdown-list [items]="obs.confidentialityLevels" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_CONFIDENTIALITY_LEVEL_DROPDOWN_LIST"></cds-dropdown-list>
     </cds-dropdown>
 
     <cds-dropdown
       [label]="'zgw.documentColumns.trefwoorden' | translate"
       formControlName="trefwoorden"
       type="multi"
-      data-test-id="valtimo-documenten-api-filter-tags-dropdown"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_TAGS_DROPDOWN"
     >
-      <cds-dropdown-list [items]="obs.tags" data-test-id="valtimo-documenten-api-filter-tags-dropdown-list"></cds-dropdown-list>
+      <cds-dropdown-list [items]="obs.tags" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_TAGS_DROPDOWN_LIST"></cds-dropdown-list>
     </cds-dropdown>
   </form>
 
-  <footer class="valtimo-documenten-api-filter__footer" data-test-id="valtimo-documenten-api-filter-footer">
-    <button cdsButton="tertiary" (click)="resetFilter()" data-test-id="valtimo-documenten-api-filter-reset-button">
+  <footer class="valtimo-documenten-api-filter__footer" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_FOOTER">
+    <button cdsButton="tertiary" (click)="resetFilter()" [attr.data-test-id]="TEST_IDS.VALTIMO_DOCUMENTEN_API_FILTER_RESET_BUTTON">
       {{ 'Reset filter' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

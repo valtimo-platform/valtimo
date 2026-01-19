@@ -32,6 +32,7 @@ import {CalendarAdd16} from '@carbon/icons';
 import {TaskService} from '../../services';
 import {Task} from '../../models';
 import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-set-task-due-date',
@@ -50,6 +51,10 @@ import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
   ],
 })
 export class SetTaskDueDateComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public readonly canModifyTaskSet$ = new BehaviorSubject<boolean>(false);
   public readonly canModifyTask$ = new BehaviorSubject<boolean>(false);
 

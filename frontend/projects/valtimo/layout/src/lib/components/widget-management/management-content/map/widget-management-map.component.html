@@ -31,7 +31,7 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
-      data-test-id="valtimo-widget-management-map-widget-title-input"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_MAP_WIDGET_TITLE_INPUT"
     />
   </cds-text-label>
 </form>
@@ -79,7 +79,7 @@
     }
   </cds-accordion>
 
-  <button cdsButton="primary" size="sm" (click)="addField()" data-test-id="valtimo-widget-management-map-add-button">
+  <button cdsButton="primary" size="sm" (click)="addField()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_MAP_ADD_BUTTON">
     {{ 'widgetTabManagement.content.map.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

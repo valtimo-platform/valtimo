@@ -25,7 +25,7 @@ import {
   WidgetWizardService,
   WidgetWizardStep,
 } from '@valtimo/layout';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {Subscription} from 'rxjs';
 import {CaseHeaderWidgetManagementService} from '../../../../services/case-header-widget-management.service';
 
@@ -46,6 +46,10 @@ export class CaseManagementHeaderComponent
   extends ManagementWidgetDetailsComponent
   implements OnInit, OnDestroy
 {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public readonly AVAILABLE_WIDGET_TYPES = [WidgetType.FIELDS];
   public readonly WIDGET_WIZARD_STEPS = [
     WidgetWizardStep.TYPE,

@@ -20,17 +20,17 @@
   [title]="'formFlow.add' | translate"
   valtimoCdsModal
   (close)="onCancel()"
-  data-test-id="form-flow-modal"
+  [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" data-test-id="form-flow-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="form-flow-modal-title">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_TITLE">
       {{ 'formFlow.add' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent data-test-id="form-flow-modal-content">
+  <section cdsModalContent [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CONTENT">
     <form [formGroup]="form">
-      <cds-label [invalid]="key.dirty && key.invalid" data-test-id="form-flow-modal-key-label">
+      <cds-label [invalid]="key.dirty && key.invalid" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_KEY_LABEL">
         {{ 'formFlow.key' | translate }}
 
         <input
@@ -39,18 +39,18 @@
           placeholder="{{ 'formFlow.key' | translate }}"
           [attr.modal-primary-focus]="true"
           [invalid]="key.dirty && key.invalid"
-          data-test-id="form-flow-modal-key-input"
+          [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_KEY_INPUT"
         />
       </cds-label>
     </form>
   </section>
 
-  <cds-modal-footer data-test-id="form-flow-modal-footer">
-    <button cdsButton="ghost" (click)="onCancel()" data-test-id="form-flow-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary" data-test-id="form-flow-modal-create-button">
+    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CREATE_BUTTON">
       {{ 'interface.create' | translate }}
     </button>
   </cds-modal-footer>

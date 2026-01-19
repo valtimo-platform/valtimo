@@ -28,12 +28,12 @@
         showClose: false,
         lowContrast: true
       }"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-identifier-fields-information"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_IDENTIFIER_FIELDS_INFORMATION"
     >
     </cds-inline-notification>
   </div>
 
-  <v-form (valueChange)="formValueChange($event)" data-test-id="create-zaakrol-niet-natuurlijk-persoon-form">
+  <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_FORM">
     <v-input
       name="roltypeUrl"
       [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
@@ -44,7 +44,7 @@
       [trim]="true"
       [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-roltype-url-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ROLTYPE_URL_INPUT"
     >
     </v-input>
 
@@ -57,7 +57,7 @@
       [required]="true"
       [margin]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-rol-toelichting-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ROL_TOELICHTING_INPUT"
     >
     </v-input>
 
@@ -71,7 +71,7 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-inn-nnp-id-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_INN_NNP_ID_INPUT"
     >
     </v-input>
 
@@ -85,7 +85,7 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-ann-identificatie-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ANN_IDENTIFICATIE_INPUT"
     >
     </v-input>
 
@@ -99,7 +99,7 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-kvk-nummer-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_KVK_NUMMER_INPUT"
     >
     </v-input>
 
@@ -113,7 +113,7 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-vestigings-nummer-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_VESTIGINGS_NUMMER_INPUT"
     >
     </v-input>
 
@@ -127,7 +127,7 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      data-test-id="create-zaakrol-niet-natuurlijk-persoon-result-process-variable-input"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_RESULT_PROCESS_VARIABLE_INPUT"
     >
     </v-input>
   </v-form>

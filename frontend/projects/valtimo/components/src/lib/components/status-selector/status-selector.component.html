@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label class="status-selector" *ngIf="listItems$ | async as listItems" data-test-id="status-selector-label">
+<cds-label class="status-selector" *ngIf="listItems$ | async as listItems" [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_LABEL">
   {{ 'caseManagement.statuses.searchFieldTitle' | translate }}
 
   <cds-dropdown
@@ -23,21 +23,21 @@
     [disabled]="disabled"
     selectionFeedback="fixed"
     (selected)="itemSelected($event)"
-    data-test-id="status-selector-dropdown"
+    [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_DROPDOWN"
   >
     <cds-dropdown-list
       [items]="listItems"
       [listTpl]="colorDropdownItemTemplate"
-      data-test-id="status-selector-dropdown-list"
+      [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_DROPDOWN_LIST"
     ></cds-dropdown-list>
   </cds-dropdown>
 </cds-label>
 
 <ng-template #colorDropdownItemTemplate let-item="item">
-  <div class="status-selector-dropdown-template" data-test-id="status-selector-dropdown-item">
-    <cds-checkbox [checked]="item.selected" data-test-id="status-selector-checkbox"></cds-checkbox>
+  <div class="status-selector-dropdown-template" [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_DROPDOWN_ITEM">
+    <cds-checkbox [checked]="item.selected" [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_CHECKBOX"></cds-checkbox>
 
-    <span *ngIf="item.key === CASES_WITHOUT_STATUS_KEY" class="generic-span" data-test-id="status-selector-no-status-span">{{
+    <span *ngIf="item.key === CASES_WITHOUT_STATUS_KEY" class="generic-span" [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_NO_STATUS_SPAN">{{
       item?.content
     }}</span>
 
@@ -46,7 +46,7 @@
       class="cds-tag--no-margin"
       [type]="item?.tagType"
       [title]="item?.content"
-      data-test-id="status-selector-tag"
+      [attr.data-test-id]="TEST_IDS.STATUS_SELECTOR_TAG"
     >
       {{ item?.content }}
     </cds-tag>

@@ -46,7 +46,7 @@
       (paginationClicked)="onPaginationClicked($event)"
       (paginationSet)="onPaginationSet($event)"
       hideColumnHeader
-      data-test-id="carbon-document-table-wrapper-list"
+      [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_LIST"
     >
       <div carbonToolbarContent>
         <input
@@ -55,7 +55,7 @@
           hidden
           type="file"
           #fileInput
-          data-test-id="carbon-document-table-wrapper-file-input"
+          [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_FILE_INPUT"
         />
 
         <button
@@ -66,7 +66,7 @@
           [offset]="{x: 0, y: 47}"
           cdsButton="ghost"
           placement="bottom"
-          data-test-id="carbon-document-table-wrapper-filter-button"
+          [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_FILTER_BUTTON"
         >
           <svg cdsIcon="filter" size="16"></svg>
         </button>
@@ -81,7 +81,7 @@
       [action]="navigateToCaseAdminButton"
       [description]="'zgw.documents.noColumns.description' | translate"
       [title]="'zgw.documents.noColumns.title' | translate"
-      data-test-id="carbon-document-table-wrapper-no-results"
+      [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_NO_RESULTS"
     ></valtimo-no-results>
   }
 
@@ -104,7 +104,7 @@
     [supportsTrefwoorden]="obs?.supportedDocumentenApiFeatures?.supportsTrefwoorden"
     (modalClose)="closeMetadataModal()"
     (metadata)="metadataSet($event)"
-    data-test-id="carbon-document-table-wrapper-metadata-modal"
+    [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_METADATA_MODAL"
   ></valtimo-documenten-api-metadata-modal>
 </div>
 
@@ -115,7 +115,7 @@
   titleTranslationKey="case.documenten.deleteConfirmationModal.title"
   [showModalSubject$]="showDeleteConfirmationModal$"
   (confirmEvent)="deleteDocument()"
-  data-test-id="carbon-document-table-wrapper-confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_CONFIRMATION_MODAL"
 >
 </valtimo-confirmation-modal>
 
@@ -125,21 +125,21 @@
       [action]="resetFilterButton"
       [description]="'zgw.documents.noResults.filterDescription' | translate"
       [title]="'zgw.documents.noResults.filterTitle' | translate"
-      data-test-id="carbon-document-table-wrapper-no-results-filter"
+      [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_NO_RESULTS_FILTER"
     ></valtimo-no-results>
   } @else if (showZaakLinkWarning && isAdmin) {
     <valtimo-no-results
       [action]="navigateToCaseAdminButton"
       [description]="'case.documenten.noZaakFound' | translate"
       [title]="'case.documenten.noZaakFoundTitle' | translate"
-      data-test-id="carbon-document-table-wrapper-no-results-zaak"
+      [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_NO_RESULTS_ZAAK"
     ></valtimo-no-results>
   } @else {
     <valtimo-no-results
       [action]="uploadButton"
       [description]="'case.documenten.noFiles' | translate"
       [title]="'case.documenten.noFilesTitle' | translate"
-      data-test-id="carbon-document-table-wrapper-no-results-files"
+      [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_NO_RESULTS_FILES"
     ></valtimo-no-results>
   }
 </ng-template>
@@ -148,12 +148,12 @@
   <valtimo-case-detail-tab-documenten-api-filter
     [prefillFilter]="filter$ | async"
     (filterEvent)="onFilterEvent($event)"
-    data-test-id="carbon-document-table-wrapper-filter"
+    [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_FILTER"
   ></valtimo-case-detail-tab-documenten-api-filter>
 </ng-template>
 
 <ng-template #resetFilterButton>
-  <button cdsButton="primary" (click)="onFilterEvent(null)" data-test-id="carbon-document-table-wrapper-reset-filter-button">
+  <button cdsButton="primary" (click)="onFilterEvent(null)" [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_RESET_FILTER_BUTTON">
     {{ 'Reset filter' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
@@ -171,7 +171,7 @@
     [vTooltip]="getUploadButtonTooltip() | translate"
     (click)="onUploadButtonClick()"
     cdsButton="primary"
-    data-test-id="carbon-document-table-wrapper-upload-button"
+    [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_UPLOAD_BUTTON"
   >
     {{ 'Upload' | translate }}
     <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
@@ -187,7 +187,7 @@
 </ng-template>
 
 <ng-template #navigateToCaseAdminButton>
-  <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary" data-test-id="carbon-document-table-wrapper-navigate-to-case-admin-button">
+  <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary" [attr.data-test-id]="TEST_IDS.CARBON_DOCUMENT_TABLE_WRAPPER_NAVIGATE_TO_CASE_ADMIN_BUTTON">
     {{ 'case.documenten.navigateToCaseAdmin' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>

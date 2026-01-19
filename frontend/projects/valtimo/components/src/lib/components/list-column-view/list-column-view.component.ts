@@ -37,6 +37,7 @@ import {
   TooltipModule,
 } from 'carbon-components-angular';
 import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-list-column-view',
@@ -57,6 +58,10 @@ import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
   ],
 })
 export class ListColumnViewComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private readonly _$availableFields = signal<ListAvailableField[]>([]);
   @Input() public set availableFields(value: ListField[]) {
     if (!value) return;

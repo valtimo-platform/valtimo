@@ -25,6 +25,7 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PlaceholderService} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
+import { LAYOUT_TEST_IDS } from '@valtimo/shared';
 
 // eslint-disable-next-line no-var
 declare var App: any;
@@ -35,6 +36,10 @@ declare var App: any;
   standalone: false,
 })
 export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = {
+    LAYOUT_TEST_IDS: LAYOUT_TEST_IDS
+  };
+
   @ViewChild('carbonPlaceHolder', {static: true, read: ViewContainerRef})
   private readonly _carbonPlaceHolder: ViewContainerRef;
 

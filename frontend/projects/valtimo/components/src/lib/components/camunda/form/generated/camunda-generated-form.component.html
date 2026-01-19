@@ -20,7 +20,7 @@
     valtimoCamundaFormfieldGenerator
     [formGroup]="formGroup"
     [formField]="formField"
-    data-test-id="form-container-form-field"
+    [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_FORM_FIELD"
   >
     <ng-content></ng-content>
   </ng-container>
@@ -32,7 +32,7 @@
           type="button"
           (click)="back()"
           id="back-button"
-          data-test-id="form-container-back-button"
+          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_BACK_BUTTON"
         >
           Back
         </button>
@@ -41,7 +41,7 @@
           type="button"
           (click)="reset()"
           id="reset-button"
-          data-test-id="form-container-reset-button"
+          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_RESET_BUTTON"
         >
           Reset
         </button>
@@ -50,7 +50,7 @@
           [disabled]="!formGroup.disabled && !formGroup.valid"
           type="submit"
           id="submit-button"
-          data-test-id="form-container-submit-button"
+          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_SUBMIT_BUTTON"
         >
           Submit
         </button>

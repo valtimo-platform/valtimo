@@ -21,7 +21,7 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     noteEventListenerEnabled: noteEventListenerEnabled$ | async
   } as obs"
-  data-test-id="configuration-form"
+  [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM"
 >
   <v-input
     name="configurationTitle"
@@ -33,7 +33,7 @@
     [required]="true"
     [margin]="true"
     [trim]="true"
-    data-test-id="configuration-title-input"
+    [attr.data-test-id]="TEST_IDS.CONFIGURATION_TITLE_INPUT"
   >
   </v-input>
 
@@ -47,7 +47,7 @@
     [required]="true"
     [trim]="true"
     [margin]="true"
-    data-test-id="url-input"
+    [attr.data-test-id]="TEST_IDS.URL_INPUT"
   >
   </v-input>
 
@@ -64,7 +64,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [loading]="!authObs.authenticationPluginSelectItems"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
-      data-test-id="authentication-plugin-select"
+      [attr.data-test-id]="TEST_IDS.AUTHENTICATION_PLUGIN_SELECT"
     ></v-select>
   </ng-container>
 
@@ -72,7 +72,7 @@
     <v-input-label
       [title]="'noteEventListenerEnabled' | pluginTranslate: pluginId | async"
       [tooltip]="'noteEventListenerEnabledTooltip' | pluginTranslate: pluginId | async"
-      data-test-id="note-event-listener-label"
+      [attr.data-test-id]="TEST_IDS.NOTE_EVENT_LISTENER_LABEL"
     >
     </v-input-label>
 
@@ -82,7 +82,7 @@
       [onText]="'noteEventListenerEnabled.toggleOn' | pluginTranslate: pluginId | async"
       [offText]="'noteEventListenerEnabled.toggleOff' | pluginTranslate: pluginId | async"
       (checkedChange)="onNoteEventListenerEnabledChange($event)"
-      data-test-id="note-event-listener-toggle"
+      [attr.data-test-id]="TEST_IDS.NOTE_EVENT_LISTENER_TOGGLE"
     ></cds-toggle>
   </div>
 
@@ -95,7 +95,7 @@
     [required]="true"
     [margin]="true"
     [trim]="true"
-    data-test-id="note-subject-input"
+    [attr.data-test-id]="TEST_IDS.NOTE_SUBJECT_INPUT"
   >
   </v-input>
 </v-form>

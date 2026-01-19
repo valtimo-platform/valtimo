@@ -22,10 +22,10 @@
     (validEvent)="onValid($event)"
     (valueChangeEvent)="onValueChange($event)"
     [fitPage]="true"
-    data-test-id="form-flow-editor"
+    [attr.data-test-id]="TEST_IDS.FORM_FLOW_EDITOR"
   ></valtimo-editor>
 } @else {
-  <cds-loading data-test-id="form-flow-loading"></cds-loading>
+  <cds-loading [attr.data-test-id]="TEST_IDS.FORM_FLOW_LOADING"></cds-loading>
 }
 
 <ng-container renderInPageHeader>
@@ -39,11 +39,11 @@
       } as obs"
       class="buttons-container"
     >
-      <cds-overflow-menu data-test-id="form-flow-overflow-menu">
+      <cds-overflow-menu [attr.data-test-id]="TEST_IDS.FORM_FLOW_OVERFLOW_MENU">
         <cds-overflow-menu-option
           [disabled]="!obs.valid && !obs.readOnly"
           (selected)="downloadFormFlowDefinition(obs.model)"
-          data-test-id="form-flow-export-option"
+          [attr.data-test-id]="TEST_IDS.FORM_FLOW_EXPORT_OPTION"
           >{{ 'interface.export' | translate }}
         </cds-overflow-menu-option>
 
@@ -51,12 +51,12 @@
           [disabled]="obs.readOnly"
           type="danger"
           (selected)="showDeleteModal()"
-          data-test-id="form-flow-delete-option"
+          [attr.data-test-id]="TEST_IDS.FORM_FLOW_DELETE_OPTION"
           >{{ 'interface.delete' | translate }}
         </cds-overflow-menu-option>
       </cds-overflow-menu>
 
-      <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()" data-test-id="form-flow-back-button">
+      <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()" [attr.data-test-id]="TEST_IDS.FORM_FLOW_BACK_BUTTON">
         {{ 'interface.back' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
@@ -67,7 +67,7 @@
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="updateFormFlowDefinition()"
-        data-test-id="form-flow-save-button"
+        [attr.data-test-id]="TEST_IDS.FORM_FLOW_SAVE_BUTTON"
       >
         {{ 'interface.save' | translate }}
 
@@ -84,5 +84,5 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDelete()"
-  data-test-id="form-flow-delete-modal"
+  [attr.data-test-id]="TEST_IDS.FORM_FLOW_DELETE_MODAL"
 ></valtimo-confirmation-modal>

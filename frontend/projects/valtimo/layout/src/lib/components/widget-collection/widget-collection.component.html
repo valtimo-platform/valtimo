@@ -22,15 +22,15 @@
     widgetData: widgetData$ | async,
   } as obs"
 >
-  <section class="valtimo-widget-collection__header" data-test-id="valtimo-widget-collection-header">
+  <section class="valtimo-widget-collection__header" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_HEADER">
     <div class="valtimo-widget-collection__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
-        data-test-id="valtimo-widget-collection-icon"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <span class="valtimo-widget-collection__title" data-test-id="valtimo-widget-collection-title">{{ $widgetTitle() }}</span>
+      <span class="valtimo-widget-collection__title" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_TITLE">{{ $widgetTitle() }}</span>
     </div>
 
     <ng-content></ng-content>
@@ -38,7 +38,7 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      data-test-id="valtimo-widget-collection-action-button"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
@@ -50,7 +50,7 @@
       'valtimo-widget-collection__render-three-columns': amountOfColumns() === 3,
       'valtimo-widget-collection__container': amountOfColumns() === 4,
     }"
-    data-test-id="valtimo-widget-collection-container"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_CONTAINER"
   >
     @for (card of obs?.collectionWidgetCards; track card.key) {
       <div
@@ -106,7 +106,7 @@
       [collapseVertically]="true"
       [description]="(obs.noVisibleFields ? 'widgets.emptyFields' : 'widgets.noData') | translate"
       [smallPadding]="true"
-      data-test-id="valtimo-widget-collection-no-results"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_NO_RESULTS"
     ></valtimo-no-results>
   }
 
@@ -115,7 +115,7 @@
     class="valtimo-widget-collection__pagination"
     [model]="paginationModel()"
     (selectPage)="onSelectPage($event)"
-    data-test-id="valtimo-widget-collection-pagination"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_PAGINATION"
   >
   </cds-pagination-nav>
 </ng-container>

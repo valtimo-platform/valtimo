@@ -19,10 +19,10 @@
   (click)="fileInput.click()"
   valtimoUploaderDragDrop
   (fileDropped)="onFileFieldChange($event)"
-  data-test-id="upload-file-container"
+  [attr.data-test-id]="TEST_IDS.UPLOAD_FILE_CONTAINER"
 >
   <span class="align-middle"><i class="mdi mdi-cloud-upload"></i></span>
-  <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple data-test-id="upload-file-input" />
+  <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple [attr.data-test-id]="TEST_IDS.UPLOAD_FILE_INPUT" />
 </div>
 <div *ngIf="showFileList">
   <div class="files-list px-3 py-2" *ngFor="let resource of resources" data-test-id="upload-file-list-item-{{$index}}">

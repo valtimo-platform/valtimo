@@ -61,12 +61,12 @@
                       'is-invalid': formControls.name.touched && formControls.name.errors,
                     }"
                     required
-                    data-test-id="choice-field-key-input"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_KEY_INPUT"
                   />
                   <div
                     *ngIf="formControls.name.touched && formControls.name.errors"
                     class="invalid-feedback"
-                    data-test-id="choice-field-key-error"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_KEY_ERROR"
                   >
                     <div *ngIf="formControls.name.errors.required">
                       Choice field value key is required
@@ -91,12 +91,12 @@
                       'is-invalid': formControls.value.touched && formControls.value.errors,
                     }"
                     required
-                    data-test-id="choice-field-value-input"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_VALUE_INPUT"
                   />
                   <div
                     *ngIf="formControls.value.touched && formControls.value.errors"
                     class="invalid-feedback"
-                    data-test-id="choice-field-value-error"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_VALUE_ERROR"
                   >
                     <div *ngIf="formControls.value.errors.required">
                       Choice field value is required
@@ -121,12 +121,12 @@
                       'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors,
                     }"
                     required
-                    data-test-id="choice-field-sequence-input"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SEQUENCE_INPUT"
                   />
                   <div
                     *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors"
                     class="invalid-feedback"
-                    data-test-id="choice-field-sequence-error"
+                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SEQUENCE_ERROR"
                   >
                     <div *ngIf="formControls.sortOrder.errors.required">
                       Choice field value sequence is required
@@ -141,7 +141,7 @@
                 >
                 <div class="col-12 col-sm-8 col-lg-6">
                   <div class="switch-button switch-button-sm switch-button-success">
-                    <input type="checkbox" formControlName="deprecated" id="deprecated" data-test-id="choice-field-deprecated-checkbox"/><span>
+                    <input type="checkbox" formControlName="deprecated" id="deprecated" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_DEPRECATED_CHECKBOX"/><span>
                       <label for="deprecated"></label
                     ></span>
                   </div>
@@ -150,13 +150,13 @@
 
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'../'" class="btn btn-space btn-default" data-test-id="choice-field-back-button">Back</a>
+                  <a [routerLink]="'../'" class="btn btn-space btn-default" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_BACK_BUTTON">Back</a>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" data-test-id="choice-field-reset-button">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_RESET_BUTTON">
                     Reset
                   </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" data-test-id="choice-field-submit-button">
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SUBMIT_BUTTON">
                     Submit
                   </button>
                 </div>

@@ -28,7 +28,7 @@
 
 <ng-template #title>
   <div class="bg-light dossier-header">
-    <h3 class="dossier-title" data-test-id="dossier-title">
+    <h3 class="dossier-title" [attr.data-test-id]="TEST_IDS.DOSSIER_TITLE">
       {{ 'object.header' | translate }}
     </h3>
   </div>
@@ -42,7 +42,7 @@
         class="nav-link clickable active"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.GENERAL)"
-        data-test-id="dossier-general-tab"
+        [attr.data-test-id]="TEST_IDS.DOSSIER_GENERAL_TAB"
       >
         {{ 'object.tabs.general' | translate }}
       </a>
@@ -53,7 +53,7 @@
 <ng-template #tabContent>
   <div class="pl-1 pr-1 pt-3 bg-white position-relative tab-container">
     <div *ngIf="currentTab && currentTab === TabEnum.GENERAL">
-      <valtimo-object-detail data-test-id="dossier-object-detail"></valtimo-object-detail>
+      <valtimo-object-detail [attr.data-test-id]="TEST_IDS.DOSSIER_OBJECT_DETAIL"></valtimo-object-detail>
     </div>
   </div>
 </ng-template>

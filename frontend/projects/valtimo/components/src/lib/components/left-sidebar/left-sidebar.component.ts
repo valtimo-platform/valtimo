@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {MenuItem, ConfigService} from '@valtimo/shared';
+import { MenuItem, ConfigService, COMPONENTS_TEST_IDS, CASE_TEST_IDS } from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
@@ -37,6 +37,11 @@ import {MenuService} from '../menu/services/menu.service';
   standalone: false,
 })
 export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
+    CASE_TEST_IDS: CASE_TEST_IDS
+  };
+
   @ViewChild('toggleButton') toggleButtonRef: ElementRef;
 
   @HostListener('document:click', ['$event.target'])

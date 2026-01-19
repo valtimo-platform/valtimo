@@ -28,7 +28,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {Page} from '@valtimo/shared';
+import { Page, LOGGING_TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   DialogModule,
@@ -78,6 +78,10 @@ import {LogSearchComponent} from '../log-search/log-search.component';
   providers: [LoggingApiService],
 })
 export class LoggingListComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    LOGGING_TEST_IDS: LOGGING_TEST_IDS
+  };
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly logItems$: Observable<CarbonListItem> = this.activatedRoute.queryParamMap.pipe(
     tap(() => this.loading$.next(true)),

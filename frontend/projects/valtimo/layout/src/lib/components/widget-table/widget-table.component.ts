@@ -32,7 +32,7 @@ import {
   MdiIconViewerComponent,
   ViewType,
 } from '@valtimo/components';
-import {Page} from '@valtimo/shared';
+import { Page, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   PaginationModel,
@@ -62,6 +62,10 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   ],
 })
 export class WidgetTableComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private _widgetConfiguration: TableWidget;
 
   public get widgetConfiguration(): TableWidget {

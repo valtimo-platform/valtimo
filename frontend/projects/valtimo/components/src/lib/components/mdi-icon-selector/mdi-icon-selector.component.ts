@@ -29,6 +29,7 @@ import {
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {POPULAR_MDI_ICONS} from '../../constants';
 import {InputLabelModule} from '../input-label/input-label.module';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-mdi-icon-selector',
@@ -55,6 +56,10 @@ import {InputLabelModule} from '../input-label/input-label.module';
   ],
 })
 export class MdiIconSelectorComponent implements ControlValueAccessor {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public labelTranslationKey: string = 'interface.icon';
   @Input() public tooltipTranslationKey: string = 'interface.iconTooltip';
   @Input() public placeholderTranslationKey: string = 'interface.iconPlaceholder';

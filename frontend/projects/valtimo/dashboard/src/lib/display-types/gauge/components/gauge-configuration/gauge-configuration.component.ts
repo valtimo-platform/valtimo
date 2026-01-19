@@ -27,6 +27,7 @@ import {ConfigurationOutput, DisplayTypeConfigurationComponent} from '../../../.
 import {startWith, Subscription} from 'rxjs';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {GaugeDisplayTypeProperties} from '../../models';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -36,6 +37,10 @@ import {GaugeDisplayTypeProperties} from '../../models';
 export class GaugeConfigurationComponent
   implements OnInit, OnDestroy, DisplayTypeConfigurationComponent
 {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public readonly form = this.fb.group({
     title: this.fb.control('', [Validators.required]),
     subtitle: this.fb.control(''),

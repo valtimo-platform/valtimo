@@ -21,7 +21,7 @@
 >
   <cds-combo-box
     class="test"
-    data-test-id="valtimo-widget-management-process-selector-process-selector"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_PROCESS_SELECTOR_PROCESS_SELECTOR"
     [label]="'widgetTabManagement.processes.selectorLabel' | translate"
     [items]="(processDefinitionItems$ | async) || []"
     [dropUp]="false"
@@ -39,7 +39,7 @@
       cdsText
       type="text"
       formControlName="name"
-      data-test-id="valtimo-widget-management-process-selector-button-text-input"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_PROCESS_SELECTOR_BUTTON_TEXT_INPUT"
       [placeholder]="'widgetTabManagement.processes.buttonTextPlaceholder' | translate"
     />
   </cds-text-label>

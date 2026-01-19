@@ -22,7 +22,7 @@
   [titleTranslationKey]="titleTranslationKey"
   [title]="title"
   [tooltip]="tooltip"
-  data-test-id="valtimo-date-time-picker-label"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_DATE_TIME_PICKER_LABEL"
 >
 </v-input-label>
 
@@ -36,7 +36,7 @@
     [dateFormat]="dateFormat"
     [disabled]="disabled"
     (valueChange)="onDateSelected($event)"
-    data-test-id="valtimo-date-time-picker-date-input"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_DATE_TIME_PICKER_DATE_INPUT"
   ></cds-date-picker>
 
   <cds-timepicker
@@ -47,7 +47,7 @@
     [value]="timeValue"
     [disabled]="disabled"
     (valueChange)="onTimeSelected($event)"
-    data-test-id="valtimo-date-time-picker-time-input"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_DATE_TIME_PICKER_TIME_INPUT"
   >
   </cds-timepicker>
 </div>

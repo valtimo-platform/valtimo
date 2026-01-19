@@ -15,9 +15,9 @@
   -->
 
 <section class="valtimo-big-number-widget__header">
-  <h3 class="valtimo-big-number-widget__title" data-test-id="valtimo-big-number-widget-title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-big-number-widget__title" [attr.data-test-id]="TEST_IDS.VALTIMO_BIG_NUMBER_WIDGET_TITLE">{{ displayTypeProperties.title }}</h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-big-number-widget__subtitle" data-test-id="valtimo-big-number-widget-subtitle">
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-big-number-widget__subtitle" [attr.data-test-id]="TEST_IDS.VALTIMO_BIG_NUMBER_WIDGET_SUBTITLE">
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>
@@ -26,11 +26,11 @@
   <span
     [class]="['valtimo-big-number-widget__number', severityClass]"
     [style.fontSize.px]="numberFontSize"
-    data-test-id="valtimo-big-number-widget-number"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_BIG_NUMBER_WIDGET_NUMBER"
     >{{ data?.value }}</span
   >
 
-  <span *ngIf="displayTypeProperties.label" class="valtimo-big-number-widget__label" data-test-id="valtimo-big-number-widget-label">
+  <span *ngIf="displayTypeProperties.label" class="valtimo-big-number-widget__label" [attr.data-test-id]="TEST_IDS.VALTIMO_BIG_NUMBER_WIDGET_LABEL">
     {{ displayTypeProperties.label }}
   </span>
 </section>

@@ -110,7 +110,7 @@
     <cds-structured-list>
       <cds-list-row>
         <cds-list-column>
-          <a href="https://docs.valtimo.nl" target="_blank" cdsLink data-test-id="right-sidebar-menu-help-link">{{
+          <a href="https://docs.valtimo.nl" target="_blank" cdsLink [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_HELP_LINK">{{
             'account.links.help' | translate
           }}</a>
         </cds-list-column>
@@ -118,7 +118,7 @@
 
       <cds-list-row>
         <cds-list-column *ngIf="!overrideFeedbackMenuItemToMailTo; else feedbackMailTo">
-          <a href="https://www.valtimo.nl/feedback" target="_blank" cdsLink data-test-id="right-sidebar-menu-feedback-link">{{
+          <a href="https://www.valtimo.nl/feedback" target="_blank" cdsLink [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_FEEDBACK_LINK">{{
             'account.links.feedback' | translate
           }}</a>
         </cds-list-column>
@@ -126,13 +126,13 @@
 
       <cds-list-row *ngIf="resetUrl">
         <cds-list-column>
-          <a [href]="resetUrl" cdsLink data-test-id="right-sidebar-menu-reset-password-link">{{ 'account.links.resetPassword' | translate }}</a>
+          <a [href]="resetUrl" cdsLink [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_RESET_PASSWORD_LINK">{{ 'account.links.resetPassword' | translate }}</a>
         </cds-list-column>
       </cds-list-row>
 
       <cds-list-row>
         <cds-list-column>
-          <a href="javascript:void(0)" cdsLink (click)="logout()" data-test-id="right-sidebar-menu-sign-out-link">{{
+          <a href="javascript:void(0)" cdsLink (click)="logout()" [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_SIGN_OUT_LINK">{{
             'account.links.signOut' | translate
           }}</a>
         </cds-list-column>
@@ -145,7 +145,7 @@
             href="mailto:valtimo@ritense.com?subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee compenseren we voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomenplantactie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks bomen voor alle Valtimo installaties die in gebruik zijn."
             target="_blank"
             cdsLink
-            data-test-id="right-sidebar-menu-plant-tree-link"
+            [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_PLANT_TREE_LINK"
           >
             {{ 'account.links.plantATree' | translate }}
           </a>
@@ -169,7 +169,7 @@
           [dropUp]="false"
           (click)="$event.stopPropagation()"
           (selected)="updateUserLanguage($event)"
-          data-test-id="right-sidebar-menu-language-dropdown"
+          [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_LANGUAGE_DROPDOWN"
         >
           <cds-dropdown-list [items]="(languageListItems$ | async) || []"></cds-dropdown-list>
         </cds-dropdown>
@@ -193,7 +193,7 @@
           [disabled]="updatingUserSettings$ | async"
           [ngModel]="collapsibleWidescreenMenu$ | async"
           (ngModelChange)="setCollapsibleWidescreenMenu($event)"
-          data-test-id="right-sidebar-menu-collapsible-menu-toggle"
+          [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_COLLAPSIBLE_MENU_TOGGLE"
         >
         </cds-toggle>
       </cds-list-column>
@@ -207,7 +207,7 @@
           (click)="$event.stopPropagation()"
           (selected)="setPreferredTheme($event)"
           [dropUp]="false"
-          data-test-id="right-sidebar-menu-theme-dropdown"
+          [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_THEME_DROPDOWN"
         >
           <cds-dropdown-list [items]="(themeOptions$ | async) || []"></cds-dropdown-list>
         </cds-dropdown>
@@ -223,7 +223,7 @@
           [disabled]="updatingUserSettings$ | async"
           [ngModel]="compactMode$ | async"
           (ngModelChange)="setCompactMode($event)"
-          data-test-id="right-sidebar-menu-compact-mode-toggle"
+          [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_COMPACT_MODE_TOGGLE"
         >
         </cds-toggle>
       </cds-list-column>
@@ -238,7 +238,7 @@
           [disabled]="updatingUserSettings$ | async"
           [ngModel]="showUserNameInTopBar$ | async"
           (ngModelChange)="setShowUserName($event)"
-          data-test-id="right-sidebar-menu-show-user-name-toggle"
+          [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_SHOW_USER_NAME_TOGGLE"
         >
         </cds-toggle>
       </cds-list-column>
@@ -295,7 +295,7 @@
       "
       target="_blank"
       cdsLink
-      data-test-id="right-sidebar-menu-feedback-mailto-link"
+      [attr.data-test-id]="TEST_IDS.RIGHT_SIDEBAR_MENU_FEEDBACK_MAILTO_LINK"
     >
       {{ 'account.links.feedback' | translate }}
     </a>

@@ -15,8 +15,8 @@
   -->
 
 <ng-container *ngIf="useBootstrapSpinner; else ngxSpinner">
-  <div class="spinner-container" [ngClass]="{'no-margin-top': noMarginTop}" data-test-id="spinner-bootstrap-container">
-    <div class="spinner-border text-primary" role="status" data-test-id="spinner-bootstrap">
+  <div class="spinner-container" [ngClass]="{'no-margin-top': noMarginTop}" [attr.data-test-id]="TEST_IDS.SPINNER_BOOTSTRAP_CONTAINER">
+    <div class="spinner-border text-primary" role="status" [attr.data-test-id]="TEST_IDS.SPINNER_BOOTSTRAP">
       <span class="sr-only">{{ 'interface.loading' | translate }}</span>
     </div>
   </div>
@@ -30,7 +30,7 @@
     [color]="color"
     [size]="size"
     [type]="type"
-    data-test-id="spinner-ngx"
+    [attr.data-test-id]="TEST_IDS.SPINNER_NGX"
   >
   </ngx-spinner>
 </ng-template>

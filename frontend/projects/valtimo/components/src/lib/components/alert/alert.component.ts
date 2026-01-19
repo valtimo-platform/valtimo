@@ -18,6 +18,7 @@ import {AfterContentInit, Component, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {Alert, AlertType} from '../../models';
 import {AlertService} from './alert.service';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -29,6 +30,10 @@ declare var $;
   standalone: false,
 })
 export class AlertComponent implements AfterContentInit, OnDestroy {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   alerts: Alert[] = [];
   subscription: Subscription;
   autoCloseInMS: number;

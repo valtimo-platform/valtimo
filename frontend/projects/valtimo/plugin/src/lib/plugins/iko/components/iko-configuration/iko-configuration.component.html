@@ -20,7 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  data-test-id="configuration-form"
+  [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM"
 >
   <v-input
     name="configurationTitle"
@@ -32,7 +32,7 @@
     [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="IKO Plugin"
-    data-test-id="configuration-form-title-input"
+    [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_TITLE_INPUT"
   >
   </v-input>
   <v-input
@@ -45,7 +45,7 @@
     [trim]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://iko.example.com/"
-    data-test-id="configuration-form-url-input"
+    [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_URL_INPUT"
   >
   </v-input>
 </v-form>

@@ -46,7 +46,7 @@ import {ListItem} from 'carbon-components-angular';
 import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {isEqual} from 'lodash';
-import {Operator} from '@valtimo/shared';
+import { Operator, CASE_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -57,6 +57,10 @@ import {Operator} from '@valtimo/shared';
 export class CaseGroupByConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
+  readonly TEST_IDS = {
+    CASE_TEST_IDS: CASE_TEST_IDS
+  };
+
   @Input() public dataSourceKey: string;
 
   public readonly form = this.fb.group({

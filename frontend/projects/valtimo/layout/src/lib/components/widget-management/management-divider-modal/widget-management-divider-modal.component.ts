@@ -33,7 +33,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {Edit16} from '@carbon/icons';
-import {ModalMode} from '@valtimo/shared';
+import { ModalMode, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {
   AutoKeyInputComponent,
   CarbonListItem,
@@ -67,6 +67,10 @@ import {
   ],
 })
 export class WidgetManagementDividerModalComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {

@@ -20,6 +20,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService, PageTitleService, ChoiceFieldService, ChoiceField} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {first} from 'rxjs/operators';
+import { CHOICE_FIELD_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,6 +29,10 @@ import {first} from 'rxjs/operators';
   styleUrls: ['./choice-field-detail.component.css'],
 })
 export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    CHOICE_FIELD_TEST_IDS: CHOICE_FIELD_TEST_IDS
+  };
+
   public id: string;
   public form: FormGroup;
   public choiceField: ChoiceField;

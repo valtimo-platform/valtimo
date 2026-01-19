@@ -20,7 +20,7 @@
   [items]="ikoViews$ | async"
   [loading]="$loading()"
   (rowClicked)="onRowClicked($event)"
-  data-test-id="iko-management-list"
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_LIST"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="uploadButton"></ng-container>
 
@@ -30,18 +30,18 @@
     [action]="addViewButton"
     [description]="'ikoManagement.views.noResultsDescription' | translate"
     [title]="'ikoManagement.views.noResultsTitle' | translate"
-    data-test-id="iko-management-no-results"
+    [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_NO_RESULTS"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #uploadButton>
-  <button [iconOnly]="true" cdsButton="ghost" (click)="openUploadModal()" data-test-id="iko-management-upload-button">
+  <button [iconOnly]="true" cdsButton="ghost" (click)="openUploadModal()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_UPLOAD_BUTTON">
     <svg cdsIcon="upload" size="16"></svg>
   </button>
 </ng-template>
 
 <ng-template #addViewButton>
-  <button cdsButton="primary" (click)="openAddModal()" data-test-id="iko-management-add-button">
+  <button cdsButton="primary" (click)="openAddModal()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_ADD_BUTTON">
     {{ 'ikoManagement.views.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -56,13 +56,13 @@
   [usedKeys]="usedKeys$ | async"
   [modalMode]="$modalMode()"
   (modalClose)="onViewModalClose($event, apiKey)"
-  data-test-id="iko-management-view-modal"
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_VIEW_MODAL"
 ></valtimo-iko-management-view-modal>
 
 <valtimo-iko-management-upload-modal
   [open]="$uploadModalOpen()"
   (modalClose)="onUploadModalClose($event)"
-  data-test-id="iko-management-upload-modal"
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_UPLOAD_MODAL"
 ></valtimo-iko-management-upload-modal>
 
 <valtimo-confirmation-modal
@@ -73,5 +73,5 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDeleteConfirm($event)"
-  data-test-id="iko-management-confirmation-modal"
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>

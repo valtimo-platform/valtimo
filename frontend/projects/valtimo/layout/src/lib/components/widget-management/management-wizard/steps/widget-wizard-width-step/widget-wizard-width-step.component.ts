@@ -19,6 +19,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetType, WidgetWidth} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
+import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-wizard-width-step.component.html',
@@ -27,6 +28,10 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardWidthStepComponent {
+  readonly TEST_IDS = {
+    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
+  };
+
   public readonly $fieldsColumnsLength: Signal<number> = computed(() =>
     this.widgetWizardService.$selectedWidget()?.type === WidgetType.FIELDS
       ? (this.widgetWizardService.$widgetContent()?.['columns']?.length ?? 0)

@@ -19,7 +19,7 @@
       [trim]="true"
       [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
       [widthPx]="350"
-      data-test-id="patch-zaak-besluit-besluit-url-input"
+      [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_BESLUIT_BESLUIT_URL_INPUT"
     ></v-input>
 
     <div class="row">
@@ -31,7 +31,7 @@
           [customPane]="true"
           placement="bottom"
           class="add-button"
-          data-test-id="patch-zaak-besluit-add-property-button"
+          [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_BESLUIT_ADD_PROPERTY_BUTTON"
         >
           {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
           <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

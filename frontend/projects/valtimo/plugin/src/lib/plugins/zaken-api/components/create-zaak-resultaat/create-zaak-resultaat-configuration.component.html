@@ -25,7 +25,7 @@
     resultaatTypeItems: resultaatTypeSelectItems$ | async,
     context: context$ | async,
   } as obs"
-  data-test-id="form-container"
+  [attr.data-test-id]="TEST_IDS.FORM_CONTAINER"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-input
@@ -37,7 +37,7 @@
       [required]="false"
       [tooltip]="'resultaattoelichtingTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
-      data-test-id="form-description-input"
+      [attr.data-test-id]="TEST_IDS.FORM_DESCRIPTION_INPUT"
     >
     </v-input>
 
@@ -49,7 +49,7 @@
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
-      data-test-id="form-input-type-radio"
+      [attr.data-test-id]="TEST_IDS.FORM_INPUT_TYPE_RADIO"
     >
     </v-radio>
 
@@ -64,7 +64,7 @@
       [trim]="true"
       [tooltip]="'resultaattypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
-      data-test-id="form-result-type-url-input"
+      [attr.data-test-id]="TEST_IDS.FORM_RESULT_TYPE_URL_INPUT"
     >
     </v-input>
 
@@ -81,14 +81,14 @@
         [loading]="!obs.resultaatTypeItems"
         [tooltip]="'resultaattypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
         [clearSelectionSubject$]="clearStatusSelection$"
-        data-test-id="form-result-type-select"
+        [attr.data-test-id]="TEST_IDS.FORM_RESULT_TYPE_SELECT"
       ></v-select>
     </ng-container>
   </ng-container>
 </v-form>
 
 <ng-template #loading>
-  <div class="loading-container" data-test-id="loading-container">
-    <cds-loading data-test-id="loading-spinner"></cds-loading>
+  <div class="loading-container" [attr.data-test-id]="TEST_IDS.LOADING_CONTAINER">
+    <cds-loading [attr.data-test-id]="TEST_IDS.LOADING_SPINNER"></cds-loading>
   </div>
 </ng-template>

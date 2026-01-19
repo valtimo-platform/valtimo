@@ -23,7 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  data-test-id="document-form"
+  [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM"
 >
   <v-input
     name="documentUrl"
@@ -35,7 +35,7 @@
     [trim]="true"
     [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    data-test-id="document-form-url-input"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_URL_INPUT"
   >
   </v-input>
   <v-input
@@ -48,7 +48,7 @@
     [trim]="true"
     [tooltip]="'titelTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
-    data-test-id="document-form-title-input"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_TITLE_INPUT"
   >
   </v-input>
   <v-input
@@ -60,7 +60,7 @@
     [required]="false"
     [tooltip]="'beschrijvingTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    data-test-id="document-form-description-input"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_DESCRIPTION_INPUT"
   >
   </v-input>
 </v-form>

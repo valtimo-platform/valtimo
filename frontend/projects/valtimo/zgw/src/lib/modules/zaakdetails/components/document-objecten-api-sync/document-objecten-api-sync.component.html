@@ -20,25 +20,25 @@
     [name]="'zaakdetails.title' | translate | lowercase"
   ></valtimo-case-management-draft-warning>
 
-  <h2 class="valtimo-objecten-sync__title" data-test-id="valtimo-objecten-sync-title">{{ 'zaakdetails.title' | translate }}</h2>
+  <h2 class="valtimo-objecten-sync__title" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_TITLE">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
     <valtimo-spinner></valtimo-spinner>
   } @else {
     @if (documentObjectenApiSync$ | async; as documentObjectenApiSync) {
       <section class="valtimo-objecten-sync__card-header">
-        <span class="valtimo-objecten-sync__card-title" data-test-id="valtimo-objecten-sync-card-title">
+        <span class="valtimo-objecten-sync__card-title" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CARD_TITLE">
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </span>
 
         <div class="valtimo-objecten-sync__card-controls">
-          <button cdsButton="tertiary" (click)="showModal()" data-test-id="valtimo-objecten-sync-edit-button">
+          <button cdsButton="tertiary" (click)="showModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_EDIT_BUTTON">
             {{ 'interface.edit' | translate }}
 
             <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
           </button>
 
-          <button cdsButton="danger" (click)="remove()" data-test-id="valtimo-objecten-sync-delete-button">
+          <button cdsButton="danger" (click)="remove()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_DELETE_BUTTON">
             {{ 'interface.delete' | translate }}
 
             <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
@@ -64,7 +64,7 @@
         </div>
       </section>
     } @else {
-      <button cdsButton="primary" (click)="showModal()" data-test-id="valtimo-objecten-sync-add-button">
+      <button cdsButton="primary" (click)="showModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_ADD_BUTTON">
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -81,7 +81,7 @@
     showFooter="true"
     (close)="onModalClose()"
   >
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()" data-test-id="valtimo-objecten-sync-modal-header">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_MODAL_HEADER">
       <h3 cdsModalHeaderHeading>
         {{ 'zaakdetails.editModal.title' | translate }}
       </h3>
@@ -105,21 +105,21 @@
           name="objectManagementConfigurationId"
           [carbonTheme]="currentTheme$ | async"
           (selectedChange)="configSelected($event)"
-          data-test-id="valtimo-objecten-sync-configuration-select"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CONFIGURATION_SELECT"
         ></v-select>
 
-        <cds-checkbox formControlName="enabled" data-test-id="valtimo-objecten-sync-enabled-checkbox">
+        <cds-checkbox formControlName="enabled" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_ENABLED_CHECKBOX">
           {{ 'zaakdetails.editModal.enabled' | translate }}
         </cds-checkbox>
       </form>
     </section>
 
-    <cds-modal-footer data-test-id="valtimo-objecten-sync-modal-footer">
-      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false" data-test-id="valtimo-objecten-sync-cancel-button">
+    <cds-modal-footer [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_MODAL_FOOTER">
+      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CANCEL_BUTTON">
         {{ 'interface.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()" data-test-id="valtimo-objecten-sync-submit-button">
+      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_SUBMIT_BUTTON">
         {{ 'searchFieldsOverview.submit' | translate }}
       </button>
     </cds-modal-footer>

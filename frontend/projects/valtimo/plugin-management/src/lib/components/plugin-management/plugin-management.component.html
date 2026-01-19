@@ -20,7 +20,7 @@
   } as obs"
 >
   <valtimo-carbon-list
-    data-test-id="plugin-management-list"
+    [attr.data-test-id]="TEST_IDS.PLUGIN_MANAGEMENT_LIST"
     [actionItems]="actionItems"
     [loading]="obs.loading"
     [items]="obs.pluginConfigurations"
@@ -31,14 +31,14 @@
     <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
 
     <valtimo-no-results
-      data-test-id="plugin-management-no-results"
+      [attr.data-test-id]="TEST_IDS.PLUGIN_MANAGEMENT_NO_RESULTS"
       [action]="configurePluginButton"
       [title]="'pages.plugins.noResults' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
   <ng-template #configurePluginButton>
-    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()" data-test-id="plugin-management-add-button">
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()" [attr.data-test-id]="TEST_IDS.PLUGIN_MANAGEMENT_ADD_BUTTON">
       {{ 'pluginManagement.add' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -47,13 +47,13 @@
 </ng-container>
 
 <valtimo-plugin-add-modal
-  data-test-id="plugin-management-add-modal"
+  [attr.data-test-id]="TEST_IDS.PLUGIN_MANAGEMENT_ADD_MODAL"
   [open]="showAddModal$ | async"
   (closeModal)="closeAddModal()"
 ></valtimo-plugin-add-modal>
 
 <valtimo-plugin-edit-modal
-  data-test-id="plugin-management-edit-modal"
+  [attr.data-test-id]="TEST_IDS.PLUGIN_MANAGEMENT_EDIT_MODAL"
   [open]="showEditModal$ | async"
   [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"

@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, filter, map, Observable, Subscription, switchMap} from 'rxjs';
-import {ConfigService} from '@valtimo/shared';
+import { ConfigService, OBJECT_MANAGEMENT_TEST_IDS, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 import {TabService} from '../../services/tab.service';
 import {TabEnum} from '../../services/tab.enum';
 import {ObjectManagementService} from '../../services/object-management.service';
@@ -32,6 +32,11 @@ import {tap} from 'rxjs/operators';
   styleUrls: ['./object-management-detail-container.component.css'],
 })
 export class ObjectManagementDetailContainerComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = {
+    OBJECT_MANAGEMENT_TEST_IDS: OBJECT_MANAGEMENT_TEST_IDS,
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   public currentTab: TabEnum;
   public caseListColumn!: boolean;
 

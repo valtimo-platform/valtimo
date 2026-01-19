@@ -20,6 +20,7 @@ import {MilestoneService} from '../milestone.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {MilestoneSet} from '../models';
+import { MILESTONE_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,6 +29,10 @@ import {MilestoneSet} from '../models';
   styleUrls: ['./milestone-set-edit.component.scss'],
 })
 export class MilestoneSetEditComponent implements OnInit {
+  readonly TEST_IDS = {
+    MILESTONE_TEST_IDS: MILESTONE_TEST_IDS
+  };
+
   public form: FormGroup;
 
   constructor(

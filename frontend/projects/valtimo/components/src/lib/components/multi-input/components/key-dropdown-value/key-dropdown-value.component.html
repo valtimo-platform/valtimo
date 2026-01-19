@@ -26,7 +26,7 @@
     [defaultValue]="value.key"
     [disabled]="disabled"
     (input)="onInputChange('key', $event.target.value)"
-    data-test-id="v-multi-input-key-input"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_KEY_INPUT"
   />
 </div>
 
@@ -44,7 +44,7 @@
     [dropUp]="false"
     (selected)="onInputChange('dropdown', $event.item.id)"
     [appendInline]="true"
-    data-test-id="v-multi-input-dropdown"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_DROPDOWN"
   >
     <cds-dropdown-list [items]="dropdownItems$ | async" type="multi"></cds-dropdown-list>
   </cds-dropdown>
@@ -64,6 +64,6 @@
     [defaultValue]="value.value"
     [disabled]="disabled"
     (input)="onInputChange('value', $event.target.value)"
-    data-test-id="v-multi-input-value-input"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_VALUE_INPUT"
   />
 </div>

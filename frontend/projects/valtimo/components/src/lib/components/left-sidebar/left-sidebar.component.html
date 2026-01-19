@@ -24,7 +24,7 @@
   } as obs"
   [allowExpansion]="false"
   [expanded]="obs.sideBarExpanded"
-  data-test-id="sidenav-container"
+  [attr.data-test-id]="TEST_IDS.SIDENAV_CONTAINER"
 >
   <ng-container *ngIf="obs.menuItemsLoaded; else loadingTemplate">
     <ng-container *ngFor="let menuItem of obs.menuItems">
@@ -58,7 +58,7 @@
         <cds-sidenav-menu
           [title]="menuItem | menuItemTranslate | async"
           [attr.data-testid]="'sidenav-item-' + menuItem.title"
-          data-test-id="sidenav-menu"
+          [attr.data-test-id]="TEST_IDS.SIDENAV_MENU"
         >
           <ng-container *ngFor="let childMenuItem of menuItem.children">
             <ng-container
@@ -82,7 +82,7 @@
                 (click)="navigateToRoute(childMenuItem.link, $event)"
                 (contextmenu)="onRightClick(vars.sequence)"
                 (ctrl-click)="openInNewTab(childMenuItem.link)"
-                data-test-id="sidenav-item"
+                [attr.data-test-id]="TEST_IDS.SIDENAV_ITEM"
               >
                 <valtimo-menu-item-text
                   [accent]="!childMenuItem.link"
@@ -129,7 +129,7 @@
       (contextmenu)="onRightClick(vars.sequence)"
       (ctrl-click)="openInNewTab(menuItem.link.link)"
       href="javascript:void(0)"
-      data-test-id="sidenav-item"
+      [attr.data-test-id]="TEST_IDS.SIDENAV_ITEM"
     >
       <valtimo-menu-item-text
         [menuItem]="menuItem"
@@ -143,14 +143,14 @@
 
 <ng-template #countTemplate let-count="count" let-disableCaseCount="disableCaseCount">
   <ng-container *ngIf="count && !disableCaseCount">
-    <span class="case-count" data-test-id="case-count">
+    <span class="case-count" [attr.data-test-id]="TEST_IDS.CASE_COUNT">
       {{ count | caseCount }}
     </span>
   </ng-container>
 </ng-template>
 
 <ng-template #loadingTemplate>
-  <div class="loading-container" data-test-id="loading-container">
+  <div class="loading-container" [attr.data-test-id]="TEST_IDS.LOADING_CONTAINER">
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

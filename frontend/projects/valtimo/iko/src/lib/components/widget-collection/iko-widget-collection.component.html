@@ -22,6 +22,6 @@
   [widgetConfiguration]="obs.widgetConfiguration"
   [widgetData]="obs.widgetData"
   (paginationEvent)="onPaginationEvent($event)"
-  data-test-id="valtimo-widget-collection"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION"
 >
 </valtimo-widget-collection>

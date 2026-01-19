@@ -21,6 +21,6 @@
   [widgets]="widgets$ | async"
   [widgetComponentMap]="widgetComponentMap"
   [widgetParams]="widgetParams$ | async"
-  data-test-id="valtimo-widget-container"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_CONTAINER"
 >
 </valtimo-widget-container>

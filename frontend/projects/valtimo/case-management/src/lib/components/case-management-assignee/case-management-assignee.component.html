@@ -35,7 +35,7 @@
         type="checkbox"
         [disabled]="obs.disabled"
         (click)="toggleAssignee(obs?.currentValue, obs.params?.caseDefinitionKey)"
-        data-test-id="toggle-assignee-checkbox"
+        [attr.data-test-id]="TEST_IDS.TOGGLE_ASSIGNEE_CHECKBOX"
       /><span class="custom-control-label custom-control-color">{{
         'caseManagement.toggleAssignee.checkboxDescription' | translate
       }}</span>
@@ -52,7 +52,7 @@
         type="checkbox"
         [disabled]="obs.disabled"
         (click)="toggleTaskAssignment(obs?.currentValue, obs.params?.caseDefinitionKey)"
-        data-test-id="toggle-assignee-auto-assign-checkbox"
+        [attr.data-test-id]="TEST_IDS.TOGGLE_ASSIGNEE_AUTO_ASSIGN_CHECKBOX"
       /><span class="custom-control-label custom-control-color">{{
         'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate
       }}</span>
@@ -61,5 +61,5 @@
 </ng-container>
 
 <ng-template #loading>
-  <valtimo-spinner data-test-id="toggle-assignee-spinner"></valtimo-spinner>
+  <valtimo-spinner [attr.data-test-id]="TEST_IDS.TOGGLE_ASSIGNEE_SPINNER"></valtimo-spinner>
 </ng-template>

@@ -18,13 +18,13 @@
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
   class="valtimo-widget-wizard-step__content"
-  data-test-id="widget-wizard-step-tile-group"
+  [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_TILE_GROUP"
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetStyle.DEFAULT"
     [selected]="$widgetStyle() === WidgetStyle.DEFAULT"
-    data-test-id="widget-wizard-step-default-tile"
+    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_DEFAULT_TILE"
   >
     <h3>{{ 'widgetTabManagement.style.default.title' | translate }}</h3>
 
@@ -40,7 +40,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetStyle.HIGH_CONTRAST"
     [selected]="$widgetStyle() === WidgetStyle.HIGH_CONTRAST"
-    data-test-id="widget-wizard-step-high-contrast-tile"
+    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_HIGH_CONTRAST_TILE"
   >
     <h3>{{ 'widgetTabManagement.style.highContrast.title' | translate }}</h3>
 

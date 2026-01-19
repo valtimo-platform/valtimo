@@ -25,7 +25,7 @@ import {
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
-import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
+import { ConfigService, GlobalNotificationService, TASK_TEST_IDS } from '@valtimo/shared';
 import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
@@ -50,6 +50,10 @@ import {TaskIntermediateSaveService, TaskService} from '../../services';
   ],
 })
 export class TaskDetailIntermediateSaveComponent {
+  readonly TEST_IDS = {
+    TASK_TEST_IDS: TASK_TEST_IDS
+  };
+
   @Input() public set task(value: Task | null) {
     if (!value) return;
     this.taskService

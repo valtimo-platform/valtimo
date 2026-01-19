@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
-import {MenuItem} from '@valtimo/shared';
+import { MenuItem, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-menu-item-text',
@@ -25,6 +25,10 @@ import {MenuItem} from '@valtimo/shared';
   standalone: false,
 })
 export class MenuItemTextComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() menuItem: MenuItem;
   @Input() accent = false;
   @Input() showOverFlowMenu = false;

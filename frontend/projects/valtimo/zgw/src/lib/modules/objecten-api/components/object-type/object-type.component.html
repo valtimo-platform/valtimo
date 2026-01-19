@@ -33,26 +33,26 @@
     [itemsTranslationKey]="'pluginManagement.tableItemsText'"
     [showPagination]="false"
     (editButtonClicked)="rowClicked($event)"
-    data-test-id="zaakobjecten-table"
+    [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_TABLE"
   ></v-table>
 
-  <v-paragraph *ngIf="!obs.hasData && !obs.loading" [center]="true" data-test-id="zaakobjecten-no-data-message">{{
+  <v-paragraph *ngIf="!obs.hasData && !obs.loading" [center]="true" [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_NO_DATA_MESSAGE">{{
     'case.zaakobjecten.noObjectType' | translate
   }}</v-paragraph>
 </ng-container>
 
-<v-modal #viewObjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750" data-test-id="zaakobjecten-view-object-modal">
+<v-modal #viewObjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750" [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_VIEW_OBJECT_MODAL">
   <div role="header">
-    <h4 data-test-id="zaakobjecten-object-name">{{ objectName$ | async }}</h4>
+    <h4 [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_OBJECT_NAME">{{ objectName$ | async }}</h4>
   </div>
 
   <div role="content">
     <valtimo-form-io
       *ngIf="(noFormDefinitionComponent$ | async) === false"
       [form]="objectForm$ | async"
-      data-test-id="zaakobjecten-form"
+      [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_FORM"
     ></valtimo-form-io>
-    <v-paragraph *ngIf="noFormDefinitionComponent$ | async" [center]="true" data-test-id="zaakobjecten-no-form-message">{{
+    <v-paragraph *ngIf="noFormDefinitionComponent$ | async" [center]="true" [attr.data-test-id]="TEST_IDS.ZAAKOBJECTEN_NO_FORM_MESSAGE">{{
       'case.zaakobjecten.noFormDefinitionComponent' | translate
     }}</v-paragraph>
   </div>

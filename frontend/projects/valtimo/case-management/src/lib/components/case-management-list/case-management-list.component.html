@@ -22,7 +22,7 @@
   paginationIdentifier="caseManagementList"
   (paginationClicked)="paginationClicked($event)"
   (paginationSet)="paginationSet($event)"
-  data-test-id="case-management-list"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
@@ -30,29 +30,29 @@
     [action]="importCaseDefinitionButton"
     [description]="'caseManagement.noResults.description' | translate"
     [title]="'caseManagement.noResults.title' | translate"
-    data-test-id="case-management-no-results"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_NO_RESULTS"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #loading>
-  <valtimo-carbon-list loading="true" data-test-id="case-management-loading-list"></valtimo-carbon-list>
+  <valtimo-carbon-list loading="true" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LOADING_LIST"></valtimo-carbon-list>
 </ng-template>
 
 <valtimo-case-management-upload
   [open]="showUploadModal$ | async"
   (closeModal)="onCloseUploadModal($event)"
-  data-test-id="case-management-upload"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_UPLOAD"
 ></valtimo-case-management-upload>
 
 <valtimo-case-management-create
   [open]="showCreateModal$ | async"
   (closeModal)="onCloseCreateModal($event)"
-  data-test-id="case-management-create"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_CREATE"
 ></valtimo-case-management-create>
 
 <ng-template #importCaseDefinitionButton>
-  <div class="valtimo-case-management-list__actions" data-test-id="case-management-actions">
-    <button cdsButton="ghost" (click)="showUploadModal()" data-test-id="case-management-upload-button">
+  <div class="valtimo-case-management-list__actions" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ACTIONS">
+    <button cdsButton="ghost" (click)="showUploadModal()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_UPLOAD_BUTTON">
       {{ 'Upload' | translate }}
 
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
@@ -62,7 +62,7 @@
       *ngIf="canUpdateGlobalConfiguration$ | async"
       cdsButton="primary"
       (click)="showCreateModal()"
-      data-test-id="case-management-create-button"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_CREATE_BUTTON"
     >
       {{ 'interface.create' | translate }}
 

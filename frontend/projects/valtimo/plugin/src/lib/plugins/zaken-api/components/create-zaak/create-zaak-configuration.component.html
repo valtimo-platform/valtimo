@@ -42,7 +42,7 @@
         [trim]="true"
         [margin]="true"
         [widthPx]="350"
-        data-test-id="create-zaak-rsin-input"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_RSIN_INPUT"
       >
       </v-input>
 
@@ -54,7 +54,7 @@
         [radioValues]="inputTypeOptions$ | async"
         [disabled]="obs.disabled"
         [margin]="true"
-        data-test-id="create-zaak-input-type-radio"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_INPUT_TYPE_RADIO"
       >
       </v-radio>
 
@@ -69,7 +69,7 @@
         [trim]="true"
         [margin]="true"
         [widthPx]="700"
-        data-test-id="create-zaak-zaaktype-url-input"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ZAAKTYPE_URL_INPUT"
       >
       </v-input>
 
@@ -93,7 +93,7 @@
           (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
         "
         [widthInPx]="350"
-        data-test-id="create-zaak-zaaktype-select"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ZAAKTYPE_SELECT"
       ></v-select>
 
       <div class="property-row">
@@ -105,7 +105,7 @@
             [cdsOverflowMenu]="addCasePropertyList"
             [customPane]="true"
             placement="bottom,top"
-            data-test-id="create-zaak-add-property-button"
+            [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ADD_PROPERTY_BUTTON"
           >
             {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
 
@@ -129,7 +129,7 @@
                   [required]="true"
                   [margin]="true"
                   [presetOptions]="geometryTypes"
-                  data-test-id="create-zaak-geometry-type-input"
+                  [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_GEOMETRY_TYPE_INPUT"
                 />
               }
               @case (CASE_GEOMETRY_COORDINATES) {
@@ -143,7 +143,7 @@
                   (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
                   [required]="true"
                   [margin]="true"
-                  data-test-id="create-zaak-geometry-coordinates-input"
+                  [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_GEOMETRY_COORDINATES_INPUT"
                 />
               }
               @default {

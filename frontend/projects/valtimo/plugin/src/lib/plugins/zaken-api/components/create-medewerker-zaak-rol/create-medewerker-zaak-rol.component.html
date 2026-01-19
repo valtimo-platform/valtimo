@@ -31,7 +31,7 @@
     [disabled]="obs.disabled"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="roltype-url-input"
+    [attr.data-test-id]="TEST_IDS.ROLTYPE_URL_INPUT"
   >
   </v-input>
 
@@ -45,7 +45,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="rol-toelichting-input"
+    [attr.data-test-id]="TEST_IDS.ROL_TOELICHTING_INPUT"
   >
   </v-input>
 
@@ -59,7 +59,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="identificatie-input"
+    [attr.data-test-id]="TEST_IDS.IDENTIFICATIE_INPUT"
   >
   </v-input>
 
@@ -73,7 +73,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="achternaam-input"
+    [attr.data-test-id]="TEST_IDS.ACHTERNAAM_INPUT"
   >
   </v-input>
 
@@ -87,7 +87,7 @@
     [trim]="true"
     [tooltip]="'voorlettersTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    data-test-id="voorletters-input"
+    [attr.data-test-id]="TEST_IDS.VOORLETTERS_INPUT"
   >
   </v-input>
 
@@ -101,7 +101,7 @@
     [trim]="true"
     [tooltip]="'voorvoegselAchternaamTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    data-test-id="voorvoegsel-achternaam-input"
+    [attr.data-test-id]="TEST_IDS.VOORVOEGSEL_ACHTERNAAM_INPUT"
   >
   </v-input>
 
@@ -115,7 +115,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="afwijkende-naam-betrokkene-input"
+    [attr.data-test-id]="TEST_IDS.AFWIJKENDE_NAAM_BETROKKENE_INPUT"
   >
   </v-input>
 
@@ -129,7 +129,7 @@
     [margin]="true"
     [fullWidth]="true"
     [radioValues]="INDICATIE_MACHTIGING_VALUES"
-    data-test-id="indicatie-machtiging-radio"
+    [attr.data-test-id]="TEST_IDS.INDICATIE_MACHTIGING_RADIO"
   >
   </v-radio>
 
@@ -143,7 +143,7 @@
     [margin]="true"
     [trim]="true"
     [fullWidth]="true"
-    data-test-id="result-process-variable-input"
+    [attr.data-test-id]="TEST_IDS.RESULT_PROCESS_VARIABLE_INPUT"
   >
   </v-input>
 </v-form>

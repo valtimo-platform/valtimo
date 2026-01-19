@@ -31,14 +31,14 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
-      data-test-id="valtimo-widget-management-fields-title-input"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_TITLE_INPUT"
     />
   </cds-text-label>
 
   <valtimo-mdi-icon-selector
     [cdsLayer]="1"
     formControlName="widgetIcon"
-    data-test-id="valtimo-widget-management-fields-icon-selector"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ICON_SELECTOR"
   ></valtimo-mdi-icon-selector>
 </form>
 
@@ -69,7 +69,7 @@
     [heading]="addColumn"
     [id]="'addColumn'"
     class="valtimo-widget-management-fields__add"
-    data-test-id="valtimo-widget-management-fields-add-column-tab"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ADD_COLUMN_TAB"
   ></cds-tab>
 </cds-tabs>
 
@@ -78,7 +78,7 @@
     cdsButton="ghost"
     [iconOnly]="true"
     (click)="$event.stopImmediatePropagation(); onAddColumnClick()"
-    data-test-id="valtimo-widget-management-fields-add-column-button"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ADD_COLUMN_BUTTON"
   >
     <svg cdsIcon="add" size="16"></svg>
   </button>

@@ -14,15 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()" data-test-id="divider-modal">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()" data-test-id="divider-modal-header">
-    <h3 cdsModalHeaderHeading data-test-id="divider-modal-title">
+<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()" [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()" [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_TITLE">
       {{ 'widgetTabManagement.list.dividerModal.' + modalMode + 'DividerTitle' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="dividerForm" cdsModalContent data-test-id="divider-modal-form">
-    <cds-label data-test-id="divider-modal-title-label">
+  <form [formGroup]="dividerForm" cdsModalContent [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_FORM">
+    <cds-label [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_TITLE_LABEL">
       {{ 'widgetTabManagement.list.dividerModal.dividerTitleLabel' | translate }}
 
       <input
@@ -35,7 +35,7 @@
         [cdsLayer]="1"
         [attr.modal-primary-focus]="true"
         (keyup)="onFocusOut()"
-        data-test-id="divider-modal-title-input"
+        [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_TITLE_INPUT"
       />
     </cds-label>
 
@@ -46,17 +46,17 @@
       formControlName="key"
       labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
       placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
-      data-test-id="divider-modal-key-input"
+      [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_KEY_INPUT"
     >
     </valtimo-auto-key-input>
   </form>
 
-  <cds-modal-footer data-test-id="divider-modal-footer">
-    <button cdsButton="ghost" (click)="onCloseModal()" data-test-id="divider-modal-cancel-button">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_CANCEL_BUTTON">
       {{ 'caseManagement.allVersionsModal.closeButton' | translate }}
     </button>
 
-    <button [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)" data-test-id="divider-modal-submit-button">
+    <button [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)" [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_SUBMIT_BUTTON">
       {{ buttonLabel | translate }}
     </button>
   </cds-modal-footer>

@@ -30,6 +30,7 @@ import {BehaviorSubject} from 'rxjs';
 import {EditorModel} from '../../models';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 import {EditorModule} from '../editor/editor.module';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-json-editor',
@@ -46,6 +47,10 @@ import {EditorModule} from '../editor/editor.module';
   ],
 })
 export class JsonEditorComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   private readonly _disabled = signal<boolean>(false);
   @Input() public set disabled(value: boolean) {
     this._disabled.set(value);

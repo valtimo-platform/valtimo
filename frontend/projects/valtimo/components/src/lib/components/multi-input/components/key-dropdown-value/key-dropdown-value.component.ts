@@ -19,6 +19,7 @@ import {ListItemWithId, MultiInputChangeEventType, MultiInputKeyValue} from '../
 import {CommonModule} from '@angular/common';
 import {DropdownModule, InputModule} from 'carbon-components-angular';
 import {Observable} from 'rxjs';
+import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-key-dropdown-value',
@@ -28,6 +29,10 @@ import {Observable} from 'rxjs';
   imports: [CommonModule, InputModule, DropdownModule],
 })
 export class KeyDropdownValueComponent {
+  readonly TEST_IDS = {
+    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
+  };
+
   @Input() public readonly keyColumnTitle!: string;
   @Input() public readonly valueColumnTitle!: string;
   @Input() public readonly dropdownColumnTitle!: string;
