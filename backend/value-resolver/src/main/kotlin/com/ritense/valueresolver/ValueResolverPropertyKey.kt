@@ -25,7 +25,7 @@ class ValueResolverPropertyKey {
 
         // IKO
         const val IKO_VIEW_KEY = "ikoViewKey"
-        const val IKO_SEARCH_ACTION_KEY = "ikoSearchActionKey"
+        const val IKO_ADP = "adp"
 
         // Other
         const val ID = "id"

@@ -22,11 +22,41 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <changeSet id="1" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
         <addColumn tableName="tab">
             <column name="properties" type="${jsonType}" defaultValue="{}">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <addColumn tableName="tab">
+            <column name="properties" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <update tableName="tab">
+            <column name="properties" value="{}"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <addNotNullConstraint tableName="tab" columnName="properties" columnDataType="${jsonType}"/>
     </changeSet>
 
 </databaseChangeLog>

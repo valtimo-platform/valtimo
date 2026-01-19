@@ -18,6 +18,7 @@ package com.ritense.iko.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
@@ -283,9 +284,11 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoClient::class)
     fun ikoClient(
         restClientBuilder: RestClient.Builder,
+        objectMapper: ObjectMapper,
     ): IkoClient {
         return IkoClient(
             restClientBuilder,
+            objectMapper,
         )
     }
 
@@ -293,15 +296,19 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
         ikoTabService: IkoTabService,
-        ikoSearchActionService: IkoSearchActionService,
-        searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
+        ikoWidgetService: IkoWidgetService,
+        caseWidgetService: CaseWidgetService,
+        ikoServerRepository: IkoServerRepository,
+        ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoTabService,
-            ikoSearchActionService,
-            searchFieldService,
             objectMapper,
+            ikoWidgetService,
+            caseWidgetService,
+            ikoServerRepository,
+            ikoRepositoryConfigRepository,
         )
     }
 

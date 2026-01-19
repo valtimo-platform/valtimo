@@ -37,6 +37,4 @@ interface IkoRepository {
         emptyList()
 
     fun findAll(config: Map<String, Any?>, filters: List<DataFilter>, pageable: Pageable): Page<JsonNode>
-
-    fun findById(config: Map<String, Any?>, id: Any): JsonNode
 }
