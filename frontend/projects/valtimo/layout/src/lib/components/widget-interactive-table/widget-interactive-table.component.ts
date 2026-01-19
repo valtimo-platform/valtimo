@@ -46,6 +46,7 @@ import {
   IconService,
   MenuButtonModule,
   PaginationModule,
+  SkeletonModule,
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -71,6 +72,7 @@ import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../mod
     ContextMenuModule,
     IconModule,
     MdiIconViewerComponent,
+    SkeletonModule,
   ],
 })
 export class WidgetInteractiveTableComponent {
@@ -119,7 +121,10 @@ export class WidgetInteractiveTableComponent {
   private _initialNumberOfElements!: number;
 
   @Input({required: true}) set widgetData(value: any | null) {
-    if (!value) return;
+    if (!value) {
+      this.widgetData$.next(null);
+      return;
+    }
 
     this.$showPagination.set(value.totalElements > value.size);
 

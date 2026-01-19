@@ -15,7 +15,7 @@
  */
 
 dependencies {
-    implementation project(":contract")
+    implementation project(":backend:contract")
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework:spring-tx"
@@ -24,8 +24,8 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:$kotlinLoggingVersion"
 
 
-    testImplementation project(":case")
-    testImplementation(project(':building-block'))
+    testImplementation project(":backend:case")
+    testImplementation(project(':backend:building-block'))
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
 

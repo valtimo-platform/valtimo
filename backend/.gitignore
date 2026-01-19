@@ -48,3 +48,4 @@ nbdist/
 
 # Logs
 **/derby.log
+/.claude/

@@ -1,0 +1,64 @@
+[
+    {
+        "key": "results",
+        "widgets": [
+            {
+                "key": "aanvraag-gegevens",
+                "type": "fields",
+                "title": "Aanvraag Gegevens",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "applicantName",
+                                "title": "Naam Aanvrager",
+                                "value": "doc:applicantName"
+                            },
+                            {
+                                "key": "householdSize",
+                                "title": "Huishouden Grootte",
+                                "value": "doc:householdSize",
+                                "displayProperties": {
+                                    "type": "number"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "berekening-resultaten",
+                "type": "fields",
+                "title": "Berekening Resultaten",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "verifiedApplicant",
+                                "title": "Geverifieerde Aanvrager",
+                                "value": "doc:verifiedApplicant"
+                            },
+                            {
+                                "key": "calculatedSubsidy",
+                                "title": "Berekende Toeslag (EUR)",
+                                "value": "doc:calculatedSubsidy",
+                                "displayProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            {
+                                "key": "eligibilityResult",
+                                "title": "Geschiktheidsbeoordeling",
+                                "value": "doc:eligibilityResult"
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]

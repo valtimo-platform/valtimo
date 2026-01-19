@@ -38,6 +38,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
@@ -242,6 +243,13 @@ class CaseDocumentJsonValueResolverFactory(
     override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
         val documentDefinitionName = caseDefinitionKey
         val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName).orElseThrow()
+        val schemaAsNode = documentDefinition.schema
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
+    }
+
+    override fun getResolvableKeyOptions(blueprintId: BlueprintId): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findByBlueprintId(blueprintId).orElseThrow()
         val schemaAsNode = documentDefinition.schema
             .asJson() as ObjectNode
         return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")

@@ -15,7 +15,7 @@
  */
 
 dependencies {
-    api project(":mail")
+    api project(":backend:mail")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"

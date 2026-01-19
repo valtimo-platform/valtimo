@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ritense.document.domain.Document;
@@ -32,7 +30,6 @@ import java.lang.reflect.Proxy;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
@@ -56,9 +53,9 @@ class StartEventFromCallActivityListenerImplTest {
     }
 
     @Test
-    void notifyShouldAssociateDocumentWhenSuperExecutionIsMissing() {
+    void notifyShouldAssociateDocumentWhenDocumentIsFound() {
         String processInstanceId = UUID.randomUUID().toString();
-        DelegateExecution execution = execution(processInstanceId, null);
+        DelegateExecution execution = execution(processInstanceId);
 
         UUID documentUuid = UUID.randomUUID();
         Document.Id documentId = documentId(documentUuid);
@@ -74,83 +71,34 @@ class StartEventFromCallActivityListenerImplTest {
             documentUuid,
             PROCESS_NAME
         );
-        verifyNoMoreInteractions(processDocumentService);
     }
 
     @Test
-    void notifyShouldResolveDocumentFromSuperExecutionWhenPresent() {
+    void notifyShouldNotAssociateDocumentWhenDocumentIsNotFound() {
         String processInstanceId = UUID.randomUUID().toString();
-        String superProcessInstanceId = UUID.randomUUID().toString();
-        DelegateExecution superExecution = superExecution(superProcessInstanceId, false);
-        DelegateExecution execution = execution(processInstanceId, superExecution);
+        DelegateExecution execution = execution(processInstanceId);
 
-        UUID documentUuid = UUID.randomUUID();
-        Document.Id documentId = documentId(documentUuid);
-        OperatonProcessInstanceId expectedProcessId = new OperatonProcessInstanceId(superProcessInstanceId);
-
-        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(documentId);
-
-        listener.notify(execution);
-
-        ArgumentCaptor<OperatonProcessInstanceId> processIdCaptor = ArgumentCaptor.forClass(OperatonProcessInstanceId.class);
-        verify(processDocumentService).getDocumentId(processIdCaptor.capture(), eq(execution));
-        assertEquals(expectedProcessId, processIdCaptor.getValue());
-        verify(processDocumentAssociationService).createProcessDocumentInstance(
-            processInstanceId,
-            documentUuid,
-            PROCESS_NAME
-        );
-        verifyNoMoreInteractions(processDocumentService);
-    }
-
-    @Test
-    void notifyShouldFallbackToCurrentProcessWhenSuperExecutionHasBuildingBlockId() {
-        String processInstanceId = UUID.randomUUID().toString();
-        String superProcessInstanceId = UUID.randomUUID().toString();
-        DelegateExecution superExecution = superExecution(superProcessInstanceId, true);
-        DelegateExecution execution = execution(processInstanceId, superExecution);
-
-        UUID documentUuid = UUID.randomUUID();
-        Document.Id documentId = documentId(documentUuid);
         OperatonProcessInstanceId expectedProcessId = new OperatonProcessInstanceId(processInstanceId);
 
-        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(documentId);
+        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(null);
 
         listener.notify(execution);
 
-        ArgumentCaptor<OperatonProcessInstanceId> processIdCaptor = ArgumentCaptor.forClass(OperatonProcessInstanceId.class);
-        verify(processDocumentService).getDocumentId(processIdCaptor.capture(), eq(execution));
-        assertEquals(expectedProcessId, processIdCaptor.getValue());
-        verify(processDocumentAssociationService, times(1)).createProcessDocumentInstance(
-            processInstanceId,
-            documentUuid,
-            PROCESS_NAME
+        verify(processDocumentService).getDocumentId(expectedProcessId, execution);
+        verify(processDocumentAssociationService, never()).createProcessDocumentInstance(
+            eq(processInstanceId),
+            eq(null),
+            eq(PROCESS_NAME)
         );
-        verifyNoMoreInteractions(processDocumentService);
     }
 
-    private DelegateExecution execution(String processInstanceId, DelegateExecution superExecution) {
-        return delegateExecution(processInstanceId, superExecution, bpmnModelInstance(), false);
-    }
-
-    private DelegateExecution superExecution(String processInstanceId, boolean hasBuildingBlockVariable) {
-        return delegateExecution(processInstanceId, null, null, hasBuildingBlockVariable);
-    }
-
-    private DelegateExecution delegateExecution(
-        String processInstanceId,
-        DelegateExecution superExecution,
-        BpmnModelInstance modelInstance,
-        boolean hasBuildingBlockVariable
-    ) {
+    private DelegateExecution execution(String processInstanceId) {
         return (DelegateExecution) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class[] {DelegateExecution.class},
             (proxy, method, args) -> switch (method.getName()) {
                 case "getProcessInstanceId" -> processInstanceId;
-                case "getSuperExecution" -> superExecution;
-                case "getBpmnModelInstance" -> modelInstance;
-                case "hasVariableLocal" -> hasBuildingBlockVariable;
+                case "getBpmnModelInstance" -> bpmnModelInstance();
                 default -> null;
             }
         );

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,14 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -54,12 +52,21 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val testProcessDefinitionId = "case-process"
         val activityId = "callActivity"
         val pluginConfigurationId = UUID.randomUUID()
-        val execution = mock<DelegateExecution> {
-            on { businessKey } doReturn documentId.toString()
+
+        // Mock the call activity execution that has the local variable
+        val callActivityExecution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
+            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { superExecution } doReturn this.mock
-            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
+            on { superExecution } doReturn null // End of hierarchy
         }
+
+        // Mock the current execution (inside the building block process)
+        val execution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
+            on { superExecution } doReturn callActivityExecution
+        }
+
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
             buildingBlockDefinitionId,
@@ -100,24 +107,36 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
     }
 
     @Test
-    fun `should throw when business key is not a uuid`() {
+    fun `should throw when no building block variable found in hierarchy`() {
+        // Execution with no building block variable in its hierarchy
         val execution = mock<DelegateExecution> {
-            on { businessKey } doReturn "not-a-uuid"
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
+            on { superExecution } doReturn null
         }
 
         assertThatThrownBy { resolver.resolve(execution, "any") }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("BusinessKey for building block instance document must be a UUID, but was 'not-a-uuid'")
-
-        verify(buildingBlockInstanceService, never()).getByDocumentId(any())
+            .hasMessage("Could not find root building block process link with plugin configuration mappings")
     }
 
     @Test
     fun `should throw when no matching building block instance is found`() {
         val documentId = UUID.randomUUID()
-        val execution = mock<DelegateExecution> {
-            on { businessKey } doReturn documentId.toString()
+        val testProcessDefinitionId = "case-process"
+
+        // Mock the call activity execution that has the local variable
+        val callActivityExecution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
+            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
+            on { processDefinitionId } doReturn testProcessDefinitionId
+            on { superExecution } doReturn null
         }
+
+        val execution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
+            on { superExecution } doReturn callActivityExecution
+        }
+
         whenever(buildingBlockInstanceService.getByDocumentId(documentId)).thenReturn(null)
 
         assertThatThrownBy { resolver.resolve(execution, "plugin-definition") }
@@ -130,12 +149,20 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         val documentId = UUID.randomUUID()
         val testProcessDefinitionId = "case-process"
         val activityId = "callActivity"
-        val execution = mock<DelegateExecution> {
-            on { businessKey } doReturn documentId.toString()
+
+        // Mock the call activity execution that has the local variable
+        val callActivityExecution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
+            on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { superExecution } doReturn this.mock
-            on { hasVariableLocal(eq(BUILDING_BLOCK_INSTANCE_ID_VARIABLE))} doReturn true
+            on { superExecution } doReturn null
         }
+
+        val execution = mock<DelegateExecution> {
+            on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
+            on { superExecution } doReturn callActivityExecution
+        }
+
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
         val definition = BuildingBlockDefinition(
             buildingBlockDefinitionId,

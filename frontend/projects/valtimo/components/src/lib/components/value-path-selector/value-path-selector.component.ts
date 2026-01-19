@@ -36,7 +36,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
-  DropdownModule,
+  ComboBoxModule,
   InputModule,
   LayerModule,
   ListItem,
@@ -57,6 +57,7 @@ import {
 } from 'rxjs';
 import {distinctUntilChanged, take} from 'rxjs/operators';
 import {
+  BlueprintContext,
   ValuePathItem,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
@@ -75,7 +76,7 @@ import {ActivatedRoute} from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    DropdownModule,
+    ComboBoxModule,
     LoadingModule,
     ReactiveFormsModule,
     ToggleModule,
@@ -189,6 +190,14 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
+  @Input() set buildingBlockDefinitionKey(value: string | null) {
+    this._buildingBlockDefinitionKey$.next(value);
+  }
+
+  @Input() set buildingBlockDefinitionVersionTag(value: string | null) {
+    this._buildingBlockDefinitionVersionTag$.next(value);
+  }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
@@ -234,9 +243,13 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
-  public readonly showToggle$ = this._caseDefinitionKey$.pipe(
-    map(caseDefinitionKey => !!caseDefinitionKey)
-  );
+  private readonly _buildingBlockDefinitionKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _buildingBlockDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
+
+  public readonly showToggle$ = combineLatest([
+    this._caseDefinitionKeySubject$,
+    this._buildingBlockDefinitionKey$,
+  ]).pipe(map(([caseDefinitionKey, buildingBlockKey]) => !!caseDefinitionKey || !!buildingBlockKey));
 
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
@@ -258,20 +271,37 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       parentItem
         ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
         : combineLatest([
-            this._caseDefinitionKey$,
+            this._caseDefinitionKeySubject$,
             this._prefixes$,
             this._type$,
             this._caseDefinitionVersionTag$,
+            this._buildingBlockDefinitionKey$,
+            this._buildingBlockDefinitionVersionTag$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , showToggle]) => showToggle),
-            switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-              this.valuePathSelectorService.getResolvableKeys(
-                prefixes,
+            filter(([, , , , , , showToggle]) => showToggle),
+            switchMap(
+              ([
                 caseDefinitionKey,
+                prefixes,
                 type,
-                caseDefinitionVersionTag
-              )
+                caseDefinitionVersionTag,
+                buildingBlockKey,
+                buildingBlockVersionTag,
+              ]) => {
+                const context = this.buildBlueprintContext(
+                  caseDefinitionKey,
+                  caseDefinitionVersionTag,
+                  buildingBlockKey,
+                  buildingBlockVersionTag
+                );
+                if (!context) return of([]);
+                return this.valuePathSelectorService.getResolvableKeysForContext(
+                  prefixes,
+                  context,
+                  type
+                );
+              }
             )
           )
     ),
@@ -315,7 +345,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
           ...(!!option.children && {children: option.children}),
         };
 
-        if (mappedOption.selected) this.onPathSelected({item: mappedOption});
+        if (mappedOption.selected) this.onPathSelected(mappedOption);
         return mappedOption;
       });
     }),
@@ -366,13 +396,17 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string} & ValuePathItem}): void {
-    const selectedPath = event?.item?.content;
+  public onPathSelected(event: {content: string} & ValuePathItem): void {
+    const selectedPath = event?.content;
     if (!selectedPath) return;
 
-    if (this.collectionSelected.observed) this.collectionSelected.emit(event.item);
+    if (this.collectionSelected.observed) this.collectionSelected.emit(event);
 
     this.selectedPath.setValue(selectedPath);
+  }
+
+  public onPathCleared(): void {
+    this.selectedPath.setValue('');
   }
 
   public onCaseDefinitionSelected(event: {item: {id: string}}): void {
@@ -416,5 +450,30 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+  }
+
+  private buildBlueprintContext(
+    caseDefinitionKey: string | null,
+    caseDefinitionVersionTag: string | null,
+    buildingBlockKey: string | null,
+    buildingBlockVersionTag: string | null
+  ): BlueprintContext | null {
+    // Building block takes precedence when both key and version tag are provided
+    if (buildingBlockKey && buildingBlockVersionTag) {
+      return {
+        type: 'building-block',
+        key: buildingBlockKey,
+        versionTag: buildingBlockVersionTag,
+      };
+    }
+    // Fall back to case definition
+    if (caseDefinitionKey) {
+      return {
+        type: 'case',
+        key: caseDefinitionKey,
+        versionTag: caseDefinitionVersionTag,
+      };
+    }
+    return null;
   }
 }

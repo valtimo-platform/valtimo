@@ -4,7 +4,10 @@
         {
             "key": "general",
             "title": "General",
-            "type": "widgets"
+            "type": "widgets",
+            "properties": {
+                "aggregatedDataProfileName": "demo"
+            }
         }
     ]
 }

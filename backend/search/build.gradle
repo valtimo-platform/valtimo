@@ -34,24 +34,27 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":changelog")
-    implementation project(":contract")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":web")
+    implementation project(":backend:changelog")
+    implementation project(":backend:contract")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:web")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
 
 
-    testImplementation project(":contract")
-    testImplementation(project(':plugin-valtimo')) {
+    testImplementation project(":backend:contract")
+    testImplementation(project(':backend:plugin-valtimo')) {
         exclude(group: "com.ritense.valtimo", module: "search")
     }
-    testImplementation project(":core")
-    testImplementation project(":resource:local-resource")
-    testImplementation project(":test-utils-common")
+    testImplementation project(":backend:core")
+    testImplementation project(":backend:resource:local-resource")
+    testImplementation project(":backend:test-utils-common")
+    testImplementation(project(":backend:building-block")) {
+        exclude(group: "com.ritense.valtimo", module: "search")
+    }
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
