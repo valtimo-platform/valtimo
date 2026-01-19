@@ -21,12 +21,10 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
@@ -59,7 +57,6 @@ import java.util.concurrent.Callable
 @org.springframework.transaction.annotation.Transactional
 class NestedBuildingBlockIT @Autowired constructor(
     private val listener: BuildingBlockCallActivityListener,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,

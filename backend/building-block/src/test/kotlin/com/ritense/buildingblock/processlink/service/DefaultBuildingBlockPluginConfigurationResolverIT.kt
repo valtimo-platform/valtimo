@@ -21,9 +21,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -57,7 +55,6 @@ import java.util.concurrent.Callable
 class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
     private val listener: BuildingBlockCallActivityListener,
     private val resolver: DefaultBuildingBlockPluginConfigurationResolver,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,

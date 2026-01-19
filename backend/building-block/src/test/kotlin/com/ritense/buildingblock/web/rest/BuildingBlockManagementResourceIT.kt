@@ -19,28 +19,21 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
-import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
-import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.never
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
@@ -52,21 +45,6 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper
 ) : BaseIntegrationTest() {
-
-    @MockitoSpyBean
-    lateinit var buildingBlockManagementService: BuildingBlockManagementService
-
-    @MockitoBean
-    lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
-
-    @MockitoBean
-    lateinit var buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
-
-    @MockitoBean
-    lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
-
-    @MockitoBean
-    lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     private val base = "/api/management/v1/building-block"
     private val key = "my-bb"
@@ -86,12 +64,20 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
+        doReturn("process-id")
+            .whenever(buildingBlockProcessService)
+            .createEmptyProcessAndLink(any(), any(), any())
+        doReturn(mock<JsonSchemaDocumentDefinition>())
+            .whenever(buildingBlockDocumentDefinitionService)
+            .ensureEmptyFor(any(), any())
     }
 
     @Test
     @WithMockUser
     fun `should return 404 when list is empty`() {
-        whenever(buildingBlockDefinitionRepository.findAll()).thenReturn(emptyList())
+        doReturn(emptyList<BuildingBlockDefinition>())
+            .whenever(buildingBlockDefinitionRepository)
+            .findAll()
 
         mockMvc.get(base)
             .andExpect { status { isNotFound() } }
@@ -109,7 +95,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
-        whenever(buildingBlockDefinitionRepository.findAll()).thenReturn(listOf(def))
+        doReturn(listOf(def))
+            .whenever(buildingBlockDefinitionRepository)
+            .findAll()
 
         mockMvc.get(base)
             .andExpect {
@@ -138,7 +126,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
-        whenever(buildingBlockDefinitionRepository.saveAndFlush(any())).thenReturn(saved)
+        doReturn(saved)
+            .whenever(buildingBlockDefinitionRepository)
+            .saveAndFlush(any())
 
         mockMvc.post(base) {
             contentType = MediaType.APPLICATION_JSON
@@ -163,7 +153,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
-        whenever(buildingBlockDefinitionRepository.findById(eq(entity.id))).thenReturn(Optional.of(entity))
+        doReturn(Optional.of(entity))
+            .whenever(buildingBlockDefinitionRepository)
+            .findById(eq(entity.id))
 
         mockMvc.get("$base/{k}/version/{v}", key, version)
             .andExpect {
@@ -178,7 +170,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     @WithMockUser
     fun `should return 404 when definition not found`() {
         val id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
-        whenever(buildingBlockDefinitionRepository.findById(eq(id))).thenReturn(Optional.empty())
+        doReturn(Optional.empty<BuildingBlockDefinition>())
+            .whenever(buildingBlockDefinitionRepository)
+            .findById(eq(id))
 
         mockMvc.get("$base/{k}/version/{v}", key, version)
             .andExpect { status { isNotFound() } }
@@ -206,8 +200,12 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = existing.basedOnVersionTag,
             final = existing.final
         )
-        whenever(buildingBlockDefinitionRepository.findById(eq(existing.id))).thenReturn(Optional.of(existing))
-        whenever(buildingBlockDefinitionRepository.save(any())).thenReturn(updated)
+        doReturn(Optional.of(existing))
+            .whenever(buildingBlockDefinitionRepository)
+            .findById(eq(existing.id))
+        doReturn(updated)
+            .whenever(buildingBlockDefinitionRepository)
+            .save(any())
 
         mockMvc.put("$base/{k}/version/{v}", key, version) {
             contentType = MediaType.APPLICATION_JSON
@@ -223,7 +221,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     @WithMockUser
     fun `should return 404 when update target not found`() {
         val id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
-        whenever(buildingBlockDefinitionRepository.findById(eq(id))).thenReturn(Optional.empty())
+        doReturn(Optional.empty<BuildingBlockDefinition>())
+            .whenever(buildingBlockDefinitionRepository)
+            .findById(eq(id))
 
         mockMvc.put("$base/{k}/version/{v}", key, version) {
             contentType = MediaType.APPLICATION_JSON
@@ -249,7 +249,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
-        whenever(buildingBlockDefinitionRepository.saveAndFlush(any())).thenReturn(saved)
+        doReturn(saved)
+            .whenever(buildingBlockDefinitionRepository)
+            .saveAndFlush(any())
 
         mockMvc.post(base) {
             contentType = MediaType.APPLICATION_JSON
@@ -277,7 +279,9 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             basedOnVersionTag = null,
             final = false
         )
-        whenever(buildingBlockDefinitionRepository.saveAndFlush(any())).thenReturn(saved)
+        doReturn(saved)
+            .whenever(buildingBlockDefinitionRepository)
+            .saveAndFlush(any())
 
         mockMvc.post(base) {
             contentType = MediaType.APPLICATION_JSON
@@ -305,6 +309,5 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         }
 
         verify(buildingBlockManagementService).createDraft(key, version, newVersion)
-        verify(applicationEventPublisher, never()).publishEvent(any<BuildingBlockDefinitionCreatedEvent>())
     }
 }

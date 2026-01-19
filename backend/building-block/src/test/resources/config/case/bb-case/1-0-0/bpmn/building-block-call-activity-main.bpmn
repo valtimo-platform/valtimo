@@ -6,7 +6,7 @@
     </bpmn:startEvent>
     <bpmn:callActivity id="callActivity" name="Call Building Block" calledElement="building-block-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:bezwaar:1.0.0" camunda:calledElementTenantId="">
       <bpmn:extensionElements>
-        <camunda:in businessKey="#{buildingBlockInstanceId}" />
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
