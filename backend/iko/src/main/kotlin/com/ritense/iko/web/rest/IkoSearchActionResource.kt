@@ -16,18 +16,16 @@
 
 package com.ritense.iko.web.rest
 
-import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoListColumnService
+import com.ritense.iko.service.IkoSearchActionService
 import com.ritense.iko.service.IkoSearchFieldService
 import com.ritense.iko.web.rest.request.IkoSearchRequest
 import com.ritense.iko.web.rest.response.IkoSearchActionUserListResponse
 import com.ritense.iko.web.rest.response.IkoSearchResponse
-import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import com.ritense.valtimo.contract.iko.Comparator
 import com.ritense.valtimo.contract.iko.DataFilter
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -87,9 +85,8 @@ class IkoSearchActionResource(
     }
 
     private fun toDataFilers(filters: Map<String, Any?>, searchFields: List<SearchFieldV2>): List<DataFilter> {
-        return filters.map { filter ->
-            val searchField = searchFields.single { it.key == filter.key }
-            DataFilter(searchField.path, searchField.matchType?.toComparator() ?: Comparator.EQUAL_TO, filter.value)
+        return filters.flatMap { filter ->
+            searchFields.single { it.key == filter.key }.toDataFilters(filter.value)
         }
     }
 
@@ -98,12 +95,5 @@ class IkoSearchActionResource(
             Sort.Order.by(headers.single { header -> header.key == sort.property }.path)
         }
         return PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by(sortOrders.toList()))
-    }
-
-    private fun SearchFieldMatchType.toComparator(): Comparator {
-        return when (this) {
-            SearchFieldMatchType.EXACT -> Comparator.EQUAL_TO
-            SearchFieldMatchType.LIKE -> Comparator.STRING_CONTAINS
-        }
     }
 }

@@ -203,10 +203,10 @@ class ValtimoImportService(
     }
 
     @Transactional
-    override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>) {
-        runImporter {
+    override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId? {
+        return runImporter {
             val entries = readZipEntries(inputStream)
-            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter null }
             val caseDefinitionId: CaseDefinitionId?
             val filteredImporterEntriesList = importerEntriesList
                 .filter { it.key.type() == CASE_DEFINITION }
@@ -223,7 +223,7 @@ class ValtimoImportService(
                 )
 
                 if (caseDefinitionIdList.contains(caseDefinitionId)) {
-                    return@runImporter
+                    return@runImporter caseDefinitionId
                 }
 
                 importerEntriesList.filter { it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
@@ -233,6 +233,8 @@ class ValtimoImportService(
                     }
                 }
 
+            } else {
+                caseDefinitionId = null
             }
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
@@ -247,6 +249,8 @@ class ValtimoImportService(
                     importer.afterImport(ImportRequest(entry.fileName, entry.content))
                 }
             }
+
+            return@runImporter caseDefinitionId
         }
     }
 
