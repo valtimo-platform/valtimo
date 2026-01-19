@@ -15,3 +15,4 @@
  */
 
 export * from './widget-interactive-table.component';
+export * from '././widget-interactive-table-search/widget-interactive-table-search.component';

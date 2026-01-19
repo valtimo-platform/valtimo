@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,18 +14,33 @@
  * limitations under the License.
  */
 
-package com.ritense.iko.plugin
+.valtimo-widget-interactive-table-search {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  padding: 16px;
 
-import com.ritense.iko.client.IkoClient
-import com.ritense.plugin.PluginFactory
-import com.ritense.plugin.service.PluginService
+  &__fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: flex-end;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
 
-class IkoPluginFactory(
-    pluginService: PluginService,
-    private val ikoClient: IkoClient,
-) : PluginFactory<IkoPlugin>(pluginService) {
+  &__filter-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 
-    override fun create(): IkoPlugin {
-        return IkoPlugin(ikoClient)
-    }
+  &__label {
+    font-size: var(--cds-label-01-font-size);
+    color: var(--cds-text-secondary);
+  }
+}
+
+::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
+  max-width: max-content !important;
+  width: max-content !important;
 }

@@ -95,18 +95,21 @@ interface IkoRepositoryConfigResponse {
 interface IkoTabCreateRequest {
   title: string;
   type: string;
+  properties: Record<string, any | null>;
 }
 
 interface IkoTabUpdateRequest {
   key: string;
   title: string;
   type: string;
+  properties: Record<string, any | null>;
 }
 
 interface TabDto {
   key: string;
   title?: string;
   type: string;
+  properties: Record<string, any | null>;
 }
 
 type PropertyFieldType = 'text' | 'keyValueList' | 'integer' | 'dropdown' | 'url';

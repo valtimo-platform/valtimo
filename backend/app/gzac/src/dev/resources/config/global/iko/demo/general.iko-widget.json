@@ -206,8 +206,8 @@
             }
         },
         {
-            "type": "table",
-            "key": "lopende-zaken",
+            "type": "interactive-table",
+            "key": "lopende-zaken-2",
             "title": "Zaken",
             "width": 2,
             "highContrast": false,
@@ -225,7 +225,9 @@
                         "displayProperties": {
                             "type": "text",
                             "hideWhenEmpty": false
-                        }
+                        },
+                        "sortable": true,
+                        "defaultSort": "ASC"
                     },
                     {
                         "key": "beschrijving",
@@ -234,7 +236,23 @@
                         "displayProperties": {
                             "type": "text",
                             "hideWhenEmpty": false
-                        }
+                        },
+                        "sortable": false
+                    }
+                ],
+                "filters": [
+                    {
+                        "key": "type",
+                        "title": "Type",
+                        "dataType": "text",
+                        "fieldType": "single"
+                    },
+                    {
+                        "key": "beschrijving",
+                        "title": "Beschrijving",
+                        "dataType": "text",
+                        "fieldType": "single",
+                        "matchType": "like"
                     }
                 ],
                 "firstColumnAsTitle": false

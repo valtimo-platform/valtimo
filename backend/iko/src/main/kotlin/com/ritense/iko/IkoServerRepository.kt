@@ -19,30 +19,27 @@ package com.ritense.iko
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ContainerNode
-import com.ritense.iko.plugin.IkoPlugin
-import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.iko.Comparator
+import com.ritense.iko.client.IkoClient
+import com.ritense.iko.dto.ContainerParam
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.valtimo.contract.iko.PropertyField
-import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_DROPDOWN
 import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_KEY_VALUE_LIST
+import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_URL
+import java.net.URI
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 
 class IkoServerRepository(
-    private val pluginService: PluginService,
+    private val ikoClient: IkoClient,
 ) : IkoRepository {
 
     override fun getType() = "iko"
 
     override fun getIkoRepositoryConfigPropertyFields(): List<PropertyField> {
-        val dropdownList = pluginService.findPluginConfigurations(IkoPlugin::class.java)
-            .map { it.id.toString() to it.title }
-
         return listOf(
-            PropertyField(PLUGIN_CONFIGURATION, PROPERTY_FIELD_TYPE_DROPDOWN, dropdownList = dropdownList)
+            PropertyField(IKO_SERVER_URL, PROPERTY_FIELD_TYPE_URL)
         )
     }
 
@@ -63,12 +60,6 @@ class IkoServerRepository(
             tooltip = "The endpoint-reference or the endpoint-operation as defined in IKO"
         ),
         PropertyField(
-            key = AGGREGATED_DATA_PROFILE_NAME,
-            title = "Aggregated Data Profile Name (Optional)",
-            tooltip = "The name of the aggregated data profile. i.e. 'personen'",
-            required = false,
-        ),
-        PropertyField(
             key = ENDPOINT_QUERY_PARAMETERS,
             type = PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,
             tooltip = "Additional query parameters for the IKO API URL. i.e. 'type=ZoekMetGeslachtsnaamEnGeboortedatum'",
@@ -85,12 +76,20 @@ class IkoServerRepository(
         ),
     )
 
+    override fun getIkoTabPropertyFields(): List<PropertyField> = listOf(
+        PropertyField(
+            key = AGGREGATED_DATA_PROFILE_NAME,
+            title = "Aggregated Data Profile Name (Optional)",
+            tooltip = "The name of the aggregated data profile. i.e. 'personen'",
+            required = false,
+        ),
+    )
+
     override fun findAll(
         config: Map<String, Any?>,
         filters: List<DataFilter>,
         pageable: Pageable
     ): Page<JsonNode> {
-        require(filters.all { it.comparator == Comparator.EQUAL_TO })
         val configuredFilterMap = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
         val filterMap = configuredFilterMap + filters.associate {
             val filterKey = it.property.substringAfter(':').substringBefore('=')
@@ -98,7 +97,8 @@ class IkoServerRepository(
             filterKey to filterValue
         }
 
-        val data = getPlugin(config).search(
+        val data = search(
+            config = config,
             connectorTag = config[CONNECTOR_TAG].toString(),
             connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
             endpointOperation = config[ENDPOINT_OPERATION].toString(),
@@ -110,18 +110,25 @@ class IkoServerRepository(
         return PageImpl(dataList, pageable, dataList.size.toLong())
     }
 
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
+    fun findById(
+        config: Map<String, Any?>,
+        id: Any,
+        containerParams: List<ContainerParam>
+    ): JsonNode {
         val aggregatedDataProfileName = config[AGGREGATED_DATA_PROFILE_NAME] as String?
         val queryParams = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
 
         return if (!aggregatedDataProfileName.isNullOrBlank()) {
-            getPlugin(config).getByAggregatedDataProfileId(
+            getByAggregatedDataProfileId(
+                config = config,
                 aggregatedDataProfileName = aggregatedDataProfileName,
                 id = id.toString(),
-                queryParams = queryParams,
+                containerParams = containerParams,
+                additionalQueryParams = queryParams,
             )
         } else {
-            getPlugin(config).getByEndpointId(
+            getByEndpointId(
+                config = config,
                 connectorTag = config[CONNECTOR_TAG].toString(),
                 connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
                 endpointOperation = config[ENDPOINT_OPERATION].toString(),
@@ -131,8 +138,54 @@ class IkoServerRepository(
         }
     }
 
-    private fun getPlugin(config: Map<String, Any?>): IkoPlugin {
-        return pluginService.createInstance(config[PLUGIN_CONFIGURATION].toString())
+    private fun getByEndpointId(
+        config: Map<String, Any?>,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
+        id: String,
+        queryParams: Map<String, String>
+    ): JsonNode {
+        return ikoClient.getByEndpointId(
+            URI(config[IKO_SERVER_URL].toString()),
+            connectorTag,
+            connectorInstanceTag,
+            endpointOperation,
+            id,
+            queryParams,
+        )
+    }
+
+    private fun search(
+        config: Map<String, Any?>,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
+        queryParams: Map<String, String> = emptyMap(),
+    ): JsonNode {
+        return ikoClient.search(
+            URI(config[IKO_SERVER_URL].toString()),
+            connectorTag,
+            connectorInstanceTag,
+            endpointOperation,
+            queryParams,
+        )
+    }
+
+    private fun getByAggregatedDataProfileId(
+        config: Map<String, Any?>,
+        aggregatedDataProfileName: String,
+        id: String,
+        containerParams: List<ContainerParam> = emptyList(),
+        additionalQueryParams: Map<String, String> = emptyMap(),
+    ): JsonNode {
+        return ikoClient.getByAggregatedDataProfileId(
+            URI(config[IKO_SERVER_URL].toString()),
+            aggregatedDataProfileName,
+            id,
+            containerParams,
+            additionalQueryParams,
+        )
     }
 
     private fun breathFirstSearch(node: JsonNode, exitCondition: (JsonNode) -> Boolean): JsonNode? {
@@ -156,7 +209,7 @@ class IkoServerRepository(
     }
 
     companion object {
-        const val PLUGIN_CONFIGURATION = "pluginConfiguration"
+        const val IKO_SERVER_URL = "ikoServerUrl"
         const val CONNECTOR_TAG = "connectorTag"
         const val CONNECTOR_INSTANCE_TAG = "connectorInstanceTag"
         const val ENDPOINT_OPERATION = "endpointOperation"

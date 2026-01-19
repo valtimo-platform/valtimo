@@ -34,7 +34,7 @@ dockerCompose {
 }
 
 dependencies {
-    api project(":contract")
+    api project(":backend:contract")
     api "org.operaton.bpm:operaton-engine:${operatonVersion}"
 
     api "org.springframework.security:spring-security-core"
@@ -63,7 +63,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
 }
 
 apply from: "gradle/publishing.gradle"

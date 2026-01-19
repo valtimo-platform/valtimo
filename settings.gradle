@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -8,10 +24,84 @@ pluginManagement {
 
 rootProject.name = "valtimo"
 
-includeBuild("backend")
+// Backend subprojects
+include(
+    ":backend",
+    ":backend:app",
+    ":backend:app:gzac",
+    ":backend:audit",
+    ":backend:authorization",
+    ":backend:case",
+    ":backend:changelog",
+    ":backend:command-handling",
+    ":backend:contract",
+    ":backend:core",
+    ":backend:dashboard",
+    ":backend:data-provider",
+    ":backend:document-generation",
+    ":backend:document-generation:local-document-generation",
+    ":backend:document-generation:smartdocuments",
+    ":backend:exact-plugin",
+    ":backend:exporter",
+    ":backend:form",
+    ":backend:form-flow",
+    ":backend:form-view-model",
+    ":backend:gradle:cve-report",
+    ":backend:gradle:license-report",
+    ":backend:iko",
+    ":backend:importer",
+    ":backend:inbox",
+    ":backend:keycloak-iam",
+    ":backend:localization",
+    ":backend:logging",
+    ":backend:mail",
+    ":backend:mail:flowmailer",
+    ":backend:mail:local-mail",
+    ":backend:mail:mandrill",
+    ":backend:mail:wordpress-mail",
+    ":backend:milestones",
+    ":backend:notes",
+    ":backend:outbox",
+    ":backend:outbox:outbox-rabbitmq",
+    ":backend:plugin",
+    ":backend:plugin-valtimo",
+    ":backend:plugin-authentication",
+    ":backend:plugin-authentication:notificaties-api-authentication",
+    ":backend:plugin-authentication:objecten-api-authentication",
+    ":backend:plugin-authentication:openklant-authentication",
+    ":backend:plugin-authentication:openzaak-plugin-authentication",
+    ":backend:process-document",
+    ":backend:process-link",
+    ":backend:process-link-url",
+    ":backend:resource",
+    ":backend:resource:local-resource",
+    ":backend:resource:temporary-resource-storage",
+    ":backend:search",
+    ":backend:test-utils-common",
+    ":backend:value-resolver",
+    ":backend:dependencies",
+    ":backend:dependencies:valtimo-dependencies",
+    ":backend:dependencies:valtimo-dependency-versions",
+    ":backend:dependencies:valtimo-gzac-dependencies",
+    ":backend:web",
+    ":backend:widget",
+    ":backend:zgw",
+    ":backend:zgw:catalogi-api",
+    ":backend:zgw:documenten-api",
+    ":backend:zgw:klantinteracties-api",
+    ":backend:zgw:notificaties-api",
+    ":backend:zgw:object-management",
+    ":backend:zgw:objecten-api",
+    ":backend:zgw:objecttypen-api",
+    ":backend:zgw:verzoek",
+    ":backend:zgw:zaakdetails",
+    ":backend:zgw:zaken-api",
+    ":backend:zgw:portaaltaak",
+    ":backend:zgw:besluiten-api"
+)
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         mavenCentral()
         mavenLocal()

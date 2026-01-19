@@ -839,6 +839,7 @@
         "type": "Choose widget type",
         "width": "Choose widget width",
         "density": "Choose widget density",
+        "filters": "Filters",
         "displayConditions": "Set display conditions"
       }
     },
@@ -919,7 +920,8 @@
         "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)",
         "linkText": "Link text",
         "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
-        "linkTextPlaceholder": "Link text (optional)"
+        "linkTextPlaceholder": "Link text (optional)",
+        "defaultSortWarning": "Updating this will overwrite other default sortings."
       },
       "map": {
         "add": "Add field",
@@ -973,6 +975,22 @@
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       }
+    },
+    "filters": {
+      "description": "Define the filters that should appear above the interactive table.",
+      "title": "Title",
+      "titlePlaceholder": "Choose a title",
+      "titleTooltip": "The title of the filter.",
+      "key": "Key",
+      "keyPlaceholder": "Enter a unique key",
+      "keyTooltip": "A unique key by which the filter is identified. If the key is not unique, you will not be able to save the filter.",
+      "dataType": "Data type",
+      "dataTypePlaceholder": "Enter a data type",
+      "dataTypeTooltip": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
+      "fieldType": "Field type",
+      "fieldTypePlaceholder": "Enter a field type",
+      "fieldTypeTooltip": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+      "add": "Add filter"
     },
     "displayConditions": {
       "description": "Configure conditions to control when this widget is shown. If you do not add any conditions, the widget is always displayed.",
@@ -1329,6 +1347,7 @@
     "noItemsFound": "No items found",
     "clearAll": "Clear all",
     "clear": "Clear",
+    "filters": "Filters",
     "show": "Show",
     "display": "Display",
     "items": "items",
@@ -2062,6 +2081,7 @@
     "tabType": "Tab type",
     "tabTypeTitle": "Tab type",
     "tabTypePlaceholder": "Enter tab type",
+    "tabProperties": "Properties",
     "addTab": "Add tab",
     "editTab": "Edit tab",
     "rowAction": "Row action",
