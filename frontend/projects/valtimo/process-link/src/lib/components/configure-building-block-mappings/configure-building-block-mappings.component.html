@@ -1,8 +1,27 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 @let obs =
   {
     fields: (buildingBlockFields$ | async),
     fieldItems: (buildingBlockFieldItems$ | async),
     params: (params$ | async),
+    buildingBlockParams: (buildingBlockParams$ | async),
+    sourceContextName: (sourceContextName$ | async),
+    targetBuildingBlockName: (targetBuildingBlockName$ | async),
   };
 
 <div class="mapping-step">
@@ -13,11 +32,9 @@
 
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
-        <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+        <v-input-label [title]="obs.sourceContextName" />
 
-        <v-input-label
-          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
-        />
+        <v-input-label [title]="obs.targetBuildingBlockName" />
       </div>
 
       <div formArrayName="inputs">
@@ -27,8 +44,10 @@
               <valtimo-value-path-selector
                 [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
                 [appendInline]="false"
                 [dropUp]="false"
                 [formControl]="group.get('source')"
@@ -98,11 +117,9 @@
 
     <div class="mapping-table" [formGroup]="outputsForm">
       <div class="mapping-header output">
-        <v-input-label
-          [title]="'processLinkConfiguration.buildingBlock.buildingBlock' | translate"
-        />
+        <v-input-label [title]="obs.targetBuildingBlockName" />
 
-        <v-input-label [title]="'processLinkConfiguration.buildingBlock.case' | translate" />
+        <v-input-label [title]="obs.sourceContextName" />
 
         <div class="sync-options">
           <v-input-label
@@ -137,8 +154,10 @@
               <valtimo-value-path-selector
                 [cdsLayer]="2"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params.caseDefinitionVersionTag"
+                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
                 [formControl]="group.get('target')"
                 [appendInline]="false"
                 [filterItems]="getUsedCaseTargetsForRow$(group) | async"

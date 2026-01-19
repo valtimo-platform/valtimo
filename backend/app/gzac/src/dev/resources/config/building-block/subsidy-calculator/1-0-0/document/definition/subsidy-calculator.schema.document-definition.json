@@ -1,0 +1,41 @@
+{
+    "$id": "subsidy-calculator.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Subsidie Berekening Document",
+    "type": "object",
+    "properties": {
+        "applicantName": {
+            "type": "string",
+            "description": "Naam van de aanvrager"
+        },
+        "householdSize": {
+            "type": "integer",
+            "description": "Aantal personen in het huishouden"
+        },
+        "verifiedApplicant": {
+            "type": "string",
+            "description": "Geverifieerde aanvragergegevens"
+        },
+        "baseSubsidyAmount": {
+            "type": "integer",
+            "description": "Basisbedrag van de subsidie"
+        },
+        "eligibilityResult": {
+            "type": "string",
+            "description": "Resultaat van de geschiktheidsbeoordeling"
+        },
+        "calculationStatus": {
+            "type": "string",
+            "description": "Status van de berekening"
+        },
+        "calculationSummary": {
+            "type": "string",
+            "description": "Samenvatting van de berekening"
+        },
+        "finalSubsidyAmount": {
+            "type": "integer",
+            "description": "Definitief subsidiebedrag (basisbedrag + bonus)"
+        }
+    },
+    "required": ["applicantName", "householdSize"]
+}

@@ -1,0 +1,26 @@
+[
+    {
+        "activityId": "CallIncomeCheckActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            },
+            {
+                "source": "doc:householdSize",
+                "target": "householdSize"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "eligibilityResult",
+                "target": "doc:incomeEligibilityResult",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

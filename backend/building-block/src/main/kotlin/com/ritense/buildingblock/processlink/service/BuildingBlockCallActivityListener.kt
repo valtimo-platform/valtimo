@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_INSTANCE_ID_VARIABLE
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
@@ -54,13 +54,56 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
+            // Check if we're inside a parent building block (nested building block scenario)
+            val parentBuildingBlockInstance = findParentBuildingBlockInstance(execution)
+
+            // For nested building blocks, use the root case document ID from the parent chain
+            // For top-level building blocks, use the execution's business key (which is the case document ID)
+            val rootCaseDocumentId = parentBuildingBlockInstance?.caseDocumentId
+                ?: UUID.fromString(execution.businessKey)
+
+            // The source document for input mappings: parent building block document or case document
+            val sourceDocumentId = parentBuildingBlockInstance?.documentId
+                ?: UUID.fromString(execution.businessKey)
+
             val buildingBlockInstance = this.createBuildingBlock(
-                it,
-                UUID.fromString(execution.businessKey),
-                activityId
+                buildingBlockProcessLink = it,
+                rootCaseDocumentId = rootCaseDocumentId,
+                sourceDocumentId = sourceDocumentId,
+                activityId = activityId,
+                parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
-            execution.setVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE, buildingBlockInstance.documentId.toString())
+            // Set as local variable on the call activity execution for two purposes:
+            // 1. The BPMN expression #{buildingBlockDocumentId} reads this to set the child process's business key
+            // 2. onCallActivityEnd reads this to perform output mappings when the building block completes
+            execution.setVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
+    }
+
+    /**
+     * Finds the parent building block instance if the current process is a building block.
+     * Returns null if this is a top-level building block (called from a case process).
+     *
+     * Uses the current process's business key to determine if we're inside a building block.
+     * If the business key matches a building block document ID, the current process is a BB
+     * and that BB instance becomes the parent of the new nested BB being created.
+     */
+    private fun findParentBuildingBlockInstance(execution: DelegateExecution): BuildingBlockInstance? {
+        // The current process's business key is set to the document ID
+        // For case processes: business key = case document ID
+        // For building block processes: business key = building block document ID
+        val businessKey = execution.processBusinessKey ?: return null
+
+        // Check if this is a valid UUID
+        val documentId = try {
+            UUID.fromString(businessKey)
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
+
+        // Try to find a building block instance with this document ID
+        // If found, the current process is a building block, and this instance is the parent
+        return buidingBlockInstanceService.getByDocumentId(documentId)
     }
 
     @EventListener(
@@ -70,14 +113,14 @@ class BuildingBlockCallActivityListener(
     )
     fun onCallActivityEnd(execution: DelegateExecution) {
 
-        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_INSTANCE_ID_VARIABLE)?.let {
+        val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)?.let {
             it as String
         }?: return
 
         val buildingBlockDocumentId = try {
             UUID.fromString(buildingBlockVariableString)
         } catch(_: IllegalArgumentException) {
-            throw IllegalStateException("Execution variable '$BUILDING_BLOCK_INSTANCE_ID_VARIABLE' should be a UUID " +
+            throw IllegalStateException("Execution variable '$BUILDING_BLOCK_DOCUMENT_ID_VARIABLE' should be a UUID " +
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
@@ -100,22 +143,44 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        val resolvedValues = valueResolverService.resolveValues(
-            buildingBlockInstance.documentId.toString(),
-            endSyncOutputMappings.map { "doc:/${it.source}" }
-        )
-
-        val valuesToHandle = endSyncOutputMappings.associate { mapping ->
-            mapping.target to resolvedValues["doc:/${mapping.source}"]
+        // Resolve values from building block document
+        // Source format: doc:/path or just /path (defaults to doc:)
+        val sourceMappings = endSyncOutputMappings.map { mapping ->
+            val sourceKey = if (mapping.source.startsWith("doc:")) {
+                mapping.source
+            } else {
+                "doc:/${mapping.source}"
+            }
+            sourceKey to mapping.target
         }
 
-        valueResolverService.handleValues(buildingBlockInstance.caseDocumentId, valuesToHandle)
+        val resolvedValues = valueResolverService.resolveValues(
+            buildingBlockInstance.documentId.toString(),
+            sourceMappings.map { it.first }
+        )
+
+        val valuesToHandle = sourceMappings.associate { (sourceKey, target) ->
+            target to resolvedValues[sourceKey]
+        }
+
+        // Determine target document: parent building block doc if nested, otherwise case doc
+        val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
+            val parentInstance = buidingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
+                ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
+            parentInstance.documentId
+        } else {
+            buildingBlockInstance.caseDocumentId
+        }
+
+        valueResolverService.handleValues(targetDocumentId, valuesToHandle)
     }
 
     private fun createBuildingBlock(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID,
-        activityId: String
+        rootCaseDocumentId: UUID,
+        sourceDocumentId: UUID,
+        activityId: String,
+        parentBuildingBlockInstanceId: UUID?
     ): BuildingBlockInstance {
         val documentRequest = NewDocumentRequest(
             null,
@@ -123,22 +188,23 @@ class BuildingBlockCallActivityListener(
             null,
             buildingBlockProcessLink.buildingBlockDefinitionId.key,
             buildingBlockProcessLink.buildingBlockDefinitionId.versionTag.toString(),
-            buildDocumentContent(buildingBlockProcessLink, caseDocumentId),
+            buildDocumentContent(buildingBlockProcessLink, sourceDocumentId),
         )
 
         return buidingBlockInstanceService.create(
             documentRequest,
-            caseDocumentId,
-            activityId
+            rootCaseDocumentId,
+            activityId,
+            parentBuildingBlockInstanceId
         )
     }
 
     private fun buildDocumentContent(
         buildingBlockProcessLink: BuildingBlockProcessLink,
-        caseDocumentId: UUID
+        sourceDocumentId: UUID
     ): JsonNode {
         val resolvedValues = valueResolverService.resolveValues(
-            caseDocumentId.toString(),
+            sourceDocumentId.toString(),
             buildingBlockProcessLink.inputMappings.map {
                 it.source
             }

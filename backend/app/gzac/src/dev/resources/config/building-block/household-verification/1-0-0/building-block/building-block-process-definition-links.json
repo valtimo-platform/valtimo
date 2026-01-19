@@ -1,0 +1,6 @@
+[
+    {
+        "processDefinitionKey": "brp-lookup",
+        "main": false
+    }
+]

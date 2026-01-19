@@ -46,7 +46,7 @@
     ></cds-toggle>
 
     @if (obs.inputModeIsDropdown && obs.showToggle) {
-      <cds-dropdown
+      <cds-combo-box
         data-testid="value-path-selector-valuePath"
         [appendInline]="appendInline"
         [disabled]="
@@ -57,10 +57,11 @@
         "
         [dropUp]="dropUp"
         (selected)="onPathSelected($event)"
+        (clear)="onPathCleared()"
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >
         <cds-dropdown-list [items]="obs.valuePathListItems || []"></cds-dropdown-list>
-      </cds-dropdown>
+      </cds-combo-box>
     } @else {
       <input
         data-testid="value-path-selector-input"

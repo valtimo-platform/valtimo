@@ -22,6 +22,6 @@ import java.io.InputStream
 
 interface ImportService {
     fun importGlobal(inputStream: InputStream)
-    fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>)
+    fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
     fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
 }

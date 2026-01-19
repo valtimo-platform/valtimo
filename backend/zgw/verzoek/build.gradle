@@ -30,21 +30,21 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":authorization")
-    implementation project(":case")
-    implementation project(":core")
-    implementation project(":contract")
-    implementation project(":logging")
-    implementation project(":process-document")
-    implementation project(":plugin")
-    implementation project(":plugin-authentication:notificaties-api-authentication")
-    implementation project(":value-resolver")
-    implementation project(":zgw")
-    implementation project(":zgw:catalogi-api")
-    implementation project(":zgw:notificaties-api")
-    implementation project(":zgw:object-management")
-    implementation project(":zgw:objecten-api")
-    implementation project(":zgw:objecttypen-api")
+    implementation project(":backend:authorization")
+    implementation project(":backend:case")
+    implementation project(":backend:core")
+    implementation project(":backend:contract")
+    implementation project(":backend:logging")
+    implementation project(":backend:process-document")
+    implementation project(":backend:plugin")
+    implementation project(":backend:plugin-authentication:notificaties-api-authentication")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:zgw")
+    implementation project(":backend:zgw:catalogi-api")
+    implementation project(":backend:zgw:notificaties-api")
+    implementation project(":backend:zgw:object-management")
+    implementation project(":backend:zgw:objecten-api")
+    implementation project(":backend:zgw:objecttypen-api")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -53,11 +53,11 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
-    testImplementation project(":core")
-    testImplementation(project(':building-block'))
-    testImplementation project(":test-utils-common")
-    testImplementation project(":resource:local-resource")
-    testImplementation project(":zgw:zaken-api")
+    testImplementation project(":backend:core")
+    testImplementation(project(':backend:building-block'))
+    testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:resource:local-resource")
+    testImplementation project(":backend:zgw:zaken-api")
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"

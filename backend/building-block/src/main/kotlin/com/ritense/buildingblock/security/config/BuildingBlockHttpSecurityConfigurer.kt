@@ -43,6 +43,7 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/plugin")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/fields")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/process-definition/{processDefinitionId}/is-building-block")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
@@ -81,6 +82,12 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
                         )
                     ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            POST,
+                            "$VALUE_RESOLVER_BASE_PATH/{key}/version/{versionTag}/keys"
+                        )
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -89,5 +96,6 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     companion object {
         const val MANAGEMENT_BASE_PATH: String = "/api/management/v1/building-block"
+        const val VALUE_RESOLVER_BASE_PATH: String = "/api/management/v1/value-resolver/building-block"
     }
 }

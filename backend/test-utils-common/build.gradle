@@ -15,8 +15,8 @@
  */
 
 dependencies {
-    implementation project(":contract")
-    compileOnly(project(":core")) {
+    implementation project(":backend:contract")
+    compileOnly(project(":backend:core")) {
         exclude(group: "com.ritense.valtimo", module: "authorization")
     }
 
