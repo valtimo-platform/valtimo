@@ -45,20 +45,13 @@ class IkoTabService(
     private val ikoRepositories: List<IkoRepository>,
 ) {
 
-    fun getDataById(ikoViewKey: String, tabKey: String?, id: String): JsonNode {
+    fun getIkoTabConfig(ikoViewKey: String, tabKey: String?): Map<String, Any?> {
         val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
         ikoViewService.requirePermission(ikoView, IkoViewActionProvider.VIEW)
-        val ikoRepository = ikoRepositories.first {
-            it.getType() == ikoView.ikoRepositoryConfig.type
-        }
         val ikoTabProperties = tabKey?.let { getByKey(ikoViewKey, tabKey) }?.properties ?: emptyMap()
-        val config = ikoView.ikoRepositoryConfig.properties
+        return ikoView.ikoRepositoryConfig.properties
             .deepMerge(ikoView.properties)
             .deepMerge(ikoTabProperties)
-        return ikoRepository.findById(
-            config = config,
-            id = id
-        )
     }
 
     fun getIkoTabPropertyFields(type: Any): List<PropertyField> {

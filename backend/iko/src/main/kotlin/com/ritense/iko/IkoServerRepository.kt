@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ContainerNode
 import com.ritense.iko.client.IkoClient
-import com.ritense.valtimo.contract.iko.Comparator
+import com.ritense.iko.dto.ContainerParam
 import com.ritense.valtimo.contract.iko.DataFilter
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.valtimo.contract.iko.PropertyField
@@ -90,7 +90,6 @@ class IkoServerRepository(
         filters: List<DataFilter>,
         pageable: Pageable
     ): Page<JsonNode> {
-        require(filters.all { it.comparator == Comparator.EQUAL_TO })
         val configuredFilterMap = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
         val filterMap = configuredFilterMap + filters.associate {
             val filterKey = it.property.substringAfter(':').substringBefore('=')
@@ -111,7 +110,11 @@ class IkoServerRepository(
         return PageImpl(dataList, pageable, dataList.size.toLong())
     }
 
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
+    fun findById(
+        config: Map<String, Any?>,
+        id: Any,
+        containerParams: List<ContainerParam>
+    ): JsonNode {
         val aggregatedDataProfileName = config[AGGREGATED_DATA_PROFILE_NAME] as String?
         val queryParams = (config[ENDPOINT_QUERY_PARAMETERS] as Map<String, String>?) ?: emptyMap()
 
@@ -120,7 +123,8 @@ class IkoServerRepository(
                 config = config,
                 aggregatedDataProfileName = aggregatedDataProfileName,
                 id = id.toString(),
-                queryParams = queryParams,
+                containerParams = containerParams,
+                additionalQueryParams = queryParams,
             )
         } else {
             getByEndpointId(
@@ -172,13 +176,15 @@ class IkoServerRepository(
         config: Map<String, Any?>,
         aggregatedDataProfileName: String,
         id: String,
-        queryParams: Map<String, String>
+        containerParams: List<ContainerParam> = emptyList(),
+        additionalQueryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
         return ikoClient.getByAggregatedDataProfileId(
             URI(config[IKO_SERVER_URL].toString()),
             aggregatedDataProfileName,
             id,
-            queryParams
+            containerParams,
+            additionalQueryParams,
         )
     }
 

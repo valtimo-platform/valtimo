@@ -33,6 +33,11 @@ class IkoRepositoryConfigSpecificationHelper {
         }
 
         @JvmStatic
+        fun all() = Specification<IkoRepositoryConfig> { _, _, _ ->
+            null
+        }
+
+        @JvmStatic
         fun byKey(key: String) = Specification<IkoRepositoryConfig> { root, _, cb ->
             cb.equal(root.get<String>(KEY), key)
         }
