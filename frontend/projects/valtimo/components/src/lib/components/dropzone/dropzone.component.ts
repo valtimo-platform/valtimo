@@ -90,7 +90,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly file$ = new BehaviorSubject<File>(undefined);
   readonly showingCamera$ = new BehaviorSubject<boolean>(false);
   private clearSubscription: Subscription;
-  private dropzone: Dropzone;
+  private dropzone?: Dropzone;
   private readonly error$ = new BehaviorSubject<string>('');
 
   private readonly errorMessagesStrings: {[key: string]: string} = {
@@ -140,7 +140,9 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearSubscription.unsubscribe();
-    this.destroyHiddenInputs();
+    if (this.dropzone) {
+      this.destroyDropzone();
+    }
   }
 
   showCamera(): void {
@@ -156,6 +158,14 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initDropzone(): void {
+    if (!this.dropzoneRef || !this.dropzoneRef.nativeElement) {
+      return;
+    }
+
+    if (this.dropzone) {
+      this.destroyDropzone();
+    }
+
     this.dropzone = new Dropzone(this.dropzoneRef.nativeElement, {
       url: '/',
       maxFilesize: this._maxFileSize,
@@ -166,7 +176,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
       previewTemplate: `<p style='display:none'></p>`,
       ...(this._maxFiles && {maxFiles: this._maxFiles}),
       accept: file => {
-        this.dropzone.removeAllFiles();
+        this.dropzone?.removeAllFiles();
         this.setFile(file);
       },
     });
@@ -193,6 +203,12 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     this.file$.next(file);
     this.clearError();
     this.fileSelected.emit(file);
+  }
+
+  private destroyDropzone(): void {
+    this.dropzone.destroy();
+    this.dropzone = undefined;
+    this.destroyHiddenInputs();
   }
 
   private destroyHiddenInputs(): void {
