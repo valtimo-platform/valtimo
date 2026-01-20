@@ -47,7 +47,7 @@ jacoco {
 }
 
 checkstyle {
-    toolVersion = "12.1.1"
+    toolVersion = "12.3.1"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
@@ -225,6 +225,7 @@ subprojects { subproject ->
         }
 
         checkstyle {
+            toolVersion = "12.3.1"
             //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
             config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false
