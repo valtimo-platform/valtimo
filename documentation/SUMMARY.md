@@ -115,6 +115,7 @@
     * [Case migration](features/case/for-developers/case-migration.md)
     * [Custom case headers](features/case/for-developers/custom-case-headers.md)
     * [Register Angular component](features/case/for-developers/register-angular-component.md)
+* [🧱 Building blocks](features/building-blocks/README.md)
 * [📊 Dashboard](features/dashboard/README.md)
   * [Widget data sources](features/dashboard/dashboard.md)
   * [Widget display types](features/dashboard/widget-display-types.md)
@@ -162,6 +163,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.12.0](release-notes/13.x.x/13.12.0/README.md)
   * [13.11.0](release-notes/13.x.x/13.11.0/README.md)
   * [13.10.0](release-notes/13.x.x/13.10.0/README.md)
   * [13.9.1](release-notes/13.x.x/13.9.1/README.md)
