@@ -36,7 +36,7 @@ Building blocks are isolated by design. They should not directly read or write c
 * Enter a **Name**, **Version**, and (optional) **Description**.
 * Click **Save**.
 
-<figure><img src="../../.gitbook/assets/building-block-create-modal.png" alt=""><figcaption><p>Create a new building block</p></figcaption></figure>
+<figure><img src="./images/building-block-create-modal.png" alt=""><figcaption><p>Create a new building block</p></figcaption></figure>
 
 ### 2. Add general information
 
@@ -44,7 +44,7 @@ Building blocks are isolated by design. They should not directly read or write c
 * Optionally upload **Artwork**.
 * Review the list of **Plugins used** so you know which plugin types must be configured later. Initially, the list will be empty. This will be updated as you add plugins or other building blocks to the processes of your building block.
 
-<figure><img src="../../.gitbook/assets/building-block-general.png" alt=""><figcaption><p>General information and artwork</p></figcaption></figure>
+<figure><img src="./images/building-block-general.png" alt=""><figcaption><p>General information and artwork</p></figcaption></figure>
 
 ### 3. Define the data fields
 
@@ -53,26 +53,29 @@ Building blocks are isolated by design. They should not directly read or write c
 * Mark required fields so the case must provide them when using the building block.
 * Click **Save**.
 
-<figure><img src="../../.gitbook/assets/building-block-document.png" alt=""><figcaption><p>Define data fields for the building block</p></figcaption></figure>
+<figure><img src="./images/building-block-document.png" alt=""><figcaption><p>Define data fields for the building block</p></figcaption></figure>
 
 ### 4. Add processes
 
 * Open the **Processes** tab.
 * Either **Upload** a BPMN file or **Create** a new process.
 * Select which process should be the **Main process** for the building block, or use the process that has been created with the building block.
+* You can use plugins in these processes just like in case processes, but you select the plugin type instead of a specific configuration.
 
-<figure><img src="../../.gitbook/assets/building-block-processes.png" alt=""><figcaption><p>Processes inside the building block</p></figcaption></figure>
+<figure><img src="./images/building-block-processes.png" alt=""><figcaption><p>Processes inside the building block</p></figcaption></figure>
 
 ### 5. Finalize the version
 
 Building blocks use **draft** and **final** versions, similar to case definitions.
+
+Before you finalize, **test the building block thoroughly**. Final versions cannot be changed.
 
 * In the **More** menu, choose **Make version final** to lock the version.
 * To make changes later, create a **new draft** from a final version.
 
 Only **final** building blocks can be used when finalizing a case definition.
 
-<figure><img src="../../.gitbook/assets/building-block-finalize.png" alt=""><figcaption><p>Finalize a building block version</p></figcaption></figure>
+<figure><img src="./images/building-block-finalize.png" alt=""><figcaption><p>Finalize a building block version</p></figcaption></figure>
 
 ## Use a building block in a case
 
@@ -81,34 +84,40 @@ Only **final** building blocks can be used when finalizing a case definition.
 * Open the case process where you want to use the building block.
 * Add a **Call activity** to the process model.
 
-<figure><img src="../../.gitbook/assets/building-block-call-activity.png" alt=""><figcaption><p>Call activity in a case process</p></figcaption></figure>
+<figure><img src="./images/building-block-call-activity.png" alt=""><figcaption><p>Call activity in a case process</p></figcaption></figure>
 
 ### 2. Link the building block
 
 * Open the **Process link** for the Call activity.
 * Choose **Building block** as the link type.
-* Select the building block and **Version** you want to use.
+* Choose the **Building block** you want to use.
 
-<figure><img src="../../.gitbook/assets/building-block-process-link-select.png" alt=""><figcaption><p>Select a building block and version</p></figcaption></figure>
+<figure><img src="./images/building-block-process-link-select.png" alt=""><figcaption><p>Select a building block and version</p></figcaption></figure>
 
 ### 3. Configure plugin mappings
 
-If the building block uses plugins, you must map each **plugin type** to a **plugin configuration** that already exists in your environment.
+* Select the building block **Version** you want to use.
 
-* Select the configuration for each plugin type.
+If this version uses plugins, you must map each **plugin type** to a **plugin configuration** that already exists in your environment.
+
+* Select the saved plugin configuration for each plugin type.
 * If you are unsure, check the plugin documentation under [Plugins](../plugins/README.md).
 
-<figure><img src="../../.gitbook/assets/building-block-plugin-mapping.png" alt=""><figcaption><p>Configure plugin mappings</p></figcaption></figure>
+<figure><img src="./images/building-block-plugin-mapping.png" alt=""><figcaption><p>Configure plugin mappings</p></figcaption></figure>
 
 ### 4. Map inputs and sync outputs
 
 * Map **Inputs** from the case data to the building block fields.
+  * The required inputs for the building block will be listed by default.
+  * Any optional inputs can be added manually by clicking **Add input**.
 * Map **Outputs** from the building block back to the case.
+  * Fields can be added for syncing by clicking **Add sync**
+  * This is one way. Any changes to the case document will not be automatically synced to the building block instance.
 * Choose when outputs should be synced:
   * **Continuous**: keep the case up to date while the building block runs.
   * **At end**: only sync after the building block finishes.
 
-<figure><img src="../../.gitbook/assets/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
+<figure><img src="./images/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
 
 ### 5. Save and deploy
 
@@ -117,6 +126,8 @@ If the building block uses plugins, you must map each **plugin type** to a **plu
 
 ## Import and export building blocks
 
+Building blocks are automatically included in case definition exports. You can also export or import a building block separately when you want to move or reuse it on its own.
+
 ### Import
 
 * Go to **Admin** → **Building blocks**.
@@ -124,14 +135,14 @@ If the building block uses plugins, you must map each **plugin type** to a **plu
 * Select a `.zip` or `.json` export file and confirm the overwrite warning.
 * Follow the steps in the wizard.
 
-<figure><img src="../../.gitbook/assets/building-block-import.png" alt=""><figcaption><p>Import a building block definition</p></figcaption></figure>
+<figure><img src="./images/building-block-import.png" alt=""><figcaption><p>Import a building block definition</p></figcaption></figure>
 
 ### Export
 
 * Open a building block.
 * Click **More** → **Export**.
 
-<figure><img src="../../.gitbook/assets/building-block-export.png" alt=""><figcaption><p>Export a building block definition</p></figcaption></figure>
+<figure><img src="./images/building-block-export.png" alt=""><figcaption><p>Export a building block definition</p></figcaption></figure>
 
 {% hint style="info" %}
 Before importing, make sure any required process definitions or plugin configurations already exist in your environment.

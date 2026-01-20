@@ -8,8 +8,9 @@
 
 * **Building blocks for reusable process steps**
 
-  - Create a reusable building block with its own data fields and processes.
-  - Link it to a case process via a Call activity and map inputs/outputs.
-  - Configure required plugin mappings per environment and choose when outputs sync back to the case.
+  Building blocks let you package a reusable subprocess with its own data model and version it independently from cases.
+  The same building block can be reused across multiple case definitions to keep shared steps consistent, while cases
+  stay stable because they only exchange defined inputs and outputs with the building block. Building blocks can also
+  be moved between environments by importing and exporting their definitions.
 
   Learn more in [Building blocks](../../../features/building-blocks/README.md).
