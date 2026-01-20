@@ -8,7 +8,7 @@
 
 ## Enhancements
 
-- **Better handling of file extensions in the Documenten API uploader FormIO component**
+* **Better handling of file extensions in the Documenten API uploader FormIO component**
 
   - It is now possible to restrict allowed file types in the Documenten API uploader FormIO component.
   - The file extension will now always reflect the actual file type of the uploaded file even when we set the filename
