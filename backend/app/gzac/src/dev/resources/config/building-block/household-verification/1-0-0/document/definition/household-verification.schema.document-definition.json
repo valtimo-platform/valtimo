@@ -36,13 +36,13 @@
             "type": "string",
             "description": "Zaak omschrijving ontvangen van parent BB (BB1)"
         },
-        "zaakOmschrijvingBB2": {
+        "zaakToelichtingBB2": {
             "type": "string",
-            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB2"
+            "description": "Zaak toelichting gelezen na ZGW patch-zaak actie in BB2"
         },
-        "zaakOmschrijvingBB3": {
+        "zaakEinddatumGeplandBB3": {
             "type": "string",
-            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB3"
+            "description": "Zaak einddatum gepland gelezen na ZGW patch-zaak actie in BB3"
         }
     },
     "required": ["applicantName", "householdSize"]

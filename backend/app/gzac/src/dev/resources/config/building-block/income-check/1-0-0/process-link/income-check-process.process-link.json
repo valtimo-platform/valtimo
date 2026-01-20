@@ -6,7 +6,7 @@
         "pluginDefinitionKey": "zakenapi",
         "pluginActionDefinitionKey": "patch-zaak",
         "actionProperties": {
-            "description": "BB3: Inkomenstoets voltooid - GOEDGEKEURD"
+            "plannedEndDate": "pv:einddatumGeplandBB3"
         }
     }
 ]

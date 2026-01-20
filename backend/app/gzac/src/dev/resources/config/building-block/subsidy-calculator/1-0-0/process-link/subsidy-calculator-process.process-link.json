@@ -46,13 +46,13 @@
                 "syncTiming": "END"
             },
             {
-                "source": "zaakOmschrijvingBB2",
-                "target": "doc:zaakOmschrijvingBB2",
+                "source": "zaakToelichtingBB2",
+                "target": "doc:zaakToelichtingBB2",
                 "syncTiming": "END"
             },
             {
-                "source": "zaakOmschrijvingBB3",
-                "target": "doc:zaakOmschrijvingBB3",
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
                 "syncTiming": "END"
             }
         ]

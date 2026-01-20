@@ -41,6 +41,21 @@
                 "syncTiming": "END"
             },
             {
+                "source": "zaakOmschrijvingFromZgw",
+                "target": "doc:zaakOmschrijvingFromZgw",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakToelichtingBB2",
+                "target": "doc:zaakToelichtingBB2",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
+                "syncTiming": "END"
+            },
+            {
                 "source": "zgwActionSummary",
                 "target": "doc:zgwActionSummary",
                 "syncTiming": "END"

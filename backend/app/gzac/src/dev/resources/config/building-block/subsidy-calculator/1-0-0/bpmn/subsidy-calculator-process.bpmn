@@ -39,7 +39,7 @@
       <bpmn:incoming>Flow_Calculate_To_Complete</bpmn:incoming>
       <bpmn:outgoing>Flow_Complete_To_StoreZgwSummary</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Zaak omschrijving na alle BB: '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')))}">
+    <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Omschrijving (BB1): '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')).concat(' | Toelichting (BB2): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting')).concat(' | Einddatum (BB3): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:einddatumGepland')))}">
       <bpmn:incoming>Flow_Complete_To_StoreZgwSummary</bpmn:incoming>
       <bpmn:outgoing>Flow_StoreZgwSummary_To_End</bpmn:outgoing>
     </bpmn:serviceTask>

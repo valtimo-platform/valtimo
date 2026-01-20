@@ -35,7 +35,7 @@
       <bpmn:incoming>Flow_Verify_To_PatchZaak</bpmn:incoming>
       <bpmn:outgoing>Flow_PatchZaak_To_ReadToelichting</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="ReadZaakToelichtingTask" name="Lees Zaak Omschrijving" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zaakOmschrijvingBB2', valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving'))}">
+    <bpmn:serviceTask id="ReadZaakToelichtingTask" name="Lees Zaak Toelichting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zaakToelichtingBB2', valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting'))}">
       <bpmn:incoming>Flow_PatchZaak_To_ReadToelichting</bpmn:incoming>
       <bpmn:outgoing>Flow_ReadToelichting_To_Calculate</bpmn:outgoing>
     </bpmn:serviceTask>
