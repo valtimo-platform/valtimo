@@ -24,6 +24,18 @@
             "type": "string",
             "description": "Resultaat van de geschiktheidsbeoordeling"
         },
+        "zaakOmschrijvingFromZgw": {
+            "type": "string",
+            "description": "Zaak omschrijving gezet door BB1"
+        },
+        "zaakToelichtingBB2": {
+            "type": "string",
+            "description": "Zaak toelichting gezet door BB2"
+        },
+        "zaakEinddatumGeplandBB3": {
+            "type": "string",
+            "description": "Zaak einddatum gepland gezet door BB3"
+        },
         "zgwActionSummary": {
             "type": "string",
             "description": "Samenvatting van alle ZGW plugin acties uitgevoerd in building blocks"

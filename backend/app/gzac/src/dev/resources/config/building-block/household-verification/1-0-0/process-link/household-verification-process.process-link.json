@@ -26,8 +26,8 @@
                 "syncTiming": "END"
             },
             {
-                "source": "zaakOmschrijvingBB3",
-                "target": "doc:zaakOmschrijvingBB3",
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
                 "syncTiming": "END"
             }
         ]
@@ -39,7 +39,7 @@
         "pluginDefinitionKey": "zakenapi",
         "pluginActionDefinitionKey": "patch-zaak",
         "actionProperties": {
-            "description": "BB2: Huishouden verificatie voltooid"
+            "explanation": "BB2: Huishouden verificatie voltooid - Toelichting"
         }
     }
 ]
