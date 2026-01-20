@@ -54,6 +54,11 @@
                                 "key": "eligibilityResult",
                                 "title": "Geschiktheidsbeoordeling",
                                 "value": "doc:eligibilityResult"
+                            },
+                            {
+                                "key": "zgwActionSummary",
+                                "title": "ZGW Actie Samenvatting",
+                                "value": "doc:zgwActionSummary"
                             }
                         ]
                     ]

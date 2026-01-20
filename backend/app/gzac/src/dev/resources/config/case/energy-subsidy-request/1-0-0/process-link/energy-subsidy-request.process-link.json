@@ -11,6 +11,9 @@
         "processLinkType": "building-block",
         "buildingBlockDefinitionKey": "subsidy-calculator",
         "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
         "inputMappings": [
             {
                 "source": "doc:applicantName",
@@ -35,6 +38,11 @@
             {
                 "source": "eligibilityResult",
                 "target": "doc:eligibilityResult",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zgwActionSummary",
+                "target": "doc:zgwActionSummary",
                 "syncTiming": "END"
             }
         ]

@@ -73,7 +73,9 @@ class DefaultBuildingBlockPluginConfigurationResolver(
                 // is the parent process definition (the one that contains the building block process link)
                 lastProcessDefinitionId = current.processDefinitionId
             }
-            current = current.superExecution
+            // superExecution is only available on the process instance (root) execution.
+            // Navigate to the process instance first, then get the super execution (call activity in parent process).
+            current = current.processInstance?.superExecution
         }
 
         if (lastBuildingBlockDocumentId == null) {

@@ -23,6 +23,10 @@
         "eligibilityResult": {
             "type": "string",
             "description": "Resultaat van de geschiktheidsbeoordeling"
+        },
+        "zgwActionSummary": {
+            "type": "string",
+            "description": "Samenvatting van alle ZGW plugin acties uitgevoerd in building blocks"
         }
     },
     "required": ["applicantName", "householdSize"]
