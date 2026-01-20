@@ -22,7 +22,6 @@ import com.ritense.valtimo.operaton.ProcessDefinitionDeployedEventPublisher;
 import com.ritense.valtimo.operaton.command.ValtimoSchemaOperationsCommand;
 import com.ritense.valtimo.operaton.incident.OperatonIncidentAlertLogProperties;
 import com.ritense.valtimo.operaton.incident.OperatonIncidentHandlerConfig;
-import com.ritense.valtimo.operaton.incident.OperatonIncidentHandlerDecorator;
 import com.ritense.valtimo.operaton.processaudit.HistoryEventAuditProcessEnginePlugin;
 import com.ritense.valtimo.operaton.processaudit.TaskEventHandler;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;

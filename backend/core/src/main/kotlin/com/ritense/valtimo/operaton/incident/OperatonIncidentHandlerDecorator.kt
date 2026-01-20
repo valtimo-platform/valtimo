@@ -25,8 +25,8 @@ class OperatonIncidentHandlerDecorator(
     ): Incident {
         val incident = defaultIncidentHandler.handleIncident(context, message)
         val lineToLog = props.messageTemplate
-            .replace("{incidentId}", incident.id)
-            .replace("{processInstanceId}", incident.processInstanceId)
+            .replace("{incidentId}", incident.id ?: "unknown")
+            .replace("{processInstanceId}", incident.processInstanceId ?: "unknown")
 
         logger.error { lineToLog }
 

@@ -1,4 +1,4 @@
-# 13.11.0
+# 13.12.0
 
 ## New Features
 
@@ -6,7 +6,7 @@
 
   When you set the Spring property `operaton.incident.alert-log.enabled` to `true`, 
   an error will be logged when an Operaton process gets into incident status.
-  This can be useful if you want to set up an alert at infrastructure level. More information about this feature can be found [here](../../../features/process/process/incident-error-logging.md).
+  This can be useful if you want to set up an alert at infrastructure level. More information about this feature can be found in the [incident error logging documentation](../../../features/process/process/incident-error-logging.md).
 
 ## Enhancements
 

@@ -24,30 +24,35 @@ class IncidentHandlerIntegrationTest(
         val listAppender = ListAppender<ILoggingEvent>().apply { start() }
         targetLogger.addAppender(listAppender)
 
-        // Start a process instance that will create a failing async job
-        val procInstance = runtimeService.startProcessInstanceByKey("failing-process")
+        try {
+            // Start a process instance that will create a failing async job
+            val procInstance = runtimeService.startProcessInstanceByKey("failing-process")
 
-        // Execute jobs until retries exhausted / incident created
-        repeat (10) {
-            val job = managementService.createJobQuery().processInstanceId(procInstance.id).singleResult() ?: return@repeat
-            try {
-                managementService.executeJob(job.id)
-            } catch (_: Exception) {
-                // expected; keep going until incident is created
+            // Execute jobs until retries exhausted / incident created
+            for (i in 1..10) {
+                val job = managementService.createJobQuery().processInstanceId(procInstance.id).singleResult() ?: break
+                try {
+                    managementService.executeJob(job.id)
+                } catch (_: Exception) {
+                    // expected; keep going until incident is created
+                }
+
+                val incident = runtimeService.createIncidentQuery()
+                    .processInstanceId(procInstance.id)
+                    .singleResult()
+
+                if (incident != null) break
             }
 
-            val incident = runtimeService.createIncidentQuery()
-                .processInstanceId(procInstance.id)
-                .singleResult()
+            val incident = runtimeService.createIncidentQuery().processInstanceId(procInstance.id).singleResult()
+            assertThat(incident).isNotNull
 
-            if (incident != null) return@repeat
+            // Assert log line
+            val msg = listAppender.list.joinToString("\n") { it.formattedMessage }
+            assertThat(msg).contains("OPERATON_INCIDENT_FAILED_JOB")
+        } finally {
+            targetLogger.detachAppender(listAppender)
+            listAppender.stop()
         }
-
-        val incident = runtimeService.createIncidentQuery().processInstanceId(procInstance.id).singleResult()
-        assertThat(incident).isNotNull
-
-        // Assert log line
-        val msg = listAppender.list.joinToString("\n") { it.formattedMessage }
-        assertThat(msg).contains("OPERATON_INCIDENT_FAILED_JOB")
     }
 }
