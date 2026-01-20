@@ -12,7 +12,7 @@
 
   - It is now possible to restrict allowed file types in the Documenten API uploader FormIO component.
   - The file extension will now always reflect the actual file type of the uploaded file even when we set the filename
-    programmatically from within the documenten API uploader component.
+    programmatically from within the Documenten API uploader component.
 
 * **Lazy loading for case widgets**
   - The case widgets are now loaded lazily to improve the performance of the case widget page.
