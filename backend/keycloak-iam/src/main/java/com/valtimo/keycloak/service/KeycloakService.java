@@ -18,6 +18,7 @@ package com.valtimo.keycloak.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.jboss.resteasy.plugins.providers.jackson.ResteasyJackson2Provider;
 import org.keycloak.OAuth2Constants;
@@ -45,30 +46,26 @@ public class KeycloakService {
     public static final String KEYCLOAK_JWT_CLIENT_REGISTRATION = "keycloakjwt";
     private final KeycloakSpringBootProperties properties;
     private final String clientName;
-    private ResteasyJackson2Provider jacksonProvider = null;
+    private ResteasyClientBuilder restEasyClientBuilder = null;
 
     public KeycloakService(KeycloakSpringBootProperties properties, String keycloakClientName) {
         this.properties = ValtimoKeycloakPropertyResolver.resolveProperties();
         this.clientName = keycloakClientName;
+        ObjectMapper mapper = new ObjectMapper()
+            .configure(
+                FAIL_ON_UNKNOWN_PROPERTIES,
+                false
+            ); // Use a lenient Jackson ObjectMapper so the Keycloak Admin Client can deserialize newer server responses that include additional/unknown fields without failing.
+
+        ResteasyJackson2Provider jacksonProvider = new ResteasyJackson2Provider();
+        jacksonProvider.setMapper(mapper);
+        restEasyClientBuilder = new ResteasyClientBuilderImpl()
+            .connectionPoolSize(10)
+            .register(jacksonProvider);
     }
 
     public Keycloak keycloak() {
-        if (jacksonProvider == null) {
-
-            ObjectMapper mapper = new ObjectMapper()
-                .configure(
-                    FAIL_ON_UNKNOWN_PROPERTIES,
-                    false
-                ); // Use a lenient Jackson ObjectMapper so the Keycloak Admin Client can deserialize newer server responses that include additional/unknown fields without failing.
-
-            jacksonProvider = new ResteasyJackson2Provider();
-            jacksonProvider.setMapper(mapper);
-
-        }
-
-        ResteasyClient resteasyClient = new ResteasyClientBuilderImpl()
-            .connectionPoolSize(10)
-            .register(jacksonProvider)
+        ResteasyClient resteasyClient = restEasyClientBuilder
             .build();
 
         return KeycloakBuilder.builder()
