@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -169,10 +169,11 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   }
 
   public readonly syncTimingItems: Array<{id: BuildingBlockSyncTiming; labelKey: string}> = [
-    {
-      id: 'CONTINUOUS' as BuildingBlockSyncTiming,
-      labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
-    },
+    // to do: uncomment once the be supports this
+    // {
+    //   id: 'CONTINUOUS' as BuildingBlockSyncTiming,
+    //   labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
+    // },
     {
       id: 'END' as BuildingBlockSyncTiming,
       labelKey: 'processLinkConfiguration.buildingBlock.sync.end',
@@ -224,7 +225,9 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           .getBuildingBlockDefinition(key, versionTag)
           .pipe(map(def => def?.name ?? key));
       }
-      return of(this.translateService.instant('processLinkConfiguration.buildingBlock.buildingBlock'));
+      return of(
+        this.translateService.instant('processLinkConfiguration.buildingBlock.buildingBlock')
+      );
     })
   );
 

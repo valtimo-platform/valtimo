@@ -13,6 +13,10 @@
             {
                 "source": "doc:householdSize",
                 "target": "householdSize"
+            },
+            {
+                "source": "doc:parentZaakOmschrijving",
+                "target": "grandparentZaakOmschrijving"
             }
         ],
         "outputMappings": [
@@ -20,7 +24,22 @@
                 "source": "eligibilityResult",
                 "target": "doc:incomeEligibilityResult",
                 "syncTiming": "END"
+            },
+            {
+                "source": "zaakOmschrijvingBB3",
+                "target": "doc:zaakOmschrijvingBB3",
+                "syncTiming": "END"
             }
         ]
+    },
+    {
+        "activityId": "PatchZaakVerificationTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "description": "BB2: Huishouden verificatie voltooid"
+        }
     }
 ]

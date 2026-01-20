@@ -31,6 +31,18 @@
         "incomeEligibilityResult": {
             "type": "string",
             "description": "Resultaat van de inkomenstoets"
+        },
+        "parentZaakOmschrijving": {
+            "type": "string",
+            "description": "Zaak omschrijving ontvangen van parent BB (BB1)"
+        },
+        "zaakOmschrijvingBB2": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB2"
+        },
+        "zaakOmschrijvingBB3": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB3"
         }
     },
     "required": ["applicantName", "householdSize"]

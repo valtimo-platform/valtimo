@@ -35,6 +35,22 @@
         "finalSubsidyAmount": {
             "type": "integer",
             "description": "Definitief subsidiebedrag (basisbedrag + bonus)"
+        },
+        "zaakOmschrijvingFromZgw": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB1"
+        },
+        "zaakOmschrijvingBB2": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB2"
+        },
+        "zaakOmschrijvingBB3": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB3"
+        },
+        "zgwActionSummary": {
+            "type": "string",
+            "description": "Samenvatting van alle ZGW plugin acties"
         }
     },
     "required": ["applicantName", "householdSize"]

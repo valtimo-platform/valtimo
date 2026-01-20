@@ -13,19 +13,29 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="SetCheckStatusTask" name="Registreer Status" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/checkStatus', 'GOEDGEKEURD')}">
       <bpmn:incoming>Flow_Check_To_Status</bpmn:incoming>
-      <bpmn:outgoing>Flow_Status_To_End</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Status_To_PatchZaak</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="PatchZaakIncomeCheckTask" name="Update Zaak: Inkomenstoets" camunda:asyncAfter="true">
+      <bpmn:incoming>Flow_Status_To_PatchZaak</bpmn:incoming>
+      <bpmn:outgoing>Flow_PatchZaak_To_ReadToelichting</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ReadZaakToelichtingTask" name="Lees Zaak Omschrijving" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zaakOmschrijvingBB3', valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving'))}">
+      <bpmn:incoming>Flow_PatchZaak_To_ReadToelichting</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReadToelichting_To_End</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="EndEvent" name="Inkomenstoets Afgerond">
-      <bpmn:incoming>Flow_Status_To_End</bpmn:incoming>
+      <bpmn:incoming>Flow_ReadToelichting_To_End</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_Check" sourceRef="StartEvent" targetRef="DetermineEligibilityTask" />
     <bpmn:sequenceFlow id="Flow_Check_To_Status" sourceRef="DetermineEligibilityTask" targetRef="SetCheckStatusTask" />
-    <bpmn:sequenceFlow id="Flow_Status_To_End" sourceRef="SetCheckStatusTask" targetRef="EndEvent" />
+    <bpmn:sequenceFlow id="Flow_Status_To_PatchZaak" sourceRef="SetCheckStatusTask" targetRef="PatchZaakIncomeCheckTask" />
+    <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadToelichting" sourceRef="PatchZaakIncomeCheckTask" targetRef="ReadZaakToelichtingTask" />
+    <bpmn:sequenceFlow id="Flow_ReadToelichting_To_End" sourceRef="ReadZaakToelichtingTask" targetRef="EndEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_IncomeCheck">
       <bpmndi:BPMNShape id="Participant_IncomeCheck_di" bpmnElement="IncomeCheckParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="590" height="200" />
+        <dc:Bounds x="160" y="60" width="850" height="200" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -35,30 +45,46 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DetermineEligibilityTask_di" bpmnElement="DetermineEligibilityTask">
-        <dc:Bounds x="320" y="120" width="100" height="80" />
+        <dc:Bounds x="290" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="SetCheckStatusTask_di" bpmnElement="SetCheckStatusTask">
-        <dc:Bounds x="480" y="120" width="100" height="80" />
+        <dc:Bounds x="420" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PatchZaakIncomeCheckTask_di" bpmnElement="PatchZaakIncomeCheckTask">
+        <dc:Bounds x="550" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReadZaakToelichtingTask_di" bpmnElement="ReadZaakToelichtingTask">
+        <dc:Bounds x="680" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="642" y="142" width="36" height="36" />
+        <dc:Bounds x="842" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="618" y="185" width="85" height="27" />
+          <dc:Bounds x="818" y="185" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_Check_di" bpmnElement="Flow_Start_To_Check">
         <di:waypoint x="258" y="160" />
-        <di:waypoint x="320" y="160" />
+        <di:waypoint x="290" y="160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Check_To_Status_di" bpmnElement="Flow_Check_To_Status">
+        <di:waypoint x="390" y="160" />
         <di:waypoint x="420" y="160" />
-        <di:waypoint x="480" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Status_To_End_di" bpmnElement="Flow_Status_To_End">
-        <di:waypoint x="580" y="160" />
-        <di:waypoint x="642" y="160" />
+      <bpmndi:BPMNEdge id="Flow_Status_To_PatchZaak_di" bpmnElement="Flow_Status_To_PatchZaak">
+        <di:waypoint x="520" y="160" />
+        <di:waypoint x="550" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadToelichting_di" bpmnElement="Flow_PatchZaak_To_ReadToelichting">
+        <di:waypoint x="650" y="160" />
+        <di:waypoint x="680" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReadToelichting_To_End_di" bpmnElement="Flow_ReadToelichting_To_End">
+        <di:waypoint x="780" y="160" />
+        <di:waypoint x="842" y="160" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

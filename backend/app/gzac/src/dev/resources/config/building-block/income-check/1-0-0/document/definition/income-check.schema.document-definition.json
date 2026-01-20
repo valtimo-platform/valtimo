@@ -19,6 +19,14 @@
         "checkStatus": {
             "type": "string",
             "description": "Status van de inkomenstoets"
+        },
+        "grandparentZaakOmschrijving": {
+            "type": "string",
+            "description": "Zaak omschrijving ontvangen van grandparent BB (BB1)"
+        },
+        "zaakOmschrijvingBB3": {
+            "type": "string",
+            "description": "Zaak omschrijving gelezen na ZGW patch-zaak actie in BB3"
         }
     },
     "required": ["applicantName", "householdSize"]

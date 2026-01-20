@@ -1,1 +1,12 @@
-[]
+[
+    {
+        "activityId": "PatchZaakIncomeCheckTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "description": "BB3: Inkomenstoets voltooid - GOEDGEKEURD"
+        }
+    }
+]
