@@ -45,6 +45,7 @@ public class KeycloakService {
     public static final String KEYCLOAK_JWT_CLIENT_REGISTRATION = "keycloakjwt";
     private final KeycloakSpringBootProperties properties;
     private final String clientName;
+    private ResteasyJackson2Provider jacksonProvider = null;
 
     public KeycloakService(KeycloakSpringBootProperties properties, String keycloakClientName) {
         this.properties = ValtimoKeycloakPropertyResolver.resolveProperties();
@@ -52,12 +53,18 @@ public class KeycloakService {
     }
 
     public Keycloak keycloak() {
+        if (jacksonProvider == null) {
 
-        ObjectMapper mapper = new ObjectMapper()
-            .configure(FAIL_ON_UNKNOWN_PROPERTIES, false); // Use a lenient Jackson ObjectMapper so the Keycloak Admin Client can deserialize newer server responses that include additional/unknown fields without failing.
+            ObjectMapper mapper = new ObjectMapper()
+                .configure(
+                    FAIL_ON_UNKNOWN_PROPERTIES,
+                    false
+                ); // Use a lenient Jackson ObjectMapper so the Keycloak Admin Client can deserialize newer server responses that include additional/unknown fields without failing.
 
-        ResteasyJackson2Provider jacksonProvider = new ResteasyJackson2Provider();
-        jacksonProvider.setMapper(mapper);
+            jacksonProvider = new ResteasyJackson2Provider();
+            jacksonProvider.setMapper(mapper);
+
+        }
 
         ResteasyClient resteasyClient = new ResteasyClientBuilderImpl()
             .connectionPoolSize(10)
