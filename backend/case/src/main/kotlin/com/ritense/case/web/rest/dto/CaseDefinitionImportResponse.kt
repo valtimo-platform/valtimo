@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule} from '@valtimo/components';
-import {IkoConfigurationComponent} from './components/iko-configuration/iko-configuration.component';
+package com.ritense.case.web.rest.dto
 
-@NgModule({
-  declarations: [IkoConfigurationComponent],
-  imports: [CommonModule, FormModule, InputModule, PluginTranslatePipeModule],
-  exports: [IkoConfigurationComponent],
-})
-export class IkoPluginModule {}
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+
+data class CaseDefinitionImportResponse(
+    val caseDefinitionId: CaseDefinitionId?,
+)
