@@ -8,7 +8,7 @@
 * [🏙️ Architectural overview](fundamentals/architectural-overview/README.md)
   * [Choosing the right setup](fundamentals/architectural-overview/choosing-the-right-setup.md)
   * [⚙️ Available modules](fundamentals/architectural-overview/modules.md)
-* [Process Exchange](fundamentals/process-exchange/README.md)
+* [Process Exchange](fundamentals/process-exchange/README.md) 
   * [Process blueprints](fundamentals/process-exchange/blueprints.md)
   * [Building blocks](fundamentals/process-exchange/building-blocks.md)
 * [📖 How to use this documentation](fundamentals/how-to-use-the-documentation.md)
