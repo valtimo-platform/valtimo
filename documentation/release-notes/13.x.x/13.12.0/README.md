@@ -15,3 +15,7 @@
   When you set the Spring property `operaton.incident.alert-log.enabled` to `true`,
   an error will be logged when an Operaton process gets into incident status.
   This can be useful if you want to set up an alert at infrastructure level. More information about this feature can be found in the [incident error logging documentation](../../../features/process/process/incident-error-logging.md).
+
+## Bugfixes
+
+* **Fixed `logging_event` errors when the application was started with an empty database**
