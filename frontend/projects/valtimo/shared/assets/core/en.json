@@ -415,7 +415,7 @@
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
   "formManagement": {
-    "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
+    "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. Click the button below to configure it.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
     "gotoProcessLinksButton": "Configure now",
     "loading": "Loading form...",
