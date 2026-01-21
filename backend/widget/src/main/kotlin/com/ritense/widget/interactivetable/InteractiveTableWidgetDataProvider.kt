@@ -73,7 +73,7 @@ class InteractiveTableWidgetDataProvider(
                 table = PageImpl(content, pageable, collectionNode.size().toLong())
             )
         } else if (collectionNode["content"] is ArrayNode) {
-            val result = collectionNode.get("content") as ArrayNode
+            val result = collectionNode["content"] as ArrayNode
             val content = toPageContent(widget, resolvedValues, result)
             val total = collectionNode["totalElements"]?.longValue() ?: result.size().toLong()
             return InteractiveTableWidgetDataResult(
