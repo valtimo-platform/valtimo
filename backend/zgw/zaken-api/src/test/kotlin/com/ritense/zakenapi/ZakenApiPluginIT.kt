@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -64,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
@@ -87,10 +89,10 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     @Autowired
     lateinit var pluginProcessLinkRepository: PluginProcessLinkRepository
 
-    @Autowired
-    lateinit var procesDocumentService: ProcessDocumentService
+    @MockitoSpyBean
+    lateinit var processDocumentService: ProcessDocumentService
 
-    @Autowired
+    @MockitoSpyBean
     lateinit var documentService: DocumentService
 
     @Autowired
@@ -241,11 +243,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
-        // Make a record in the database about a document that is matched to the open zaak
+        setupZaakInstanceLinkCreationOnDocumentCreate()
         setupResourceMock()
 
         // Start the process
-        val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
         assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
 
         // Check the request that was sent to the open zaak api
@@ -272,11 +274,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val newDocumentRequest = newDocumentRequest()
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
-        // Make a record in1 the database about a document that is matched to the open zaak
+        setupZaakInstanceLinkCreationOnDocumentCreate()
         setupResourceMock()
 
         // Start the process
-        val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
         assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
 
         // Check the request that was sent to the open zaak api
@@ -431,6 +433,21 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             .thenReturn(resource)
         whenever(resourceProvider.getResource(any()))
             .thenReturn(resource)
+    }
+
+    private fun setupZaakInstanceLinkCreationOnDocumentCreate() {
+        doAnswer { invocation ->
+            val result = invocation.callRealMethod() as com.ritense.document.service.result.CreateDocumentResult
+            result.resultingDocument().ifPresent { document ->
+                zaakInstanceLinkService.createZaakInstanceLink(
+                    ZAAK_URL,
+                    UUID.fromString(ZAAK_ID),
+                    document.id().id,
+                    ZAAKTYPE_URL
+                )
+            }
+            result
+        }.whenever(documentService).createDocument(any())
     }
 
     private fun zakenApiPlugin() =
