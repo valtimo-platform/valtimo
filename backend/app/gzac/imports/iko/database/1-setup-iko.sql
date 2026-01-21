@@ -81,7 +81,7 @@ INSERT INTO connector_endpoint(id,name,connector_id,operation) VALUES('d53096fe-
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('c6c88840-074d-4a22-9af3-42037a600670','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_USER');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a16','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ADMIN');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a17','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ENDPOINT_BRPPERSONENENDPOINT');
-INSERT INTO aggregated_data_profile(id,name,primary_endpoint,transform,role,connector_endpoint_id,connector_instance_id) VALUES('4d4b7633-46d3-4eaf-9d78-9f9c95599c42','Personen',NULL,'{persoon: .personen[0]}','ROLE_ENDPOINT_BRPPERSONENENDPOINT','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605');
+INSERT INTO aggregated_data_profile(id,name,primary_endpoint,transform,roles,connector_endpoint_id,connector_instance_id) VALUES('4d4b7633-46d3-4eaf-9d78-9f9c95599c42','Personen',NULL,'{persoon: .personen[0]}','ROLE_ENDPOINT_BRPPERSONENENDPOINT','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605');
 
 
 
@@ -391,7 +391,7 @@ INSERT INTO connector_endpoint(id,name,connector_id,operation) VALUES('e6396e4a-
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464cca','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_USER');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464ccc','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_ADMIN');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464ccd','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_ENDPOINT_BRPPERSONENENDPOINT');
-INSERT INTO aggregated_data_profile(id,name,transform,role,connector_endpoint_id,connector_instance_id,endpoint_transform) VALUES('fef3cd88-0470-4cfa-8112-fb27727a4f67', 'demo',
+INSERT INTO aggregated_data_profile(id,name,transform,roles,connector_endpoint_id,connector_instance_id,endpoint_transform) VALUES('fef3cd88-0470-4cfa-8112-fb27727a4f67', 'demo',
 'def parse_header_json($name):
   (header($name)
    | if . == null or . == "" then {} else (try fromjson catch {}) end);
