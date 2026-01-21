@@ -746,8 +746,8 @@
       "namePlaceholder": "Voer hier een naam in",
       "nameTooltip": "De naam die de gebruiker te zien krijgt.",
       "version": "Versie van de dossierdefinitie",
-      "versionPlaceholder": "Voer hier een versie in",
-      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie.",
+      "versionPlaceholder": "Voer hier een versie in (bijv. 1.0.0)",
+      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie. Gebruik Semantic Versioning (bijv. 1.0.0).",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
