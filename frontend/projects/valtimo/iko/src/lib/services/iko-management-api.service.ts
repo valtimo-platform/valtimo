@@ -235,9 +235,9 @@ export class IkoManagementApiService extends BaseApiService {
     return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/iko/${key}`));
   }
 
-  public getIkoRepositoryConfigPropertyFields(type: string): Observable<PropertyField[]> {
+  public getIkoTabPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/management/v1/iko-property-fields/${type}/repository-config`)
+      this.getApiUrl(`/management/v1/iko-property-fields/${type}/tab`)
     );
   }
 

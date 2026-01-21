@@ -81,6 +81,13 @@
     gap: 16px;
   }
 
+  &__sorting {
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+    gap: 16px;
+  }
+
   &__enum {
     display: flex;
     flex-direction: column;
