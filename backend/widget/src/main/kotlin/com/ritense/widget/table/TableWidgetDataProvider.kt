@@ -76,7 +76,7 @@ class TableWidgetDataProvider(
         } else if (collectionNode["content"] is ArrayNode) {
             val result = collectionNode["content"] as ArrayNode
             val content = toPageContent(widget, result)
-            val total = collectionNode["totalElements"]?.longValue() ?: collectionNode.size().toLong()
+            val total = collectionNode["totalElements"]?.longValue() ?: result.size().toLong()
             return ResolvedPage(
                 content = content,
                 resolved = exposedValues,
