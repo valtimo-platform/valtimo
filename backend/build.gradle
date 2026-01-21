@@ -47,7 +47,7 @@ jacoco {
 }
 
 checkstyle {
-    toolVersion = "12.1.1"
+    toolVersion = "12.3.1"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
@@ -185,11 +185,6 @@ subprojects { subproject ->
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
 
-        dependencyCheck {
-            analyzers.ossIndex.username = System.getenv('SONATYPE_OSS_INDEX_USERNAME')
-            analyzers.ossIndex.password = System.getenv('SONATYPE_OSS_INDEX_API_TOKEN')            
-        }
-
         apply from: "${rootProject.projectDir}/backend/gradle/test.gradle"
 
         tasks.register("allDeps", DependencyReportTask) {}
@@ -230,6 +225,7 @@ subprojects { subproject ->
         }
 
         checkstyle {
+            toolVersion = "12.3.1"
             //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
             config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false

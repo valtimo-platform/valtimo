@@ -213,7 +213,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
         ),
         hideWhenEmpty: this.fb.control<boolean>(false),
         sortable: this.fb.control<boolean>(false),
-        defaultSort: this.fb.control<Direction | ''>({value: '', disabled: true}),
+        defaultSort: this.fb.control<Direction | null>({value: null, disabled: true}),
       })
     );
   }
@@ -359,7 +359,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           title: row.title,
           value: row.content,
           ...(row.sortable !== undefined && {sortable: row.sortable}),
-          ...(row.defaultSort !== '' && row.sortable && {defaultSort: row.defaultSort}),
+          ...(row.defaultSort && row.sortable && {defaultSort: row.defaultSort}),
           ...(!!row?.type.id && {
             displayProperties: {
               type: row.type.id,
