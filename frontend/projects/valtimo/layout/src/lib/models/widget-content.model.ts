@@ -16,7 +16,6 @@
 
 import {WidgetDisplayType} from './widget-display.model';
 import {FieldsWidgetValue, GeoJsonSource, WidgetAction} from './widget.model';
-import {ListItem} from 'carbon-components-angular';
 
 interface WidgetFieldsContent {
   columns: FieldsWidgetValue[][];
