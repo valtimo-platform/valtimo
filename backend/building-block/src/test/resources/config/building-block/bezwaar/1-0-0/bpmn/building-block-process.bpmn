@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0yk60qs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.39.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+  <bpmn:process id="building-block-process" name="Building block process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0lmxbfr</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0lmxbfr" sourceRef="StartEvent_1" targetRef="Event_04x4r47" />
+    <bpmn:endEvent id="Event_0ltydlb">
+      <bpmn:incoming>Flow_1h70eh0</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1h70eh0" sourceRef="Event_04x4r47" targetRef="Event_0ltydlb" />
+    <bpmn:intermediateCatchEvent id="Event_04x4r47" name="Wait until test signals ready">
+      <bpmn:incoming>Flow_0lmxbfr</bpmn:incoming>
+      <bpmn:outgoing>Flow_1h70eh0</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0e9v8zi" messageRef="Message_30936nr" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_30936nr" name="test-ready" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="building-block-process">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ltydlb_di" bpmnElement="Event_0ltydlb">
+        <dc:Bounds x="422" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_08q49r5_di" bpmnElement="Event_04x4r47">
+        <dc:Bounds x="292" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="277" y="145" width="66" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0lmxbfr_di" bpmnElement="Flow_0lmxbfr">
+        <di:waypoint x="218" y="120" />
+        <di:waypoint x="292" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1h70eh0_di" bpmnElement="Flow_1h70eh0">
+        <di:waypoint x="328" y="120" />
+        <di:waypoint x="422" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -17,13 +17,10 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -46,7 +43,6 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import java.util.UUID
-import java.util.concurrent.Callable
 
 /**
  * Integration tests for DefaultBuildingBlockPluginConfigurationResolver.
@@ -57,7 +53,6 @@ import java.util.concurrent.Callable
 class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
     private val listener: BuildingBlockCallActivityListener,
     private val resolver: DefaultBuildingBlockPluginConfigurationResolver,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,
@@ -179,9 +174,9 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
             businessKey = caseDocumentId.toString()
         )
 
-        AuthorizationContext.runWithoutAuthorization(Callable {
+        runWithoutAuthorization {
             listener.onCallActivityStart(bb1Execution)
-        })
+        }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
 
@@ -192,9 +187,9 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
             businessKey = bb1Instance.documentId.toString()
         )
 
-        AuthorizationContext.runWithoutAuthorization(Callable {
+        runWithoutAuthorization {
             listener.onCallActivityStart(bb2Execution)
-        })
+        }
 
         val bb2Instance = buildingBlockInstanceRepository.findAll().find { it.definition.id == bb2DefinitionId }!!
 
@@ -268,9 +263,9 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
             businessKey = caseDocumentId.toString()
         )
 
-        AuthorizationContext.runWithoutAuthorization(Callable {
+        runWithoutAuthorization {
             listener.onCallActivityStart(bb1Execution)
-        })
+        }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
 
