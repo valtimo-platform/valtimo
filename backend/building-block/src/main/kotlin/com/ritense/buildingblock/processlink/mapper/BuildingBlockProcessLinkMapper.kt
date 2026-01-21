@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateRequestDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkDeployDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
@@ -125,6 +127,19 @@ class BuildingBlockProcessLinkMapper(
                 outputMappings = processLink.outputMappings.toOutputDto()
             )
         }
+    }
+
+    override fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> {
+        processLink as BuildingBlockProcessLink
+        return setOf(BuildingBlockDefinitionExportRequest(processLink.buildingBlockDefinitionId))
+    }
+
+    override fun createRelatedExportRequestsForBuildingBlock(
+        processLink: ProcessLink,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Set<ExportRequest> {
+        processLink as BuildingBlockProcessLink
+        return setOf(BuildingBlockDefinitionExportRequest(processLink.buildingBlockDefinitionId))
     }
 
     override fun toNewProcessLink(

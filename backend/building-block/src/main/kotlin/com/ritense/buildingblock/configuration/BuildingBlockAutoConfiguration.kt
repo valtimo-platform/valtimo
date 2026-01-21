@@ -63,6 +63,7 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.exporter.ExportService
+import com.ritense.importer.BuildingBlockDependencyResolver
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -315,14 +316,14 @@ class BuildingBlockAutoConfiguration {
         valtimoImportService: ValtimoImportService,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         applicationEventPublisher: ApplicationEventPublisher,
-        objectMapper: ObjectMapper,
+        buildingBlockDependencyResolver: BuildingBlockDependencyResolver,
     ): BuildingBlockDefinitionDeploymentService {
         return BuildingBlockDefinitionDeploymentService(
             resourceLoader,
             valtimoImportService,
             buildingBlockDefinitionRepository,
             applicationEventPublisher,
-            objectMapper
+            buildingBlockDependencyResolver
         )
     }
 

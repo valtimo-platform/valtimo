@@ -18,6 +18,8 @@ package com.ritense.valtimo.contract.buildingblock
 
 interface BuildingBlockDefinitionChecker {
 
+    fun getAllBuildingBlockDefinitionIds(): List<BuildingBlockDefinitionId> = emptyList()
+
     fun existsBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean = false
 
     fun existsBuildingBlockDefinition(buildingBlockDefinitionKey: String): Boolean = false

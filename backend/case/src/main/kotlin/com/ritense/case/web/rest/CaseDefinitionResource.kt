@@ -39,6 +39,7 @@ import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -75,6 +76,7 @@ class CaseDefinitionResource(
     private val importService: ImportService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
 ) {
 
     @RunWithoutAuthorization
@@ -369,7 +371,12 @@ class CaseDefinitionResource(
     ): ResponseEntity<CaseDefinitionImportResponse> {
         return try {
             val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-            val caseDefinitionId = importService.import(file.inputStream, skipImportOfCaseDefinitions)
+            val existingBuildingBlocks = buildingBlockDefinitionChecker.getAllBuildingBlockDefinitionIds()
+            val caseDefinitionId = importService.importCaseWithDependencies(
+                file.inputStream,
+                skipImportOfCaseDefinitions,
+                existingBuildingBlocks
+            )
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
         } catch (exception: ImportServiceException) {

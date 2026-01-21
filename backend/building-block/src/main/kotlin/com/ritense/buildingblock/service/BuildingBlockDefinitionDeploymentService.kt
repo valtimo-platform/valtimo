@@ -16,13 +16,11 @@
 
 package com.ritense.buildingblock.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.importer.BuildingBlockDependencyResolver
 import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockImporterRan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.StringUtils
@@ -46,7 +44,7 @@ class BuildingBlockDefinitionDeploymentService(
     private val valtimoImportService: ValtimoImportService,
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val objectMapper: ObjectMapper
+    private val buildingBlockDependencyResolver: BuildingBlockDependencyResolver
 ) {
     @Order(Ordered.LOWEST_PRECEDENCE)
     @EventListener(ApplicationReadyEvent::class)
@@ -95,85 +93,33 @@ class BuildingBlockDefinitionDeploymentService(
     private fun sortByDependencies(
         resources: List<Pair<String, List<Pair<String, Resource>>>>
     ): List<Pair<String, List<Pair<String, Resource>>>> {
-        val resourceMap = resources.toMap()
-        val allKeys = resources.map { it.first }.toSet()
-
         // Map resource keys to BuildingBlockDefinitionIds for matching
+        val allKeys = resources.map { it.first }.toSet()
         val keyToDefinitionId = allKeys.associateWith { key ->
             // Key format: /definition-key/version-tag (e.g., /sub-processor/1-0-0)
-            val parts = key.trim('/').split("/")
-            BuildingBlockDefinitionId.of(parts[0], parts[1].replace("-", "."))
+            buildingBlockDependencyResolver.fromFolderPath(key)
         }
         val definitionIdToKey = keyToDefinitionId.entries.associate { it.value to it.key }
 
-        // Build dependency graph: resource key -> set of resource keys it depends on
-        val dependencies = resources.associate { (key, files) ->
-            val deps = files
-                .filter { (filename, _) -> filename.endsWith(".process-link.json") }
-                .flatMap { (_, resource) ->
-                    try {
-                        extractBuildingBlockDependencies(resource)
-                            .mapNotNull { definitionIdToKey[it] }
-                    } catch (_: Exception) {
-                        logger.warn { "Failed to parse process link file for dependency analysis: ${resource.filename}" }
-                        emptyList()
+        return buildingBlockDependencyResolver.sortByDependencies(
+            items = resources,
+            keyExtractor = { it.first },
+            dependencyExtractor = { (_, files) ->
+                files
+                    .filter { (filename, _) -> filename.endsWith(".process-link.json") }
+                    .flatMap { (_, resource) ->
+                        try {
+                            val content = resource.inputStream.use { it.readBytes() }
+                            buildingBlockDependencyResolver.extractDependenciesFromProcessLink(content)
+                                .mapNotNull { definitionIdToKey[it] }
+                        } catch (_: Exception) {
+                            logger.warn { "Failed to parse process link file for dependency analysis: ${resource.filename}" }
+                            emptyList()
+                        }
                     }
-                }
-                .toSet()
-            key to deps
-        }
-        logger.info { "Building block dependencies: $dependencies" }
-
-        // Topological sort using Kahn's algorithm
-        // in-degree = number of unresolved dependencies for each building block
-        val inDegree = allKeys.associateWith { key ->
-            dependencies[key]?.size ?: 0
-        }.toMutableMap()
-
-        val sorted = mutableListOf<String>()
-        val queue = ArrayDeque(inDegree.filterValues { it == 0 }.keys)
-
-        while (queue.isNotEmpty()) {
-            val current = queue.removeFirst()
-            sorted.add(current)
-            // Find all building blocks that depend on current and decrease their in-degree
-            dependencies.forEach { (key, deps) ->
-                if (current in deps) {
-                    inDegree[key] = inDegree[key]!! - 1
-                    if (inDegree[key] == 0) {
-                        queue.add(key)
-                    }
-                }
+                    .toSet()
             }
-        }
-
-        if (sorted.size != resources.size) {
-            val remaining = allKeys - sorted.toSet()
-            logger.warn { "Circular dependency detected among building blocks: $remaining. Importing in original order." }
-            return resources
-        }
-
-        return sorted.mapNotNull { key -> resourceMap[key]?.let { key to it } }
-    }
-
-    /**
-     * Extracts BuildingBlockDefinitionIds that this resource depends on.
-     * Looks for building-block type process links and extracts their target definition IDs.
-     */
-    private fun extractBuildingBlockDependencies(resource: Resource): Set<BuildingBlockDefinitionId> {
-        val content = resource.inputStream.bufferedReader().readText()
-        val jsonTree = objectMapper.readTree(content)
-
-        if (jsonTree !is ArrayNode) return emptySet()
-
-        return jsonTree.mapNotNull { node ->
-            if (node.get("processLinkType")?.asText() != "building-block") return@mapNotNull null
-
-            val key = node.get("buildingBlockDefinitionKey")?.asText() ?: return@mapNotNull null
-            val versionTag = node.get("buildingBlockDefinitionVersionTag")?.asText() ?: return@mapNotNull null
-
-            BuildingBlockDefinitionId.of(key, versionTag)
-        }.toSet()
+        )
     }
 
     companion object {

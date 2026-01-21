@@ -21,6 +21,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
 import org.operaton.bpm.engine.RepositoryService
@@ -44,12 +45,17 @@ class BuildingBlockProcessLinkExporter(
                 .singleResult()
         ).key
 
+        val relatedRequests = mutableSetOf<ExportRequest>()
         val exportDtos = processLinkService.getProcessLinks(processDefinitionId).map { link ->
-            getProcessLinkMapper(link.processLinkType).toProcessLinkExportResponseDto(link)
+            val mapper = getProcessLinkMapper(link.processLinkType)
+            relatedRequests.addAll(
+                mapper.createRelatedExportRequestsForBuildingBlock(link, request.buildingBlockDefinitionId)
+            )
+            mapper.toProcessLinkExportResponseDto(link)
         }
 
         if (exportDtos.isEmpty()) {
-            return ExportResult(null)
+            return ExportResult(null, relatedRequests)
         }
 
         val bytes = ByteArrayOutputStream().use {
@@ -70,7 +76,7 @@ class BuildingBlockProcessLinkExporter(
             bytes
         )
 
-        return ExportResult(file)
+        return ExportResult(file, relatedRequests)
     }
 
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {

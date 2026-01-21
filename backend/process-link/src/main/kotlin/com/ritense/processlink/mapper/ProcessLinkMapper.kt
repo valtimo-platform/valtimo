@@ -24,6 +24,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.util.UUID
 
@@ -51,6 +52,17 @@ interface ProcessLinkMapper {
      * @param caseDefinitionId The caseDefinitionId of the case the processLink is part of
      */
     fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = setOf()
+
+    /**
+     * Used by the export service for building blocks.
+     * Should return export requests the provided processLink depends on.
+     * @param processLink The processLink to create related export requests for
+     * @param buildingBlockDefinitionId The buildingBlockDefinitionId of the building block the processLink is part of
+     */
+    fun createRelatedExportRequestsForBuildingBlock(
+        processLink: ProcessLink,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Set<ExportRequest> = setOf()
 
     fun getImporterType(): String? = null
 }

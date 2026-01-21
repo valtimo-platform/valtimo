@@ -24,4 +24,19 @@ interface ImportService {
     fun importGlobal(inputStream: InputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
     fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
+
+    /**
+     * Imports a case definition with its building block dependencies from a zip file.
+     * Building blocks are imported first (if not already existing), then the case definition.
+     *
+     * @param inputStream The input stream containing the zip file
+     * @param existingCaseDefinitions List of case definitions to skip if already existing
+     * @param existingBuildingBlocks List of building blocks to skip if already existing
+     * @return The imported case definition ID, or null if skipped
+     */
+    fun importCaseWithDependencies(
+        inputStream: InputStream,
+        existingCaseDefinitions: List<CaseDefinitionId>,
+        existingBuildingBlocks: List<BuildingBlockDefinitionId>
+    ): CaseDefinitionId?
 }

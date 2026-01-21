@@ -41,6 +41,8 @@ import java.util.zip.ZipOutputStream
 
 class ValtimoImportServiceTest {
 
+    private val dependencyResolver = mock<BuildingBlockDependencyResolver>()
+
     @Test
     fun `should not instantiate on duplicate importer types`() {
         val exception = assertThrows<DuplicateImporterTypeException> {
@@ -50,7 +52,8 @@ class ValtimoImportServiceTest {
                     TestImporter()
                 ),
                 mock(),
-                emptyList()
+                emptyList(),
+                dependencyResolver
             )
         }
 
@@ -67,7 +70,8 @@ class ValtimoImportServiceTest {
                 filteredImporter
             ),
             mock(),
-            emptyList()
+            emptyList(),
+            dependencyResolver
         )
 
         //Should not throw TooManyImportCandidatesException, since 'other' is filtered out
@@ -87,7 +91,8 @@ class ValtimoImportServiceTest {
                     TestImporter("test3", supportsFunction = { false })
                 ),
                 mock(),
-                emptyList()
+                emptyList(),
+                dependencyResolver
             )
 
             service.import(createZipInputStream(1), emptyList())
@@ -105,7 +110,8 @@ class ValtimoImportServiceTest {
                     TestImporter("1"),
                 ),
                 mock(),
-                emptyList()
+                emptyList(),
+                dependencyResolver
             )
         }
 
@@ -115,7 +121,7 @@ class ValtimoImportServiceTest {
 
     @Test
     fun `should throw InvalidImportZipException`() {
-        val importService = ValtimoImportService(setOf(), mock(), emptyList())
+        val importService = ValtimoImportService(setOf(), mock(), emptyList(), dependencyResolver)
         assertThrows<InvalidImportZipException> {
             importService.import("123456".byteInputStream(Charsets.UTF_8), emptyList())
         }
@@ -154,7 +160,7 @@ class ValtimoImportServiceTest {
             }
         """.trimIndent()
 
-        val importService = ValtimoImportService(importers.shuffled().toSet()+caseDefinitionImporterMock, mock(), emptyList())
+        val importService = ValtimoImportService(importers.shuffled().toSet()+caseDefinitionImporterMock, mock(), emptyList(), dependencyResolver)
 
         // do not create file "3"
         val skip = 3
@@ -205,7 +211,7 @@ class ValtimoImportServiceTest {
             isCaseDefinition = false
         )
 
-        val service = ValtimoImportService(setOf(importer), mock(), emptyList())
+        val service = ValtimoImportService(setOf(importer), mock(), emptyList(), dependencyResolver)
 
         service.importGlobal(input)
 

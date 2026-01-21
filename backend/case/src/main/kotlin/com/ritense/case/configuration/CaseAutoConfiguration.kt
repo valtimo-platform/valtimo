@@ -62,6 +62,7 @@ import com.ritense.importer.ValtimoImportService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -100,6 +101,7 @@ class CaseAutoConfiguration {
         activeCaseDefinitionService: ActiveCaseDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -108,6 +110,7 @@ class CaseAutoConfiguration {
             importService,
             caseDefinitionRepository,
             caseDefinitionChecker,
+            buildingBlockDefinitionChecker,
         )
     }
 

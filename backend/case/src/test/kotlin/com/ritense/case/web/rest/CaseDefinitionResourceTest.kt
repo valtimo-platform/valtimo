@@ -27,6 +27,7 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -65,6 +66,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     lateinit var importService: ImportService
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var caseDefinitionChecker: CaseDefinitionChecker
+    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
     lateinit var mapper: ObjectMapper
 
     @BeforeEach
@@ -75,6 +77,7 @@ class CaseDefinitionResourceTest : BaseTest() {
         importService = mock()
         caseDefinitionRepository = mock()
         caseDefinitionChecker = mock()
+        buildingBlockDefinitionChecker = mock()
         resource = CaseDefinitionResource(
             service,
             activeCaseDefinitionService,
@@ -82,6 +85,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             importService,
             caseDefinitionRepository,
             caseDefinitionChecker,
+            buildingBlockDefinitionChecker,
         )
 
         mapper = MapperSingleton.get()

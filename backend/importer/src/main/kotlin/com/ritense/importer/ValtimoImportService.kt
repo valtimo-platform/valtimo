@@ -40,7 +40,8 @@ import java.util.zip.ZipInputStream
 class ValtimoImportService(
     importers: Set<Importer>,
     private val environment: Environment,
-    val whitelistedEnvironmentProperties: List<Regex>
+    val whitelistedEnvironmentProperties: List<Regex>,
+    private val buildingBlockDependencyResolver: BuildingBlockDependencyResolver
 ) : ImportService {
 
     private val orderedImporters = distinctImporters(importers).let {
@@ -374,6 +375,202 @@ class ValtimoImportService(
         }
     }
 
+    @Transactional
+    override fun importCaseWithDependencies(
+        inputStream: InputStream,
+        existingCaseDefinitions: List<CaseDefinitionId>,
+        existingBuildingBlocks: List<BuildingBlockDefinitionId>
+    ): CaseDefinitionId? {
+        return runImporter {
+            // Read all entries keeping original paths for building block grouping
+            val rawEntries = readZipEntriesWithOriginalPaths(inputStream)
+
+            // Import building blocks first (dependencies should be imported before the case)
+            importBuildingBlocksFromRawEntries(rawEntries, existingBuildingBlocks)
+
+            // Prepare entries for case import (strip prefixes)
+            val caseEntries = rawEntries
+                .filter { it.originalPath.startsWith("config/case") }
+                .map { ZipFileEntry(prepareFilePath(it.originalPath), it.content) }
+
+            if (caseEntries.isEmpty()) {
+                return@runImporter null
+            }
+
+            // Import case definition using existing logic
+            val importerEntriesList = getEntriesByImporter(caseEntries) { importer ->
+                importer.partOfCaseDefinition()
+            }.ifEmpty { return@runImporter null }
+
+            val caseDefinitionId: CaseDefinitionId?
+            val filteredImporterEntriesList = importerEntriesList
+                .filter { it.key.type() == CASE_DEFINITION }
+
+            if (filteredImporterEntriesList.isNotEmpty()) {
+                val caseDefinitionEntries = filteredImporterEntriesList.let {
+                    it[it.keys.first()]
+                }
+                val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
+                    .readValue(caseDefinitionEntries?.first()?.content!!)
+                caseDefinitionId = CaseDefinitionId(
+                    caseDefinitionMap["key"] as String,
+                    caseDefinitionMap["versionTag"] as String
+                )
+
+                if (existingCaseDefinitions.contains(caseDefinitionId)) {
+                    return@runImporter caseDefinitionId
+                }
+
+                importerEntriesList.filter { it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
+                    entries.forEach { entry ->
+                        logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                        importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+                    }
+                }
+
+            } else {
+                caseDefinitionId = null
+            }
+
+            importerEntriesList.filter { it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    importer.afterImport(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+                }
+            }
+
+            return@runImporter caseDefinitionId
+        }
+    }
+
+    /**
+     * Groups building block entries by their definition ID and imports them in order.
+     * Skips building blocks that already exist.
+     */
+    private fun importBuildingBlocksFromRawEntries(
+        rawEntries: List<RawZipFileEntry>,
+        existingBuildingBlocks: List<BuildingBlockDefinitionId>
+    ) {
+        // Group entries by building block (key/version)
+        val buildingBlockGroups = rawEntries
+            .filter { it.originalPath.startsWith("config/building-block/") }
+            .groupBy { entry ->
+                // Extract key/version from path like config/building-block/key/1-0-0/...
+                val pathParts = entry.originalPath.removePrefix("config/building-block/").split("/")
+                if (pathParts.size >= 2) {
+                    "${pathParts[0]}/${pathParts[1]}"
+                } else {
+                    null
+                }
+            }
+            .filterKeys { it != null }
+            .mapKeys { it.key!! }
+
+        if (buildingBlockGroups.isEmpty()) {
+            return
+        }
+
+        // Sort building blocks by dependencies using the shared utility
+        val sortedGroups = buildingBlockDependencyResolver.sortByDependencies(
+            items = buildingBlockGroups.entries.toList(),
+            keyExtractor = { it.key },
+            dependencyExtractor = { (_, entries) ->
+                entries
+                    .filter { it.originalPath.endsWith(".process-link.json") }
+                    .flatMap { entry ->
+                        buildingBlockDependencyResolver.extractDependenciesFromProcessLink(entry.content)
+                            .map { buildingBlockDependencyResolver.toFolderPath(it) }
+                    }
+                    .toSet()
+            }
+        )
+
+        logger.info { "Importing building blocks in order: ${sortedGroups.map { it.key }}" }
+
+        // Import each building block
+        sortedGroups.forEach { (bbKey, bbRawEntries) ->
+            // Prepare entries (strip prefix for importers)
+            val bbEntries = bbRawEntries.map { raw ->
+                ZipFileEntry(prepareFilePath(raw.originalPath), raw.content)
+            }
+
+            val importerEntriesList = getEntriesByImporter(bbEntries) { importer ->
+                importer.partOfBuildingBlockDefinition()
+            }
+
+            if (importerEntriesList.isEmpty()) {
+                return@forEach
+            }
+
+            // Extract building block definition ID
+            val definitionEntries = importerEntriesList
+                .filter { it.key.type() == BUILDING_BLOCK_DEFINITION }
+                .let { it[it.keys.firstOrNull()] }
+
+            if (definitionEntries.isNullOrEmpty()) {
+                logger.warn { "No building block definition file found for $bbKey, skipping" }
+                return@forEach
+            }
+
+            val definitionMap: Map<String, Any> = jacksonObjectMapper()
+                .readValue(definitionEntries.first().content)
+            val buildingBlockDefinitionId = BuildingBlockDefinitionId(
+                definitionMap["key"] as String,
+                definitionMap["versionTag"] as String
+            )
+
+            // Skip if already exists
+            if (existingBuildingBlocks.contains(buildingBlockDefinitionId)) {
+                logger.debug { "Skipping existing building block: $buildingBlockDefinitionId" }
+                return@forEach
+            }
+
+            logger.info { "Importing building block: $buildingBlockDefinitionId" }
+
+            // Import
+            importerEntriesList
+                .filter { it.key.partOfBuildingBlockDefinition() }
+                .forEach { (importer, entries) ->
+                    entries.forEach { entry ->
+                        logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                        importer.import(
+                            ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId)
+                        )
+                    }
+                }
+
+            // After import
+            importerEntriesList
+                .filter { it.key.partOfBuildingBlockDefinition() }
+                .forEach { (importer, entries) ->
+                    entries.forEach { entry ->
+                        importer.afterImport(
+                            ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId)
+                        )
+                    }
+                }
+        }
+    }
+
+    /**
+     * Reads zip entries keeping original paths for building block grouping.
+     */
+    private fun readZipEntriesWithOriginalPaths(inputStream: InputStream): List<RawZipFileEntry> {
+        return try {
+            ZipInputStream(inputStream).use { stream ->
+                generateSequence { stream.nextEntry }
+                    .filter { !it.isDirectory }
+                    .map { RawZipFileEntry(it.name, stream.readBytes()) }
+                    .toMutableList()
+            }
+        } catch (ex: Exception) {
+            throw InvalidImportZipException(ex.message)
+        }.apply {
+            if (this.isEmpty()) {
+                throw InvalidImportZipException("Archive was empty or not a zip")
+            }
+        }
+    }
+
     private fun readZipEntries(inputStream: InputStream): List<ZipFileEntry> {
         // Read all entries with data from the stream
         return try {
@@ -533,6 +730,28 @@ class ValtimoImportService(
 
             override fun hashCode(): Int {
                 return fileName.hashCode()
+            }
+        }
+
+        /**
+         * Zip file entry with original path preserved for grouping.
+         */
+        data class RawZipFileEntry(
+            val originalPath: String,
+            val content: ByteArray
+        ) {
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as RawZipFileEntry
+
+                return originalPath == other.originalPath
+            }
+
+            override fun hashCode(): Int {
+                return originalPath.hashCode()
             }
         }
     }

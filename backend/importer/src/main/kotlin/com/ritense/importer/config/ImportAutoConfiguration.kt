@@ -16,6 +16,8 @@
 
 package com.ritense.importer.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.importer.BuildingBlockDependencyResolver
 import com.ritense.importer.ImportService
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportService
@@ -30,16 +32,26 @@ import org.springframework.core.env.Environment
 class ImportAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockDependencyResolver::class)
+    fun buildingBlockDependencyResolver(
+        objectMapper: ObjectMapper
+    ): BuildingBlockDependencyResolver {
+        return BuildingBlockDependencyResolver(objectMapper)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ImportService::class)
     fun importService(
         importers: Set<Importer>,
         environment: Environment,
-        importProperties: ImportProperties
+        importProperties: ImportProperties,
+        buildingBlockDependencyResolver: BuildingBlockDependencyResolver
     ): ImportService {
         return ValtimoImportService(
             importers,
             environment,
-            importProperties.whitelistedPaths.map { it.toRegex() }
+            importProperties.whitelistedPaths.map { it.toRegex() },
+            buildingBlockDependencyResolver
         )
     }
 }

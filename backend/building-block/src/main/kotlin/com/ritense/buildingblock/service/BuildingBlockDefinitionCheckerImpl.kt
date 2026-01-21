@@ -30,6 +30,11 @@ class BuildingBlockDefinitionCheckerImpl(
     private val draftEnvironments: String,
     private val draftsEnabled: Boolean,
 ) : BuildingBlockDefinitionChecker {
+
+    override fun getAllBuildingBlockDefinitionIds(): List<BuildingBlockDefinitionId> {
+        return repository.findAll().map { it.id }
+    }
+
     override fun existsBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean {
         return repository.findByIdOrNull(buildingBlockDefinitionId) != null
     }
