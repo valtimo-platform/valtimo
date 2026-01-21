@@ -18,8 +18,6 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
-import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
@@ -31,6 +29,9 @@ import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -39,7 +40,6 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.mock.web.MockPart
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
@@ -51,12 +51,6 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     private val objectMapper: ObjectMapper
 ) : BaseIntegrationTest() {
 
-    @MockitoBean
-    lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
-
-    @MockitoBean
-    lateinit var buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService
-
     private val base = "/api/management/v1/building-block"
     private val key = "bb-key"
     private val version = "1.0.0"
@@ -65,8 +59,9 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should return 200 with empty list when no process definitions found`() {
-        whenever(buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(eq(key), eq(version)))
-            .thenReturn(emptyList())
+        doReturn(emptyList<BuildingBlockProcessDefinitionDto>())
+            .whenever(buildingBlockProcessService)
+            .getProcessDefinitionsForBuildingBlock(eq(key), eq(version))
 
         mockMvc.get("$base/{key}/version/{version}/process-definition", key, version)
             .andExpect {
@@ -87,8 +82,9 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             versionTag = "v1",
             main = true
         )
-        whenever(buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(eq(key), eq(version)))
-            .thenReturn(listOf(dto))
+        doReturn(listOf(dto))
+            .whenever(buildingBlockProcessService)
+            .getProcessDefinitionsForBuildingBlock(eq(key), eq(version))
 
         mockMvc.get("$base/{key}/version/{version}/process-definition", key, version)
             .andExpect {
@@ -119,13 +115,13 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
             bpmn20Xml = "<definitions/>"
         )
 
-        whenever(
-            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
+        doReturn(withLinks)
+            .whenever(buildingBlockProcessService)
+            .getProcessDefinitionWithProcessLinks(
                 eq(key),
                 eq(version),
                 eq(processDefinitionId)
             )
-        ).thenReturn(withLinks)
 
         mockMvc.get(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
@@ -151,13 +147,13 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should return 404 when process definition with links not found`() {
-        whenever(
-            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
+        doReturn(null)
+            .whenever(buildingBlockProcessService)
+            .getProcessDefinitionWithProcessLinks(
                 eq(key),
                 eq(version),
                 eq(processDefinitionId)
             )
-        ).thenReturn(null)
 
         mockMvc.get(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
@@ -178,6 +174,10 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should deploy process definition with file and links and return 204`() {
+        doReturn(null)
+            .whenever(buildingBlockProcessService)
+            .deployProcessDefinitionAndProcessLinks(any(), any(), any(), any(), any(), any())
+
         val bpmn = MockMultipartFile(
             "file",
             "process.bpmn",
@@ -231,11 +231,11 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
                 PluginWithDependenciesDto("plugin-b", emptyList())
             )
         )
-        whenever(
-            buildingBlockPluginDefinitionService.getPluginDefinitionsWithDependenciesForBuildingBlock(
+        doReturn(pluginDefinitionsWithDependenciesDto)
+            .whenever(buildingBlockPluginDefinitionService)
+            .getPluginDefinitionsWithDependenciesForBuildingBlock(
                 eq(BuildingBlockDefinitionId.of(key, version))
             )
-        ).thenReturn(pluginDefinitionsWithDependenciesDto)
 
         mockMvc.get("$base/{key}/version/{version}/plugin", key, version)
             .andExpect {
@@ -250,9 +250,9 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @WithMockUser
     fun `should return plugin definitions for process definition`() {
         val pluginKeys = setOf("plugin-c")
-        whenever(
-            buildingBlockPluginDefinitionService.getPluginDefinitionKeysForProcessDefinition(eq(processDefinitionId))
-        ).thenReturn(pluginKeys)
+        doReturn(pluginKeys)
+            .whenever(buildingBlockPluginDefinitionService)
+            .getPluginDefinitionKeysForProcessDefinition(eq(processDefinitionId))
 
         mockMvc.get(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}/plugin",
@@ -272,6 +272,10 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should set main process definition for building block`() {
+        doNothing()
+            .whenever(buildingBlockProcessService)
+            .setMainProcessDefinition(eq(key), eq(version), eq(processDefinitionId))
+
         mockMvc.post(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}/main",
             key,
@@ -293,6 +297,10 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should delete process definition for building block`() {
+        doNothing()
+            .whenever(buildingBlockProcessService)
+            .deleteProcessDefinitionForBuildingBlock(eq(key), eq(version), eq(processDefinitionId))
+
         mockMvc.delete(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",
             key,
@@ -314,13 +322,13 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should return 400 when deleting main process definition for building block`() {
-        whenever(
-            buildingBlockProcessService.deleteProcessDefinitionForBuildingBlock(
+        doThrow(IllegalStateException("Cannot delete main process definition"))
+            .whenever(buildingBlockProcessService)
+            .deleteProcessDefinitionForBuildingBlock(
                 eq(key),
                 eq(version),
                 eq(processDefinitionId)
             )
-        ).thenThrow(IllegalStateException("Cannot delete main process definition"))
 
         mockMvc.delete(
             "$base/{key}/version/{version}/process-definition/{processDefinitionId}",

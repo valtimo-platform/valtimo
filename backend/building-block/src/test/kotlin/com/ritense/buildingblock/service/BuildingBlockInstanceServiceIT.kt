@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -40,9 +39,6 @@ class BuildingBlockInstanceServiceIT : BaseIntegrationTest() {
 
     @Autowired
     lateinit var buildingBlockInstanceService: BuildingBlockInstanceService
-
-    @Autowired
-    lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
 
     @Autowired
     lateinit var buildingBlockInstanceRepository: BuildingBlockInstanceRepository
