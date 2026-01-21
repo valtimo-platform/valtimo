@@ -96,9 +96,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     lateinit var documentService: DocumentService
 
     @Autowired
-    lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
-
-    @Autowired
     lateinit var objectMapper: ObjectMapper
 
     lateinit var server: MockWebServer
