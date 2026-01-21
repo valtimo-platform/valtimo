@@ -265,20 +265,20 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                "beschrijving":"Laatste login 1 week geleden voor upload documenten"
             },
             {
-               "kanaal":"Digitaal portaal2",
-               "beschrijving":"Laatste login 1 week geleden voor upload documenten"
+              "kanaal": "Balie",
+              "beschrijving": "Persoonlijk gesprek op het gemeentehuis"
             },
             {
-               "kanaal":"Digitaal portaal3",
-               "beschrijving":"Laatste login 1 week geleden voor upload documenten"
+              "kanaal": "Post",
+              "beschrijving": "Ontvangst van schriftelijke beschikking per brief"
             },
             {
-               "kanaal":"Digitaal portaal4",
-               "beschrijving":"Laatste login 1 week geleden voor upload documenten"
+              "kanaal": "Chat",
+              "beschrijving": "Online chatgesprek met klantenservice"
             },
             {
-               "kanaal":"Digitaal portaal5",
-               "beschrijving":"Laatste login 1 week geleden voor upload documenten"
+              "kanaal": "Videogesprek",
+              "beschrijving": "Videobelafspraak met consulent"
             }
          ],
          "notities":[
