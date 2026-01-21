@@ -64,6 +64,8 @@ export class WidgetWizardService {
 
   public readonly $widgetConditionsValid: WritableSignal<boolean> = signal(false);
 
+  public readonly $widgetFiltersValid: WritableSignal<boolean> = signal(false);
+
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
   public readonly $disableActionButton: WritableSignal<boolean> = signal(false);
@@ -74,6 +76,7 @@ export class WidgetWizardService {
     WidgetWizardStep.DENSITY,
     WidgetWizardStep.STYLE,
     WidgetWizardStep.CONTENT,
+    WidgetWizardStep.FILTERS,
     WidgetWizardStep.DISPLAY_CONDITIONS,
   ]);
 
@@ -89,6 +92,7 @@ export class WidgetWizardService {
         !!this.$widgetContent() &&
         this.$widgetContentValid() &&
         (!!this.$widgetTitle() || this.$disableTitleInput()),
+      [WidgetWizardStep.FILTERS]: this.$widgetFiltersValid(),
       [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
@@ -104,6 +108,10 @@ export class WidgetWizardService {
           ? false
           : [WidgetType.COLLECTION, WidgetType.FIELDS, WidgetType.TABLE].includes(selectedType);
       },
+    },
+    [WidgetWizardStep.FILTERS]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => this.$selectedWidget()?.type === WidgetType.INTERACTIVE_TABLE,
     },
   }));
 
@@ -171,6 +179,7 @@ export class WidgetWizardService {
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
       this.$widgetDisplayConditions.set(null);
+      this.$widgetFiltersValid.set(false);
       this.$editMode.set(false);
       this.$widgetDensity.set(null);
       this.$disableActionButton.set(false);
@@ -185,6 +194,7 @@ export class WidgetWizardService {
       WidgetWizardStep.DENSITY,
       WidgetWizardStep.STYLE,
       WidgetWizardStep.CONTENT,
+      WidgetWizardStep.FILTERS,
       WidgetWizardStep.DISPLAY_CONDITIONS,
     ]);
   }

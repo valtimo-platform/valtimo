@@ -155,6 +155,7 @@
   * [Job Retry cycles](features/process/retry-cycle.md)
   * [For developers](features/process/process/README.md)
     * [Integrating spring beans in a process](features/process/process/integrate-spring-bean-in-process.md)
+    * [Incident error logging](features/process/process/incident-error-logging.md)
     * [Whitelisting Spring beans for Operaton](features/process/process/whitelist-spring-bean.md)
     * [Whitelisting scripting classes for Operaton](features/process/process/whitelist-scripting-classes.md)
 
@@ -162,6 +163,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.12.0](release-notes/13.x.x/13.12.0/README.md)
   * [13.11.0](release-notes/13.x.x/13.11.0/README.md)
   * [13.10.0](release-notes/13.x.x/13.10.0/README.md)
   * [13.9.1](release-notes/13.x.x/13.9.1/README.md)

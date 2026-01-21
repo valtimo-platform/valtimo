@@ -22,9 +22,9 @@
   [widgetData]="obs.widgetData"
   [widgetConfiguration]="obs.widgetConfiguration"
   (actionEvent)="onActionEvent($event, obs.widgetData.resolved)"
-  (paginationEvent)="onPaginationEvent($event)"
   (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
+  (queryParamsEvent)="onQueryParamsEvent($event)"
 >
 </valtimo-widget-interactive-table>
 
