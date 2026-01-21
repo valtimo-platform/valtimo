@@ -2,7 +2,7 @@
     "key": "energy-subsidy-request",
     "name": "Energietoeslag Aanvraag",
     "versionTag": "1.0.0",
-    "final": true,
+    "final": false,
     "canHaveAssignee": true,
     "autoAssignTasks": true
 }

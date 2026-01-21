@@ -61,6 +61,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.ZaakNotitieLink
 import com.ritense.zakenapi.domain.ZaakNotitieLinkId
@@ -302,10 +303,14 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+            val existingZaakUrl = try {
+                zaakUrlProvider.getZaakUrl(documentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
+                null
+            }
 
-            if (zaakInstanceLink != null) {
-                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$documentId'. Zaak URL: '${zaakInstanceLink.zaakInstanceUrl}'." }
+            if (existingZaakUrl != null) {
+                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$documentId'. Zaak URL: '$existingZaakUrl'." }
                 return
             }
 
@@ -414,8 +419,9 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting patch of zaak for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
-            if (zaakInstanceLink == null) {
+            val zaakUrl = try {
+                zaakUrlProvider.getZaakUrl(documentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
                 logger.warn { "Skipping patch zaak. Zaak does not exist for document with id '$documentId'." }
                 return
             }
@@ -423,7 +429,7 @@ class ZakenApiPlugin(
             val zaak = client.patchZaak(
                 authentication = authenticationPluginConfiguration,
                 baseUrl = url,
-                zaakUrl = zaakInstanceLink.zaakInstanceUrl,
+                zaakUrl = zaakUrl,
                 request = PatchZaakRequest(
                     omschrijving = description,
                     toelichting = explanation,
@@ -1136,10 +1142,14 @@ class ZakenApiPlugin(
 
             if (execution != null && resolvedZaakObjectRequest.zaakUrl == null) {
                 val documentId = UUID.fromString(execution.businessKey)
-                val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+                val zaakUrl = try {
+                    zaakUrlProvider.getZaakUrl(documentId)
+                } catch (e: ZaakInstanceLinkNotFoundException) {
+                    null
+                }
 
-                if (zaakInstanceLink != null) {
-                    resolvedZaakObjectRequest.zaakUrl = zaakInstanceLink.zaakInstanceUrl
+                if (zaakUrl != null) {
+                    resolvedZaakObjectRequest.zaakUrl = zaakUrl
                 }
             }
 
