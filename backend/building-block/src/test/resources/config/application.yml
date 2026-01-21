@@ -33,3 +33,10 @@ spring-actuator:
     password: test
 
 valtimo.changelog.buildingblock.clear-tables: true
+
+operaton:
+    bpm:
+        history-level: audit
+        generic-properties:
+            properties:
+                enforceHistoryTimeToLive: false
