@@ -28,6 +28,7 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecific
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
@@ -74,7 +75,7 @@ class ProcessDefinitionExporter(
         return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull {
             if (it.calledElement != null) {
                 val spec = byKey(it.calledElement)
-                val processDefinitionId = checkNotNull(
+                val processDefinition = checkNotNull(
                     when (it.operatonCalledElementBinding) {
                         "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(it.operatonCalledElementVersion.toInt())))
                         "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(it.operatonCalledElementVersionTag)))
@@ -83,8 +84,13 @@ class ProcessDefinitionExporter(
                     }
                 ) {
                     "Process definition with key '${it.calledElement}' could not be found!"
-                }.id
-                ProcessDefinitionExportRequest(processDefinitionId, caseDefinitionId)
+                }
+                // Skip building block processes - they are exported via their own export chain
+                if (processDefinition.versionTag?.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX) == true) {
+                    null
+                } else {
+                    ProcessDefinitionExportRequest(processDefinition.id, caseDefinitionId)
+                }
             } else {
                 null
             }
