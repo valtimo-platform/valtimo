@@ -117,7 +117,7 @@ class IkoClient(
         containerParams: List<ContainerParam> = emptyList(),
         additionalQueryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
-        val encoder = Base64.getUrlEncoder().withoutPadding()
+        val encoder = Base64.getUrlEncoder()
 
         val encodedContainerParams = containerParams.map { param ->
             encoder.encodeToString(objectMapper.writeValueAsBytes(param))

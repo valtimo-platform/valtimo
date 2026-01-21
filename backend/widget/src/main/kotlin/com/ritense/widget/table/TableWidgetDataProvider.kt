@@ -18,6 +18,7 @@ package com.ritense.widget.table
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
@@ -61,31 +62,45 @@ class TableWidgetDataProvider(
             )
         }
 
-        if (!collectionNode.isArray) {
+        if (collectionNode.isArray) {
+            val result = collectionNode
+                .chunked(pageable.pageSize)
+                .getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+            val content = toPageContent(widget, result)
+            return ResolvedPage(
+                content = content,
+                resolved = exposedValues,
+                pageable = pageable,
+                total = collectionNode.size().toLong()
+            )
+        } else if (collectionNode["content"] is ArrayNode) {
+            val result = collectionNode["content"] as ArrayNode
+            val content = toPageContent(widget, result)
+            val total = collectionNode["totalElements"]?.longValue() ?: collectionNode.size().toLong()
+            return ResolvedPage(
+                content = content,
+                resolved = exposedValues,
+                pageable = pageable,
+                total = total
+            )
+        } else {
             throw InvalidCollectionException()
         }
+    }
 
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
-
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
-            .onEachIndexed { index, node ->
-                if (!node.isContainerNode) {
-                    throw InvalidCollectionNodeTypeException(index)
-                }
-            }.map { child ->
-                widget.properties.columns.associate { column ->
-                    column.key to getValueAt(child, column.value)
-                }
+    private fun toPageContent(
+        widget: TableWidget,
+        content: Iterable<JsonNode>,
+    ): List<Map<String, Any?>> {
+        return content.onEachIndexed { index, node ->
+            if (!node.isContainerNode) {
+                throw InvalidCollectionNodeTypeException(index)
             }
-
-        return ResolvedPage(
-            content = result,
-            resolved = exposedValues,
-            pageable = pageable,
-            total = collectionNode.size().toLong()
-        )
+        }.map { child ->
+            widget.properties.columns.associate { column ->
+                column.key to getValueAt(child, column.value)
+            }
+        }
     }
 
     private fun getValueAt(data: JsonNode, path: String): Any? {

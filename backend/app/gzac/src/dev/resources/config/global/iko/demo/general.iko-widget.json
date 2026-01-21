@@ -207,7 +207,7 @@
         },
         {
             "type": "interactive-table",
-            "key": "lopende-zaken-2",
+            "key": "lopende_zaken",
             "title": "Zaken",
             "width": 2,
             "highContrast": false,
@@ -251,8 +251,7 @@
                         "key": "beschrijving",
                         "title": "Beschrijving",
                         "dataType": "text",
-                        "fieldType": "single",
-                        "matchType": "like"
+                        "fieldType": "single"
                     }
                 ],
                 "firstColumnAsTitle": false
