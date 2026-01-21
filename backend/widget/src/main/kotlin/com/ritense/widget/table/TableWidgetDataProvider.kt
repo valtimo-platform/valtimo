@@ -45,7 +45,7 @@ class TableWidgetDataProvider(
     override fun supportedWidgetType() = TableWidget::class.java
 
     override fun getData(widget: TableWidget, properties: Map<String, Any>): ResolvedPage<Map<String, Any?>> {
-        val pageSize = if (properties[NO_PAGE_SIZE] as Boolean) widget.properties.defaultPageSize else null
+        val pageSize = if (properties[NO_PAGE_SIZE] as Boolean? == true) widget.properties.defaultPageSize else null
         val pageable = (properties[PAGEABLE] as Pageable?).withSize(pageSize)
 
         val resolvedValues = valueResolverService.resolveValues(

@@ -44,7 +44,7 @@ class CollectionWidgetDataProvider(
         widget: CollectionWidget,
         properties: Map<String, Any>
     ): ResolvedPage<CollectionWidgetDataResult> {
-        val pageSize = if (properties[NO_PAGE_SIZE] as Boolean) widget.properties.defaultPageSize else null
+        val pageSize = if (properties[NO_PAGE_SIZE] as Boolean? == true) widget.properties.defaultPageSize else null
         val pageable = (properties[PAGEABLE] as Pageable?).withSize(pageSize)
 
         val resolvedValues = valueResolverService.resolveValues(

@@ -60,12 +60,13 @@ class IkoWidgetResource(
         @PageableDefault pageable: Pageable,
         request: HttpServletRequest,
     ): ResponseEntity<Any?> {
+        val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
         val allProperties = properties + mapOf(
             IKO_VIEW_KEY to ikoViewKey,
             TAB_KEY to tabKey,
             WIDGET_KEY to widgetKey,
             PAGEABLE to pageable,
-            NO_PAGE_SIZE to (request.parameterMap["size"]?.firstOrNull()?.toIntOrNull() == null)
+            NO_PAGE_SIZE to (pageSize == null || pageSize <= 0)
         )
 
         return ResponseEntity.ok(
