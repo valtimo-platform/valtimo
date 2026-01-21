@@ -4,14 +4,13 @@ applicationSuite: Valtimo Platform
 url: 'https://github.com/valtimo-platform/valtimo'
 landingURL: 'https://www.valtimo.nl/'
 softwareVersion: 'latest'
-releaseDate: '2025-01-19'
+releaseDate: '2026-01-14'
 platforms:
   - web
   - linux
   - windows
   - mac
 categories:
-  - case-management
   - document-management
   - collaboration
   - workflow-management
@@ -47,6 +46,9 @@ description:
     screenshots:
       - https://www.valtimo.nl/wp-content/uploads/Screenshot-2025-01-28-at-20.19.54.png
       - https://www.valtimo.nl/wp-content/uploads/PE-plugins.png
+      - https://www.valtimo.nl/wp-content/uploads/Form-editor-uitgelicht-1.png
+      - https://www.valtimo.nl/wp-content/uploads/process-progress-uitgelicht.png
+      
   nl:
     localisedName: Valtimo (GZAC)
     genericName: Zaakgericht werken platform
@@ -88,6 +90,8 @@ dependsOn:
 intendedAudience:
   scope:
     - government
+    - education
+    - local-authorities
   countries:
     - nl
     - be
@@ -100,11 +104,4 @@ usedBy:
   - Gemeente Utrecht
   - Technische Universiteit Delft
 roadmap: 'https://ritense.atlassian.net/jira/discovery/share/views/6a25d852-900a-46de-8e45-a4a7fa554de6'
-inputTypes:
-  - application/json
-  - application/xml
-  - application/pdf
-outputTypes:
-  - application/json
-  - application/xml
-  - application/pdf
+
