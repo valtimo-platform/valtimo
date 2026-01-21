@@ -16,14 +16,23 @@
 
 package com.ritense.buildingblock
 
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockManagementService
+import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito.mockingDetails
+import org.mockito.kotlin.reset
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -31,7 +40,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
-@Import(TestAutoConfiguration::class)
 @Tag("integration")
 abstract class BaseIntegrationTest {
     @MockitoBean
@@ -42,4 +50,38 @@ abstract class BaseIntegrationTest {
 
     @MockitoSpyBean
     lateinit var processLinkService: ProcessLinkService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockManagementService: BuildingBlockManagementService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+
+    @MockitoSpyBean
+    lateinit var buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService
+
+    @Autowired
+    lateinit var applicationEventPublisher: ApplicationEventPublisher
+
+    @AfterEach
+    fun resetMocks() {
+        listOf(
+            userManagementService,
+            mailSender,
+            processLinkService,
+            buildingBlockManagementService,
+            buildingBlockDefinitionRepository,
+            buildingBlockDocumentDefinitionService,
+            buildingBlockProcessService,
+            buildingBlockPluginDefinitionService,
+            applicationEventPublisher
+        ).filter { mockingDetails(it).isMock || mockingDetails(it).isSpy }
+            .forEach { reset(it) }
+    }
 }
