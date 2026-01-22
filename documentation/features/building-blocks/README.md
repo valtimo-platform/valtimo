@@ -123,9 +123,6 @@ your environment.
 * Map **Outputs** from the building block back to the case.
     * Fields can be added for syncing by clicking **Add sync**
     * This is one way. Any changes to the case document will not be automatically synced to the building block instance.
-* Choose when outputs should be synced:
-    * **Continuous**: keep the case up to date while the building block runs.
-    * **At end**: only sync after the building block finishes.
 
 <figure><img src="./images/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
 
