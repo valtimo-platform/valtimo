@@ -1,7 +1,7 @@
-# 13.13.0
+# 13.x.x
 
 {% hint style="info" %}
-**Release date 28-02-2026**
+**Release date xx-xx-2026**
 {% endhint %}
 
 ## New Features
