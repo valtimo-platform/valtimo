@@ -107,6 +107,10 @@ class CaseWidgetService(
         }
     }
 
+    fun getCaseWidget(documentId: JsonSchemaDocumentId, tabKey: String, widgetKey: String): CaseWidgetTabWidgetDto? {
+        return getWidgetTab(documentId, tabKey)?.widgets?.singleOrNull { it.key == widgetKey }
+    }
+
     @Transactional
     fun updateWidgetTab(@Valid tabDto: CaseWidgetTabDto): CaseWidgetTabDto {
         denyAuthorization()

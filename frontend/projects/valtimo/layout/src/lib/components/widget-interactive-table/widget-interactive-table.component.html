@@ -19,6 +19,7 @@
     fields: fields$ | async,
     widgetData: widgetData$ | async,
     caseDefinitions: caseDefinitions$ | async,
+    filters: filters$ | async,
   } as obs"
 >
   <div class="valtimo-widget-interactive-table__title-container">
@@ -34,13 +35,30 @@
     [header]="false"
     [fields]="obs.fields"
     [items]="obs.widgetData || []"
+    [initialSortState]="$initialSortState()"
     [loading]="obs.widgetData === null"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+    (sortChanged)="onSortChanged($event)"
     (rowClicked)="rowClick($event)"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
+      <button
+        *ngIf="!!obs.filters.length"
+        carbonToolbarContent
+        [cdsOverflowMenu]="widgetInteractiveTableSearch"
+        [customPane]="true"
+        [iconOnly]="true"
+        [flip]="true"
+        [offset]="{x: 0, y: 47}"
+        placement="bottom"
+        cdsButton="ghost"
+      >
+        <svg cdsIcon="filter" size="16"></svg>
+      </button>
+
       <cds-overflow-menu
         *ngIf="!!widgetConfiguration?.actions?.length"
         [customTrigger]="externalLinkTrigger"
@@ -75,6 +93,14 @@
       [smallPadding]="true"
     ></valtimo-no-results>
   </valtimo-carbon-list>
+
+  <ng-template #widgetInteractiveTableSearch>
+    <valtimo-widget-interactive-table-search
+      [filters]="obs.filters"
+      [initSearchRequest]="searchRequest"
+      (searchSubmitEvent)="onSearchSubmit($event)"
+    ></valtimo-widget-interactive-table-search>
+  </ng-template>
 
   <ng-template #externalLinkTrigger>
     <button cdsButton="ghost" iconOnly="true">

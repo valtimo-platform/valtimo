@@ -18,31 +18,44 @@ package com.ritense.iko
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.ritense.iko.service.IkoSearchActionService
-import com.ritense.iko.service.IkoSearchFieldService
+import com.ritense.case_.service.CaseWidgetService
+import com.ritense.case_.widget.collection.CollectionCaseWidget
+import com.ritense.case_.widget.table.TableCaseWidgetDto
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
+import com.ritense.iko.IkoServerRepository.Companion.IKO_SERVER_URL
+import com.ritense.iko.dto.ContainerParam
+import com.ritense.iko.repository.IkoRepositoryConfigRepository
+import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.all
 import com.ritense.iko.service.IkoTabService
-import com.ritense.iko.service.IkoViewService
-import com.ritense.valtimo.contract.iko.DataFilter
+import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.ID
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_SEARCH_ACTION_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_ADP
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
+import com.ritense.widget.collection.CollectionWidget
+import com.ritense.widget.interactivetable.InteractiveTableWidget
+import com.ritense.widget.table.TableWidget
 import java.util.function.Function
 import org.operaton.bpm.engine.delegate.VariableScope
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import kotlin.jvm.optionals.getOrNull
 
 class IkoValueResolverFactory(
     private val ikoTabService: IkoTabService,
-    private val ikoSearchActionService: IkoSearchActionService,
-    private val ikoSearchFieldService: IkoSearchFieldService,
     private val objectMapper: ObjectMapper,
+    private val ikoWidgetService: IkoWidgetService,
+    private val caseWidgetService: CaseWidgetService,
+    private val ikoServerRepository: IkoServerRepository,
+    private val ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -59,50 +72,92 @@ class IkoValueResolverFactory(
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
         return getIkoViewDataById(properties)
-            ?: searchIkoViewData(properties)
+            ?: getIkoAdpDataById(properties)
             ?: Function { null }
     }
 
     private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
-        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString() ?: return null
         val tabKey = properties[TAB_KEY]?.toString()
-        val id = properties[ID]?.toString()
-        if (ikoViewKey != null && id != null) {
-            val data = ikoTabService.getDataById(ikoViewKey, tabKey, id)
-            return toValueFunction(data)
-        }
-        return null
+        val id = properties[ID]?.toString() ?: return null
+        val config = ikoTabService.getIkoTabConfig(ikoViewKey, tabKey)
+        val data = ikoServerRepository.findById(
+            config = config,
+            id = id,
+            containerParams = getContainerParams(properties)
+        )
+        return toValueFunction(data)
     }
 
-    private fun searchIkoViewData(properties: Map<String, Any>): Function<String, Any?>? {
-        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
-        val ikoSearchActionKey = properties[IKO_SEARCH_ACTION_KEY]?.toString()
-        if (ikoViewKey == null || ikoSearchActionKey == null) {
-            return null
-        }
-        val (ikoSearchAction, searchFields) = ikoSearchActionService.findAll(
-            key = ikoSearchActionKey,
-            ikoViewKey = ikoViewKey,
-        ).map { ikoSearchAction ->
-            ikoSearchAction to ikoSearchFieldService.findAllSearchFieldsByIkoSearchAction(
-                ikoViewKey = ikoSearchAction.id.ikoView.key,
-                ikoSearchActionKey = ikoSearchAction.id.key
-            )
-        }
-            .filter { (_, searchFields) -> searchFields.all { properties.contains(it.key) || !it.required } }
-            .map { (ikoSearchAction, searchFields) -> ikoSearchAction to searchFields.filter { properties.contains(it.key) } }
-            .firstOrNull() ?: return null
-
-        val filters = searchFields.map { searchField -> DataFilter(searchField.path, properties[searchField.key]) }
-        val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.unpaged()
-        val dataPaged = ikoSearchActionService.searchData(
-            key = ikoSearchAction.id.key,
-            ikoViewKey = ikoSearchAction.id.ikoView.key,
-            filters = filters,
-            pageable = pageable
+    private fun getIkoAdpDataById(properties: Map<String, Any>): Function<String, Any?>? {
+        val adp = properties[IKO_ADP]?.toString() ?: return null
+        val id = properties[ID]?.toString() ?: return null
+        val ikoServerUrl = properties[IKO_SERVER_URL]
+            ?: ikoRepositoryConfigRepository.findOne(all()).getOrNull()?.properties?.get(IKO_SERVER_URL)
+        val config = mutableMapOf<String, Any?>(AGGREGATED_DATA_PROFILE_NAME to adp)
+        config[IKO_SERVER_URL] = ikoServerUrl
+        val data = ikoServerRepository.findById(
+            config = config,
+            id = id,
+            containerParams = getContainerParams(properties)
         )
-        val data = objectMapper.valueToTree<ArrayNode>(dataPaged.content)
         return toValueFunction(data)
+    }
+
+    private fun getContainerParams(properties: Map<String, Any>): List<ContainerParam> {
+        return listOfNotNull(getIkoTableContainerParam(properties) ?: getCaseTableContainerParam(properties))
+    }
+
+    private fun getIkoTableContainerParam(properties: Map<String, Any>): ContainerParam? {
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString() ?: return null
+        val tabKey = properties[TAB_KEY]?.toString() ?: return null
+        val widgetKey = properties[WIDGET_KEY]?.toString() ?: return null
+        val pageable = properties[PAGEABLE] as Pageable?
+        return when (val widget = ikoWidgetService.getByKey(ikoViewKey, tabKey, widgetKey)) {
+            is InteractiveTableWidget -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = widget.properties.filters
+                    .flatMap { ContainerParam.fromFilter(it, properties[it.key]) }
+                    .toMap()
+            )
+
+            is TableWidget -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            is CollectionWidget -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            else -> null
+        }
+    }
+
+    private fun getCaseTableContainerParam(properties: Map<String, Any>): ContainerParam? {
+        val documentId = properties[DOCUMENT_ID]?.toString()?.let { JsonSchemaDocumentId.existingId(it) } ?: return null
+        val tabKey = properties[TAB_KEY]?.toString() ?: return null
+        val widgetKey = properties[WIDGET_KEY]?.toString() ?: return null
+        val pageable = properties[PAGEABLE] as Pageable?
+        return when (val widget = caseWidgetService.getCaseWidget(documentId, tabKey, widgetKey)) {
+            is TableCaseWidgetDto -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            is CollectionCaseWidget -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = emptyMap()
+            )
+
+            else -> null
+        }
     }
 
     private fun toValueFunction(data: JsonNode): Function<String, Any?> {
