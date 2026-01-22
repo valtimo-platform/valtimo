@@ -1,0 +1,62 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet author="Ritense" id="1">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists tableName="plugin_configuration"/>
+            <tableExists tableName="iko_repository_config"/>
+        </preConditions>
+
+        <sql>
+            UPDATE iko_repository_config
+            SET properties = jsonb_build_object('ikoServerUrl', (SELECT properties::jsonb->>'url' FROM plugin_configuration WHERE plugin_definition_key = 'iko' LIMIT 1))
+            WHERE EXISTS (SELECT 1 FROM plugin_configuration WHERE plugin_definition_key = 'iko')
+            AND type = 'iko';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <tableExists tableName="plugin_configuration"/>
+            <tableExists tableName="iko_repository_config"/>
+        </preConditions>
+
+        <sql>
+            UPDATE iko_repository_config
+            SET properties = JSON_OBJECT('ikoServerUrl', (SELECT JSON_UNQUOTE(JSON_EXTRACT(properties, '$.url')) FROM plugin_configuration WHERE plugin_definition_key = 'iko' LIMIT 1))
+            WHERE EXISTS (SELECT 1 FROM plugin_configuration WHERE plugin_definition_key = 'iko')
+            AND type = 'iko';
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="plugin_configuration"/>
+        </preConditions>
+        <comment>Delete iko plugin configuration</comment>
+        <delete tableName="plugin_configuration">
+            <where>plugin_definition_key = 'iko'</where>
+        </delete>
+    </changeSet>
+
+</databaseChangeLog>

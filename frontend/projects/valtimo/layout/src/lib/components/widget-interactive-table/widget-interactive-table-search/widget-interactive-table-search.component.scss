@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,33 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule} from '@valtimo/components';
-import {IkoConfigurationComponent} from './components/iko-configuration/iko-configuration.component';
+.valtimo-widget-interactive-table-search {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  padding: 16px;
 
-@NgModule({
-  declarations: [IkoConfigurationComponent],
-  imports: [CommonModule, FormModule, InputModule, PluginTranslatePipeModule],
-  exports: [IkoConfigurationComponent],
-})
-export class IkoPluginModule {}
+  &__fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: flex-end;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+
+  &__filter-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    font-size: var(--cds-label-01-font-size);
+    color: var(--cds-text-secondary);
+  }
+}
+
+::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
+  max-width: max-content !important;
+  width: max-content !important;
+}

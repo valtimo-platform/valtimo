@@ -57,6 +57,8 @@
           : vars.placeholderText
     "
     [type]="multiple ? 'multi' : 'single'"
+    [warn]="warn"
+    [warnText]="warnText"
     (clear)="clear()"
     (selected)="setSelected($event)"
   >

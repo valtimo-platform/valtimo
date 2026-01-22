@@ -32,6 +32,7 @@ import {WidgetWizardContentStepComponent} from '../components/widget-management/
 import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
 import {WidgetWizardDensityStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
+import {WidgetWizardFiltersStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-filters-step/widget-wizard-filters-step.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
@@ -39,6 +40,7 @@ enum WidgetWizardStep {
   DENSITY = 'density',
   STYLE = 'style',
   CONTENT = 'content',
+  FILTERS = 'filters',
   DISPLAY_CONDITIONS = 'displayConditions',
 }
 
@@ -77,6 +79,7 @@ const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.DENSITY]: WidgetWizardDensityStepComponent,
   [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
+  [WidgetWizardStep.FILTERS]: WidgetWizardFiltersStepComponent,
   [WidgetWizardStep.DISPLAY_CONDITIONS]: WidgetWizardDisplayConditionsStepComponent,
 };
 
