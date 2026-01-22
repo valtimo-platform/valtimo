@@ -299,6 +299,10 @@ camunda:
             id: Admin
             password: admin
             first-name: Admin account
+    incident:
+        alert-log:
+            enabled: true
+            message-template: "CAMUNDA_INCIDENT_FAILED_JOB: processInstanceId={processInstanceId} incidentId={incidentId}"
 
 external:
     case:
