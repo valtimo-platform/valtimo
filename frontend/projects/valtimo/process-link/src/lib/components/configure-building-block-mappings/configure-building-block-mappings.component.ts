@@ -169,11 +169,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   }
 
   public readonly syncTimingItems: Array<{id: BuildingBlockSyncTiming; labelKey: string}> = [
-    // to do: uncomment once the be supports this
-    // {
-    //   id: 'CONTINUOUS' as BuildingBlockSyncTiming,
-    //   labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
-    // },
+    {
+      id: 'CONTINUOUS' as BuildingBlockSyncTiming,
+      labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
+    },
     {
       id: 'END' as BuildingBlockSyncTiming,
       labelKey: 'processLinkConfiguration.buildingBlock.sync.end',
