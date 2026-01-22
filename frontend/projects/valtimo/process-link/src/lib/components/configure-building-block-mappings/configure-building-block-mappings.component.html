@@ -22,6 +22,10 @@
     buildingBlockParams: (buildingBlockParams$ | async),
     sourceContextName: (sourceContextName$ | async),
     targetBuildingBlockName: (targetBuildingBlockName$ | async),
+    sourceIsCase: (sourceIsCase$ | async),
+    caseLabelTranslation: ('Case' | translate),
+    buildingBlockLabelTranslation:
+      ('processLinkConfiguration.buildingBlock.selectLabel' | translate),
   };
 
 <div class="mapping-step">
@@ -32,9 +36,17 @@
 
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
-        <v-input-label [title]="obs.sourceContextName" />
+        <v-input-label
+          [title]="
+            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
+            ': ' +
+            obs.sourceContextName
+          "
+        />
 
-        <v-input-label [title]="obs.targetBuildingBlockName" />
+        <v-input-label
+          [title]="obs.buildingBlockLabelTranslation + ': ' + obs.targetBuildingBlockName"
+        />
       </div>
 
       <div formArrayName="inputs">
@@ -62,7 +74,7 @@
               <div class="mapping-cell">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
                   <div class="required-target">
-                    {{ group.get('target')?.value }}
+                    {{ 'doc:' + group.get('target')?.value }}
                   </div>
                 } @else {
                   <v-select
@@ -124,9 +136,17 @@
 
     <div class="mapping-table" [formGroup]="outputsForm">
       <div class="mapping-header output">
-        <v-input-label [title]="obs.targetBuildingBlockName" />
+        <v-input-label
+          [title]="obs.buildingBlockLabelTranslation + ': ' + obs.targetBuildingBlockName"
+        />
 
-        <v-input-label [title]="obs.sourceContextName" />
+        <v-input-label
+          [title]="
+            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
+            ': ' +
+            obs.sourceContextName
+          "
+        />
 
         <div class="sync-options">
           <v-input-label

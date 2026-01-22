@@ -30,7 +30,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
 import {map, switchMap, take} from 'rxjs/operators';
 import {
   BuildingBlockInputMapping,
@@ -101,7 +101,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         buildingBlockFields.map(buildingBlockField => {
           return {
             id: buildingBlockField.name,
-            text: buildingBlockField.name,
+            text: `doc:${buildingBlockField.name}`,
           };
         })
       )
@@ -132,8 +132,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           inputsFormValue.inputs?.map(input => input.target).filter(Boolean) ?? [];
 
         return buildingBlockFieldItems.filter(item => {
-          if (item.text === groupValue.target) return true;
-          return !usedInputTargets.includes(item.text);
+          if (item.id === groupValue.target) return true;
+          return !usedInputTargets.includes(`${item.id}`);
         });
       })
     );
@@ -183,6 +183,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   public readonly buildingBlockParams$ = getBuildingBlockManagementRouteParams(this.route);
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
+  public readonly sourceIsCase$ = new BehaviorSubject<boolean>(true);
+
   /**
    * Returns the name of the source/target context in mappings.
    * When in a building block context, shows the parent building block name.
@@ -194,6 +196,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   ]).pipe(
     switchMap(([caseParams, bbParams]) => {
       if (bbParams?.buildingBlockDefinitionKey && bbParams?.buildingBlockDefinitionVersionTag) {
+        this.sourceIsCase$.next(false);
         // We're in a building block context - fetch the parent building block name
         return this.buildingBlockApiService
           .getBuildingBlockDefinition(
@@ -202,6 +205,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           )
           .pipe(map(def => def?.name ?? bbParams.buildingBlockDefinitionKey));
       } else if (caseParams?.caseDefinitionKey && caseParams?.caseDefinitionVersionTag) {
+        this.sourceIsCase$.next(true);
         // We're in a case context - fetch the case name
         return this.buildingBlockApiService
           .getCaseDefinition(caseParams.caseDefinitionKey, caseParams.caseDefinitionVersionTag)
