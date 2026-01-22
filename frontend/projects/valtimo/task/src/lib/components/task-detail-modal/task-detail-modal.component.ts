@@ -24,28 +24,29 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
-import {CarbonModalSize} from '@valtimo/components';
-import {SseService} from '@valtimo/sse';
-import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
+import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { PermissionService } from '@valtimo/access-control';
+import { CarbonModalSize } from '@valtimo/components';
+import { SseService } from '@valtimo/sse';
+import { FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink } from '@valtimo/process-link';
 import moment from 'moment';
-import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
-import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
-import {TaskIntermediateSaveService} from '../../services';
+import { NGXLogger } from 'ngx-logger';
+import { BehaviorSubject, combineLatest, of, Subscription, throwError } from 'rxjs';
+import { catchError, filter, map, switchMap, take } from 'rxjs/operators';
+import { IntermediateSubmission, Task, TaskUpdateSseEvent } from '../../models';
+import { TaskIntermediateSaveService, TaskService } from '../../services';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
-import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {filter, take} from 'rxjs/operators';
-import {IconService} from 'carbon-components-angular';
-import {DocumentService} from '@valtimo/document';
-import {TaskService} from '../../services/task.service';
-import {FolderDetailsReference16} from '@carbon/icons';
+import { TaskDetailIntermediateSaveComponent } from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
+import { IconService } from 'carbon-components-angular';
+import { DocumentService } from '@valtimo/document';
+// @ts-ignore
+import { FolderDetailsReference16 } from '@carbon/icons';
+import { GlobalNotificationService } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -58,7 +59,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class TaskDetailModalComponent implements OnInit, OnDestroy {
   @ViewChild(TaskDetailIntermediateSaveComponent)
-  private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
+  private readonly _intermediateSaveComponent!: TaskDetailIntermediateSaveComponent;
 
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
@@ -104,7 +105,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
     private readonly documentService: DocumentService,
-    private readonly taskService: TaskService
+    private readonly taskService: TaskService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {
     this.iconService.registerAll([FolderDetailsReference16]);
   }
@@ -163,12 +165,51 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private openTaskUpdateSseEventSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.task$,
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-      ])
-        .pipe(filter(([task, event]) => task?.id === event.taskId))
-        .subscribe(() => this.closeModal())
+      this.sseService
+        .getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE')
+        .pipe(
+          filter(event => this.task$.getValue()?.id === event.taskId),
+          switchMap(event =>
+            this.taskService.getTask(event.taskId).pipe(
+              catchError(err => {
+                if (err.status === 404) {
+                  return of(null);
+                }
+                return throwError(() => err);
+              })
+            )
+          )
+        )
+        .subscribe(response => {
+          if (!response) {
+            this.closeModal();
+          } else {
+            const currentTask = this.task$.getValue();
+            const newTask = response.task;
+
+            if (currentTask && newTask && currentTask.assignee !== newTask.assignee) {
+              if (newTask.assignee) {
+                const assigneeName =
+                  newTask.valtimoAssignee?.fullName || newTask.assignee || 'someone';
+                this.globalNotificationService.showToast({
+                  title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
+                  content: `${this.translateService.instant(
+                    'taskDetail.assignedNotificationContent'
+                  )} ${assigneeName}`,
+                  type: 'info',
+                });
+              } else {
+                this.globalNotificationService.showToast({
+                  title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
+                  content: this.translateService.instant('taskDetail.unassignedNotificationContent'),
+                  type: 'info',
+                });
+              }
+            }
+
+            this.task$.next(newTask);
+          }
+        })
     );
   }
 
@@ -177,7 +218,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public openTaskDetails(task: Task | null): void {
-    this.task$.next({...task});
+    if (task) {
+      this.task$.next({ ...task });
+    }
     this.page$.next({
       title: task?.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
@@ -188,11 +231,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public openTaskAndProcessLinkDetails(taskWithProcessLink: TaskWithProcessLink | null): void {
     this.processLinkPreloaded$.next(true);
-    this.taskAndProcessLink$.next(taskWithProcessLink);
-    this.task$.next({...(taskWithProcessLink.task as any)});
+    if (taskWithProcessLink) {
+      this.taskAndProcessLink$.next(taskWithProcessLink);
+      this.task$.next({ ...taskWithProcessLink.task } as unknown as Task);
+    }
     this.page$.next({
-      title: taskWithProcessLink.task?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink.task?.created}`,
+      title: taskWithProcessLink?.task?.name,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink?.task?.created}`,
     });
 
     this.openModal();

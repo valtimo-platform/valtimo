@@ -1457,7 +1457,14 @@
     "noTranslationFound": "No translation found",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
+  "taskDetail": {
+    "taskCreated": "Created",
+    "taskCompleted": "has successfully been completed",
+    "assignedNotificationTitle": "Task assigned",
+    "assignedNotificationContent": "The task has been assigned to",
+    "unassignedNotificationTitle": "Task unassigned",
+    "unassignedNotificationContent": "The task has been unassigned"
+  },
   "assignTask": {
     "assignedTo": "Assigned to",
     "header": "Assign a user to this task",
