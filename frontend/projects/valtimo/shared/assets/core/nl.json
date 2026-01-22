@@ -418,7 +418,7 @@
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
   "formManagement": {
-    "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
+    "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
     "loading": "Formulier wordt geladen...",
