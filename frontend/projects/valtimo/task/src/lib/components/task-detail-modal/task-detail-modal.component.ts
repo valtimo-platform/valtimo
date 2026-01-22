@@ -24,29 +24,29 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
-import { PermissionService } from '@valtimo/access-control';
-import { CarbonModalSize } from '@valtimo/components';
-import { SseService } from '@valtimo/sse';
-import { FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink } from '@valtimo/process-link';
+import {Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
+import {CarbonModalSize} from '@valtimo/components';
+import {SseService} from '@valtimo/sse';
+import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
-import { NGXLogger } from 'ngx-logger';
-import { BehaviorSubject, combineLatest, of, Subscription, throwError } from 'rxjs';
-import { catchError, filter, map, switchMap, take } from 'rxjs/operators';
-import { IntermediateSubmission, Task, TaskUpdateSseEvent } from '../../models';
-import { TaskIntermediateSaveService, TaskService } from '../../services';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, combineLatest, of, Subscription, throwError} from 'rxjs';
+import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
+import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
+import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
-import { TaskDetailIntermediateSaveComponent } from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import { IconService } from 'carbon-components-angular';
-import { DocumentService } from '@valtimo/document';
+import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
+import {IconService} from 'carbon-components-angular';
+import {DocumentService} from '@valtimo/document';
 // @ts-ignore
-import { FolderDetailsReference16 } from '@carbon/icons';
-import { GlobalNotificationService } from '@valtimo/shared';
+import {FolderDetailsReference16} from '@carbon/icons';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -201,7 +201,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
               } else {
                 this.globalNotificationService.showToast({
                   title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
-                  content: this.translateService.instant('taskDetail.unassignedNotificationContent'),
+                  content: this.translateService.instant(
+                    'taskDetail.unassignedNotificationContent'
+                  ),
                   type: 'info',
                 });
               }
@@ -219,7 +221,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public openTaskDetails(task: Task | null): void {
     if (task) {
-      this.task$.next({ ...task });
+      this.task$.next({...task});
     }
     this.page$.next({
       title: task?.name,
@@ -233,7 +235,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.processLinkPreloaded$.next(true);
     if (taskWithProcessLink) {
       this.taskAndProcessLink$.next(taskWithProcessLink);
-      this.task$.next({ ...taskWithProcessLink.task } as unknown as Task);
+      this.task$.next({...taskWithProcessLink.task} as unknown as Task);
     }
     this.page$.next({
       title: taskWithProcessLink?.task?.name,
