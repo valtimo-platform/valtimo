@@ -67,6 +67,7 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.PluginService
+import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
@@ -190,6 +191,11 @@ class BuildingBlockAutoConfiguration {
             authroizationService
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkToBuildingBlockMapper::class)
+    fun buildingBlockProcessLinkToBuildingBlockMapper() =
+        com.ritense.buildingblock.service.BuildingBlockProcessLinkToBuildingBlockMapper()
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockInstanceService::class)
@@ -431,7 +437,11 @@ class BuildingBlockAutoConfiguration {
         processLinkService: ProcessLinkService,
         objectMapper: ObjectMapper,
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
-    ) = BuildingBlockProcessLinkImporter(processLinkService, objectMapper, buildingBlockDefinitionProcessDefinitionService)
+    ) = BuildingBlockProcessLinkImporter(
+        processLinkService,
+        objectMapper,
+        buildingBlockDefinitionProcessDefinitionService
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionExporter::class)
@@ -467,7 +477,11 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         repositoryService: RepositoryService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-    ) = BuildingBlockProcessDefinitionLinkExporter(objectMapper, repositoryService, processDefinitionBuildingBlockDefinitionRepository)
+    ) = BuildingBlockProcessDefinitionLinkExporter(
+        objectMapper,
+        repositoryService,
+        processDefinitionBuildingBlockDefinitionRepository
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessLinkExporter::class)
@@ -476,7 +490,14 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         repositoryService: RepositoryService,
         processLinkMappers: List<ProcessLinkMapper>,
-    ) = BuildingBlockProcessLinkExporter(processLinkService, objectMapper, repositoryService, processLinkMappers)
+        buildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper,
+    ) = BuildingBlockProcessLinkExporter(
+        processLinkService,
+        objectMapper,
+        repositoryService,
+        processLinkMappers,
+        buildingBlockMapper
+    )
 
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionFinalizationChecker::class)
