@@ -18,4 +18,6 @@
   class="formio-carbon"
   cdsLayer="1"
   *ngIf="(editFormModified$ | async) && form$ | async as formDefinition"
-></div>
+>
+  <form-builder [form]="formDefinition" (change)="onChange($event)"></form-builder>
+</div>
