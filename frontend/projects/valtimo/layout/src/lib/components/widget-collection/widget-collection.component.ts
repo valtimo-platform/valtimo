@@ -145,7 +145,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   public readonly $widgetTitle = signal('-');
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
-  public readonly $paginationModel = signal<PaginationModel>(new PaginationModel());
+  public readonly $paginationModel = signal<PaginationModel | null>(new PaginationModel());
   public readonly amountOfColumns = signal(0);
 
   public readonly collectionWidgetCards$: Observable<
