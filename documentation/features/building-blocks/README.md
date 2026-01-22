@@ -1,9 +1,12 @@
 # Building blocks
 
-Building blocks let you package a reusable part of a case process with its own data and configuration. You can use the same building block in multiple case definitions and across environments, while keeping a clear input and output contract.
+Building blocks let you package a reusable subprocess with its own data model and version it separately from cases.
+This allows them to use their own data and configuration. You can use the same building block in multiple case
+definitions and across environments, while keeping a clear input and output contract.
 
 {% hint style="info" %}
-This feature is different from the Process Exchange building blocks that you download and copy into projects. For those, see [Process Exchange building blocks](../../fundamentals/process-exchange/building-blocks.md).
+This feature is different from the Process Exchange building blocks that you download and copy into projects. For those,
+see [Process Exchange building blocks](../../fundamentals/process-exchange/building-blocks.md).
 {% endhint %}
 
 ## When to use building blocks
@@ -14,7 +17,8 @@ Building blocks are useful when:
 * You want one place to update a shared step.
 * You want a consistent way to pass data in and get results back.
 
-**Example:** A "Household verification" building block can be used in both subsidy and permit cases. Each case passes in the citizen data, the building block runs the checks, and the outcome is synced back to the case.
+**Example:** A "Household verification" building block can be used in both subsidy and permit cases. Each case passes in
+the citizen data, the building block runs the checks, and the outcome is synced back to the case.
 
 ## How building blocks work
 
@@ -24,7 +28,8 @@ Building blocks are useful when:
 4. Link the building block to a **Call activity** in a case process.
 5. Map inputs and outputs, and choose when outputs are synced.
 
-Building blocks are isolated by design. They should not directly read or write case data. Instead, you define the inputs and outputs when you link them to a case.
+Building blocks are isolated by design. They should not directly read or write case data. Instead, you define the inputs
+and outputs when you link them to a case.
 
 ## Create a building block
 
@@ -42,14 +47,16 @@ Building blocks are isolated by design. They should not directly read or write c
 
 * Open the **General** tab.
 * Optionally upload **Artwork**.
-* Review the list of **Plugins used** so you know which plugin types must be configured later. Initially, the list will be empty. This will be updated as you add plugins or other building blocks to the processes of your building block.
+* Review the list of **Plugins used** so you know which plugin types must be configured later. Initially, the list will
+  be empty. This will be updated as you add plugins or other building blocks to the processes of your building block.
 
 <figure><img src="./images/building-block-general.png" alt=""><figcaption><p>General information and artwork</p></figcaption></figure>
 
 ### 3. Define the data fields
 
 * Open the **Document** tab.
-* Add the fields the building block needs (inputs) and may return (outputs) and any other data the building block will need to use internally.
+* Add the fields the building block needs (inputs) and may return (outputs) and any other data the building block will
+  need to use internally.
 * Mark required fields so the case must provide them when using the building block.
 * Click **Save**.
 
@@ -59,8 +66,10 @@ Building blocks are isolated by design. They should not directly read or write c
 
 * Open the **Processes** tab.
 * Either **Upload** a BPMN file or **Create** a new process.
-* Select which process should be the **Main process** for the building block, or use the process that has been created with the building block.
-* You can use plugins in these processes just like in case processes, but you select the plugin type instead of a specific configuration.
+* Select which process should be the **Main process** for the building block, or use the process that has been created
+  with the building block.
+* You can use plugins in these processes just like in case processes, but you select the plugin type instead of a
+  specific configuration.
 
 <figure><img src="./images/building-block-processes.png" alt=""><figcaption><p>Processes inside the building block</p></figcaption></figure>
 
@@ -98,7 +107,8 @@ Only **final** building blocks can be used when finalizing a case definition.
 
 * Select the building block **Version** you want to use.
 
-If this version uses plugins, you must map each **plugin type** to a **plugin configuration** that already exists in your environment.
+If this version uses plugins, you must map each **plugin type** to a **plugin configuration** that already exists in
+your environment.
 
 * Select the saved plugin configuration for each plugin type.
 * If you are unsure, check the plugin documentation under [Plugins](../plugins/README.md).
@@ -108,14 +118,14 @@ If this version uses plugins, you must map each **plugin type** to a **plugin co
 ### 4. Map inputs and sync outputs
 
 * Map **Inputs** from the case data to the building block fields.
-  * The required inputs for the building block will be listed by default.
-  * Any optional inputs can be added manually by clicking **Add input**.
+    * The required inputs for the building block will be listed by default.
+    * Any optional inputs can be added manually by clicking **Add input**.
 * Map **Outputs** from the building block back to the case.
-  * Fields can be added for syncing by clicking **Add sync**
-  * This is one way. Any changes to the case document will not be automatically synced to the building block instance.
+    * Fields can be added for syncing by clicking **Add sync**
+    * This is one way. Any changes to the case document will not be automatically synced to the building block instance.
 * Choose when outputs should be synced:
-  * **Continuous**: keep the case up to date while the building block runs.
-  * **At end**: only sync after the building block finishes.
+    * **Continuous**: keep the case up to date while the building block runs.
+    * **At end**: only sync after the building block finishes.
 
 <figure><img src="./images/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
 
@@ -126,7 +136,8 @@ If this version uses plugins, you must map each **plugin type** to a **plugin co
 
 ## Import and export building blocks
 
-Building blocks are automatically included in case definition exports. You can also export or import a building block separately when you want to move or reuse it on its own.
+Building blocks are automatically included in case definition exports. You can also export or import a building block
+separately when you want to move or reuse it on its own.
 
 ### Import
 
