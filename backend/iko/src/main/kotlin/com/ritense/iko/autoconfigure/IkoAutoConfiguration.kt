@@ -18,6 +18,7 @@ package com.ritense.iko.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
@@ -40,7 +41,6 @@ import com.ritense.iko.importer.IkoSearchFieldImporter
 import com.ritense.iko.importer.IkoTabImporter
 import com.ritense.iko.importer.IkoViewImporter
 import com.ritense.iko.importer.IkoWidgetImporter
-import com.ritense.iko.plugin.IkoPluginFactory
 import com.ritense.iko.repository.IkoRepositoryConfigRepository
 import com.ritense.iko.repository.IkoSearchActionRepository
 import com.ritense.iko.repository.IkoSearchActionSearchFieldRepository
@@ -68,7 +68,6 @@ import com.ritense.iko.web.rest.IkoViewResource
 import com.ritense.iko.web.rest.IkoWidgetManagementResource
 import com.ritense.iko.web.rest.IkoWidgetResource
 import com.ritense.importer.ImportService
-import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
 import com.ritense.tab.service.TabService
@@ -285,9 +284,11 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoClient::class)
     fun ikoClient(
         restClientBuilder: RestClient.Builder,
+        objectMapper: ObjectMapper,
     ): IkoClient {
         return IkoClient(
             restClientBuilder,
+            objectMapper,
         )
     }
 
@@ -295,25 +296,29 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoValueResolverFactory::class)
     fun ikoValueResolverFactory(
         ikoTabService: IkoTabService,
-        ikoSearchActionService: IkoSearchActionService,
-        searchFieldService: IkoSearchFieldService,
         objectMapper: ObjectMapper,
+        ikoWidgetService: IkoWidgetService,
+        caseWidgetService: CaseWidgetService,
+        ikoServerRepository: IkoServerRepository,
+        ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
     ): IkoValueResolverFactory {
         return IkoValueResolverFactory(
             ikoTabService,
-            ikoSearchActionService,
-            searchFieldService,
             objectMapper,
+            ikoWidgetService,
+            caseWidgetService,
+            ikoServerRepository,
+            ikoRepositoryConfigRepository,
         )
     }
 
     @Bean
     @ConditionalOnMissingBean(IkoServerRepository::class)
     fun ikoServerRepository(
-        pluginService: PluginService,
+        ikoClient: IkoClient,
     ): IkoServerRepository {
         return IkoServerRepository(
-            pluginService,
+            ikoClient,
         )
     }
 
@@ -534,18 +539,6 @@ class IkoAutoConfiguration {
             searchFieldService,
             ikoSearchActionSearchFieldRepository,
             ikoViewService,
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IkoPluginFactory::class)
-    fun ikoPluginFactory(
-        pluginService: PluginService,
-        ikoClient: IkoClient,
-    ): IkoPluginFactory {
-        return IkoPluginFactory(
-            pluginService,
-            ikoClient,
         )
     }
 

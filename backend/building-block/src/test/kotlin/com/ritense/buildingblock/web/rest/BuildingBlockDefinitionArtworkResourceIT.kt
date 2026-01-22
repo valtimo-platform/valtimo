@@ -21,7 +21,6 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwork
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -48,7 +47,6 @@ import javax.imageio.ImageIO
 class BuildingBlockDefinitionArtworkResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockDefinitionArtworkRepository: BuildingBlockDefinitionArtworkRepository
 ) : BaseIntegrationTest() {
 

@@ -418,7 +418,7 @@
   "message": {"empty": "Geen resultaat gevonden"},
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
   "formManagement": {
-    "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
+    "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
     "loading": "Formulier wordt geladen...",
@@ -750,8 +750,8 @@
       "namePlaceholder": "Voer hier een naam in",
       "nameTooltip": "De naam die de gebruiker te zien krijgt.",
       "version": "Versie van de dossierdefinitie",
-      "versionPlaceholder": "Voer hier een versie in",
-      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie.",
+      "versionPlaceholder": "Voer hier een versie in (bijv. 1.0.0)",
+      "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie. Gebruik Semantic Versioning (bijv. 1.0.0).",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
@@ -862,6 +862,7 @@
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
         "density": "Kies widgetdichtheid",
+        "filters": "Filters",
         "displayConditions": "Weergavecondities instellen"
       }
     },
@@ -948,7 +949,8 @@
         "ellipsisCharacterLimitPlaceholder": "Kies een aantal tekens (optioneel)",
         "linkText": "Link tekst",
         "linkTextTooltip": "De tekst die wordt weergegeven als een link. Als dit leeg is, wordt de URL als tekst gebruikt.",
-        "linkTextPlaceholder": "Link tekst (optioneel)"
+        "linkTextPlaceholder": "Link tekst (optioneel)",
+        "defaultSortWarning": "Het bijwerken hiervan zal andere standaardsorteringen overschrijven."
       },
       "map": {
         "add": "Veld toevoegen",
@@ -1005,6 +1007,22 @@
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
       }
+    },
+    "filters": {
+      "description": "Definieer de filters die boven de interactieve tabel beschikbaar zijn.",
+      "title": "Titel",
+      "titlePlaceholder": "Kies een titel",
+      "titleTooltip": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de key-vertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke key-waarde weergegeven).",
+      "key": "Key",
+      "keyPlaceholder": "Voer een unieke key in",
+      "keyTooltip": "Een unieke key waarmee het zoekveld wordt geïdentificeerd. Als de key niet uniek is, kan het zoekveld niet worden opgeslagen.",
+      "dataType": "Datatype",
+      "dataTypePlaceholder": "Voer een datatype in",
+      "dataTypeTooltip": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
+      "fieldType": "Veldtype",
+      "fieldTypePlaceholder": "Voer een veldtype in",
+      "fieldTypeTooltip": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+      "add": "Filter toevoegen"
     },
     "displayConditions": {
       "description": "Configureer condities om te bepalen wanneer deze widget wordt getoond. Als je geen condities toevoegt, wordt de widget altijd weergegeven.",
@@ -1364,6 +1382,7 @@
     "noItemsFound": "Geen items gevonden",
     "clearAll": "Alles wissen",
     "clear": "Wissen",
+    "filters": "Filters",
     "show": "Toon",
     "display": "Weergave",
     "items": "items",

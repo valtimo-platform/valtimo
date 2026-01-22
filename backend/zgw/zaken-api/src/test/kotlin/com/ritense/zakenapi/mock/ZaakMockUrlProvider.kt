@@ -19,15 +19,20 @@ package com.ritense.zakenapi.mock
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.ZaakUrlProvider
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
+import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.util.UUID
 
 @Service
-class ZaakMockUrlProvider : ZaakUrlProvider, ZaaktypeUrlProvider {
+class ZaakMockUrlProvider(
+    private val zaakInstanceLinkService: ZaakInstanceLinkService
+) : ZaakUrlProvider, ZaaktypeUrlProvider {
 
+    @Throws(ZaakInstanceLinkNotFoundException::class)
     override fun getZaakUrl(documentId: UUID): URI {
-        return URI("http://localhost:56273/zaken/api/v1/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
+        return zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
     }
 
     override fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI {

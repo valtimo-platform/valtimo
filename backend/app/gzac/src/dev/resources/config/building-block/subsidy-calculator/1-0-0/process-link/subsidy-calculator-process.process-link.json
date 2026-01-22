@@ -1,5 +1,15 @@
 [
     {
+        "activityId": "PatchZaakCalculationStartTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "description": "BB1: Subsidie berekening gestart"
+        }
+    },
+    {
         "activityId": "CallHouseholdVerificationActivity",
         "activityType": "bpmn:CallActivity:start",
         "processLinkType": "building-block",
@@ -13,6 +23,10 @@
             {
                 "source": "doc:householdSize",
                 "target": "householdSize"
+            },
+            {
+                "source": "doc:zaakOmschrijvingFromZgw",
+                "target": "parentZaakOmschrijving"
             }
         ],
         "outputMappings": [
@@ -29,6 +43,16 @@
             {
                 "source": "incomeEligibilityResult",
                 "target": "doc:eligibilityResult",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakToelichtingBB2",
+                "target": "doc:zaakToelichtingBB2",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
                 "syncTiming": "END"
             }
         ]
