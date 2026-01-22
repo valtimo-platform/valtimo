@@ -148,7 +148,7 @@
           "
         />
 
-        <div class="sync-options">
+        <div class="sync-options" [style.display]="'none'">
           <v-input-label
             [title]="'processLinkConfiguration.buildingBlock.sync.title' | translate"
           />
@@ -195,7 +195,7 @@
             </div>
 
             <div class="mapping-part">
-              <div class="mapping-cell">
+              <div class="mapping-cell" [style.display]="'none'">
                 <cds-radio-group
                   class="sync-radio-group"
                   formControlName="syncTiming"
