@@ -1865,7 +1865,7 @@
       "sync": {
         "title": "Sync",
         "continuous": "Continuous",
-        "end": "At end"
+        "end": "End"
       },
       "pluginDependenciesWarning": {
         "title": "Dependencies",
