@@ -23,7 +23,7 @@ You can customize the log message using the Spring configuration property `camun
 For example:
 
 ```yml
-camunda.incident.alert-log.message-template: "An Camunda process has been placed in incident status after exhausting all retries: Process instance ID: {processInstanceId}"
+camunda.incident.alert-log.message-template: "A Camunda process has been placed in incident status after exhausting all retries: Process instance ID: {processInstanceId}"
 ```
 
 The following placeholders are supported in the template:
