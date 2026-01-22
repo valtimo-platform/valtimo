@@ -117,7 +117,7 @@ class IkoClient(
         containerParams: List<ContainerParam> = emptyList(),
         additionalQueryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
-        val encoder = Base64.getUrlEncoder().withoutPadding()
+        val encoder = Base64.getUrlEncoder()
 
         val encodedContainerParams = containerParams.map { param ->
             encoder.encodeToString(objectMapper.writeValueAsBytes(param))
@@ -128,6 +128,7 @@ class IkoClient(
             if (encodedContainerParams.isNotEmpty()) {
                 addAll("containerParam", encodedContainerParams)
             }
+            put("id", listOf(id))
         }
 
         return runCatching {
@@ -142,7 +143,6 @@ class IkoClient(
                         .path(baseUrl.path)
                         .pathSegment("aggregated-data-profiles")
                         .pathSegment(aggregatedDataProfileName)
-                        .pathSegment(id)
                         .queryParams(queryParams)
                         .build()
                 }

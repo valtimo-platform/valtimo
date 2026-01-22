@@ -583,7 +583,7 @@ services:
             start_period: 5s
 
     iko:
-        image: ghcr.io/integraal-klant-en-objectbeeld/iko:0.6.0
+        image: ghcr.io/integraal-klant-en-objectbeeld/iko:0.7.0
         container_name: gzac-docker-compose-iko
         platform: linux/amd64
         profiles:
