@@ -44,18 +44,17 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            backend/.gradle
             backend/**/build
           key: backend-libraries-contents-${{ needs.compute_contents_sha.outputs.contents_sha }}
       # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
       # the artifact registry to be available to subsequent jobs
       - name: Upload built libraries
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-build-output
           retention-days: 1
           path: |
-            backend/.gradle
             backend/**/build
 
   build_libraries:
@@ -76,7 +75,7 @@ jobs:
           java-version: "21"
           cache: gradle
       - name: Build libraries
-        run: ./gradlew :backend:assemble
+        run: ./gradlew assemble
 
       - name: Upload built libraries
         uses: actions/upload-artifact@v4
@@ -84,7 +83,6 @@ jobs:
           name: backend-build-output
           retention-days: 1
           path: |
-            backend/.gradle
             backend/**/build
   determine-tests:
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
@@ -114,7 +112,7 @@ jobs:
             ${{ env.UNIT_TESTS_MATRIX }}
             ${{ env.INTEGRATION_TESTS_MATRIX }}
             ${{ env.SECURITY_TESTS_MATRIX }}
-          key: testdefinitions-${{ hashFiles('build.gradle', 'settings.gradle', 'gradle.properties', 'backend/**/build.gradle', 'backend/**/build.gradle.kts', 'backend/**/settings.gradle', 'backend/**/settings.gradle.kts', 'backend/**/gradle.properties') }}
+          key: testdefinitions-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle.properties', '**/gradle-wrapper.properties') }}
       - name: Make test matrices
         id: make_test_matrices
         if: steps.cache-test-definitions.outputs.cache-hit != 'true'
@@ -229,6 +227,5 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            backend/.gradle
             backend/**/build
           key: ${{ needs.check_cache.outputs.cache-key }}
