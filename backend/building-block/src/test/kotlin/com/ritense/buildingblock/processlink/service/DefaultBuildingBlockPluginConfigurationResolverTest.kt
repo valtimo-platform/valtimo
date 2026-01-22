@@ -58,13 +58,18 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
             on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { superExecution } doReturn null // End of hierarchy
+            on { processInstance } doReturn null // End of hierarchy
+        }
+
+        // Mock the process instance execution that returns the call activity as superExecution
+        val processInstanceExecution = mock<DelegateExecution> {
+            on { superExecution } doReturn callActivityExecution
         }
 
         // Mock the current execution (inside the building block process)
         val execution = mock<DelegateExecution> {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { superExecution } doReturn callActivityExecution
+            on { processInstance } doReturn processInstanceExecution
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")
@@ -111,7 +116,7 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
         // Execution with no building block variable in its hierarchy
         val execution = mock<DelegateExecution> {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { superExecution } doReturn null
+            on { processInstance } doReturn null
         }
 
         assertThatThrownBy { resolver.resolve(execution, "any") }
@@ -129,12 +134,17 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
             on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { superExecution } doReturn null
+            on { processInstance } doReturn null // End of hierarchy
+        }
+
+        // Mock the process instance execution that returns the call activity as superExecution
+        val processInstanceExecution = mock<DelegateExecution> {
+            on { superExecution } doReturn callActivityExecution
         }
 
         val execution = mock<DelegateExecution> {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { superExecution } doReturn callActivityExecution
+            on { processInstance } doReturn processInstanceExecution
         }
 
         whenever(buildingBlockInstanceService.getByDocumentId(documentId)).thenReturn(null)
@@ -155,12 +165,17 @@ class DefaultBuildingBlockPluginConfigurationResolverTest {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn true
             on { getVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn documentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
-            on { superExecution } doReturn null
+            on { processInstance } doReturn null // End of hierarchy
+        }
+
+        // Mock the process instance execution that returns the call activity as superExecution
+        val processInstanceExecution = mock<DelegateExecution> {
+            on { superExecution } doReturn callActivityExecution
         }
 
         val execution = mock<DelegateExecution> {
             on { hasVariableLocal(eq(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)) } doReturn false
-            on { superExecution } doReturn callActivityExecution
+            on { processInstance } doReturn processInstanceExecution
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb-key", "1.0.0")

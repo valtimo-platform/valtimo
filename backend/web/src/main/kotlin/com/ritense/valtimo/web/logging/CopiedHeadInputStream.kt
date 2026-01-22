@@ -28,16 +28,16 @@ class CopiedHeadInputStream(
     private var index: Int = 0
 
     private var closed: Boolean = false
+    private var headEmitted = false
 
     override fun read(): Int {
         checkClosed()
         val b = inputStream.read()
-        if (b == -1 && index < buffer.size || index == buffer.size) {
-            onHeadReady(buffer.take(index).map { it.toByte() }.toByteArray())
-            index++
-        } else if (index < buffer.size) {
-            buffer[index] = b
-            index++
+        if (b != -1 && index < buffer.size) {
+            buffer[index++] = b
+            if (index == buffer.size) emitHead()
+        } else if (b == -1) {
+            emitHead()
         }
         return b
     }
@@ -72,6 +72,13 @@ class CopiedHeadInputStream(
     override fun mark(readlimit: Int) = inputStream.mark(readlimit)
     override fun reset() = inputStream.reset()
     override fun markSupported() = inputStream.markSupported()
+
+    private fun emitHead() {
+        if (!headEmitted) {
+            headEmitted = true
+            onHeadReady(buffer.take(index).map { it.toByte() }.toByteArray())
+        }
+    }
 
     private fun checkClosed() {
         if (closed) {

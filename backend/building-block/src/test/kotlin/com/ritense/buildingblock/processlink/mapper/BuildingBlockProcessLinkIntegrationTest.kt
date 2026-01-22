@@ -30,7 +30,6 @@ import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateR
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkResponseDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkUpdateRequestDto
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
@@ -53,7 +52,6 @@ import kotlin.test.assertEquals
 class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     private val mapper: BuildingBlockProcessLinkMapper,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
 ) : BaseIntegrationTest() {
 
     lateinit var buildingBlock: BuildingBlockDefinition

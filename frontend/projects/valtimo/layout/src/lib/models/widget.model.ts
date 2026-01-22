@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
-import {Condition} from '@valtimo/shared';
+import {Condition, Direction} from '@valtimo/shared';
 import {
   WidgetCollectionContent,
   WidgetContentProperties,
@@ -66,6 +66,8 @@ interface FieldsWidgetValue {
   value: string;
   ellipsisCharacterLimit?: number;
   displayProperties?: WidgetDisplayType;
+  sortable?: boolean;
+  defaultSort?: Direction;
 }
 
 interface GeoJsonSource {
