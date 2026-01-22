@@ -19,5 +19,5 @@
   cdsLayer="1"
   *ngIf="(editFormModified$ | async) && form$ | async as formDefinition"
 >
-  <form-builder [form]="formDefinition" (change)="onChange($event)"></form-builder>
+  <form-builder></form-builder>
 </div>
