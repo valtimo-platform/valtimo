@@ -119,6 +119,7 @@
     &-vertically,
     &-two-columns,
     &-three-columns {
+      display: grid;
       grid-gap: 16px;
       align-items: stretch;
       overflow: hidden;
@@ -127,7 +128,7 @@
     }
 
     &-vertically {
-      display: flex !important;
+      grid-template-columns: 1fr;
     }
 
     &-two-columns {
