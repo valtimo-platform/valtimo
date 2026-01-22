@@ -38,7 +38,7 @@
       </div>
 
       <div formArrayName="inputs">
-        @for (group of inputs.controls; let i = $index; track i) {
+        @for (group of inputs.controls; let inputIndex = $index; track inputIndex) {
           <div class="mapping-row input" [formGroup]="group">
             <div class="mapping-part">
               <valtimo-value-path-selector
@@ -47,7 +47,9 @@
                 [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                 [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
+                [buildingBlockDefinitionVersionTag]="
+                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                "
                 [appendInline]="false"
                 [dropUp]="false"
                 [formControl]="group.get('source')"
@@ -80,7 +82,12 @@
 
               <div class="mapping-cell-actions">
                 @if (!isRequiredTarget(obs.fields, group.get('target')?.value)) {
-                  <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteInput(i)">
+                  <button
+                    cdsButton="danger--ghost"
+                    iconOnly
+                    size="sm"
+                    (click)="deleteInput(inputIndex)"
+                  >
                     <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                   </button>
                 } @else {
@@ -129,7 +136,7 @@
       </div>
 
       <div formArrayName="outputs">
-        @for (group of outputs.controls; track group) {
+        @for (group of outputs.controls; let outputIndex = $index; track outputIndex) {
           <div class="mapping-row output" [formGroup]="group">
             <div class="mapping-part">
               <div class="mapping-cell">
@@ -157,7 +164,9 @@
                 [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                 [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
+                [buildingBlockDefinitionVersionTag]="
+                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                "
                 [formControl]="group.get('target')"
                 [appendInline]="false"
                 [filterItems]="getUsedCaseTargetsForRow$(group) | async"
@@ -170,7 +179,7 @@
                 <cds-radio-group
                   class="sync-radio-group"
                   formControlName="syncTiming"
-                  [attr.name]="'syncTiming-' + i"
+                  [attr.name]="'syncTiming-' + outputIndex"
                 >
                   @for (item of syncTimingItems; track item.id) {
                     <cds-radio [value]="item.id" [checked]="isSyncTimingSelected(group, item.id)">
@@ -181,7 +190,12 @@
               </div>
 
               <div class="mapping-cell-actions">
-                <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteOutput(i)">
+                <button
+                  cdsButton="danger--ghost"
+                  iconOnly
+                  size="sm"
+                  (click)="deleteOutput(outputIndex)"
+                >
                   <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                 </button>
               </div>
