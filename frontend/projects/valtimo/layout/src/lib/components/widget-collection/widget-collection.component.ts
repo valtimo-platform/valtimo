@@ -81,7 +81,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
     this.hostClasses = `valtimo-widget-collection ${value.isCompact ? 'valtimo-widget-collection--compact' : ''}`;
   }
 
-  public readonly showPagination$ = new BehaviorSubject<boolean>(false);
+  public readonly $showPagination = signal<boolean>(false);
 
   private readonly _widgetData$ = new BehaviorSubject<Page<CollectionWidgetCardData> | null>(null);
 
@@ -116,9 +116,9 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
     this._widgetData$.next(widgetData);
 
     if (!this._paginationInitialized) {
-      this.showPagination$.next(value.totalElements > value.size);
+      this.$showPagination.set(value.totalElements > value.size);
 
-      this.paginationModel.set(
+      this.$paginationModel.set(
         value.totalPages < 0
           ? null
           : {
@@ -130,7 +130,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
 
       this._paginationInitialized = true;
     } else {
-      this.paginationModel.update((model: PaginationModel) => ({
+      this.$paginationModel.update((model: PaginationModel) => ({
         ...model,
         currentPage: value.number + 1,
       }));
@@ -145,7 +145,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   public readonly $widgetTitle = signal('-');
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
-  public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
+  public readonly $paginationModel = signal<PaginationModel>(new PaginationModel());
   public readonly amountOfColumns = signal(0);
 
   public readonly collectionWidgetCards$: Observable<
@@ -208,7 +208,9 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   }
 
   public onSelectPage(page: number): void {
-    this.paginationEvent.emit({...this.paginationModel(), currentPage: page});
+    const paginationModel = this.$paginationModel();
+    if (!paginationModel) return;
+    this.paginationEvent.emit({...paginationModel, currentPage: page});
   }
 
   private getCardField(
