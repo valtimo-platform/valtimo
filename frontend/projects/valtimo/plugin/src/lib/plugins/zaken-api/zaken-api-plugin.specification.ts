@@ -314,7 +314,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de organisatorische eenheid:<br/>- Identificatie<br/>- Naam',
       createZaakrolVestigingIdentifierFieldsInformation:
-        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de vestiging:<br/>- Handelsnaam<br/>- Vestigingsnummer<br/>- KVK-nummer',
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de vestiging:<br/>- Vestigingsnummer<br/>- Handelsnaam<br/>- KVK-nummer',
     },
     en: {
       title: 'Zaken API',
@@ -557,7 +557,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name',
       createZaakrolVestigingIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the branch:<br/>- Trade name<br/>- Branch number<br/>- Chamber of Commerce number',
+        'At least one of the following fields must be completed to identify the branch:<br/>- Branch number<br/>- Trade name<br/>- Chamber of Commerce number',
     },
   },
 };
