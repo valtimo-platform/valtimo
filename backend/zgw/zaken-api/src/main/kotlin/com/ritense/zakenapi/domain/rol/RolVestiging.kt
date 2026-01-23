@@ -34,4 +34,15 @@ data class RolVestiging(
     val verblijfsadres: Verblijfsadres? = null,
     val subVerblijfBuitenland: SubVerblijfBuitenland? = null,
     val kvkNummer: String? = null
-) : BetrokkeneIdentificatie()
+) : BetrokkeneIdentificatie() {
+
+    init {
+        require(
+            !kvkNummer.isNullOrBlank() ||
+            !handelsnaam.isNullOrEmpty() ||
+            !vestigingsNummer.isNullOrBlank()
+        ) {
+            "Either kvkNummer, handelsnaam or vestigingsNummer should be provided!"
+        }
+    }
+}

@@ -32,5 +32,12 @@ data class RolMedewerker(
     val achternaam: String? = null,
     val voorletters: String? = null,
     val voorvoegselAchternaam: String? = null
-) : BetrokkeneIdentificatie()
+) : BetrokkeneIdentificatie() {
+
+    init {
+        require(!identificatie.isNullOrBlank() || !achternaam.isNullOrBlank()) {
+            "Either identificatie or achternaam should be provided!"
+        }
+    }
+}
 

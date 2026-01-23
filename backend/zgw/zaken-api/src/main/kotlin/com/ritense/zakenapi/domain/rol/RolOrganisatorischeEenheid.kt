@@ -30,4 +30,11 @@ data class RolOrganisatorischeEenheid(
     val identificatie: String? = null,
     val naam: String? = null,
     val isGehuisvestIn: String? = null
-) : BetrokkeneIdentificatie()
+) : BetrokkeneIdentificatie() {
+
+    init {
+        require(!identificatie.isNullOrBlank() || !naam.isNullOrBlank()) {
+            "Either identificatie or name should be provided!"
+        }
+    }
+}
