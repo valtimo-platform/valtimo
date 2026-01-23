@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form
- */
+import {Component, OnInit} from '@angular/core';
 
-export * from './lib/form.service';
-export * from './lib/form.module';
-export * from './lib/services/form-mapping/form-mapping.service';
-export * from './lib/services/form-translation/form-translation.service';
-export * from './lib/models';
+@Component({
+  selector: 'app-custom-maps-tab',
+  templateUrl: './custom-maps-tab.component.html',
+  styleUrls: ['./custom-maps-tab.component.scss'],
+  standalone: false,
+})
+export class CustomMapsTabComponent implements OnInit {
+  constructor() {}
+
+  ngOnInit() {}
+}
