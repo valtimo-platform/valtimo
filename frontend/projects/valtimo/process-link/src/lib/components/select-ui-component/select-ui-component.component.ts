@@ -25,12 +25,14 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   map,
   Observable,
   Subscription,
   switchMap,
   take,
   tap,
+  withLatestFrom,
 } from 'rxjs';
 import {FormCustomComponentConfig, UIComponentProcessLinkUpdateRequestDto} from '../../models';
 import {ListItem} from 'carbon-components-angular';
@@ -104,9 +106,14 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 

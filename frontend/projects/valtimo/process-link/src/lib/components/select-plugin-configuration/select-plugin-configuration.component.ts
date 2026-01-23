@@ -15,7 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {map, switchMap, take} from 'rxjs/operators';
+import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {PluginStateService} from '../../services/plugin-state.service';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {
@@ -178,17 +178,27 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
   private openNextButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.nextButtonClick$.subscribe(() => {
-        this.stepService.setChoosePluginActionSteps();
-      })
+      this.buttonService.nextButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setChoosePluginActionSteps();
+        })
     );
   }
 }

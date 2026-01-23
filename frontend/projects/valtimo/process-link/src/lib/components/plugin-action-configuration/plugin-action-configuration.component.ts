@@ -23,7 +23,7 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {map, take} from 'rxjs/operators';
+import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
 import {
   PluginConfigurationReferenceType,
@@ -52,8 +52,21 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
     ProcessLink['actionProperties'] | null
   >(null);
-  private readonly _prefillConfiguration$ = this.stateService.selectedProcessLink$.pipe(
-    map(processLink => (processLink ? processLink?.actionProperties : undefined))
+  // Only prefill if the action key hasn't changed from what's saved in the process link
+  private readonly _prefillConfiguration$ = combineLatest([
+    this.stateService.selectedProcessLink$,
+    this.pluginStateService.selectedPluginFunction$,
+  ]).pipe(
+    map(([processLink, selectedFunction]) => {
+      if (!processLink) return undefined;
+      // Only prefill if the action hasn't been changed
+      const savedActionKey = processLink.pluginActionDefinitionKey;
+      const currentActionKey = selectedFunction?.key;
+      if (currentActionKey && savedActionKey !== currentActionKey) {
+        return undefined; // Action changed, don't prefill old configuration
+      }
+      return processLink.actionProperties;
+    })
   );
   public readonly prefillConfiguration$ = combineLatest([
     this._prefillConfigurationSubject$,
@@ -106,26 +119,33 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   private updateProcessLink(configuration: PluginConfigurationData): void {
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      const inferredReferenceType: PluginConfigurationReferenceType =
-        (selectedProcessLink.referenceType as PluginConfigurationReferenceType) ||
-        (selectedProcessLink.pluginDefinitionKey ? 'BUILDING_BLOCK' : 'FIXED');
-      const pluginConfigurationId =
-        inferredReferenceType === 'FIXED'
-          ? (selectedProcessLink.pluginConfigurationId ?? '')
-          : undefined;
-      const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
-        id: selectedProcessLink.id,
-        pluginConfigurationId,
-        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey ?? '',
-        actionProperties: configuration,
-        activityId: selectedProcessLink.activityId,
-        referenceType: inferredReferenceType,
-        pluginDefinitionKey: selectedProcessLink.pluginDefinitionKey,
-      };
+    combineLatest([
+      this.stateService.selectedProcessLink$,
+      this.pluginStateService.selectedPluginFunction$,
+    ])
+      .pipe(take(1))
+      .subscribe(([selectedProcessLink, selectedFunction]) => {
+        const inferredReferenceType: PluginConfigurationReferenceType =
+          (selectedProcessLink.referenceType as PluginConfigurationReferenceType) ||
+          (selectedProcessLink.pluginDefinitionKey ? 'BUILDING_BLOCK' : 'FIXED');
+        const pluginConfigurationId =
+          inferredReferenceType === 'FIXED'
+            ? (selectedProcessLink.pluginConfigurationId ?? '')
+            : undefined;
+        // Use the currently selected function key (user may have changed it)
+        const actionKey = selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
+        const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
+          id: selectedProcessLink.id,
+          pluginConfigurationId,
+          pluginActionDefinitionKey: actionKey,
+          actionProperties: configuration,
+          activityId: selectedProcessLink.activityId,
+          referenceType: inferredReferenceType,
+          pluginDefinitionKey: selectedProcessLink.pluginDefinitionKey,
+        };
 
-      this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-    });
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+      });
   }
 
   private saveNewProcessLink(configuration: PluginConfigurationData): void {
@@ -182,9 +202,14 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stepService.setChoosePluginActionSteps();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setChoosePluginActionSteps();
+        })
     );
   }
 

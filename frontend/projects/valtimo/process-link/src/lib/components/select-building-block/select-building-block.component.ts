@@ -23,7 +23,7 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
-import {catchError, map, Observable, of, shareReplay, Subscription, tap} from 'rxjs';
+import {catchError, filter, map, Observable, of, shareReplay, Subscription, tap, withLatestFrom} from 'rxjs';
 
 @Component({
   standalone: false,
@@ -90,17 +90,27 @@ export class SelectBuildingBlockComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
 
     this.subscriptions.add(
-      this.buttonService.nextButtonClick$.subscribe(() => {
-        this.stepService.setConfigureBuildingBlockPluginsStep(
-          this.getDefinitionLabel(this.findDefinitionByKey(this.selectedKey))
-        );
-      })
+      this.buttonService.nextButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setConfigureBuildingBlockPluginsStep(
+            this.getDefinitionLabel(this.findDefinitionByKey(this.selectedKey))
+          );
+        })
     );
   }
 

@@ -31,7 +31,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {BehaviorSubject, combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
-import {map, switchMap, take} from 'rxjs/operators';
+import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {
   BuildingBlockInputMapping,
   BuildingBlockOutputMapping,
@@ -272,7 +272,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService
+    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService,
+    private readonly stateService: ProcessLinkStateService
   ) {}
 
   ngOnInit(): void {
@@ -297,9 +298,14 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this.triggerValidation();
 
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stepService.setConfigureBuildingBlockPluginsStep();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setConfigureBuildingBlockPluginsStep();
+        })
     );
 
     this._subscriptions.add(

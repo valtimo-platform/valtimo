@@ -36,7 +36,7 @@ import {
   ProcessLinkType,
 } from '../../models';
 import {combineLatest, distinctUntilChanged, Observable, of, shareReplay, Subscription} from 'rxjs';
-import {catchError, map, switchMap, take} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {TranslateService} from '@ngx-translate/core';
 import {NotificationContent} from 'carbon-components-angular';
@@ -209,17 +209,27 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     );
 
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stepService.setBuildingBlockSteps();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setBuildingBlockSteps();
+        })
     );
 
     this._subscriptions.add(
-      this.buttonService.nextButtonClick$.subscribe(() => {
-        this.stepService.setConfigureBuildingBlockMappingsStep(
-          this.buildingBlockStateService.getDefinitionSnapshot().key ?? undefined
-        );
-      })
+      this.buttonService.nextButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setConfigureBuildingBlockMappingsStep(
+            this.buildingBlockStateService.getDefinitionSnapshot().key ?? undefined
+          );
+        })
     );
   }
 
