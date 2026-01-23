@@ -618,7 +618,7 @@ class ZakenApiPlugin(
                         identificatie = identificatie,
                         achternaam = achternaam,
                         voorletters = voorletters,
-                        voorvoegselAchternaam = voorvoegselAchternaam ?: ""
+                        voorvoegselAchternaam = voorvoegselAchternaam
                     ),
                     afwijkendeNaamBetrokkene = afwijkendeNaamBetrokkene,
                     indicatieMachtigingString = indicatieMachtiging,
