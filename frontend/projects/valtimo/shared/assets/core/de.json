@@ -801,7 +801,7 @@
     },
     "draftWarning": {
       "title": "Nicht mit einer Version des Case verknüpft",
-      "description": "Beim Aktualisieren {name} ändert sich der {name} für alle Versionen dieses Case. Nicht nur für die ausgewählte Version!"
+      "description": "Beim Aktualisieren {{name}} ändert sich der {{name}} für alle Versionen dieses Case. Nicht nur für die ausgewählte Version!"
     }
   },
   "widgetTabManagement": {

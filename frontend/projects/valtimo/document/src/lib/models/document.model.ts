@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ interface DocumentDefinition {
 
 interface DocumentDefinitionId {
   name: string;
-  caseDefinitionId: CaseDefinitionId;
+  blueprintId: BlueprintId;
 }
 
 interface CreateDocumentDefinitionResponse {
@@ -124,6 +124,12 @@ interface ProcessDocumentDefinition {
 interface CaseDefinitionId {
   key: string;
   versionTag: string;
+}
+
+interface BlueprintId {
+  blueprintKey: string;
+  blueprintType: 'CASE' | 'BUILDING_BLOCK';
+  blueprintVersionTag: string;
 }
 
 interface ProcessDefinitionCaseDefinitionId {
