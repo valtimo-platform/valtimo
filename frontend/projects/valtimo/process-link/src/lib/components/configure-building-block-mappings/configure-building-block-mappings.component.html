@@ -22,6 +22,10 @@
     buildingBlockParams: (buildingBlockParams$ | async),
     sourceContextName: (sourceContextName$ | async),
     targetBuildingBlockName: (targetBuildingBlockName$ | async),
+    sourceIsCase: (sourceIsCase$ | async),
+    caseLabelTranslation: ('Case' | translate),
+    buildingBlockLabelTranslation:
+      ('processLinkConfiguration.buildingBlock.selectLabel' | translate),
   };
 
 <div class="mapping-step">
@@ -32,13 +36,21 @@
 
     <div class="mapping-table" [formGroup]="inputsForm">
       <div class="mapping-header input">
-        <v-input-label [title]="obs.sourceContextName" />
+        <v-input-label
+          [title]="
+            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
+            ': ' +
+            obs.sourceContextName
+          "
+        />
 
-        <v-input-label [title]="obs.targetBuildingBlockName" />
+        <v-input-label
+          [title]="obs.buildingBlockLabelTranslation + ': ' + obs.targetBuildingBlockName"
+        />
       </div>
 
       <div formArrayName="inputs">
-        @for (group of inputs.controls; let i = $index; track i) {
+        @for (group of inputs.controls; let inputIndex = $index; track inputIndex) {
           <div class="mapping-row input" [formGroup]="group">
             <div class="mapping-part">
               <valtimo-value-path-selector
@@ -47,7 +59,9 @@
                 [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                 [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
+                [buildingBlockDefinitionVersionTag]="
+                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                "
                 [appendInline]="false"
                 [dropUp]="false"
                 [formControl]="group.get('source')"
@@ -60,7 +74,7 @@
               <div class="mapping-cell">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
                   <div class="required-target">
-                    {{ group.get('target')?.value }}
+                    {{ 'doc:' + group.get('target')?.value }}
                   </div>
                 } @else {
                   <v-select
@@ -80,7 +94,12 @@
 
               <div class="mapping-cell-actions">
                 @if (!isRequiredTarget(obs.fields, group.get('target')?.value)) {
-                  <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteInput(i)">
+                  <button
+                    cdsButton="danger--ghost"
+                    iconOnly
+                    size="sm"
+                    (click)="deleteInput(inputIndex)"
+                  >
                     <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                   </button>
                 } @else {
@@ -117,11 +136,19 @@
 
     <div class="mapping-table" [formGroup]="outputsForm">
       <div class="mapping-header output">
-        <v-input-label [title]="obs.targetBuildingBlockName" />
+        <v-input-label
+          [title]="obs.buildingBlockLabelTranslation + ': ' + obs.targetBuildingBlockName"
+        />
 
-        <v-input-label [title]="obs.sourceContextName" />
+        <v-input-label
+          [title]="
+            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
+            ': ' +
+            obs.sourceContextName
+          "
+        />
 
-        <div class="sync-options">
+        <div class="sync-options" [style.display]="'none'">
           <v-input-label
             [title]="'processLinkConfiguration.buildingBlock.sync.title' | translate"
           />
@@ -129,7 +156,7 @@
       </div>
 
       <div formArrayName="outputs">
-        @for (group of outputs.controls; track group) {
+        @for (group of outputs.controls; let outputIndex = $index; track outputIndex) {
           <div class="mapping-row output" [formGroup]="group">
             <div class="mapping-part">
               <div class="mapping-cell">
@@ -157,7 +184,9 @@
                 [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                 [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
                 [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="obs.buildingBlockParams?.buildingBlockDefinitionVersionTag"
+                [buildingBlockDefinitionVersionTag]="
+                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                "
                 [formControl]="group.get('target')"
                 [appendInline]="false"
                 [filterItems]="getUsedCaseTargetsForRow$(group) | async"
@@ -166,11 +195,11 @@
             </div>
 
             <div class="mapping-part">
-              <div class="mapping-cell">
+              <div class="mapping-cell" [style.display]="'none'">
                 <cds-radio-group
                   class="sync-radio-group"
                   formControlName="syncTiming"
-                  [attr.name]="'syncTiming-' + i"
+                  [attr.name]="'syncTiming-' + outputIndex"
                 >
                   @for (item of syncTimingItems; track item.id) {
                     <cds-radio [value]="item.id" [checked]="isSyncTimingSelected(group, item.id)">
@@ -181,7 +210,12 @@
               </div>
 
               <div class="mapping-cell-actions">
-                <button cdsButton="danger--ghost" iconOnly size="sm" (click)="deleteOutput(i)">
+                <button
+                  cdsButton="danger--ghost"
+                  iconOnly
+                  size="sm"
+                  (click)="deleteOutput(outputIndex)"
+                >
                   <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                 </button>
               </div>
