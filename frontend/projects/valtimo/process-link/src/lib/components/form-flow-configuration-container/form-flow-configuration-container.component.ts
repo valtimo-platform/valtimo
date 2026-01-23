@@ -29,7 +29,6 @@ import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {ChangeEvent, FormFlowCustomComponent} from '../../models';
 import {FormFlowComponentService} from '../../services';
-import {FormioSubmission} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -51,7 +50,7 @@ export class FormFlowConfigurationContainerComponent
     this._formFlowInstanceId$.next(value);
   }
   @Output() public changeEvent = new EventEmitter<ChangeEvent>();
-  @Output() public submitEvent = new EventEmitter<FormioSubmission>();
+  @Output() public submitEvent = new EventEmitter<Record<string, unknown>>();
 
   private _changeSubscription!: Subscription;
   private _submitSubscription!: Subscription;

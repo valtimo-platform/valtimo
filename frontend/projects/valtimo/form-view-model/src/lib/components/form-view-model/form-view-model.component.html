@@ -21,7 +21,6 @@
     submission: submission$ | async,
     form: form$ | async,
     tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
-    formioOptions: formioOptions$ | async,
     loading: loading$ | async,
     errors: formErrors$ | async,
     renderOptions: renderOptions$ | async,
@@ -45,7 +44,6 @@
     #formio
     [submission]="obs.submission"
     [form]="obs.form"
-    [options]="obs.formioOptions"
     [renderOptions]="obs.renderOptions"
     [refresh]="refreshForm"
     (submit)="onSubmit($event)"

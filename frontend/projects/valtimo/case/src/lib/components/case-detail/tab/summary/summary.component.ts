@@ -18,7 +18,6 @@ import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
 import {Document, DocumentService} from '@valtimo/document';
 import {FormService} from '@valtimo/form';
-import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {
@@ -60,8 +59,6 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
   public readonly document$ = new BehaviorSubject<Document>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public options: ValtimoFormioOptions;
-
   public notificationObj$ = new BehaviorSubject<NotificationContent>(null);
 
   private _subscriptions = new Subscription();
@@ -76,8 +73,6 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
     this.snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this.snapshot.get('caseDefinitionKey') || '';
     this.documentId = this.snapshot.get('documentId') || '';
-    this.options = new FormioOptionsImpl();
-    this.options.disableAlerts = true;
   }
 
   public ngOnInit(): void {
