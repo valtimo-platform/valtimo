@@ -12,9 +12,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Zaken API - Changed required fields for Create Zaakrol plugin actions**
 
-  New enhancement explanation.
+  Changed required fields for; Create Zaakrol - Employee, Create Zaakrol - Organisational unit and Create Zaakrol - Branch
 
 ## Bugfixes
 
