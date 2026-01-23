@@ -556,7 +556,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'At least one of the following fields must be completed to identify the employee:<br/>- Identification<br/>- Last name',
       createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name',
-      createZaakrolVestigingdIdentifierFieldsInformation:
+      createZaakrolVestigingIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the branch:<br/>- Trade name<br/>- Branch number<br/>- Chamber of Commerce number',
     },
   },
