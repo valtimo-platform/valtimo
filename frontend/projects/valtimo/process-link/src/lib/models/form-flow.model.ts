@@ -15,6 +15,7 @@
  */
 
 import {EventEmitter, Type} from '@angular/core';
+import {FormioSubmission} from '@valtimo/components';
 
 interface ChangeEvent {
   data: object;
@@ -25,7 +26,7 @@ interface FormFlowCustomComponent {
   componentId?: string;
   disabled: boolean;
   changeEvent: EventEmitter<ChangeEvent>;
-  submitEvent: EventEmitter<Record<string, unknown>>;
+  submitEvent: EventEmitter<FormioSubmission>;
 }
 
 interface FormFlowCustomComponentDefinition {

@@ -28,6 +28,9 @@ export class FormioComponent implements OnInit {
   };
   public formDefinition: any;
   public formData: any;
+  public formioOptions = {
+    disableAlerts: true,
+  };
 
   constructor() {}
 

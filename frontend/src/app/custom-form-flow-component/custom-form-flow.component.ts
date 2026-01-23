@@ -16,6 +16,7 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ChangeEvent, FormFlowCustomComponent} from '@valtimo/process-link';
+import {FormioSubmission} from '@valtimo/components';
 
 @Component({
   standalone: true,
@@ -29,7 +30,7 @@ export class CustomFormFlowComponent implements FormFlowCustomComponent {
   @Input() disabled!: boolean;
 
   @Output() changeEvent = new EventEmitter<ChangeEvent>();
-  @Output() submitEvent = new EventEmitter<Record<string, unknown>>();
+  @Output() submitEvent = new EventEmitter<FormioSubmission>();
 
   public onSubmit(): void {
     this.submitEvent.emit({

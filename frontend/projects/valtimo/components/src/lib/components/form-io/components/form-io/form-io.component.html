@@ -19,6 +19,7 @@
   cdsLayer="1"
   *ngIf="{
     currentLanguage: currentLanguage$ | async,
+    formioOptions: formioOptions$ | async,
     submission: submission$ | async,
     readOnly: readOnly$ | async,
     form: form$ | async,
@@ -34,9 +35,10 @@
   </div>
 
   <formio
-    *ngIf="obs.form"
+    *ngIf="obs.formioOptions && obs.form"
     [form]="obs.form"
     [language]="languageEventEmitter"
+    [options]="obs.formioOptions"
     [readOnly]="obs.readOnly"
     [submission]="obs.submission"
     (change)="onChange($event)"

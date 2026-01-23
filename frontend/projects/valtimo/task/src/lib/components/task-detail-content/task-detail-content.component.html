@@ -28,6 +28,7 @@
     processLinkIsForm: processLinkIsForm$ | async,
     processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
     processLinkIsUiComponent: processLinkIsUiComponent$ | async,
+    formioOptions: formioOptions$ | async,
     processLinkIsFormFlow: processLinkIsFormFlow$ | async,
     formFlowInstanceId: formFlowInstanceId$ | async,
     errorMessage: errorMessage$ | async,
@@ -46,6 +47,7 @@
     [submission]="obs.submission"
     (submit)="onSubmit($event)"
     (change)="onChange($event)"
+    [options]="obs.formioOptions"
   ></valtimo-form-io>
 
   <valtimo-form-flow

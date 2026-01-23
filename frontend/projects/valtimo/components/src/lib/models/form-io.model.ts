@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+import {
+  AlertsOptions,
+  ErrorsOptions,
+  FormioBeforeSubmit,
+  FormioHookOptions,
+  FormioOptions,
+} from '@formio/angular';
+
 interface FormioSubmission {
   data: {
     [key: string]: any;
@@ -26,6 +34,42 @@ interface FormioSubmission {
 interface ResourceOption {
   label: string;
   value: string;
+}
+
+class AlertsOptionsImpl implements AlertsOptions {
+  submitMessage: string;
+
+  constructor(submitMessage: string) {
+    this.submitMessage = submitMessage;
+  }
+}
+
+interface ValtimoFormioOptions extends FormioOptions {
+  setAlertMessage(submitMessage: string);
+  setHooks(submitFunction: FormioBeforeSubmit);
+}
+
+class FormioOptionsImpl implements ValtimoFormioOptions {
+  errors?: ErrorsOptions;
+  alerts?: AlertsOptions;
+  disableAlerts?: boolean;
+  language?: string;
+  i18n?: object;
+  fileService?: object;
+  hooks?: FormioHookOptions;
+  readonly?: boolean;
+  decimalSeparator?: string;
+  thousandsSeparator?: string;
+
+  constructor() {}
+
+  setAlertMessage(submitMessage: string) {
+    this.alerts = new AlertsOptionsImpl(submitMessage);
+  }
+
+  setHooks(beforeSubmit: FormioBeforeSubmit) {
+    this.hooks = {beforeSubmit};
+  }
 }
 
 interface ValidateOptions {
@@ -114,6 +158,9 @@ interface ConditionalOptions {
 export {
   FormioSubmission,
   ResourceOption,
+  AlertsOptionsImpl,
+  FormioOptionsImpl,
+  ValtimoFormioOptions,
   ValidateOptions,
   BuilderInfo,
   ComponentSchema,

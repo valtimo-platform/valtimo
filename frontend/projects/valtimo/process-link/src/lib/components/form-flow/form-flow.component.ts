@@ -17,7 +17,13 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {FormioForm} from '@formio/angular';
-import {FormioComponent, ValtimoModalService} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+  ValtimoModalService,
+} from '@valtimo/components';
 import {FormFlowService} from '../../services';
 import {FormFlowInstance, FormFlowStepType} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
@@ -47,6 +53,7 @@ export class FormFlowComponent implements OnInit, OnDestroy {
   @Output() public readonly formFlowChange = new EventEmitter();
 
   public formDefinition: FormioForm;
+  public formioOptions: ValtimoFormioOptions;
 
   public readonly breadcrumbs$ = new BehaviorSubject<Step[]>([]);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
@@ -67,7 +74,10 @@ export class FormFlowComponent implements OnInit, OnDestroy {
     private readonly modalService: ValtimoModalService,
     private readonly translateService: TranslateService,
     private readonly configService: ConfigService
-  ) {}
+  ) {
+    this.formioOptions = new FormioOptionsImpl();
+    this.formioOptions.disableAlerts = true;
+  }
 
   public ngOnInit() {
     this.getFormFlowStep();
@@ -84,7 +94,7 @@ export class FormFlowComponent implements OnInit, OnDestroy {
     this.formFlowChange.emit();
   }
 
-  public onSubmit(submission: Record<string, unknown>): void {
+  public onSubmit(submission: FormioSubmission): void {
     this.disable();
 
     if (submission.data) {
@@ -92,7 +102,7 @@ export class FormFlowComponent implements OnInit, OnDestroy {
     }
 
     if (
-      submission.data['submit'] &&
+      submission.data.submit &&
       this.formFlowInstanceId$.getValue() &&
       this.formFlowStepInstanceId
     ) {

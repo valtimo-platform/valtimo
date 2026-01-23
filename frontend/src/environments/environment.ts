@@ -266,6 +266,14 @@ export const environment: ValtimoConfig = {
     enableSuppressDocumentError: false,
   },
   csp: cspHeaderParamsDev,
+  formioOptions: {
+    languageOverride: {
+      'en-US': {
+        decimalSeparator: ':',
+        delimiter: ':',
+      },
+    },
+  },
   translationResources: ['./assets/i18n/'],
 };
 
