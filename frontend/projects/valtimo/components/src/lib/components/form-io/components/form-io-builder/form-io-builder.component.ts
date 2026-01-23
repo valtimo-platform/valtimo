@@ -100,27 +100,11 @@ export class FormioBuilderComponent implements OnInit {
     this.tagsService.reregisterTags(this.injector);
   }
 
-  public ngOnInit() {
-    this.modifyEditForm();
-  }
+  public ngOnInit() {}
 
   public onChange(event) {
     this.change.emit(event);
   }
-
-  private modifyEditForm = (): void => {
-    const params = getCaseManagementRouteParams(this.route);
-    const originalEditForm = Components.baseEditForm;
-    Components.baseEditForm = function (...extend) {
-      const editForm = originalEditForm(...extend);
-      modiyEditFormApiKeyInput(editForm);
-      addValueResolverSelectorToEditform(editForm, params);
-
-      return editForm;
-    };
-
-    setTimeout(() => this.editFormModified$.next(true));
-  };
 
   private setOverrideOptions(config: ValtimoConfig): void {
     if (!config.formioOptions) return;
