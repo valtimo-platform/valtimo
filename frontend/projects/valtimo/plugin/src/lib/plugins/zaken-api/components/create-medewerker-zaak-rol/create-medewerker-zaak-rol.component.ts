@@ -62,8 +62,7 @@ export class CreateMedewerkerZaakRolComponent
       formValue.roltypeUrl &&
       (
         formValue.identificatie ||
-        formValue.achternaam ||
-        formValue.voorletters
+        formValue.achternaam
       )
     );
     this._valid$.next(valid);

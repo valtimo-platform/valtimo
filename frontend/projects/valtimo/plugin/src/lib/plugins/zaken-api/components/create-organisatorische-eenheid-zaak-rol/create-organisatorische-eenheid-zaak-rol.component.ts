@@ -63,8 +63,7 @@ export class CreateOrganisatorischeEenheidZaakRolComponent
       formValue.roltypeUrl &&
       (
         formValue.identificatie ||
-        formValue.naam ||
-        formValue.isGehuisvestIn
+        formValue.naam
       )
     );
 
