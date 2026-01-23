@@ -310,9 +310,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       notitieType: 'Notitietype',
       status: 'Status',
       createZaakrolMedewerkerIdentifierFieldsInformation:
-        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de medewerker:<br/>- Identificatie<br/>- Achternaam<br/>- Voorletters',
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de medewerker:<br/>- Identificatie<br/>- Achternaam',
       createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
-        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de organisatorische eenheid:<br/>- Identificatie<br/>- Naam<br/>- Is gehuisvest in',
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de organisatorische eenheid:<br/>- Identificatie<br/>- Naam',
+      createZaakrolVestigingIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de vestiging:<br/>- Handelsnaam<br/>- Vestigingsnummer<br/>- KVK-nummer',
     },
     en: {
       title: 'Zaken API',
@@ -551,9 +553,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       notitieType: 'Note type',
       status: 'Status',
       createZaakrolMedewerkerIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the employee:<br/>- Identification<br/>- Last name<br/>- Initials',
+        'At least one of the following fields must be completed to identify the employee:<br/>- Identification<br/>- Last name',
       createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name<br/>- Is housed in',
+        'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name',
+      createZaakrolVestigingdIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the branch:<br/>- Trade name<br/>- Branch number<br/>- Chamber of Commerce number',
     },
   },
 };
