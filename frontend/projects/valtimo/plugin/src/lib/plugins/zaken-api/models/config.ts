@@ -94,8 +94,8 @@ interface CreateVestigingZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
   handelsnaam?: string;
-  kvkNummer: string;
-  vestigingsNummer: string;
+  kvkNummer?: string;
+  vestigingsNummer?: string;
   resultProcessVariable?: string;
 }
 
