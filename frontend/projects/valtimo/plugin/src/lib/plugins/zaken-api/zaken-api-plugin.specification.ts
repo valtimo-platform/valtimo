@@ -177,7 +177,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
       datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
-      statustoelichtingTooltip: 'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
+      statustoelichtingTooltip:
+        'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
       'create-zaakresultaat': 'Zaakresultaat aanmaken',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
@@ -288,15 +289,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identificatie',
       'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
       'create-zaaknotitie': 'Zaak-notitie aanmaken',
-      createZaakNotitieInformation: 'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
+      createZaakNotitieInformation:
+        'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
       'patch-zaaknotitie': 'Zaak-notitie bijwerken',
-      patchZaakNotitieInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak-notitie gekoppeld aan de Zaak in de Zaken API bij te werken.',
+      patchZaakNotitieInformation:
+        'Deze actie maakt het mogelijk eigenschappen van de Zaak-notitie gekoppeld aan de Zaak in de Zaken API bij te werken.',
       addPatchZaakNotitieProperty: 'Voeg parameter toe',
       zaakNotitieUrl: 'Zaak-notitie URL',
       zaakNotitieUrlTooltip: 'De URL referentie naar de Zaak-notitie in de Zaken API.',
@@ -305,6 +309,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       aangemaaktDoor: 'Aangemaakt door',
       notitieType: 'Notitietype',
       status: 'Status',
+      createZaakrolMedewerkerIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de medewerker:<br/>- Identificatie<br/>- Achternaam<br/>- Voorletters',
+      createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de organisatorische eenheid:<br/>- Identificatie<br/>- Naam<br/>- Is gehuisvest in',
     },
     en: {
       title: 'Zaken API',
@@ -523,12 +531,17 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
+      createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
-      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result is stored.',
       'create-zaaknotitie': 'Create Zaak-notitie',
-      createZaakNotitieInformation: 'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
+      createZaakNotitieInformation:
+        'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
       'patch-zaaknotitie': 'Update Zaak-notitie',
-      patchZaakNotitieInformation: 'This action allows you to update properties of the Zaak-notitie linked to the Zaak in the Zaken API.',
+      patchZaakNotitieInformation:
+        'This action allows you to update properties of the Zaak-notitie linked to the Zaak in the Zaken API.',
       addPatchZaakNotitieProperty: 'Add property',
       zaakNotitieUrl: 'Zaak-notitie URL',
       zaakNotitieUrlTooltip: 'The reference URL to the Zaak-notitie in the Zaken API',
@@ -537,6 +550,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       aangemaaktDoor: 'Created by',
       notitieType: 'Note type',
       status: 'Status',
+      createZaakrolMedewerkerIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the employee:<br/>- Identification<br/>- Last name<br/>- Initials',
+      createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name<br/>- Is housed in',
     },
     de: {
       title: 'Zaken API',
@@ -754,15 +771,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Objektidentifikation',
       'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
       resultProcessVariable: 'Ergebnis Prozessvariable',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
+      resultProcessVariableTooltip:
+        'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
+        'Mindestens eines der folgenden Felder muss zur Identifizierung der juristischen Person ausgefüllt werden:<br/>- Nummer der juristischen Person<br/>- Sonstige Identifikationsmerkmale der juristischen Person<br/>- Handelskammernummer<br/>- Betriebsnumme',
       'create-zaaknotitie': 'Zaak-notitie erstellen',
-      createZaakNotitieInformation: 'Mit dieser Aktion können Sie dem Zaak in der Zaken-API eine Zaak-notitie hinzufügen.',
+      createZaakNotitieInformation:
+        'Mit dieser Aktion können Sie dem Zaak in der Zaken-API eine Zaak-notitie hinzufügen.',
       'patch-zaaknotitie': 'Zaak-notitie aktualisieren',
-      patchZaakNotitieInformation: 'Mit dieser Aktion können Sie die Eigenschaften der mit dem Zaak verknüpften Zaak-notitie in der Zaken-API aktualisieren.',
+      patchZaakNotitieInformation:
+        'Mit dieser Aktion können Sie die Eigenschaften der mit dem Zaak verknüpften Zaak-notitie in der Zaken-API aktualisieren.',
       addPatchZaakNotitieProperty: 'Parameter hinzufügen',
       zaakNotitieUrl: 'Zaak-notitie-URL',
       zaakNotitieUrlTooltip: 'URL-Referenz zur der Zaak-notitie in der Zaken-API',
@@ -771,6 +791,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       aangemaaktDoor: 'Erstellt von',
       notitieType: 'Notiztyp',
       status: 'Status',
+      createZaakrolMedewerkerIdentifierFieldsInformation:
+        'Mindestens eines der folgenden Felder muss ausgefüllt werden, um den Mitarbeiter zu identifizieren:<br/>- Identifikationsnummer<br/>- Nachname<br/>- Initialen',
+      createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
+        'Mindestens eines der folgenden Felder muss ausgefüllt werden, um die Organisationseinheit zu identifizieren:<br/>- Identifikation<br/>- Name<br/>- Ist untergebracht in',
     },
   },
 };

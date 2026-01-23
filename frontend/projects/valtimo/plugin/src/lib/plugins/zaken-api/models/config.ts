@@ -70,9 +70,9 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
 interface CreateMedewerkerZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
-  identificatie: string;
-  achternaam: string;
-  voorletters: string;
+  identificatie?: string;
+  achternaam?: string;
+  voorletters?: string;
   voorvoegselAchternaam?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
@@ -82,9 +82,9 @@ interface CreateMedewerkerZaakRolConfig {
 interface CreateOrganisatorischeEenheidZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
-  identificatie: string;
-  naam: string;
-  isGehuisvestIn: string;
+  identificatie?: string;
+  naam?: string;
+  isGehuisvestIn?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
   resultProcessVariable?: string;

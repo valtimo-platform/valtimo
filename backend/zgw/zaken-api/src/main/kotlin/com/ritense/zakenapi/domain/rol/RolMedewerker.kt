@@ -28,9 +28,9 @@ import com.fasterxml.jackson.annotation.JsonInclude
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class RolMedewerker(
-    val identificatie: String,
-    val achternaam: String,
-    val voorletters: String,
-    val voorvoegselAchternaam: String
+    val identificatie: String? = null,
+    val achternaam: String? = null,
+    val voorletters: String? = null,
+    val voorvoegselAchternaam: String? = null
 ) : BetrokkeneIdentificatie()
 
