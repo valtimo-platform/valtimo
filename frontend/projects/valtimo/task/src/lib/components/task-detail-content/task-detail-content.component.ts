@@ -34,12 +34,7 @@ import {RecentlyViewed16} from '@carbon/icons';
 import {FormioForm} from '@formio/angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {
-  FormioComponent,
-  FormIoModule,
-  FormIoStateService,
-  ValtimoModalService,
-} from '@valtimo/components';
+import {FormioComponent, FormIoModule, ValtimoModalService} from '@valtimo/components';
 import {
   ConfigService,
   FORM_VIEW_MODEL_TOKEN,
@@ -163,7 +158,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly permissionService: PermissionService,
     private readonly processLinkService: ProcessLinkService,
     private readonly router: Router,
-    private readonly stateService: FormIoStateService,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly taskService: TaskService,
     private readonly translateService: TranslateService,
@@ -262,14 +256,12 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
     this.setDocumentDefinitionNameInService(task);
     const documentId = task.businessKey;
-    this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
     this.page$.next({
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     });
-    this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
   private getCurrentProgress(formViewModelComponentRef?: ComponentRef<any>): void {
@@ -483,7 +475,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
       .subscribe(ProcessDefinitionCaseDefinition => {
         const caseDefinitionKey = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
         this.modalService.setCaseDefinitionKey(caseDefinitionKey);
-        this.stateService.setDocumentDefinitionName(caseDefinitionKey);
       });
   }
 }

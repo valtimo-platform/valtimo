@@ -37,7 +37,6 @@ import {
   EditorModel,
   EditorModule,
   FormIoModule,
-  FormIoTagsService,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -193,11 +192,9 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     private readonly breadcrumbService: BreadcrumbService,
     private readonly environmentService: EnvironmentService,
     private readonly draftVersionService: DraftVersionService,
-    private readonly formIoTagsService: FormIoTagsService,
     private readonly injector: Injector
   ) {
     this.iconService.registerAll([ArrowLeft16]);
-    this.formIoTagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
@@ -371,7 +368,6 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
 
   public onSelectedTab(tab: EDIT_TABS): void {
     this.activeTab = tab;
-    this.formIoTagsService.reregisterTags(this.injector);
 
     if (tab === EDIT_TABS.BUILDER) {
       return;

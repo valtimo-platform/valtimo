@@ -20,10 +20,8 @@
   *ngIf="{
     submission: submission$ | async,
     form: form$ | async,
-    tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
     loading: loading$ | async,
     errors: formErrors$ | async,
-    renderOptions: renderOptions$ | async,
   } as obs"
 >
   <div *ngIf="obs.loading" class="overlay">
@@ -39,18 +37,4 @@
       </li>
     </ol>
   </div>
-
-  <formio
-    #formio
-    [submission]="obs.submission"
-    [form]="obs.form"
-    [renderOptions]="obs.renderOptions"
-    [refresh]="refreshForm"
-    (submit)="onSubmit($event)"
-    (change)="onChange($event)"
-    (focusin)="onFocus($event)"
-    (focusout)="onBlur($event)"
-    (nextPage)="onNextPage()"
-    (prevPage)="onPreviousPage()"
-  ></formio>
 </div>

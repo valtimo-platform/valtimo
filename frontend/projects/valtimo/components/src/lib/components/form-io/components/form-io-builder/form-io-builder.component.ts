@@ -17,10 +17,8 @@
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject} from 'rxjs';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
-import {FormIoTagsService} from '../../services/form-io.tags.service';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -52,14 +50,10 @@ export class FormioBuilderComponent implements OnInit {
 
   constructor(
     private readonly translateService: TranslateService,
-    private readonly stateService: FormIoStateService,
     private readonly configService: ConfigService,
     private readonly injector: Injector,
-    private readonly tagsService: FormIoTagsService,
     private readonly route: ActivatedRoute
-  ) {
-    this.tagsService.reregisterTags(this.injector);
-  }
+  ) {}
 
   public ngOnInit() {
     setTimeout(() => this.editFormModified$.next(true));
