@@ -26,14 +26,7 @@ abstract class ReflectingPermissionCondition(type: PermissionConditionType) : Pe
             if (currentEntity == null) {
                 throw NullPointerException("Field $fields not found in class ${entity.javaClass}")
             }
-            var classToSearch: Class<*>? = currentEntity?.javaClass
-            var declaredField: Field? = null
-
-            while (declaredField == null && classToSearch != null) {
-                declaredField = classToSearch.declaredFields.firstOrNull { it.name == value }
-                if (declaredField == null)
-                    classToSearch = classToSearch.superclass
-            }
+            val declaredField = findDeclaredField(currentEntity.javaClass, value)
 
             if (declaredField == null) {
                 throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
@@ -52,5 +45,21 @@ abstract class ReflectingPermissionCondition(type: PermissionConditionType) : Pe
             }
         }
         return currentEntity
+    }
+
+
+    private fun findDeclaredField(clazz: Class<*>, fieldName: String): Field? {
+        var classToSearch: Class<*>? = clazz
+        while (classToSearch != null) {
+            val match = classToSearch.declaredFields.firstOrNull { declared ->
+                declared.name == fieldName ||
+                    declared.getAnnotation(AuthorizationFieldAlias::class.java)?.names?.contains(fieldName) == true
+            }
+            if (match != null) {
+                return match
+            }
+            classToSearch = classToSearch.superclass
+        }
+        return null
     }
 }
