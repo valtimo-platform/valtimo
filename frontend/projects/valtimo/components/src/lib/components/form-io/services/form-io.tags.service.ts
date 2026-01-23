@@ -31,9 +31,5 @@ export class FormIoTagsService {
     this._tagsToRegister = [...this._tagsToRegister, tag];
   }
 
-  public reregisterTags(injector: Injector): void {
-    this.tagsToRegister.forEach(tag => {
-      registerCustomTag(tag, injector);
-    });
-  }
+  public reregisterTags(injector: Injector): void {}
 }

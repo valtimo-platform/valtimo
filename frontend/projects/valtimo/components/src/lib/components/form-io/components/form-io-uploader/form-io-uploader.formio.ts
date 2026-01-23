@@ -32,8 +32,4 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   editForm: formIoUploaderEditForm,
 };
 
-export function registerFormioUploadComponent(injector: Injector) {
-  if (!customElements.get(COMPONENT_OPTIONS.selector)) {
-    registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoUploaderComponent, injector);
-  }
-}
+export function registerFormioUploadComponent(injector: Injector) {}

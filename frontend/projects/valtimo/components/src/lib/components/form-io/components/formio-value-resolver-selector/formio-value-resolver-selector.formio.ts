@@ -35,16 +35,4 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   },
 };
 
-export function registerFormioValueResolverSelectorComponent(injector: Injector) {
-  // @ts-ignore
-  registerCustomFormioComponent(COMPONENT_OPTIONS, FormioValueResolverSelectorComponent, injector);
-
-  setTimeout(() => {
-    let valtimoWindow = window as ValtimoWindow;
-
-    valtimoWindow.flags = {
-      ...valtimoWindow.flags,
-      formioValueResolverSelectorComponentRegistered: true,
-    };
-  });
-}
+export function registerFormioValueResolverSelectorComponent(injector: Injector) {}

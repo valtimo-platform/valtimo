@@ -32,6 +32,4 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   },
 };
 
-export function registerFormioCurrentUserComponent(injector: Injector) {
-  registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoCurrentUserComponent, injector);
-}
+export function registerFormioCurrentUserComponent(injector: Injector) {}
