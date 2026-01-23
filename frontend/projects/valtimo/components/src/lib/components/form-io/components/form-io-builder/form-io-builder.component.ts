@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
-import {Components} from 'formiojs';
+import {Component, EventEmitter, Injector, Input, Output} from '@angular/core';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
-import {
-  addValueResolverSelectorToEditform,
-  modiyEditFormApiKeyInput,
-} from './form-io-builder.utils';
 import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
@@ -38,7 +33,7 @@ import {ActivatedRoute} from '@angular/router';
   styleUrls: ['./form-io-builder.component.css'],
   standalone: false,
 })
-export class FormioBuilderComponent implements OnInit {
+export class FormioBuilderComponent {
   public readonly form$ = new BehaviorSubject<object | null>(null);
 
   @Input() public set form(value: object) {
@@ -99,8 +94,6 @@ export class FormioBuilderComponent implements OnInit {
     this.setOverrideOptions(this.configService.config);
     this.tagsService.reregisterTags(this.injector);
   }
-
-  public ngOnInit() {}
 
   public onChange(event) {
     this.change.emit(event);
