@@ -45,6 +45,7 @@ export class ProcessLinkModalComponent {
   public readonly saving$ = this.stateService.saving$;
   public readonly typeOfSelectedProcessLink$ = this.stateService.typeOfSelectedProcessLink$;
   public readonly viewModelEnabled$ = this.stateService.viewModelEnabled$;
+  public readonly isEditing$ = this.stateService.isEditing$;
   public readonly selectedPluginConfiguration$ =
     this.pluginStateService.selectedPluginConfiguration$;
 

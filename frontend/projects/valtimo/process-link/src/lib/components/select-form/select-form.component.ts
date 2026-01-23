@@ -18,7 +18,7 @@ import {ActivatedRoute} from '@angular/router';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {filter, take, withLatestFrom} from 'rxjs/operators';
 import {
   FormDefinitionListItem,
   FormDisplayType,
@@ -137,9 +137,14 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
