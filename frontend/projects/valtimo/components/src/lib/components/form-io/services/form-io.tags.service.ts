@@ -15,7 +15,6 @@
  */
 
 import {Injectable, Injector} from '@angular/core';
-import {registerCustomTag} from '../../../modules';
 
 @Injectable({
   providedIn: 'root',

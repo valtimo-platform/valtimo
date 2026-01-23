@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Injector, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
@@ -33,7 +33,7 @@ import {ActivatedRoute} from '@angular/router';
   styleUrls: ['./form-io-builder.component.css'],
   standalone: false,
 })
-export class FormioBuilderComponent {
+export class FormioBuilderComponent implements OnInit {
   public readonly form$ = new BehaviorSubject<object | null>(null);
 
   @Input() public set form(value: object) {
@@ -93,6 +93,10 @@ export class FormioBuilderComponent {
   ) {
     this.setOverrideOptions(this.configService.config);
     this.tagsService.reregisterTags(this.injector);
+  }
+
+  public ngOnInit() {
+    setTimeout(() => this.editFormModified$.next(true));
   }
 
   public onChange(event) {

@@ -45,7 +45,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
-import {Formio} from 'formiojs';
 import {
   FormIoLocalStorageService,
   FormIoStateService,
@@ -161,9 +160,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
-    Formio.setProjectUrl(location.origin);
-    Formio.authUrl = location.origin;
-
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
@@ -246,8 +242,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private setToken(token: string): void {
-    Formio.setUser(jwtDecode(token));
-    Formio.setToken(token);
     this.setTimerForTokenRefresh(token);
     this.localStorageService.setTokenInLocalStorage(token);
 
