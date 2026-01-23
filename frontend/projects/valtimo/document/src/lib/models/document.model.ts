@@ -391,6 +391,7 @@ interface CaseDefinition {
 
 export {
   AssignHandlerToDocumentResult,
+  BlueprintId,
   CaseDefinition,
   CaseDefinitionId,
   CaseListColumn,
