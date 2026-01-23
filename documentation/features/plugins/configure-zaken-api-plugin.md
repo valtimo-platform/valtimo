@@ -130,9 +130,9 @@ The **Create zaakrol - employee** action creates a zaakrol in the zaken API. Usi
 
 * **Role type URL.** Every person that is linked to a zaak has a role within that zaak. This property contains a URL to the type of the role within the zaak.
 * **Role explanation.** An explanation of the role that the person has within the zaak.
-* **Identification.** A short unique designation of the employee.
-* **Last name.** The last name as used by the employee in daily life.
-* **Initial.** The collection of letters formed by the first letter of all forenames in order.
+* **Identification.** (Optional) A short unique designation of the employee.
+* **Last name.** (Optional) The last name as used by the employee in daily life.
+* **Initial.** (Optional) The collection of letters formed by the first letter of all forenames in order.
 * **Prefix to last name** (Optional) Part of the genus name that appears in Table 36 (GBA), prefix table, and is separated from the genus name by a space.
 * **Alternative name of the person involved.** (Optional) The name of the person involved under which they wish to be addressed in relation to the case.
 * **Authorization indication** (Optional) The type that represents the authorization indication.
@@ -143,11 +143,21 @@ The **Create zaakrol - organizational unit** action creates a zaakrol in the zak
 
 * **Role type URL.** Every person that is linked to a zaak has a role within that zaak. This property contains a URL to the type of the role within the zaak.
 * **Role explanation.** An explanation of the role that the person has within the zaak.
-* **Identification.** A short identification of the organizational unit.
-* **Name.** The actual name of the organizational unit.
-* **Is housed in.** Location where the organizational unit is housed.
+* **Identification.** (Optional) A short identification of the organizational unit.
+* **Name.** (Optional) The actual name of the organizational unit.
+* **Is housed in.** (Optional) Location where the organizational unit is housed.
 * **Alternative name of the person involved** (Optional) The name of the person involved under which they wish to be addressed in relation to the case.
 * **Authorization indication.** (Optional) The type that represents the authorization indication.
+
+### Create zaakrol - branch
+
+The **Create zaakrol - branch** action creates a zaakrol in the zaken API. Using this action, a branch can be linked to a zaak. When creating a process link the following properties have to be entered:
+
+* **Role type URL.** Every person that is linked to a zaak has a role within that zaak. This property contains a URL to the type of the role within the zaak.
+* **Role explanation.** An explanation of the role that the person has within the zaak.
+* **Branch number.** (Optional) A short unique designation of the branch.
+* **Trade name.** (Optional) The name of the establishment where the business is conducted.
+* **Chamber of Commerce number.** (Optional) A unique number assigned by the Chamber of Commerce.
 
 ### Create zaakeigenschap
 
