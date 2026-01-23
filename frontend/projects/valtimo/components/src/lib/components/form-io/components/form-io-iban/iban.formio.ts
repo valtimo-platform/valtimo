@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+import {Injector} from '@angular/core';
+import {FormIoIbanComponent} from './iban.component';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../../modules';
+
+const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
+  type: 'iban',
+  selector: 'valtimo-iban',
+  title: 'Iban',
+  group: 'basic',
+  icon: 'bank',
+  schema: {
+    label: 'Iban component',
+    key: 'iban',
+    hideLabel: false,
+    tableView: true,
+    validate: {
+      required: false,
+    },
+  },
+};
+
+export function registerFormioIbanComponent(injector: Injector) {}

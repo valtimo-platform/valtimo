@@ -25,18 +25,26 @@ import {
 } from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
-  BpmnJsDiagramModule,
+  enableCustomFormioComponents,
   FormIoModule,
-  MenuModule,
+  registerFormioCurrencyComponent,
+  registerFormioCurrentUserComponent,
+  registerFormioFileSelectorComponent,
+  registerFormioIbanComponent,
+  registerFormioUploadComponent,
+  registerFormioValueResolverSelectorComponent,
   UploaderModule,
+  BpmnJsDiagramModule,
+  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
+  CASE_TAB_TOKEN,
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
   CaseDetailTabNotesComponent,
@@ -110,7 +118,7 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {ZgwModule} from '@valtimo/zgw';
+import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';

@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+import {Injector} from '@angular/core';
+import {Components, Formio} from 'formiojs';
+import {DocumentService} from '@valtimo/document';
+import {take} from 'rxjs/operators';
+import {ResourceOption} from '../../../../models';
+
+const SelectComponent = Components.components.select;
+
+export function registerFormioFileSelectorComponent(injector: Injector) {}

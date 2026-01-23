@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+export const formioValueResolverSelectorEditForm = () => ({
+  components: [{key: 'type', type: 'hidden'}],
+});

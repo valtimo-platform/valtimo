@@ -33,6 +33,7 @@ import {
   CaseDetailTabObjectTypeComponent,
   CaseManagementLinkProcessComponent,
   DocumentenApiMetadataModalComponent,
+  DocumentenApiUploaderComponent,
 } from './modules';
 import {CaseManagementZgwComponent} from './components';
 
@@ -49,8 +50,8 @@ import {CaseManagementZgwComponent} from './components';
     DocumentenApiMetadataModalComponent,
     NotificatiesApiRoutingModule,
   ],
-  declarations: [],
-  exports: [],
+  declarations: [DocumentenApiUploaderComponent],
+  exports: [DocumentenApiUploaderComponent],
   providers: [
     {
       provide: CASE_MANAGEMENT_TAB_TOKEN,

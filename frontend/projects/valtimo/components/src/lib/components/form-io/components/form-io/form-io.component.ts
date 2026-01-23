@@ -43,6 +43,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
+import {Formio} from 'formiojs';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -139,6 +140,9 @@ export class FormioComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    Formio.setProjectUrl(location.origin);
+    Formio.authUrl = location.origin;
+
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
@@ -187,6 +191,8 @@ export class FormioComponent implements OnInit, OnDestroy {
   }
 
   private setToken(token: string): void {
+    Formio.setUser(jwtDecode(token));
+    Formio.setToken(token);
     this.setTimerForTokenRefresh(token);
 
     this.logger.debug('New token set for form.io.');
