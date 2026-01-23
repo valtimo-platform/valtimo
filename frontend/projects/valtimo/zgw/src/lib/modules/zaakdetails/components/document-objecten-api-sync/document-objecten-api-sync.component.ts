@@ -87,7 +87,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
-  public readonly documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
+  public readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
     switchMap(params =>
       this.documentService.getDocumentDefinitionByVersion(
         params?.caseDefinitionKey ?? '',
@@ -150,7 +150,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   }
 
   public loadDocumentenObjectenApiSync(): void {
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
         filter(documentDefinition => !!documentDefinition?.id?.blueprintId),
         switchMap((documentDefinition: DocumentDefinition) =>
@@ -169,7 +169,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   }
 
   public remove(): void {
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.deleteDocumentObjectenApiSync(
@@ -186,7 +186,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
 
   public submit(): void {
     const formValues = this.formGroup.getRawValue();
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.updateDocumentObjectenApiSync(

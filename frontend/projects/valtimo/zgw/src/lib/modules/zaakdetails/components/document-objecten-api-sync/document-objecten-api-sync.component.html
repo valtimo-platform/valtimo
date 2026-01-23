@@ -16,8 +16,8 @@
 
 <cds-tile>
   <valtimo-case-management-draft-warning
-    *ngIf="(isDraftVersion$ | async) && documentDefinition$ | async as documentDefinition"
-    [name]="documentDefinition?.schema?.title || documentDefinition?.id?.name || '-'"
+    *ngIf="isDraftVersion$ | async"
+    [name]="'zaakdetails.title' | translate | lowercase"
   ></valtimo-case-management-draft-warning>
 
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
