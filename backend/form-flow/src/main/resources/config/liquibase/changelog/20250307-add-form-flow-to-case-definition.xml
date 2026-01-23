@@ -85,6 +85,7 @@
     </changeSet>
 
     <changeSet id="9" author="Ritense">
+        <validCheckSum>9:17865be1f45e2a37f3b3dcec162f15e7</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="form_flow_definition_key"/>
             <tableExists tableName="json_schema_document"/>
@@ -106,8 +107,8 @@
                     ffd.form_flow_definition_key || '-' || ffd.form_flow_definition_version as form_flow_definition_key,
                     ffi.form_flow_definition_version,
                     ffd.start_step ,
-                    jsd.case_definition_key,
-                    jsd.case_definition_version_tag,
+                    jsd.blueprint_key,
+                    jsd.blueprint_version_tag,
                     ffd.form_flow_definition_key as migration_definition_key
                 from form_flow_instance ffi
                 join json_schema_document jsd
@@ -150,6 +151,7 @@
     </changeSet>
 
     <changeSet id="10" author="Ritense">
+        <validCheckSum>9:1675dcd672c723fd21a5c56920a16cdf</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="form_flow_definition_key"/>
             <tableExists tableName="json_schema_document"/>
@@ -171,8 +173,8 @@
                     concat(ffd.form_flow_definition_key, '-', ffd.form_flow_definition_version) as form_flow_definition_key,
                     ffi.form_flow_definition_version,
                     ffd.start_step ,
-                    jsd.case_definition_key,
-                    jsd.case_definition_version_tag,
+                    jsd.blueprint_key,
+                    jsd.blueprint_version_tag,
                     ffd.form_flow_definition_key as migration_definition_key
                 from form_flow_instance ffi
                 join json_schema_document jsd
@@ -256,14 +258,15 @@
     </changeSet>
 
     <changeSet id="13" author="Ritense">
+        <validCheckSum>9:5e7c00347727dc9a4fc702ba9210b90d</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="json_schema_document"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
             update form_flow_instance ffi
-            set case_definition_key = jsd.case_definition_key,
-                case_definition_version_tag = jsd.case_definition_version_tag,
+            set case_definition_key = jsd.blueprint_key,
+                case_definition_version_tag = jsd.blueprint_version_tag,
                 form_flow_definition_key = ffd.form_flow_definition_key
             from json_schema_document jsd
             join form_flow_instance ffi2
@@ -271,13 +274,14 @@
             join form_flow_definition ffd
                 on ffi2.form_flow_definition_version = ffd.form_flow_definition_version
                 and ffi2.form_flow_definition_key = ffd.migration_definition_key
-                and ffd.case_definition_key = jsd.case_definition_key
-                and ffd.case_definition_version_tag = jsd.case_definition_version_tag
+                and ffd.case_definition_key = jsd.blueprint_key
+                and ffd.case_definition_version_tag = jsd.blueprint_version_tag
             where ffi.form_flow_instance_id = ffi2.form_flow_instance_id
         </sql>
     </changeSet>
 
     <changeSet id="14" author="Ritense">
+        <validCheckSum>9:76201d6cb62a47b9cb0077a03b46ee9a</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="json_schema_document"/>
             <dbms type="mysql"/>
@@ -289,10 +293,10 @@
             join form_flow_definition ffd
                 on ffi.form_flow_definition_version = ffd.form_flow_definition_version
                 and ffi.form_flow_definition_key = ffd.migration_definition_key
-                and ffd.case_definition_key = jsd.case_definition_key
-                and ffd.case_definition_version_tag = jsd.case_definition_version_tag
-            set ffi.case_definition_key = jsd.case_definition_key,
-                ffi.case_definition_version_tag = jsd.case_definition_version_tag,
+                and ffd.case_definition_key = jsd.blueprint_key
+                and ffd.case_definition_version_tag = jsd.blueprint_version_tag
+            set ffi.case_definition_key = jsd.blueprint_key,
+                ffi.case_definition_version_tag = jsd.blueprint_version_tag,
                 ffi.form_flow_definition_key = ffd.form_flow_definition_key
         </sql>
     </changeSet>
