@@ -810,7 +810,7 @@
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
-      "description": "Bij het bijwerken van {name} verandert de {name} voor alle versies van dit dossiertype. Niet alleen voor de geselecteerde versie!"
+      "description": "Bij het bijwerken van {{name}} verandert de {{name}} voor alle versies van dit dossiertype. Niet alleen voor de geselecteerde versie!"
     }
   },
   "widgetTabManagement": {
@@ -1901,7 +1901,7 @@
       "sync": {
         "title": "Synchroniseren",
         "continuous": "Continu",
-        "end": "Aan het einde"
+        "end": "Einde"
       },
       "pluginDependenciesWarning": {
         "title": "Afhankelijkheden",
