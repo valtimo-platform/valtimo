@@ -116,7 +116,6 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly formErrors$ = new BehaviorSubject<string[]>([]);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(undefined);
-  public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
   public readonly data$ = new BehaviorSubject<any>(null);
   public readonly changeEvents$ = new Subject<any>();
   public readonly blur$ = new Subject<FocusEvent>();
