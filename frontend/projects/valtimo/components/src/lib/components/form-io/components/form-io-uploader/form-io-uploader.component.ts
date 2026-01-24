@@ -18,7 +18,9 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormioCustomComponent} from '../../../../modules';
 import {BehaviorSubject} from 'rxjs';
 import {DownloadService, ResourceDto, ResourceFile, UploadProviderService} from '@valtimo/resource';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';
+import {FormIoDomService} from '../../services/form-io-dom.service';
 
 @Component({
   selector: 'valtimo-form-io-uploader',
@@ -40,6 +42,8 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
+    private readonly stateService: FormIoStateService,
+    private readonly domService: FormIoDomService,
     private readonly downloadService: DownloadService
   ) {}
 
@@ -65,10 +69,20 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
   }
 
   fileSelected(file: File) {
+    this.domService.toggleSubmitButton(true);
     this.uploading$.next(true);
+    this.stateService.documentDefinitionName$.pipe(take(1)).subscribe(name => {
+      this.uploadProviderService.uploadFile(file, name).subscribe(result => {
+        this.domService.toggleSubmitButton(false);
+        this.uploading$.next(false);
+        this._value.push(result);
+        this.valueChange.emit(this._value);
+      });
+    });
   }
 
   deleteFile(resourceId: string): void {
+    this.domService.toggleSubmitButton(true);
     this._value = this._value.filter((file: ResourceFile) =>
       file?.data ? file?.data?.resourceId !== resourceId : true
     );
