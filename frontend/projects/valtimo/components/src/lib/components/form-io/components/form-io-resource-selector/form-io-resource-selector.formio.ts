@@ -22,4 +22,73 @@ import {ResourceOption} from '../../../../models';
 
 const SelectComponent = Components.components.select;
 
-export function registerFormioFileSelectorComponent(injector: Injector) {}
+export function registerFormioFileSelectorComponent(injector: Injector) {
+  const documentService = injector.get(DocumentService);
+
+  const unavailableMessage: ResourceOption = {
+    label: 'could not retrieve documents',
+    value: null,
+  };
+
+  function getDocumentResources(documentId: string): Promise<ResourceOption[]> {
+    if (!documentId) {
+      return new Promise(resolve => {
+        resolve([unavailableMessage]);
+      });
+    }
+    return documentService
+      .getDocument(documentId)
+      .toPromise()
+      .then(document =>
+        document.relatedFiles.map(relatedFile => ({
+          label: relatedFile.fileName,
+          value: relatedFile.fileId,
+        }))
+      )
+      .catch(
+        () =>
+          new Promise(resolve => {
+            resolve([unavailableMessage]);
+          })
+      );
+  }
+
+  class ResourceSelectorComponent extends SelectComponent {
+    static schema(...extend) {
+      return SelectComponent.schema({
+        type: 'resource-selector',
+        label: 'Resource selector',
+        key: 'resource-selector',
+        dataSrc: 'custom',
+        dataType: 'string',
+        valueProperty: 'value',
+        asyncValues: true,
+        data: {
+          custom: 'values = instance.getResources()',
+        },
+        ...extend,
+      });
+    }
+
+    getResources() {
+      return Promise.resolve([unavailableMessage]);
+    }
+
+    static get builderInfo() {
+      return {
+        title: 'Document picker',
+        icon: 'th-list',
+        group: 'basic',
+        documentation: '/userguide/#textfield',
+        weight: 0,
+        schema: ResourceSelectorComponent.schema(),
+      };
+    }
+  }
+
+  Formio.use({
+    components: {
+      'resource-selector': ResourceSelectorComponent,
+    },
+  });
+}

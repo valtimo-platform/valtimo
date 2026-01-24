@@ -21,12 +21,23 @@ import {FormioCustomComponentInfo} from './elements.common';
 import {createCustomFormioComponent} from './create-custom-component';
 import {CustomTagsService} from '@formio/angular';
 
-function registerCustomTag(tag: string, injector: Injector): void {}
+function registerCustomTag(tag: string, injector: Injector): void {
+  injector.get(CustomTagsService).addCustomTag(tag);
+}
 
 function registerCustomFormioComponent(
   options: FormioCustomComponentInfo,
   angularComponent: Type<any>,
   injector: Injector
-): void {}
+): void {
+  registerCustomTag(options.selector, injector);
+
+  if (!customElements.get(options.selector)) {
+    const complexCustomComponent = createCustomElement(angularComponent, {injector});
+    customElements.define(options.selector, complexCustomComponent);
+  }
+
+  Components.setComponent(options.type, createCustomFormioComponent(options));
+}
 
 export {registerCustomTag, registerCustomFormioComponent};

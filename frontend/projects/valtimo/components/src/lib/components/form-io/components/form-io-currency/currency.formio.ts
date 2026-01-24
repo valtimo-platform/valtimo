@@ -37,4 +37,6 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   editForm: currencyEditForm,
 };
 
-export function registerFormioCurrencyComponent(injector: Injector) {}
+export function registerFormioCurrencyComponent(injector: Injector) {
+  registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoCurrencyComponent, injector);
+}

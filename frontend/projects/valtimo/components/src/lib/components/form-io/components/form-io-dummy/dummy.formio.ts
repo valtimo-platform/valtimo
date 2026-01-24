@@ -33,4 +33,6 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   },
 };
 
-export function enableCustomFormioComponents(injector: Injector) {}
+export function enableCustomFormioComponents(injector: Injector) {
+  registerCustomFormioComponent(COMPONENT_OPTIONS, FormioDummyComponent, injector);
+}

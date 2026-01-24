@@ -35,4 +35,6 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   },
 };
 
-export function registerFormioIbanComponent(injector: Injector) {}
+export function registerFormioIbanComponent(injector: Injector) {
+  registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoIbanComponent, injector);
+}
