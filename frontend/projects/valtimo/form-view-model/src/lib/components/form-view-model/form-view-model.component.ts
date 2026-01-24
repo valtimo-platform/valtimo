@@ -38,7 +38,7 @@ import {
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
-import {ValtimoFormioOptions} from '@valtimo/components';
+import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
@@ -147,13 +147,32 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     })
   );
 
+  public readonly renderOptions$: Observable<any> = combineLatest([this.currentLanguage$]).pipe(
+    map(([language]) => {
+      const formioTranslations = this.translateService.instant('formioTranslations');
+
+      return {
+        language,
+        ...(typeof formioTranslations === 'object'
+          ? {
+              language,
+              i18n: {
+                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+              },
+            }
+          : {}),
+      };
+    })
+  );
+
   private focusSubscription: Subscription;
   private blurSubscription: Subscription;
   private updateSubscription: Subscription;
 
   constructor(
     private readonly viewModelService: ViewModelService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly stateService: FormIoStateService
   ) {}
 
   public ngOnInit(): void {

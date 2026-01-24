@@ -19,6 +19,7 @@ import {Components} from 'formiojs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
@@ -73,7 +74,7 @@ export class FormioBuilderComponent implements OnInit {
         ...options,
         ...(formioTranslations === 'object' && {
           i18n: {
-            [language]: 'nl',
+            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
           },
         }),
       };
@@ -88,6 +89,7 @@ export class FormioBuilderComponent implements OnInit {
 
   constructor(
     private readonly translateService: TranslateService,
+    private readonly stateService: FormIoStateService,
     private readonly configService: ConfigService,
     private readonly injector: Injector,
     private readonly route: ActivatedRoute
