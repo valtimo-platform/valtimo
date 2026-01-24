@@ -1764,21 +1764,6 @@
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
     "select": "Wählen Sie einen Anzeigetyp aus"
   },
-  "formioTranslations": {
-    "Submit": "Einreichen",
-    "Save": "Speichern",
-    "Cancel": "Stornieren",
-    "Remove": "Entfernen",
-    "Next": "Nächste",
-    "Previous": "Vorherige",
-    "formioIbanComponent": {
-      "errorMessage": "Kein gültiges IBAN. Bitte geben Sie eine gültige IBAN ein."
-    },
-    "formioCurrencyComponent": {
-      "errorMessage": "Keine gültige Dezimalzahl. Bitte geben Sie eine gültige Dezimalzahl ein."
-    },
-    "formioFormViewModelComponent": {"submitError": "Ungültige Einreichung"}
-  },
   "viewTypeConverter": {
     "Yes": "Ja",
     "No": "Nein",

@@ -1823,20 +1823,6 @@
     "underscoresToSpaces": "Lage streepjes naar spaties",
     "select": "Selecteer een weergavetype"
   },
-  "formioTranslations": {
-    "Submit": "Versturen",
-    "Send": "Versturen",
-    "Save": "Opslaan",
-    "Cancel": "Annuleren",
-    "Remove": "Verwijderen",
-    "Next": "Volgende",
-    "Previous": "Vorige",
-    "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
-    "formioCurrencyComponent": {
-      "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
-    },
-    "formioFormViewModelComponent": {"submitError": "Ongeldige submissie"}
-  },
   "viewTypeConverter": {
     "Yes": "Ja",
     "No": "Nee",
