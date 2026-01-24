@@ -38,7 +38,6 @@ import {
   FormioComponent,
   FormIoModule,
   FormioOptionsImpl,
-  FormIoStateService,
   FormioSubmission,
   ValtimoFormioOptions,
   ValtimoModalService,
@@ -167,7 +166,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly permissionService: PermissionService,
     private readonly processLinkService: ProcessLinkService,
     private readonly router: Router,
-    private readonly stateService: FormIoStateService,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly taskService: TaskService,
     private readonly translateService: TranslateService,
@@ -269,14 +267,12 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
     this.setDocumentDefinitionNameInService(task);
     const documentId = task.businessKey;
-    this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
     this.page$.next({
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     });
-    this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
   private getCurrentProgress(formViewModelComponentRef?: ComponentRef<any>): void {
@@ -490,7 +486,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
       .subscribe(ProcessDefinitionCaseDefinition => {
         const caseDefinitionKey = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
         this.modalService.setCaseDefinitionKey(caseDefinitionKey);
-        this.stateService.setDocumentDefinitionName(caseDefinitionKey);
       });
   }
 }

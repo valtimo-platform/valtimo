@@ -17,7 +17,6 @@
 import {Injector} from '@angular/core';
 import {Components, Formio} from 'formiojs';
 import {DocumentService} from '@valtimo/document';
-import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';
 import {ResourceOption} from '../../../../models';
 
@@ -25,7 +24,6 @@ const SelectComponent = Components.components.select;
 
 export function registerFormioFileSelectorComponent(injector: Injector) {
   const documentService = injector.get(DocumentService);
-  const stateService = injector.get(FormIoStateService);
 
   const unavailableMessage: ResourceOption = {
     label: 'could not retrieve documents',
@@ -73,10 +71,7 @@ export function registerFormioFileSelectorComponent(injector: Injector) {
     }
 
     getResources() {
-      return stateService.documentId$
-        .pipe(take(1))
-        .toPromise()
-        .then(documentId => getDocumentResources(documentId));
+      return Promise.resolve([unavailableMessage]);
     }
 
     static get builderInfo() {

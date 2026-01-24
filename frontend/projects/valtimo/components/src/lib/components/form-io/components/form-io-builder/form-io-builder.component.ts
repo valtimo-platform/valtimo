@@ -19,7 +19,6 @@ import {Components} from 'formiojs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
-import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
@@ -29,7 +28,6 @@ import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
 import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
-import {FormIoTagsService} from '../../services/form-io.tags.service';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -75,7 +73,7 @@ export class FormioBuilderComponent implements OnInit {
         ...options,
         ...(formioTranslations === 'object' && {
           i18n: {
-            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+            [language]: 'nl',
           },
         }),
       };
@@ -90,14 +88,11 @@ export class FormioBuilderComponent implements OnInit {
 
   constructor(
     private readonly translateService: TranslateService,
-    private readonly stateService: FormIoStateService,
     private readonly configService: ConfigService,
     private readonly injector: Injector,
-    private readonly tagsService: FormIoTagsService,
     private readonly route: ActivatedRoute
   ) {
     this.setOverrideOptions(this.configService.config);
-    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit() {

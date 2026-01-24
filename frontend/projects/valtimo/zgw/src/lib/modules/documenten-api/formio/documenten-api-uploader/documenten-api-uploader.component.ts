@@ -15,12 +15,7 @@
  */
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {
-  FormioCustomComponent,
-  FormIoDomService,
-  FormIoStateService,
-  ValtimoModalService,
-} from '@valtimo/components';
+import {FormioCustomComponent, ValtimoModalService} from '@valtimo/components';
 import {DocumentenApiFileReference, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {
@@ -109,31 +104,6 @@ export class DocumentenApiUploaderComponent
 
   @Input() set documentType(defaultValue: string) {
     this.defaultValues['informatieobjecttype'] = defaultValue;
-    this.stateService.documentDefinitionName$
-      .pipe(
-        filter(documentDefinitionName => !!documentDefinitionName),
-        switchMap(documentDefinitionName =>
-          this.documentService.getCaseSettings(documentDefinitionName)
-        ),
-        switchMap(caseDefinition =>
-          this.documentService.getDocumentTypesForCase(
-            String(caseDefinition.caseDefinitionKey),
-            String(caseDefinition.caseDefinitionVersionTag)
-          )
-        ),
-        catchError(() => {
-          this.defaultValues['informatieobjecttype'] = defaultValue;
-          return EMPTY;
-        })
-      )
-      .subscribe(documentTypes => {
-        const foundDocumentType = documentTypes.find(
-          documentType => documentType.name === defaultValue
-        );
-        foundDocumentType
-          ? (this.defaultValues['informatieobjecttype'] = foundDocumentType.url)
-          : (this.defaultValues['informatieobjecttype'] = defaultValue);
-      });
   }
 
   @Input() set hideDocumentType(hide: boolean) {
@@ -220,12 +190,10 @@ export class DocumentenApiUploaderComponent
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
-    private readonly domService: FormIoDomService,
     private readonly modalService: ValtimoModalService,
     private readonly userProviderService: UserProviderService,
     private readonly route: ActivatedRoute,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
-    private readonly stateService: FormIoStateService,
     private readonly documentService: DocumentService
   ) {}
 
@@ -256,7 +224,6 @@ export class DocumentenApiUploaderComponent
   }
 
   public deleteFile(id: string): void {
-    this.domService.toggleSubmitButton(true);
     this._value = this._value.filter((file: DocumentenApiFileReference) =>
       file?.id ? file?.id !== id : true
     );
@@ -270,7 +237,6 @@ export class DocumentenApiUploaderComponent
   public metadataSet(metadata: DocumentenApiMetadata): void {
     this.uploading$.next(true);
     this.showModal.set(false);
-    this.domService.toggleSubmitButton(true);
 
     this.fileToBeUploaded$
       .pipe(
@@ -278,12 +244,11 @@ export class DocumentenApiUploaderComponent
         switchMap(file =>
           this.uploadProviderService.uploadTempFileWithMetadata(file, {
             ...metadata,
-            processInstanceId: this.stateService.processInstanceId,
+            processInstanceId: '',
             documentUrlProcessVariable: this.documentUrlProcessVariable || null,
           })
         ),
         tap(result => {
-          this.domService.toggleSubmitButton(false);
           this.uploading$.next(false);
           this._value = [...this._value, result];
           this.valueChange.emit(this._value);

@@ -124,10 +124,6 @@ export * from './lib/components/form-io/components/form-io-currency/currency.for
 
 export * from './lib/components/form-io/components/form-io-resource-selector/form-io-resource-selector.formio';
 
-export * from './lib/components/form-io/services/form-io-state.service';
-export * from './lib/components/form-io/services/form-io-dom.service';
-export * from './lib/components/form-io/services/form-io.tags.service';
-
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
 

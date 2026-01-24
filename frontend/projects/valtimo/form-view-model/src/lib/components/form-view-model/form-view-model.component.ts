@@ -38,7 +38,7 @@ import {
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
-import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
+import {ValtimoFormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
@@ -116,7 +116,6 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly formErrors$ = new BehaviorSubject<string[]>([]);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(undefined);
-  public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
   public readonly data$ = new BehaviorSubject<any>(null);
   public readonly changeEvents$ = new Subject<any>();
   public readonly blur$ = new Subject<FocusEvent>();
@@ -148,32 +147,13 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly renderOptions$: Observable<any> = combineLatest([this.currentLanguage$]).pipe(
-    map(([language]) => {
-      const formioTranslations = this.translateService.instant('formioTranslations');
-
-      return {
-        language,
-        ...(typeof formioTranslations === 'object'
-          ? {
-              language,
-              i18n: {
-                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-              },
-            }
-          : {}),
-      };
-    })
-  );
-
   private focusSubscription: Subscription;
   private blurSubscription: Subscription;
   private updateSubscription: Subscription;
 
   constructor(
     private readonly viewModelService: ViewModelService,
-    private readonly translateService: TranslateService,
-    private readonly stateService: FormIoStateService
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
