@@ -15,10 +15,15 @@
  */
 
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
+import {Components} from 'formiojs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
+import {
+  addValueResolverSelectorToEditform,
+  modiyEditFormApiKeyInput,
+} from './form-io-builder.utils';
 import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
@@ -91,12 +96,26 @@ export class FormioBuilderComponent implements OnInit {
   }
 
   public ngOnInit() {
-    setTimeout(() => this.editFormModified$.next(true));
+    this.modifyEditForm();
   }
 
   public onChange(event) {
     this.change.emit(event);
   }
+
+  private modifyEditForm = (): void => {
+    const params = getCaseManagementRouteParams(this.route);
+    const originalEditForm = Components.baseEditForm;
+    Components.baseEditForm = function (...extend) {
+      const editForm = originalEditForm(...extend);
+      modiyEditFormApiKeyInput(editForm);
+      addValueResolverSelectorToEditform(editForm, params);
+
+      return editForm;
+    };
+
+    setTimeout(() => this.editFormModified$.next(true));
+  };
 
   private setOverrideOptions(config: ValtimoConfig): void {
     if (!config.formioOptions) return;
