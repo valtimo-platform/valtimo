@@ -236,5 +236,14 @@ export function tabsFactory() {
   ],
 })
 export class AppModule {
-  constructor(injector: Injector) {}
+  constructor(injector: Injector) {
+    enableCustomFormioComponents(injector);
+    registerFormioCurrentUserComponent(injector);
+    registerFormioUploadComponent(injector);
+    registerFormioFileSelectorComponent(injector);
+    registerDocumentenApiFormioUploadComponent(injector);
+    registerFormioIbanComponent(injector);
+    registerFormioCurrencyComponent(injector);
+    registerFormioValueResolverSelectorComponent(injector);
+  }
 }
