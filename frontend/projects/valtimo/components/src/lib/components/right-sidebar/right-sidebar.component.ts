@@ -22,7 +22,6 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {SelectableCarbonTheme, ValtimoVersion} from '../../models';
 import {
@@ -138,7 +137,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   constructor(
     private readonly translateService: TranslateService,
     private readonly userProviderService: UserProviderService,
-    private readonly formBuilder: FormBuilder,
     private readonly versionService: VersionService,
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef,

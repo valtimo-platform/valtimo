@@ -30,10 +30,10 @@ import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
-  FormIoModule,
-  UploaderModule,
   BpmnJsDiagramModule,
+  FormIoModule,
   MenuModule,
+  UploaderModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -110,7 +110,7 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
+import {ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';

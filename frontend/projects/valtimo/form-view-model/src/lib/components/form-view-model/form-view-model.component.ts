@@ -28,17 +28,9 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  FormioComponent,
-  FormioModule,
-  FormioOptions,
-  FormioSubmission,
-  FormioSubmissionCallback,
-} from '@formio/angular';
+import {FormioComponent, FormioModule, FormioSubmissionCallback} from '@formio/angular';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
-import {deepmerge} from 'deepmerge-ts';
-import {ValtimoFormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
@@ -56,11 +48,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 export class FormViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('formio') formio: FormioComponent;
 
-  @Input() set options(optionsValue: any) {
-    this.options$.next(optionsValue);
-  }
-
-  @Input() set submission(submissionValue: FormioSubmission) {
+  @Input() set submission(submissionValue: Record<string, unknown>) {
     this.submission$.next(submissionValue);
   }
 
@@ -114,7 +102,6 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly form$ = new BehaviorSubject<object>(undefined);
   public readonly formName$ = new BehaviorSubject<string>(undefined);
   public readonly formErrors$ = new BehaviorSubject<string[]>([]);
-  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly data$ = new BehaviorSubject<any>(null);
   public readonly changeEvents$ = new Subject<any>();
@@ -130,21 +117,6 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
     distinctUntilChanged()
-  );
-
-  private readonly _overrideOptions$ = new BehaviorSubject<FormioOptions>({
-    hooks: {
-      beforeSubmit: this.beforeSubmitHook(this),
-    },
-  });
-
-  public readonly formioOptions$: Observable<ValtimoFormioOptions | FormioOptions> = combineLatest([
-    this.options$,
-    this._overrideOptions$,
-  ]).pipe(
-    map(([options, overrideOptions]) => {
-      return deepmerge(options, overrideOptions);
-    })
   );
 
   private focusSubscription: Subscription;
@@ -306,7 +278,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onSubmit(submission: FormioSubmission): void {
+  public onSubmit(submission: Record<string, unknown>): void {
     this.formSubmit.next(submission);
   }
 

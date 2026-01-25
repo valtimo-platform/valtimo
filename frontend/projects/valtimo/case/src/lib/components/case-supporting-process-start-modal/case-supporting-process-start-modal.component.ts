@@ -28,12 +28,7 @@ import {
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
-import {
-  FormioComponent,
-  FormioOptionsImpl,
-  FormioSubmission,
-  ValtimoFormioOptions,
-} from '@valtimo/components';
+import {FormioComponent} from '@valtimo/components';
 import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {ProcessService, StartProcessLinkType} from '@valtimo/process';
 import {
@@ -68,9 +63,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly processName$ = new BehaviorSubject<string>('');
   public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
-  public readonly formioSubmission$ = new BehaviorSubject<FormioSubmission>(undefined);
+  public readonly formioSubmission$ = new BehaviorSubject<Record<string, unknown>>(undefined);
   public readonly processLinkId$ = new BehaviorSubject<string>('');
-  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly submission$ = new BehaviorSubject<object>(undefined);
   public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
@@ -161,17 +155,11 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       callback(null, submission);
     };
 
-    const options = new FormioOptionsImpl();
-    options.disableAlerts = true;
-    options.setHooks(formioBeforeSubmit);
-
-    this.options$.next(options);
-
     this.loadProcessLink();
     this.openCdsModal();
   }
 
-  public onSubmit(submission: FormioSubmission): void {
+  public onSubmit(submission: Record<string, object>): void {
     this.formioSubmission$.next(submission);
 
     if (this.processLinkId$.getValue()) {
@@ -224,16 +212,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       this.formDefinition$,
       this.processDefinitionKey$,
       this.caseDefinitionKey$,
-      this.options$,
       this.documentId$,
     ])
       .pipe(take(1))
-      .subscribe(([form, processDefinitionKey, caseDefinitionKey, options, documentId]) => {
+      .subscribe(([form, processDefinitionKey, caseDefinitionKey, documentId]) => {
         formViewModelComponent.instance.formName = formName;
         formViewModelComponent.instance.form = form;
         formViewModelComponent.instance.processDefinitionKey = processDefinitionKey;
         formViewModelComponent.instance.documentDefinitionName = caseDefinitionKey;
-        formViewModelComponent.instance.options = options;
         formViewModelComponent.instance.isStartForm = true;
         formViewModelComponent.instance.documentId = documentId;
       });

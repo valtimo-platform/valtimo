@@ -17,12 +17,8 @@
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioOptions} from '@formio/angular/';
-import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
-import {ValtimoFormioOptions} from '../../../../models';
-import {deepmerge} from 'deepmerge-ts';
-import {isEqual} from 'lodash';
-import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
+import {BehaviorSubject} from 'rxjs';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -42,8 +38,6 @@ export class FormioBuilderComponent implements OnInit {
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() public change: EventEmitter<any> = new EventEmitter();
 
-  public readonly triggerRebuild: EventEmitter<FormioOptions> = new EventEmitter();
-
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
     distinctUntilChanged(),
@@ -52,33 +46,6 @@ export class FormioBuilderComponent implements OnInit {
 
   public readonly languageEventEmitter = new EventEmitter<string>();
 
-  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
-
-  private readonly _overrideOptions$ = new BehaviorSubject<FormioOptions>({});
-
-  public readonly formioOptions$: Observable<ValtimoFormioOptions | FormioOptions> = combineLatest([
-    this.options$.pipe(startWith({})),
-    this.currentLanguage$,
-    this._overrideOptions$,
-  ]).pipe(
-    map(([options, language, overrideOptions]) => {
-      const formioTranslations = this.translateService.instant('formioTranslations');
-
-      const defaultOptions = {
-        ...options,
-        ...(formioTranslations === 'object' && {
-          i18n: {
-            [language]: 'nl',
-          },
-        }),
-      };
-
-      return deepmerge(defaultOptions, overrideOptions);
-    }),
-    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
-    tap(() => this.triggerRebuild.emit())
-  );
-
   public readonly editFormModified$ = new BehaviorSubject<boolean>(false);
 
   constructor(
@@ -86,9 +53,7 @@ export class FormioBuilderComponent implements OnInit {
     private readonly configService: ConfigService,
     private readonly injector: Injector,
     private readonly route: ActivatedRoute
-  ) {
-    this.setOverrideOptions(this.configService.config);
-  }
+  ) {}
 
   public ngOnInit() {
     setTimeout(() => this.editFormModified$.next(true));
@@ -96,11 +61,5 @@ export class FormioBuilderComponent implements OnInit {
 
   public onChange(event) {
     this.change.emit(event);
-  }
-
-  private setOverrideOptions(config: ValtimoConfig): void {
-    if (!config.formioOptions) return;
-
-    this._overrideOptions$.next(config.formioOptions);
   }
 }

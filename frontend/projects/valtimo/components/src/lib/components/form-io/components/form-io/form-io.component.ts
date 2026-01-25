@@ -24,26 +24,17 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {ValtimoFormioOptions} from '../../../../models';
 import {ValtimoModalService} from '../../../../services';
 import {UserProviderService} from '@valtimo/security';
-import {
-  FormioComponent as FormIoSourceComponent,
-  FormioForm,
-  FormioOptions,
-  FormioRefreshValue,
-  FormioSubmission,
-} from '@formio/angular';
+import {FormioComponent as FormIoSourceComponent, FormioForm} from '@formio/angular';
 import {jwtDecode} from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription, timer} from 'rxjs';
 import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {deepmerge} from 'deepmerge-ts';
-import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/shared';
 import {isEqual} from 'lodash';
-import {Formio} from 'formiojs';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -53,10 +44,7 @@ import {Formio} from 'formiojs';
   standalone: false,
 })
 export class FormioComponent implements OnInit, OnDestroy {
-  @Input() set options(optionsValue: ValtimoFormioOptions) {
-    this.options$.next(optionsValue);
-  }
-  @Input() set submission(submissionValue: FormioSubmission) {
+  @Input() set submission(submissionValue: Record<string, unknown>) {
     this.submission$.next(submissionValue);
   }
   @Input() set form(formValue: FormioForm) {
@@ -75,7 +63,7 @@ export class FormioComponent implements OnInit, OnDestroy {
   @HostListener('window:beforeunload', ['$event'])
   private handleBeforeUnload() {}
 
-  public readonly submission$ = new BehaviorSubject<FormioSubmission>({});
+  public readonly submission$ = new BehaviorSubject<Record<string, unknown>>({});
 
   private readonly _form$ = new BehaviorSubject<FormioForm>(undefined);
 
@@ -84,7 +72,6 @@ export class FormioComponent implements OnInit, OnDestroy {
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
-  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
 
@@ -94,31 +81,6 @@ export class FormioComponent implements OnInit, OnDestroy {
     map(() => this.translateService.currentLang),
     distinctUntilChanged(),
     tap(language => this.languageEventEmitter.emit(language))
-  );
-
-  private readonly _overrideOptions$ = new BehaviorSubject<FormioOptions>({});
-
-  public readonly formioOptions$: Observable<ValtimoFormioOptions | FormioOptions> = combineLatest([
-    this.options$,
-    this.currentLanguage$,
-    this._overrideOptions$,
-  ]).pipe(
-    map(([options, language, overrideOptions]) => {
-      const formioTranslations = this.translateService.instant('formioTranslations');
-
-      const defaultOptions = {
-        ...options,
-        ...(formioTranslations === 'object' && {
-          i18n: {
-            [language]: 'nl',
-          },
-        }),
-      };
-
-      return deepmerge(defaultOptions, overrideOptions);
-    }),
-    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
-    tap(options => this.logger.debug('Form.IO options used', options))
   );
 
   private _tokenRefreshTimerSubscription!: Subscription;
@@ -135,14 +97,9 @@ export class FormioComponent implements OnInit, OnDestroy {
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
     private readonly injector: Injector
-  ) {
-    this.setOverrideOptions(this.configService.config);
-  }
+  ) {}
 
   public ngOnInit(): void {
-    Formio.setProjectUrl(location.origin);
-    Formio.authUrl = location.origin;
-
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
@@ -157,7 +114,7 @@ export class FormioComponent implements OnInit, OnDestroy {
     this.errors$.next(errors);
   }
 
-  public onSubmit(submission: FormioSubmission): void {
+  public onSubmit(submission: Record<string, unknown>): void {
     this.errors$.next([]);
     this.submit.emit(submission);
   }
@@ -191,8 +148,6 @@ export class FormioComponent implements OnInit, OnDestroy {
   }
 
   private setToken(token: string): void {
-    Formio.setUser(jwtDecode(token));
-    Formio.setToken(token);
     this.setTimerForTokenRefresh(token);
 
     this.logger.debug('New token set for form.io.');
@@ -230,11 +185,5 @@ export class FormioComponent implements OnInit, OnDestroy {
         }
       })
     );
-  }
-
-  private setOverrideOptions(config: ValtimoConfig): void {
-    if (!config.formioOptions) return;
-
-    this._overrideOptions$.next(config.formioOptions);
   }
 }

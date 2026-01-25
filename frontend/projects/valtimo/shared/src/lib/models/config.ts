@@ -18,7 +18,6 @@ import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
 import {CSPHeaderParams} from 'csp-header';
-import {FormioOptions} from '@formio/angular';
 
 const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
@@ -59,10 +58,6 @@ interface Sort {
 interface SortState {
   state: Sort;
   isSorting: boolean;
-}
-
-interface OverrideFormioOptions extends FormioOptions {
-  [key: string]: any;
 }
 
 interface ValtimoConfigFeatureToggles {
@@ -140,7 +135,6 @@ interface ValtimoConfig {
   };
   overrideFeedbackMenuItemToMailTo?: FeedbackMailTo;
   csp?: CSPHeaderParams;
-  formioOptions?: OverrideFormioOptions;
 }
 
 interface FeedbackMailTo {
@@ -182,7 +176,6 @@ export {
   CustomLeftSidebar,
   Sort,
   SortState,
-  OverrideFormioOptions,
   ValtimoConfigFeatureToggles,
   ValtimoConfig,
   FeedbackMailTo,

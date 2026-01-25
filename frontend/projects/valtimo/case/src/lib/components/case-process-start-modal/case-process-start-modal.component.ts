@@ -29,17 +29,14 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
   FormioComponent,
   FormIoModule,
-  FormioOptionsImpl,
-  FormioSubmission,
   RenderInBodyComponent,
   ValtimoCdsModalDirective,
-  ValtimoFormioOptions,
 } from '@valtimo/components';
 import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
@@ -88,9 +85,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public formDefinition: FormioForm;
   public formName: string;
   public formFlowInstanceId: string;
-  public formioSubmission: FormioSubmission;
+  public formioSubmission: Record<string, unknown>;
   private processLinkId: string;
-  public options: ValtimoFormioOptions;
   public isAdmin: boolean;
   public isFormViewModel = false;
   public isUIComponent = false;
@@ -222,16 +218,10 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
     this.processName = processDefinitionCaseDefinition.processDefinitionName;
-    this.options = new FormioOptionsImpl();
-    this.options.disableAlerts = true;
-    const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
-      callback(null, submission);
-    };
-    this.options.setHooks(formioBeforeSubmit);
     this.loadProcessLink();
   }
 
-  public onSubmit(submission: FormioSubmission) {
+  public onSubmit(submission: Record<string, object>) {
     this.formioSubmission = submission;
 
     this.processLinkService.submitForm(this.processLinkId, submission.data).subscribe({
