@@ -23,6 +23,7 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ritense.authorization.permission.condition.AuthorizationFieldAlias;
 import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId;
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
@@ -42,6 +43,7 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
     private String name;
 
     @Embedded
+    @AuthorizationFieldAlias(names = "caseDefinitionId")
     private JsonSchemaDocumentDefinitionBlueprintId blueprintId;
 
     @JsonCreator
