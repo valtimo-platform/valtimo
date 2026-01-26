@@ -204,7 +204,7 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         //Assert change
         val modifiedDocument = documentService.findBy(document.id).get()
         assertThat(modifiedDocument.internalStatus()).isEqualTo(newStatusKey)
-        assertThat(modifiedDocument.retentionDate()).isEmpty
+        assertThat(modifiedDocument.retentionDate()).isEmpty()
     }
 
     @Test
