@@ -22,8 +22,10 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.resource.authorization.ResourceSpecification
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
@@ -40,6 +42,7 @@ class CaseDefinitionSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
+        logger.info { "Creating predicate for CaseDefinitionSpecification" }
         val predicates = permissions
             .filter { permission ->
                 CaseDefinition::class.java == permission.resourceType
@@ -62,5 +65,9 @@ class CaseDefinitionSpecification(
         return runWithoutAuthorization {
             caseDefinitionService.getCaseDefinition(CaseDefinitionId.of(identifier))
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
