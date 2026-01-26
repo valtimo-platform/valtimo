@@ -16,7 +16,9 @@
             "plannedEndDate": "pv:plannedEndDate",
             "paymentIndication": "pv:paymentIndication",
             "caseGeometryType": "pv:caseGeometryType",
-            "caseGeometryCoordinates": "pv:caseGeometryCoordinates"
+            "caseGeometryCoordinates": "pv:caseGeometryCoordinates",
+            "startDate": "pv:startDate",
+            "finalDeliveryDate": "pv:finalDeliveryDate"
         },
         "processLinkType": "plugin"
     }

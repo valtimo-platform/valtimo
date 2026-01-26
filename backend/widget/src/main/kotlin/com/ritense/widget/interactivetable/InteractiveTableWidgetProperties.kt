@@ -18,8 +18,14 @@ package com.ritense.widget.interactivetable
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
+import com.ritense.search.domain.ColumnDefaultSort
+import com.ritense.search.domain.DataType
+import com.ritense.search.domain.FieldType
+import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.widget.displayproperties.FieldDisplayProperties
 import com.ritense.widget.domain.WidgetAction
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -29,6 +35,7 @@ data class InteractiveTableWidgetProperties(
     @field:NotBlank val collection: String,
     @field:Min(1) val defaultPageSize: Int,
     @field:NotEmpty val columns: List<@Valid Column>,
+    val filters: List<FilterConfig> = emptyList(),
     val firstColumnAsTitle: Boolean = false,
     val rowClickAction: WidgetAction? = null,
     val canStartCase: Boolean? = false,
@@ -38,6 +45,23 @@ data class InteractiveTableWidgetProperties(
         @field:NotBlank val key: String,
         val title: String?,
         @field:NotBlank val value: String,
-        @field:Valid val displayProperties: FieldDisplayProperties? = null
+        @field:Valid val displayProperties: FieldDisplayProperties? = null,
+        val sortable: Boolean = false,
+        val defaultSort: ColumnDefaultSort? = null,
+    )
+
+    @JsonInclude(Include.NON_NULL)
+    data class FilterConfig(
+        @field:NotBlank val key: String,
+        @field:NotBlank val title: String?,
+
+        @Enumerated(EnumType.STRING)
+        @field:NotBlank val dataType: DataType,
+
+        @Enumerated(EnumType.STRING)
+        @field:NotBlank val fieldType: FieldType,
+
+        @Enumerated(EnumType.STRING)
+        val matchType: SearchFieldMatchType? = SearchFieldMatchType.EXACT
     )
 }

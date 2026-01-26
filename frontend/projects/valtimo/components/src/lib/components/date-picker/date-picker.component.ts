@@ -51,6 +51,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
 
   @Input() public name = '';
   @Input() public title = '';
+  @Input() public placeholder = '';
   @Input() public titleTranslationKey = '';
   @Input() public widthPx!: number;
   @Input() public set fullWidth(value: boolean) {

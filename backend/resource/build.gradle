@@ -15,9 +15,9 @@
  */
 
 dependencies {
-    api project(':contract')
-    api project(':logging')
-    implementation project(":authorization")
+    api project(':backend:contract')
+    api project(':backend:logging')
+    implementation project(":backend:authorization")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -39,6 +39,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+
+    implementation "io.projectreactor:reactor-core:3.8.0"
+    implementation "xyz.capybara:clamav-client:2.1.2"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

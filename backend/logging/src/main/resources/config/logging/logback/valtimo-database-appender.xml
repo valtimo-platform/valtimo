@@ -24,6 +24,12 @@
     <springProperty name="spring.jpa.database-platform" source="spring.jpa.database-platform"/>
 
     <appender name="VALTIMODB" class="ch.qos.logback.classic.db.DBAppender">
+        <filter class="com.ritense.logging.LogDbReadyFilter">
+            <jdbcUrl>${spring.datasource.url}</jdbcUrl>
+            <username>${spring.datasource.username}</username>
+            <password>${spring.datasource.password}</password>
+            <driverClassName>${spring.datasource.driver-class-name}</driverClassName>
+        </filter>
         <connectionSource class="ch.qos.logback.core.db.DataSourceConnectionSource">
             <dataSource class="${spring.datasource.type}">
                 <driverClassName>${spring.datasource.driver-class-name}</driverClassName>

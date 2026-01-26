@@ -17,8 +17,10 @@
 package com.ritense.valtimo.web.sse.service
 
 import com.ritense.valtimo.web.logging.CopiedHeadInputStream
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.text.Charsets.UTF_8
 
 class CopiedHeadInputStreamTest {
@@ -33,5 +35,23 @@ class CopiedHeadInputStreamTest {
 
         val result = inStream.bufferedReader().use { it.readText() }
         assertEquals("0123456789", result)
+    }
+
+    @Test
+    fun `should handle multiple EOF`() {
+        val result = mutableListOf<ByteArray>()
+        val inStream = CopiedHeadInputStream(
+            inputStream = "012".byteInputStream(UTF_8),
+            buffer = IntArray(5),
+            onHeadReady = { head -> result += head }
+        )
+        assertArrayEquals("012".toByteArray(), inStream.readBytes())
+
+        // When
+        repeat(3) { assertEquals(-1, inStream.read()) }
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals("012", String(result.first(), UTF_8))
     }
 }

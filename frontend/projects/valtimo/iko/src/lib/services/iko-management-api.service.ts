@@ -235,9 +235,9 @@ export class IkoManagementApiService extends BaseApiService {
     return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/iko/${key}`));
   }
 
-  public getIkoRepositoryConfigPropertyFields(type: string): Observable<PropertyField[]> {
+  public getIkoTabPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/management/v1/iko-property-fields/${type}/repository-config`)
+      this.getApiUrl(`/management/v1/iko-property-fields/${type}/tab`)
     );
   }
 
@@ -349,8 +349,8 @@ export class IkoManagementApiService extends BaseApiService {
     requestKey: string,
     fieldKey: string,
     body: IkoSearchField
-  ): Observable<IkoSearchField[]> {
-    return this.httpClient.put<IkoSearchField[]>(
+  ): Observable<IkoSearchField> {
+    return this.httpClient.put<IkoSearchField>(
       this.getApiUrl(
         `management/v1/iko-view/${aggregateKey}/search-action/${requestKey}/search-field/${fieldKey}`
       ),
@@ -417,6 +417,44 @@ export class IkoManagementApiService extends BaseApiService {
   public deleteIkoListColumn(aggregateKey: string, columnKey: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(`/management/v1/iko-view/${aggregateKey}/column/${columnKey}`)
+    );
+  }
+
+  public getDropdownData(
+    provider: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
+    return this.httpClient.get<object>(
+      this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
+    );
+  }
+
+  public postDropdownData(
+    provider: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
+    searchFieldKey: string,
+    dropdownData: object
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
+    return this.httpClient.post<object>(
+      this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`),
+      dropdownData
+    );
+  }
+
+  public deleteDropdownData(
+    provider: string,
+    ikoViewKey: string,
+    ikoSearchActionKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(ikoViewKey + '_' + ikoSearchActionKey + '_' + searchFieldKey);
+    return this.httpClient.delete<object>(
+      this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
   }
 }
