@@ -16,29 +16,37 @@
 
 package com.ritense.resource.authorization
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import java.net.URI
 
 class ResourceSpecification(
     authRequest: AuthorizationRequest<ResourcePermission>,
-    permissions: List<Permission>,
-) : AuthorizationSpecification<ResourcePermission>(authRequest, permissions) {
+    permissionSupplier: () -> List<Permission>,
+) : AuthorizationSpecification<ResourcePermission>(authRequest, permissionSupplier) {
 
     override fun toPredicate(
         root: Root<ResourcePermission>,
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
-        throw NotImplementedError()
+        logger.info { "Creating predicate for ResourceSpecification" }
+        return criteriaBuilder.conjunction()
     }
 
     override fun identifierToEntity(identifier: String): ResourcePermission {
-        throw NotImplementedError()
+        return ResourcePermission()
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
 
