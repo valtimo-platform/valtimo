@@ -27,7 +27,7 @@ import {
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {CarbonModalSize} from '@valtimo/components';
+import {CarbonModalSize, runAfterCarbonModalClosed} from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
@@ -264,8 +264,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public closeModal(): void {
     this.modalOpen$.next(false);
-    this.taskIntermediateSaveService.setSubmission({});
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
+    // Delay clearing submission until after modal close animation completes
+    runAfterCarbonModalClosed(() => {
+      this.taskIntermediateSaveService.setSubmission({});
+    });
   }
 
   private openModal(): void {
