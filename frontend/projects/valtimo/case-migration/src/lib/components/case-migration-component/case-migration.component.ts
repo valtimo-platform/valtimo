@@ -64,7 +64,7 @@ export class CaseMigrationComponent {
   }
 
   public readonly caseDefinitions$: Observable<Array<CaseDefinition>> = this.documentService
-    .getCaseDefinitionsManagement({sort: 'name,id.versionTag'})
+    .getCaseDefinitionsManagement({sort: 'name,id.versionTag', size: 100000})
     .pipe(
       map(caseDefinitionsPage => caseDefinitionsPage.content),
       shareReplay(1)

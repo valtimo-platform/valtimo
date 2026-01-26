@@ -69,7 +69,7 @@ internal class IkoWidgetResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget",
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
                 "klant",
                 "general"
             )
@@ -94,7 +94,7 @@ internal class IkoWidgetResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget/{widgetKey}/data",
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data",
                 "klant",
                 "general",
                 "general"

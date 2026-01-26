@@ -22,6 +22,7 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
+import com.ritense.valtimo.event.ProcessDefinitionDetached
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -45,5 +46,16 @@ class ProcessDefinitionDeletedEventListener(
 
         }
         processLinkService.deleteProcessLinksForProcessDefinition(event.processDefinitionId)
+    }
+
+    @RunWithoutAuthorization
+    @EventListener(ProcessDefinitionDetached::class)
+    fun handleProcessDefinitionDetachedEvent(event: ProcessDefinitionDetached) {
+        if (event.caseDefinitionId != null) {
+            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                ProcessDefinitionId(event.processDefinitionId),
+                event.caseDefinitionId!!
+            )
+        }
     }
 }

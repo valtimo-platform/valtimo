@@ -1,10 +1,13 @@
 {
-    "ikoDataAggregateKey": "klant",
+    "ikoViewKey": "klant",
     "ikoTabs": [
         {
             "key": "general",
             "title": "Algemeen",
-            "type": "widgets"
+            "type": "widgets",
+            "properties": {
+                "aggregatedDataProfileName": "Personen"
+            }
         },
         {
             "key": "case-progress",

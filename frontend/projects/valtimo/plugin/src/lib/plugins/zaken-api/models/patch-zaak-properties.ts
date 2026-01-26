@@ -17,6 +17,7 @@
 export const PatchZaakPropertyOptions = [
   'description',
   'explanation',
+  'startDate',
   'plannedEndDate',
   'finalDeliveryDate',
   'publicationDate',
@@ -30,4 +31,5 @@ export const PatchZaakPropertyOptions = [
   'archiveActionDate',
   'startDateRetentionPeriod',
 ] as const;
+
 export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];

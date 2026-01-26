@@ -27,13 +27,14 @@ interface IkoRepository {
     fun getIkoRepositoryConfigPropertyFields(): List<PropertyField> =
         emptyList()
 
-    fun getDataAggregatePropertyFields(): List<PropertyField> =
+    fun getIkoViewPropertyFields(): List<PropertyField> =
         emptyList()
 
-    fun getDataRequestPropertyFields(): List<PropertyField> =
+    fun getIkoSearchActionPropertyFields(): List<PropertyField> =
+        emptyList()
+
+    fun getIkoTabPropertyFields(): List<PropertyField> =
         emptyList()
 
     fun findAll(config: Map<String, Any?>, filters: List<DataFilter>, pageable: Pageable): Page<JsonNode>
-
-    fun findById(config: Map<String, Any?>, id: Any): JsonNode
 }

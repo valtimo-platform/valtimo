@@ -63,7 +63,7 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
   public readonly $disableInput = signal<boolean>(true);
   public readonly $modalMode = signal<ModalMode>('add');
 
-  private readonly _dataAggregateKey$: Observable<string> = this.route.params.pipe(
+  private readonly _ikoViewKey$: Observable<string> = this.route.params.pipe(
     map(params => params?.key),
     filter(key => !!key)
   );
@@ -169,7 +169,7 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(
-      combineLatest([this._dataAggregateKey$, this._reloadColumns$])
+      combineLatest([this._ikoViewKey$, this._reloadColumns$])
         .pipe(
           tap(() => this.$disableInput.set(true)),
           switchMap(([key]) => this.ikoManagementApiService.getIkoListColumns(key)),
@@ -194,7 +194,7 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
 
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(
         switchMap(key => this.ikoManagementApiService.updateIkoListColumnOrder(key, mappedItems))
       )
@@ -227,7 +227,7 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
   public onDeleteListColumn(event: ListColumnDto): void {
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(switchMap(key => this.ikoManagementApiService.deleteIkoListColumn(key, event.key)))
       .subscribe({
         next: () => {

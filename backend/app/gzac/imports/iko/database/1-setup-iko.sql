@@ -15,16 +15,17 @@
  */
 
 INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b57e-6215bd6ef51e', 'BRP', 'brp', '- route:
-      id: "direct:iko:endpoint:transform:brp.personen"
+      id: "direct:iko:endpoint:transform:brp.Personen"
       errorHandler:
           noErrorHandler: {}
       from:
-          uri: "direct:iko:endpoint:transform:brp.personen"
+          uri: "direct:iko:endpoint:transform:brp.Personen"
           steps:
               - setBody:
                     jq: |
                         {
-                          type: (header("type") | tostring | split(",")),
+                           type: (if (header("type") != null) then header("type") else "RaadpleegMetBurgerservicenummer" end),
+                           fields: (if (header("fields") != null) then header("fields") | split(",") else ["burgerservicenummer","naam","geboorte","nationaliteiten","verblijfplaats","partners"] end),
                            gemeenteVanInschrijving: header("gemeenteVanInschrijving"),
                            inclusiefOverledenPersonen: header("inclusiefOverledenPersonen"),
                            geboortedatum: header("geboortedatum"),
@@ -32,7 +33,7 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
                            geslacht: header("geslacht"),
                            voorvoegsel: header("voorvoegsel"),
                            voornamen: header("voornamen"),
-                           burgerservicenummer: (header("burgerservicenummer") | tostring | split(",")),
+                           burgerservicenummer: (if header("burgerservicenummer") != null then header("burgerservicenummer") | split(",") else [header("idParam")] end),
                            huisletter: header("huisletter"),
                            huisnummer: header("huisnummer"),
                            huisnummertoevoeging: header("huisnummertoevoeging"),
@@ -42,10 +43,10 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
                            straat: header("straat"),
                            nummeraanduidingIdentificatie: header("nummeraanduidingIdentificatie"),
                            adresseerbaarObjectIdentificatie: header("adresseerbaarObjectIdentificatie")
-                           } | with_entries(select(.value!=null))
+                        } | with_entries(select(.value!=null))
               - removeHeaders:
                     pattern: "*"
-                    excludePattern: "type|gemeenteVanInschrijving|inclusiefOverledenPersonen|geboortedatum|geslachtsnaam|geslacht|voorvoegsel|voornamen|burgerservicenummer|huisletter|huisnummer|huisnummertoevoeging|postcode|geboortedatum|geslachtsnaam|straat|nummeraanduidingIdentificatie|adresseerbaarObjectIdentificatie"
+                    excludePattern: "type|fields|gemeenteVanInschrijving|inclusiefOverledenPersonen|geboortedatum|geslachtsnaam|geslacht|voorvoegsel|voornamen|burgerservicenummer|huisletter|huisnummer|huisnummertoevoeging|postcode|geboortedatum|geslachtsnaam|straat|nummeraanduidingIdentificatie|adresseerbaarObjectIdentificatie"
 - route:
       id: "direct:iko:connector:brp"
       errorHandler:
@@ -71,12 +72,13 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('e6aac203-a3b1-4832-b5
 ');
 
 INSERT INTO connector_instance(id,name,connector_id,tag,config) VALUES('0734b815-1166-42eb-8200-26a19a86c605','brp1','e6aac203-a3b1-4832-b57e-6215bd6ef51e','brp1', NULL);
-INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'host', 'mVwcp2iZuNh8f2+8KLlCVPMy04B3vP+rwmzEu/n4Za4uy3h6bmkKNhjhHQdy26oBEA==');
+INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'host', 'kQ/JVrXIlxyUxRadQ72e53zlv6mvdGMKhmw6a26uOqJ6BBWPbfNictxxT/w9N7A78zzn7AmPyCKO2+gL');
 INSERT INTO connector_instance_config(connector_instance_id,key,value) VALUES('0734b815-1166-42eb-8200-26a19a86c605', 'specificationUri', 't5YB+lqLDYOLXJ2srmkrLLiGqG3rOlfxGgxgjn47A6LpMewKnzXOKpJRvljV1+aTtXR9zCJvnU8zZohpID8XL2fjplNwFk0svbQmUxsTJe8LI++AXmMu6+qYKLbivjtM');
 INSERT INTO connector_endpoint(id,name,connector_id,operation) VALUES('d53096fe-0fab-4bb0-9406-6859b6ba4274','Personen','e6aac203-a3b1-4832-b57e-6215bd6ef51e','Personen');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('c6c88840-074d-4a22-9af3-42037a600670','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_USER');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a16','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ADMIN');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('acb1a41c-555f-41ee-a00f-e9a90ea80a17','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605','ROLE_ENDPOINT_BRPPERSONENENDPOINT');
+INSERT INTO aggregated_data_profile(id,name,transform,roles,connector_endpoint_id,connector_instance_id) VALUES('4d4b7633-46d3-4eaf-9d78-9f9c95599c42','Personen','{persoon: .personen[0]}','ROLE_ENDPOINT_BRPPERSONENENDPOINT','d53096fe-0fab-4bb0-9406-6859b6ba4274','0734b815-1166-42eb-8200-26a19a86c605');
 
 
 
@@ -87,8 +89,12 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
     from:
       uri: "direct:iko:connector:demo"
       steps:
+        - delay:
+           asyncDelayed: true
+           expression:
+             simple: "${random(0,1000)}"
         - setBody:
-            constant: ''{
+           constant: ''{
    "content":[
       {
          "basisgegevens":{
@@ -131,6 +137,26 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                      "naam":"Jan",
                      "leeftijd":12,
                      "relatie":"Kind"
+                  },
+                  {
+                    "naam": "Sofie",
+                    "leeftijd": 10,
+                    "relatie": "Kind"
+                  },
+                  {
+                    "naam": "Dirk",
+                    "leeftijd": 14,
+                    "relatie": "Kind"
+                  },
+                  {
+                    "naam": "Lotte",
+                    "leeftijd": 5,
+                    "relatie": "Kind"
+                  },
+                  {
+                    "naam": "Peter",
+                    "leeftijd": 9,
+                    "relatie": "Kind"
                   }
                ]
             },
@@ -152,6 +178,27 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                },
                {
                   "type":"Kindgebonden budget"
+               },
+               {
+                  "type":"Kinderopvangtoeslag"
+               },
+               {
+                  "type":"Energietoeslag"
+               },
+               {
+                  "type":"Alleenstaande-ouderkop"
+               },
+               {
+                  "type":"Tegemoetkoming scholieren"
+               },
+               {
+                  "type":"Individuele inkomenstoeslag"
+               },
+               {
+                  "type":"Bijzondere bijstand"
+               },
+               {
+                  "type":"Studietoeslag"
                }
             ],
             "gemeentelijke_regelingen":[
@@ -175,6 +222,26 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
                "type":"Evenementenvergunning",
                "beschrijving":"Aanvraag voor evenementenvergunning",
                "link":"/cases/evenementenvergunning/document/50fb0582-ad5e-42f0-b274-bb33d7beab18/general"
+            },
+            {
+              "type": "Omgevingsvergunning",
+              "beschrijving": "Aanvraag voor verbouwing van woning"
+            },
+            {
+              "type": "Parkeervergunning",
+              "beschrijving": "Aanvraag bewonersparkeervergunning"
+            },
+            {
+              "type": "Uitkering Participatiewet",
+              "beschrijving": "Aanvraag voor bijstandsuitkering"
+            },
+            {
+              "type": "Leerlingenvervoer",
+              "beschrijving": "Aanvraag vervoer naar speciaal onderwijs"
+            },
+            {
+              "type": "Melding openbare ruimte",
+              "beschrijving": "Melding van kapotte straatverlichting"
             }
          ],
          "contactmomenten":[
@@ -193,6 +260,22 @@ INSERT INTO connector(id,name,tag,connector_code) VALUES ('bc18d7dd-84b5-4097-95
             {
                "kanaal":"Digitaal portaal",
                "beschrijving":"Laatste login 1 week geleden voor upload documenten"
+            },
+            {
+              "kanaal": "Balie",
+              "beschrijving": "Persoonlijk gesprek op het gemeentehuis"
+            },
+            {
+              "kanaal": "Post",
+              "beschrijving": "Ontvangst van schriftelijke beschikking per brief"
+            },
+            {
+              "kanaal": "Chat",
+              "beschrijving": "Online chatgesprek met klantenservice"
+            },
+            {
+              "kanaal": "Videogesprek",
+              "beschrijving": "Videobelafspraak met consulent"
             }
          ],
          "notities":[
@@ -305,4 +388,93 @@ INSERT INTO connector_endpoint(id,name,connector_id,operation) VALUES('e6396e4a-
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464cca','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_USER');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464ccc','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_ADMIN');
 INSERT INTO connector_endpoint_role(id,connector_endpoint_id,connector_instance_id,role) VALUES('e6396e4a-3e6c-4243-afaa-8e369f464ccd','e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af','ROLE_ENDPOINT_BRPPERSONENENDPOINT');
-INSERT INTO aggregated_data_profile(id,name,primary_endpoint,transform,role,connector_endpoint_id,connector_instance_id) VALUES('fef3cd88-0470-4cfa-8112-fb27727a4f67', 'demo', NULL, '.content[0]','ROLE_ENDPOINT_BRPPERSONENENDPOINT', 'e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af');
+INSERT INTO aggregated_data_profile(id,name,transform,roles,connector_endpoint_id,connector_instance_id,endpoint_transform) VALUES('fef3cd88-0470-4cfa-8112-fb27727a4f67', 'demo',
+'def parse_header_json($name):
+  (header($name)
+   | if . == null or . == "" then {} else (try fromjson catch {}) end);
+
+def dir_is_desc($dir):
+  (($dir // "ASC") | ascii_upcase) == "DESC";
+
+def prop_path($p):
+  ($p // "")
+  | sub("^data\\."; "")
+  | split(".")
+  | map(select(. != ""));
+
+def apply_sort_and_page($cfg):
+  ($cfg.sort[0]? // {}) as $s0
+  | ($s0.property // "") as $p
+  | ($s0.direction // "ASC") as $d
+  | ($cfg.pageNumber? // null) as $pn
+  | ($cfg.pageSize?   // null) as $ps
+  | (if $p == "" then .
+     else sort_by( (getpath(prop_path($p)) // "") )
+     end)
+  | (if dir_is_desc($d) then reverse else . end)
+  | (if ($pn != null and $ps != null) then .[($pn*$ps):(($pn*$ps)+$ps)] else . end);
+
+def apply_filter($fobj):
+  map(
+    . as $item
+    | select(
+        ($item | type == "object")
+        and all($fobj | keys[]; ($item[.] // null) == $fobj[.])
+      )
+  );
+
+. as $root
+| (parse_header_json("sortParams"))   as $spv
+| (parse_header_json("filterParams")) as $fpv
+| ($root.content[0] // {}) as $c0
+
+# Determine the target collection key (prefer sortParams key, else filterParams key)
+| (if ($spv|type)=="object" and ($spv|length)>0 then ($spv|keys[0])
+   elif ($fpv|type)=="object" and ($fpv|length)>0 then ($fpv|keys[0])
+   else null
+   end) as $k
+
+| if $k == null then
+    $c0
+  else
+    # Start from the original array
+    ($c0[$k] // []) as $orig
+
+    # Apply filter first (for correct totalElements)
+    | ($orig
+       | if ($fpv|type)=="object" and ($fpv|length)>0 and ($fpv[$k]?|type)=="object"
+         then apply_filter($fpv[$k])
+         else .
+         end
+      ) as $filtered
+
+    # totalElements BEFORE paging
+    | ($filtered | length) as $total
+
+    # Apply sort + paging after filtering
+    | ($filtered
+       | if ($spv|type)=="object" and ($spv|length)>0 and ($spv[$k]?|type)=="object"
+         then apply_sort_and_page($spv[$k])
+         else .
+         end
+      ) as $paged
+
+    # Page metadata
+    | ($spv[$k].pageNumber // 0) as $num
+    | ($spv[$k].pageSize   // ($paged|length)) as $size
+
+    # Replace the array with the wrapped object
+    | ($c0
+       | .[$k] = {
+           totalElements: $total,
+           number: $num,
+           size: $size,
+           content: $paged
+         }
+      )
+  end
+','ROLE_ENDPOINT_BRPPERSONENENDPOINT', 'e6396e4a-3e6c-4243-afaa-8e369f464ccb','9b43db4a-0d10-4027-b7be-58ad8e4481af',
+'. + {
+  sortParams: ((.sortParams // {}) | tojson),
+  filterParams: ((.filterParams // {}) | tojson)
+}');

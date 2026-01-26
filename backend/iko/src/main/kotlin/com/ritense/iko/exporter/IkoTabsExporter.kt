@@ -38,30 +38,24 @@ class IkoTabsExporter(
     override fun supports() = IkoTabsExportRequest::class.java
 
     override fun export(request: IkoTabsExportRequest): ExportResult {
-        val ikoTabs = ikoTabService.findAllTabsByIkoDataAggregateKey(
-            ikoDataAggregateKey = request.ikoDataAggregateKey
+        val ikoTabs = ikoTabService.findAllTabsByIkoViewKey(
+            ikoViewKey = request.ikoViewKey
         )
         if (ikoTabs.isEmpty()) {
             return ExportResult()
         }
         val ikoTabsDto = IkoTabsDto(
-            ikoDataAggregateKey = request.ikoDataAggregateKey,
-            ikoTabs = ikoTabs.map { ikoTab ->
-                TabDto(
-                    key = ikoTab.key,
-                    title = ikoTab.title,
-                    type = ikoTab.type,
-                )
-            }
+            ikoViewKey = request.ikoViewKey,
+            ikoTabs = ikoTabs.map { ikoTab -> TabDto.from(ikoTab) }
         )
 
         val ikoTabsExport = ExportFile(
-            PATH.format(request.ikoDataAggregateKey, request.ikoDataAggregateKey),
+            PATH.format(request.ikoViewKey, request.ikoViewKey),
             objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(ikoTabsDto)
         )
         return ExportResult(
             ikoTabsExport, ikoTabs.map { ikoTab ->
-                IkoWidgetsExportRequest(request.ikoDataAggregateKey, ikoTab.key)
+                IkoWidgetsExportRequest(request.ikoViewKey, ikoTab.key)
             }.toSet()
         )
     }

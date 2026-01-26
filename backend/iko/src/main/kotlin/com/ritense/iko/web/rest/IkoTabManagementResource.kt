@@ -20,10 +20,10 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.web.rest.request.IkoTabCreateRequest
 import com.ritense.iko.web.rest.request.IkoTabUpdateRequest
-import com.ritense.tab.domain.Tab
 import com.ritense.tab.web.rest.dto.TabDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.iko.PropertyField
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,87 +42,90 @@ class IkoTabManagementResource(
 ) {
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab")
+    @GetMapping("/v1/iko-property-fields/{type}/tab")
+    fun getIkoTabPropertyFields(
+        @PathVariable type: String,
+    ): ResponseEntity<List<PropertyField>> {
+        return ResponseEntity.ok(service.getIkoTabPropertyFields(type))
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun getIkoTabsForManagement(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
     ): ResponseEntity<List<TabDto>> {
-        val ikoTabs = service.findAllTabsByIkoDataAggregateKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+        val ikoTabs = service.findAllTabsByIkoViewKey(
+            ikoViewKey = ikoViewKey,
         )
         return ResponseEntity.ok(ikoTabs.map { TabDto.from(it) })
     }
 
     @RunWithoutAuthorization
-    @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab/{key}")
+    @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun getIkoTab(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
     ): ResponseEntity<TabDto> {
-        val ikoTab = service.getByKey(ikoDataAggregateKey, key)
+        val ikoTab = service.getByKey(ikoViewKey, key)
         return ResponseEntity.ok(TabDto.from(ikoTab))
     }
 
     @RunWithoutAuthorization
-    @PostMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab/{key}")
+    @PostMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun createIkoTab(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoTabCreateRequest
     ): ResponseEntity<TabDto> {
         val ikoTab = service.create(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            tab = Tab(
-                key = key,
-                title = request.title,
-                type = request.type,
-                order = 0,
-            ),
+            ikoViewKey = ikoViewKey,
+            tab = request.toEntity(key),
         )
         return ResponseEntity.ok(TabDto.from(ikoTab))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab/{key}")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun updateIkoTab(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
         @RequestBody request: IkoTabUpdateRequest,
     ): ResponseEntity<TabDto> {
         require(request.key == key)
         val existingIkoTab = service.findByKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+            ikoViewKey = ikoViewKey,
             tabKey = key
         )
         requireNotNull(existingIkoTab)
         val updatedIkoTab = request.toEntity(id = existingIkoTab.id, order = existingIkoTab.order)
-        val ikoTab = service.update(ikoDataAggregateKey, updatedIkoTab)
+        val ikoTab = service.update(ikoViewKey, updatedIkoTab)
         return ResponseEntity.ok(TabDto.from(ikoTab))
     }
 
     @RunWithoutAuthorization
-    @PutMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab")
+    @PutMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun updateIkoTabOrder(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @RequestBody request: List<IkoTabUpdateRequest>,
     ): ResponseEntity<List<TabDto>> {
-        val existingIkoTabs = service.findAllTabsByIkoDataAggregateKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
+        val existingIkoTabs = service.findAllTabsByIkoViewKey(
+            ikoViewKey = ikoViewKey,
         )
         require(request.map { it.key }.toSet() == existingIkoTabs.map { it.key }.toSet())
         val ikoTabs = request.mapIndexed { index, updatedTab ->
             val existingTab = existingIkoTabs.first { it.key == updatedTab.key }
-            service.update(ikoDataAggregateKey, existingTab.copy(order = index))
+            service.update(ikoViewKey, existingTab.copy(order = index))
         }
         return ResponseEntity.ok(ikoTabs.map { TabDto.from(it) })
     }
 
     @RunWithoutAuthorization
-    @DeleteMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab/{key}")
+    @DeleteMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun deleteIkoTab(
-        @PathVariable ikoDataAggregateKey: String,
+        @PathVariable ikoViewKey: String,
         @PathVariable key: String,
     ): ResponseEntity<TabDto> {
-        service.deleteByKey(ikoDataAggregateKey, key)
+        service.deleteByKey(ikoViewKey, key)
         return ResponseEntity.noContent().build()
     }
 }

@@ -51,10 +51,9 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public readonly $disableInput = signal<boolean>(true);
   public readonly $ikoTabDtos = signal<TabDto[]>([]);
   public readonly $usedKeys = computed(() =>
-    this.$ikoTabDtos().reduce(
-      (acc, curr) => [...acc, ...(curr.key === this.$selectedTab()?.key ? [] : [curr.key])],
-      [] as string[]
-    )
+    this.$ikoTabDtos()
+      .filter(tab => tab.key !== this.$selectedTab()?.key)
+      .map(tab => tab.key)
   );
   public readonly $loading = signal<boolean>(true);
   public readonly $selectedTab = signal<TabDto | null>(null);
@@ -62,7 +61,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public readonly $modalMode = signal<ModalMode>('add');
   public readonly openConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _dataAggregateKey$ = this.route.params.pipe(
+  private readonly _ikoViewKey$ = this.route.params.pipe(
     map(params => params?.key),
     filter(key => !!key)
   );
@@ -77,6 +76,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
       tabs.map(tab => ({
         ...tab,
         type: this.translateService.instant(`ikoManagement.tabTypes.${tab.type}`),
+        properties: this.getTabPropertiesView(tab),
       }))
     ),
     tap(() => this.$disableInput.set(false))
@@ -98,6 +98,12 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
     {
       key: 'type',
       label: 'ikoManagement.tabType',
+      viewType: 'string',
+      sortable: false,
+    },
+    {
+      key: 'properties',
+      label: 'ikoManagement.tabProperties',
       viewType: 'string',
       sortable: false,
     },
@@ -126,7 +132,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(
-      combineLatest([this._dataAggregateKey$, this._reloadTabs$])
+      combineLatest([this._ikoViewKey$, this._reloadTabs$])
         .pipe(
           tap(() => this.$disableInput.set(true)),
           switchMap(([key]) => this.ikoManagementApiService.getIkoTabs(key)),
@@ -178,7 +184,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(switchMap(key => this.ikoManagementApiService.updateIkoTabs(key, mappedItems)))
       .subscribe({
         next: () => {
@@ -193,7 +199,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
   public onCreateButtonClicked(): void {
     this.$modalMode.set('add');
-    this.$selectedTab.set({title: '', key: '', type: ''});
+    this.$selectedTab.set({title: '', key: '', type: '', properties: {}});
     this.openModal();
   }
 
@@ -213,7 +219,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public onDeleteTab(event: {key: string}): void {
     this.disableInput();
 
-    this._dataAggregateKey$
+    this._ikoViewKey$
       .pipe(switchMap(key => this.ikoManagementApiService.deleteIkoTab(key, event.key)))
       .subscribe({
         next: () => {
@@ -224,6 +230,16 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
           this.enableInput();
         },
       });
+  }
+
+  private getTabPropertiesView(tab: TabDto): string | null {
+    if (!tab?.properties || Object.keys(tab.properties).length === 0) {
+      return null;
+    }
+
+    return Object.entries(tab.properties)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ');
   }
 
   private disableInput(): void {

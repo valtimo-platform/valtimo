@@ -17,10 +17,10 @@
 package com.ritense.iko.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoDataRequestSearchField
-import com.ritense.iko.domain.IkoDataRequestSearchFieldId
-import com.ritense.iko.repository.IkoDataRequestSearchFieldRepository
+import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
+import com.ritense.iko.domain.IkoSearchActionSearchField
+import com.ritense.iko.domain.IkoSearchActionSearchFieldId
+import com.ritense.iko.repository.IkoSearchActionSearchFieldRepository
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.web.rest.dto.SearchFieldV2Dto
@@ -33,71 +33,71 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class IkoSearchFieldService(
     private val searchFieldService: SearchFieldV2Service,
-    private val ikoDataRequestSearchFieldRepository: IkoDataRequestSearchFieldRepository,
-    private val ikoDataAggregateService: IkoDataAggregateService,
+    private val ikoSearchActionSearchFieldRepository: IkoSearchActionSearchFieldRepository,
+    private val ikoViewService: IkoViewService,
 ) {
 
-    fun findByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String): SearchFieldV2? {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
-            ikoDataAggregateKey,
-            ikoDataRequestKey,
+    fun findByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String): SearchFieldV2? {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
+            ikoViewKey,
+            ikoSearchActionKey,
             searchFieldKey
         )?.searchField
     }
 
-    fun getByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String): SearchFieldV2 {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return findByKey(ikoDataAggregateKey, ikoDataRequestKey, searchFieldKey)
+    fun getByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String): SearchFieldV2 {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return findByKey(ikoViewKey, ikoSearchActionKey, searchFieldKey)
             ?: error("Unknown searchField key: $searchFieldKey")
     }
 
-    fun findAllSearchFieldsByIkoDataRequest(
-        ikoDataAggregateKey: String,
-        ikoDataRequestKey: String
+    fun findAllSearchFieldsByIkoSearchAction(
+        ikoViewKey: String,
+        ikoSearchActionKey: String
     ): List<SearchFieldV2> {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataRequestSearchFieldRepository.findAllByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyOrderBySearchFieldOrder(
-            ikoDataAggregateKey,
-            ikoDataRequestKey
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoSearchActionSearchFieldRepository.findAllByIdIkoViewKeyAndIdIkoSearchActionKeyOrderBySearchFieldOrder(
+            ikoViewKey,
+            ikoSearchActionKey
         ).map { it.searchField }
     }
 
-    fun deleteByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String) {
-        ikoDataAggregateService.denyAuthorization()
-        ikoDataRequestSearchFieldRepository.deleteByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+    fun deleteByKey(ikoViewKey: String, ikoSearchActionKey: String, searchFieldKey: String) {
+        ikoViewService.denyAuthorization()
+        ikoSearchActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
+            ikoViewKey = ikoViewKey,
+            ikoSearchActionKey = ikoSearchActionKey,
             searchFieldKey = searchFieldKey
         )
     }
 
-    fun deleteByIkoDataRequestKey(ikoDataAggregateKey: String, ikoDataRequestKey: String) {
-        ikoDataAggregateService.denyAuthorization()
-        ikoDataRequestSearchFieldRepository.deleteByIdIkoDataAggregateKeyAndIdIkoDataRequestKey(
-            ikoDataAggregateKey = ikoDataAggregateKey,
-            ikoDataRequestKey = ikoDataRequestKey,
+    fun deleteByIkoSearchActionKey(ikoViewKey: String, ikoSearchActionKey: String) {
+        ikoViewService.denyAuthorization()
+        ikoSearchActionSearchFieldRepository.deleteByIdIkoViewKeyAndIdIkoSearchActionKey(
+            ikoViewKey = ikoViewKey,
+            ikoSearchActionKey = ikoSearchActionKey,
         )
-        ikoDataRequestSearchFieldRepository.flush()
+        ikoSearchActionSearchFieldRepository.flush()
     }
 
-    fun create(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchField: SearchFieldV2): SearchFieldV2 {
-        ikoDataAggregateService.denyAuthorization()
+    fun create(ikoViewKey: String, ikoSearchActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+        ikoViewService.denyAuthorization()
         require(
-            ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
-                ikoDataAggregateKey,
-                ikoDataRequestKey,
+            ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
+                ikoViewKey,
+                ikoSearchActionKey,
                 searchField.key
             ) == null
         )
         val createdSearchField = runWithoutAuthorization {
             searchFieldService.create(SearchFieldV2Dto.of(searchField))
         }
-        ikoDataRequestSearchFieldRepository.save(
-            IkoDataRequestSearchField(
-                id = IkoDataRequestSearchFieldId(
-                    ikoDataRequestKey = ikoDataRequestKey,
-                    ikoDataAggregateKey = ikoDataAggregateKey,
+        ikoSearchActionSearchFieldRepository.save(
+            IkoSearchActionSearchField(
+                id = IkoSearchActionSearchFieldId(
+                    ikoSearchActionKey = ikoSearchActionKey,
+                    ikoViewKey = ikoViewKey,
                     searchFieldId = searchField.id
                 ),
                 searchField = createdSearchField,
@@ -106,20 +106,20 @@ class IkoSearchFieldService(
         return createdSearchField
     }
 
-    fun update(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchField: SearchFieldV2): SearchFieldV2 {
-        ikoDataAggregateService.denyAuthorization()
-        val ikoDataRequestSearchField =
-            ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
-                ikoDataAggregateKey,
-                ikoDataRequestKey,
+    fun update(ikoViewKey: String, ikoSearchActionKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+        ikoViewService.denyAuthorization()
+        val ikoSearchActionSearchField =
+            ikoSearchActionSearchFieldRepository.findByIdIkoViewKeyAndIdIkoSearchActionKeyAndSearchFieldKey(
+                ikoViewKey,
+                ikoSearchActionKey,
                 searchField.key
             )
-        requireNotNull(ikoDataRequestSearchField)
+        requireNotNull(ikoSearchActionSearchField)
         val updatedSearchField = runWithoutAuthorization {
-            searchFieldService.update(SearchFieldV2Dto.of(searchField.copy(id = ikoDataRequestSearchField.id.searchFieldId)))
+            searchFieldService.update(SearchFieldV2Dto.of(searchField.copy(id = ikoSearchActionSearchField.id.searchFieldId)))
         }
-        ikoDataRequestSearchFieldRepository.save(
-            ikoDataRequestSearchField.copy(
+        ikoSearchActionSearchFieldRepository.save(
+            ikoSearchActionSearchField.copy(
                 searchField = updatedSearchField,
             )
         )

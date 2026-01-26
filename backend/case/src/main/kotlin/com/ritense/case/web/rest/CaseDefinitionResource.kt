@@ -21,6 +21,7 @@ import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
+import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
@@ -364,11 +365,12 @@ class CaseDefinitionResource(
     @RunWithoutAuthorization
     fun import(
         @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<CaseDefinitionImportResponse> {
         return try {
-            importService.import(file.inputStream, caseDefinitionRepository.findAll().map { it.id })
+            val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
+            val caseDefinitionId = importService.import(file.inputStream, skipImportOfCaseDefinitions)
             service.setLatestToActiveIfNoneIsActive()
-            ResponseEntity.ok().build()
+            ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()

@@ -16,11 +16,14 @@
 
 package com.ritense.iko.web.rest
 
+import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
 import com.ritense.iko.service.IkoTabService
 import com.ritense.iko.web.rest.request.IkoTabCreateRequest
 import com.ritense.iko.web.rest.request.IkoTabUpdateRequest
 import com.ritense.tab.domain.Tab
+import com.ritense.valtimo.contract.iko.PropertyField
 import com.ritense.valtimo.contract.json.MapperSingleton
+import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -61,11 +64,33 @@ internal class IkoTabManagementResourceTest {
     }
 
     @Test
+    fun `should get ikoTab property fields`() {
+        whenever(service.getIkoTabPropertyFields("iko")).thenReturn(
+            listOf(
+                PropertyField(
+                    key = AGGREGATED_DATA_PROFILE_NAME,
+                    title = "Aggregated Data Profile Name (Optional)",
+                    tooltip = "The name of the aggregated data profile. i.e. 'personen'",
+                    required = false,
+                ),
+            )
+        )
+
+        mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/tab", "iko"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.*", hasSize<Int>(1)))
+            .andExpect(jsonPath("$[0].title").value("Aggregated Data Profile Name (Optional)"))
+            .andExpect(jsonPath("$[0].key").value("aggregatedDataProfileName"))
+            .andExpect(jsonPath("$[0].type").value("text"))
+    }
+
+    @Test
     fun `should get tabs`() {
-        whenever(service.findAllTabsByIkoDataAggregateKey("klant"))
+        whenever(service.findAllTabsByIkoViewKey("klant"))
             .thenReturn(listOf(tab()))
 
-        mockMvc.perform(get("/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab", "klant"))
+        mockMvc.perform(get("/api/management/v1/iko-view/{ikoViewKey}/tab", "klant"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].key").value("overview"))
@@ -80,7 +105,7 @@ internal class IkoTabManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}",
                 "klant",
                 "overview"
             )
@@ -103,7 +128,7 @@ internal class IkoTabManagementResourceTest {
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}",
                 "klant",
                 "overview"
             )
@@ -121,16 +146,16 @@ internal class IkoTabManagementResourceTest {
     fun `should update tab`() {
         val tab = tab()
         val request = IkoTabUpdateRequest(
-                tab.key,
-                tab.title,
-                tab.type,
+            tab.key,
+            tab.title,
+            tab.type,
         )
         whenever(service.findByKey("klant", "overview"))
             .thenReturn(tab)
         whenever(service.update(eq("klant"), any())).thenReturn(tab)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{key}",
                 "klant",
                 "overview"
             )
@@ -154,12 +179,12 @@ internal class IkoTabManagementResourceTest {
                 tab.type,
             )
         )
-        whenever(service.findAllTabsByIkoDataAggregateKey("klant"))
+        whenever(service.findAllTabsByIkoViewKey("klant"))
             .thenReturn(listOf(tab))
         whenever(service.update(eq("klant"), any())).thenReturn(tab)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab",
                 "klant"
             )
                 .content(objectMapper.writeValueAsString(request))
@@ -176,7 +201,7 @@ internal class IkoTabManagementResourceTest {
     fun `should delete tab`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}",
                 "klant",
                 "overview"
             )

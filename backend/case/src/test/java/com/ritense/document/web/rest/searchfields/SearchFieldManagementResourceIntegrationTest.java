@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ritense.BaseIntegrationTest;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.domain.impl.searchfield.SearchField;
+import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
 import com.ritense.document.web.rest.impl.SearchFieldManagementResource;
@@ -41,6 +42,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Transactional
 class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
@@ -111,4 +113,39 @@ class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
             .andExpect(jsonPath("$[0].title", is("aTitle")));
     }
 
+    @Test
+    void shouldUpdateSearchFieldsWhenNoneExistYet() throws Exception {
+        searchFieldRepository.deleteAllInBatch();
+
+        runWithoutAuthorization(() -> {
+            searchFieldService.updateSearchFields(
+                DOCUMENT_DEFINITION_NAME,
+                List.of(
+                    new SearchFieldDto(
+                        "street",
+                        "doc:street",
+                        TEXT,
+                        SINGLE,
+                        EXACT,
+                        null,
+                        "aTitle"
+                    )
+                )
+            );
+            return null;
+        });
+
+        mockMvc.perform(
+                get("/api/management/v1/document-search/{documentDefinitionName}/fields",
+                    DOCUMENT_DEFINITION_NAME))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].key", is("street")))
+            .andExpect(jsonPath("$[0].path", is("doc:street")))
+            .andExpect(jsonPath("$[0].dataType", is(TEXT.toString())))
+            .andExpect(jsonPath("$[0].fieldType", is(SINGLE.toString())))
+            .andExpect(jsonPath("$[0].matchType", is(EXACT.toString())))
+            .andExpect(jsonPath("$[0].title", is("aTitle")));
+    }
 }

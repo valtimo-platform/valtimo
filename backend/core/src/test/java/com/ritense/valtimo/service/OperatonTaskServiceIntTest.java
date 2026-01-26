@@ -34,6 +34,7 @@ import com.ritense.authorization.role.RoleRepository;
 import com.ritense.outbox.domain.BaseEvent;
 import com.ritense.outbox.repository.OutboxMessageRepository;
 import com.ritense.valtimo.BaseIntegrationTest;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
@@ -78,6 +79,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
     @Autowired
     private OutboxMessageRepository outboxRepository;
 
+    private final CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("everything", "1.0.0");
     private final String processDefinitionKey = "one-task-process";
     private final String businessKey = "some-id";
 
@@ -87,6 +89,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         ProcessInstanceWithDefinition processInstanceWithDefinition = runWithoutAuthorization(() -> operatonProcessService.startProcess(
                 processDefinitionKey,
                 businessKey,
+                caseDefinitionId,
                 Map.of()
             ));
 
@@ -108,6 +111,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of()
         ));
 
@@ -150,6 +154,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of("context", "something")
         ));
 
@@ -173,6 +178,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
                 operatonProcessService.startProcess(
                     processDefinitionKey,
                     businessKey,
+                    caseDefinitionId,
                     Map.of()
                 );
             }
@@ -198,6 +204,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
                 operatonProcessService.startProcess(
                     "identity-link-mapper-test-process",
                     businessKey,
+                    caseDefinitionId,
                     Map.of()
                 );
             }
@@ -291,6 +298,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of()
         ));
 
@@ -339,6 +347,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of()
         ));
 
@@ -369,6 +378,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         final var processInstance = runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of("serialized_var", LocalDateTime.now())
         ));
         final var task = taskService.createTaskQuery()
@@ -388,6 +398,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
+            caseDefinitionId,
             Map.of()
         ));
         var taskId = runWithoutAuthorization(() -> operatonTaskService.findTasksFiltered(
@@ -407,6 +418,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
             operatonProcessService.startProcess(
                 processDefinitionKey,
                 businessKey,
+                caseDefinitionId,
                 Map.of()
             ));
         final var task = taskService.createTaskQuery()
@@ -428,6 +440,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         final var processInstance = runWithoutAuthorization(() -> operatonProcessService.startProcess(
                 processDefinitionKey,
                 businessKey,
+                caseDefinitionId,
                 Map.of()
             ));
 

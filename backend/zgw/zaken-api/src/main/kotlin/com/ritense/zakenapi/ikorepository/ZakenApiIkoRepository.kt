@@ -54,7 +54,7 @@ class ZakenApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(ZAAKTYPE_URL, PROPERTY_FIELD_TYPE_URL),
     )
 
@@ -76,20 +76,6 @@ class ZakenApiIkoRepository(
 
         val jsonZaakList = objectMapper.valueToTree<ArrayNode>(zaakList.results)
         return PageImpl(jsonZaakList.toList(), pageable, zaakList.count.toLong())
-    }
-
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
-        val plugin = getPlugin(config)
-        val zaakUrl = UriComponentsBuilder.fromUri(plugin.url)
-            .pathSegment("zaken")
-            .pathSegment(id.toString())
-            .toUriString()
-
-        val zaakWrapper = getPlugin(config).getZaak(
-            zaakUrl = URI(zaakUrl),
-        )
-
-        return objectMapper.valueToTree(zaakWrapper)
     }
 
     private fun getPlugin(config: Map<String, Any?>): ZakenApiPlugin {

@@ -16,12 +16,12 @@
 
 package com.ritense.iko.service
 
-import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
+import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoTabWidget
 import com.ritense.iko.domain.IkoTabWidgetId
 import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.service.WidgetService
@@ -35,46 +35,46 @@ class IkoWidgetService(
     private val ikoTabService: IkoTabService,
     private val ikoTabWidgetRepository: IkoTabWidgetRepository,
     private val widgetService: WidgetService,
-    private val ikoDataAggregateService: IkoDataAggregateService,
+    private val ikoViewService: IkoViewService,
 ) {
 
-    fun findByKey(ikoDataAggregateKey: String, tabKey: String, widgetKey: String): Widget? {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        val tab = ikoTabService.findByKey(ikoDataAggregateKey, tabKey) ?: return null
+    fun findByKey(ikoViewKey: String, tabKey: String, widgetKey: String): Widget? {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        val tab = ikoTabService.findByKey(ikoViewKey, tabKey) ?: return null
         return ikoTabWidgetRepository.findByIdTabIdAndWidgetKey(tab.id, widgetKey)?.widget
     }
 
-    fun getByKey(ikoDataAggregateKey: String, tabKey: String, widgetKey: String): Widget {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return findByKey(ikoDataAggregateKey, tabKey, widgetKey)
+    fun getByKey(ikoViewKey: String, tabKey: String, widgetKey: String): Widget {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return findByKey(ikoViewKey, tabKey, widgetKey)
             ?: error("Widget $widgetKey not found")
     }
 
-    fun findAllByTabKey(ikoDataAggregateKey: String, tabKey: String): List<Widget> {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
+    fun findAllByTabKey(ikoViewKey: String, tabKey: String): List<Widget> {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
         return ikoTabWidgetRepository.findAllByIdTabIdOrderByWidgetOrder(tab.id).map { it.widget }
     }
 
-    fun findAllByTabKeyFilteredByDisplayConditions(ikoDataAggregateKey: String, tabKey: String): List<Widget> {
+    fun findAllByTabKeyFilteredByDisplayConditions(ikoViewKey: String, tabKey: String): List<Widget> {
         return widgetService.filterWidgetsOnDisplayConditions(
-            widgets = findAllByTabKey(ikoDataAggregateKey, tabKey),
+            widgets = findAllByTabKey(ikoViewKey, tabKey),
             properties = mapOf(
-                IKO_DATA_AGGREGATE_KEY to ikoDataAggregateKey,
+                IKO_VIEW_KEY to ikoViewKey,
                 TAB_KEY to tabKey,
             )
         )
     }
 
-    fun deleteByKey(ikoDataAggregateKey: String, tabKey: String, widgetKey: String) {
-        ikoDataAggregateService.denyAuthorization()
-        val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
+    fun deleteByKey(ikoViewKey: String, tabKey: String, widgetKey: String) {
+        ikoViewService.denyAuthorization()
+        val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
         ikoTabWidgetRepository.deleteByIdTabIdAndWidgetKey(tab.id, widgetKey)
     }
 
-    fun create(ikoDataAggregateKey: String, tabKey: String, widget: Widget): Widget {
-        ikoDataAggregateService.denyAuthorization()
-        val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
+    fun create(ikoViewKey: String, tabKey: String, widget: Widget): Widget {
+        ikoViewService.denyAuthorization()
+        val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
         require(ikoTabWidgetRepository.findByIdTabIdAndWidgetKey(tab.id, widget.key) == null)
         val createdWidget = widgetService.create(widget)
         ikoTabWidgetRepository.save(
@@ -86,9 +86,9 @@ class IkoWidgetService(
         return createdWidget
     }
 
-    fun update(ikoDataAggregateKey: String, tabKey: String, widget: Widget): Widget {
-        ikoDataAggregateService.denyAuthorization()
-        val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
+    fun update(ikoViewKey: String, tabKey: String, widget: Widget): Widget {
+        ikoViewService.denyAuthorization()
+        val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
         requireNotNull(ikoTabWidgetRepository.findByIdTabIdAndWidgetKey(tab.id, widget.key))
         val updatedWidget = widgetService.update(widget)
         ikoTabWidgetRepository.save(
@@ -101,13 +101,13 @@ class IkoWidgetService(
     }
 
     fun getWidgetData(
-        ikoDataAggregateKey: String,
+        ikoViewKey: String,
         tabKey: String,
         widgetKey: String,
         properties: Map<String, Any>,
     ): Any? {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        val widget = getByKey(ikoDataAggregateKey, tabKey, widgetKey)
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        val widget = getByKey(ikoViewKey, tabKey, widgetKey)
         return widgetService.getWidgetData(widget, properties)
     }
 
