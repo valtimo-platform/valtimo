@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* LockProvider configuration now uses the `TimeZone.getDefault()` to determine the time zone, ensuring consistency with the system's default time zone settings.
