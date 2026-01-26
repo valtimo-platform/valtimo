@@ -73,6 +73,12 @@ and outputs when you link them to a case.
 
 <figure><img src="./images/building-block-processes.png" alt=""><figcaption><p>Processes inside the building block</p></figcaption></figure>
 
+* When a building block has multiple processes, you can create call activities from one process to another. Set the
+  process definition key and include a reference to the current building block in the **Version tag** field. The
+  version tag has the format `BB:<building-block-key>:<building-block-version>`.
+
+<figure><img src="./images/link-additional-process.png" alt=""><figcaption><p>Link to a different process in the building block</p></figcaption></figure>
+
 ### 5. Finalize the version
 
 Building blocks use **draft** and **final** versions, similar to case definitions.
