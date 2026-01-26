@@ -90,7 +90,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     ]),
     retentionPeriod: this.fb.control(-1, [
       Validators.required,
-      Validators.pattern(/^-?\d+$/),
+      Validators.pattern(/^(?:-1|0|[1-9]\d*)$/),
     ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
