@@ -111,12 +111,15 @@
     padding: 8px 0;
     display: flex;
     justify-content: center;
+    height: 64px;
+    align-items: center;
   }
 
   &__render {
     &-vertically,
     &-two-columns,
     &-three-columns {
+      display: grid;
       grid-gap: 16px;
       align-items: stretch;
       overflow: hidden;
@@ -125,7 +128,7 @@
     }
 
     &-vertically {
-      display: flex !important;
+      grid-template-columns: 1fr;
     }
 
     &-two-columns {

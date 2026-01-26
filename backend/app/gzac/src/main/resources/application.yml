@@ -289,3 +289,7 @@ operaton:
             id: ${OPERATON_BPM_ADMINUSER_ID:Admin}
             password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
             first-name: Admin account
+    incident:
+        alert-log:
+            enabled: true
+            message-template: "OPERATON_INCIDENT_FAILED_JOB: processInstanceId={processInstanceId} incidentId={incidentId}"
