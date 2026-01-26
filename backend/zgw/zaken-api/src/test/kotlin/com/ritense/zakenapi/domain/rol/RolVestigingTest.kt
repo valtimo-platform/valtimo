@@ -1,7 +1,7 @@
 package com.ritense.zakenapi.domain.rol
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertThrows
 
 class RolVestigingTest {
@@ -15,7 +15,7 @@ class RolVestigingTest {
                 kvkNummer = null
             )
         }
-        assertEquals("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!", exception.message)
+        assertThat(exception.message).isEqualTo("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!")
     }
 
     @Test
@@ -27,7 +27,7 @@ class RolVestigingTest {
                 vestigingsNummer = null
             )
         }
-        assertEquals("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!", exception.message)
+        assertThat(exception.message).isEqualTo("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!")
     }
 
     @Test
@@ -39,6 +39,6 @@ class RolVestigingTest {
                 vestigingsNummer = null
             )
         }
-        assertEquals("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!", exception.message)
+        assertThat(exception.message).isEqualTo("Either vestigingsNummer, handelsnaam or kvkNummer should be provided!")
     }
 }

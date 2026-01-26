@@ -1,5 +1,6 @@
 package com.ritense.zakenapi.domain.rol
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -13,7 +14,6 @@ class RolMedewerkerTest {
                 achternaam = null
             )
         }
-        assert(exception.message == "Either identificatie or achternaam should be provided!")
+        assertThat(exception.message).isEqualTo("Either identificatie or achternaam should be provided!")
     }
-
 }
