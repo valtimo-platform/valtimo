@@ -25,6 +25,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.TimeZone;
 
 @AutoConfiguration
 @ConditionalOnClass(DataSource.class)
@@ -33,6 +35,11 @@ public class SchedulerAutoConfiguration {
     @Order(HIGHEST_PRECEDENCE + 13)
     @Bean
     public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcTemplateLockProvider(dataSource);
+        return new JdbcTemplateLockProvider(
+            JdbcTemplateLockProvider.Configuration.builder()
+                .withJdbcTemplate(new JdbcTemplate(dataSource))
+                .withTimeZone(TimeZone.getDefault())
+                .build()
+        );
     }
 }
