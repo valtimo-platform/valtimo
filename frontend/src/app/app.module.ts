@@ -25,26 +25,18 @@ import {
 } from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
-  enableCustomFormioComponents,
-  FormIoModule,
-  registerFormioCurrencyComponent,
-  registerFormioCurrentUserComponent,
-  registerFormioFileSelectorComponent,
-  registerFormioIbanComponent,
-  registerFormioUploadComponent,
-  registerFormioValueResolverSelectorComponent,
-  UploaderModule,
   BpmnJsDiagramModule,
+  FormIoModule,
   MenuModule,
+  UploaderModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
-  CASE_TAB_TOKEN,
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
   CaseDetailTabNotesComponent,
@@ -118,7 +110,7 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
+import {ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
@@ -236,14 +228,5 @@ export function tabsFactory() {
   ],
 })
 export class AppModule {
-  constructor(injector: Injector) {
-    enableCustomFormioComponents(injector);
-    registerFormioCurrentUserComponent(injector);
-    registerFormioUploadComponent(injector);
-    registerFormioFileSelectorComponent(injector);
-    registerDocumentenApiFormioUploadComponent(injector);
-    registerFormioIbanComponent(injector);
-    registerFormioCurrencyComponent(injector);
-    registerFormioValueResolverSelectorComponent(injector);
-  }
+  constructor(injector: Injector) {}
 }
