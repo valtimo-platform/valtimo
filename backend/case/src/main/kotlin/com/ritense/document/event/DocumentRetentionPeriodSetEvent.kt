@@ -38,7 +38,7 @@ class DocumentRetentionPeriodSetEvent @JsonCreator constructor(
 
     init {
         assertArgumentNotNull(documentId, "documentId is required")
-        assertArgumentNotNull(retentionDate, "internal status is required")
+        assertArgumentNotNull(retentionDate, "Retention date is required")
     }
 
     fun setDocumentId(documentId: UUID) {

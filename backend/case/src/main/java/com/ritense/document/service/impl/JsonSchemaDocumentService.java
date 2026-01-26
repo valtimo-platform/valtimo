@@ -219,15 +219,15 @@ public class JsonSchemaDocumentService implements DocumentService {
                 null
             );
 
-        Page<JsonSchemaDocument> documentPage = documentRepository.findAll(
+        Page<JsonSchemaDocument> expiredDocuments = documentRepository.findAll(
             spec.and(expiredDocuments()), pageable);
 
         outboxService.send(() ->
             new DocumentsListed(
-                objectMapper.valueToTree(documentPage.getContent())
+                objectMapper.valueToTree(expiredDocuments.getContent())
             )
         );
-        return documentPage;
+        return expiredDocuments;
     }
 
     @Override

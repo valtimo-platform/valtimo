@@ -76,19 +76,6 @@ class JsonSchemaDocumentSpecificationHelper {
             return byDocumentDefinitionIdName(id.name()).and(byDocumentDefinitionIdCaseDefinitionId(id.caseDefinitionId()))
         }
 
-
-        @JvmStatic
-        fun byCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
-            return Specification { root: Root<JsonSchemaDocument>,
-                                   _: CriteriaQuery<*>?,
-                                   criteriaBuilder: CriteriaBuilder ->
-                criteriaBuilder.equal(
-                    root.get<CaseDefinitionId>(CASE_DEFINITION_ID),
-                    caseDefinitionId
-                )
-            }
-        }
-
         @JvmStatic
         fun byUnassigned() = Specification<JsonSchemaDocument> { root, _, cb ->
             cb.isNull(root.get<Any>(ASSIGNEE_ID))
