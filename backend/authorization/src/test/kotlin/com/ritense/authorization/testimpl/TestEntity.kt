@@ -16,6 +16,7 @@
 
 package com.ritense.authorization.testimpl
 
+import com.ritense.authorization.permission.condition.AuthorizationFieldAlias
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
@@ -24,8 +25,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
-import java.util.UUID
 import org.hibernate.annotations.Type
+import java.util.UUID
 
 @Entity
 @Table(name = "test_entity")
@@ -36,6 +37,7 @@ data class TestEntity(
     val child: TestChildEntity? = null,
 
     @Column(name = "name", columnDefinition = "varchar(100)")
+    @field:AuthorizationFieldAlias("legacyName")
     val name: String = "test",
 
     @ElementCollection
