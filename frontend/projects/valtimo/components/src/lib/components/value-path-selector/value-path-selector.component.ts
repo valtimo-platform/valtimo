@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
@@ -249,7 +250,9 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   public readonly showToggle$ = combineLatest([
     this._caseDefinitionKeySubject$,
     this._buildingBlockDefinitionKey$,
-  ]).pipe(map(([caseDefinitionKey, buildingBlockKey]) => !!caseDefinitionKey || !!buildingBlockKey));
+  ]).pipe(
+    map(([caseDefinitionKey, buildingBlockKey]) => !!caseDefinitionKey || !!buildingBlockKey)
+  );
 
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
@@ -358,7 +361,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
@@ -429,6 +433,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._inputMode$.next(
       toDropdownMode ? ValuePathSelectorInputMode.DROPDOWN : ValuePathSelectorInputMode.MANUAL
     );
+
+    setTimeout(() => this.changeDetectorRef.detectChanges(), 1);
   }
 
   private getFormattedPath(unformattedPath: string): string {

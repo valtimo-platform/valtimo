@@ -18,7 +18,7 @@ import {ActivatedRoute} from '@angular/router';
 import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
+import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
 import {
   FormDefinitionListItem,
@@ -134,9 +134,14 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
