@@ -79,7 +79,6 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
@@ -823,7 +822,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
-        boolean retentiondDateSet = document.retentionDate().isPresent();
+        boolean retentionDateSet = document.retentionDate().isPresent();
 
         var internalCaseStatus = internalStatusKey != null ? internalCaseStatusService.get(
             document.definitionId().name(),
@@ -833,7 +832,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
         documentRepository.save(document);
 
-        if (retentiondDateSet && document.retentionDate().isEmpty()) {
+        if (retentionDateSet && document.retentionDate().isEmpty()) {
             applicationEventPublisher.publishEvent(
                 new DocumentRetentionPeriodUnsetEvent(
                     UUID.randomUUID(),
