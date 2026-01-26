@@ -379,7 +379,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
-    public List<ProcessDocumentInstanceDto> getProcesInstanceId(JsonSchemaDocumentId jsonSchemaDocumentId, VariableScope variableScope) {
+    public List<ProcessDocumentInstanceDto> getProcessInstanceId(JsonSchemaDocumentId jsonSchemaDocumentId) {
         return processDocumentAssociationService.findProcessDocumentInstanceDtos(jsonSchemaDocumentId);
     }
 
