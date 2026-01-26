@@ -46,7 +46,7 @@ class DocumentRetentionPeriodExpiredWorkerService(
                 }
             }
         } catch (ex: Exception) {
-            logger.error(ex) { "Unexpected error while processing inbound notificaties api events" }
+            logger.error(ex) { "Unexpected error while processing expired documents for retention" }
         } finally {
             running.set(false)
         }
