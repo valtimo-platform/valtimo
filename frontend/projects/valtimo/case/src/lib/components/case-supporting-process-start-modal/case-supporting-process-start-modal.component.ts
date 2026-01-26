@@ -44,7 +44,7 @@ import {
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
-import { FORM_VIEW_MODEL_TOKEN, FormViewModel, COMPONENTS_TEST_IDS, PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
+import { FORM_VIEW_MODEL_TOKEN, FormViewModel, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -54,10 +54,7 @@ import { FORM_VIEW_MODEL_TOKEN, FormViewModel, COMPONENTS_TEST_IDS, PROCESS_LINK
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseSupportingProcessStartModalComponent implements OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})

@@ -26,7 +26,7 @@ import {
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {PageHeaderService} from '@valtimo/components';
-import { ConfigService, CASE_TEST_IDS } from '@valtimo/shared';
+import { ConfigService, TEST_IDS } from '@valtimo/shared';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {
   AssignUserToTaskComponent,
@@ -60,9 +60,7 @@ import {TaskWithProcessLink} from '@valtimo/process-link';
   ],
 })
 export class CaseDetailsTaskDetailComponent implements OnDestroy {
-  readonly TEST_IDS = {
-    CASE_TEST_IDS: CASE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;

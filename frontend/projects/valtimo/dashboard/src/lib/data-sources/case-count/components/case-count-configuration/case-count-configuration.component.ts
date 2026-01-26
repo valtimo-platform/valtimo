@@ -36,7 +36,7 @@ import {
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import { Operator, CASE_TEST_IDS } from '@valtimo/shared';
+import { Operator, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -47,9 +47,7 @@ import { Operator, CASE_TEST_IDS } from '@valtimo/shared';
 export class CaseCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
-  readonly TEST_IDS = {
-    CASE_TEST_IDS: CASE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public dataSourceKey: string;
 

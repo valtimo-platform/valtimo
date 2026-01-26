@@ -18,7 +18,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {combineLatest, Subscription} from 'rxjs';
 import {PluginManagementStateService} from '../../services';
 import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
-import { PLUGIN_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,9 +27,7 @@ import { PLUGIN_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./plugin-add-select.component.scss'],
 })
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    PLUGIN_MANAGEMENT_TEST_IDS: PLUGIN_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
   public readonly disabled$ = this.stateService.inputDisabled$;

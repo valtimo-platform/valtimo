@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {GetResultaattypenConfig} from '../../models';
-import { COMPONENTS_TEST_IDS, ZGW_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,10 +28,7 @@ import { COMPONENTS_TEST_IDS, ZGW_TEST_IDS } from '@valtimo/shared';
 export class GetResultaattypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    ZGW_TEST_IDS: ZGW_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

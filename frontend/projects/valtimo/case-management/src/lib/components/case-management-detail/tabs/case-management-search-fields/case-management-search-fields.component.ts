@@ -38,7 +38,7 @@ import {
   ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
-import { EditPermissionsService, SearchField, SearchFieldDataType, SearchFieldFieldType, SearchFieldMatchType, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { EditPermissionsService, SearchField, SearchFieldDataType, SearchFieldFieldType, SearchFieldMatchType, TEST_IDS } from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {
@@ -64,9 +64,7 @@ import {v4 as uuidv4} from 'uuid';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | undefined>(undefined);

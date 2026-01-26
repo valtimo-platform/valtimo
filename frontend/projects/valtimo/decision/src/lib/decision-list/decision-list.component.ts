@@ -20,7 +20,7 @@ import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {Decision} from '../models';
 import {DecisionService} from '../services/decision.service';
-import { ConfigService, EditPermissionsService, getCaseManagementRouteParams, getContextObservable, DECISION_TEST_IDS } from '@valtimo/shared';
+import { ConfigService, EditPermissionsService, getCaseManagementRouteParams, getContextObservable, TEST_IDS } from '@valtimo/shared';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
 import {CarbonListModule, WidgetModule} from '@valtimo/components';
@@ -45,9 +45,7 @@ import {TranslateModule} from '@ngx-translate/core';
   ],
 })
 export class DecisionListComponent {
-  readonly TEST_IDS = {
-    DECISION_TEST_IDS: DECISION_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
 

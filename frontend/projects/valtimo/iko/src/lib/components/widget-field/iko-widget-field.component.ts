@@ -27,7 +27,7 @@ import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-field',
@@ -44,9 +44,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class IkoWidgetFieldComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public set widgetConfiguration(value: FieldsWidget) {
     if (!value) return;

@@ -29,7 +29,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {distinctUntilChanged, filter, take} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {CaseTag, CaseTagsUtils} from '@valtimo/document';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-tags-selector',
@@ -40,9 +40,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, DropdownModule, CheckboxModule, InputModule, TranslateModule, TagModule],
 })
 export class CaseTagsSelectorComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public set caseTags(value: CaseTag[]) {
     this._caseTags$.next(

@@ -19,7 +19,7 @@ import {ProcessLinkStateService} from '../../services';
 import {FormCustomComponentConfig, ProcessLinkType} from '../../models';
 import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
 import {map, Subscription} from 'rxjs';
-import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./choose-process-link-type.component.scss'],
 })
 export class ChooseProcessLinkTypeComponent {
-  readonly TEST_IDS = {
-    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;

@@ -18,7 +18,7 @@ import {Component, OnInit} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {ChoiceFieldService} from '../../../../../../services';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-choicefield-formfield',
@@ -26,9 +26,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaChoicefieldFormfieldComponent implements OnInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public formGroup: UntypedFormGroup;
   public formField: FormField;

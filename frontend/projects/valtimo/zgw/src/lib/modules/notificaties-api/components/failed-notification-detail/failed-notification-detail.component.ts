@@ -20,7 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, ModalModule} from 'carbon-components-angular';
 import {FailedNotification} from '../../models';
 import moment from 'moment';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-notificaties-api-failed-notification-detail',
@@ -31,9 +31,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationDetailComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public open = false;
   @Input() public notification: FailedNotification | null = null;

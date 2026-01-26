@@ -22,7 +22,7 @@ import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentenApiManagementVersion} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
-import { getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-documenten-api-version',
@@ -32,9 +32,7 @@ import { getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shar
   imports: [CommonModule, TranslateModule, LoadingModule, NotificationModule, TilesModule],
 })
 export class DocumentenApiVersionComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 

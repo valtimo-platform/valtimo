@@ -30,7 +30,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {
@@ -60,9 +60,7 @@ import {take} from 'rxjs/operators';
   ],
 })
 export class DocumentenApiColumnsComponent implements AfterViewInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('columnKeyTemplate') public readonly columnKeyTemplate: TemplateRef<any>;
   @ViewChild('defaultSortTemplate') public readonly defaultSortTemplate: TemplateRef<any>;

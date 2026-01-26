@@ -31,7 +31,7 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, ViewContentService, MdiIconViewerComponent} from '@valtimo/components';
-import { Page, DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { Page, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -70,9 +70,7 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   ],
 })
 export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class') public hostClasses = 'valtimo-widget-collection';
   @ViewChild('widgetCollection') private _widgetCollectionRef: ElementRef<HTMLDivElement>;

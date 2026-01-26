@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {DefaultPluginConfigurationData} from '../../models';
 import {validate as isValidUUID} from 'uuid';
-import { PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 // import {PLUGIN_CONFIGURATION_ID_TEST} from '@e2e/constants';
 
 @Component({
@@ -28,9 +28,7 @@ import { PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class DefaultPluginConfigurationComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    PLUGIN_CONFIGURATION_TEST_IDS: PLUGIN_CONFIGURATION_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

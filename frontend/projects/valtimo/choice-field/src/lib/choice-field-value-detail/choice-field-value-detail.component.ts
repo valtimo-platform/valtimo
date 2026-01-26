@@ -18,7 +18,7 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService, ChoiceFieldService, ChoiceField, ChoiceFieldValue} from '@valtimo/components';
-import { CHOICE_FIELD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,9 +27,7 @@ import { CHOICE_FIELD_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./choice-field-value-detail.component.css'],
 })
 export class ChoiceFieldValueDetailComponent implements OnInit {
-  readonly TEST_IDS = {
-    CHOICE_FIELD_TEST_IDS: CHOICE_FIELD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public choiceFieldValueId: string;
   public form: FormGroup;

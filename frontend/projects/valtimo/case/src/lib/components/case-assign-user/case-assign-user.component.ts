@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
-import { NamedUser, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { NamedUser, TEST_IDS } from '@valtimo/shared';
 import {tap} from 'rxjs/operators';
 
 @Component({
@@ -27,9 +27,7 @@ import {tap} from 'rxjs/operators';
   styleUrls: ['./case-assign-user.component.scss'],
 })
 export class CaseAssignUserComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() set documentId(value: string) {
     this.documentId$.next(value);

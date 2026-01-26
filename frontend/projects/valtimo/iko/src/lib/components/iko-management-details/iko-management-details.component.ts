@@ -38,7 +38,7 @@ import {TabsModule} from 'carbon-components-angular';
 import {IkoManagementTab, IkoManagementTabType} from '../../models';
 import {TranslateModule} from '@ngx-translate/core';
 import {IKO_MANAGEMENT_TABS} from '../../constants';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-details',
@@ -48,9 +48,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, CarbonListModule, TabsModule, TranslateModule],
 })
 export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   private readonly _dynamicContainerSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
   @ViewChild('tabComponent', {static: false, read: ViewContainerRef})

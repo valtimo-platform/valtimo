@@ -27,7 +27,7 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import { CASE_CONFIGURATION_EXTENSIONS_TOKEN, EditPermissionsService, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { CASE_CONFIGURATION_EXTENSIONS_TOKEN, EditPermissionsService, TEST_IDS } from '@valtimo/shared';
 import {CaseManagementService} from '../../../../services';
 import {MuuriItemComponent} from '@valtimo/components';
 
@@ -38,9 +38,7 @@ import {MuuriItemComponent} from '@valtimo/components';
   styleUrl: './case-management-general.component.scss',
 })
 export class CaseManagementGeneralComponent implements AfterViewInit {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('extensions', {read: ViewContainerRef})
   private _extensions: ViewContainerRef;

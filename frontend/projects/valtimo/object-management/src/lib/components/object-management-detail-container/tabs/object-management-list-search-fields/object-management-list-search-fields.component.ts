@@ -28,7 +28,7 @@ import {
   tap,
 } from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import { ConfigService, DefinitionColumn, SearchField, SearchFieldColumnView, SearchFieldDataType, SearchFieldFieldType, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { ConfigService, DefinitionColumn, SearchField, SearchFieldColumnView, SearchFieldDataType, SearchFieldFieldType, TEST_IDS } from '@valtimo/shared';
 import {ListField} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -44,9 +44,7 @@ import {ObjectManagementService} from '../../../../services/object-management.se
   styleUrls: ['./object-management-list-search-fields.component.scss'],
 })
 export class ObjectManagementListSearchFieldsComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('moveRowButtons') public moveRowButtonsTemplateRef: TemplateRef<any>;
   readonly downloadName$ = new BehaviorSubject<string>('');

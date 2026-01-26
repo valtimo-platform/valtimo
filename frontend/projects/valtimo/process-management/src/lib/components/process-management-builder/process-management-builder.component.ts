@@ -35,7 +35,7 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
-import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, getCaseManagementRouteParamsAndContext, GlobalNotificationService, ManagementContext, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, getCaseManagementRouteParamsAndContext, GlobalNotificationService, ManagementContext, TEST_IDS } from '@valtimo/shared';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -132,9 +132,7 @@ export class ProcessManagementBuilderComponent
   extends PendingChangesComponent
   implements AfterViewInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('modeler', {static: false}) modelerElementRef!: ElementRef;
   @ViewChild('modelerPanel', {static: false}) modelerPanelElementRef!: ElementRef;

@@ -32,7 +32,7 @@ import {DocumentService} from '@valtimo/document';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
-import { CaseManagementParams, ManagementContext, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, ManagementContext, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -43,9 +43,7 @@ import { CaseManagementParams, ManagementContext, COMPONENTS_TEST_IDS } from '@v
 export class CreateZaakeigenschapComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

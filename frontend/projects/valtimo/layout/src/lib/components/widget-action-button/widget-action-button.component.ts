@@ -18,7 +18,7 @@ import {CommonModule} from '@angular/common';
 import {Component, Input} from '@angular/core';
 import {ButtonModule} from 'carbon-components-angular';
 import {BasicWidget, WidgetAction} from '../../models';
-import { GlobalNotificationService, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-action-button',
@@ -28,9 +28,7 @@ import { GlobalNotificationService, COMPONENTS_TEST_IDS } from '@valtimo/shared'
   imports: [CommonModule, ButtonModule],
 })
 export class WidgetActionButtonComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public widgetConfiguration: BasicWidget;
   @Input() public resolvedData: object;

@@ -40,7 +40,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
@@ -57,9 +57,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class CarbonMultiInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public addRowText = '';
   @Input() public addButtonType = 'primary';

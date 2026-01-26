@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ApiTabItem} from '@valtimo/case';
 import {TabService} from '../../../../../services';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -25,9 +25,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   templateUrl: './case-management-edit-tab-modal.component.html',
 })
 export class CaseManagementEditTabModalComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() open: boolean;
 

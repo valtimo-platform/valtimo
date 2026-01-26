@@ -19,7 +19,7 @@ import {Objecttype} from '../../../../models/object-management.model';
 import {ObjectManagementService} from '../../../../services/object-management.service';
 import {ObjectManagementStateService} from '../../../../services/object-management-state.service';
 import {BehaviorSubject, Observable} from 'rxjs';
-import { OBJECT_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { OBJECT_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./object-management-detail.component.scss'],
 })
 export class ObjectManagementDetailComponent {
-  readonly TEST_IDS = {
-    OBJECT_MANAGEMENT_TEST_IDS: OBJECT_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() object$: Observable<Objecttype>;
   readonly loading$ = new BehaviorSubject<boolean>(false);

@@ -17,7 +17,7 @@ import {Component} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ListField, PageTitleService, Pagination} from '@valtimo/components';
-import { GlobalNotificationService, SearchField, SearchFieldValues, SearchFilter, SearchFilterRange, OBJECT_MANAGEMENT_TEST_IDS, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { GlobalNotificationService, SearchField, SearchFieldValues, SearchFilter, SearchFilterRange, TEST_IDS } from '@valtimo/shared';
 import {ObjectManagementService, SearchColumn} from '@valtimo/object-management';
 import {
   BehaviorSubject,
@@ -42,10 +42,7 @@ import {ObjectService} from '../../services/object.service';
   styleUrls: ['./object-list.component.scss'],
 })
 export class ObjectListComponent {
-  readonly TEST_IDS = {
-    OBJECT_MANAGEMENT_TEST_IDS: OBJECT_MANAGEMENT_TEST_IDS,
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});

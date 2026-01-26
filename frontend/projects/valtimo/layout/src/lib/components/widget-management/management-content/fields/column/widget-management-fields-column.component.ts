@@ -76,7 +76,7 @@ import {
 } from '../../../../../models';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
 import {IWidgetManagementService} from '../../../../../interfaces';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management-fields-column',
@@ -101,9 +101,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class') public readonly class = 'valtimo-widget-management-field-column';
   @Input({required: true}) public columnData: FieldsWidgetValue[];

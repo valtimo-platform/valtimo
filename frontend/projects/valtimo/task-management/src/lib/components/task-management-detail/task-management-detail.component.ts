@@ -22,7 +22,7 @@ import {TaskManagementTab} from '../../models';
 import {TaskManagementService} from '../../services';
 import {TaskManagementColumnsComponent} from '../task-management-columns/task-management-columns.component';
 import {TaskManagementSearchFieldsComponent} from '../task-management-search-fields/task-management-search-fields.component';
-import { TASK_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './task-management-detail.component.html',
@@ -40,9 +40,7 @@ import { TASK_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   providers: [TaskManagementService],
 })
 export class TaskManagementDetailComponent {
-  readonly TEST_IDS = {
-    TASK_MANAGEMENT_TEST_IDS: TASK_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly activeTab$ = this.taskManagementService.activeTab$;
 

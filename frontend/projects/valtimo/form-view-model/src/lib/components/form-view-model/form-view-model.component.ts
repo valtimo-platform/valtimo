@@ -43,7 +43,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
 import {LayerModule} from 'carbon-components-angular';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
@@ -55,9 +55,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   imports: [CommonModule, FormioModule, LayerModule],
 })
 export class FormViewModelComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('formio') formio: FormioComponent;
 

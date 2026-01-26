@@ -30,7 +30,7 @@ import {tap} from 'rxjs/operators';
 import {ChangeEvent, FormFlowCustomComponent} from '../../models';
 import {FormFlowComponentService} from '../../services';
 import {FormioSubmission} from '@valtimo/components';
-import { FORM_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -40,9 +40,7 @@ import { FORM_TEST_IDS } from '@valtimo/shared';
 export class FormFlowConfigurationContainerComponent
   implements OnInit, OnDestroy, FormFlowCustomComponent
 {
-  readonly TEST_IDS = {
-    FORM_TEST_IDS: FORM_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('formFlowConfigurationComponent', {static: true, read: ViewContainerRef})
   private readonly _dynamicContainer: ViewContainerRef;

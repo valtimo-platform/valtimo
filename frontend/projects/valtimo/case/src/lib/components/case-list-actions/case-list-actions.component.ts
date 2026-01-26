@@ -19,7 +19,7 @@ import {Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, ValtimoCdsModalDirective} from '@valtimo/components';
 import {CaseSettings, DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import { GlobalNotificationService, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {DialogModule, ModalModule, TilesModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -54,9 +54,7 @@ declare const $;
   ],
 })
 export class CaseListActionsComponent implements OnInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('processStartModal') processStart: CaseProcessStartModalComponent;
 

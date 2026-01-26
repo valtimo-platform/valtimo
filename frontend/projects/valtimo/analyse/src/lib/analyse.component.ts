@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import { ANALYSE_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -24,7 +24,5 @@ import { ANALYSE_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./analyse.component.scss'],
 })
 export class AnalyseComponent {
-  readonly TEST_IDS = {
-    ANALYSE_TEST_IDS: ANALYSE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 }

@@ -19,7 +19,7 @@ import {Task, TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import moment from 'moment';
 import {BehaviorSubject} from 'rxjs';
 import {take} from 'rxjs/operators';
-import { DASHBOARD_TEST_IDS, TASK_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -31,10 +31,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS,
-    TASK_TEST_IDS: TASK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public processDefinitions: Array<any>;
   public openTasks: Array<any>;

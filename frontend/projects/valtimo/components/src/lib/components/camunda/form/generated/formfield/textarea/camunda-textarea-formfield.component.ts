@@ -17,7 +17,7 @@
 import {Component} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-textarea-formfield',
@@ -25,9 +25,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaTextareaFormfieldComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public formGroup: UntypedFormGroup;
   public formField: FormField;

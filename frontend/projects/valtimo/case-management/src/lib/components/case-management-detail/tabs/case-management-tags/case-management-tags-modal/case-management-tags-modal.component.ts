@@ -38,7 +38,7 @@ import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import { TagColor, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TagColor, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -48,9 +48,7 @@ import { TagColor, COMPONENTS_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementTagsModalComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);

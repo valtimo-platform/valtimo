@@ -19,7 +19,7 @@ import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {CamundaFormfieldService} from '../camunda-formfield.service';
 import moment from 'moment';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey'));
 // eslint-disable-next-line no-var
@@ -31,9 +31,7 @@ declare var $;
   standalone: false,
 })
 export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public formGroup: UntypedFormGroup;
   public formField: FormField;

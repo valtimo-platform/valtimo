@@ -26,7 +26,7 @@ import {ListItem} from 'carbon-components-angular';
 import {map, Observable} from 'rxjs';
 import {CandidateUser} from '../../models';
 import {CaseBulkAssignService} from '../../services';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -36,9 +36,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseBulkAssignModalComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class') public modalClass = 'valtimo-case-bulk-assign-modal';
 

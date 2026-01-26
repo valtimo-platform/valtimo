@@ -40,7 +40,7 @@ import {
   WidgetType,
   WidgetWizardService,
 } from '@valtimo/layout';
-import { CaseManagementParams, getCaseManagementRouteParams, DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -73,9 +73,7 @@ export class CaseManagementWidgetTabComponent
   extends ManagementWidgetDetailsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
     tap(params => {

@@ -24,7 +24,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import {NGXLogger} from 'ngx-logger';
@@ -37,9 +37,7 @@ import {from, take} from 'rxjs';
   styleUrls: ['./migration-process-diagram.component.scss'],
 })
 export class MigrationProcessDiagramComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   private bpmnViewer: NavigatedViewer;
   public flowNodeMap: any = null;

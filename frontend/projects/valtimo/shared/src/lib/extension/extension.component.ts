@@ -17,7 +17,7 @@
 import {Component, Input, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {ConfigService} from '../services/config.service';
 import {Extension, ExtensionLoader, ExtensionPoint} from '../models';
-import { COMPONENTS_TEST_IDS } from '../constants/test-ids';
+import { TEST_IDS } from '../constants/test-ids';
 
 @Component({
   selector: 'valtimo-extension',
@@ -26,9 +26,7 @@ import { COMPONENTS_TEST_IDS } from '../constants/test-ids';
   standalone: false,
 })
 export class ExtensionComponent implements OnInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public extensionLoader: ExtensionLoader = null;
   public selectedExtensionPoint: ExtensionPoint;

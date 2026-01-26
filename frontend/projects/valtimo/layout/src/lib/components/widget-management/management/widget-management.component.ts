@@ -30,7 +30,7 @@ import {
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management',
@@ -47,9 +47,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementComponent {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public set params(value: any) {
     if (!value) return;

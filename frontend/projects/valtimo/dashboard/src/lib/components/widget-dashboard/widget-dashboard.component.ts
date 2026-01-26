@@ -18,7 +18,7 @@ import {BehaviorSubject, Observable, tap} from 'rxjs';
 import {Dashboard, WidgetData} from '../../models';
 import {DashboardService} from '../../services';
 import {WidgetApiService} from '../../services/widget-api.service';
-import { COMPONENTS_TEST_IDS, DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,10 +28,7 @@ import { COMPONENTS_TEST_IDS, DASHBOARD_TEST_IDS } from '@valtimo/shared';
   encapsulation: ViewEncapsulation.None,
 })
 export class WidgetDashboardComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards().pipe(
     tap(dashboards => {

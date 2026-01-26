@@ -19,7 +19,7 @@ import {MilestoneService} from '../milestone.service';
 import {Milestone, MilestoneSet} from '../models';
 import {Router} from '@angular/router';
 import {combineLatest} from 'rxjs';
-import { MILESTONE_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { MILESTONE_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./milestone-list.component.scss'],
 })
 export class MilestoneListComponent implements OnInit {
-  readonly TEST_IDS = {
-    MILESTONE_TEST_IDS: MILESTONE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public milestones: Array<Array<string | MilestoneSet | Array<Milestone>>> = [];
   public milestoneFields = [

@@ -29,7 +29,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PageHeaderService} from '@valtimo/components';
-import { getCaseManagementRouteParams, GlobalNotificationService, CASE_TEST_IDS } from '@valtimo/shared';
+import { getCaseManagementRouteParams, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {IconService, ListItem, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -44,9 +44,7 @@ import {CaseDetailService, CaseManagementService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailActionsComponent {
-  readonly TEST_IDS = {
-    CASE_TEST_IDS: CASE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;

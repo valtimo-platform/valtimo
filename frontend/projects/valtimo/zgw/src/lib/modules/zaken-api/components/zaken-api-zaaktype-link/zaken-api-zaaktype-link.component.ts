@@ -28,7 +28,7 @@ import {
   ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
-import { CaseManagementParams, getCaseManagementRouteParams, GlobalNotificationService, ZGW_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   IconModule,
@@ -67,9 +67,7 @@ import {ZakenApiZaaktypeLinkService} from '../../services';
   ],
 })
 export class ZakenApiZaaktypeLinkComponent implements OnInit {
-  readonly TEST_IDS = {
-    ZGW_TEST_IDS: ZGW_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public zaakTypes: ZaakType[];
   public pluginConfigurations: PluginConfiguration[];

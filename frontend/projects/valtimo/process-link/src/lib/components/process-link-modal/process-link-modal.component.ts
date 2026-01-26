@@ -23,7 +23,7 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import { ConfigService, PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
+import { ConfigService, TEST_IDS } from '@valtimo/shared';
 import {ProcessLinkEditMode} from '../../models';
 
 @Component({
@@ -33,9 +33,7 @@ import {ProcessLinkEditMode} from '../../models';
   styleUrls: ['./process-link-modal.component.scss'],
 })
 export class ProcessLinkModalComponent {
-  readonly TEST_IDS = {
-    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly showModal$ = this.stateService.showModal$;
   public readonly processStepName$ = this.stateService.elementName$;

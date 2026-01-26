@@ -23,7 +23,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import { EditPermissionsService, getCaseManagementRouteParams, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { EditPermissionsService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
@@ -48,9 +48,7 @@ import {CaseManagementService} from '../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 

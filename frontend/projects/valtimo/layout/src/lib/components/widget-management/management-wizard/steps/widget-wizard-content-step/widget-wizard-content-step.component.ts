@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {WidgetWizardService} from '../../../../../services/widget-wizard.service';
 import {WidgetManagementActionButtonComponent} from '../../../management-action-button/widget-management-action-button.component';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-wizard-content-step.component.html',
@@ -34,9 +34,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, WidgetManagementActionButtonComponent],
 })
 export class WidgetWizardContentStepComponent implements AfterViewInit {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('actionButton', {read: TemplateRef}) actionButton!: TemplateRef<any>;
   @ViewChild('contentRenderer', {read: ViewContainerRef})

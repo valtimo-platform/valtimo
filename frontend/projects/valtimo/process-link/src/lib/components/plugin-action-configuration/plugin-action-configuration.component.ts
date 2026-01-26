@@ -31,7 +31,7 @@ import {
   ProcessLinkEditMode,
   ProcessLink,
 } from '../../models';
-import { COMPONENTS_TEST_IDS, PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -40,10 +40,7 @@ import { COMPONENTS_TEST_IDS, PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/sha
   styleUrls: ['./plugin-action-configuration.component.scss'],
 })
 export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    PLUGIN_CONFIGURATION_TEST_IDS: PLUGIN_CONFIGURATION_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() selectedPluginConfiguration$: Observable<PluginConfiguration>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();

@@ -18,7 +18,7 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {CaseSettings, DocumentService} from '@valtimo/document';
-import { CaseManagementParams, getCaseManagementRouteParams, GlobalNotificationService, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
 
@@ -29,9 +29,7 @@ import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} fr
   styleUrl: './case-management-external-start-form.component.scss',
 })
 export class CaseManagementExternalStartFormComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   private _isReadOnly: boolean;
   @Input() public set isReadOnly(value: boolean) {

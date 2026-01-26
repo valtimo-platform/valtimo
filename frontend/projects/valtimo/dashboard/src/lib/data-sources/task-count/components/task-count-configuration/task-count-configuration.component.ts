@@ -33,7 +33,7 @@ import {AbstractControl, FormBuilder} from '@angular/forms';
 import {TaskCountConfiguration} from '../../models';
 import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import { Operator, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { Operator, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -44,9 +44,7 @@ import { Operator, COMPONENTS_TEST_IDS } from '@valtimo/shared';
 export class TaskCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public dataSourceKey: string;
 

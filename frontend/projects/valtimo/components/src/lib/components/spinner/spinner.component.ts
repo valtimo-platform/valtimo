@@ -15,7 +15,7 @@
  */
 
 import {Component, Input} from '@angular/core';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-spinner',
@@ -24,9 +24,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class SpinnerComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() useBootstrapSpinner = true;
   @Input() name: string;

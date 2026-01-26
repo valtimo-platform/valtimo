@@ -22,7 +22,7 @@ import {map} from 'rxjs/operators';
 import {FormDefinitionListItem, FormDisplayType, FormSize} from '../../models';
 import {ProcessLinkButtonService, ProcessLinkStateService} from '../../services';
 import {MultiInputValues} from '@valtimo/components';
-import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,9 +30,7 @@ import { PROCESS_LINK_TEST_IDS } from '@valtimo/shared';
   templateUrl: './form-display-configuration.component.html',
 })
 export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    PROCESS_LINK_TEST_IDS: PROCESS_LINK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public selectedFormDefinition: FormDefinitionListItem;
 

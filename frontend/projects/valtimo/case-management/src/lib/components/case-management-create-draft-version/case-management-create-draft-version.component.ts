@@ -26,7 +26,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Edit16, Information16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {TemplatePayload} from '@valtimo/document';
-import { CaseManagementParams, getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -41,9 +41,7 @@ import {CaseManagementService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementCreateDraftVersionComponent implements OnInit {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public readonly open = false;
 

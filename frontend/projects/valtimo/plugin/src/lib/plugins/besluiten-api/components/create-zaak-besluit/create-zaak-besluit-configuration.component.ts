@@ -36,7 +36,7 @@ import {DocumentService} from '@valtimo/document';
 import {BesluitenApiService} from '../../services';
 import {InputOption} from '../../../zaken-api/models';
 import {PluginTranslatePipe} from '../../../../pipes';
-import { CaseManagementParams, ManagementContext, ZGW_TEST_IDS, BESLUIT_API_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, ManagementContext, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -48,10 +48,7 @@ import { CaseManagementParams, ManagementContext, ZGW_TEST_IDS, BESLUIT_API_TEST
 export class CreateZaakBesluitConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    ZGW_TEST_IDS: ZGW_TEST_IDS,
-    BESLUIT_API_TEST_IDS: BESLUIT_API_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

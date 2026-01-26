@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {UserInterfaceService} from '../../services/user-interface.service';
 import {PageHeaderService, PageTitleService} from '../../services';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-page-header',
@@ -33,9 +33,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class PageHeaderComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('contentVcr', {static: true, read: ViewContainerRef})
   private readonly _contentrVcr!: ViewContainerRef;

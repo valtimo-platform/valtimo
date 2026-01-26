@@ -30,7 +30,7 @@ import {
   DateTimePickerComponent,
   FormModule,
 } from '@valtimo/components';
-import { SearchFieldBoolean, SearchFieldValues, IKO_TEST_IDS } from '@valtimo/shared';
+import { SearchFieldBoolean, SearchFieldValues, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
@@ -78,9 +78,7 @@ type SearchFormValue = string | boolean | string[] | null | undefined;
   ],
 })
 export class IkoSearchComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    IKO_TEST_IDS: IKO_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly formValues: Record<string, SearchFormValue> = {};
   public readonly dropdownSelectItemsMap: Map<string, Array<any>> = new Map();

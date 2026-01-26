@@ -41,7 +41,7 @@ import {debounceTime, Subscription} from 'rxjs';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-fields.component.html',
@@ -64,9 +64,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, AfterViewInit {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
   @ViewChild(Tab) private readonly _tab: Tab;

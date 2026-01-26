@@ -31,7 +31,7 @@ import {
 import {take} from 'rxjs/operators';
 import {FormioForm} from '@formio/angular';
 import {CommonModule} from '@angular/common';
-import { ZGW_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-object-type',
@@ -41,9 +41,7 @@ import { ZGW_TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, TableModule, ParagraphModule, VModalModule, FormIoModule],
 })
 export class CaseDetailTabObjectTypeComponent {
-  readonly TEST_IDS = {
-    ZGW_TEST_IDS: ZGW_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('viewObjectModal') viewObjectModal: VModalComponent;
 

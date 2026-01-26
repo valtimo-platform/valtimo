@@ -19,7 +19,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {PluginConfigurationData} from '@valtimo/plugin';
 import {of} from 'rxjs';
-import { PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { PLUGIN_CONFIGURATION_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./plugin-configure.component.scss'],
 })
 export class PluginConfigureComponent {
-  readonly TEST_IDS = {
-    PLUGIN_CONFIGURATION_TEST_IDS: PLUGIN_CONFIGURATION_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =

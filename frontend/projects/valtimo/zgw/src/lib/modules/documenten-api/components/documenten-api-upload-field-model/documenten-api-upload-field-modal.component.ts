@@ -46,7 +46,7 @@ import {CommonModule} from '@angular/common';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
 import {DocumentService} from '@valtimo/document';
-import { getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -69,9 +69,7 @@ import {ActivatedRoute} from '@angular/router';
   ],
 })
 export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public caseDefinitionKey!: string;
   @Input() public type!: string;

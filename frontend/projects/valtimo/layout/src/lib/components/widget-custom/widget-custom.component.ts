@@ -38,7 +38,7 @@ import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-custom',
@@ -57,9 +57,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('customWidgetContainer', {read: ViewContainerRef})
   private readonly _customWidgetContainerRef: ViewContainerRef;

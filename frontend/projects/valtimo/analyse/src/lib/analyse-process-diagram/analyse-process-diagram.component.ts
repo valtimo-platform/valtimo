@@ -28,7 +28,7 @@ import {Heatpoint} from '../models';
 import BpmnViewer from 'bpmn-js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 import {PageTitleService} from '@valtimo/components';
-import { COMPONENTS_TEST_IDS, ANALYSE_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -37,10 +37,7 @@ import { COMPONENTS_TEST_IDS, ANALYSE_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./analyse-process-diagram.component.scss'],
 })
 export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    ANALYSE_TEST_IDS: ANALYSE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   private bpmnViewer: BpmnViewer;
   private heatMapInstance: any;

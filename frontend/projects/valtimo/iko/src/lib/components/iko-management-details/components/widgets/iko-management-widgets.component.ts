@@ -30,7 +30,7 @@ import {
 import {combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {IkoManagementParams, IkoRepositoryConfigResponse, TabDto} from '../../../../models';
 import {IkoManagementApiService, IkoWidgetManagementApiService} from '../../../../services';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './iko-management-widgets.component.html',
@@ -49,9 +49,7 @@ export class IkoManagementWidgetsComponent
   extends ManagementWidgetDetailsComponent
   implements OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly params$: Observable<IkoManagementParams> = this.route.params.pipe(
     map((params: Params) => ({

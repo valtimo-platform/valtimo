@@ -29,7 +29,7 @@ import {
 import {RelateerZakenConfig} from '../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {SelectItem} from '@valtimo/components';
-import { COMPONENTS_TEST_IDS, ZGW_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-relateer-zaken',
@@ -38,10 +38,7 @@ import { COMPONENTS_TEST_IDS, ZGW_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class RelateerZakenComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    ZGW_TEST_IDS: ZGW_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

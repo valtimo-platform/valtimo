@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {FormBuilder, Validators} from '@angular/forms';
 import {FormFlowDefinition} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import { FORM_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,9 +27,7 @@ import { FORM_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewFormFlowModalComponent {
-  readonly TEST_IDS = {
-    FORM_TEST_IDS: FORM_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() open = false;
   @Output() closeEvent = new EventEmitter<FormFlowDefinition | null>();

@@ -43,7 +43,7 @@ import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/oper
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
-import { ConfigService, ValtimoConfig, FORM_TEST_IDS } from '@valtimo/shared';
+import { ConfigService, ValtimoConfig, TEST_IDS } from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {Formio} from 'formiojs';
 import {
@@ -61,9 +61,7 @@ import {
   standalone: false,
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
-  readonly TEST_IDS = {
-    FORM_TEST_IDS: FORM_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() set options(optionsValue: ValtimoFormioOptions) {
     this.options$.next(optionsValue);

@@ -20,7 +20,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {CreateZaakNotitieConfig} from '../../models';
 import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
 import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
-import { ZGW_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,9 +30,7 @@ import { ZGW_TEST_IDS } from '@valtimo/shared';
 export class CreateZaakNotitieConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    ZGW_TEST_IDS: ZGW_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

@@ -19,7 +19,7 @@ import {BreakpointObserver, BreakpointState} from '@angular/cdk/layout';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {SelectItem, TableColumn, TablePagination} from '../../models';
 import {map, take, tap} from 'rxjs/operators';
-import { COMPONENTS_TEST_IDS, LAYOUT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -31,10 +31,7 @@ import { COMPONENTS_TEST_IDS, LAYOUT_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class TableComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS,
-    LAYOUT_TEST_IDS: LAYOUT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input()
   set items(items: Array<object>) {

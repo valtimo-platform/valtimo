@@ -20,7 +20,7 @@ import {BehaviorSubject, delay, finalize, Observable, Subject, tap} from 'rxjs';
 import {ExportRoleOutput, Role} from '../../models';
 import {AccessControlExportService} from '../../services/access-control-export.service';
 import {AccessControlService} from '../../services/access-control.service';
-import { ACCESS_CONTROL_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { ACCESS_CONTROL_TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccessControlOverviewComponent implements OnInit {
-  readonly TEST_IDS = {
-    ACCESS_CONTROL_TEST_IDS: ACCESS_CONTROL_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 

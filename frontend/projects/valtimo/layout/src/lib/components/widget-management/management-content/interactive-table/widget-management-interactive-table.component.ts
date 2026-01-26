@@ -43,7 +43,7 @@ import {
   WidgetInteractiveTableContent,
 } from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-interactive-table.component.html',
@@ -65,9 +65,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementInteractiveTableComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class') public readonly class = 'valtimo-widget-management-interactive-table';
 

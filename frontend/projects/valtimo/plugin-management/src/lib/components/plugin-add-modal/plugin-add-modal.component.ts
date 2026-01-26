@@ -21,7 +21,7 @@ import {BehaviorSubject, Subject} from 'rxjs';
 import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import { PLUGIN_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,9 +30,7 @@ import { PLUGIN_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
 export class PluginAddModalComponent {
-  readonly TEST_IDS = {
-    PLUGIN_MANAGEMENT_TEST_IDS: PLUGIN_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() open = false;
 

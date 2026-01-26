@@ -27,7 +27,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {ProcessService} from '../process.service';
-import { PROCESS_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 import BpmnViewer from 'bpmn-js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
@@ -40,9 +40,7 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   standalone: false,
 })
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
-  readonly TEST_IDS = {
-    PROCESS_MANAGEMENT_TEST_IDS: PROCESS_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   private bpmnViewer: BpmnViewer;
   private heatMapInstance: any;

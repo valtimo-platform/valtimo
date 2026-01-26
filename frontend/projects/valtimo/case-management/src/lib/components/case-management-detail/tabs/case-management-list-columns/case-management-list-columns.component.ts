@@ -26,7 +26,7 @@ import {
   ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
-import { EditPermissionsService, getCaseManagementRouteParams, getDisplayTypeParametersView, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { EditPermissionsService, getCaseManagementRouteParams, getDisplayTypeParametersView, TEST_IDS } from '@valtimo/shared';
 import {CaseListColumn, CaseListColumnView, DocumentService} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {
@@ -52,9 +52,7 @@ import {ListColumnModal} from '../../../../models';
   styleUrls: ['./case-management-list-columns.component.scss'],
 })
 export class CaseManagementListColumnsComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | null>(null);

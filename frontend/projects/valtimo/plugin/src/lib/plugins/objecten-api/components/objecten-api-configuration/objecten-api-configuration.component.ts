@@ -20,7 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {ObjectenApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import { OBJECT_MANAGEMENT_TEST_IDS, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,10 +31,7 @@ import { OBJECT_MANAGEMENT_TEST_IDS, COMPONENTS_TEST_IDS } from '@valtimo/shared
 export class ObjectenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    OBJECT_MANAGEMENT_TEST_IDS: OBJECT_MANAGEMENT_TEST_IDS,
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

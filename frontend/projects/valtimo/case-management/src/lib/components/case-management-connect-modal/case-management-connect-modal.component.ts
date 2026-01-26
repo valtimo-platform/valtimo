@@ -16,7 +16,7 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalComponent} from '@valtimo/components';
-import { GlobalNotificationService, CASE_TEST_IDS } from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentService,
@@ -34,9 +34,7 @@ import {CaseDetailService} from '../../services';
   styleUrls: ['./case-management-connect-modal.component.scss'],
 })
 export class CaseManagementConnectModalComponent implements OnInit {
-  readonly TEST_IDS = {
-    CASE_TEST_IDS: CASE_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('caseConnectModal') private readonly _modal: ModalComponent;
   @Output() public reloadProcessDocumentDefinitions = new EventEmitter<any>();

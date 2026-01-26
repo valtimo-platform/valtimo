@@ -71,7 +71,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { TASK_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields-modal',
@@ -95,9 +95,7 @@ import { TASK_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
-  readonly TEST_IDS = {
-    TASK_MANAGEMENT_TEST_IDS: TASK_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input({required: true}) open: boolean;
 

@@ -56,7 +56,7 @@ import {
 } from '@valtimo/task';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {isEqual} from 'lodash';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-column-modal',
@@ -83,9 +83,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class TaskManagementColumnModalComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.G10;
   @Input() public set taskListColumns(value: TaskListColumn[]) {

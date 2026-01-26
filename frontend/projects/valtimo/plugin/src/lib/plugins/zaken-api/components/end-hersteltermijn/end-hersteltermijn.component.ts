@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {Observable, Subscription} from 'rxjs';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 export class EndHersteltermijnComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() disabled$: Observable<boolean>;
   @Input() save$: Observable<void>;

@@ -26,7 +26,7 @@ import {
   take,
 } from 'rxjs';
 import {OpenKlantTokenAuthenticationConfig} from '../../models';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-open-klant-token-authentication-configuration',
@@ -36,9 +36,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 export class OpenKlantTokenAuthenticationConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;

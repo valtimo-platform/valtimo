@@ -20,7 +20,7 @@ import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/compon
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {IkoApiService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
-import { IKO_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-list',
@@ -29,9 +29,7 @@ import { IKO_TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, CarbonListModule, TranslatePipe],
 })
 export class IkoListComponent implements OnDestroy {
-  readonly TEST_IDS = {
-    IKO_TEST_IDS: IKO_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly listConfig$: Observable<{fields: ColumnConfig[]; items: any[]}> = combineLatest([

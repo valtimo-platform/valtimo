@@ -53,7 +53,7 @@ import moment from 'moment';
 import {CaseDetailLayoutService} from '../../services';
 import {ProcessLinkService, TaskWithProcessLink} from '@valtimo/process-link';
 import {UserFilled20} from '@carbon/icons';
-import { TASK_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -78,9 +78,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   ],
 })
 export class CaseDetailTaskListComponent {
-  readonly TEST_IDS = {
-    TASK_TEST_IDS: TASK_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
 

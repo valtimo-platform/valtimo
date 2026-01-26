@@ -32,7 +32,7 @@ import {FormControl} from '@angular/forms';
 import {DropdownButtonStyle, DropdownItem} from '../../models';
 import {BehaviorSubject, combineLatest, fromEvent, Subscription} from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-searchable-dropdown',
@@ -41,9 +41,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class SearchableDropdownComponent implements OnInit, OnDestroy, OnChanges {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() style: DropdownButtonStyle;
   @Input() items: Array<DropdownItem>;

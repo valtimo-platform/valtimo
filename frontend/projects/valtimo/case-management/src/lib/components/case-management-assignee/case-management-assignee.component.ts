@@ -19,7 +19,7 @@ import {CaseSettings, DocumentService} from '@valtimo/document';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {tap} from 'rxjs/operators';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,9 +28,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./case-management-assignee.component.scss'],
 })
 export class CaseManagementAssigneeComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   readonly disabled$ = new BehaviorSubject<boolean>(false);
 

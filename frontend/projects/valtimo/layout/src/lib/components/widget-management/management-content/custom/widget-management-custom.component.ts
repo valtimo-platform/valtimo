@@ -47,7 +47,7 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} f
 import {CUSTOM_WIDGET_TOKEN} from '../../../../constants';
 import {CustomWidgetConfig, WidgetContentProperties, WidgetCustomContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
-import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-custom.component.html',
@@ -68,9 +68,7 @@ import { DASHBOARD_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementCustomComponent implements OnDestroy, OnInit {
-  readonly TEST_IDS = {
-    DASHBOARD_TEST_IDS: DASHBOARD_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),

@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import { getCaseManagementRouteParams, PROCESS_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {LoadingModule, NotificationModule} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {BehaviorSubject, combineLatest, startWith, Subscription, switchMap} from 'rxjs';
@@ -46,9 +46,7 @@ import {ProcessManagementUploadComponent} from '../process-management-upload/pro
   providers: [TranslateService],
 })
 export class ProcessManagementComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    PROCESS_MANAGEMENT_TEST_IDS: PROCESS_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly context$ = getContextObservable(this.route);
 

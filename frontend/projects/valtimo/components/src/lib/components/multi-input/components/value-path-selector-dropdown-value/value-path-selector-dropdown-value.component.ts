@@ -27,7 +27,7 @@ import {DropdownModule, InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ValuePathSelectorComponent} from '../../../value-path-selector';
 import {Observable} from 'rxjs';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-value-path-selector-dropdown-value',
@@ -44,9 +44,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class ValuePathSelectorDropdownValueComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public readonly keyColumnTitle!: string;
   @Input() public readonly valueColumnTitle!: string;

@@ -31,7 +31,7 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
 import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/case';
-import { CaseManagementParams, ConfigService, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, ConfigService, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../../../services';
@@ -45,9 +45,7 @@ import {TabService} from '../../../../../services';
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseManagementAddTabModalComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() params: CaseManagementParams;
   @Input() open = false;

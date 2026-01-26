@@ -20,7 +20,7 @@ import moment from 'moment';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, AuditEvent} from '@valtimo/document';
 import {NgxSpinnerService} from 'ngx-spinner';
-import { LOGGING_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -31,9 +31,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   styleUrls: ['./audit.component.scss'],
 })
 export class CaseDetailTabAuditComponent implements OnInit {
-  readonly TEST_IDS = {
-    LOGGING_TEST_IDS: LOGGING_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
 

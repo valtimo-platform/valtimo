@@ -19,7 +19,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
-import { EnvironmentService, GlobalNotificationService, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { EnvironmentService, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {IconService, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
@@ -33,9 +33,7 @@ import {CaseManagementService} from '../../services';
   styleUrls: ['./case-management-deployment.component.scss'],
 })
 export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('createDraftMessage')
   private readonly _createDraftMessageTemplateRef: TemplateRef<HTMLDivElement>;

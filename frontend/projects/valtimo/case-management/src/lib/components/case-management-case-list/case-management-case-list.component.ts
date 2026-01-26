@@ -15,7 +15,7 @@
  */
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import { CaseManagementParams, DraftVersionService, getCaseManagementRouteParams, CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, DraftVersionService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {BehaviorSubject, switchMap, of, Observable} from 'rxjs';
 import {TabEnum} from '../../models';
 
@@ -26,9 +26,7 @@ import {TabEnum} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementCaseListComponent {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly isDraftVersion$: Observable<boolean> = getCaseManagementRouteParams(
     this.route

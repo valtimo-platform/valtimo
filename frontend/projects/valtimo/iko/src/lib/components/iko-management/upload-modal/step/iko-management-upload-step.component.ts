@@ -15,7 +15,7 @@
  */
 
 import {Component, Input} from '@angular/core';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -24,9 +24,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./iko-management-upload-step.component.scss'],
 })
 export class IkoManagementUploadStepComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() illustration!: string;
   @Input() message!: string;

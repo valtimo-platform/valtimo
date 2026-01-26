@@ -27,7 +27,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import { CaseManagementParams, getCaseManagementRouteParams, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {Page} from '@valtimo/document';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
@@ -64,9 +64,7 @@ import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/docume
   ],
 })
 export class DocumentenApiTagsComponent {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 

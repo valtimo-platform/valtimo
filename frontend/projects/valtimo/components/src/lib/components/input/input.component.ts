@@ -29,7 +29,7 @@ import {InputType} from '../../models';
 import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
 import {IconService} from 'carbon-components-angular';
 import {View16, ViewOff16} from '@carbon/icons';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-input',
@@ -38,9 +38,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class InputComponent implements OnInit, OnChanges, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @HostBinding('class.full-width') fullWidthClass = false;
 

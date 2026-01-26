@@ -37,7 +37,7 @@ import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetFormioContent} from '../../../../models';
-import { CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-widget-formio.component.html',
@@ -57,9 +57,7 @@ import { CASE_MANAGEMENT_TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit {
-  readonly TEST_IDS = {
-    CASE_MANAGEMENT_TEST_IDS: CASE_MANAGEMENT_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),

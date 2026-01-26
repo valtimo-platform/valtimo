@@ -28,7 +28,7 @@ import {first, Subscription} from 'rxjs';
 import {EditorModel} from '../../models';
 import {ShellService} from '../../services/shell.service';
 import {EditorService} from './editor.service';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 declare const monaco: any;
 
@@ -39,9 +39,7 @@ declare const monaco: any;
   standalone: false,
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @ViewChild('editorContainer', {static: true}) editorContainer: ElementRef;
 

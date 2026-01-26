@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetEigenschapConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,9 +29,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
 export class GetEigenschapConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() public save$: Observable<void>;
   @Input() public disabled$: Observable<boolean>;

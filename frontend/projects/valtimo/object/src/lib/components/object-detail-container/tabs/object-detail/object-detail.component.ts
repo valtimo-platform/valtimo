@@ -17,7 +17,7 @@ import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
-import { GlobalNotificationService, COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {ObjectManagementService} from '@valtimo/object-management';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
@@ -31,9 +31,7 @@ import {ObjectService} from '../../../../services/object.service';
   styleUrls: ['./object-detail.component.scss'],
 })
 export class ObjectDetailComponent implements OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});

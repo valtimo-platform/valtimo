@@ -26,7 +26,7 @@ import {
   take,
 } from 'rxjs';
 import {CreatePersoonConfig} from '../../models';
-import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -34,9 +34,7 @@ import { COMPONENTS_TEST_IDS } from '@valtimo/shared';
   templateUrl: './create-persoon.component.html',
 })
 export class CreatePersoonComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
-  readonly TEST_IDS = {
-    COMPONENTS_TEST_IDS: COMPONENTS_TEST_IDS
-  };
+  readonly TEST_IDS = TEST_IDS;
 
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
