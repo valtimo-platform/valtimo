@@ -21,9 +21,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="1" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
         <addColumn tableName="building_block_process_link">
             <column name="input_mappings" type="${jsonType}" defaultValue="[]"/>
             <column name="output_mappings" type="${jsonType}" defaultValue="[]"/>
         </addColumn>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <addColumn tableName="building_block_process_link">
+            <column name="input_mappings" type="${jsonType}"/>
+            <column name="output_mappings" type="${jsonType}"/>
+        </addColumn>
+        <sql>
+            update building_block_process_link
+            set input_mappings = JSON_ARRAY()
+            where input_mappings is null
+        </sql>
+        <sql>
+            update building_block_process_link
+            set output_mappings = JSON_ARRAY()
+            where output_mappings is null
+        </sql>
     </changeSet>
 </databaseChangeLog>

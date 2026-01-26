@@ -129,7 +129,8 @@ const CustomRootElement = (props: {
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
-      modeling.updateProperties(element, {});
+      // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+      setTimeout(() => modeling.updateProperties(element, {}), 0);
     });
   };
 
@@ -140,7 +141,8 @@ const CustomRootElement = (props: {
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
-      modeling.updateProperties(element, {});
+      // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+      setTimeout(() => modeling.updateProperties(element, {}), 0);
     });
   };
 
@@ -148,7 +150,8 @@ const CustomRootElement = (props: {
     processManagementEditorService.sendDeleteProcessLinkEvent(
       {activityId: processLink.activityId},
       () => {
-        modeling.updateProperties(element, {});
+        // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+        setTimeout(() => modeling.updateProperties(element, {}), 0);
       }
     );
   };

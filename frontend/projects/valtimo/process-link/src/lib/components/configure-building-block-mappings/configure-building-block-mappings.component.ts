@@ -30,8 +30,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
-import {map, switchMap, take} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, startWith, Subscription} from 'rxjs';
+import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import {
   BuildingBlockInputMapping,
   BuildingBlockOutputMapping,
@@ -101,7 +101,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
         buildingBlockFields.map(buildingBlockField => {
           return {
             id: buildingBlockField.name,
-            text: buildingBlockField.name,
+            text: `doc:${buildingBlockField.name}`,
           };
         })
       )
@@ -132,8 +132,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           inputsFormValue.inputs?.map(input => input.target).filter(Boolean) ?? [];
 
         return buildingBlockFieldItems.filter(item => {
-          if (item.text === groupValue.target) return true;
-          return !usedInputTargets.includes(item.text);
+          if (item.id === groupValue.target) return true;
+          return !usedInputTargets.includes(`${item.id}`);
         });
       })
     );
@@ -169,11 +169,10 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   }
 
   public readonly syncTimingItems: Array<{id: BuildingBlockSyncTiming; labelKey: string}> = [
-    // to do: uncomment once the be supports this
-    // {
-    //   id: 'CONTINUOUS' as BuildingBlockSyncTiming,
-    //   labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
-    // },
+    {
+      id: 'CONTINUOUS' as BuildingBlockSyncTiming,
+      labelKey: 'processLinkConfiguration.buildingBlock.sync.continuous',
+    },
     {
       id: 'END' as BuildingBlockSyncTiming,
       labelKey: 'processLinkConfiguration.buildingBlock.sync.end',
@@ -183,6 +182,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   public readonly params$ = getCaseManagementRouteParams(this.route);
   public readonly buildingBlockParams$ = getBuildingBlockManagementRouteParams(this.route);
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
+  public readonly sourceIsCase$ = new BehaviorSubject<boolean>(true);
 
   /**
    * Returns the name of the source/target context in mappings.
@@ -195,6 +196,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   ]).pipe(
     switchMap(([caseParams, bbParams]) => {
       if (bbParams?.buildingBlockDefinitionKey && bbParams?.buildingBlockDefinitionVersionTag) {
+        this.sourceIsCase$.next(false);
         // We're in a building block context - fetch the parent building block name
         return this.buildingBlockApiService
           .getBuildingBlockDefinition(
@@ -203,6 +205,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           )
           .pipe(map(def => def?.name ?? bbParams.buildingBlockDefinitionKey));
       } else if (caseParams?.caseDefinitionKey && caseParams?.caseDefinitionVersionTag) {
+        this.sourceIsCase$.next(true);
         // We're in a case context - fetch the case name
         return this.buildingBlockApiService
           .getCaseDefinition(caseParams.caseDefinitionKey, caseParams.caseDefinitionVersionTag)
@@ -269,7 +272,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService
+    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService,
+    private readonly stateService: ProcessLinkStateService
   ) {}
 
   ngOnInit(): void {
@@ -294,9 +298,14 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     this.triggerValidation();
 
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stepService.setConfigureBuildingBlockPluginsStep();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setConfigureBuildingBlockPluginsStep();
+        })
     );
 
     this._subscriptions.add(

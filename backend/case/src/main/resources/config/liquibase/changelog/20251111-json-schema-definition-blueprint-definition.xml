@@ -47,25 +47,22 @@
     <changeSet id="3" author="Ritense">
         <addColumn tableName="json_schema_document">
             <column name="blueprint_type" type="VARCHAR(40)"/>
-            <column name="blueprint_key" type="VARCHAR(256)"/>
-            <column name="blueprint_version_tag" type="VARCHAR(200)"/>
         </addColumn>
         <sql>
             update json_schema_document
-            set blueprint_type = 'CASE',
-                blueprint_key = case_definition_key,
-                blueprint_version_tag = case_definition_version_tag
+            set blueprint_type = 'CASE'
         </sql>
+        <renameColumn tableName="json_schema_document"
+                      oldColumnName="case_definition_key"
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
+        <renameColumn tableName="json_schema_document"
+                      oldColumnName="case_definition_version_tag"
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(200)"/>
         <addNotNullConstraint tableName="json_schema_document" columnName="blueprint_type" columnDataType="VARCHAR(40)"/>
         <addNotNullConstraint tableName="json_schema_document" columnName="blueprint_key" columnDataType="VARCHAR(256)"/>
         <addNotNullConstraint tableName="json_schema_document" columnName="blueprint_version_tag" columnDataType="VARCHAR(200)"/>
-        <dropColumn tableName="json_schema_document" columnName="case_definition_key"/>
-        <dropColumn tableName="json_schema_document" columnName="case_definition_version_tag"/>
-        <addForeignKeyConstraint constraintName="fk_json_document_definition_blueprint"
-                                 baseTableName="json_schema_document"
-                                 baseColumnNames="document_definition_name, blueprint_type, blueprint_key, blueprint_version_tag"
-                                 referencedTableName="json_schema_document_definition"
-                                 referencedColumnNames="document_definition_name, blueprint_type, blueprint_key, blueprint_version_tag"/>
     </changeSet>
 
     <changeSet id="4" author="Ritense">
@@ -73,8 +70,10 @@
             <column name="blueprint_type" type="VARCHAR(40)"/>
         </addColumn>
         <renameColumn tableName="json_schema_document_snapshot" oldColumnName="case_definition_key"
-                      newColumnName="blueprint_key"/>
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
         <renameColumn tableName="json_schema_document_snapshot" oldColumnName="case_definition_version_tag"
-                      newColumnName="blueprint_version_tag"/>
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(256)"/>
     </changeSet>
 </databaseChangeLog>

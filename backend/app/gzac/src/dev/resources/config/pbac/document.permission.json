@@ -16,13 +16,13 @@
                 },
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.blueprintId.blueprintKey",
+                    "field": "documentDefinitionId.caseDefinitionId.key",
                     "operator": "in",
                     "value": ["leningen", "bezwaar"]
                 },
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.blueprintId.blueprintVersionTag",
+                    "field": "documentDefinitionId.caseDefinitionId.versionTag",
                     "operator": "==",
                     "value": "${ACTIVE}"
                 }
