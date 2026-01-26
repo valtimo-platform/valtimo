@@ -5,7 +5,7 @@
         "startableByUser": true
     },
     {
-        "processDefinitionKey": "patch-zaak",
+        "processDefinitionKey": "catalogi-get-typen",
         "canInitializeDocument": false,
         "startableByUser": true
     },
@@ -15,7 +15,17 @@
         "startableByUser": true
     },
     {
-        "processDefinitionKey": "catalogi-get-typen",
+        "processDefinitionKey": "patch-zaak",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "create-zaaknotitie",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "patch-zaaknotitie",
         "canInitializeDocument": false,
         "startableByUser": true
     },

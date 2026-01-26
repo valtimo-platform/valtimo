@@ -71,7 +71,14 @@ export class IkoManagementRepositoryModalComponent {
   public readonly $prefillData = signal<IkoRepositoryConfigResponse | null>(null);
   @Input() public set prefillData(value: IkoRepositoryConfigResponse | null) {
     this.$prefillData.set(value);
-    this.formGroup.patchValue(value);
+    this.formGroup.patchValue({
+      ...value,
+      type: value?.type || 'iko',
+    });
+
+    if (!this.enableIkoType) {
+      this.formGroup.get('type')?.disable({emitEvent: false});
+    }
   }
 
   private _modalMode: ModalMode;
@@ -106,7 +113,7 @@ export class IkoManagementRepositoryModalComponent {
   public formGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', Validators.required),
-    type: this.fb.control('', Validators.required),
+    type: this.fb.control({value: 'iko', disabled: true}, Validators.required),
     properties: this.fb.group({}, Validators.required),
   });
 
@@ -114,7 +121,7 @@ export class IkoManagementRepositoryModalComponent {
     .get('type')
     .valueChanges.pipe(
       startWith(this.formGroup.get('type').value),
-      tap(_ => this.formGroup.patchValue({properties: {}})),
+      tap(_ => this.formGroup.patchValue({properties: {}}, {emitEvent: false})),
       filter(type => !!type && !Array.isArray(type)),
       switchMap(type => this.ikoManagementApiService.getIkoRepositoryPropertyFields(type))
     );
@@ -125,6 +132,9 @@ export class IkoManagementRepositoryModalComponent {
     private readonly configService: ConfigService
   ) {
     this.enableIkoType = this.configService.getFeatureToggle('enableIkoType');
+    if (this.enableIkoType) {
+      this.formGroup.get('type').enable({emitEvent: false});
+    }
   }
 
   public get properties(): FormGroup | null {
@@ -156,7 +166,12 @@ export class IkoManagementRepositoryModalComponent {
 
   private resetForm(): void {
     setTimeout(() => {
-      this.formGroup.reset();
+      this.formGroup.reset({
+        title: '',
+        key: '',
+        type: 'iko',
+        properties: {},
+      });
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

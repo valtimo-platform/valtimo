@@ -54,7 +54,7 @@ class ObjectenApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(OBJECTTYPEN_API_URL, PROPERTY_FIELD_TYPE_URL),
         PropertyField(OBJECT_TYPE_VERSION, PROPERTY_FIELD_TYPE_INTEGER),
     )
@@ -83,21 +83,6 @@ class ObjectenApiIkoRepository(
 
         val jsonObjectList = objectMapper.valueToTree<ArrayNode>(objectList.results)
         return PageImpl(jsonObjectList.toList(), pageable, objectList.count.toLong())
-    }
-
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
-        val plugin = getPlugin(config)
-        val objectUrl = UriComponentsBuilder.newInstance()
-            .uri(plugin.url)
-            .pathSegment("objects")
-            .pathSegment(id.toString())
-            .toUriString()
-
-        val objectWrapper = getPlugin(config).getObject(
-            objectUrl = URI(objectUrl),
-        )
-
-        return objectMapper.valueToTree(objectWrapper)
     }
 
     private fun getPlugin(config: Map<String, Any?>): ObjectenApiPlugin {

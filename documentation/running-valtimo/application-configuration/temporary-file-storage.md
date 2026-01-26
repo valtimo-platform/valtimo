@@ -23,3 +23,6 @@ valtimo:
 ```
 
 When the whitelist is not defined or empty, no filtering will be applied.
+
+## Enabling virus scanning
+It is possible to enable virus scanning for before storing uploaded files. See [enabling virus scanning](../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning) for details.

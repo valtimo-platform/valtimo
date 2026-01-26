@@ -39,7 +39,7 @@ import {
 } from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {
-  IkoDataAggregateResponse,
+  IkoViewResponse,
   IkoRepositoryConfigListResponse,
   IkoRepositoryConfigResponse,
 } from '../../models';
@@ -159,13 +159,13 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
     });
   }
 
-  public onEditClick(item: IkoDataAggregateResponse): void {
+  public onEditClick(item: IkoViewResponse): void {
     this.$modalMode.set('edit');
     this.$prefillData.set(item);
     this.$modalOpen.set(true);
   }
 
-  public onDeleteClick(item: IkoDataAggregateResponse): void {
+  public onDeleteClick(item: IkoViewResponse): void {
     this.$keyToDelete.set(item.key);
     this.showDeleteModal$.next(true);
   }

@@ -46,7 +46,7 @@ interface WidgetCollectionContent {
 interface CollectionWidgetResolvedField {
   key: string;
   title: string;
-  value: string;
+  value: string | null;
   width: CollectionWidgetFieldWidth;
   hideWhenEmpty: boolean;
 }
@@ -67,14 +67,40 @@ interface WidgetTableContent {
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
   canStartCase: boolean;
   rowClickAction: WidgetAction;
+  filters?: WidgetFilter[];
+}
+
+interface WidgetFilter {
+  dataType: string;
+  fieldType: string;
+  key: string;
+  matchType?: string;
+  title: string;
 }
 
 interface WidgetCustomContent {
   componentKey: string;
+  componentValue: {[key: string]: string};
 }
 
 interface WidgetFormioContent {
   formDefinitionName: string;
+}
+
+interface WidgetInteractiveTableEventSearchRequest {
+  size?: number;
+  page?: number;
+  filters?: Record<string, string>;
+}
+
+enum MoveRowDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+interface MoveRowEvent {
+  direction: MoveRowDirection;
+  index: number;
 }
 
 interface WidgetMapContent {
@@ -99,6 +125,8 @@ export {
   WidgetInteractiveTableContent,
   WidgetCollectionContent,
   WidgetMapContent,
+  WidgetInteractiveTableEventSearchRequest,
+  WidgetFilter,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,
   CollectionWidgetResolvedField,

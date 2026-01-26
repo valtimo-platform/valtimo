@@ -73,7 +73,7 @@ internal class IkoWidgetManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
                 "klant",
                 "general"
             )
@@ -98,7 +98,7 @@ internal class IkoWidgetManagementResourceTest {
 
         mockMvc.perform(
             get(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget/{widgetKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}",
                 "klant",
                 "general",
                 "general"
@@ -125,7 +125,7 @@ internal class IkoWidgetManagementResourceTest {
 
         mockMvc.perform(
             post(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget/{widgetKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}",
                 "klant",
                 "general",
                 "partner"
@@ -156,7 +156,7 @@ internal class IkoWidgetManagementResourceTest {
             .thenReturn(widget)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget/{key}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}",
                 "klant",
                 "general",
                 "partner"
@@ -188,7 +188,7 @@ internal class IkoWidgetManagementResourceTest {
             .thenReturn(widget)
         mockMvc.perform(
             put(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
                 "klant",
                 "general"
             )
@@ -212,7 +212,7 @@ internal class IkoWidgetManagementResourceTest {
     fun `should delete iko widget`() {
         mockMvc.perform(
             delete(
-                "/api/management/v1/iko-data-aggregate/{dataAggregateKey}/tab/{tabKey}/widget/{widgetKey}",
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}",
                 "klant",
                 "general",
                 "general"

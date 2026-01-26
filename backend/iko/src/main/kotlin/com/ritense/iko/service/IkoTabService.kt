@@ -16,15 +16,20 @@
 
 package com.ritense.iko.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoDataAggregateTab
-import com.ritense.iko.domain.IkoDataAggregateTabId
-import com.ritense.iko.event.IkoDataAggregateTabPreDeleteEvent
-import com.ritense.iko.repository.IkoDataAggregateTabRepository
+import com.ritense.iko.authorization.IkoViewActionProvider
+import com.ritense.iko.authorization.IkoViewActionProvider.Companion.VIEW
+import com.ritense.iko.domain.IkoViewTab
+import com.ritense.iko.domain.IkoViewTabId
+import com.ritense.iko.event.IkoViewTabPreDeleteEvent
+import com.ritense.iko.helper.MergeHelper.deepMerge
+import com.ritense.iko.repository.IkoViewTabRepository
 import com.ritense.tab.domain.Tab
 import com.ritense.tab.service.TabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.iko.IkoRepository
+import com.ritense.valtimo.contract.iko.PropertyField
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,63 +39,78 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class IkoTabService(
     private val tabService: TabService,
-    private val ikoDataAggregateTabRepository: IkoDataAggregateTabRepository,
-    private val ikoDataAggregateService: IkoDataAggregateService,
+    private val ikoViewTabRepository: IkoViewTabRepository,
+    private val ikoViewService: IkoViewService,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val ikoRepositories: List<IkoRepository>,
 ) {
 
-    fun findByKey(ikoDataAggregateKey: String, tabKey: String): Tab? {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataAggregateTabRepository.findByIdIkoDataAggregateKeyAndTabKey(ikoDataAggregateKey, tabKey)?.tab
+    fun getIkoTabConfig(ikoViewKey: String, tabKey: String?): Map<String, Any?> {
+        val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
+        ikoViewService.requirePermission(ikoView, IkoViewActionProvider.VIEW)
+        val ikoTabProperties = tabKey?.let { getByKey(ikoViewKey, tabKey) }?.properties ?: emptyMap()
+        return ikoView.ikoRepositoryConfig.properties
+            .deepMerge(ikoView.properties)
+            .deepMerge(ikoTabProperties)
     }
 
-    fun getByKey(ikoDataAggregateKey: String, tabKey: String): Tab {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return findByKey(ikoDataAggregateKey, tabKey)
+    fun getIkoTabPropertyFields(type: Any): List<PropertyField> {
+        ikoViewService.denyAuthorization()
+        return ikoRepositories.single { it.getType() == type }.getIkoTabPropertyFields()
+    }
+
+    fun findByKey(ikoViewKey: String, tabKey: String): Tab? {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoViewTabRepository.findByIdIkoViewKeyAndTabKey(ikoViewKey, tabKey)?.tab
+    }
+
+    fun getByKey(ikoViewKey: String, tabKey: String): Tab {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return findByKey(ikoViewKey, tabKey)
             ?: error("Unknown tab key: $tabKey")
     }
 
-    fun findAllTabsByIkoDataAggregateKey(ikoDataAggregateKey: String): List<Tab> {
-        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        return ikoDataAggregateTabRepository.findAllByIdIkoDataAggregateKeyOrderByTabOrder(ikoDataAggregateKey)
+    fun findAllTabsByIkoViewKey(ikoViewKey: String): List<Tab> {
+        ikoViewService.requirePermission(ikoViewKey, VIEW)
+        return ikoViewTabRepository.findAllByIdIkoViewKeyOrderByTabOrder(ikoViewKey)
             .map { it.tab }
     }
 
-    fun deleteByKey(ikoDataAggregateKey: String, tabKey: String) {
-        ikoDataAggregateService.denyAuthorization()
+    fun deleteByKey(ikoViewKey: String, tabKey: String) {
+        ikoViewService.denyAuthorization()
         applicationEventPublisher.publishEvent(
-            IkoDataAggregateTabPreDeleteEvent(ikoDataAggregateKey, tabKey)
+            IkoViewTabPreDeleteEvent(ikoViewKey, tabKey)
         )
-        ikoDataAggregateTabRepository.deleteByIdIkoDataAggregateKeyAndTabKey(ikoDataAggregateKey, tabKey)
+        ikoViewTabRepository.deleteByIdIkoViewKeyAndTabKey(ikoViewKey, tabKey)
     }
 
-    fun create(ikoDataAggregateKey: String, tab: Tab): Tab {
-        ikoDataAggregateService.denyAuthorization()
-        val tabs = findAllTabsByIkoDataAggregateKey(ikoDataAggregateKey)
+    fun create(ikoViewKey: String, tab: Tab): Tab {
+        ikoViewService.denyAuthorization()
+        val tabs = findAllTabsByIkoViewKey(ikoViewKey)
         require(tabs.none { it.key == tab.key })
         val createdTab = tabService.create(tab.copy(order = tabs.maxOfOrNull { it.order + 1 } ?: 0))
-        ikoDataAggregateTabRepository.save(
-            IkoDataAggregateTab(
-                id = IkoDataAggregateTabId(ikoDataAggregateKey, tab.id),
+        ikoViewTabRepository.save(
+            IkoViewTab(
+                id = IkoViewTabId(ikoViewKey, tab.id),
                 tab = createdTab,
             )
         )
         return createdTab
     }
 
-    fun update(ikoDataAggregateKey: String, tab: Tab): Tab {
-        ikoDataAggregateService.denyAuthorization()
-        val ikoDataAggregateTab = ikoDataAggregateTabRepository.findByIdIkoDataAggregateKeyAndTabKey(
-            ikoDataAggregateKey,
+    fun update(ikoViewKey: String, tab: Tab): Tab {
+        ikoViewService.denyAuthorization()
+        val ikoViewTab = ikoViewTabRepository.findByIdIkoViewKeyAndTabKey(
+            ikoViewKey,
             tab.key
         )
-        requireNotNull(ikoDataAggregateTab)
+        requireNotNull(ikoViewTab)
         val updatedTab = runWithoutAuthorization {
-            tabService.update(tab.copy(id = ikoDataAggregateTab.id.tabId))
+            tabService.update(tab.copy(id = ikoViewTab.id.tabId))
         }
-        ikoDataAggregateTabRepository.save(
-            IkoDataAggregateTab(
-                id = IkoDataAggregateTabId(ikoDataAggregateKey, updatedTab.id),
+        ikoViewTabRepository.save(
+            IkoViewTab(
+                id = IkoViewTabId(ikoViewKey, updatedTab.id),
                 tab = updatedTab,
             )
         )

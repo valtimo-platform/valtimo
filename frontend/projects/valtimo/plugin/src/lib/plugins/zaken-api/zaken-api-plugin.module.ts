@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {NgModule} from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {CommonModule} from '@angular/common';
+import {PluginTranslatePipeModule} from '../../pipes';
 import {
   FormModule,
   InputLabelModule,
   InputModule,
   ParagraphModule,
   RadioModule,
+  ReadOnlyDirective,
   SelectModule,
 } from '@valtimo/components';
 import {
@@ -36,31 +37,33 @@ import {
   TimePickerModule,
   ToggleModule,
 } from 'carbon-components-angular';
-
-import {PluginTranslatePipeModule} from '../../pipes';
+import {TranslateModule} from '@ngx-translate/core';
+import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
+import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
+import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
+import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
 import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
-import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
-import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
-import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
-import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
-import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
-import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
-import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
-import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
-import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
-import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
-import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
+import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
+import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
-import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
+import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
+import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
+import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
 @NgModule({
   declarations: [
@@ -86,6 +89,9 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
+    GetZaakbesluitenConfigurationComponent,
+    CreateZaakNotitieConfigurationComponent,
+    PatchZaakNotitieConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -108,6 +114,8 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     NotificationModule,
     ReactiveFormsModule,
     TimePickerModule,
+    InputModule,
+    ReadOnlyDirective,
   ],
   exports: [
     ZakenApiConfigurationComponent,
@@ -118,6 +126,7 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
     DeleteZaakRolComponent,
+    PatchZaakConfigurationComponent,
     CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -131,6 +140,9 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
+    GetZaakbesluitenConfigurationComponent,
+    CreateZaakNotitieConfigurationComponent,
+    PatchZaakNotitieConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}

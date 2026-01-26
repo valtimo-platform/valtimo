@@ -24,15 +24,15 @@ Click **Add widget** to open the create new widget modal that will guide the wid
 Five types of widgets are currently supported:
 
 * **Fields**\
-  &#xNAN;_&#x41; set of single data elements in a widget._
+  _&#x41; set of single data elements in a widget._
 * **Custom component**\
-  &#xNAN;_&#x41;n option to direct to a custom Angular component in de codebase._
+  _&#x41;n option to direct to a custom Angular component in de codebase._
 * **Form.io form**\
-  &#xNAN;_&#x54;his type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
+  _&#x54;his type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
 * **Table**\
-  &#xNAN;_&#x50;resent array case data in a table within a widget._
+  _&#x50;resent array case data in a table within a widget._
 * **Collection**\
-  &#xNAN;_&#x50;resent array case data in a collection of cards within a widget._
+  _&#x50;resent array case data in a collection of cards within a widget._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -51,6 +51,14 @@ The widget can be configured to display on any number of columns between 1 and 4
 A widget can either have a "Default" color scheme or it can be "High Contrast" to attract focus to that widget and it's content.
 
 <figure><img src="../../../../.gitbook/assets/image (23).png" alt=""><figcaption><p>Choosing widget style</p></figcaption></figure>
+{% endstep %}
+
+{% step %}
+**Choose widget density**
+
+A widget can either have a "Default" density or it can be "Compact" to display data in a more efficient manner. For now, Compact mode is only available for the Fields, Table and Collection widgets
+
+<figure><img src="../../../../.gitbook/assets/density.png" alt=""><figcaption><p>Choosing widget density</p></figcaption></figure>
 {% endstep %}
 
 {% step %}
@@ -75,18 +83,18 @@ By default each widget is shown in the UI. However, it is possible to add condit
 To create a fields widget the following configurations need to be done.
 
 * **Widget title**\
-  &#xNAN;_&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
 * **Configure widget fields**\
-  &#xNAN;_&#x45;ach field can be configured to display case data in a certain way._
+  _&#x45;ach field can be configured to display case data in a certain way._
 
 For each field that is added to the widget the following configuration is required in order to display the data correctly in the UI.
 
 * **Field title**\
-  &#xNAN;_&#x54;his is presented as the label of the field_
+  _&#x54;his is presented as the label of the field_
 * **Field value**\
-  &#xNAN;_&#x41;dd the exact path to the data in the JSON document._
+  _&#x41;dd the exact path to the data in the JSON document._
 * **Display type**\
-  &#xNAN;_&#x53;elect the way the data is presented in the UI. Please find the available display types below._
+  _&#x53;elect the way the data is presented in the UI. Please find the available display types below._
 
 **Display types**
 
@@ -169,9 +177,11 @@ Once a component is configured in Angular any user is able to configure the comp
 Adding a custom component widget to a page is easily done.
 
 * **Widget title**\
-  &#xNAN;_&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
 * **Angular component**\
-  &#xNAN;_&#x52;egistered Angular components in the front-end implementation of Valtimo will be listed in a dropdown menu. This component defines the widget content._
+  _&#x52;egistered Angular components in the front-end implementation of Valtimo will be listed in a dropdown menu. This component defines the widget content._
+* **Key/Value custom values**\
+  _Here custom key/value pairs can be configured. In order for these to work, the component needs to have @Input fields that match the 'keys' configured in this screen. The values become accessible through the properties defined in the custom component_
 
 <figure><img src="../../../../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
 
@@ -184,9 +194,9 @@ Adding a custom component widget to a page is easily done.
 For the Form.io widget there's only two fields that need to be configured:
 
 * **Widget title**\
-  &#xNAN;_&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
 *   **Form.io form**\
-    &#xNAN;_&#x41; dropdown is available with all Form.io definitions that are available in the implementation_
+    _&#x41; dropdown is available with all Form.io definitions that are available in the implementation_
 
     <figure><img src="../../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
 
@@ -215,24 +225,24 @@ color: var(--cds-text-primary)
 A table widget can be used when arrays (lists) are stored in the case data structure and need to be presented as such in the case UI. The following fields need to be configured for a table widget.
 
 * **Widget title**\
-  &#xNAN;_&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
 * **Rows per page**\
-  &#xNAN;_&#x49;f the content exceeds the number of rows pagination will be added in the UI._
+  _&#x49;f the content exceeds the number of rows pagination will be added in the UI._
 * **Path to table data**\
-  &#xNAN;_&#x54;he exact path in the JSON document that contains the array with data._
+  _&#x54;he exact path in the JSON document that contains the array with data._
 * **Table columns**\
-  &#xNAN;_&#x43;olumns need to be based on the available fields within the array data._
+  _&#x43;olumns need to be based on the available fields within the array data._
 
 **Configuring table columns**
 
 For each column in the table the following configurations needs to be done.
 
 * **Title**\
-  &#xNAN;_&#x54;he title will be displayed as the label of the field in the widget._
+  _&#x54;he title will be displayed as the label of the field in the widget._
 * **Value**\
-  &#xNAN;_&#x54;he value itself will not actually be configured, the path targeting the value in the JSON document is configured. The value is passed through by the widget._
+  _&#x54;he value itself will not actually be configured, the path targeting the value in the JSON document is configured. The value is passed through by the widget._
 * **Display type**\
-  &#xNAN;_&#x53;elect the way the data is presented in the UI. Please find the available display types below._
+  _&#x53;elect the way the data is presented in the UI. Please find the available display types below._
 
 {% hint style="info" %}
 The available [display types](widgets.md#fields-widget) are the same as for the fields widget.
@@ -313,11 +323,11 @@ Below option there is a toggle available named "_First column is the title of th
 A collection widget can be used when arrays (lists) are stored in the case data structure and need to be presented as such in the case UI. The following fields need to be configured for a collection widget.
 
 * **Widget title**\
-  &#xNAN;_&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
 * **Number of cards per page**\
-  &#xNAN;_&#x49;f the content exceeds the number of rows pagination will be added in the UI._
+  _&#x49;f the content exceeds the number of rows pagination will be added in the UI._
 * **Path to collection data**\
-  &#xNAN;_&#x54;he exact path in the JSON document that contains the array with data._
+  _&#x54;he exact path in the JSON document that contains the array with data._
 * **Card title display type**\
   Same as each text field, the title of the card can also be set to a certain [display type](widgets.md#fields-widget).
 
@@ -326,9 +336,9 @@ A collection widget can be used when arrays (lists) are stored in the case data 
 For each card in the collection the following configurations needs to be done.
 
 * **Card title**\
-  &#xNAN;_&#x54;he title of each card can be set to a value from the array items. So the card title is not a label in this case, but a value from a array item._
+  _&#x54;he title of each card can be set to a value from the array items. So the card title is not a label in this case, but a value from a array item._
 * **Display type**\
-  &#xNAN;_&#x53;elect the way the card title is presented in the UI. Please find the available display types below._
+  _&#x53;elect the way the card title is presented in the UI. Please find the available display types below._
 
 **Configuring card fields**
 
@@ -336,13 +346,13 @@ A set of fields can be configured that will display the data for each card.\
 The following configuration needs to be done to add a field to a card.
 
 * **Title**\
-  &#xNAN;_&#x57;ill be displayed as the fields label in the UI._
+  _&#x57;ill be displayed as the fields label in the UI._
 * **Value**\
-  &#xNAN;_&#x54;he value itself will not actually be configured, the path targeting the value in the JSON document is configured. The value is passed through by the widget._
+  _&#x54;he value itself will not actually be configured, the path targeting the value in the JSON document is configured. The value is passed through by the widget._
 * **Display type**\
-  &#xNAN;_&#x53;elect the way the data is presented in the UI. Please find the available display types below._
+  _&#x53;elect the way the data is presented in the UI. Please find the available display types below._
 * **Field width**\
-  &#xNAN;_&#x46;or each field the choice can be made to use the full width of the card or half._
+  _&#x46;or each field the choice can be made to use the full width of the card or half._
 
 {% hint style="info" %}
 The available [display types](widgets.md#fields-widget) are the same as for the fields widget.
@@ -469,7 +479,7 @@ Access to the case widgets can be configured through access control. More inform
    "conditions": [
       {
          "type": "field",
-         "field": "id.caseWidgetTab.id.caseDefinitionName",
+         "field": "id.caseWidgetTab.id.caseDefinitionId.key",
          "operator": "==",
          "value": "evenementenvergunning"
       }

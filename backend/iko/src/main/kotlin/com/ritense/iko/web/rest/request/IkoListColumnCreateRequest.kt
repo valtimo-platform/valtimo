@@ -30,9 +30,9 @@ data class IkoListColumnCreateRequest(
     val sortable: Boolean = false,
     val defaultSort: ColumnDefaultSort? = null,
 ) {
-    fun toEntity(ikoDataAggregateKey: String, order: Int) = SearchListColumn(
+    fun toEntity(ikoViewKey: String, order: Int) = SearchListColumn(
         id = UUID.randomUUID(),
-        ownerId = "ikoDataAggregate:$ikoDataAggregateKey",
+        ownerId = "ikoView:$ikoViewKey",
         key = key,
         title = title,
         path = path,

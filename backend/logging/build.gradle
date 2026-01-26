@@ -35,7 +35,7 @@ dockerCompose {
 
 dependencies {
 
-    implementation project(":contract")
+    implementation project(":backend:contract")
 
     implementation "org.springframework.boot:spring-boot"
     implementation "org.springframework.boot:spring-boot-starter"

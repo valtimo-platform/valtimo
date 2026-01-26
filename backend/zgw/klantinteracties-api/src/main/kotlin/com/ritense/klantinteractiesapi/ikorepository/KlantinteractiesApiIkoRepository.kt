@@ -49,7 +49,7 @@ class KlantinteractiesApiIkoRepository(
         )
     }
 
-    override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
+    override fun getIkoViewPropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             PARTIJ_SOORT,
             PROPERTY_FIELD_TYPE_DROPDOWN,
@@ -83,14 +83,6 @@ class KlantinteractiesApiIkoRepository(
 
         val jsonPartijenList = objectMapper.valueToTree<ArrayNode>(partijenPage.results)
         return PageImpl(jsonPartijenList.toList(), pageable, partijenPage.count.toLong())
-    }
-
-    override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
-        val plugin = getPlugin(config)
-        val partij = getPlugin(config).getPartij(
-            partijUrl = plugin.getPartijUrl(UUID.fromString(id.toString())),
-        )
-        return objectMapper.valueToTree(partij)
     }
 
     private fun getPlugin(config: Map<String, Any?>): KlantinteractiesApiPlugin {

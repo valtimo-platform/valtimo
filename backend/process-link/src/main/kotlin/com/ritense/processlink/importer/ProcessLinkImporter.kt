@@ -30,6 +30,8 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byCaseDefinitionId
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
@@ -52,7 +54,10 @@ class ProcessLinkImporter(
         val processDefinitionKey = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
         withLoggingContext("processDefinitionKey", processDefinitionKey) {
             val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
-                repositoryService.findLatestProcessDefinition(processDefinitionKey)?.id
+                repositoryService.findProcessDefinition(
+                    byKey(processDefinitionKey)
+                        .and(byCaseDefinitionId(request.caseDefinitionId))
+                )?.id
                     ?: throw IllegalStateException("Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey'.")
             }
 

@@ -58,6 +58,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
             processService.startProcess(
                 "form-one-task-process",
                 document.id().toString(),
+                caseDefinitionId,
                 mapOf(
                     "lastName" to "Doe"
                 )
@@ -103,6 +104,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
             processService.startProcess(
                 "form-one-task-process",
                 document.id().toString(),
+                caseDefinitionId,
                 mapOf()
             )
         }

@@ -15,10 +15,10 @@
  */
 
 dependencies {
-    api project(':inbox')
+    api project(':backend:inbox')
 
-    implementation project(':contract')
-    implementation project(':logging')
+    implementation project(':backend:contract')
+    implementation project(':backend:logging')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"

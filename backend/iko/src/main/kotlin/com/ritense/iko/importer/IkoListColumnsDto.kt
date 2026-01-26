@@ -19,6 +19,6 @@ package com.ritense.iko.importer
 import com.ritense.search.importer.ListColumnDto
 
 data class IkoListColumnsDto(
-    val ikoDataAggregateKey: String,
+    val ikoViewKey: String,
     val ikoListColumns: List<ListColumnDto>,
 )

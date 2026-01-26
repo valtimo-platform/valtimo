@@ -36,5 +36,8 @@
     <include file="changelog/20250711-add-iko-list-column-and-search-field.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251021-rename-property-endpoint-path.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251024-remove-cascade-from-fk.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251128-rename-iko.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260106-migrate-tab-properties.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260113-migrate-iko-config.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

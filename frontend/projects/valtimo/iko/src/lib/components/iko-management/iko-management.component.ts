@@ -28,7 +28,7 @@ import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, switchMap, take, tap} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {IKO_MANAGEMENT_TABS} from '../../constants';
-import {IkoDataAggregateResponse} from '../../models';
+import {IkoViewResponse} from '../../models';
 import {IkoManagementApiService} from '../../services';
 import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-modal.component';
 import {TranslateModule} from '@ngx-translate/core';
@@ -59,19 +59,17 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     filter(key => !!key)
   );
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  public readonly ikoDataAggregates$ = combineLatest([this.apiKey$, this._refresh$]).pipe(
+  public readonly ikoViews$ = combineLatest([this.apiKey$, this._refresh$]).pipe(
     tap(() => this.$loading.set(true)),
     switchMap(([apiKey]) =>
-      this.ikoManagementApiService
-        .getManagementIkoDataAggregates(undefined, undefined, apiKey)
-        .pipe(
-          map(dataAggregatePage => dataAggregatePage.content),
-          tap(content => {
-            const keys = content?.map(item => item.key) ?? [];
-            this.usedKeys$.next(keys);
-            this.$loading.set(false);
-          })
-        )
+      this.ikoManagementApiService.getManagementIkoViews(undefined, undefined, apiKey).pipe(
+        map(ikoViewPage => ikoViewPage.content),
+        tap(content => {
+          const keys = content?.map(item => item.key) ?? [];
+          this.usedKeys$.next(keys);
+          this.$loading.set(false);
+        })
+      )
     )
   );
 
@@ -120,7 +118,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     this.pageTitleService.enableReset();
   }
 
-  public onRowClicked(event: IkoDataAggregateResponse): void {
+  public onRowClicked(event: IkoViewResponse): void {
     this.apiKey$.pipe(take(1)).subscribe(apiKey => {
       this.router.navigate(['iko-management', apiKey, event.key, IKO_MANAGEMENT_TABS[0].key]);
     });
@@ -136,32 +134,32 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     this.$uploadModalOpen.set(true);
   }
 
-  public onEditClick(item: IkoDataAggregateResponse): void {
+  public onEditClick(item: IkoViewResponse): void {
     this.$modalMode.set('edit');
     this.$prefillData.set(item);
     this.$viewModalOpen.set(true);
   }
 
-  public onDeleteClick(item: IkoDataAggregateResponse): void {
+  public onDeleteClick(item: IkoViewResponse): void {
     this.$keyToDelete.set(item.key);
     this.showDeleteModal$.next(true);
   }
 
   public onDeleteConfirm(key: string): void {
-    this.ikoManagementApiService.deleteIkoDataAggregate(key).subscribe(() => {
+    this.ikoManagementApiService.deleteIkoView(key).subscribe(() => {
       this.menuService.reload();
       this._refresh$.next(null);
     });
   }
 
-  public onViewModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
+  public onViewModalClose(item: IkoViewResponse | null, ikoRepositoryConfigKey: string) {
     this.$viewModalOpen.set(false);
     this.$prefillData.set(null);
     if (!item) return;
 
     if (this.$modalMode() === 'edit') {
       this.ikoManagementApiService
-        .updateIkoDataAggregate(item.key, {
+        .updateIkoView(item.key, {
           ...item,
           ikoRepositoryConfigKey,
         })
@@ -174,7 +172,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     }
 
     this.ikoManagementApiService
-      .createIkoDataAggregate(item.key, {...item, ikoRepositoryConfigKey})
+      .createIkoView(item.key, {...item, ikoRepositoryConfigKey})
       .pipe(take(1))
       .subscribe(() => {
         this.menuService.reload();

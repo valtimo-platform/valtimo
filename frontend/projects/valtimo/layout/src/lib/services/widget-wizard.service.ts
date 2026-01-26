@@ -36,6 +36,8 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
 export class WidgetWizardService {
   public readonly $currentStepIndex: WritableSignal<number> = signal(0);
 
+  public readonly $currentStep: WritableSignal<WidgetWizardStep> = signal(WidgetWizardStep.TYPE);
+
   public readonly $selectedWidget: WritableSignal<WidgetTypeSelection | null> = signal(null);
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
@@ -62,6 +64,8 @@ export class WidgetWizardService {
 
   public readonly $widgetConditionsValid: WritableSignal<boolean> = signal(false);
 
+  public readonly $widgetFiltersValid: WritableSignal<boolean> = signal(false);
+
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
   public readonly $disableActionButton: WritableSignal<boolean> = signal(false);
@@ -72,6 +76,7 @@ export class WidgetWizardService {
     WidgetWizardStep.DENSITY,
     WidgetWizardStep.STYLE,
     WidgetWizardStep.CONTENT,
+    WidgetWizardStep.FILTERS,
     WidgetWizardStep.DISPLAY_CONDITIONS,
   ]);
 
@@ -83,7 +88,11 @@ export class WidgetWizardService {
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
-      [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
+      [WidgetWizardStep.CONTENT]:
+        !!this.$widgetContent() &&
+        this.$widgetContentValid() &&
+        (!!this.$widgetTitle() || this.$disableTitleInput()),
+      [WidgetWizardStep.FILTERS]: this.$widgetFiltersValid(),
       [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
@@ -100,27 +109,38 @@ export class WidgetWizardService {
           : [WidgetType.COLLECTION, WidgetType.FIELDS, WidgetType.TABLE].includes(selectedType);
       },
     },
+    [WidgetWizardStep.FILTERS]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => this.$selectedWidget()?.type === WidgetType.INTERACTIVE_TABLE,
+    },
   }));
 
   public readonly $widgetWizardStepProperties: Signal<
     Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
-  > = computed(() =>
-    this.$widgetWizardSteps().reduce(
-      (acc, curr, index, steps) => ({
+  > = computed(() => {
+    const enabledConditions = this.$widgetWizardStepEnableCondition();
+    const completeConditions = this._$stepCompleteCondition();
+    const isEditMode = this.$editMode();
+    const steps = this.$widgetWizardSteps().filter(
+      step => enabledConditions[step]?.condition() ?? true
+    );
+
+    return steps.reduce(
+      (acc, step, index) => ({
         ...acc,
-        [curr]: {
+        [step]: {
           disabled:
-            (this.$editMode() && index === 0) ||
-            (!this._$stepCompleteCondition()[steps[index - 1]] && index > 0),
-          complete: this._$stepCompleteCondition()[curr] || this.$editMode(),
+            (isEditMode && index === 0) ||
+            (!isEditMode && index > 0 && !completeConditions[steps[index - 1]]),
+          complete: !!completeConditions[step] || isEditMode,
         },
       }),
       {} as Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
-    )
-  );
+    );
+  });
 
   public readonly $nextButtonDisabled = computed(
-    () => !this._$stepCompleteCondition()[this.$widgetWizardSteps()[this.$currentStepIndex()]]
+    () => !this._$stepCompleteCondition()[this.$currentStep()]
   );
 
   private _defaultWidth!: WidgetWidth | null;
@@ -149,6 +169,7 @@ export class WidgetWizardService {
   public resetWizard(): void {
     setTimeout(() => {
       this.$currentStepIndex.set(0);
+      this.$currentStep.set(WidgetWizardStep.TYPE);
       this.$selectedWidget.set(null);
       this.$widgetWidth.set(this._defaultWidth || null);
       this.$widgetStyle.set(null);
@@ -158,9 +179,11 @@ export class WidgetWizardService {
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
       this.$widgetDisplayConditions.set(null);
+      this.$widgetFiltersValid.set(false);
       this.$editMode.set(false);
       this.$widgetDensity.set(null);
       this.$disableActionButton.set(false);
+      this.$disableTitleInput.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
@@ -171,6 +194,7 @@ export class WidgetWizardService {
       WidgetWizardStep.DENSITY,
       WidgetWizardStep.STYLE,
       WidgetWizardStep.CONTENT,
+      WidgetWizardStep.FILTERS,
       WidgetWizardStep.DISPLAY_CONDITIONS,
     ]);
   }

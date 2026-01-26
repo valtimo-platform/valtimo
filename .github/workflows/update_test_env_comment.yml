@@ -1,0 +1,99 @@
+name: "Update PR test env comment"
+run-name: "Update PR test env comment (${{ github.event.client_payload.data.test_env_name }}: ${{github.event.client_payload.state}})"
+
+on:
+  repository_dispatch:
+    types:
+      - waiting_for_images
+      - test_env_cannot_start
+      - test_env_started
+      - test_env_is_running
+      - test_env_is_crash_looping
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  PAYLOAD_FILE: /tmp/client_payload.json
+
+jobs:
+  update_test_env_comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare payload and schema
+        id: prepare
+        run: echo '${{ toJson(github.event.client_payload) }}' > ${{env.PAYLOAD_FILE}}
+
+      - name: Validate client payload
+        uses: dsanders11/json-schema-validate-action@v1.4.0
+        with:
+          schema: .github/test_env_update_schema.json
+          files: ${{env.PAYLOAD_FILE}}
+
+      - name: Determine comment message
+        id: message
+        run: |
+          set -euo pipefail
+          payload=${{env.PAYLOAD_FILE}}
+          comment_id=$(jq -r '.data.test_env_comment_id' "$payload")
+          state=$(jq -r '.state' "$payload")
+          template_dir=".github/test_env_comments"
+          template_file="${template_dir}/${state}.md"
+
+          export TEST_ENV_NAME=$(jq -r '.data.test_env_name' "$payload")
+          export COMMIT_SHA=$(jq -r '.data.commit_sha' "$payload")
+          export FRONTEND_CONTENTS_SHA=$(jq -r '.data.frontend_contents_sha' "$payload")
+          export BACKEND_CONTENTS_SHA=$(jq -r '.data.backend_contents_sha' "$payload")
+
+          case "$state" in
+            waiting_for_images)
+              ;;
+            test_env_started|test_env_is_running|test_env_is_crash_looping)
+              export FRONTEND_IMAGE_TAG=$(jq -r '.data.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.data.backend_image_tag' "$payload")
+              export TEST_ENV_URL=$(jq -r '.data.test_env_url' "$payload")
+              export METRICS_URL=$(jq -r '.data.grafana_backend_pod_metrics_url' "$payload")
+              export LOGS_URL=$(jq -r '.data.grafana_backend_pod_logs_url' "$payload")
+              ;;
+            test_env_cannot_start)
+              export FRONTEND_IMAGE_TAG=$(jq -r '.data.frontend_image_tag' "$payload")
+              export BACKEND_IMAGE_TAG=$(jq -r '.data.backend_image_tag' "$payload")
+              export ERROR_MESSAGE=$(jq -r '.data.error_message' "$payload")
+              ;;
+            *)
+              echo "Unknown state: $state" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ ! -f "$template_file" ]; then
+            echo "Template not found for state: $state at $template_file" >&2
+            exit 1
+          fi
+
+          message_body=$(cat "$template_file" | envsubst)
+
+          {
+            echo 'message_body<<EOF'
+            printf '%s\n' "$message_body"
+            echo 'EOF'
+            printf 'comment_id=%s\n' "$comment_id"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate token as GitHub App
+        id: token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
+          private_key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
+      - name: Update PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.message.outputs.comment_id }}
+          token: ${{ steps.token.outputs.token }}
+          body: ${{ steps.message.outputs.message_body }}
+          edit-mode: replace

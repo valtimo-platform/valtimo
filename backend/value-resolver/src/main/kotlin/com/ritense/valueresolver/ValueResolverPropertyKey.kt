@@ -24,12 +24,13 @@ class ValueResolverPropertyKey {
         const val VARIABLE_SCOPE = "variableScope"
 
         // IKO
-        const val IKO_DATA_AGGREGATE_KEY = "ikoDataAggregateKey"
-        const val IKO_DATA_REQUEST_KEY = "ikoDataRequestKey"
+        const val IKO_VIEW_KEY = "ikoViewKey"
+        const val IKO_ADP = "adp"
 
         // Other
         const val ID = "id"
         const val PAGEABLE = "pageable"
+        const val NO_PAGE_SIZE = "noPageSize"
         const val TAB_KEY = "tabKey"
         const val WIDGET_KEY = "widgetKey"
 

@@ -39,14 +39,19 @@ import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
 import com.ritense.zakenapi.domain.Betalingsindicatie
+import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
+import com.ritense.zakenapi.domain.NotitieStatus
+import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.Opschorting
+import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakRequest
+import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.RelevanteZaak
 import com.ritense.zakenapi.domain.SearchParameter
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
@@ -55,6 +60,9 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
+import com.ritense.zakenapi.domain.ZaakNotitie
+import com.ritense.zakenapi.domain.ZaakNotitieLink
+import com.ritense.zakenapi.domain.ZaakNotitieLinkId
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -73,23 +81,25 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit.DAYS
-import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.data.domain.Pageable
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit.DAYS
+import java.util.UUID
 
 @Plugin(
     key = ZakenApiPlugin.PLUGIN_KEY,
@@ -107,6 +117,7 @@ class ZakenApiPlugin(
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
+    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -114,6 +125,22 @@ class ZakenApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: ZakenApiAuthentication
+
+    @PluginProperty(
+        key = "noteEventListenerEnabled",
+        title = "When enabled acts on Note events resulting in create, update or delete of ZaakNotitie",
+        required = false,
+        secret = false
+    )
+    var noteEventListenerEnabled: Boolean = false
+
+    @PluginProperty(
+        key = "noteSubject",
+        title = "Contains the fixed value for 'onderwerp' of the ZaakNotitie",
+        required = false,
+        secret = false
+    )
+    var noteSubject: String = "Note created by Valtimo GZAC"
 
     @PluginAction(
         key = "link-document-to-zaak",
@@ -327,6 +354,7 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty description: String? = null,
         @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty startDate: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
         @PluginActionProperty publicationDate: String? = null,
@@ -347,6 +375,7 @@ class ZakenApiPlugin(
             documentId = documentId,
             description = description,
             explanation = explanation,
+            startDate = startDate?.let { LocalDate.parse(it) },
             plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
             finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
             publicationDate = publicationDate?.let { LocalDate.parse(it) },
@@ -365,6 +394,7 @@ class ZakenApiPlugin(
         documentId: UUID,
         description: String? = null,
         explanation: String? = null,
+        startDate: LocalDate? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
         publicationDate: LocalDate? = null,
@@ -395,6 +425,7 @@ class ZakenApiPlugin(
                 request = PatchZaakRequest(
                     omschrijving = description,
                     toelichting = explanation,
+                    startdatum = startDate,
                     einddatumGepland = plannedEndDate,
                     uiterlijkeEinddatumAfdoening = finalDeliveryDate,
                     publicatiedatum = publicationDate,
@@ -1318,6 +1349,198 @@ class ZakenApiPlugin(
         logger.info { "Deleting zaak for zaak URL '$zaakUrl'" }
         client.deleteZaak(authenticationPluginConfiguration, url, zaakUrl)
     }
+
+    @PluginAction(
+        key = "create-zaaknotitie",
+        title = "Create zaaknotitie",
+        description = "Creates a new Zaaknotitie for the current zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun createZaakNotitie(
+        execution: DelegateExecution,
+        @PluginActionProperty onderwerp: String,
+        @PluginActionProperty tekst: String,
+        @PluginActionProperty aangemaaktDoor: String? = null,
+        @PluginActionProperty notitieType: String? = null,
+        @PluginActionProperty status: String? = null,
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        createZaakNotitie(
+            onderwerp = onderwerp,
+            tekst = tekst,
+            zaakUrl = zaakUrl,
+            aangemaaktDoor = aangemaaktDoor,
+            notitieType = notitieTypeFrom(notitieType),
+            status = notitieStatusFrom(status)
+        ).also { zaakNotitie ->
+            zaakNotitieLinkRepository.save(ZaakNotitieLink(
+                zaakNotitieLinkId = ZaakNotitieLinkId.newId(UUID.randomUUID()),
+                zaakNotitieUrl = zaakNotitie.url,
+                documentId = documentId
+            )).also {
+                logger.debug { "Created ZaakNotitieLink for " +
+                    "zaakNotitieUrl: ${zaakNotitie.url} and"
+                    "documentId: $documentId"
+                }
+            }
+        }
+    }
+
+    fun createZaakNotitie(
+        onderwerp: String,
+        tekst: String,
+        zaakUrl: URI,
+        aangemaaktDoor: String? = null,
+        notitieType: NotitieType? = null,
+        status: NotitieStatus? = null
+    ): ZaakNotitie {
+        logger.info {
+            "Creating Zaaknotitie for Zaak with URL '$zaakUrl'"
+        }
+        return client.createZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            request = CreateZaakNotitieRequest(
+                onderwerp = onderwerp,
+                tekst = tekst,
+                gerelateerdAan = zaakUrl,
+                aangemaaktDoor = aangemaaktDoor,
+                notitieType = notitieType,
+                status = status
+            )
+        ).also {
+            logger.info { "Created Zaaknotitie with URL '${it.url}' for Zaak with URL '$zaakUrl'" }
+        }
+    }
+
+    fun updateZaakNotitie(
+        zaakNotitieUrl: URI,
+        onderwerp: String,
+        tekst: String,
+        zaakUrl: URI,
+        aangemaaktDoor: String? = null,
+        notitieType: NotitieType? = null,
+        status: NotitieStatus? = null
+    ): ZaakNotitie {
+        logger.info {
+            "Updating Zaaknotitie with URL '$zaakNotitieUrl' for Zaak with URL '$zaakUrl'"
+        }
+        return client.updateZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            notitieUrl = zaakNotitieUrl,
+            request = PutZaakNotitieRequest(
+                onderwerp = onderwerp,
+                tekst = tekst,
+                gerelateerdAan = zaakUrl,
+                aangemaaktDoor = aangemaaktDoor,
+                notitieType = notitieType,
+                status = status
+            )
+        ).also {
+            logger.info { "Updated Zaaknotitie with URL '$zaakNotitieUrl'" }
+        }
+    }
+
+    @PluginAction(
+        key = "patch-zaaknotitie",
+        title = "Patch zaaknotitie",
+        description = "Partially updates an existing Zaaknotitie",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun patchZaakNotitie(
+        execution: DelegateExecution,
+        @PluginActionProperty zaakNotitieUrl: URI,
+        @PluginActionProperty onderwerp: String? = null,
+        @PluginActionProperty tekst: String? = null,
+        @PluginActionProperty aangemaaktDoor: String? = null,
+        @PluginActionProperty notitieType: String? = null,
+        @PluginActionProperty status: String? = null,
+    ) {
+        patchZaakNotitie(
+            zaakNotitieUrl = zaakNotitieUrl,
+            onderwerp = onderwerp,
+            tekst = tekst,
+            aangemaaktDoor = aangemaaktDoor,
+            notitieType = notitieTypeFrom(notitieType),
+            status = notitieStatusFrom(status)
+        )
+    }
+
+    fun patchZaakNotitie(
+        zaakNotitieUrl: URI,
+        onderwerp: String? = null,
+        tekst: String? = null,
+        aangemaaktDoor: String? = null,
+        notitieType: NotitieType? = null,
+        status: NotitieStatus? = null
+    ): ZaakNotitie {
+        logger.info {
+            "Patching Zaaknotitie with URL '$zaakNotitieUrl'"
+        }
+        return client.patchZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            notitieUrl = zaakNotitieUrl,
+            request = PatchZaakNotitieRequest(
+                onderwerp = onderwerp,
+                tekst = tekst,
+                aangemaaktDoor = aangemaaktDoor,
+                notitieType = notitieType,
+                status = status
+            )
+        ).also {
+            logger.info { "Patched Zaaknotitie with URL '$zaakNotitieUrl'" }
+        }
+    }
+
+    fun deleteZaakNotitie(zaakNotitieUrl: URI) {
+        logger.debug { "Deleting Zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.deleteZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            notitieUrl = zaakNotitieUrl
+        ).also {
+            logger.info { "Deleted Zaaknotitie with URL '$zaakNotitieUrl'" }
+        }
+    }
+
+    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
+        logger.debug { "Fetching Zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.getZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakNotitieUrl = zaakNotitieUrl
+        )
+    }
+
+    fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
+        logger.debug { "Fetching Zaaknotities for Zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakNotities(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                zaakUrl = zaakUrl,
+                page = page
+            )
+        }
+    }
+
+    private fun notitieTypeFrom(value: String?): NotitieType? =
+        if (value.isNullOrBlank()) {
+            null
+        } else {
+            NotitieType.entries.single { it.key == value }
+        }
+
+    private fun notitieStatusFrom(value: String?): NotitieStatus? =
+        if (value.isNullOrBlank()) {
+            null
+        } else {
+            NotitieStatus.entries.single { it.key == value }
+        }
 
     private fun calculateUiterlijkeEinddatumAfdoening(zaaktypeUrl: URI, startdatum: LocalDate): LocalDate? {
         return getCatalogiApiPlugin(zaaktypeUrl)
