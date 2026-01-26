@@ -99,10 +99,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
     if (this.taskInstanceId$.getValue() === value.id) {
       this.task$.next(value);
-      this.page$.next({
-        title: value.name,
-        subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value.created}`,
-      });
       return;
     }
     this.loadTaskDetails(value);
@@ -133,7 +129,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly formName$ = new BehaviorSubject<string | null>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  public readonly page$ = new BehaviorSubject<any>(null);
   public readonly submission$: Observable<any>;
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string | null>(null);
@@ -281,10 +276,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
-    this.page$.next({
-      title: task.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
-    });
     this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
