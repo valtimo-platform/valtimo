@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Transactional
-class DocumentRetentionPeriodExpiredWorkerService(
+class DocumentRetentionPeriodExpiredWorker(
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,

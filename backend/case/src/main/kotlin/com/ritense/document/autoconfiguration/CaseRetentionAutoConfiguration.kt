@@ -17,7 +17,7 @@
 package com.ritense.document.autoconfiguration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.case_.service.DocumentRetentionPeriodExpiredWorkerService
+import com.ritense.case_.service.DocumentRetentionPeriodExpiredWorker
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.outbox.OutboxService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -28,13 +28,13 @@ import org.springframework.context.annotation.Bean
 class CaseRetentionAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(DocumentRetentionPeriodExpiredWorkerService::class)
+    @ConditionalOnMissingBean(DocumentRetentionPeriodExpiredWorker::class)
     fun documentRetentionPeriodWorker(
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         outboxService: OutboxService,
         objectMapper: ObjectMapper
-        ): DocumentRetentionPeriodExpiredWorkerService {
-        return DocumentRetentionPeriodExpiredWorkerService(
+        ): DocumentRetentionPeriodExpiredWorker {
+        return DocumentRetentionPeriodExpiredWorker(
             jsonSchemaDocumentService,
             outboxService,
             objectMapper
