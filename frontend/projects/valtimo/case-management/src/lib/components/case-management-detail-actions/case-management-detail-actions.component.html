@@ -74,7 +74,7 @@
         {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
       </cds-tag>
 
-      <cds-tag *ngIf="item?.active" class="cds-tag--no-margin" type="high-contrast">
+      <cds-tag *ngIf="item?.active" data-test-id="globally-active-case-version" class="cds-tag--no-margin" type="high-contrast">
         {{ 'caseManagement.globallyActive' | translate }}
       </cds-tag>
     </div>
