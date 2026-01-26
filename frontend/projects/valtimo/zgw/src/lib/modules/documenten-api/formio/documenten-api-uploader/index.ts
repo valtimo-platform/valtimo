@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+export * from './documenten-api-uploader-edit-form';
+export * from './documenten-api-uploader.component';
+export * from './documenten-api-uploader.formio';

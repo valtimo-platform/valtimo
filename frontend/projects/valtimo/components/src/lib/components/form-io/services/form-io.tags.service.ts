@@ -14,7 +14,26 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+import {Injectable, Injector} from '@angular/core';
+import {registerCustomTag} from '../../../modules';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class FormIoTagsService {
+  private _tagsToRegister: string[] = [];
+
+  public get tagsToRegister(): string[] {
+    return this._tagsToRegister;
+  }
+
+  public markTagForRegistration(tag: string): void {
+    this._tagsToRegister = [...this._tagsToRegister, tag];
+  }
+
+  public reregisterTags(injector: Injector): void {
+    this.tagsToRegister.forEach(tag => {
+      registerCustomTag(tag, injector);
+    });
+  }
+}

@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+import {UrlUtils, ValtimoConfig} from '@valtimo/shared';
+
+const getFormioAppConfig = (config: ValtimoConfig) => {
+  const origin = window.location.origin;
+
+  return {
+    appUrl: origin,
+    apiUrl: UrlUtils.formatUrlTrailingSlash(
+      `${window.location.origin}${config.valtimoApi.endpointUri}`,
+      false
+    ),
+    icons: 'fontawesome',
+    formOnly: false,
+  };
+};
+
+export {getFormioAppConfig};

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+export * from './form-io-translation.service';
+export * from './form-io.tags.service';
+export * from './form-io-dom.service';
+export * from './form-io-local-storage.service';
+export * from './form-io-state.service';

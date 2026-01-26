@@ -23,6 +23,7 @@ export * from './lib/constants';
 export * from './lib/pipes';
 export * from './lib/services';
 export * from './lib/guards';
+export * from './lib/modules';
 export * from './lib/utils';
 
 /*
@@ -109,6 +110,24 @@ export * from './lib/components/searchable-dropdown/searchable-dropdown.componen
 export * from './lib/components/dropzone/dropzone.module';
 export * from './lib/components/dropzone/dropzone.component';
 
+export * from './lib/components/form-io/components/form-io-uploader/form-io-uploader.component';
+export * from './lib/components/form-io/components/form-io-uploader/form-io-uploader.formio';
+
+export * from './lib/components/form-io/components/form-io-current-user/form-io-current-user.component';
+export * from './lib/components/form-io/components/form-io-current-user/form-io-current-user.formio';
+
+export * from './lib/components/form-io/components/form-io-iban/iban.component';
+export * from './lib/components/form-io/components/form-io-iban/iban.formio';
+
+export * from './lib/components/form-io/components/form-io-currency/currency.component';
+export * from './lib/components/form-io/components/form-io-currency/currency.formio';
+
+export * from './lib/components/form-io/components/form-io-resource-selector/form-io-resource-selector.formio';
+
+export * from './lib/components/form-io/services/form-io-state.service';
+export * from './lib/components/form-io/services/form-io-dom.service';
+export * from './lib/components/form-io/services/form-io.tags.service';
+
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
 
@@ -142,6 +161,12 @@ export * from './lib/components/editor/editor.component';
 export * from './lib/components/status-selector/status-selector.component';
 // value path selector
 export * from './lib/components/value-path-selector/value-path-selector.component';
+// formio value resolver selector
+export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.formio';
+export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.component';
+// formio dummy
+export * from './lib/components/form-io/components/form-io-dummy/dummy.component';
+export * from './lib/components/form-io/components/form-io-dummy/dummy.formio';
 // Table component
 export * from './lib/components/table/table.module';
 export * from './lib/components/table/table.component';

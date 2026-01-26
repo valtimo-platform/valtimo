@@ -14,15 +14,13 @@
   ~ limitations under the License.
   -->
 
-<div
-  class="formio-carbon"
-  cdsLayer="1"
-  *ngIf="(editFormModified$ | async) && form$ | async as formDefinition"
->
-  <form-builder
-    [form]="formDefinition"
-    [options]="formioOptions$ | async"
-    [rebuild]="triggerRebuild"
-    (change)="onChange($event)"
-  ></form-builder>
-</div>
+<valtimo-value-path-selector
+  [caseDefinitionKey]="caseDefinitionKey$ | async"
+  [caseDefinitionVersionTag]="caseDefinitionVersionTag$ | async"
+  [appendInline]="true"
+  [defaultValue]="defaultValue$ | async"
+  [showCaseDefinitionSelector]="true"
+  notation="slashes"
+  [prefixes]="[ValuePathSelectorPrefix.DOC]"
+  (valueChangeEvent)="onValueChange($event)"
+></valtimo-value-path-selector>

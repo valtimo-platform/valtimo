@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-export * from './components';
-export * from './models';
-export * from './formio';
-export * from './services';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {FormioCustomComponent} from '../../../../modules';
+
+@Component({
+  selector: 'valtimo-dummy',
+  template: '',
+  standalone: false,
+})
+export class FormioDummyComponent implements FormioCustomComponent<any> {
+  @Input() public value: string;
+  @Input() public disabled = false;
+  @Input() public required = false;
+  @Output() public valueChange = new EventEmitter<any>();
+}
