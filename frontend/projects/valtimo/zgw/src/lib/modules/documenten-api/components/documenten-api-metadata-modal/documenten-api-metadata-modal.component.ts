@@ -52,6 +52,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {
+  FormIoStateService,
   InputLabelModule,
   InputModule,
   ModalService,
@@ -398,7 +399,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly documentId$ = this.route.params.pipe(map(params => params?.documentId ?? null));
+  public readonly documentId$ = combineLatest([
+    this.formioStateService.documentId$,
+    this.route.params.pipe(map(params => params?.documentId ?? null)),
+  ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentId$.pipe(startWith(null)),
@@ -461,7 +465,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly modalService: ModalService,
     private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly formioStateService: FormIoStateService
   ) {}
 
   public ngOnInit(): void {
