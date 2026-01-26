@@ -26,6 +26,7 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import java.lang.reflect.Field
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -49,14 +50,36 @@ abstract class PermissionCondition(
 
     fun <T> createDatabaseObjectPath(field: String, root: Root<T>): Path<Any>? {
         var path: Path<Any>? = null
-        field.split('.').forEach {
+        var currentClass: Class<*>? = root.javaType
+
+        field.split('.').forEach { segment ->
+            val resolvedField = currentClass?.let { findDeclaredField(it, segment) }
+            val resolvedSegment = resolvedField?.name ?: segment
+
             path = if (path == null) {
-                root.get(it)
+                root.get(resolvedSegment)
             } else {
-                path!!.get(it)
+                path!!.get(resolvedSegment)
             }
+
+            currentClass = resolvedField?.type
         }
 
         return path
+    }
+
+    private fun findDeclaredField(clazz: Class<*>, fieldName: String): Field? {
+        var classToSearch: Class<*>? = clazz
+        while (classToSearch != null) {
+            val match = classToSearch.declaredFields.firstOrNull { declared ->
+                declared.name == fieldName ||
+                    declared.getAnnotation(AuthorizationFieldAlias::class.java)?.names?.contains(fieldName) == true
+            }
+            if (match != null) {
+                return match
+            }
+            classToSearch = classToSearch.superclass
+        }
+        return null
     }
 }
