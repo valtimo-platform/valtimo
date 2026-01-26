@@ -16,6 +16,7 @@
 package com.ritense.document.domain
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.ritense.authorization.permission.condition.AuthorizationFieldAlias
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -36,10 +37,12 @@ class JsonSchemaDocumentDefinitionBlueprintId(
     @Column(name = "blueprint_type", length = 40, nullable = false)
     var blueprintType: JsonSchemaDocumentDefinitionBlueprintType,
     @Column(name = "blueprint_key", length = 256, nullable = false)
+    @field:AuthorizationFieldAlias("key")
     var blueprintKey: String,
     @Convert(converter = SemverConverter::class)
     @Column(name = "blueprint_version_tag", nullable = false)
     @JsonSerialize(using = SemverSerializer::class)
+    @field:AuthorizationFieldAlias("versionTag")
     var blueprintVersionTag: Semver,
 ) : Serializable {
     init {
