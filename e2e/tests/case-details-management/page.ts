@@ -30,7 +30,7 @@ export class CaseDetailsManagementPage {
   }
 
   get setActiveVersionButton() {
-    return this.page.getByTestId('caseSetActiveVersionButton');
+    return this.page.getByRole('menuitem', { name: 'Set as active version' });
   }
 
   get seeAllVersionsButton() {
@@ -56,7 +56,10 @@ export class CaseDetailsManagementPage {
 
   async switchCaseVersionViaDropdown(caseVersion: string) {
     await this.versionSelectDropdown.click();
-    await this.page.getByTestId(`caseVersion${caseVersion}`).click();
+    await this.page
+        .getByRole('listbox')
+        .getByTestId(`caseVersion${caseVersion}`)
+        .click();
   }
 
   async switchCaseVersionViaList(caseVersion: string) {
@@ -76,9 +79,18 @@ export class CaseDetailsManagementPage {
   }
 
   async makeVersionGlobal(caseVersion: string) {
-    await this.switchCaseVersionViaDropdown('1.0.0');
+    await this.switchCaseVersionViaDropdown(caseVersion);
+
     await this.moreButton.click();
-    await this.setActiveVersionButton.click();
+
+    const item = this.setActiveVersionButton;
+    await expect(item).toBeVisible();
+
+    if (await item.isDisabled()) {
+      return;
+    }
+
+    await item.click();
     await this.confirmationModalContinueButton.click();
     await this.confirmationModalSetActiveButton.click();
   }

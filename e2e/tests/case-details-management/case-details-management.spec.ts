@@ -32,7 +32,7 @@ test.describe('Case management', () => {
       await caseDetailsManagementPage.switchCaseVersionViaDropdown('1.0.0');
 
       // Assert
-      expect(page).toHaveURL('**/1.0.0/**');
+      expect(page).toHaveURL('/case-management/case/bezwaar/version/1.0.0/general');
     });
 
     test('Switch version via list', async () => {
@@ -40,7 +40,7 @@ test.describe('Case management', () => {
       await caseDetailsManagementPage.switchCaseVersionViaList('1.0.0');
 
       // Assert
-      expect(page).toHaveURL('**/1.0.0/**');
+      expect(page).toHaveURL('/case-management/case/bezwaar/version/1.0.0/general');
     });
 
     test('Export case definition', async () => {
@@ -52,15 +52,13 @@ test.describe('Case management', () => {
       expect(download.suggestedFilename()).toContain('1.0.0');
     });
 
-    // To fix
     test('Set active version', async () => {
       //Act
       await caseDetailsManagementPage.makeVersionGlobal('1.0.0');
 
       //Assert
-      expect(caseDetailsManagementPage.versionSelectDropdown.locator('button')).toContain(
-        'Globally active'
-      );
-    });
+      await expect(
+          caseDetailsManagementPage.versionSelectDropdown.locator('cds-tag', { hasText: 'Globally active' })
+      ).toBeVisible();    });
   });
 });
