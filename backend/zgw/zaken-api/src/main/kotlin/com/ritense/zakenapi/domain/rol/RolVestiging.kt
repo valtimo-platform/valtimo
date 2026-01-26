@@ -39,10 +39,10 @@ data class RolVestiging(
     init {
         require(
             !kvkNummer.isNullOrBlank() ||
-            !handelsnaam.isNullOrEmpty() ||
+            ( !handelsnaam.isNullOrEmpty() && handelsnaam.any { !it.isBlank() } ) ||
             !vestigingsNummer.isNullOrBlank()
         ) {
-            "Either kvkNummer, handelsnaam or vestigingsNummer should be provided!"
+            "Either vestigingsNummer, handelsnaam or kvkNummer should be provided!"
         }
     }
 }
