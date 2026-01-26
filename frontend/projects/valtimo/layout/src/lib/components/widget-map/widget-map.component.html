@@ -34,6 +34,13 @@
     ></valtimo-widget-action-button>
   </section>
 
+  <div
+    class="widget-map__render"
+    #widgetMap
+    [hidden]="obs?.isEmptyWidgetData || obs.widgetData === null"
+    [attr.data-test-id]="TEST_IDS.WIDGET_MAP_RENDER"
+  ></div>
+
   @if (obs?.isEmptyWidgetData) {
     <valtimo-no-results
       [collapseVertically]="true"
@@ -41,7 +48,9 @@
       [smallPadding]="true"
       [attr.data-test-id]="TEST_IDS.WIDGET_MAP_NO_RESULTS"
     ></valtimo-no-results>
-  } @else {
-    <div class="widget-map__render" #widgetMap [attr.data-test-id]="TEST_IDS.WIDGET_MAP_RENDER"></div>
+  } @else if (obs.widgetData === null) {
+    <div class="widget-map__skeleton">
+      <cds-skeleton-placeholder></cds-skeleton-placeholder>
+    </div>
   }
 </ng-container>

@@ -15,11 +15,11 @@
  */
 
 dependencies {
-    implementation project(':case')
-    implementation project(':contract')
-    implementation project(':core')
-    implementation project(':process-document')
-    implementation project(':resource')
+    implementation project(':backend:case')
+    implementation project(':backend:contract')
+    implementation project(':backend:core')
+    implementation project(':backend:process-document')
+    implementation project(':backend:resource')
 
     testImplementation "org.springframework.security:spring-security-test"
 }

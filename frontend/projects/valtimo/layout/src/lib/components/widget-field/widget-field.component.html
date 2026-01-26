@@ -62,7 +62,7 @@
       }"
       [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_CONTAINER"
     >
-      @if (obs.noVisibleFields) {
+      @if (obs.widgetData && obs.noVisibleFields) {
         <valtimo-no-results
           [collapseVertically]="true"
           [description]="'widgets.emptyFields' | translate"
@@ -87,11 +87,15 @@
                   {{ property?.title }}</label
                 >
 
-                <div [attr.title]="property?.value" class="valtimo-widget-field__field-value" data-test-id="widget-field-value-{{$parent.index}}-{{$index}}">
-                  @if (property?.isRawValue) {
-                    <div [innerHTML]="property?.value" data-test-id="widget-field-raw-value-{{$parent.index}}-{{$index}}"></div>
+                <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
+                  @if (!obs.widgetData) {
+                    <cds-skeleton-text [lines]="1" [maxLineWidth]="100"></cds-skeleton-text>
                   } @else {
-                    {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                    @if (property?.isRawValue) {
+                      <div [innerHTML]="property?.value" data-test-id="widget-field-raw-value-{{$parent.index}}-{{$index}}"></div>
+                    } @else {
+                      {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                    }
                   }
                 </div>
               </div>

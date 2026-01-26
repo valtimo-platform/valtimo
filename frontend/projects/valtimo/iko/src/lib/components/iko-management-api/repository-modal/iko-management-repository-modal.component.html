@@ -46,7 +46,7 @@
       *ngIf="enableIkoType"
       [invalid]="getControlInvalid('type')"
       formControlName="type"
-      [disabled]="true"
+      [disabled]="!enableIkoType"
       [items]="ikoRepositoryTypeSelectItems$ | async"
       [title]="'ikoManagement.typeTitle' | translate"
       [appendInline]="false"

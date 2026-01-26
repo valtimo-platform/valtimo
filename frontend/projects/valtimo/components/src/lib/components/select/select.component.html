@@ -58,6 +58,8 @@
           : vars.placeholderText
     "
     [type]="multiple ? 'multi' : 'single'"
+    [warn]="warn"
+    [warnText]="warnText"
     (clear)="clear()"
     (selected)="setSelected($event)"
     [attr.data-test-id]="TEST_IDS.V_SELECT_CONTAINER_COMBO_BOX"

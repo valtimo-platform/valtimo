@@ -15,7 +15,7 @@
  */
 
 dependencies {
-    api project(':plugin')
+    api project(':backend:plugin')
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 

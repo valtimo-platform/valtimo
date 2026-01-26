@@ -44,27 +44,38 @@
     ></valtimo-widget-action-button>
   </section>
 
-  @if (obs.widgetData && obs.fields && obs.widgetData.length) {
+  @if (obs.fields && (obs.widgetData === null || obs.widgetData.length > 0)) {
     <section class="valtimo-widget-table__content" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_CONTENT">
       <valtimo-carbon-list
         [header]="false"
         [hideToolbar]="true"
         [fields]="obs.fields"
-        [items]="obs.widgetData"
+        [items]="obs.widgetData || []"
+        [loading]="obs.widgetData === null"
+        [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
         [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_LIST"
       >
       </valtimo-carbon-list>
 
-      <cds-pagination-nav
-        *ngIf="$paginationModel() && $showPagination()"
-        class="valtimo-widget-table__pagination"
-        [model]="$paginationModel()"
-        (selectPage)="onSelectPage($event)"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_PAGINATION"
-      >
-      </cds-pagination-nav>
+      @if ($paginationModel() && $showPagination()) {
+        <cds-pagination-nav
+          class="valtimo-widget-table__pagination"
+          [model]="$paginationModel()"
+          (selectPage)="onSelectPage($event)"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_PAGINATION"
+        >
+        </cds-pagination-nav>
+      } @else if (obs.widgetData === null) {
+        <div class="valtimo-widget-table__pagination">
+          <cds-skeleton-text
+            [lines]="1"
+            [maxLineWidth]="150"
+            [minLineWidth]="150"
+          ></cds-skeleton-text>
+        </div>
+      }
     </section>
-  } @else {
+  } @else if (obs.widgetData !== null) {
     <valtimo-no-results
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"

@@ -62,6 +62,12 @@
       [appendInline]="false"
       [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TYPE_SELECT"
     ></v-select>
+
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="properties?.value"
+    />
   </form>
 
   <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_FOOTER">

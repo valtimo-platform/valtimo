@@ -19,6 +19,7 @@
     fields: fields$ | async,
     widgetData: widgetData$ | async,
     caseDefinitions: caseDefinitions$ | async,
+    filters: filters$ | async,
   } as obs"
 >
   <div class="valtimo-widget-interactive-table__title-container">
@@ -34,14 +35,33 @@
   <valtimo-carbon-list
     [header]="false"
     [fields]="obs.fields"
-    [items]="obs.widgetData"
+    [items]="obs.widgetData || []"
+    [initialSortState]="$initialSortState()"
+    [loading]="obs.widgetData === null"
+    [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+    (sortChanged)="onSortChanged($event)"
     (rowClicked)="rowClick($event)"
     [attr.data-test-id]="TEST_IDS.WIDGET_INTERACTIVE_TABLE_LIST"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
+      <button
+        *ngIf="!!obs.filters.length"
+        carbonToolbarContent
+        [cdsOverflowMenu]="widgetInteractiveTableSearch"
+        [customPane]="true"
+        [iconOnly]="true"
+        [flip]="true"
+        [offset]="{x: 0, y: 47}"
+        placement="bottom"
+        cdsButton="ghost"
+      >
+        <svg cdsIcon="filter" size="16"></svg>
+      </button>
+
       <cds-overflow-menu
         *ngIf="!!widgetConfiguration?.actions?.length"
         [customTrigger]="externalLinkTrigger"
@@ -73,12 +93,21 @@
     </section>
 
     <valtimo-no-results
+      *ngIf="obs.widgetData !== null"
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
       [attr.data-test-id]="TEST_IDS.WIDGET_INTERACTIVE_TABLE_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
+
+  <ng-template #widgetInteractiveTableSearch>
+    <valtimo-widget-interactive-table-search
+      [filters]="obs.filters"
+      [initSearchRequest]="searchRequest"
+      (searchSubmitEvent)="onSearchSubmit($event)"
+    ></valtimo-widget-interactive-table-search>
+  </ng-template>
 
   <ng-template #externalLinkTrigger>
     <button cdsButton="ghost" iconOnly="true" [attr.data-test-id]="TEST_IDS.WIDGET_INTERACTIVE_TABLE_EXTERNAL_LINK_TRIGGER">

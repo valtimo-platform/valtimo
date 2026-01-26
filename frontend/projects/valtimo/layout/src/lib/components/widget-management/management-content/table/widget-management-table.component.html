@@ -98,6 +98,7 @@
   [columnData]="$content()?.columns"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
+  [showSortableCheckbox]="sortableColumns"
   [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_TABLE_FIELDS_COLUMN"
 ></valtimo-widget-management-fields-column>
 

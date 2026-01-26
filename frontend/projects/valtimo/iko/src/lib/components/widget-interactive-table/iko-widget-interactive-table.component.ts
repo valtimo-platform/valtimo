@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
+import {HttpParams} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,14 +33,9 @@ import {
   WidgetInteractiveTableComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
-import {
-  ButtonModule,
-  ModalModule,
-  PaginationModel,
-  PaginationModule,
-  TilesModule,
-} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {ButtonModule, ModalModule, PaginationModule, TilesModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap} from 'rxjs';
+
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 import { TEST_IDS } from '@valtimo/shared';
@@ -86,21 +82,27 @@ export class IkoWidgetInteractiveTableComponent {
     this._widgetParams$.next(value);
   }
 
-  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
+  private readonly _queryParams$ = new BehaviorSubject<HttpParams>(new HttpParams());
 
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._queryParams$.pipe(
+      distinctUntilChanged(
+        (prevParams, currParams) => prevParams.toString() === currParams.toString()
+      )
+    ),
     this.listService.forceRefresh$,
   ]).pipe(
-    switchMap(([widgetConfiguration, widgetParams]) =>
+    switchMap(([widgetConfiguration, widgetParams, queryParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
         : this.ikoApiService.getIkoWidgetData(
             widgetParams.ikoViewKey,
             widgetParams.tabKey,
             widgetConfiguration.key,
-            widgetParams.entryId
+            widgetParams.entryId,
+            queryParams
           )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
@@ -112,8 +114,8 @@ export class IkoWidgetInteractiveTableComponent {
     private readonly listService: CaseListService
   ) {}
 
-  public onPaginationEvent(event: PaginationModel): void {
-    this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
+  public onQueryParamsEvent(params: HttpParams): void {
+    this._queryParams$.next(params);
   }
 
   public onRowClickEvent(event: any, widgetConfiguration: InteractiveTableWidget): void {

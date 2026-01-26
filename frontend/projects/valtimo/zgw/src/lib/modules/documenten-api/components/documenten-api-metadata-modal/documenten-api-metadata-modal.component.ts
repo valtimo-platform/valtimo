@@ -41,7 +41,7 @@ import {
 } from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, DocumentType as ZgwDocumentType} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
 import {CommonModule} from '@angular/common';
@@ -408,20 +408,36 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.documentId$,
+    this.documentId$.pipe(startWith(null)),
+    this.valtimoModalService.caseDefinitionKey$.pipe(startWith(null)),
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(([documentId]) => !!documentId),
-    switchMap(([documentId, informatieobjecttypeValue]) =>
-      combineLatest([
-        this.documentService.getDocumentTypesForDocument(documentId),
-        of(informatieobjecttypeValue),
-      ])
-    ),
+    filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
+    switchMap(([documentId, caseDefinitionKey, defaultValue]) => {
+      if (documentId) {
+        return this.documentService
+          .getDocumentTypesForDocument(documentId)
+          .pipe(map(types => [types, defaultValue]));
+      }
+      if (caseDefinitionKey) {
+        return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
+          switchMap(settings =>
+            settings.caseDefinitionVersionTag
+              ? this.documentService.getDocumentTypesForCase(
+                  caseDefinitionKey,
+                  settings.caseDefinitionVersionTag
+                )
+              : of([])
+          ),
+          map(types => [types, defaultValue])
+        );
+      }
+      return of([[], defaultValue]);
+    }),
     map(([documentTypes, informatieobjecttypeValue]) =>
-      documentTypes.map((type: any) => ({
+      (documentTypes as ZgwDocumentType[]).map((type: any) => ({
         id: type.url,
         content: type.name,
         selected: informatieobjecttypeValue === type.url,
