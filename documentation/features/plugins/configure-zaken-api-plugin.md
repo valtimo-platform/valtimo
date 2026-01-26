@@ -118,11 +118,13 @@ The **Create zaakrol - non-natural person** action creates a zaakrol in the zake
 
 * **Role type URL.** Every person that is linked to a zaak has a role within that zaak. This property contains a URL to the type of the role within the zaak.
 * **Role explanation.** An explanation of the role that the person has within the zaak.
-* **Initiator non-natural person identification.** The unique number assigned by a chamber for the registered non-natural person that should be linked to the zaak.
+* **Initiator non-natural person identification.** (Optional) The unique number assigned by a chamber for the registered non-natural person that should be linked to the zaak.
 * **Other non-natural person identification.** (Optional) The unique number issued by the municipality for another non-natural person.
 * **Administration number person.** (Optional) The administration number of the person, as referred to in the BRP Act.
 * **Chamber of Commerce number.** (Optional) A unique number assigned by the Chamber of Commerce.
 * **Branch number.** (Optional) A short unique designation of the branch.
+
+**Note.** At least one of the identifiers _Initiator non-natural person identification_, _Other non-natural person identification_, _Chamber of commerce number_ or _Branch number_ must be provided.
 
 ### Create zaakrol - medewerker
 
@@ -137,6 +139,8 @@ The **Create zaakrol - employee** action creates a zaakrol in the zaken API. Usi
 * **Alternative name of the person involved.** (Optional) The name of the person involved under which they wish to be addressed in relation to the case.
 * **Authorization indication** (Optional) The type that represents the authorization indication.
 
+**Note.** At least one of the identifiers _Identification_ or _Last name_ must be provided.
+
 ### Create zaakrol - organizational unit
 
 The **Create zaakrol - organizational unit** action creates a zaakrol in the zaken API. Using this action, an organizational unit can be linked to a zaak. When creating a process link the following properties have to be entered:
@@ -149,6 +153,8 @@ The **Create zaakrol - organizational unit** action creates a zaakrol in the zak
 * **Alternative name of the person involved** (Optional) The name of the person involved under which they wish to be addressed in relation to the case.
 * **Authorization indication.** (Optional) The type that represents the authorization indication.
 
+**Note.** At least one of the identifiers _Identification_ or _Name_ must be provided.
+
 ### Create zaakrol - branch
 
 The **Create zaakrol - branch** action creates a zaakrol in the zaken API. Using this action, a branch can be linked to a zaak. When creating a process link the following properties have to be entered:
@@ -158,6 +164,8 @@ The **Create zaakrol - branch** action creates a zaakrol in the zaken API. Using
 * **Branch number.** (Optional) A short unique designation of the branch.
 * **Trade name.** (Optional) The name of the establishment where the business is conducted.
 * **Chamber of Commerce number.** (Optional) A unique number assigned by the Chamber of Commerce.
+
+**Note.** At least one of the identifiers _Branch number_, _Trade name_ or _Chamber of commerce number_ must be provided.
 
 ### Create zaakeigenschap
 
