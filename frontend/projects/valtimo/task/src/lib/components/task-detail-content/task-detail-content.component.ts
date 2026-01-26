@@ -34,7 +34,14 @@ import {RecentlyViewed16} from '@carbon/icons';
 import {FormioForm} from '@formio/angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {FormioComponent, FormIoModule, ValtimoModalService} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormIoModule,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+  ValtimoModalService,
+} from '@valtimo/components';
 import {
   ConfigService,
   FORM_VIEW_MODEL_TOKEN,
@@ -113,6 +120,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly formDefinition$ = new BehaviorSubject<FormioForm | null>(null);
   public readonly formDefinitionId$ = new BehaviorSubject<string | null>(null);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string | null>(null);
+  public readonly formioOptions$ = new BehaviorSubject<ValtimoFormioOptions | null>(null);
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly formName$ = new BehaviorSubject<string | null>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -171,6 +179,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
     this.iconService.registerAll([RecentlyViewed16]);
 
+    const options = new FormioOptionsImpl();
+    options.disableAlerts = true;
+    this.formioOptions$.next(options);
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
   public ngOnInit(): void {
@@ -187,7 +198,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this._viewInitialized$.next(true);
   }
 
-  public onSubmit(submission: Record<string, object>): void {
+  public onSubmit(submission: FormioSubmission): void {
     if (submission.data) {
       this.taskIntermediateSaveService.setFormIoFormData(submission.data);
       this.formIoFormData$.next(submission.data);

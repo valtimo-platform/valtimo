@@ -1,0 +1,50 @@
+.notification-test {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 0;
+
+  &__title {
+    margin-bottom: 0.5rem;
+  }
+
+  &__description {
+    margin-bottom: 1.5rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__toolbar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--cds-text-primary);
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--cds-border-subtle);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 280px;
+  }
+
+  &__error {
+    margin-top: 0.5rem;
+    color: var(--cds-support-error, #da1e28);
+  }
+
+  &__actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
