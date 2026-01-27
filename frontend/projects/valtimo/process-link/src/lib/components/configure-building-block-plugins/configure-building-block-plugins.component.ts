@@ -64,9 +64,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
           return 'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.zaakInstanceLink';
         } else if (zaakTypeLinkDependency) {
           return 'processLinkConfiguration.buildingBlock.pluginDependenciesWarning.zaakTypeLink';
-        } else {
-          return '';
         }
+        return '';
       })
     );
 
