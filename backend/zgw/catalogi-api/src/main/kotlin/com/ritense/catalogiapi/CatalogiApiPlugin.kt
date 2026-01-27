@@ -17,7 +17,6 @@
 package com.ritense.catalogiapi
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.catalogiapi.client.BesluittypeRequest
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.EigenschapRequest
@@ -39,13 +38,13 @@ import com.ritense.catalogiapi.exception.EigenschapNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.domain.Document
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
@@ -54,11 +53,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
+import java.util.UUID
 
 @Plugin(
     key = "catalogiapi",
     title = "Catalogi API",
-    description = "Connects to the Catalogi API to retrieve zaak type information"
+    description = "Connects to the Catalogi API to retrieve zaak type information",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK]
 )
 class CatalogiApiPlugin(
     val client: CatalogiApiClient,
@@ -505,10 +506,7 @@ class CatalogiApiPlugin(
         }
 
     private fun getZaaktypeUrl(execution: DelegateExecution): URI =
-        zaaktypeUrlProvider.getZaaktypeUrl(getDocument(execution).definitionId().caseDefinitionId())
-
-    private fun getDocument(execution: DelegateExecution): Document =
-        AuthorizationContext.runWithoutAuthorization { documentService.get(execution.businessKey) }
+        zaaktypeUrlProvider.getZaaktypeUrl(UUID.fromString(execution.businessKey))
 
     companion object {
         private val logger = KotlinLogging.logger {}

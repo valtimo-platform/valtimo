@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,21 +47,20 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
         Document.Id documentId = getDocumentId(execution);
         if (documentId != null) {
             processDocumentAssociationService.createProcessDocumentInstance(
-                execution.getProcessInstanceId(), //processInstance from new process
+                execution.getProcessInstanceId(),
                 documentId.getId(),
                 getProcessNameFrom(execution)
             );
         }
     }
 
+    /**
+     * Gets the document ID for this process instance.
+     * The document is determined by the process's business key, which is set to:
+     * - Case document ID for case processes and their sub-processes
+     * - Building block document ID for building block processes and their sub-processes
+     */
     private Document.Id getDocumentId(DelegateExecution execution) {
-        if (execution.getSuperExecution() != null) {
-            var processId = new OperatonProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
-            var documentId = processDocumentService.getDocumentId(processId, execution);
-            if (documentId != null) {
-                return documentId;
-            }
-        }
         var processId = new OperatonProcessInstanceId(execution.getProcessInstanceId());
         return processDocumentService.getDocumentId(processId, execution);
     }

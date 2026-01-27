@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.service;
 
-import static com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -407,7 +407,7 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
 
         CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("some-case", "1.0.0");
         String caseTag =
-            OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
         String customNonCaseTag = "SOME_OTHER_TAG";
 
         process.setOperatonVersionTag(caseTag);

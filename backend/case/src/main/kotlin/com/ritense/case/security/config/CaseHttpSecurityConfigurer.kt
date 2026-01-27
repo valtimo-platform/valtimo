@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, HEADER_WIDGET_URL))
                     .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$HEADER_WIDGET_URL/data")).hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{key}/version/{version}/finalizable")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

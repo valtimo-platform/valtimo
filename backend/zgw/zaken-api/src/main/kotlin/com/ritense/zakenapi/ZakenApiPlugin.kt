@@ -29,6 +29,7 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
@@ -60,6 +61,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
+import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.ZaakNotitieLink
 import com.ritense.zakenapi.domain.ZaakNotitieLinkId
@@ -104,7 +106,8 @@ import java.util.UUID
 @Plugin(
     key = ZakenApiPlugin.PLUGIN_KEY,
     title = "Zaken API",
-    description = "Connects to the Zaken API"
+    description = "Connects to the Zaken API",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK, PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class ZakenApiPlugin(
     private val client: ZakenApiClient,
@@ -300,10 +303,14 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+            val existingZaakUrl = try {
+                zaakUrlProvider.getZaakUrl(documentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
+                null
+            }
 
-            if (zaakInstanceLink != null) {
-                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$documentId'. Zaak URL: '${zaakInstanceLink.zaakInstanceUrl}'." }
+            if (existingZaakUrl != null) {
+                logger.warn { "Skipping zaak creation. Zaak already exists for document with id '$documentId'. Zaak URL: '$existingZaakUrl'." }
                 return
             }
 
@@ -412,8 +419,9 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting patch of zaak for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
-            if (zaakInstanceLink == null) {
+            val zaakUrl = try {
+                zaakUrlProvider.getZaakUrl(documentId)
+            } catch (e: ZaakInstanceLinkNotFoundException) {
                 logger.warn { "Skipping patch zaak. Zaak does not exist for document with id '$documentId'." }
                 return
             }
@@ -421,7 +429,7 @@ class ZakenApiPlugin(
             val zaak = client.patchZaak(
                 authentication = authenticationPluginConfiguration,
                 baseUrl = url,
-                zaakUrl = zaakInstanceLink.zaakInstanceUrl,
+                zaakUrl = zaakUrl,
                 request = PatchZaakRequest(
                     omschrijving = description,
                     toelichting = explanation,
@@ -1134,10 +1142,14 @@ class ZakenApiPlugin(
 
             if (execution != null && resolvedZaakObjectRequest.zaakUrl == null) {
                 val documentId = UUID.fromString(execution.businessKey)
-                val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+                val zaakUrl = try {
+                    zaakUrlProvider.getZaakUrl(documentId)
+                } catch (e: ZaakInstanceLinkNotFoundException) {
+                    null
+                }
 
-                if (zaakInstanceLink != null) {
-                    resolvedZaakObjectRequest.zaakUrl = zaakInstanceLink.zaakInstanceUrl
+                if (zaakUrl != null) {
+                    resolvedZaakObjectRequest.zaakUrl = zaakUrl
                 }
             }
 
