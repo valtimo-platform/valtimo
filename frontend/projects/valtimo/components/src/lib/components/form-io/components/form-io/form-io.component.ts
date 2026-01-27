@@ -123,7 +123,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
         ...options,
         ...(formioTranslations === 'object' && {
           i18n: {
-            [language]: 'nl',
+            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
           },
         }),
       };
@@ -145,6 +145,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private readonly userProviderService: UserProviderService,
     private readonly logger: NGXLogger,
+    private readonly stateService: FormIoStateService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly localStorageService: FormIoLocalStorageService,
@@ -187,7 +188,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.submit.emit(submission);
   }
 
-  public formReady(form: FormIoSourceComponent): void {}
+  public formReady(form: FormIoSourceComponent): void {
+    this.stateService.currentForm = form;
+  }
 
   public onChange(object: any): void {
     this.change.emit(object);
@@ -286,9 +289,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
         const documentId = params.documentId;
 
         if (documentDefinitionName) {
+          this.stateService.setDocumentDefinitionName(documentDefinitionName);
         }
 
         if (documentId) {
+          this.stateService.setDocumentId(documentId);
         }
       })
     );
