@@ -41,7 +41,7 @@ export class SampleAppModule
 Below is an example of a custom component. The `widgetConfiguration` property is always injected by the custom-widget 
 component and contains the configuration of the custom-widget.
 
-The `category` and `status` are dditional input properties specific for this custom component, if the component does not 
+The `category` and `status` are additional input properties specific for this custom component, if the component does not 
 need them, don't define them. The values for these properties need to be specified via the custom-widgets configuration 
 'custom key-value pairs' collection.
 
