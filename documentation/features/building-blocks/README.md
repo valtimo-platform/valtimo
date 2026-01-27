@@ -79,6 +79,11 @@ and outputs when you link them to a case.
 
 <figure><img src="./images/link-additional-process.png" alt=""><figcaption><p>Link to a different process in the building block</p></figcaption></figure>
 
+{% hint style="warning" %}
+User tasks are not yet supported in building blocks. This means form, form flow, and custom UI component process links
+cannot be used. Only plugin and building block process links are available.
+{% endhint %}
+
 ### 5. Finalize the version
 
 Building blocks use **draft** and **final** versions, similar to case definitions.
