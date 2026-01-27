@@ -23,6 +23,7 @@ import com.ritense.outbox.OutboxService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.transaction.support.TransactionTemplate
 
 @AutoConfiguration
 class CaseRetentionAutoConfiguration {
@@ -30,11 +31,13 @@ class CaseRetentionAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DocumentRetentionPeriodExpiredWorker::class)
     fun documentRetentionPeriodWorker(
+        transactionTemplate: TransactionTemplate,
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         outboxService: OutboxService,
         objectMapper: ObjectMapper
         ): DocumentRetentionPeriodExpiredWorker {
         return DocumentRetentionPeriodExpiredWorker(
+            transactionTemplate,
             jsonSchemaDocumentService,
             outboxService,
             objectMapper

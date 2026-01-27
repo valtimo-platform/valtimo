@@ -6,13 +6,15 @@ import com.ritense.document.event.DocumentExpired
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.outbox.OutboxService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.concurrent.atomic.AtomicBoolean
 
-@Transactional
+@Transactional(propagation = Propagation.NEVER)
 class DocumentRetentionPeriodExpiredWorker(
+    private val transactionTemplate: TransactionTemplate,
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
@@ -27,22 +29,19 @@ class DocumentRetentionPeriodExpiredWorker(
             return
         }
         try {
-            runWithoutAuthorization {
-                jsonSchemaDocumentService.getExpiredDocuments(Pageable.unpaged()).forEach { doc ->
-                    logger.debug {
-                        "expired doc found ${doc.retentionDate()} for case ${
-                            doc.caseTags()?.first()?.key ?: "not found"
-                        }"
+            jsonSchemaDocumentService.getExpiredDocuments().forEach { document ->
+                try {
+                    transactionTemplate.execute {
+                        runWithoutAuthorization {
+                            logger.debug { "expired doc found ${document.retentionDate()}" }
+                            jsonSchemaDocumentService.deleteDocument(document.id)
+                            outboxService.send {
+                                DocumentExpired(document.id.toString(), objectMapper.valueToTree(document))
+                            }
+                        }
                     }
-                    jsonSchemaDocumentService.deleteDocument(
-                        doc.id
-                    )
-                    outboxService.send {
-                        DocumentExpired(
-                            doc?.id.toString(),
-                            objectMapper.valueToTree(doc)
-                        )
-                    }
+                } catch (ex: Exception) {
+                    logger.error(ex) { "Error processing expired document $document" }
                 }
             }
         } catch (ex: Exception) {
