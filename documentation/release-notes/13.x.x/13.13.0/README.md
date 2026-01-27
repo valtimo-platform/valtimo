@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Tasks are now no longer closed when another user changes the task assignee.**
