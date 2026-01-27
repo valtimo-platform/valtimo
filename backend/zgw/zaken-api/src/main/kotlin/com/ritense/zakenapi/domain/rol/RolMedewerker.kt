@@ -28,9 +28,16 @@ import com.fasterxml.jackson.annotation.JsonInclude
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class RolMedewerker(
-    val identificatie: String,
-    val achternaam: String,
-    val voorletters: String,
-    val voorvoegselAchternaam: String
-) : BetrokkeneIdentificatie()
+    val identificatie: String? = null,
+    val achternaam: String? = null,
+    val voorletters: String? = null,
+    val voorvoegselAchternaam: String? = null
+) : BetrokkeneIdentificatie() {
+
+    init {
+        require(!identificatie.isNullOrBlank() || !achternaam.isNullOrBlank()) {
+            "Either identificatie or achternaam should be provided!"
+        }
+    }
+}
 
