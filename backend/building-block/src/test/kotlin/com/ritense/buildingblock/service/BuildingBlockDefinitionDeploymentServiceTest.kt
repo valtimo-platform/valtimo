@@ -93,7 +93,7 @@ class BuildingBlockDefinitionDeploymentServiceTest {
         service.deployOnStartup()
 
         val idCaptor = argumentCaptor<List<BuildingBlockDefinitionId>>()
-        verify(importService).importBuildingBlockDefinition(any(), idCaptor.capture())
+        verify(importService).importBuildingBlockDefinitionsWithStream(any(), idCaptor.capture())
         assertThat(idCaptor.firstValue).containsExactly(finalDefinition.id)
     }
 }
