@@ -79,8 +79,8 @@ data class BuildingBlockDefinitionId(
 
         @JvmStatic
         fun fromProcessVersionTag(versionTag: String?): BuildingBlockDefinitionId? {
-            if (versionTag == null || !versionTag.startsWith("BB:")) return null
-            val parts = versionTag.removePrefix("BB:").split(":")
+            if (versionTag == null || !versionTag.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)) return null
+            val parts = versionTag.removePrefix(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX).split(":")
             if (parts.size != 2) return null
 
             val (key, tag) = parts

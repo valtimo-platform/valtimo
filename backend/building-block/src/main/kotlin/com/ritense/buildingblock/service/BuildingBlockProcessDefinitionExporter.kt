@@ -20,16 +20,9 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersion
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
-import org.operaton.bpm.model.bpmn.instance.CallActivity
 import java.io.ByteArrayOutputStream
 
 class BuildingBlockProcessDefinitionExporter(
@@ -51,10 +44,6 @@ class BuildingBlockProcessDefinitionExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
-        val subProcessDefinitionExportRequests =
-            getCallActivityProcessDefinitionExportRequests(bpmnModelInstance, request.buildingBlockDefinitionId)
-        //val decisionExportRequests = getDecisionExportRequests(request.buildingBlockDefinitionId, bpmnModelInstance)
-
         val exportFile = ByteArrayOutputStream().use {
             Bpmn.writeModelToStream(it, bpmnModelInstance)
             ExportFile(
@@ -68,55 +57,9 @@ class BuildingBlockProcessDefinitionExporter(
         }
         return ExportResult(
             exportFile,
-            subProcessDefinitionExportRequests //+ decisionExportRequests
+            emptySet()
         )
     }
-
-    private fun getCallActivityProcessDefinitionExportRequests(
-        bpmnModelInstance: BpmnModelInstance,
-        buildingBlockDefinitionId: BuildingBlockDefinitionId
-    ): Set<BuildingBlockProcessDefinitionExportRequest> {
-        return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull {
-            if (it.calledElement != null) {
-                val spec = byKey(it.calledElement)
-                val processDefinitionId = checkNotNull(
-                    when (it.operatonCalledElementBinding) {
-                        "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(it.operatonCalledElementVersion.toInt())))
-                        "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(it.operatonCalledElementVersionTag)))
-                        "deployment" -> null
-                        else -> operatonRepositoryService.findProcessDefinition(spec.and(byLatestVersion()))
-                    }
-                ) {
-                    "Process definition with key '${it.calledElement}' could not be found!"
-                }.id
-                BuildingBlockProcessDefinitionExportRequest(processDefinitionId, buildingBlockDefinitionId)
-            } else {
-                null
-            }
-        }.toSet()
-    }
-
-    // TODO: Uncomment when decision definitions are supported
-//    private fun getDecisionExportRequests(buildingBlockDefinitionId: BuildingBlockDefinitionId, bpmnModelInstance: BpmnModelInstance): Set<DecisionDefinitionExportRequest> {
-//        return bpmnModelInstance.getModelElementsByType(BusinessRuleTask::class.java).mapNotNull {
-//            if (it.operatonDecisionRef != null) {
-//                val spec = OperatonDecisionDefinitionSpecificationHelper.byKey(it.operatonDecisionRef)
-//                val decisionDefinitionId = checkNotNull(
-//                    when (it.operatonDecisionRefBinding) {
-//                        "version" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersion(it.operatonDecisionRefVersion.toInt())))
-//                        "versionTag" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersionTag(it.operatonDecisionRefVersionTag)))
-//                        "deployment" -> null
-//                        else -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion()))
-//                    }
-//                ) {
-//                    "Decision definition with reference '${it.operatonDecisionRef}' could not be found!"
-//                }.id
-//                BuildingBlockDecisionDefinitionExportRequest(decisionDefinitionId, buildingBlockDefinitionId)
-//            } else {
-//                null
-//            }
-//        }.toSet()
-//    }
 
     companion object {
         private const val PATH =

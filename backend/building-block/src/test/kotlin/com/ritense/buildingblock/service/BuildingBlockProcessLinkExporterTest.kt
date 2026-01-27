@@ -19,6 +19,7 @@ package com.ritense.buildingblock.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
@@ -41,6 +42,7 @@ class BuildingBlockProcessLinkExporterTest(
     @Mock private val processLinkService: ProcessLinkService,
     @Mock private val repositoryService: RepositoryService,
     @Mock private val processLinkMapper: ProcessLinkMapper,
+    @Mock private val buildingBlockProcessLinkToBuildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper,
 ) {
 
     private val objectMapper = ObjectMapper()
@@ -64,6 +66,7 @@ class BuildingBlockProcessLinkExporterTest(
             objectMapper = objectMapper,
             repositoryService = repositoryService,
             processLinkMappers = listOf(processLinkMapper),
+            buildingBlockProcessLinkToBuildingBlockMapper = buildingBlockProcessLinkToBuildingBlockMapper,
         )
     }
 
@@ -100,6 +103,8 @@ class BuildingBlockProcessLinkExporterTest(
             referenceType = "BUILDING_BLOCK"
         )
         whenever(processLinkMapper.toProcessLinkExportResponseDto(processLink)).thenReturn(exportDto)
+        whenever(buildingBlockProcessLinkToBuildingBlockMapper.toBuildingBlockExportRequests(listOf(exportDto)))
+            .thenReturn(emptySet())
 
         val result = exporter.export(
             BuildingBlockProcessDefinitionExportRequest(processDefinitionId, buildingBlockDefinitionId)

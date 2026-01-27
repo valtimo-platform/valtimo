@@ -24,4 +24,5 @@ interface ImportService {
     fun importGlobal(inputStream: InputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
     fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
+    fun importBuildingBlockDefinition(entries: List<ZipFileEntry>, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
 }

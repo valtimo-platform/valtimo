@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.domain
+package com.ritense.importer
 
-import com.fasterxml.jackson.annotation.JsonAlias
+class ZipFileEntry(
+    val fileName: String,
+    val content: ByteArray
+) {
 
-data class BuildingBlockDefinitionMainProcessDefinitionDto(
-    @JsonAlias("key")
-    val processDefinitionKey: String
-)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ZipFileEntry
+
+        return fileName == other.fileName
+    }
+
+    override fun hashCode(): Int {
+        return fileName.hashCode()
+    }
+}

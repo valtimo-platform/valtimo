@@ -40,7 +40,8 @@ import java.util.zip.ZipInputStream
 class ValtimoImportService(
     importers: Set<Importer>,
     private val environment: Environment,
-    val whitelistedEnvironmentProperties: List<Regex>
+    val whitelistedEnvironmentProperties: List<Regex>,
+    private val buildingBlockDefinitionIdSupplier: BuildingBlockDefinitionIdSupplier? = null
 ) : ImportService {
 
     private val orderedImporters = distinctImporters(importers).let {
@@ -166,50 +167,11 @@ class ValtimoImportService(
     }
 
     @Transactional
-    open fun importBuildingBlockDefinition(
+    open fun importBuildingBlockDefinitionsWithStream(
         resources: List<Pair<String, Resource>>,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
     ) {
-        runImporter {
-            // If building block definition is already imported, don't import the rest of the files for the building
-            // block definition (so a skip)
-
-            val importerEntriesList = getEntriesByImporter(
-                getEntriesFromResources(resources),
-                { importer -> importer.partOfBuildingBlockDefinition() }
-            )
-            val buildingBlockDefinitionId: BuildingBlockDefinitionId?
-            val buildingBlockDefinitionEntries = importerEntriesList
-                .filter { it.key.type() == BUILDING_BLOCK_DEFINITION }
-                .let {
-                    it[it.keys.first()]
-                }
-            val definitionContent = buildingBlockDefinitionEntries?.firstOrNull()?.content
-                ?: throw IllegalStateException("No building block definition file found in the provided resources")
-            val buildingBlockDefinitionMap: Map<String, Any> = jacksonObjectMapper()
-                .readValue(definitionContent)
-            buildingBlockDefinitionId = BuildingBlockDefinitionId(
-                buildingBlockDefinitionMap["key"] as String,
-                buildingBlockDefinitionMap["versionTag"] as String
-            )
-
-            if (buildingBlockDefinitionIdList.contains(buildingBlockDefinitionId)) {
-                return@runImporter
-            }
-
-            importerEntriesList.filter { it.key.partOfBuildingBlockDefinition() }.forEach { (importer, entries) ->
-                entries.forEach { entry ->
-                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId))
-                }
-            }
-
-            importerEntriesList.filter { it.key.partOfBuildingBlockDefinition() }.forEach { (importer, entries) ->
-                entries.forEach { entry ->
-                    importer.afterImport(ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId))
-                }
-            }
-        }
+        importBuildingBlockDefinition(getEntriesFromResources(resources), buildingBlockDefinitionIdList)
 
     }
 
@@ -264,7 +226,18 @@ class ValtimoImportService(
     @Transactional
     override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId? {
         return runImporter {
-            val entries = readZipEntries(inputStream)
+            val entriesWithRawPath = readZipEntriesWithRawPath(inputStream)
+            val buildingBlockEntries = groupBuildingBlockEntries(entriesWithRawPath)
+
+            val existingBuildingBlockIds = buildingBlockDefinitionIdSupplier?.getIds().orEmpty()
+            buildingBlockEntries.values.forEach { entries ->
+                importBuildingBlockDefinition(entries, existingBuildingBlockIds)
+            }
+
+            val entries = entriesWithRawPath
+                .filter { extractBuildingBlockGroupKey(it.first) == null }
+                .map { it.second }
+
             val importerEntriesList = getEntriesByImporter(
                 entries
             ) { importer -> importer.partOfCaseDefinition() }
@@ -314,9 +287,24 @@ class ValtimoImportService(
         inputStream: InputStream,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
     ) {
-        runImporter {
-            val entries = readZipEntries(inputStream)
+        val entriesWithRawPath = readZipEntriesWithRawPath(inputStream)
+        val buildingBlockEntries = groupBuildingBlockEntries(entriesWithRawPath)
 
+        if (buildingBlockEntries.isEmpty()) {
+            throw IllegalStateException("No building block definition file found in the provided archive")
+        }
+
+        buildingBlockEntries.values.forEach { entries ->
+            importBuildingBlockDefinition(entries, buildingBlockDefinitionIdList)
+        }
+    }
+
+    @Transactional
+    override fun importBuildingBlockDefinition(
+        entries: List<ZipFileEntry>,
+        buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
+    ) {
+        runImporter {
             val importerEntriesList = getEntriesByImporter(
                 entries
             ) { importer -> importer.partOfBuildingBlockDefinition() }
@@ -375,12 +363,20 @@ class ValtimoImportService(
     }
 
     private fun readZipEntries(inputStream: InputStream): List<ZipFileEntry> {
+        return readZipEntriesWithRawPath(inputStream).map { it.second }
+    }
+
+    private fun readZipEntriesWithRawPath(inputStream: InputStream): List<Pair<String, ZipFileEntry>> {
         // Read all entries with data from the stream
         return try {
             ZipInputStream(inputStream).use { stream ->
                 generateSequence { stream.nextEntry }
                     .filter { !it.isDirectory }
-                    .map { ZipFileEntry(prepareFilePath(it.name), stream.readBytes()) }
+                    .map { entry ->
+                        val content = stream.readBytes()
+                        val preparedPath = prepareFilePath(entry.name)
+                        entry.name to ZipFileEntry(preparedPath, content)
+                    }
                     .toMutableList()
             }
         } catch (ex: Exception) {
@@ -393,27 +389,79 @@ class ValtimoImportService(
     }
 
     private fun prepareFilePath(path: String): String {
-        return if (path.startsWith("config/case")) {
-            val relativePath = path.substringAfter("config/case")
+        val normalizedPath = path.trimStart('/')
+        return if (normalizedPath.startsWith("config/case")) {
+            val relativePath = normalizedPath.substringAfter("config/case")
             val subStringStartIndex = StringUtils.ordinalIndexOf(relativePath, "/", 3)
             if (subStringStartIndex > -1) {
                 relativePath.substring(subStringStartIndex)
             } else {
-                path
+                normalizedPath
             }
-        } else if (path.startsWith("config/building-block")) {
-            val relativePath = path.substringAfter("config/building-block")
+        } else if (normalizedPath.startsWith("case/")) {
+            val relativePath = normalizedPath.substringAfter("case")
             val subStringStartIndex = StringUtils.ordinalIndexOf(relativePath, "/", 3)
             if (subStringStartIndex > -1) {
                 relativePath.substring(subStringStartIndex)
             } else {
-                path
+                normalizedPath
             }
-        } else if (path.startsWith("config/global")) {
-            return path.substringAfter("config")
+        } else if (normalizedPath.startsWith("config/building-block")) {
+            val relativePath = normalizedPath.substringAfter("config/building-block")
+            val subStringStartIndex = StringUtils.ordinalIndexOf(relativePath, "/", 3)
+            if (subStringStartIndex > -1) {
+                relativePath.substring(subStringStartIndex)
+            } else {
+                normalizedPath
+            }
+        } else if (normalizedPath.startsWith("building-block")) {
+            val relativePath = normalizedPath.substringAfter("building-block")
+            val subStringStartIndex = StringUtils.ordinalIndexOf(relativePath, "/", 3)
+            if (subStringStartIndex > -1) {
+                relativePath.substring(subStringStartIndex)
+            } else {
+                normalizedPath
+            }
+        } else if (normalizedPath.startsWith("config/global")) {
+            return normalizedPath.substringAfter("config")
         } else {
-            path
+            normalizedPath
         }
+    }
+
+    private fun groupBuildingBlockEntries(
+        entriesWithRawPath: List<Pair<String, ZipFileEntry>>
+    ): Map<String, List<ZipFileEntry>> {
+        val grouped = LinkedHashMap<String, MutableList<ZipFileEntry>>()
+
+        entriesWithRawPath.forEach { (rawPath, entry) ->
+            val groupKey = extractBuildingBlockGroupKey(rawPath) ?: return@forEach
+            grouped.getOrPut(groupKey) { mutableListOf() }.add(entry)
+        }
+
+        val result = LinkedHashMap<String, List<ZipFileEntry>>()
+        grouped.forEach { (key, entries) ->
+            result[key] = entries.toList()
+        }
+        return result
+    }
+
+    private fun extractBuildingBlockGroupKey(rawPath: String): String? {
+        val normalizedPath = rawPath.trimStart('/')
+        val basePath = when {
+            normalizedPath.startsWith("config/building-block/") -> "config/building-block/"
+            normalizedPath.startsWith("building-block/") -> "building-block/"
+            else -> return null
+        }
+
+        val relativePath = normalizedPath.substringAfter(basePath)
+        val subStringEndIndex = StringUtils.ordinalIndexOf(relativePath, "/", 2)
+        if (subStringEndIndex < 0) {
+            return null
+        }
+
+        val groupPath = relativePath.substring(0, subStringEndIndex)
+        return "building-block/$groupPath"
     }
 
     private fun getEntriesFromResources(resources: List<Pair<String, Resource>>): List<ZipFileEntry> {
@@ -517,23 +565,5 @@ class ValtimoImportService(
             }
         }
 
-        data class ZipFileEntry(
-            val fileName: String,
-            val content: ByteArray
-        ) {
-
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (javaClass != other?.javaClass) return false
-
-                other as ZipFileEntry
-
-                return fileName == other.fileName
-            }
-
-            override fun hashCode(): Int {
-                return fileName.hashCode()
-            }
-        }
     }
 }
