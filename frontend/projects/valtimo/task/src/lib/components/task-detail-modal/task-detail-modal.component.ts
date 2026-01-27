@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, of, Subscription, throwError} from 'rxjs';
-import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
+import {BehaviorSubject, EMPTY, of, Subscription} from 'rxjs';
+import {catchError, filter, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {
@@ -175,7 +175,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
                 if (err.status === 404) {
                   return of(null);
                 }
-                return throwError(() => err);
+                this.logger.error('Failed to fetch task on SSE update', err);
+                return EMPTY;
               })
             )
           )
@@ -190,7 +191,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
             if (currentTask && newTask && currentTask.assignee !== newTask.assignee) {
               if (newTask.assignee) {
                 const assigneeName =
-                  newTask.valtimoAssignee?.fullName || newTask.assignee || 'someone';
+                  newTask.valtimoAssignee?.fullName ||
+                  newTask.assignee ||
+                  this.translateService.instant('taskDetail.unknownAssignee');
                 this.globalNotificationService.showToast({
                   title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
                   content: `${this.translateService.instant(

@@ -1493,7 +1493,8 @@
     "assignedNotificationTitle": "Taak toegewezen",
     "assignedNotificationContent": "De taak is toegewezen aan",
     "unassignedNotificationTitle": "Taak niet meer toegewezen",
-    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen"
+    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
+    "unknownAssignee": "onbekend"
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",

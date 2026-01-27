@@ -1463,7 +1463,8 @@
     "assignedNotificationTitle": "Task assigned",
     "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned"
+    "unassignedNotificationContent": "The task has been unassigned",
+    "unknownAssignee": "unknown"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
