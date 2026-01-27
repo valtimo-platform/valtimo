@@ -161,6 +161,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
+    Formio.authUrl = location.origin;
+
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
