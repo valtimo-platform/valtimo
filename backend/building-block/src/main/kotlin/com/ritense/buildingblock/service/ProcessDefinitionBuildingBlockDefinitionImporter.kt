@@ -40,7 +40,7 @@ class ProcessDefinitionBuildingBlockDefinitionImporter(
                 request.buildingBlockDefinitionId,
                 fileNameWithoutPath(request.fileName),
                 it
-            )
+            )?: return
 
             buildingBlockDefinitionProcessDefinitionService.setMainLink(
                 request.buildingBlockDefinitionId!!,

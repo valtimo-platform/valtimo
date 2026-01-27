@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
+import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.exporter.ProcessLinkExporter
 import com.ritense.processlink.importer.GlobalProcessLinkImporter
 import com.ritense.processlink.importer.ProcessLinkImporter
@@ -162,11 +163,13 @@ class ProcessLinkAutoConfiguration {
     fun processLinkExporter(
         objectMapper: ObjectMapper,
         processLinkService: ProcessLinkService,
-        repositoryService: OperatonRepositoryService
+        repositoryService: OperatonRepositoryService,
+        buildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper,
     ) = ProcessLinkExporter(
         objectMapper,
         processLinkService,
-        repositoryService
+        repositoryService,
+        buildingBlockMapper,
     )
 
     @Bean

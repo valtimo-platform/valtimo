@@ -58,14 +58,16 @@ class BuildingBlockDefinitionDeploymentService(
     private fun deployBuildingBlock() {
         try {
             val resources =
-                ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(BUILDING_BLOCK_DEFINITION_PATH)
+                ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+                    .getResources(BUILDING_BLOCK_DEFINITION_PATH)
                     .groupBy { resource ->
                         val relativePath = resource.url.path.substringAfter(BUILDING_BLOCK_DEFINITION_FOLDER_STRUCTURE)
                         relativePath.substring(0, StringUtils.ordinalIndexOf(relativePath, "/", 3))
                     }
                     .map { (key, files) ->
                         key to (files.map {
-                            it.url.path.substringAfter(BUILDING_BLOCK_DEFINITION_FOLDER_STRUCTURE).substring(key.length) to it
+                            it.url.path.substringAfter(BUILDING_BLOCK_DEFINITION_FOLDER_STRUCTURE)
+                                .substring(key.length) to it
                         })
                     }
 
@@ -77,10 +79,13 @@ class BuildingBlockDefinitionDeploymentService(
             sortedResources.forEach { (key, files) ->
                 logger.info { "Importing building block: $key" }
                 runWithoutAuthorization {
-                    val existingFinalIds = buildingBlockDefinitionRepository.findAll()
-                        .filter { it.final }
-                        .map { it.id }
-                    valtimoImportService.importBuildingBlockDefinition(files, existingFinalIds)
+                    valtimoImportService.importBuildingBlockDefinitionsWithStream(
+                        files,
+                        buildingBlockDefinitionRepository
+                            .findAll()
+                            .filter { it.final }
+                            .map { it.id }
+                    )
                 }
             }
 

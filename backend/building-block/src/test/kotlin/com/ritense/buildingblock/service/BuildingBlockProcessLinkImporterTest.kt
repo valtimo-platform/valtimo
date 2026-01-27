@@ -41,6 +41,7 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNotNull
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -156,7 +157,7 @@ class BuildingBlockProcessLinkImporterTest {
         )
 
         val createCaptor = argumentCaptor<ProcessLinkCreateRequestDto>()
-        verify(processLinkService).createProcessLink(createCaptor.capture(), isNull())
+        verify(processLinkService).createProcessLink(createCaptor.capture(), isNotNull())
 
         val createDto = createCaptor.firstValue as PluginProcessLinkCreateDto
         assertThat(createDto.processDefinitionId).isEqualTo(processDefinitionId)
