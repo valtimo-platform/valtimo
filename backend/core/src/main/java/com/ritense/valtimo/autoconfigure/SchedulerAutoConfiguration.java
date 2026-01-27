@@ -18,6 +18,8 @@ package com.ritense.valtimo.autoconfigure;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -41,10 +43,16 @@ public class SchedulerAutoConfiguration {
         final DataSource dataSource,
         @Value("${timezone:UTC}") final String timeZone
     ) {
+        final ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(timeZone);
+        } catch (DateTimeException ex) {
+            throw new IllegalArgumentException("Invalid timezone: " + timeZone, ex);
+        }
         return new JdbcTemplateLockProvider(
             JdbcTemplateLockProvider.Configuration.builder()
                 .withJdbcTemplate(new JdbcTemplate(dataSource))
-                .withTimeZone(TimeZone.getTimeZone(timeZone))
+                .withTimeZone(TimeZone.getTimeZone(zoneId))
                 .build()
         );
     }
