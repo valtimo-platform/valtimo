@@ -99,6 +99,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+  private readonly _skeletonRowCount$ = new BehaviorSubject<number>(5);
 
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
@@ -152,6 +153,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() loading: boolean;
+  @Input() set skeletonRowCount(value: number) {
+    this._skeletonRowCount$.next(value);
+  }
 
   /**
    * @deprecated The actions field is deprecated. Actions can be added through the **@Input field**.
@@ -286,6 +290,22 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.pagination) {
       this.loadPaginationSize();
     }
+
+    this._subscriptions.add(
+      combineLatest([this._headerItems$, this._items$, this._skeletonRowCount$]).subscribe(
+        ([headers, items, skeletonRowCount]) => {
+          let rowCount = items.length > 0 ? items.length : skeletonRowCount;
+
+          if (items.length === 0 && this.pagination?.size) {
+            rowCount = this.pagination.size;
+          }
+          if (!this.hideToolbar) {
+            rowCount++;
+          }
+          this.skeletonModel = Table.skeletonModel(rowCount + 1, headers.length);
+        }
+      )
+    );
 
     this._subscriptions.add(
       this.searchFormControl.valueChanges
