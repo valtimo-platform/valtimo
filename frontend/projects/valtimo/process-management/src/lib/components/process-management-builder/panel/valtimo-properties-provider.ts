@@ -108,20 +108,24 @@ const CustomRootElement = (props: {
     pluginTranslationService,
   } = props;
   const modeling = useService('modeling');
+  const elementRegistry = useService('elementRegistry');
   const editProcessLinkText = translateService.instant('interface.edit');
   const unlinkText = translateService.instant('processLink.unlink');
   const createText = translateService.instant('processLink.create');
 
-  const getModalParams = (): ModalParams => ({
-    processDefinitionKey: processManagementEditorService.selectionProcessDefinition?.key,
-    processDefinitionId: processManagementEditorService.selectionProcessDefinition?.id,
-    element: {
-      id: element.id,
-      type: element.type,
-      activityListenerType: mapActivityTypeToActivityListenerType(element.type),
-      name: element.di.bpmnElement.name,
-    },
-  });
+  const getModalParams = (): ModalParams => {
+    const currentElement = elementRegistry.get(element.id) || element;
+    return {
+      processDefinitionKey: processManagementEditorService.selectionProcessDefinition?.key,
+      processDefinitionId: processManagementEditorService.selectionProcessDefinition?.id,
+      element: {
+        id: currentElement.id,
+        type: currentElement.type,
+        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type),
+        name: currentElement.di?.bpmnElement?.name,
+      },
+    };
+  };
 
   const handleCreateClick = (): void => {
     const event: OpenProcessLinkModalEvent = {
