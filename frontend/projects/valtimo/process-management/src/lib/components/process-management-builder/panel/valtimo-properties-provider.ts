@@ -112,7 +112,7 @@ const CustomRootElement = (props: {
   const unlinkText = translateService.instant('processLink.unlink');
   const createText = translateService.instant('processLink.create');
 
-  const modalParams: ModalParams = {
+  const getModalParams = (): ModalParams => ({
     processDefinitionKey: processManagementEditorService.selectionProcessDefinition?.key,
     processDefinitionId: processManagementEditorService.selectionProcessDefinition?.id,
     element: {
@@ -121,11 +121,11 @@ const CustomRootElement = (props: {
       activityListenerType: mapActivityTypeToActivityListenerType(element.type),
       name: element.di.bpmnElement.name,
     },
-  };
+  });
 
   const handleCreateClick = (): void => {
     const event: OpenProcessLinkModalEvent = {
-      modalParams,
+      modalParams: getModalParams(),
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
@@ -137,7 +137,7 @@ const CustomRootElement = (props: {
   const handleEditClick = (): void => {
     const event: OpenProcessLinkModalEvent = {
       processLink,
-      modalParams,
+      modalParams: getModalParams(),
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
