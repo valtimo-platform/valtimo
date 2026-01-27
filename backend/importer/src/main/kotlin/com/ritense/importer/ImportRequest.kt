@@ -16,6 +16,7 @@
 
 package com.ritense.importer
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
@@ -36,5 +37,9 @@ data class ImportRequest(
 
     override fun hashCode(): Int {
         return fileName.hashCode()
+    }
+
+    fun getBlueprintId(): BlueprintId? {
+        return caseDefinitionId?:buildingBlockDefinitionId
     }
 }

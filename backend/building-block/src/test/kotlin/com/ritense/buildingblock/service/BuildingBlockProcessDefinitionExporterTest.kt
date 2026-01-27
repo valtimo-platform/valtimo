@@ -84,7 +84,7 @@ class BuildingBlockProcessDefinitionExporterTest(
     }
 
     @Test
-    fun `should export process definition and related call activities`() {
+    fun `should export process definition without related call activities`() {
         val bpmnContent = """
             <?xml version="1.0" encoding="UTF-8"?>
             <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="Examples">
@@ -122,7 +122,7 @@ class BuildingBlockProcessDefinitionExporterTest(
         assertThat(callActivities).hasSize(1)
         assertThat(callActivities.first().calledElement).isEqualTo("sub-process-key")
 
-        assertThat(result.relatedRequests).contains(
+        assertThat(result.relatedRequests).doesNotContain(
             BuildingBlockProcessDefinitionExportRequest(
                 processDefinitionId = subProcessDefinition.id,
                 buildingBlockDefinitionId = buildingBlockDefinitionId

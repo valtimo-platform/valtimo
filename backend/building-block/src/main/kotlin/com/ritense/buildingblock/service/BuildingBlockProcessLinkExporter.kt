@@ -17,12 +17,16 @@
 package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
+import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.operaton.bpm.engine.RepositoryService
 import java.io.ByteArrayOutputStream
 
@@ -31,6 +35,7 @@ class BuildingBlockProcessLinkExporter(
     private val objectMapper: ObjectMapper,
     private val repositoryService: RepositoryService,
     private val processLinkMappers: List<ProcessLinkMapper>,
+    private val buildingBlockProcessLinkToBuildingBlockMapper: BuildingBlockProcessLinkToBuildingBlockMapper
 ) : Exporter<BuildingBlockProcessDefinitionExportRequest> {
 
     override fun supports() = BuildingBlockProcessDefinitionExportRequest::class.java
@@ -52,6 +57,8 @@ class BuildingBlockProcessLinkExporter(
             return ExportResult(null)
         }
 
+        val buildingBlocks = buildingBlockProcessLinkToBuildingBlockMapper.toBuildingBlockExportRequests(exportDtos)
+
         val bytes = ByteArrayOutputStream().use {
             objectMapper.writeValue(it, exportDtos)
             it.toByteArray()
@@ -70,7 +77,7 @@ class BuildingBlockProcessLinkExporter(
             bytes
         )
 
-        return ExportResult(file)
+        return ExportResult(file, buildingBlocks)
     }
 
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
