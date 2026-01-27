@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "energy-subsidy-request",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

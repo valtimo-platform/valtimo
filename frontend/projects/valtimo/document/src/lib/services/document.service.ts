@@ -347,7 +347,7 @@ export class DocumentService {
 
   public findProcessDocumentInstances(documentId: string): Observable<ProcessDocumentInstance[]> {
     return this.http.get<ProcessDocumentInstance[]>(
-      `${this.valtimoEndpointUri}v1/process-document/instance/document/${documentId}`
+      `${this.valtimoEndpointUri}v2/process-document/instance/document/${documentId}`
     );
   }
 

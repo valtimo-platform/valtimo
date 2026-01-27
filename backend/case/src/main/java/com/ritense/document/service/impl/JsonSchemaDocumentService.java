@@ -71,15 +71,17 @@ import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -88,8 +90,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -180,10 +180,16 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     @Override
     public JsonSchemaDocument get(
-        @LoggableResource(resourceType = JsonSchemaDocument.class) String documentId
+        String documentId
+    ) {
+        return get(UUID.fromString(documentId));
+    }
+
+    public JsonSchemaDocument get(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId
     ) {
         var documentOptional = runWithoutAuthorization(
-            () -> findBy(JsonSchemaDocumentId.existingId(UUID.fromString(documentId))));
+            () -> findBy(JsonSchemaDocumentId.existingId(documentId)));
 
         JsonSchemaDocument document = documentOptional.orElseThrow(
             () -> new DocumentNotFoundException("Document not found with id " + documentId)
@@ -259,9 +265,10 @@ public class JsonSchemaDocumentService implements DocumentService {
     ) {
         return withLoggingContext(
             "documentDefinitionName", newDocumentRequest.documentDefinitionName(), () -> {
+                final BlueprintId blueprintId = newDocumentRequest.blueprintId();
                 final JsonSchemaDocumentDefinition definition = runWithoutAuthorization(
                     () -> documentDefinitionService
-                        .findByCaseDefinitionId(newDocumentRequest.caseDefinitionId())
+                        .findByBlueprintId(blueprintId)
                         .orElseThrow(
                             () -> new UnknownDocumentDefinitionException(newDocumentRequest.documentDefinitionName())
                         )

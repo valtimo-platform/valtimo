@@ -193,7 +193,7 @@ class ProcessDocumentResourceTest extends BaseTest {
 
     @Test
     void shouldReturnOkWhenGettingProcessDocumentInstances() throws Exception {
-        when(processDocumentAssociationService.findProcessDocumentInstanceDtos(any(JsonSchemaDocumentId.class)))
+        when(processDocumentAssociationService.findProcessDocumentInstanceDtosWithoutBuildingBlocks(any(JsonSchemaDocumentId.class)))
             .thenReturn(List.of(processDocumentInstance));
 
         mockMvc.perform(

@@ -1,29 +1,33 @@
 spring:
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-  liquibase:
-    enabled: false
-    change-log: classpath:/config/liquibase/note-master.xml
-  jpa:
-    show_sql: true
-    open-in-view: false
-    properties:
-      hibernate:
-        hbm2ddl.auto: none
-        generate_statistics: false
-        naming-strategy: org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
-        cache:
-          use_second_level_cache: false
-          use_query_cache: false
-          region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
-        format_sql: true
-        jdbc:
-          time_zone: UTC
-        connection:
-          provider_disables_autocommit: true
-    hibernate:
-      ddl-auto: none
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+    liquibase:
+        enabled: false
+        change-log: classpath:/config/liquibase/note-master.xml
+    jpa:
+        show_sql: true
+        open-in-view: false
+        properties:
+            hibernate:
+                hbm2ddl.auto: none
+                generate_statistics: false
+                naming-strategy: org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
+                cache:
+                    use_second_level_cache: false
+                    use_query_cache: false
+                    region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+                format_sql: true
+                jdbc:
+                    time_zone: UTC
+                connection:
+                    provider_disables_autocommit: true
+        hibernate:
+            ddl-auto: none
 
 spring-actuator:
-  username: test
-  password: test
+    username: test
+    password: test
+
+valtimo:
+    plugin:
+        encryption-secret: "abcdefghijklmnop"

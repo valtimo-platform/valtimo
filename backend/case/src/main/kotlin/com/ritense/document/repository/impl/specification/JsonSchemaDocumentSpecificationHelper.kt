@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package com.ritense.document.repository.impl.specification
 
 import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -29,7 +32,10 @@ class JsonSchemaDocumentSpecificationHelper {
     companion object {
 
         const val DOCUMENT_DEFINITION_ID: String = "documentDefinitionId"
-        const val CASE_DEFINITION_ID: String = "caseDefinitionId"
+        const val OWNER_ID: String = "blueprintId"
+        const val OWNER_TYPE: String = "blueprintType"
+        const val OWNER_KEY: String = "blueprintKey"
+        const val OWNER_VERSION_TAG: String = "blueprintVersionTag"
         const val NAME: String = "name"
         const val ASSIGNEE_ID: String = "assigneeId"
 
@@ -44,19 +50,27 @@ class JsonSchemaDocumentSpecificationHelper {
 
         @JvmStatic
         fun byDocumentDefinitionIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
+            val ownerId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
             return Specification { root: Root<JsonSchemaDocument>,
                                    _: CriteriaQuery<*>?,
-                                   criteriaBuilder: CriteriaBuilder ->
-                criteriaBuilder.equal(
-                    root.get<Any>(DOCUMENT_DEFINITION_ID).get<CaseDefinitionId>(CASE_DEFINITION_ID),
-                    caseDefinitionId
+                                   cb: CriteriaBuilder ->
+                val ownerPath = root.get<Any>(DOCUMENT_DEFINITION_ID).get<Any>(OWNER_ID)
+                cb.and(
+                    cb.equal(ownerPath.get<JsonSchemaDocumentDefinitionBlueprintType>(OWNER_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(ownerPath.get<String>(OWNER_KEY), ownerId.blueprintKey()),
+                    cb.equal(ownerPath.get<String>(OWNER_VERSION_TAG), ownerId.blueprintVersionTag())
                 )
             }
         }
 
         @JvmStatic
         fun byDocumentDefinitionId(id: DocumentDefinition.Id): Specification<JsonSchemaDocument> {
-            return byDocumentDefinitionIdName(id.name()).and(byDocumentDefinitionIdCaseDefinitionId(id.caseDefinitionId()))
+            val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(id)
+            return Specification { root: Root<JsonSchemaDocument>,
+                                   _: CriteriaQuery<*>?,
+                                   cb: CriteriaBuilder ->
+                cb.equal(root.get<JsonSchemaDocumentDefinitionId>(DOCUMENT_DEFINITION_ID), documentDefinitionId)
+            }
         }
 
         @JvmStatic

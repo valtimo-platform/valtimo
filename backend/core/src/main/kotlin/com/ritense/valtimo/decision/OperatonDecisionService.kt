@@ -18,6 +18,7 @@ package com.ritense.valtimo.decision
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.service.OperatonByteArrayService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
@@ -33,7 +34,7 @@ class OperatonDecisionService(
         // It is not possible to look for a decision definition by version tag so we get them all and filter based on the version tag
         val decisionDefinitions = repositoryService
             .createDecisionDefinitionQuery()
-            .versionTag("CD:$caseDefinitionId")
+            .versionTag("${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}${caseDefinitionId}")
             .list()
 
         return decisionDefinitions
@@ -46,7 +47,7 @@ class OperatonDecisionService(
 
         val decisionDefinition = repositoryService
             .createDecisionDefinitionQuery()
-            .versionTag("CD:$caseDefinitionId")
+            .versionTag("${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}${caseDefinitionId}")
             .decisionDefinitionKey(decisionDefinitionKey)
             .singleResult()
 

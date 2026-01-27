@@ -246,6 +246,10 @@ export * from './lib/components/mdi-icon-selector/mdi-icon-selector.component';
 // MDI icon viewer
 export * from './lib/components/mdi-icon-viewer/mdi-icon-viewer.component';
 
+// Schema editor
+
+export * from './lib/components/schema-editor/schema-editor.component';
+
 /*
 directives
  */

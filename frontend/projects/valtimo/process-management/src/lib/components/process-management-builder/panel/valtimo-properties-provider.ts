@@ -108,46 +108,56 @@ const CustomRootElement = (props: {
     pluginTranslationService,
   } = props;
   const modeling = useService('modeling');
+  const elementRegistry = useService('elementRegistry');
   const editProcessLinkText = translateService.instant('interface.edit');
   const unlinkText = translateService.instant('processLink.unlink');
   const createText = translateService.instant('processLink.create');
 
-  const modalParams: ModalParams = {
-    processDefinitionKey: processManagementEditorService.selectionProcessDefinition?.key,
-    processDefinitionId: processManagementEditorService.selectionProcessDefinition?.id,
-    element: {
-      id: element.id,
-      type: element.type,
-      activityListenerType: mapActivityTypeToActivityListenerType(element.type),
-      name: element.di.bpmnElement.name,
-    },
+  const getModalParams = (): ModalParams => {
+    const currentElement = elementRegistry.get(element.id) || element;
+    return {
+      processDefinitionKey: processManagementEditorService.selectionProcessDefinition?.key,
+      processDefinitionId: processManagementEditorService.selectionProcessDefinition?.id,
+      element: {
+        id: currentElement.id,
+        type: currentElement.type,
+        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type),
+        name: currentElement.di?.bpmnElement?.name,
+      },
+    };
   };
 
   const handleCreateClick = (): void => {
     const event: OpenProcessLinkModalEvent = {
-      modalParams,
+      modalParams: getModalParams(),
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
-      modeling.updateProperties(element, {});
+      // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+      setTimeout(() => modeling.updateProperties(element, {}), 0);
     });
   };
 
   const handleEditClick = (): void => {
     const event: OpenProcessLinkModalEvent = {
       processLink,
-      modalParams,
+      modalParams: getModalParams(),
     };
 
     processManagementEditorService.sendOpenProcessLinkModalEvent(event, () => {
-      modeling.updateProperties(element, {});
+      // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+      setTimeout(() => modeling.updateProperties(element, {}), 0);
     });
   };
 
   const handleUnlinkClick = (): void => {
-    processManagementEditorService.deleteProcessLink({activityId: processLink.activityId}, () => {
-      modeling.updateProperties(element, {});
-    });
+    processManagementEditorService.sendDeleteProcessLinkEvent(
+      {activityId: processLink.activityId},
+      () => {
+        // Defer to avoid calling modeling.updateProperties during command stack execute/revert phase
+        setTimeout(() => modeling.updateProperties(element, {}), 0);
+      }
+    );
   };
 
   const processLinkFormDefinitionId = processLink?.formDefinitionId;
@@ -199,6 +209,42 @@ const CustomRootElement = (props: {
           class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
           ><span class="cds--tag__label">
             ${translateService.instant('processLinkType.form-flow')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
+  const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
+
+  if (buildingBlockDefinitionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title"
+          >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
+        >
+
+        <cds-tag
+          class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.building-block')}
           </span>
         </cds-tag>
       </div>
