@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
-import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -41,8 +41,8 @@ import kotlin.jvm.optionals.getOrElse
 @SkipComponentScan
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockDocumentDefinitionResource(
-    private val repository: JsonSchemaDocumentDefinitionRepository,
-    private val service: JsonSchemaDocumentDefinitionService,
+    private val jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService,
+    private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
     private val mapper: ObjectMapper
 ) {
 
@@ -53,7 +53,7 @@ class BuildingBlockDocumentDefinitionResource(
     ): ResponseEntity<JsonNode> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val definition = runWithoutAuthorization {
-            service
+            jsonSchemaDocumentDefinitionService
                 .findByBlueprintId(buildingBlockId)
         }
             .getOrElse { return ResponseEntity.notFound().build() }
@@ -74,7 +74,7 @@ class BuildingBlockDocumentDefinitionResource(
         val newSchema = JsonSchema.fromString(schemaString)
 
         val updated = JsonSchemaDocumentDefinition(id, newSchema)
-        val saved = repository.save(updated)
+        val saved = buildingBlockDocumentDefinitionService.store(updated)
 
         return ResponseEntity.ok(saved.schema())
     }
