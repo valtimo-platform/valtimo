@@ -20,19 +20,16 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class RolNietNatuurlijkPersoonTest {
+class RolOrganisatorischeEenheidTest {
 
     @Test
-    fun `should throw exception when annIdentificatie, innNnpId, kvkNummer or vestigingsNummer is not provided`() {
+    fun `should throw exception when identificatie or naam is not provided`() {
         val exception = assertThrows<IllegalArgumentException> {
-            RolNietNatuurlijkPersoon(
-                annIdentificatie = null,
-                innNnpId = null,
-                kvkNummer = null,
-                vestigingsNummer = null
+            RolOrganisatorischeEenheid(
+                identificatie = null,
+                naam = null
             )
         }
-        assertThat(exception.message)
-            .isEqualTo("Either annIdentificatie, innNnpId, kvkNummer or vestigingsNummer should be provided!")
+        assertThat(exception.message).isEqualTo("Either identificatie or name should be provided!")
     }
 }
