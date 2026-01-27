@@ -310,15 +310,14 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
       }
 
       const activityId = modalParams.element?.id;
-      const processDefinitionId = modalParams.processDefinitionId;
 
-      if (!activityId || !processDefinitionId) {
+      if (!activityId) {
         this.stateService.stopSaving();
         return;
       }
 
       const request: BuildingBlockProcessLinkCreateDto = {
-        processDefinitionId,
+        processDefinitionId: modalParams.processDefinitionId ?? '-',
         activityId,
         activityType: modalParams.element?.activityListenerType ?? '',
         processLinkType: 'building-block',
