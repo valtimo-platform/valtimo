@@ -16,6 +16,7 @@
 
 package com.ritense.importer.config
 
+import com.ritense.importer.BuildingBlockDefinitionIdSupplier
 import com.ritense.importer.ImportService
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportService
@@ -34,12 +35,14 @@ class ImportAutoConfiguration {
     fun importService(
         importers: Set<Importer>,
         environment: Environment,
-        importProperties: ImportProperties
+        importProperties: ImportProperties,
+        buildingBlockDefinitionIdSupplier: BuildingBlockDefinitionIdSupplier?
     ): ImportService {
         return ValtimoImportService(
             importers,
             environment,
-            importProperties.whitelistedPaths.map { it.toRegex() }
+            importProperties.whitelistedPaths.map { it.toRegex() },
+            buildingBlockDefinitionIdSupplier
         )
     }
 }

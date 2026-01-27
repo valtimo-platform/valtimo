@@ -241,7 +241,6 @@ class BuildingBlockProcessLinkMapper(
             return mappings
         }
 
-        require(mappings.isNotEmpty()) { "pluginConfigurationMappings must not be empty" }
         require(mappings.keys.none { it.isBlank() }) { "pluginConfigurationMappings contains blank plugin definition keys" }
 
         val missingKeys = requiredKeys - mappings.keys
