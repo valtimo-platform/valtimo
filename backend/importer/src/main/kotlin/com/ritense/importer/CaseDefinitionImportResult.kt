@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.domain
+package com.ritense.importer
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-data class BuildingBlockDefinitionMainProcessDefinitionDto(
-    @JsonAlias("key")
-    val processDefinitionKey: String
+data class CaseDefinitionImportResult(
+    val importedCaseDefinitionIds: List<CaseDefinitionId>,
+    val skippedCaseDefinitionIds: List<CaseDefinitionId>,
 )

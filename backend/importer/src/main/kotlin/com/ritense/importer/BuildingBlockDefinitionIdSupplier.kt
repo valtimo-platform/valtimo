@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.domain
+package com.ritense.importer
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 
-data class BuildingBlockDefinitionMainProcessDefinitionDto(
-    @JsonAlias("key")
-    val processDefinitionKey: String
-)
+interface BuildingBlockDefinitionIdSupplier {
+    fun getIds(): List<BuildingBlockDefinitionId>
+}
