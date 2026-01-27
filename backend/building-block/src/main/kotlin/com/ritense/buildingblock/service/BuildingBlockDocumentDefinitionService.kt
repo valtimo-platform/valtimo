@@ -84,8 +84,8 @@ class BuildingBlockDocumentDefinitionService(
         }
     }
 
-    fun store(documentDefinition: JsonSchemaDocumentDefinition) {
-        withLoggingContext(
+    fun store(documentDefinition: JsonSchemaDocumentDefinition): JsonSchemaDocumentDefinition {
+        return withLoggingContext(
             JsonSchemaDocumentDefinition::class.java,
             documentDefinition.id.toString(),
             {
