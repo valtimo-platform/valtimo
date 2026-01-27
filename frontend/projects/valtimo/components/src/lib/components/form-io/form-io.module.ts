@@ -69,6 +69,6 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
     FormIoCurrencyComponent,
     FormioDummyComponent,
   ],
-  providers: [],
+  providers: [FormIoDomService],
 })
 export class FormIoModule {}
