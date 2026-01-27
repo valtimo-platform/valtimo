@@ -33,7 +33,6 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.domain.ProcessInstanceId;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId;
-import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest;
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest;
@@ -65,7 +64,6 @@ import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.operaton.bpm.engine.delegate.BaseDelegateExecution;
@@ -377,10 +375,6 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 return null;
             }
         }
-    }
-
-    public List<ProcessDocumentInstanceDto> getProcessInstanceId(JsonSchemaDocumentId jsonSchemaDocumentId) {
-        return processDocumentAssociationService.findProcessDocumentInstanceDtos(jsonSchemaDocumentId);
     }
 
     public JsonSchemaDocument getDocument(ProcessInstanceId processInstanceId, VariableScope variableScope) {
