@@ -17,8 +17,8 @@
 package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.buildingblock.domain.BuildingBlockDefinitionMainProcessDefinitionDto
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
-import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
@@ -63,12 +63,8 @@ class BuildingBlockProcessDefinitionLinkExporter(
         val exportFile = ByteArrayOutputStream().use {
             objectMapper.writer(ExportPrettyPrinter()).writeValue(
                 it,
-                BuildingBlockProcessDefinitionDto(
-                    mainProcessDefinition.id,
-                    mainProcessDefinition.key,
-                    mainProcessDefinition.name,
-                    mainProcessDefinition.versionTag,
-                    main = true
+                BuildingBlockDefinitionMainProcessDefinitionDto(
+                    processDefinitionKey = mainProcessDefinition.key
                 )
             )
 

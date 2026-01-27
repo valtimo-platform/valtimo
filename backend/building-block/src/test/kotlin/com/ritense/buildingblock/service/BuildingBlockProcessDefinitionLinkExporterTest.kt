@@ -73,10 +73,8 @@ class BuildingBlockProcessDefinitionLinkExporterTest(
             main = false
         )
         val mainProcessDefinition = org.mockito.kotlin.mock<ProcessDefinition>()
-        whenever(mainProcessDefinition.id).thenReturn("main-process-id")
         whenever(mainProcessDefinition.key).thenReturn("main-process-key")
-        whenever(mainProcessDefinition.name).thenReturn("Main process name")
-        whenever(mainProcessDefinition.versionTag).thenReturn("BB:bb-link:1.0.0")
+        whenever(mainProcessDefinition.id).thenReturn("main-process-id")
 
         whenever(
             processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
@@ -100,10 +98,7 @@ class BuildingBlockProcessDefinitionLinkExporterTest(
         )
 
         val exportedDto = ObjectMapper().readTree(exportFile.content)
-        assertThat(exportedDto.get("id").asText()).isEqualTo("main-process-id")
-        assertThat(exportedDto.get("key").asText()).isEqualTo("main-process-key")
-        assertThat(exportedDto.get("name").asText()).isEqualTo("Main process name")
-        assertThat(exportedDto.get("main").asBoolean()).isTrue()
+        assertThat(exportedDto.get("processDefinitionKey").asText()).isEqualTo("main-process-key")
 
         assertThat(result.relatedRequests).containsExactlyInAnyOrder(
             BuildingBlockProcessDefinitionExportRequest("main-process-id", buildingBlockDefinitionId),

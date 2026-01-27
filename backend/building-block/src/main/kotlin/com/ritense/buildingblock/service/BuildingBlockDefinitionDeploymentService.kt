@@ -77,7 +77,10 @@ class BuildingBlockDefinitionDeploymentService(
             sortedResources.forEach { (key, files) ->
                 logger.info { "Importing building block: $key" }
                 runWithoutAuthorization {
-                    valtimoImportService.importBuildingBlockDefinition(files, buildingBlockDefinitionRepository.findAll().map { it.id })
+                    val existingFinalIds = buildingBlockDefinitionRepository.findAll()
+                        .filter { it.final }
+                        .map { it.id }
+                    valtimoImportService.importBuildingBlockDefinition(files, existingFinalIds)
                 }
             }
 
