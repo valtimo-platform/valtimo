@@ -29,7 +29,7 @@ import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, switchMap, take, tap} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 
@@ -108,17 +108,23 @@ export class TaskDetailIntermediateSaveComponent {
   public saveCurrentProgress(): void {
     combineLatest([this.submission$, this.formIoFormData$])
       .pipe(
+        take(1),
         switchMap(([submission, formIoFormData]) => {
+          const dataToSave = submission?.data ? submission.data : formIoFormData;
           const intermediateSaveRequest: IntermediateSaveRequest = {
-            submission: submission?.data ? submission.data : formIoFormData,
+            submission: dataToSave,
             taskInstanceId: this.taskValue()?.id ?? '',
           };
 
-          return this.taskIntermediateSaveService.storeIntermediateSubmission(
-            intermediateSaveRequest
-          );
-        }),
-        take(1)
+          return this.taskIntermediateSaveService
+            .storeIntermediateSubmission(intermediateSaveRequest)
+            .pipe(
+              tap(() => {
+                // Update in-memory submission so form retains data on re-render
+                this.taskIntermediateSaveService.setSubmission({data: dataToSave});
+              })
+            );
+        })
       )
       .subscribe({
         next: intermediateSubmission => {
@@ -186,6 +192,8 @@ export class TaskDetailIntermediateSaveComponent {
       .subscribe(intermediateSave => {
         if (intermediateSave !== null) {
           this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSave);
+          // Update in-memory submission with data from API
+          this.taskIntermediateSaveService.setSubmission({data: intermediateSave.submission});
         } else {
           this.currentIntermediateSave = null;
           this.taskIntermediateSaveService.setSubmission({});
