@@ -57,7 +57,7 @@ import {
   selector: 'valtimo-form-io',
   templateUrl: './form-io.component.html',
   styleUrls: ['./form-io.component.css'],
-  providers: [],
+  providers: [FormIoLocalStorageService],
   standalone: false,
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
@@ -82,7 +82,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Output() event = new EventEmitter<any>();
 
   @HostListener('window:beforeunload', ['$event'])
-  private handleBeforeUnload() {}
+  private handleBeforeUnload() {
+    this.localStorageService.clearTokenFromLocalStorage();
+  }
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
@@ -132,6 +134,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     tap(options => this.logger.debug('Form.IO options used', options))
   );
 
+  public readonly tokenSetInLocalStorage$ = this.localStorageService.tokenSetInLocalStorage$;
+
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
 
@@ -143,6 +147,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
+    private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
     private readonly injector: Injector
@@ -170,6 +175,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.unsubscribeFormRefresh();
     this._tokenRefreshTimerSubscription?.unsubscribe();
     this._subscriptions.unsubscribe();
+    this.localStorageService.clearTokenFromLocalStorage();
   }
 
   public showErrors(errors: string[]): void {
@@ -230,7 +236,10 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private setToken(token: string): void {
+    Formio.setUser(jwtDecode(token));
+    Formio.setToken(token);
     this.setTimerForTokenRefresh(token);
+    this.localStorageService.setTokenInLocalStorage(token);
 
     this.logger.debug('New token set for form.io.');
   }
