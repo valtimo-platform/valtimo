@@ -27,7 +27,7 @@ A status can be added with the **Add status** button. A modal will be shown with
   \_The identifier of the status, this must be a unique value within the scope of the case it is added to. A key based on the name is generated automatically but can be overwritten via the pencil button.
 * **Retention date**\
   When the **retention period** is set to 0 or higher, the **retention date** is calculated when the internal state is applied to a case. The case will be removed once the retention period has expired.\
-  **Note:** If an internal state with the retention period not set (less then 0), the retention date of the case will not be calculated or cleared when set.\
+  **Note:** If an internal state with the retention period not set (less than 0), the retention date of the case will not be calculated or cleared when set.\
   Possible retention period values are:
   * Values of 0 or higher: retention is active, case will be deleted after the specified number of days.
   * Negative values (e.g., -1): no retention period is set, case will not be automatically deleted.
