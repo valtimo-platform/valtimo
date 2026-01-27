@@ -152,16 +152,15 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
+    private readonly tagsService: FormIoTagsService,
     private readonly injector: Injector,
     private readonly formioTranslationService: FormioTranslationService
   ) {
     this.setOverrideOptions(this.configService.config);
+    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
-    Formio.setProjectUrl(location.origin);
-    Formio.authUrl = location.origin;
-
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
