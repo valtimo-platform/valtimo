@@ -174,6 +174,8 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     this.showRetentionPeriod$.next(checked);
     if (!checked) {
       this.retentionPeriod.setValue(-1);
+      this.retentionPeriod.markAsDirty();
+      this.statusFormGroup.markAsDirty();
     }
   }
 
@@ -268,11 +270,13 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private prefillForm(prefillStatus: InternalCaseStatus): void {
+    const retentionPeriod = prefillStatus.retentionPeriod ?? -1;
+    this.showRetentionPeriod$.next(retentionPeriod !== -1);
     this._originalStatusKey$.next(prefillStatus.key);
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
       title: prefillStatus.title,
-      retentionPeriod: prefillStatus.retentionPeriod,
+      retentionPeriod,
       visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
       color: prefillStatus.color,
     });
@@ -282,6 +286,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private resetForm(): void {
+    this.showRetentionPeriod$.next(false);
     this.statusFormGroup.patchValue({
       key: '',
       title: '',
