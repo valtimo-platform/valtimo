@@ -38,7 +38,7 @@ public class SchedulerAutoConfiguration {
         return new JdbcTemplateLockProvider(
             JdbcTemplateLockProvider.Configuration.builder()
                 .withJdbcTemplate(new JdbcTemplate(dataSource))
-                .withTimeZone(TimeZone.getDefault())
+                .withTimeZone(TimeZone.getTimeZone("UTC"))
                 .build()
         );
     }
