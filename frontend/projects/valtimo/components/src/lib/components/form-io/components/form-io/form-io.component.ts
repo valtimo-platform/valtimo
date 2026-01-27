@@ -20,6 +20,7 @@ import {
   HostListener,
   Injector,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
@@ -56,10 +57,10 @@ import {
   selector: 'valtimo-form-io',
   templateUrl: './form-io.component.html',
   styleUrls: ['./form-io.component.css'],
-  providers: [FormIoLocalStorageService],
+  providers: [],
   standalone: false,
 })
-export class FormioComponent implements OnInit, OnDestroy {
+export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set options(optionsValue: ValtimoFormioOptions) {
     this.options$.next(optionsValue);
   }
@@ -81,9 +82,7 @@ export class FormioComponent implements OnInit, OnDestroy {
   @Output() event = new EventEmitter<any>();
 
   @HostListener('window:beforeunload', ['$event'])
-  private handleBeforeUnload() {
-    this.localStorageService.clearTokenFromLocalStorage();
-  }
+  private handleBeforeUnload() {}
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
@@ -93,7 +92,6 @@ export class FormioComponent implements OnInit, OnDestroy {
 
   public readonly form$ = combineLatest([this._form$, this.translateService.stream('key')]).pipe(
     filter(([form]) => !!form),
-    map(([form]) => this.formioTranslationService.translateFormDefinition(form)),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
@@ -123,7 +121,7 @@ export class FormioComponent implements OnInit, OnDestroy {
         ...options,
         ...(formioTranslations === 'object' && {
           i18n: {
-            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+            [language]: 'nl',
           },
         }),
       };
@@ -134,8 +132,6 @@ export class FormioComponent implements OnInit, OnDestroy {
     tap(options => this.logger.debug('Form.IO options used', options))
   );
 
-  public readonly tokenSetInLocalStorage$ = this.localStorageService.tokenSetInLocalStorage$;
-
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
 
@@ -145,33 +141,35 @@ export class FormioComponent implements OnInit, OnDestroy {
   constructor(
     private readonly userProviderService: UserProviderService,
     private readonly logger: NGXLogger,
-    private readonly stateService: FormIoStateService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
-    private readonly tagsService: FormIoTagsService,
-    private readonly injector: Injector,
-    private readonly formioTranslationService: FormioTranslationService
+    private readonly injector: Injector
   ) {
     this.setOverrideOptions(this.configService.config);
-    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
-    Formio.setProjectUrl(location.origin);
-    Formio.authUrl = location.origin;
-
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
+    this.subscribeFormRefresh();
+    this.openReloadFormSubscription();
+    this.openReloadSubmissionSubscription();
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes?.formDefinitionRefresh$) {
+      this.unsubscribeFormRefresh();
+      this.subscribeFormRefresh();
+    }
   }
 
   public ngOnDestroy(): void {
+    this.unsubscribeFormRefresh();
     this._tokenRefreshTimerSubscription?.unsubscribe();
     this._subscriptions.unsubscribe();
-    this.localStorageService.clearTokenFromLocalStorage();
   }
 
   public showErrors(errors: string[]): void {
@@ -183,9 +181,7 @@ export class FormioComponent implements OnInit, OnDestroy {
     this.submit.emit(submission);
   }
 
-  public formReady(form: FormIoSourceComponent): void {
-    this.stateService.currentForm = form;
-  }
+  public formReady(form: FormIoSourceComponent): void {}
 
   public onChange(object: any): void {
     this.change.emit(object);
@@ -234,10 +230,7 @@ export class FormioComponent implements OnInit, OnDestroy {
   }
 
   private setToken(token: string): void {
-    Formio.setUser(jwtDecode(token));
-    Formio.setToken(token);
     this.setTimerForTokenRefresh(token);
-    this.localStorageService.setTokenInLocalStorage(token);
 
     this.logger.debug('New token set for form.io.');
   }
@@ -284,11 +277,9 @@ export class FormioComponent implements OnInit, OnDestroy {
         const documentId = params.documentId;
 
         if (documentDefinitionName) {
-          this.stateService.setDocumentDefinitionName(documentDefinitionName);
         }
 
         if (documentId) {
-          this.stateService.setDocumentId(documentId);
         }
       })
     );
