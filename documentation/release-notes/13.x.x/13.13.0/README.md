@@ -30,6 +30,11 @@
 
   Changed required fields for; Create Zaakrol - Employee, Create Zaakrol - Organisational unit and Create Zaakrol - Branch
 
+* **Allow switching between process link steps**
+
+  For existing process links, it is now possible to switch between the steps of its configuration in the process link
+  modal.
+
 ## Bugfixes
 
 * **Tasks are now no longer closed when another user changes the task assignee.**
