@@ -495,9 +495,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -553,9 +553,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -593,9 +593,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty achternaam: String,
-        @PluginActionProperty voorletters: String,
+        @PluginActionProperty identificatie: String? = null,
+        @PluginActionProperty achternaam: String? = null,
+        @PluginActionProperty voorletters: String? = null,
         @PluginActionProperty voorvoegselAchternaam: String? = null,
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
@@ -615,9 +615,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -626,7 +626,7 @@ class ZakenApiPlugin(
                         identificatie = identificatie,
                         achternaam = achternaam,
                         voorletters = voorletters,
-                        voorvoegselAchternaam = voorvoegselAchternaam ?: ""
+                        voorvoegselAchternaam = voorvoegselAchternaam
                     ),
                     afwijkendeNaamBetrokkene = afwijkendeNaamBetrokkene,
                     indicatieMachtigingString = indicatieMachtiging,
@@ -657,9 +657,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty naam: String,
-        @PluginActionProperty isGehuisvestIn: String,
+        @PluginActionProperty identificatie: String? = null,
+        @PluginActionProperty naam: String? = null,
+        @PluginActionProperty isGehuisvestIn: String? = null,
         @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
         @PluginActionProperty indicatieMachtiging: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
@@ -678,9 +678,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,
@@ -719,8 +719,8 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty kvkNummer: String,
-        @PluginActionProperty vestigingsNummer: String,
+        @PluginActionProperty kvkNummer: String? = null,
+        @PluginActionProperty vestigingsNummer: String? = null,
         @PluginActionProperty handelsnaam: String? = null,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
@@ -738,9 +738,9 @@ class ZakenApiPlugin(
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
             val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                rol = Rol(
                     zaak = zaakUrl,
                     roltype = URI(roltypeUrl),
                     roltoelichting = rolToelichting,

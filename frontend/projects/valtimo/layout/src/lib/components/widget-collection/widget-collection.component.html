@@ -109,11 +109,16 @@
     ></valtimo-no-results>
   }
 
-  <cds-pagination-nav
-    *ngIf="paginationModel() && (showPagination$ | async)"
-    class="valtimo-widget-collection__pagination"
-    [model]="paginationModel()"
-    (selectPage)="onSelectPage($event)"
-  >
-  </cds-pagination-nav>
+  @if ($paginationModel() && $showPagination()) {
+    <cds-pagination-nav
+      class="valtimo-widget-collection__pagination"
+      [model]="$paginationModel()"
+      (selectPage)="onSelectPage($event)"
+    >
+    </cds-pagination-nav>
+  } @else if (!obs.widgetData) {
+    <div class="valtimo-widget-collection__pagination">
+      <cds-skeleton-text [lines]="1" [maxLineWidth]="150" [minLineWidth]="150"></cds-skeleton-text>
+    </div>
+  }
 </ng-container>
