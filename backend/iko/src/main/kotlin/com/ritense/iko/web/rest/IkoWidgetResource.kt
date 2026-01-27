@@ -21,9 +21,11 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.NO_PAGE_SIZE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.widget.web.rest.dto.WidgetDto
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -45,7 +47,8 @@ class IkoWidgetResource(
         @PathVariable ikoViewKey: String,
         @PathVariable tabKey: String,
     ): ResponseEntity<List<WidgetDto>> {
-        return ResponseEntity.ok(ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey).map { it.toDto() })
+        return ResponseEntity.ok(
+            ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey).map { it.toDto() })
     }
 
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data")
@@ -54,14 +57,18 @@ class IkoWidgetResource(
         @PathVariable tabKey: String,
         @PathVariable widgetKey: String,
         @RequestParam properties: Map<String, String>,
-        @PageableDefault(size = 5) pageable: Pageable,
+        @PageableDefault pageable: Pageable,
+        request: HttpServletRequest,
     ): ResponseEntity<Any?> {
+        val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
         val allProperties = properties + mapOf(
             IKO_VIEW_KEY to ikoViewKey,
             TAB_KEY to tabKey,
             WIDGET_KEY to widgetKey,
             PAGEABLE to pageable,
+            NO_PAGE_SIZE to (pageSize == null || pageSize <= 0)
         )
+
         return ResponseEntity.ok(
             ikoWidgetService.getWidgetData(ikoViewKey, tabKey, widgetKey, allProperties)
         )
