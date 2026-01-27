@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
-import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription} from 'rxjs';
 import {
   FormCustomComponentConfig,
   ModalParams,
@@ -27,7 +27,7 @@ import {
 import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
-import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
+import {FORM_CUSTOM_COMPONENT_TOKEN, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../constants';
 import {ManagementContext} from '@valtimo/shared';
 import {BuildingBlockStateService} from './building-block-state.service';
 
@@ -67,15 +67,22 @@ export class ProcessLinkStateService implements OnDestroy {
   }
 
   public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
-    return this._availableProcessLinkTypes$.pipe(
-      map(types =>
+    return combineLatest([this._availableProcessLinkTypes$, this._context$]).pipe(
+      map(([types, context]) =>
         (!this.formCustomComponentConfig
           ? types.map(type => ({
               ...type,
               enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
             }))
           : types
-        ).filter(type => type.processLinkType !== 'url')
+        )
+          .filter(type => type.processLinkType !== 'url')
+          .map(type =>
+            context === 'buildingBlock' &&
+            UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK.includes(type.processLinkType)
+              ? {...type, enabled: false}
+              : type
+          )
       )
     );
   }
