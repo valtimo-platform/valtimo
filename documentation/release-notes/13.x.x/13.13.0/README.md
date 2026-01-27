@@ -12,10 +12,11 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Widget configuration made available to custom component**
 
-  New enhancement explanation.
+  To be able to access the widget configuration in a custom component it is now injected as `widgetConfiguration` when the custom component is created by the `custom-component` widget.
 
 ## Bugfixes
 
-* LockProvider configuration now uses the `TimeZone.getDefault()` to determine the time zone, ensuring consistency with the system's default time zone settings.
+* **Tasks are now no longer closed when another user changes the task assignee.**
+* **LockProvider configuration now supports specifying the `timezone` via configuration properties and defaults to `UTC` if not specified.**
