@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/building-block-management",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["vanilla-jsoneditor", "ajv"]
 }

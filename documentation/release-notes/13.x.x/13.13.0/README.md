@@ -4,6 +4,10 @@
 **Release date xx-xx-2026**
 {% endhint %}
 
+## Migration
+
+* [Front-end migration](front-end-migration.md)
+
 ## New Features
 
 * **Building blocks for reusable process steps**

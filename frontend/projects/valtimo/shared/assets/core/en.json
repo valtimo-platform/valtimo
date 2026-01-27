@@ -1921,7 +1921,8 @@
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
     "form": "There are no forms available. Create a form to be able to link it to a process step.",
     "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step.",
-    "ui-component": "There are no custom components registered please create one if you wish to use this option."
+    "ui-component": "There are no custom components registered. Please create one if you wish to use this option.",
+    "buildingBlockUnsupported": "This process link type is not yet supported for building blocks."
   },
   "processLinkUrlInvalid": "Invalid URL {{ URL }}",
   "accessControl": {
