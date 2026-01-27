@@ -94,6 +94,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public readonly form$ = combineLatest([this._form$, this.translateService.stream('key')]).pipe(
     filter(([form]) => !!form),
+    map(([form]) => this.formioTranslationService.translateFormDefinition(form)),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
@@ -151,11 +152,10 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
-    private readonly tagsService: FormIoTagsService,
-    private readonly injector: Injector
+    private readonly injector: Injector,
+    private readonly formioTranslationService: FormioTranslationService
   ) {
     this.setOverrideOptions(this.configService.config);
-    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
