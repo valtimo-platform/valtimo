@@ -52,17 +52,11 @@
 </ng-template>
 
 <ng-template #statusForm let-obs="obs">
-  <form [formGroup]="statusFormGroup" class="status-form">
+  <form [formGroup]="statusFormGroup" class="list-column-form">
     <cds-label>
       {{ 'caseManagement.statuses.columns.title' | translate }}
 
       <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
-
-      <input cdsText formControlName="retentionPeriod" />
     </cds-label>
 
     <cds-label>
@@ -115,6 +109,27 @@
         (checkedChange)="toggleCheckedChange($event)"
       ></cds-toggle>
     </div>
+
+    <cds-toggle
+            [label]="'caseManagement.statuses.showRetentionPeriod' | translate"
+            [onText]="'interface.yes' | translate"
+            [offText]="'interface.no' | translate"
+            [disabled]="obs.disabled"
+            [checked]="showRetentionPeriod$ | async"
+            (checkedChange)="toggleRetentionPeriod($event)"
+    ></cds-toggle>
+
+    <cds-label *ngIf="showRetentionPeriod$ | async">
+      <span class="label-with-tooltip">
+      {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
+        <v-tooltip-icon
+                [tooltip]="'caseManagement.statuses.columns.retentionPeriodTooltip' | translate"
+        ></v-tooltip-icon>
+      </span>
+      <input cdsText formControlName="retentionPeriod" />
+    </cds-label>
+
+
   </form>
 </ng-template>
 

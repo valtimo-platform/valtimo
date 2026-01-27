@@ -29,8 +29,8 @@ A status can be added with the **Add status** button. A modal will be shown with
   When the **retention period** is set to 0 or higher, the **retention date** is calculated when the internal state is applied to a case. The case will be removed once the retention period has expired.\
   **Note:** If an internal state with the retention period not set (less then 0), the retention date of the case will not be calculated or cleared when set.\
   Possible retention period values are:
-  * Values of 0 or higher: retention is active, case will be deleted after the specified number of days
-  * Negative values (e.g., -1): no retention period is set, case will not be automatically deleted
+  * Values of 0 or higher: retention is active, case will be deleted after the specified number of days.
+  * Negative values (e.g., -1): no retention period is set, case will not be automatically deleted.
 * **Color**\
   Statuses are displayed as a badge in the case details and list screen UI.\
   This badge will be displayed in the selected color.\

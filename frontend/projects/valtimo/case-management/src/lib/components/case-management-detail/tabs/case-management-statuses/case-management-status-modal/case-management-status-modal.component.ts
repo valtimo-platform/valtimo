@@ -168,6 +168,15 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
   public readonly editingKey$ = new BehaviorSubject<boolean>(false);
 
+  public readonly showRetentionPeriod$ = new BehaviorSubject<boolean>(false);
+
+  public toggleRetentionPeriod(checked: boolean): void {
+    this.showRetentionPeriod$.next(checked);
+    if (!checked) {
+      this.retentionPeriod.setValue(-1);
+    }
+  }
+
   private readonly _originalStatusKey$ = new BehaviorSubject<string>('');
 
   private readonly _subscriptions = new Subscription();

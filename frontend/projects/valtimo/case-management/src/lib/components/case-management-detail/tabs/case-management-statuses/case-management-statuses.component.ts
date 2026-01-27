@@ -41,6 +41,7 @@ import {CaseManagementService} from '../../../../services';
 })
 export class CaseManagementStatusesComponent implements AfterViewInit {
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
+  @ViewChild('retentionPeriodColumnTemplate') retentionPeriodColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
@@ -204,7 +205,8 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
       {
         key: 'retentionPeriod',
         label: 'caseManagement.statuses.columns.retentionPeriod',
-        viewType: ViewType.NUMBER,
+        viewType: ViewType.TEMPLATE,
+        template: this.retentionPeriodColumnTemplate,
       },
       {
         viewType: ViewType.TEMPLATE,
