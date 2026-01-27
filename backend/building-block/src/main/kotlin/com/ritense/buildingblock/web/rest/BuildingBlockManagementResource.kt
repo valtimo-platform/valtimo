@@ -129,7 +129,13 @@ class BuildingBlockManagementResource(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         return try {
-            importService.importBuildingBlockDefinitions(file.inputStream, buildingBlockDefinitionRepository.findAll().map { it.id })
+            importService.importBuildingBlockDefinitions(
+                file.inputStream,
+                buildingBlockDefinitionRepository
+                    .findAll()
+                    .filter { it.final }
+                    .map { it.id }
+            )
             ResponseEntity.ok().build()
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }

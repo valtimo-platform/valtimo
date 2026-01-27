@@ -85,10 +85,10 @@ class BuildingBlockProcessLinkImporter(
                 val createDto = mapper.toProcessLinkCreateRequestDto(deployDto)
 
                 try {
-                    processLinkService.createProcessLink(createDto, request.caseDefinitionId)
+                    processLinkService.createProcessLink(createDto, request.getBlueprintId())
                 } catch (e: ProcessLinkExistsException) {
                     val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId)
-                    processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
+                    processLinkService.updateProcessLink(updateDto, request.getBlueprintId())
                 }
             }
         }
