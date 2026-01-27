@@ -1491,7 +1491,15 @@
     "noTranslationFound": "Geen vertaling gevonden",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
+  "taskDetail": {
+    "taskCreated": "Aangemaakt op",
+    "taskCompleted": "is succesvol afgerond",
+    "assignedNotificationTitle": "Taak toegewezen",
+    "assignedNotificationContent": "De taak is toegewezen aan",
+    "unassignedNotificationTitle": "Taak niet meer toegewezen",
+    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
+    "unknownAssignee": "onbekend"
+  },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
     "header": "Gebruiker toewijzen aan deze taak",
