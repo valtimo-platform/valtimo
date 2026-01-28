@@ -179,7 +179,7 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = USERNAME, authorities = [ADMIN])
-    fun `should set retention date when setting document status with retention Period larger then 0`() {
+    fun `should set retention date when setting document status with retention Period larger than 0`() {
         val document = createDocument("""{"street": "Admin street"}""")
         assertThat(document.internalStatus()).isNull()
 
@@ -189,7 +189,8 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         //Assert change
         val modifiedDocument = documentService.findBy(document.id).get()
         assertThat(modifiedDocument.internalStatus()).isEqualTo(newStatusKey)
-        assertThat(modifiedDocument.retentionDate().get().isAfter(LocalDateTime.now()))
+        assertThat(modifiedDocument.retentionDate()).isPresent
+        assertThat(modifiedDocument.retentionDate().get()).isAfter(LocalDateTime.now())
     }
 
     @Test
