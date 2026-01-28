@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.24.0" camunda:diagramRelationId="dce89363-c157-4317-a430-578b7d1cb20d">
+  <bpmn:collaboration id="Collaboration_1azd7b1">
+    <bpmn:participant id="OverdragenMeldingNaarDerdenParticipant" name="Overdragen melding naar derden" processRef="overdragen-melding-naar-derden" />
+    <bpmn:textAnnotation id="TextAnnotation_1apfbug">
+      <bpmn:text>nieuwe status: in behandeling</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_1u51pce">
+      <bpmn:text>nieuwe status: melding overgedragen</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_1fwrkvy">
+      <bpmn:text>Input: overdrachtNaarDerden</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0cwo74r" associationDirection="None" sourceRef="MeldingOntvangenStartEvent" targetRef="TextAnnotation_1fwrkvy" />
+    <bpmn:association id="Association_0euw7fb" sourceRef="UpdateZaakstatusCallActivity" targetRef="TextAnnotation_1u51pce" />
+    <bpmn:association id="Association_0g0lngu" sourceRef="UpdateZaakstatusCallActivity1" targetRef="TextAnnotation_1apfbug" />
+    <bpmn:textAnnotation id="TextAnnotation_1ne9yp6">
+      <bpmn:text>naar de betrokken partij</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_06slue9" associationDirection="None" sourceRef="VersturenEmailMetAanvraagBijlageTask" targetRef="TextAnnotation_1ne9yp6" />
+  </bpmn:collaboration>
+  <bpmn:process id="overdragen-melding-naar-derden" name="Overdragen melding naar derden" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_0q0k2zv">
+      <bpmn:lane id="Lane_0x4o3t2">
+        <bpmn:flowNodeRef>MeldingOntvangenStartEvent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>VastleggenLaatsteOverdrachtTask</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>VersturenEmailMetAanvraagBijlageTask</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UpdateZaakstatusCallActivity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TerugkoppelingGewenstGateway</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>VastleggenTerugkoppelingTask</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>MeldingOvergedragenEndEvent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UpdateZaakstatusCallActivity1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TerugkoppelingOntvangenEndEvent</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="MeldingOntvangenStartEvent" name="Melding Ontvangen">
+      <bpmn:outgoing>Flow_1g9hg7q</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="VastleggenLaatsteOverdrachtTask" name="Vastleggen laatste overdracht" camunda:asyncAfter="true" camunda:expression="${true}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="laatsteOverdracht">${overdrachtNaarDerden.get(overdrachtNaarDerden.size()-1)}</camunda:inputParameter>
+          <camunda:outputParameter name="terugkoppelingGewenst">${laatsteOverdracht.overdracht.terugkoppelingGewenst}</camunda:outputParameter>
+          <camunda:outputParameter name="laatsteOverdracht">${laatsteOverdracht}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1g9hg7q</bpmn:incoming>
+      <bpmn:outgoing>Flow_0laup1s</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1g9hg7q" sourceRef="MeldingOntvangenStartEvent" targetRef="VastleggenLaatsteOverdrachtTask" />
+    <bpmn:sequenceFlow id="Flow_0laup1s" sourceRef="VastleggenLaatsteOverdrachtTask" targetRef="VersturenEmailMetAanvraagBijlageTask" />
+    <bpmn:sequenceFlow id="Flow_111e7kd" sourceRef="VersturenEmailMetAanvraagBijlageTask" targetRef="UpdateZaakstatusCallActivity" />
+    <bpmn:sequenceFlow id="Flow_0ou9ghw" sourceRef="UpdateZaakstatusCallActivity" targetRef="TerugkoppelingGewenstGateway" />
+    <bpmn:sequenceFlow id="JaSequenceFlow" name="Ja" sourceRef="TerugkoppelingGewenstGateway" targetRef="VastleggenTerugkoppelingTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${terugkoppelingGewenst}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="NeeSequenceFlow" name="Nee" sourceRef="TerugkoppelingGewenstGateway" targetRef="MeldingOvergedragenEndEvent" />
+    <bpmn:sequenceFlow id="Flow_1per3gj" sourceRef="VastleggenTerugkoppelingTask" targetRef="UpdateZaakstatusCallActivity1" />
+    <bpmn:sequenceFlow id="Flow_0lpflkt" sourceRef="UpdateZaakstatusCallActivity1" targetRef="TerugkoppelingOntvangenEndEvent" />
+    <bpmn:sendTask id="VersturenEmailMetAanvraagBijlageTask" name="Versturen email " camunda:asyncAfter="true" camunda:expression="${mailService.sendElementTemplateTaskMail(execution)}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="datumMeldingOntvangen">${datumOntvangen}</camunda:inputParameter>
+          <camunda:inputParameter name="voornaam">${voornaamMelder}</camunda:inputParameter>
+          <camunda:inputParameter name="tussenvoegsel">${tussenvoegselMelder}</camunda:inputParameter>
+          <camunda:inputParameter name="achternaam">${achternaamMelder}</camunda:inputParameter>
+          <camunda:inputParameter name="meldingovergedragenaan">${laatsteOverdracht.overdracht.overgedragenNaar}</camunda:inputParameter>
+          <camunda:inputParameter name="toelichtingnaarderden">${laatsteOverdracht.overdracht.toelichtingNaarBetrokkenPartij}</camunda:inputParameter>
+          <camunda:inputParameter name="emailBetrokkenPartij">${laatsteOverdracht.overdracht.emailBetrokkenPartij}</camunda:inputParameter>
+        </camunda:inputOutput>
+        <camunda:properties>
+          <camunda:property name="mailSendTaskFrom" value="noreply@valtimo.nl" />
+          <camunda:property name="mailSendTaskTemplate" value="melding-doorsturen-naar-derden" />
+          <camunda:property name="mailSendTaskSubject" value="Overdragen melding naar derden" />
+          <camunda:property name="mailSendTaskTo" value="${emailBetrokkenPartij}" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0laup1s</bpmn:incoming>
+      <bpmn:outgoing>Flow_111e7kd</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:callActivity id="UpdateZaakstatusCallActivity" name="update zaakstatus" camunda:asyncAfter="true" calledElement="generic-update-zaakstatus">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in source="zaakstatus" target="zaakstatus" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="zaakstatus">Overgedragen</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_111e7kd</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ou9ghw</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:exclusiveGateway id="TerugkoppelingGewenstGateway" name="Terugkoppeling gewenst?" default="NeeSequenceFlow">
+      <bpmn:incoming>Flow_0ou9ghw</bpmn:incoming>
+      <bpmn:outgoing>JaSequenceFlow</bpmn:outgoing>
+      <bpmn:outgoing>NeeSequenceFlow</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="VastleggenTerugkoppelingTask" name="Vastleggen terugkoppeling" camunda:asyncAfter="true" camunda:candidateGroups="ROLE_ADMIN, ROLE_USER">
+      <bpmn:extensionElements />
+      <bpmn:incoming>JaSequenceFlow</bpmn:incoming>
+      <bpmn:outgoing>Flow_1per3gj</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="MeldingOvergedragenEndEvent" name="melding overgedragen">
+      <bpmn:incoming>NeeSequenceFlow</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:callActivity id="UpdateZaakstatusCallActivity1" name="update zaakstatus" camunda:asyncAfter="true" calledElement="generic-update-zaakstatus">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in source="zaakstatus" target="zaakstatus" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="zaakstatus">In behandeling</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1per3gj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lpflkt</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="TerugkoppelingOntvangenEndEvent" name="terugkoppeling ontvangen">
+      <bpmn:incoming>Flow_0lpflkt</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1azd7b1">
+      <bpmndi:BPMNShape id="BPMNShape_1v5d7uf" bpmnElement="OverdragenMeldingNaarDerdenParticipant" isHorizontal="true">
+        <dc:Bounds x="150" y="80" width="1240" height="400" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0w9nrax" bpmnElement="Lane_0x4o3t2" isHorizontal="true">
+        <dc:Bounds x="180" y="80" width="1210" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_13lirmy" bpmnElement="MeldingOntvangenStartEvent">
+        <dc:Bounds x="212" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="204" y="295" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1z0p339_di" bpmnElement="VastleggenLaatsteOverdrachtTask">
+        <dc:Bounds x="300" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16cfvbq_di" bpmnElement="VersturenEmailMetAanvraagBijlageTask">
+        <dc:Bounds x="480" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_08lmkx3" bpmnElement="UpdateZaakstatusCallActivity">
+        <dc:Bounds x="660" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1gyxi0f" bpmnElement="TerugkoppelingGewenstGateway" isMarkerVisible="true">
+        <dc:Bounds x="835" y="245" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="823" y="208" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_112blqc" bpmnElement="VastleggenTerugkoppelingTask">
+        <dc:Bounds x="960" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1sqc3gz_di" bpmnElement="MeldingOvergedragenEndEvent">
+        <dc:Bounds x="992" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="977" y="405" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0hw6xz4" bpmnElement="UpdateZaakstatusCallActivity1">
+        <dc:Bounds x="1140" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_07s5djb" bpmnElement="TerugkoppelingOntvangenEndEvent">
+        <dc:Bounds x="1312" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1294" y="295" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1g9hg7q_di" bpmnElement="Flow_1g9hg7q">
+        <di:waypoint x="248" y="270" />
+        <di:waypoint x="300" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0laup1s_di" bpmnElement="Flow_0laup1s">
+        <di:waypoint x="400" y="270" />
+        <di:waypoint x="480" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_111e7kd_di" bpmnElement="Flow_111e7kd">
+        <di:waypoint x="580" y="270" />
+        <di:waypoint x="660" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ou9ghw_di" bpmnElement="Flow_0ou9ghw">
+        <di:waypoint x="760" y="270" />
+        <di:waypoint x="835" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0u9h1jw_di" bpmnElement="JaSequenceFlow">
+        <di:waypoint x="885" y="270" />
+        <di:waypoint x="960" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="916" y="252" width="12" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0s9pah4_di" bpmnElement="NeeSequenceFlow">
+        <di:waypoint x="860" y="295" />
+        <di:waypoint x="860" y="380" />
+        <di:waypoint x="992" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="865" y="335" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1per3gj_di" bpmnElement="Flow_1per3gj">
+        <di:waypoint x="1060" y="270" />
+        <di:waypoint x="1140" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lpflkt_di" bpmnElement="Flow_0lpflkt">
+        <di:waypoint x="1240" y="270" />
+        <di:waypoint x="1312" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_0sqt882" bpmnElement="TextAnnotation_1apfbug">
+        <dc:Bounds x="1180" y="128" width="150" height="45" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0fr5m5a" bpmnElement="TextAnnotation_1u51pce">
+        <dc:Bounds x="670" y="130" width="173" height="41" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1fwrkvy_di" bpmnElement="TextAnnotation_1fwrkvy">
+        <dc:Bounds x="210" y="140" width="140" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1ne9yp6_di" bpmnElement="TextAnnotation_1ne9yp6">
+        <dc:Bounds x="500" y="140" width="99.99274099883856" height="40.65040650406504" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_0cwo74r_di" bpmnElement="Association_0cwo74r">
+        <di:waypoint x="235" y="253" />
+        <di:waypoint x="253" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_123ef4x" bpmnElement="Association_0euw7fb">
+        <di:waypoint x="710" y="230" />
+        <di:waypoint x="720" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_00qw1lq" bpmnElement="Association_0g0lngu">
+        <di:waypoint x="1208" y="230" />
+        <di:waypoint x="1230" y="173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_06slue9_di" bpmnElement="Association_06slue9">
+        <di:waypoint x="537" y="230" />
+        <di:waypoint x="546" y="181" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

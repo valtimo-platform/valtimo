@@ -1,6 +1,6 @@
 # Process beans
 
-Process beans are Spring beans that can be used inside a Camunda BPMN process. The BPMN expression fields have access to all process beans. This page gives an overview of all available process beans.
+Process beans are Spring beans that can be used inside a Operaton BPMN process. The BPMN expression fields have access to all process beans. This page gives an overview of all available process beans.
 
 ## ConnectorService
 
@@ -93,7 +93,7 @@ This process bean is for sending emails.
 fun sendElementTemplateTaskMail(execution: DelegateExecution)
 ```
 
-Is able to send an email using the configured Camunda extension properties. The extension properties are:
+Is able to send an email using the configured Operaton extension properties. The extension properties are:
 
 * `mailSendTaskFrom` - The email-address of the sender.
 * `mailSendTaskSubject` - The subject of the email.

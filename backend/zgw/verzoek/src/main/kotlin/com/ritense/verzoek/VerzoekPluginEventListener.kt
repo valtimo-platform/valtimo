@@ -52,7 +52,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
 @SkipComponentScan
@@ -247,7 +247,7 @@ class VerzoekPluginEventListener(
         verzoekObject: ObjectNode
     ): Document {
         logger.debug { "Creating document for verzoek of type '${verzoekTypeProperties.type}'" }
-        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).get()
+        val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId).get()
         return AuthorizationContext.runWithoutAuthorization {
             documentService.createDocument(
                 NewDocumentRequest(

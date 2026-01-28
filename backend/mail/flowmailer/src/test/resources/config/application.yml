@@ -35,3 +35,5 @@ valtimo:
         client-id: clientId
         client-secret: clientSecret
         account-id: accountId
+    plugin:
+        encryption-secret: "abcdefghijklmnop"

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_HouseholdVerification" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_HouseholdVerification">
+    <bpmn:participant id="HouseholdVerificationParticipant" name="Huishouden Verificatie" processRef="household-verification-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="household-verification-process" name="Huishouden Verificatie Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start Verificatie">
+      <bpmn:outgoing>Flow_Start_To_Format</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="FormatNameTask" name="Formatteer Naam" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/formattedName', valueResolverDelegateService.resolveValue(execution, 'doc:/applicantName').toUpperCase())}">
+      <bpmn:incoming>Flow_Start_To_Format</bpmn:incoming>
+      <bpmn:outgoing>Flow_Format_To_BRP</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallBrpLookupActivity" name="BRP Opvraging" camunda:asyncAfter="true" calledElement="brp-lookup" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:household-verification:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Format_To_BRP</bpmn:incoming>
+      <bpmn:outgoing>Flow_BRP_To_IncomeCheck</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallIncomeCheckActivity" name="Inkomenstoets" camunda:asyncAfter="true" calledElement="income-check-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:income-check:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_BRP_To_IncomeCheck</bpmn:incoming>
+      <bpmn:outgoing>Flow_IncomeCheck_To_Verify</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="CreateVerifiedApplicantTask" name="Stel Verificatie Samen" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/verifiedApplicant', 'Geverifieerd: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/brpVerifiedName')))}">
+      <bpmn:incoming>Flow_IncomeCheck_To_Verify</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verify_To_PatchZaak</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="PatchZaakVerificationTask" name="Update Zaak: Verificatie" camunda:asyncAfter="true">
+      <bpmn:incoming>Flow_Verify_To_PatchZaak</bpmn:incoming>
+      <bpmn:outgoing>Flow_PatchZaak_To_ReadToelichting</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ReadZaakToelichtingTask" name="Lees Zaak Toelichting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zaakToelichtingBB2', valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting'))}">
+      <bpmn:incoming>Flow_PatchZaak_To_ReadToelichting</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReadToelichting_To_Calculate</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CalculateBaseAmountTask" name="Bereken Basisbedrag" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/baseSubsidyAmount', valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize') * 2)}">
+      <bpmn:incoming>Flow_ReadToelichting_To_Calculate</bpmn:incoming>
+      <bpmn:outgoing>Flow_Calculate_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_Verify_To_PatchZaak" sourceRef="CreateVerifiedApplicantTask" targetRef="PatchZaakVerificationTask" />
+    <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadToelichting" sourceRef="PatchZaakVerificationTask" targetRef="ReadZaakToelichtingTask" />
+    <bpmn:sequenceFlow id="Flow_ReadToelichting_To_Calculate" sourceRef="ReadZaakToelichtingTask" targetRef="CalculateBaseAmountTask" />
+    <bpmn:endEvent id="EndEvent" name="Verificatie Afgerond">
+      <bpmn:incoming>Flow_Calculate_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Calculate_To_End" sourceRef="CalculateBaseAmountTask" targetRef="EndEvent" />
+    <bpmn:sequenceFlow id="Flow_Start_To_Format" sourceRef="StartEvent" targetRef="FormatNameTask" />
+    <bpmn:sequenceFlow id="Flow_Format_To_BRP" sourceRef="FormatNameTask" targetRef="CallBrpLookupActivity" />
+    <bpmn:sequenceFlow id="Flow_BRP_To_IncomeCheck" sourceRef="CallBrpLookupActivity" targetRef="CallIncomeCheckActivity" />
+    <bpmn:sequenceFlow id="Flow_IncomeCheck_To_Verify" sourceRef="CallIncomeCheckActivity" targetRef="CreateVerifiedApplicantTask" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_HouseholdVerification">
+      <bpmndi:BPMNShape id="Participant_HouseholdVerification_di" bpmnElement="HouseholdVerificationParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="1310" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="202" y="202" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FormatNameTask_di" bpmnElement="FormatNameTask">
+        <dc:Bounds x="290" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallBrpLookupActivity_di" bpmnElement="CallBrpLookupActivity">
+        <dc:Bounds x="420" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallIncomeCheckActivity_di" bpmnElement="CallIncomeCheckActivity">
+        <dc:Bounds x="550" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CreateVerifiedApplicantTask_di" bpmnElement="CreateVerifiedApplicantTask">
+        <dc:Bounds x="680" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PatchZaakVerificationTask_di" bpmnElement="PatchZaakVerificationTask">
+        <dc:Bounds x="810" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReadZaakToelichtingTask_di" bpmnElement="ReadZaakToelichtingTask">
+        <dc:Bounds x="940" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalculateBaseAmountTask_di" bpmnElement="CalculateBaseAmountTask">
+        <dc:Bounds x="1070" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="1232" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1210" y="202" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Format_di" bpmnElement="Flow_Start_To_Format">
+        <di:waypoint x="258" y="177" />
+        <di:waypoint x="290" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Format_To_BRP_di" bpmnElement="Flow_Format_To_BRP">
+        <di:waypoint x="390" y="177" />
+        <di:waypoint x="420" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BRP_To_IncomeCheck_di" bpmnElement="Flow_BRP_To_IncomeCheck">
+        <di:waypoint x="520" y="177" />
+        <di:waypoint x="550" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IncomeCheck_To_Verify_di" bpmnElement="Flow_IncomeCheck_To_Verify">
+        <di:waypoint x="650" y="177" />
+        <di:waypoint x="680" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Verify_To_PatchZaak_di" bpmnElement="Flow_Verify_To_PatchZaak">
+        <di:waypoint x="780" y="177" />
+        <di:waypoint x="810" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadToelichting_di" bpmnElement="Flow_PatchZaak_To_ReadToelichting">
+        <di:waypoint x="910" y="177" />
+        <di:waypoint x="940" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReadToelichting_To_Calculate_di" bpmnElement="Flow_ReadToelichting_To_Calculate">
+        <di:waypoint x="1040" y="177" />
+        <di:waypoint x="1070" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_End_di" bpmnElement="Flow_Calculate_To_End">
+        <di:waypoint x="1170" y="177" />
+        <di:waypoint x="1232" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

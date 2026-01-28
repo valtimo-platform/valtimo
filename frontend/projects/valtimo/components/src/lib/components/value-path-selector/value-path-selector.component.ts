@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
@@ -36,7 +37,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
-  DropdownModule,
+  ComboBoxModule,
   InputModule,
   LayerModule,
   ListItem,
@@ -57,11 +58,12 @@ import {
 } from 'rxjs';
 import {distinctUntilChanged, take} from 'rxjs/operators';
 import {
+  BlueprintContext,
   ValuePathItem,
-  ValuePathType,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
+  ValuePathType,
 } from '../../models';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
@@ -75,7 +77,7 @@ import {ActivatedRoute} from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    DropdownModule,
+    ComboBoxModule,
     LoadingModule,
     ReactiveFormsModule,
     ToggleModule,
@@ -99,6 +101,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     false;
   @HostBinding('class.value-path-selector--margin-bottom-xl') private _showMarginXl: boolean =
     false;
+
   @HostListener('focusout')
   public onBlur(): void {
     this.onBlurEvent();
@@ -109,7 +112,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   });
 
   public get selectedPath(): AbstractControl<string> {
-    return this.formGroup.get('selectedPath');
+    return this.formGroup.get('selectedPath')!;
   }
 
   private _onChangeFunction!: (value: string) => void;
@@ -129,6 +132,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   @Input() public name = '';
   @Input() public appendInline = false;
+
   @Input() public set margin(value: boolean) {
     this._showMargin = value;
   }
@@ -138,6 +142,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Input() public set marginXl(value: boolean) {
     this._showMarginXl = value;
   }
+
   @Input() public set disabled(value: boolean) {
     this.disabled$.next(!!value);
 
@@ -171,6 +176,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       });
     }
   }
+
   @Input() set caseDefinitionVersionTag(value: string | null) {
     if (value) {
       this._caseDefinitionVersionTag$.next(value);
@@ -184,28 +190,50 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       });
     }
   }
+
+  @Input() set buildingBlockDefinitionKey(value: string | null) {
+    this._buildingBlockDefinitionKey$.next(value);
+  }
+
+  @Input() set buildingBlockDefinitionVersionTag(value: string | null) {
+    this._buildingBlockDefinitionVersionTag$.next(value);
+  }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
+
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
   @Input() public showCaseDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
+  @Input() public dropUp: boolean = false;
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;
     this.selectedPath.setValue(value);
-    if (this.showCaseDefinitionSelector) this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+    if (this.showCaseDefinitionSelector) {
+      this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+    }
   }
+
   private readonly _type$ = new BehaviorSubject<ValuePathType>(ValuePathType.FIELD);
   @Input() public set type(value: ValuePathType) {
     this._type$.next(value);
   }
+
   private readonly _parentItem$ = new BehaviorSubject<ValuePathItem | null>(null);
   @Input() public set parentItem(value: ValuePathItem | null) {
     this._parentItem$.next(value);
   }
+
+  private readonly _filteredItems$ = new BehaviorSubject<string[]>([]);
+
+  @Input() public set filterItems(value: string[] | null | undefined) {
+    this._filteredItems$.next(value ?? []);
+  }
+
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
@@ -213,10 +241,17 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private get _caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
   }
+
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
-  public readonly showToggle$ = this._caseDefinitionKey$.pipe(
-    map(caseDefinitionKey => !!caseDefinitionKey)
+  private readonly _buildingBlockDefinitionKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _buildingBlockDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
+
+  public readonly showToggle$ = combineLatest([
+    this._caseDefinitionKeySubject$,
+    this._buildingBlockDefinitionKey$,
+  ]).pipe(
+    map(([caseDefinitionKey, buildingBlockKey]) => !!caseDefinitionKey || !!buildingBlockKey)
   );
 
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
@@ -225,9 +260,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     ValuePathSelectorInputMode.DROPDOWN
   );
   public inputModeIsDropdown$: Observable<boolean> = this._inputMode$.pipe(
-    map(mode => {
-      return mode === ValuePathSelectorInputMode.DROPDOWN;
-    })
+    map(mode => mode === ValuePathSelectorInputMode.DROPDOWN)
   );
 
   public readonly loadingValuePathItems$ = new BehaviorSubject<boolean>(true);
@@ -241,20 +274,37 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       parentItem
         ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
         : combineLatest([
-            this._caseDefinitionKey$,
+            this._caseDefinitionKeySubject$,
             this._prefixes$,
             this._type$,
             this._caseDefinitionVersionTag$,
+            this._buildingBlockDefinitionKey$,
+            this._buildingBlockDefinitionVersionTag$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , showToggle]) => showToggle),
-            switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-              this.valuePathSelectorService.getResolvableKeys(
-                prefixes,
+            filter(([, , , , , , showToggle]) => showToggle),
+            switchMap(
+              ([
                 caseDefinitionKey,
+                prefixes,
                 type,
-                caseDefinitionVersionTag
-              )
+                caseDefinitionVersionTag,
+                buildingBlockKey,
+                buildingBlockVersionTag,
+              ]) => {
+                const context = this.buildBlueprintContext(
+                  caseDefinitionKey,
+                  caseDefinitionVersionTag,
+                  buildingBlockKey,
+                  buildingBlockVersionTag
+                );
+                if (!context) return of([]);
+                return this.valuePathSelectorService.getResolvableKeysForContext(
+                  prefixes,
+                  context,
+                  type
+                );
+              }
             )
           )
     ),
@@ -270,15 +320,27 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     ),
     tap(options => (this._cachedOptions = options)),
     switchMap(options =>
-      combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
+      combineLatest([
+        of(options),
+        this._selectedPath$,
+        this.inputModeIsDropdown$,
+        this._filteredItems$.pipe(startWith(this._filteredItems$.getValue())),
+      ])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
       const formattedOptions = options.map(option => option.formattedPath);
-      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
+      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown) {
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+      }
     }),
-    map(([options, selectedPath]) =>
-      options.map(option => {
+    map(([options, selectedPath, , filteredItems]) => {
+      const filteredOptions = options.filter(option => {
+        const isSelected = option.formattedPath === selectedPath;
+        if (isSelected) return true;
+        return !filteredItems.includes(option.formattedPath);
+      });
+
+      return filteredOptions.map(option => {
         const mappedOption = {
           content: option.formattedPath,
           selected: option.formattedPath === selectedPath,
@@ -286,10 +348,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
           ...(!!option.children && {children: option.children}),
         };
 
-        if (mappedOption.selected) this.onPathSelected({item: mappedOption});
+        if (mappedOption.selected) this.onPathSelected(mappedOption);
         return mappedOption;
-      })
-    ),
+      });
+    }),
     tap(() => this.loadingValuePathItems$.next(false))
   );
 
@@ -299,7 +361,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
@@ -326,7 +389,6 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   public onBlurEvent(): void {
     if (!this._onTouchedFunction) return;
-
     this._onTouchedFunction();
   }
 
@@ -338,13 +400,17 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string} & ValuePathItem}): void {
-    const selectedPath = event?.item?.content;
+  public onPathSelected(event: {content: string} & ValuePathItem): void {
+    const selectedPath = event?.content;
     if (!selectedPath) return;
 
-    if (this.collectionSelected.observed) this.collectionSelected.emit(event.item);
+    if (this.collectionSelected.observed) this.collectionSelected.emit(event);
 
     this.selectedPath.setValue(selectedPath);
+  }
+
+  public onPathCleared(): void {
+    this.selectedPath.setValue('');
   }
 
   public onCaseDefinitionSelected(event: {item: {id: string}}): void {
@@ -367,6 +433,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._inputMode$.next(
       toDropdownMode ? ValuePathSelectorInputMode.DROPDOWN : ValuePathSelectorInputMode.MANUAL
     );
+
+    setTimeout(() => this.changeDetectorRef.detectChanges(), 1);
   }
 
   private getFormattedPath(unformattedPath: string): string {
@@ -388,5 +456,30 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+  }
+
+  private buildBlueprintContext(
+    caseDefinitionKey: string | null,
+    caseDefinitionVersionTag: string | null,
+    buildingBlockKey: string | null,
+    buildingBlockVersionTag: string | null
+  ): BlueprintContext | null {
+    // Building block takes precedence when both key and version tag are provided
+    if (buildingBlockKey && buildingBlockVersionTag) {
+      return {
+        type: 'building-block',
+        key: buildingBlockKey,
+        versionTag: buildingBlockVersionTag,
+      };
+    }
+    // Fall back to case definition
+    if (caseDefinitionKey) {
+      return {
+        type: 'case',
+        key: caseDefinitionKey,
+        versionTag: caseDefinitionVersionTag,
+      };
+    }
+    return null;
   }
 }

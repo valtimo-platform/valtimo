@@ -16,11 +16,13 @@
 
 package com.ritense.exporter.request
 
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
 abstract class ExportRequest(
     open val required: Boolean = true,
-    open val caseDefinitionId: CaseDefinitionId? = null
+    open val caseDefinitionId: CaseDefinitionId? = null,
+    open val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null
 ) {
     abstract override fun equals(other: Any?): Boolean
 

@@ -38,6 +38,8 @@
     "@types/topojson": "3.2.6",
     "@tadashi/currency": "3.4.0",
     "semver": "7.7.1",
-    "muuri": "0.9.5"
+    "muuri": "0.9.5",
+    "ajv": "8.17.1",
+    "vanilla-jsoneditor": "3.10.0"
   }
 }

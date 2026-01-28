@@ -389,12 +389,13 @@
     </changeSet>
 
     <changeSet id="16" author="Ritense">
+        <validCheckSum>9:7f9e37bba3c85e2633a104388d5cd949</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
             update case_tag_link ctl
-            set case_definition_version_tag = d.case_definition_version_tag
+            set case_definition_version_tag = d.blueprint_version_tag
                 from json_schema_document d
             where ctl.json_schema_document_id = d.json_schema_document_id
         </sql>
@@ -406,6 +407,7 @@
     </changeSet>
 
     <changeSet id="17" author="Ritense">
+        <validCheckSum>9:1eda5a999b2abf1ff75a5118383ce7f7</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
         </preConditions>
@@ -413,7 +415,7 @@
             update case_tag_link ctl
             join json_schema_document d
             on ctl.json_schema_document_id = d.json_schema_document_id
-            set ctl.case_definition_version_tag = d.case_definition_version_tag
+            set ctl.case_definition_version_tag = d.blueprint_version_tag
         </sql>
 
         <sql>
