@@ -1,4 +1,4 @@
-timezone: etc/UTC
+timezone: Etc/UTC
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource

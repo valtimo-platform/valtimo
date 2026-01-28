@@ -38,3 +38,4 @@
 ## Bugfixes
 
 * **Tasks are now no longer closed when another user changes the task assignee.**
+* **LockProvider configuration now supports specifying the `timezone` via configuration properties and defaults to `UTC` if not specified.**
