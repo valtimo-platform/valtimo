@@ -29,13 +29,13 @@ In the example below, a junior financial advisor is only allowed to start an int
 ```json
 [
     {
-        "resourceType": "com.ritense.valtimo.camunda.domain.CamundaExecution",
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
         "action": "create",
         "roleKey": "ROLE_JR_FINANCIAL",
         "conditions": [
             {
                 "type": "container",
-                "resourceType": "com.ritense.valtimo.camunda.domain.CamundaProcessDefinition",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
                 "conditions": [
                     {
                         "type": "field",
