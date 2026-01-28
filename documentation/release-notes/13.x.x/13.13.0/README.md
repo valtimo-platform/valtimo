@@ -19,6 +19,7 @@
 
   Learn more in [Building blocks](../../../features/building-blocks/README.md).
 
+
 ## Enhancements
 
 * **Widget configuration made available to custom component**
