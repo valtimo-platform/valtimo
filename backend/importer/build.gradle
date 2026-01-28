@@ -25,6 +25,7 @@ dependencies {
 
 
     testImplementation project(":backend:case")
+    testImplementation(project(':backend:building-block'))
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
 

@@ -3,7 +3,7 @@
 ### Valtimo Core edition modules
 
 * [Authorization](core/authorization.md)
-* [Camunda](core/camunda-webapps.md)
+* [Operaton](core/operaton-webapps.md)
 * [Document](broken-reference)
 * [Form](core/form.md)
 * [Form flow](core/form-flow.md)

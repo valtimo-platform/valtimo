@@ -1,0 +1,128 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{
+    showModal: showModal$ | async,
+  } as obs"
+  [open]="obs.showModal"
+  showFooter="true"
+  valtimoCdsModal
+  (close)="onCloseModal()"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'buildingBlockManagement.createDefinition.modalTitle' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    class="valtimo-definition-create__content"
+    [cdsLayer]="1"
+  >
+    <div class="cds--text-input__field-wrapper">
+      <cds-label [disabled]="formGroup.disabled" [invalid]="name.touched && name.invalid">
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.name' | translate }}
+
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.nameTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
+
+        <input
+          formControlName="name"
+          cdsText
+          placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
+        />
+      </cds-label>
+    </div>
+
+    <valtimo-auto-key-input
+      [cdsLayer]="1"
+      formControlName="key"
+      labelTranslationKey="buildingBlockManagement.createDefinition.keyTitle"
+      placeholderTranslationKey="buildingBlockManagement.createDefinition.keyPlaceHolder"
+      mode="add"
+      [usedKeys]="usedKeys$ | async"
+      [sourceText]="name.value"
+    >
+    </valtimo-auto-key-input>
+
+    <div class="cds--text-input__field-wrapper">
+      <cds-label
+        [disabled]="formGroup.disabled"
+        [invalid]="versionTag.touched && versionTag.invalid"
+      >
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.version' | translate }}
+
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.versionTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
+
+        <input
+          formControlName="versionTag"
+          cdsText
+          placeholder="{{
+            'buildingBlockManagement.createDefinition.versionPlaceholder' | translate
+          }}"
+        />
+      </cds-label>
+    </div>
+
+    <div class="cds--text-input__field-wrapper">
+      <cds-label
+        [disabled]="formGroup.disabled"
+        [invalid]="description.touched && description.invalid"
+      >
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.description' | translate }}
+
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
+
+        <textarea
+          cdsTextArea
+          formControlName="description"
+          placeholder="{{
+            'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
+          }}"
+          [rows]="3"
+          [cols]="150"
+        ></textarea>
+      </cds-label>
+    </div>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onSave()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

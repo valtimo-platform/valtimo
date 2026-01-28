@@ -1,0 +1,31 @@
+#
+# Copyright 2015-2025 Ritense BV, the Netherlands.
+#
+# Licensed under EUPL, Version 1.2 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+com.ritense.buildingblock.configuration.BuildingBlockAutoConfiguration
+com.ritense.case.configuration.CaseAutoConfiguration
+com.ritense.case_.configuration.CaseWidgetAutoConfiguration
+com.ritense.document.autoconfigure.DocumentAutoConfiguration
+com.ritense.document.autoconfigure.DocumentSnapshotAutoConfiguration
+com.ritense.document.autoconfigure.DocumentSecurityAutoConfiguration
+com.ritense.document.autoconfigure.DocumentLiquibaseAutoConfiguration
+com.ritense.document.autoconfigure.DocumentRetryAutoConfiguration
+com.ritense.document.autoconfigure.SearchFieldAutoConfiguration
+com.ritense.document.autoconfiguration.CaseTagAutoConfiguration
+com.ritense.document.autoconfiguration.DocumentAuthorizationAutoConfiguration
+com.ritense.document.autoconfiguration.DocumentEventAutoConfiguration
+com.ritense.document.autoconfiguration.DocumentWidgetAutoConfiguration
+com.ritense.document.autoconfiguration.InternalCaseStatusAutoConfiguration
+com.ritense.document.autoconfiguration.DocumentMigrationAutoConfiguration

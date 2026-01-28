@@ -40,6 +40,7 @@ import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
@@ -53,8 +54,8 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ValidationException
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.hibernate.validator.constraints.Length
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -68,7 +69,8 @@ import java.util.UUID
 @Plugin(
     key = PLUGIN_KEY,
     title = "Documenten API",
-    description = "Connects to the Documenten API to store documents"
+    description = "Connects to the Documenten API to store documents",
+    dependencies = [PluginDependency.ZAAK_INSTANCE_LINK]
 )
 class DocumentenApiPlugin(
     private val client: DocumentenApiClient,

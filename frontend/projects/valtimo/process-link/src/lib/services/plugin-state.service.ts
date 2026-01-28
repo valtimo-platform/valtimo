@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, take} from 'rxjs/operators';
 import {
   PluginConfiguration,
   PluginDefinition,
@@ -60,12 +60,9 @@ export class PluginStateService {
   }
 
   get functionKey$(): Observable<string> {
-    return this._selectedProcessLink$.pipe(
-      switchMap(processLink =>
-        !processLink
-          ? this._selectedPluginFunction$.pipe(map(pluginFunction => pluginFunction?.key))
-          : of(processLink?.pluginActionDefinitionKey)
-      )
+    // Prioritize user-selected function, fall back to process link's saved action
+    return this._selectedPluginFunction$.pipe(
+      map(pluginFunction => pluginFunction?.key)
     );
   }
 
@@ -73,14 +70,23 @@ export class PluginStateService {
     return this._selectedProcessLink$.pipe(
       switchMap(selectedProcesLink =>
         !selectedProcesLink
-          ? this._selectedPluginConfiguration$.pipe(
-              map(configuration => configuration?.pluginDefinition.key)
+          ? combineLatest([
+              this._selectedPluginConfiguration$,
+              this._selectedPluginDefinition$,
+            ]).pipe(
+              map(
+                ([configuration, definition]) =>
+                  configuration?.pluginDefinition.key || definition?.key
+              )
             )
           : combineLatest([
               this._selectedProcessLink$,
               this.pluginService.pluginSpecifications$,
             ]).pipe(
               map(([processLink, pluginSpecifications]) => {
+                if (processLink?.pluginDefinitionKey) {
+                  return processLink.pluginDefinitionKey;
+                }
                 const pluginSpecification = pluginSpecifications.find(specification => {
                   const functionKeys =
                     specification?.functionConfigurationComponents &&
@@ -99,7 +105,7 @@ export class PluginStateService {
     this._selectedPluginDefinition$.next(definition);
   }
 
-  selectPluginConfiguration(configuration: PluginConfiguration): void {
+  selectPluginConfiguration(configuration: PluginConfiguration | undefined): void {
     this._selectedPluginConfiguration$.next(configuration);
   }
 
@@ -109,6 +115,75 @@ export class PluginStateService {
 
   selectProcessLink(processLink: ProcessLink): void {
     this._selectedProcessLink$.next(processLink);
+
+    // When editing a plugin process link, populate the plugin definition
+    if (processLink?.processLinkType === 'plugin') {
+      this.loadPluginDefinitionForProcessLink(processLink);
+    }
+  }
+
+  private loadPluginDefinitionForProcessLink(processLink: ProcessLink): void {
+    // Get the plugin definition key - either directly or from plugin specifications
+    this.getPluginDefinitionKeyForProcessLink(processLink)
+      .pipe(take(1))
+      .subscribe(pluginDefinitionKey => {
+        if (pluginDefinitionKey) {
+          // Fetch all plugin definitions and find the one matching the key
+          this.pluginManagementService
+            .getPluginDefinitions()
+            .pipe(
+              take(1),
+              map(definitions => definitions.find(d => d.key === pluginDefinitionKey))
+            )
+            .subscribe(definition => {
+              if (definition) {
+                this._selectedPluginDefinition$.next(definition);
+
+                // Also set the selected function if available
+                if (processLink.pluginActionDefinitionKey) {
+                  this._selectedPluginFunction$.next({
+                    key: processLink.pluginActionDefinitionKey,
+                  } as PluginFunction);
+                }
+              }
+            });
+        }
+      });
+
+    // Load and set the plugin configuration if available
+    if (processLink.pluginConfigurationId) {
+      this.pluginManagementService
+        .getAllPluginConfigurations()
+        .pipe(
+          take(1),
+          map(configs => configs.find(c => c.id === processLink.pluginConfigurationId))
+        )
+        .subscribe(configuration => {
+          if (configuration) {
+            this._selectedPluginConfiguration$.next(configuration);
+          }
+        });
+    }
+  }
+
+  private getPluginDefinitionKeyForProcessLink(processLink: ProcessLink): Observable<string> {
+    // If the key is directly available, use it
+    if (processLink.pluginDefinitionKey) {
+      return of(processLink.pluginDefinitionKey);
+    }
+
+    // Otherwise, derive it from plugin specifications using the action key
+    return this.pluginService.pluginSpecifications$.pipe(
+      map(pluginSpecifications => {
+        const pluginSpecification = pluginSpecifications.find(specification => {
+          const functionKeys =
+            specification?.functionConfigurationComponents &&
+            Object.keys(specification.functionConfigurationComponents);
+          return functionKeys?.includes(processLink.pluginActionDefinitionKey);
+        });
+        return pluginSpecification?.pluginId;
+      })
+    );
   }
 
   deselectProcessLink(): void {

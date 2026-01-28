@@ -65,6 +65,7 @@ dependencies {
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
     implementation "org.springframework:spring-expression"
 
+    testImplementation project(':backend:building-block')
     testImplementation project(':backend:resource')
     testImplementation project(':backend:test-utils-common')
 
