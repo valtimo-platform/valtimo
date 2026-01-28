@@ -34,6 +34,7 @@ public interface ProcessDocumentAssociationService {
 
     List<? extends ProcessDocumentInstance> findProcessDocumentInstances(Document.Id documentId);
 
+    List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtosWithoutBuildingBlocks(Document.Id documentId);
     List<? extends ProcessDocumentInstance> findProcessDocumentInstancesWithoutPermissionCheck(Document.Id documentId);
 
     List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId);

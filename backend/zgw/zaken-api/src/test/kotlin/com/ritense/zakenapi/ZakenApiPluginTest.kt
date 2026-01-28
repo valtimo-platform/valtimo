@@ -402,7 +402,7 @@ internal class ZakenApiPluginTest {
         assertThat(betrokkeneIdentificatie.identificatie).isEqualTo("identificatie")
         assertThat(betrokkeneIdentificatie.achternaam).isEqualTo("achternaam")
         assertThat(betrokkeneIdentificatie.voorletters).isEqualTo("voorletters")
-        assertThat(betrokkeneIdentificatie.voorvoegselAchternaam).isEmpty()
+        assertThat(betrokkeneIdentificatie.voorvoegselAchternaam).isNull()
     }
 
     @Test
@@ -712,6 +712,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri(zaakId)
         val zaakInstanceLink: ZaakInstanceLink = mock()
         val zaakResponse: ZaakResponse = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
 
         val description = "Omschrijving"
         val explantation = "Toelichting"
@@ -732,6 +733,9 @@ internal class ZakenApiPluginTest {
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
+
+        whenever(zaakUrlProvider.getZaakUrl(eq(documentId)))
+            .thenReturn(zaakUrl)
 
         whenever(zaakInstanceLink.zaakInstanceUrl)
             .thenReturn(zaakUrl)
@@ -756,7 +760,8 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient,
             zaakInstanceLinkRepository = zaakInstanceLinkRepository,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            zaakUrlProvider = zaakUrlProvider
         )
 
         plugin.patchZaak(

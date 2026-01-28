@@ -16,10 +16,13 @@
 
 package com.ritense.importer
 
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.io.InputStream
 
 interface ImportService {
     fun importGlobal(inputStream: InputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
+    fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
+    fun importBuildingBlockDefinition(entries: List<ZipFileEntry>, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
 }

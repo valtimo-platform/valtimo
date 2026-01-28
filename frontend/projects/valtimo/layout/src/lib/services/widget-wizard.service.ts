@@ -48,7 +48,8 @@ export class WidgetWizardService {
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
-  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
+  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition<string>> | null> =
+    signal(null);
 
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 

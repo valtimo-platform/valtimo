@@ -562,6 +562,10 @@
           "createdDate": "Created on",
           "description": "Description"
         }
+      },
+      "notFinalizableWarning": {
+        "title": "This case definition cannot be finalized.",
+        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final."
       }
     },
     "processLinkNotification": {
@@ -1464,7 +1468,15 @@
     "noTranslationFound": "No translation found",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
+  "taskDetail": {
+    "taskCreated": "Created",
+    "taskCompleted": "has successfully been completed",
+    "assignedNotificationTitle": "Task assigned",
+    "assignedNotificationContent": "The task has been assigned to",
+    "unassignedNotificationTitle": "Task unassigned",
+    "unassignedNotificationContent": "The task has been unassigned",
+    "unknownAssignee": "unknown"
+  },
   "assignTask": {
     "assignedTo": "Assigned to",
     "header": "Assign a user to this task",
@@ -1823,6 +1835,7 @@
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
     "choosePluginConfigurationDescription": "Choose the plugin configuration you want to link to the process step.",
+    "choosePluginDefinitionDescription": "Choose the plugin definition you want to link to the process step.",
     "choosePluginActionDescription": "Choose the action you want to perform with the plugin.",
     "chooseForm": "Choose form",
     "cancel": "Cancel",
@@ -1842,14 +1855,49 @@
     "selectVersion": "Select version",
     "activity": "Process activity",
     "selectActivity": "Select process activity",
-    "noProcess": "No upload process"
+    "noProcess": "No upload process",
+    "buildingBlock": {
+      "name": "Name",
+      "description": "Description",
+      "selectLabel": "Building block",
+      "emptyState": "No building blocks available. Create a building block first.",
+      "noRequirements": "This building block does not require any plugin configurations.",
+      "nestedBuildingBlockInfo": "Plugin configurations are inherited from the parent building block.",
+      "configurationLabel": "Plugin configuration",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Select a configuration",
+      "versionLabel": "Choose building block version",
+      "versionPlaceholder": "Select a version",
+      "inputTitle": "Input",
+      "outputTitle": "Sync",
+      "addInput": "Add input",
+      "addOutput": "Add sync",
+      "case": "Case",
+      "buildingBlock": "Building block",
+      "targetPlaceholder": "Select target",
+      "outputSource": "Building block output",
+      "syncTiming": "Sync timing",
+      "selectedBuildingBlockFieldPlaceholder": "Select a field...",
+      "sync": {
+        "title": "Sync",
+        "continuous": "Continuous",
+        "end": "End"
+      },
+      "pluginDependenciesWarning": {
+        "title": "Dependencies",
+        "zaakInstanceAndTypeLink": "This building block may need both a zaak instance link and a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly.",
+        "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
+        "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
+      }
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Form",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Building block"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -1873,18 +1921,23 @@
     },
     "selectFormFlow": "Select your FormFlow",
     "choosePluginConfiguration": "Select plugin configuration",
+    "choosePluginDefinition": "Select plugin definition",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
     "addSubtitle": "Add subtitle",
-    "uiComponent": "Select UI component"
+    "uiComponent": "Select UI component",
+    "selectBuildingBlock": "Select building block",
+    "configureBuildingBlockPlugins": "Configure plugin mappings",
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
     "form": "There are no forms available. Create a form to be able to link it to a process step.",
     "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step.",
-    "ui-component": "There are no custom components registered please create one if you wish to use this option."
+    "ui-component": "There are no custom components registered. Please create one if you wish to use this option.",
+    "buildingBlockUnsupported": "This process link type is not yet supported for building blocks."
   },
   "processLinkUrlInvalid": "Invalid URL {{ URL }}",
   "accessControl": {
@@ -2122,6 +2175,117 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "buildingBlockManagement": {
+    "title": "Building blocks",
+    "listColumns": {
+      "name": "Name",
+      "key": "Key",
+      "versionTag": "Version"
+    },
+    "detail": {
+      "title": "Building block details"
+    },
+    "actions": {
+      "more": "More",
+      "makeFinal": "Make version final",
+      "createDraft": "Create a new draft",
+      "finalize": {
+        "success": "Draft version has been finalized",
+        "error": "Finalizing draft version failed"
+      },
+      "draft": {
+        "title": "Create draft version",
+        "version": "New version tag",
+        "placeholder": "Enter new version tag",
+        "confirm": "Create draft",
+        "success": "Draft version created",
+        "error": "Creating draft version failed"
+      }
+    },
+    "noResults": {
+      "title": "There are no building blocks",
+      "description": "Add a building block to get started"
+    },
+    "createDefinition": {
+      "modalTitle": "Create building block",
+      "name": "Name",
+      "nameTooltip": "The name of the building block.",
+      "namePlaceholder": "Enter name",
+      "keyTitle": "Key",
+      "keyPlaceHolder": "The key is generated here automatically",
+      "version": "Version",
+      "versionTooltip": "The version tag of the building block.",
+      "versionPlaceholder": "Enter version",
+      "description": "Description",
+      "descriptionTooltip": "A short description of the functionality the building block offers.",
+      "descriptionPlaceholder": "Enter description"
+    },
+    "tabs": {
+      "general": "General",
+      "document": "Document",
+      "processes": "Processes"
+    },
+    "metadata": {
+      "title": "General information"
+    },
+    "processDefinition": {
+      "title": "Building block process definition",
+      "name": "Name",
+      "key": "Key",
+      "mainText": "Main process",
+      "markAsMain": "Make main process"
+    },
+    "importDefinition": {
+      "title": "Import building block definition",
+      "overwriteWarning": "If your building block definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
+      "info": {
+        "title": "Attention",
+        "message": "Before importing, please make sure the plugin configurations or process definitions referenced by this building block are already present in the system."
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "buttonText": "Select file"
+      },
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import building block definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
+        "finished": "Building block definition successfully imported",
+        "label": "Importing building block definition"
+      },
+      "invalidJsonError": {
+        "text": "Please make sure it contains a valid JSON value.",
+        "title": "The file contains an error."
+      },
+      "steps": {
+        "plugins": {
+          "message": "This building block may use plugins. Make sure you configure them correctly.",
+          "title": "Plugin Configuration"
+        }
+      }
+    },
+    "artwork": {
+      "title": "Artwork",
+      "fileUploaderTitle": "Select artwork for this building block",
+      "fileUploaderDescription": "Maximum file size is 10mb. Only .png images are supported. Make sure the background of the image is transparent.",
+      "fileUploaderButton": "Choose file",
+      "deleteConfirmationModalText": "Are you sure you want to delete this artwork? This action cannot be undone."
+    },
+    "plugins": {
+      "title": "Plugins used",
+      "noPluginsUsed": "This building block does not use any plugins"
+    },
+    "overflowMenu": {
+      "export": "Export \"{{value}}\"",
+      "exportSuccessTitle": "Download will start shortly",
+      "preparingDownload": "Preparing download"
+    }
+  },
   "mdiIcons": {
     "mdi-home": "Home",
     "mdi-home-city": "Home City",
@@ -2320,5 +2484,10 @@
     "mdi-clipboard-text-clock": "Clipboard Text Clock",
     "mdi-clipboard-text-play": "Clipboard Text Play",
     "mdi-clipboard-flow": "Clipboard Flow"
+  },
+  "schemaEditor": {
+    "rootObject": "Root level",
+    "manageRequiredFields": "Manage required fields",
+    "requiredFields": "Required fields"
   }
 }

@@ -52,6 +52,7 @@
     <include file="changelog/20251009-add-document-index-case-status.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250113-major13-upgrade.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251013-add-document-index-case-status-post-13-migration.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251111-json-schema-definition-blueprint-definition.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251104-add-column-retention-period-to-internal-case-status-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251107-add-document-retention-info.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -112,6 +112,8 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     @Nullable
     private CaseDefinitionId caseDefinitionId;
 
+    // TODO: Add support for building blocks here
+
     @Column(name = "read_only", columnDefinition = "BIT")
     private Boolean readOnly = false;
 
