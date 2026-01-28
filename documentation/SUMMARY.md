@@ -154,6 +154,7 @@
   * [Process links](features/process/process-link.md)
   * [For developers](features/process/process/README.md)
     * [Integrating spring beans in a process](features/process/process/integrate-spring-bean-in-process.md)
+    * [Incident error logging](features/process/process/incident-error-logging.md)
     * [Whitelisting Scripting classes for Camunda](features/process/process/whitelist-scripting-classes.md)
     * [Whitelisting Spring beans for Camunda](features/process/process/whitelist-spring-bean.md)
 * [✅ Tasks](features/tasks.md)

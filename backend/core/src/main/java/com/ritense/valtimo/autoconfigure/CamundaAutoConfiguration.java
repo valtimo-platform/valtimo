@@ -19,6 +19,8 @@ package com.ritense.valtimo.autoconfigure;
 import com.ritense.valtimo.CamundaBeansPlugin;
 import com.ritense.valtimo.camunda.ProcessDefinitionDeployedEventPublisher;
 import com.ritense.valtimo.camunda.command.ValtimoSchemaOperationsCommand;
+import com.ritense.valtimo.camunda.incident.CamundaIncidentAlertLogProperties;
+import com.ritense.valtimo.camunda.incident.CamundaIncidentHandlerConfig;
 import com.ritense.valtimo.camunda.processaudit.HistoryEventAuditProcessEnginePlugin;
 import com.ritense.valtimo.camunda.processaudit.TaskEventHandler;
 import com.ritense.valtimo.camunda.repository.CustomRepositoryServiceImpl;
@@ -45,6 +47,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -53,6 +56,7 @@ import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
 @AutoConfigureAfter(CamundaBpmAutoConfiguration.class)
+@EnableConfigurationProperties(CamundaIncidentAlertLogProperties.class)
 public class CamundaAutoConfiguration {
 
     @Bean
@@ -165,5 +169,12 @@ public class CamundaAutoConfiguration {
     @Order(Ordering.DEFAULT_ORDER - 2)
     public CamundaBeansPlugin camundaBeansPlugin() {
         return new CamundaBeansPlugin();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CamundaIncidentHandlerConfig.class)
+    @ConditionalOnProperty("camunda.incident.alert-log.enabled")
+    public CamundaIncidentHandlerConfig camundaIncidentHandlerConfig(CamundaIncidentAlertLogProperties props)  {
+        return new CamundaIncidentHandlerConfig(props);
     }
 }
