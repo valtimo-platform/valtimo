@@ -90,7 +90,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
     testImplementation project(':backend:core')
+    testImplementation(project(':backend:audit')) {
+        exclude(group: "com.ritense.valtimo", module: "case")
+    }
     testImplementation project(':backend:test-utils-common')
+    testImplementation(project(':backend:building-block')) {
+        exclude(group: "com.ritense.valtimo", module: "case")
+    }
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

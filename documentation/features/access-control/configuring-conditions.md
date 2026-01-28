@@ -151,19 +151,19 @@ The following example demonstrates how to allow any user with `ROLE_USER` to cre
 
 <summary>Create process instance permissions</summary>
 
-The example below shows how to allow users with `ROLE_USER` to create a process instance of process definition type `GenericProces`. When trying to create a process instance, the execution itself does not yet exist. So in order for conditions to be evaluated, they have to be defined based on the relation between the two resources, `CamundaExecution` and `CamundaProcessDefinition`.
+The example below shows how to allow users with `ROLE_USER` to create a process instance of process definition type `GenericProces`. When trying to create a process instance, the execution itself does not yet exist. So in order for conditions to be evaluated, they have to be defined based on the relation between the two resources, `OperatonExecution` and `OperatonProcessDefinition`.
 
 {% code overflow="wrap" %}
 ```json
 [
   {
-    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaExecution",
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
     "action": "create",
     "roleKey": "ROLE_USER",
     "conditions": [
       {
         "type": "container",
-        "resourceType": "com.ritense.valtimo.camunda.domain.CamundaProcessDefinition",
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
         "conditions": [
           {
             "type": "field",
@@ -191,13 +191,13 @@ Access to a user task is usually controlled by setting the 'Candidate groups' to
 ```json
 [
   {
-    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
     "action": "view_list",
     "roleKey": "ROLE_USER",
     "conditions": [
       {
         "type": "container",
-        "resourceType": "com.ritense.valtimo.camunda.domain.CamundaIdentityLink",
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
         "conditions": [
           {
             "type": "field",
@@ -225,7 +225,7 @@ Access to a user task can be controlled based on properties inside the JsonSchem
 ```json
 [
   {
-    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
     "action": "view_list",
     "roleKey": "ROLE_USER",
     "conditions": [
@@ -280,12 +280,12 @@ Access to a user task can be controlled based on properties inside the JsonSchem
 
 ```json
 {
-  "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
+  "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
   "action": "view",
   "conditions": [
     {
       "type": "container",
-      "resourceType": "com.ritense.valtimo.camunda.domain.CamundaIdentityLink",
+      "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
       "conditions": [
         {
           "type": "field",

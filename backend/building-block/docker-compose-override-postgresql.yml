@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3363:5432"
+        environment:
+            - POSTGRES_DB=building-block-test

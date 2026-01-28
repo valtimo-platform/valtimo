@@ -204,23 +204,23 @@ Other changes required are impossible to list because they depend on how Camunda
 
 #### Application configuration
 
-References to Camunda properties in the application configuration should be changed. Usually this is done in `applcation.yml`
+References to Camunda properties in the application configuration should be changed. Usually this is done in `application.yml`
 
 <table><thead><tr><th>Before</th><th>After</th></tr></thead><tbody><tr><td><pre class="language-yaml"><code class="lang-yaml">spring:
     jersey:
         application-path: /api/camunda-rest
 camunda:
-bpm:
-history-level: AUDIT
-history-level-default: AUDIT
+    bpm:
+        history-level: AUDIT
+        history-level-default: AUDIT
 
 </code></pre></td><td><pre class="language-yaml"><code class="lang-yaml">spring:
-jersey:
-application-path: /api/operaton-rest
+    jersey:
+        application-path: /api/operaton-rest
 operaton:
-bpm:
-history-level: AUDIT
-history-level-default: AUDIT
+    bpm:
+        history-level: AUDIT
+        history-level-default: AUDIT
 
 </code></pre></td></tr></tbody></table>
 

@@ -14,37 +14,29 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="pluginConfigurations$ | async as pluginConfigurations; else loading">
+<ng-container *ngIf="listItems$ | async as items; else loading">
   <p class="step-description">
-    {{ 'processLinkConfiguration.choosePluginConfigurationDescription' | translate }}
+    {{ pageHeaderText$ | async | translate }}
   </p>
   <div class="list-container">
     <cds-structured-list (selected)="selected($event)" selection="true">
       <cds-list-header>
         <cds-list-column nowrap="true"></cds-list-column>
-        <cds-list-column nowrap="true">{{
-          'pluginManagement.labels.configurationName' | translate
-        }}</cds-list-column>
-        <cds-list-column>{{
-          'processLinkConfiguration.pluginDescription' | translate
-        }}</cds-list-column>
-      </cds-list-header>
-      <cds-list-row
-        *ngFor="let pluginConfiguration of pluginConfigurations"
-        [value]="pluginConfiguration"
-      >
-        <cds-list-column>
-          <div *ngIf="pluginConfiguration.pluginLogoBase64">
-            <img
-              [src]="pluginConfiguration.pluginLogoBase64"
-              [title]="'title' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async"
-              class="plugin-configuration-logo"
-            /></div
-        ></cds-list-column>
-        <cds-list-column>{{ pluginConfiguration.title }}</cds-list-column>
-        <cds-list-column>
-          {{ 'description' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async }}
+        <cds-list-column nowrap="true">
+          {{ columnHeaderText$ | async | translate }}
         </cds-list-column>
+        <cds-list-column>
+          {{ 'processLinkConfiguration.pluginDescription' | translate }}
+        </cds-list-column>
+      </cds-list-header>
+      <cds-list-row *ngFor="let item of items" [value]="item.payload">
+        <cds-list-column>
+          <div *ngIf="item.logo">
+            <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" />
+          </div>
+        </cds-list-column>
+        <cds-list-column>{{ item.title }}</cds-list-column>
+        <cds-list-column>{{ item.description }}</cds-list-column>
       </cds-list-row>
     </cds-structured-list>
   </div>

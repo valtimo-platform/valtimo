@@ -15,13 +15,13 @@
  */
 
 import {ProcessDocumentDefinition} from '@valtimo/document';
-import {ProcessDefinition} from '@valtimo/process';
 import {ProcessLink} from '@valtimo/process-link';
+import {ProcessDefinitionWithPropertiesDto} from '@valtimo/shared';
 
 interface ProcessDefinitionResult {
   bpmn20Xml: string;
   processCaseLink?: ProcessDocumentDefinition;
-  processDefinition: ProcessDefinition;
+  processDefinition: ProcessDefinitionWithPropertiesDto;
   processLinks: ProcessLink[];
 }
 

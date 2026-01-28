@@ -296,7 +296,8 @@ class ProcessLinkResource(
 
         val definition = runWithoutAuthorization {
             operatonProcessService
-                .getDefinitionByKeyAndCaseDefinition(caseDefinitionId, processDefinitionKey)
+                .getDefinitionsByKeyAndBlueprint(caseDefinitionId, processDefinitionKey)
+                .firstOrNull()
                 ?: throw IllegalStateException("No process definition found for key '$processDefinitionKey' in case definition '$caseDefinitionId'")
         }
 
@@ -329,17 +330,19 @@ class ProcessLinkResource(
         @PathVariable("processDefinitionKey") processDefinitionKey: String,
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
-            val definition = operatonProcessService
-                .getDefinitionByKeyAndCaseDefinition(
+            operatonProcessService
+                .getDefinitionsByKeyAndBlueprint(
                     CaseDefinitionId.of(caseDefinitionKey, versionTag),
                     processDefinitionKey
                 )
-            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                ProcessDefinitionId(definition.id),
-                CaseDefinitionId.of(caseDefinitionKey, versionTag)
-            )
-            processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
-            operatonProcessService.deleteProcessDefinition(definition.id)
+                .forEach { definition: OperatonProcessDefinition ->
+                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                        ProcessDefinitionId(definition.id),
+                        CaseDefinitionId.of(caseDefinitionKey, versionTag)
+                    )
+                    processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
+                    operatonProcessService.deleteProcessDefinition(definition.id)
+                }
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }

@@ -27,6 +27,8 @@ spring:
 valtimo:
     processlink:
         encryption-secret: "abcdefghijklmnop"
+    plugin:
+        encryption-secret: "abcdefghijklmnop"
 
 spring-actuator:
     username: admin

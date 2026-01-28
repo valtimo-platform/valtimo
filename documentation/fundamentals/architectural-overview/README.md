@@ -6,7 +6,7 @@ Valtimo is a Java & [Kotlin](https://kotlinlang.org/) based product, with [Angul
 
 [IBM Carbon](https://carbondesignsystem.com/) is the design system used as basis for the UX design. When extending Valtimo, developers can rely on the well maintained and extensive library of components.
 
-[Postgres](https://www.postgresql.org/) is used as the relational database system, and [Formio](https://formio.com/) is the basis for the no-code forms functionality. [Camunda CE](https://github.com/camunda/camunda-bpm-platform) is the process engine for BPMN and DMN support.
+[Postgres](https://www.postgresql.org/) is used as the relational database system, and [Formio](https://formio.com/) is the basis for the no-code forms functionality. [Operaton](https://github.com/operaton/operaton) is the process engine for BPMN and DMN support.
 
 ### Scope
 

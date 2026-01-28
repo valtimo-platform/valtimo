@@ -1,0 +1,7 @@
+{
+    "key": "income-check",
+    "name": "Inkomenstoets",
+    "description": "Controleert of het inkomen van de aanvrager binnen de vastgestelde normen valt voor de energietoeslag. Bepaalt de geschiktheid op basis van huishoudgrootte en inkomensgegevens.",
+    "versionTag": "1.0.0",
+    "final": false
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.plugin.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
@@ -41,7 +42,10 @@ class PluginProcessLink(
     val actionProperties: ObjectNode? = null,
 
     @Embedded
-    val pluginConfigurationId: PluginConfigurationId,
+    val pluginConfigurationId: PluginConfigurationId? = null,
+
+    @Embedded
+    val pluginConfigurationReference: PluginConfigurationReference = PluginConfigurationReference(),
 
     @Column(name = "plugin_action_definition_key", nullable = false)
     val pluginActionDefinitionKey: String
@@ -53,6 +57,21 @@ class PluginProcessLink(
     activityType,
     PROCESS_LINK_TYPE_PLUGIN,
 ) {
+
+    init {
+        if (pluginConfigurationReference.type == BUILDING_BLOCK) {
+            requireNotNull(pluginConfigurationReference.pluginDefinitionKey) {
+                "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
+            }
+            require(pluginConfigurationId == null) {
+                "pluginConfigurationId must not be set when reference type is BUILDING_BLOCK"
+            }
+        } else {
+            requireNotNull(pluginConfigurationId) {
+                "pluginConfigurationId is required when reference type is FIXED"
+            }
+        }
+    }
 
     @Deprecated("Marked for removal since 10.6.0")
     constructor(
@@ -70,6 +89,7 @@ class PluginProcessLink(
         activityType,
         actionProperties,
         pluginConfigurationId,
+        PluginConfigurationReference(),
         pluginActionDefinitionKey,
     )
 
@@ -88,7 +108,8 @@ class PluginProcessLink(
         activityId: String = this.activityId,
         activityType: ActivityTypeWithEventName = this.activityType,
         actionProperties: ObjectNode? = this.actionProperties,
-        pluginConfigurationId: PluginConfigurationId = this.pluginConfigurationId,
+        pluginConfigurationId: PluginConfigurationId? = this.pluginConfigurationId,
+        pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         pluginActionDefinitionKey: String = this.pluginActionDefinitionKey,
     ) = PluginProcessLink(
         id = id,
@@ -97,6 +118,7 @@ class PluginProcessLink(
         activityType = activityType,
         actionProperties = actionProperties,
         pluginConfigurationId = pluginConfigurationId,
+        pluginConfigurationReference = pluginConfigurationReference,
         pluginActionDefinitionKey = pluginActionDefinitionKey
     )
 
@@ -109,6 +131,7 @@ class PluginProcessLink(
 
         if (actionProperties != other.actionProperties) return false
         if (pluginConfigurationId != other.pluginConfigurationId) return false
+        if (pluginConfigurationReference != other.pluginConfigurationReference) return false
         if (pluginActionDefinitionKey != other.pluginActionDefinitionKey) return false
 
         return true
@@ -117,7 +140,8 @@ class PluginProcessLink(
     override fun hashCode(): Int {
         var result = super.hashCode()
         result = 31 * result + (actionProperties?.hashCode() ?: 0)
-        result = 31 * result + pluginConfigurationId.hashCode()
+        result = 31 * result + (pluginConfigurationId?.hashCode() ?: 0)
+        result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + pluginActionDefinitionKey.hashCode()
         return result
     }

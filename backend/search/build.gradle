@@ -52,6 +52,9 @@ dependencies {
     testImplementation project(":backend:core")
     testImplementation project(":backend:resource:local-resource")
     testImplementation project(":backend:test-utils-common")
+    testImplementation(project(":backend:building-block")) {
+        exclude(group: "com.ritense.valtimo", module: "search")
+    }
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

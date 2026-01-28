@@ -7,9 +7,6 @@ on:
       - frontend/**
       - .github/workflows/frontend_*.yml
   pull_request:
-    branches:
-      - next-minor
-      - rc/*
     paths:
       - .github/workflows/frontend_*.yml
       - frontend/**

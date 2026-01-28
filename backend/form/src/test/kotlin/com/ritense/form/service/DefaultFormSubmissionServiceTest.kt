@@ -88,7 +88,6 @@ class DefaultFormSubmissionServiceTest {
     lateinit var documentSequenceGeneratorService: DocumentSequenceGeneratorService
     lateinit var authorizationService: AuthorizationService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var caseDefinitionService: CaseDefinitionService
 
     lateinit var formProcessLink: FormProcessLink
     lateinit var processDefinition: OperatonProcessDefinition
@@ -109,7 +108,6 @@ class DefaultFormSubmissionServiceTest {
         prefillFormService = mock()
         authorizationService = mock()
         valueResolverService = mock()
-        caseDefinitionService = mock()
         mockkObject(AuthorizationSupportedHelper)
         defaultFormSubmissionService = DefaultFormSubmissionService(
             processLinkService,
@@ -124,7 +122,6 @@ class DefaultFormSubmissionServiceTest {
             prefillFormService,
             authorizationService,
             valueResolverService,
-            caseDefinitionService,
             MapperSingleton.get()
         )
 
@@ -135,6 +132,7 @@ class DefaultFormSubmissionServiceTest {
 
         processDefinition = mock<OperatonProcessDefinition>()
         whenever(processDefinition.key).thenReturn("myProcessDefinitionKey")
+        whenever(processDefinition.getBlueprintId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
         whenever(repositoryService.findProcessDefinitionById(formProcessLink.processDefinitionId))
             .thenReturn(processDefinition)
 

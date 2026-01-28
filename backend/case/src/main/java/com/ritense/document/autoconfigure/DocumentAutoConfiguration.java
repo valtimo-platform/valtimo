@@ -25,12 +25,13 @@ import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEve
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
 import com.ritense.document.exporter.JsonSchemaDocumentDefinitionExporter;
-import com.ritense.document.importer.JsonSchemaDocumentDefinitionImporter;
+import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
+import com.ritense.document.service.DefaultCaseDocumentResolver;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
@@ -55,6 +56,8 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -110,6 +113,15 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseDocumentResolver.class)
+    public CaseDocumentResolver caseDocumentResolver(
+        final DocumentService documentService,
+        final List<BlueprintCaseDocumentResolver> blueprintCaseDocumentResolvers
+    ) {
+        return new DefaultCaseDocumentResolver(documentService, blueprintCaseDocumentResolvers);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(DocumentDefinitionService.class)
     public JsonSchemaDocumentDefinitionService documentDefinitionService(
         final ResourceLoader resourceLoader,
@@ -139,10 +151,10 @@ public class DocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
+    public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
-        return new JsonSchemaDocumentDefinitionImporter(
+        return new CaseJsonSchemaDocumentDefinitionImporter(
             jsonSchemaDocumentDefinitionService
         );
     }

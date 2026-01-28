@@ -19,6 +19,7 @@ package com.ritense.document.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ritense.document.domain.validation.DocumentContentValidationResult;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.time.temporal.Temporal;
 
@@ -41,8 +42,10 @@ public interface DocumentDefinition {
         String name();
 
         @JsonProperty
-        CaseDefinitionId caseDefinitionId();
+        default CaseDefinitionId caseDefinitionId() { return null; }
 
+        @JsonProperty
+        default BuildingBlockDefinitionId buildingBlockDefinitionId() { return null; }
     }
 
 }

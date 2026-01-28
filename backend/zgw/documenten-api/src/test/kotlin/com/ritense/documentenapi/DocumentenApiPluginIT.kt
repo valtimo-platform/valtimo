@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -36,8 +36,6 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -46,6 +44,8 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -404,13 +404,14 @@ internal class DocumentenApiPluginIT @Autowired constructor(
     private fun saveProcessLink(pluginActionDefinitionKey: String, generateDocumentActionProperties: String) {
         pluginProcessLinkRepository.save(
             PluginProcessLink(
-                PluginProcessLinkId(UUID.fromString("71997298-163c-4a67-b52a-1dcc2af72b40")),
-                processDefinitionId,
-                "serviceTask",
-                objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
-                pluginConfiguration.id,
-                pluginActionDefinitionKey,
-                ActivityTypeWithEventName.SERVICE_TASK_START
+                id = UUID.fromString("71997298-163c-4a67-b52a-1dcc2af72b40"),
+                processDefinitionId = processDefinitionId,
+                activityId = "serviceTask",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
+                pluginConfigurationId = pluginConfiguration.id,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = pluginActionDefinitionKey
             )
         )
     }
