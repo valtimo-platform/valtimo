@@ -26,7 +26,7 @@
   sources into a single unified response, enabling employees to assist citizens, businesses, and institutions more
   effectively and transparently.
 
-  Learn more at https://docs.integraal-klant-objectbeeld.nl/
+  Learn more at Learn more at [IKO documentation](https://docs.integraal-klant-objectbeeld.nl/).
 
 
 ## Enhancements
