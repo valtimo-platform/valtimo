@@ -29,6 +29,7 @@ dependencies {
     api(project(":backend:form"))
     api(project(":backend:form-flow"))
     api(project(":backend:form-view-model"))
+    api(project(":backend:iko"))
     api(project(":backend:importer"))
     api(project(":backend:inbox"))
     api(project(":backend:keycloak-iam"))
