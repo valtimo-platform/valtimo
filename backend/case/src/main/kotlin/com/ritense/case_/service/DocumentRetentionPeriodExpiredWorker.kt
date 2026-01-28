@@ -49,7 +49,7 @@ class DocumentRetentionPeriodExpiredWorker(
                 try {
                     transactionTemplate.execute {
                         runWithoutAuthorization {
-                            logger.debug { "expired doc found ${document.retentionDate()}" }
+                            logger.debug { "expired doc found: ${document.id()}, retention date: ${document.retentionDate()}" }
                             jsonSchemaDocumentService.deleteDocument(document.id)
                             outboxService.send {
                                 DocumentExpired(document.id.toString(), objectMapper.valueToTree(document))
@@ -57,7 +57,9 @@ class DocumentRetentionPeriodExpiredWorker(
                         }
                     }
                 } catch (ex: Exception) {
-                    logger.error(ex) { "Error processing expired document $document" }
+                    logger.error(ex) {
+                        "Error processing expired document id=${document.id} retentionDate=${document.retentionDate()}"
+                    }
                 }
             }
         } catch (ex: Exception) {
