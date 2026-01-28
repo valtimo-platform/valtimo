@@ -19,16 +19,6 @@
 
   Learn more in [Building blocks](../../../features/building-blocks/README.md).
 
-* **IKO**
-
-  IKO is a component designed to support service delivery by providing an integrated, up-to-date overview of customer (
-  Klantbeeld) and object (Objectbeeld) data. It acts as an API gateway that aggregates information from multiple backend
-  sources into a single unified response, enabling employees to assist citizens, businesses, and institutions more
-  effectively and transparently.
-
-  Learn more at https://docs.integraal-klant-objectbeeld.nl/
-
-
 ## Enhancements
 
 * **Widget configuration made available to custom component**
