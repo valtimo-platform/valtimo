@@ -28,11 +28,9 @@ interface ValuePathResponse {
 }
 
 interface ValuePathSelectorCache {
-  [documentDefinitionName: string]: {
-    [version: string | number]: {
-      [prefix: string]: {
-        [type in ValuePathType]: ValuePathItem[];
-      };
+  [cacheKey: string]: {
+    [prefix: string]: {
+      [type in ValuePathType]: ValuePathItem[];
     };
   };
 }

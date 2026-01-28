@@ -1,0 +1,56 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Energietoeslag Aanvraag",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "Vul uw gegevens in om de energietoeslag aan te vragen. Uw aanvraag wordt automatisch gecontroleerd via huishoudenverificatie en inkomenstoets.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Naam aanvrager",
+            "placeholder": "Vul uw volledige naam in...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "minLength": 2
+            },
+            "key": "applicantName",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "label": "Aantal personen in huishouden",
+            "placeholder": "Aantal personen inclusief uzelf...",
+            "tableView": true,
+            "validate": {
+                "required": true,
+                "min": 1
+            },
+            "key": "householdSize",
+            "type": "number",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Aanvraag Indienen",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

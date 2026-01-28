@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
-import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription} from 'rxjs';
 import {
   FormCustomComponentConfig,
   ModalParams,
   ProcessLink,
   ProcessLinkCreateEvent,
   ProcessLinkDeleteEvent,
-  ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
 } from '../models';
 import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
-import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
+import {FORM_CUSTOM_COMPONENT_TOKEN, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../constants';
+import {ManagementContext} from '@valtimo/shared';
+import {BuildingBlockStateService} from './building-block-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -43,12 +44,11 @@ export class ProcessLinkStateService implements OnDestroy {
   private readonly _saving$ = new BehaviorSubject<boolean>(false);
   private readonly _modalParams$ = new BehaviorSubject<ModalParams>(undefined);
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
-  private readonly _processLinkEditMode$ = new BehaviorSubject<ProcessLinkEditMode>(
-    ProcessLinkEditMode.SAVE_TO_BACKEND
-  );
+  private readonly _isEditing$ = new BehaviorSubject<boolean>(false);
   private readonly _processLinkUpdateEvents$ = new Subject<ProcessLinkUpdateEvent>();
   private readonly _processLinkCreateEvents$ = new Subject<ProcessLinkCreateEvent>();
   private readonly _processLinkDeleteEvents$ = new Subject<ProcessLinkDeleteEvent>();
+  private readonly _context$ = new BehaviorSubject<ManagementContext>('independent');
 
   public get processLinkUpdateEvents$(): Observable<ProcessLinkUpdateEvent> {
     return this._processLinkUpdateEvents$.asObservable();
@@ -67,15 +67,22 @@ export class ProcessLinkStateService implements OnDestroy {
   }
 
   public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
-    return this._availableProcessLinkTypes$.pipe(
-      map(types =>
+    return combineLatest([this._availableProcessLinkTypes$, this._context$]).pipe(
+      map(([types, context]) =>
         (!this.formCustomComponentConfig
           ? types.map(type => ({
               ...type,
               enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
             }))
           : types
-        ).filter(type => type.processLinkType !== 'url')
+        )
+          .filter(type => type.processLinkType !== 'url')
+          .map(type =>
+            context === 'buildingBlock' &&
+            UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK.includes(type.processLinkType)
+              ? {...type, enabled: false}
+              : type
+          )
       )
     );
   }
@@ -108,31 +115,40 @@ export class ProcessLinkStateService implements OnDestroy {
   public get typeOfSelectedProcessLink$(): Observable<string> {
     return this.selectedProcessLink$.pipe(map(processLink => processLink?.processLinkType || ''));
   }
-  public get processLinkEditMode(): ProcessLinkEditMode {
-    return this._processLinkEditMode$.getValue();
-  }
   public get viewModelEnabled$(): Observable<boolean> {
     return this._viewModelEnabled$.asObservable();
   }
   public get url$(): Observable<string> {
     return this._url$.asObservable();
   }
+  public get context$(): Observable<ManagementContext> {
+    return this._context$.asObservable();
+  }
+  public get isEditing$(): Observable<boolean> {
+    return this._isEditing$.asObservable();
+  }
 
   private _availableProcessLinkTypesSubscription!: Subscription;
+  private _backButtonSubscription!: Subscription;
+  private _nextButtonSubscription!: Subscription;
 
   constructor(
     private readonly processLinkStepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginStateService: PluginStateService,
+    private readonly buildingBlockStateService: BuildingBlockStateService,
     @Optional()
     @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
     private readonly formCustomComponentConfig: FormCustomComponentConfig
   ) {
     this.openAvailableProcessLinkTypesSubscription();
+    this.openEditModeNavigationSubscriptions();
   }
 
   public ngOnDestroy(): void {
     this._availableProcessLinkTypesSubscription?.unsubscribe();
+    this._backButtonSubscription?.unsubscribe();
+    this._nextButtonSubscription?.unsubscribe();
   }
 
   public setAvailableProcessLinkTypes(processLinkTypes: Array<ProcessLinkType>): void {
@@ -194,21 +210,30 @@ export class ProcessLinkStateService implements OnDestroy {
     this._modalParams$.next(params);
   }
 
+  public setContext(context: ManagementContext): void {
+    this._context$.next(context);
+    this.processLinkStepService.setContext(context);
+  }
+
   public selectProcessLink(processLink: ProcessLink | undefined): void {
     if (!processLink) return;
     this._selectedProcessLink$.next(processLink);
+    this._isEditing$.next(true);
     this.pluginStateService.selectProcessLink(processLink);
+    this.buildingBlockStateService.setProcessLink(processLink);
     this.setViewModelEnabled(processLink.viewModelEnabled ?? false);
     this._url$.next(processLink.url ?? '');
+
+    // Initialize stepper for editing mode - navigate to last step
+    this.processLinkStepService.initializeEditModeSteps(processLink.processLinkType);
+    // Set button visibility based on current step position
+    this.updateButtonsForCurrentStep();
   }
 
   public deselectProcessLink(): void {
     this._selectedProcessLink$.next(undefined);
     this.pluginStateService.deselectProcessLink();
-  }
-
-  public setEditMode(editMode: ProcessLinkEditMode): void {
-    this._processLinkEditMode$.next(editMode);
+    this.resetBuildingBlockState();
   }
 
   public sendProcessLinkUpdateEvent(event: ProcessLinkUpdateEvent): void {
@@ -233,6 +258,66 @@ export class ProcessLinkStateService implements OnDestroy {
     );
   }
 
+  private openEditModeNavigationSubscriptions(): void {
+    // Handle back button in edit mode
+    this._backButtonSubscription = this.buttonService.backButtonClick$.subscribe(() => {
+      if (this._isEditing$.getValue()) {
+        this.navigateBackInEditMode();
+      }
+    });
+
+    // Handle next button in edit mode
+    this._nextButtonSubscription = this.buttonService.nextButtonClick$.subscribe(() => {
+      if (this._isEditing$.getValue()) {
+        this.navigateForwardInEditMode();
+      }
+    });
+  }
+
+  private navigateBackInEditMode(): void {
+    const navigated = this.processLinkStepService.goToPreviousStep();
+    if (navigated) {
+      this.updateButtonsForCurrentStep();
+    }
+  }
+
+  private navigateForwardInEditMode(): void {
+    const navigated = this.processLinkStepService.goToNextStep();
+    if (navigated) {
+      this.updateButtonsForCurrentStep();
+    }
+  }
+
+  private updateButtonsForCurrentStep(): void {
+    const isFirstStep = this.processLinkStepService.isFirstStep();
+    const isLastStep = this.processLinkStepService.isLastStep();
+
+    // Back button visibility
+    if (isFirstStep) {
+      this.buttonService.hideBackButton();
+    } else {
+      this.buttonService.showBackButton();
+    }
+
+    // Next/Save button visibility
+    if (isLastStep) {
+      this.buttonService.hideNextButton();
+      this.buttonService.showSaveButton();
+    } else {
+      this.buttonService.showNextButton();
+      this.buttonService.enableNextButton();
+      this.buttonService.hideSaveButton();
+    }
+  }
+
+  public isBuildingBlockContext(): boolean {
+    return this._context$.getValue() === 'buildingBlock';
+  }
+
+  private resetBuildingBlockState(): void {
+    this.buildingBlockStateService.reset();
+  }
+
   private reset(): void {
     this.setAvailableProcessLinkTypes([]);
     this.processLinkStepService.reset();
@@ -240,5 +325,7 @@ export class ProcessLinkStateService implements OnDestroy {
     this.buttonService.resetButtons();
     this.clearSelectedProcessLinkType();
     this.deselectProcessLink();
+    this.resetBuildingBlockState();
+    this._isEditing$.next(false);
   }
 }

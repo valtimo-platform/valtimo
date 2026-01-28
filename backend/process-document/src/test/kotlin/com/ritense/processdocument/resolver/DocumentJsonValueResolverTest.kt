@@ -57,7 +57,7 @@ internal class DocumentJsonValueResolverTest {
     private lateinit var documentService: DocumentService
     private lateinit var documentDefinitionService: JsonSchemaDocumentDefinitionService
 
-    private lateinit var documentValueResolver: DocumentJsonValueResolverFactory
+    private lateinit var documentValueResolver: CaseDocumentJsonValueResolverFactory
 
     private lateinit var processInstanceId: String
     private lateinit var variableScope: DelegateTask
@@ -70,7 +70,7 @@ internal class DocumentJsonValueResolverTest {
         documentService = mock()
         documentDefinitionService = mock()
         val documentProperties = DocumentProperties(null)
-        documentValueResolver = DocumentJsonValueResolverFactory(
+        documentValueResolver = CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,

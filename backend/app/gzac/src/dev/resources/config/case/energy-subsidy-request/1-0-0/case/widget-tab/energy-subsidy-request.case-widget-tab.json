@@ -1,0 +1,110 @@
+[
+    {
+        "key": "results",
+        "widgets": [
+            {
+                "key": "aanvraag-gegevens",
+                "type": "fields",
+                "title": "Aanvraag Gegevens",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "applicantName",
+                                "title": "Naam Aanvrager",
+                                "value": "doc:applicantName"
+                            },
+                            {
+                                "key": "householdSize",
+                                "title": "Huishouden Grootte",
+                                "value": "doc:householdSize",
+                                "displayProperties": {
+                                    "type": "number"
+                                }
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "berekening-resultaten",
+                "type": "fields",
+                "title": "Berekening Resultaten",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "verifiedApplicant",
+                                "title": "Geverifieerde Aanvrager",
+                                "value": "doc:verifiedApplicant"
+                            },
+                            {
+                                "key": "calculatedSubsidy",
+                                "title": "Berekende Toeslag (EUR)",
+                                "value": "doc:calculatedSubsidy",
+                                "displayProperties": {
+                                    "type": "number"
+                                }
+                            },
+                            {
+                                "key": "eligibilityResult",
+                                "title": "Geschiktheidsbeoordeling",
+                                "value": "doc:eligibilityResult"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "zaak-eigenschappen",
+                "type": "fields",
+                "title": "Zaak Eigenschappen (per Building Block)",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "zaakOmschrijvingBB1",
+                                "title": "BB1: Zaak Omschrijving",
+                                "value": "doc:zaakOmschrijvingFromZgw"
+                            },
+                            {
+                                "key": "zaakToelichtingBB2",
+                                "title": "BB2: Zaak Toelichting",
+                                "value": "doc:zaakToelichtingBB2"
+                            },
+                            {
+                                "key": "zaakEinddatumBB3",
+                                "title": "BB3: Zaak Einddatum Gepland",
+                                "value": "doc:zaakEinddatumGeplandBB3"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
+                "key": "zgw-samenvatting",
+                "type": "fields",
+                "title": "ZGW Samenvatting",
+                "width": 2,
+                "highContrast": false,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "zgwActionSummary",
+                                "title": "Alle ZGW Acties",
+                                "value": "doc:zgwActionSummary"
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]

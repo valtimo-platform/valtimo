@@ -151,8 +151,6 @@ export class WidgetInteractiveTableComponent {
 
   private _paginationInitialized = false;
 
-  private _initialNumberOfElements!: number;
-
   @Input({required: true}) set widgetData(value: any | null) {
     if (!value) {
       this.widgetData$.next(null);
@@ -160,8 +158,6 @@ export class WidgetInteractiveTableComponent {
     }
 
     this.$showPagination.set(value.totalElements > value.size);
-
-    if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
     const widgetPage: Page<CarbonListItem> = value['table'] ?? value;
     let widgetData: any[] = value['table']?.content ?? value?.content;
@@ -171,8 +167,8 @@ export class WidgetInteractiveTableComponent {
     if (!value['table']) {
       widgetData = widgetData.map(data => (data['data'] = data));
     }
-    if (widgetData.length < this._initialNumberOfElements) {
-      const rows = new Array<null>(this._initialNumberOfElements).fill(null);
+    if (widgetData.length < widgetPage.size) {
+      const rows = new Array<null>(widgetPage.size).fill(null);
 
       widgetData = rows.map((_, index) => widgetData[index] || {...value[0], hidden: true});
     }
@@ -208,7 +204,9 @@ export class WidgetInteractiveTableComponent {
     this.cdr.detectChanges();
   }
 
-  @Input() public set searchRequest(value: WidgetInteractiveTableEventSearchRequest | null | undefined) {
+  @Input() public set searchRequest(
+    value: WidgetInteractiveTableEventSearchRequest | null | undefined
+  ) {
     this._searchRequest = value ?? this._defaultSearchRequest;
     this.$searchRequest.set(this._searchRequest);
   }
@@ -222,7 +220,8 @@ export class WidgetInteractiveTableComponent {
   @Output() public readonly actionEvent = new EventEmitter<WidgetAction>();
   @Output() public readonly caseStartEvent = new EventEmitter<CaseDefinition>();
   @Output() public readonly queryParamsEvent = new EventEmitter<HttpParams>();
-  @Output() public readonly searchSubmitEvent = new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
+  @Output() public readonly searchSubmitEvent =
+    new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly caseDefinitions$: Observable<CaseDefinition[]> =
@@ -286,6 +285,7 @@ export class WidgetInteractiveTableComponent {
     this.$paginationModel.set({
       ...paginationModel,
       size,
+      page: 1,
     });
   }
 

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
+import {ListItem} from 'carbon-components-angular/dropdown';
 
 interface ProcessLink {
   id: string;
@@ -22,6 +24,8 @@ interface ProcessLink {
   activityType: string;
   processLinkType: string;
   pluginConfigurationId?: string;
+  pluginDefinitionKey?: string;
+  referenceType?: PluginConfigurationReferenceType;
   pluginActionDefinitionKey?: string;
   actionProperties?: {
     [key: string]: any;
@@ -34,6 +38,11 @@ interface ProcessLink {
   formSize?: FormSize;
   subtitles?: string[];
   componentKey?: string;
+  buildingBlockDefinitionKey?: string;
+  buildingBlockDefinitionVersionTag?: string;
+  pluginConfigurationMappings?: Record<string, string>;
+  inputMappings?: Array<BuildingBlockInputMapping>;
+  outputMappings?: Array<BuildingBlockOutputMapping>;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -55,7 +64,12 @@ type ProcessLinkConfigurationStep =
   | 'configurePluginAction'
   | 'selectForm'
   | 'selectFormFlow'
+  | 'selectBuildingBlock'
+  | 'configureBuildingBlockPlugins'
+  | 'configureBuildingBlockMappings'
   | 'empty';
+
+type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';
 
 interface FormProcessLinkCreateRequestDto {
   processDefinitionId: string;
@@ -83,19 +97,23 @@ interface PluginProcessLinkCreateDto {
   activityId: string;
   activityType: string;
   processLinkType: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: object;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface PluginProcessLinkUpdateDto {
   id: string;
   activityId: string;
-  pluginConfigurationId: string;
+  pluginConfigurationId?: string;
   pluginActionDefinitionKey: string;
   actionProperties: {
     [key: string]: any;
   };
+  referenceType: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
 }
 
 interface FormFlowProcessLinkUpdateRequestDto {
@@ -160,6 +178,42 @@ interface UIComponentProcessLinkUpdateRequestDto {
   componentKey: string;
 }
 
+interface BuildingBlockProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+  pluginConfigurationMappings: Record<string, string>;
+  inputMappings: Array<BuildingBlockInputMapping>;
+  outputMappings: Array<BuildingBlockOutputMapping>;
+}
+
+interface BuildingBlockProcessLinkUpdateDto {
+  id: string;
+  activityId: string;
+  processLinkType: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+  pluginConfigurationMappings: Record<string, string>;
+  inputMappings: Array<BuildingBlockInputMapping>;
+  outputMappings: Array<BuildingBlockOutputMapping>;
+}
+
+type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
+
+interface BuildingBlockInputMapping {
+  source: string;
+  target: string;
+}
+
+interface BuildingBlockOutputMapping {
+  source: string;
+  target: string;
+  syncTiming: BuildingBlockSyncTiming;
+}
+
 type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface TaskProcessLinkResult {
@@ -188,7 +242,8 @@ type ProcessLinkUpdateEvent =
   | FormFlowProcessLinkUpdateRequestDto
   | FormProcessLinkUpdateRequestDto
   | URLProcessLinkUpdateRequestDto
-  | UIComponentProcessLinkUpdateRequestDto;
+  | UIComponentProcessLinkUpdateRequestDto
+  | BuildingBlockProcessLinkUpdateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -208,6 +263,7 @@ type ProcessLinkCreateEvent =
   | FormProcessLinkCreateRequestDto
   | FormFlowProcessLinkCreateRequestDto
   | PluginProcessLinkCreateDto
+  | BuildingBlockProcessLinkCreateDto
   | URLProcessLinkCreateDto
   | UIComponentProcessLinkCreateRequestDto;
 
@@ -215,11 +271,6 @@ interface ProcessLinkDeleteEvent {
   activityId: string;
 }
 
-enum ProcessLinkEditMode {
-  SAVE_TO_BACKEND,
-  EMIT_EVENTS,
-}
-
 interface CompatibleProcessVersion {
   version: string;
   processLinks: ProcessLink[];
@@ -238,6 +289,22 @@ interface CompatibleProcessVersion {
 interface CompatiblePluginProcessLinks {
   processDefinitionKey: string;
   versions: CompatibleProcessVersion[];
+}
+
+type PluginListItem = {
+  id: string;
+  title: string;
+  description: string;
+  logo?: string | null;
+  payload: PluginConfiguration | string;
+  isDefinition: boolean;
+};
+
+interface PluginConfigurationViewModel {
+  key: string;
+  label: string;
+  dropdownItems: Array<ListItem>;
+  hasOptions: boolean;
 }
 
 export {
@@ -249,17 +316,24 @@ export {
   FormProcessLinkCreateRequestDto,
   FormProcessLinkUpdateRequestDto,
   FormSize,
+  BuildingBlockProcessLinkCreateDto,
+  BuildingBlockProcessLinkUpdateDto,
+  BuildingBlockInputMapping,
+  BuildingBlockOutputMapping,
+  BuildingBlockSyncTiming,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginConfigurationViewModel,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLink,
   ProcessLinkConfigurationStep,
   ProcessLinkCreateEvent,
   ProcessLinkDeleteEvent,
-  ProcessLinkEditMode,
   ProcessLinkType,
   ProcessLinkUpdateEvent,
+  PluginConfigurationReferenceType,
+  PluginListItem,
   TaskProcessLinkResult,
   TaskProcessLinkType,
   TaskWithProcessLink,
