@@ -67,7 +67,7 @@ class ActuatorSecurityFilterChainFactory {
                             healthEndpointProperties.roles.contains(ACTUATOR)
                         )
                 )) {
-                    it.requestMatchers(getHealthMatcher(webEndpointProperties.basePath)).permitAll()
+                    it.requestMatchers(*getHealthMatcher(webEndpointProperties.basePath)).permitAll()
                 }
                 it.requestMatchers(*matchers).hasAuthority(ACTUATOR)
             }
@@ -111,9 +111,7 @@ class ActuatorSecurityFilterChainFactory {
         antMatcher(GET, actuatorPath),
         antMatcher(GET, "${actuatorPath}/configprops"),
         antMatcher(GET, "${actuatorPath}/env"),
-        getHealthMatcher(actuatorPath),
-        antMatcher(GET, "${actuatorPath}/health/liveness"),
-        antMatcher(GET, "${actuatorPath}/health/readiness"),
+        *getHealthMatcher(actuatorPath),
         antMatcher(GET, "${actuatorPath}/mappings"),
         antMatcher(GET, "${actuatorPath}/logfile"),
         antMatcher(GET, "${actuatorPath}/loggers"),
@@ -121,8 +119,11 @@ class ActuatorSecurityFilterChainFactory {
         antMatcher(GET, "${actuatorPath}/info"),
     )
 
-    private fun getHealthMatcher(actuatorPath: String) =
-        antMatcher(GET, "${actuatorPath}/health")
+    private fun getHealthMatcher(actuatorPath: String) = arrayOf(
+        antMatcher(GET, "${actuatorPath}/health"),
+        antMatcher(GET, "${actuatorPath}/health/liveness"),
+        antMatcher(GET, "${actuatorPath}/health/readiness"),
+    )
 
     companion object {
         const val ACTUATOR_REALM = "Actuator realm"

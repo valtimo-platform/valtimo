@@ -12,9 +12,10 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Allow access to Spring Actuator readiness and liveness health endpoints when details are omitted**
 
-  New enhancement explanation.
+  This behaviour, previously limited to `/health`, now also applies to `/health/readiness` and `/health/liveness`.
+  These endpoints can be used by cloud services to determine whether the application has started successfully and is ready to receive traffic.
 
 ## Bugfixes
 

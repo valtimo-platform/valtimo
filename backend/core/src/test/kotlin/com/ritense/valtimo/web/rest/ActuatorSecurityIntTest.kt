@@ -31,6 +31,8 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import java.util.Base64
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 @TestPropertySource(properties = ["management.port=0"])
 class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
@@ -48,10 +50,39 @@ class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
         assertThat(pingStatus).isEqualTo("UP")
     }
 
+    @ParameterizedTest
+    @CsvSource("/actuator/health/readiness", "/actuator/health/liveness")
+    fun `actuator user should have full access to health probe endpoints`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
+            .init()
+            .withBasicTestUser()
+
+        val response = mockMvc.perform(request).andReturn().response
+        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+
+        val status = read<Any>(response.contentAsString, "$.status")
+        assertThat(status).isEqualTo("UP")
+    }
+
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.USER])
     fun `authenticated user should have access to health endpoint without details`() {
         val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/health")
+            .init()
+
+        val response = mockMvc.perform(request).andReturn().response
+        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+
+        assertThrows<PathNotFoundException> {
+            read<Map<String, Any>>(response.contentAsString, "$.components")
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource("/actuator/health/readiness", "/actuator/health/liveness")
+    @WithMockUser(authorities = [AuthoritiesConstants.USER])
+    fun `authenticated user should have access to health probe endpoints without details`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
             .init()
 
         val response = mockMvc.perform(request).andReturn().response
