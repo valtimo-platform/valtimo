@@ -63,17 +63,18 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
     private readonly pageTitleService: PageTitleService,
     @Optional()
     @Inject(BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN)
-    public readonly injectedCustomTabs: BuildingBlockManagementTabConfig[]
+    public readonly buildingBlockManagementTabConfig: BuildingBlockManagementTabConfig[]
   ) {
     this.buildingBlockManagementDetailService.setRoute(this.route);
   }
 
   public get customTabs(): BuildingBlockManagementTabConfig[] {
-    return (
-      (Array.isArray(this.injectedCustomTabs)
-        ? this.injectedCustomTabs
-        : [this.injectedCustomTabs]) || []
-    ).filter(tab => !!tab);
+    const raw = this.buildingBlockManagementTabConfig;
+    let tabs: BuildingBlockManagementTabConfig[] = [];
+    if (raw) {
+      tabs = Array.isArray(raw) ? raw : [raw];
+    }
+    return tabs.filter(tab => !!tab?.component);
   }
 
   public ngOnInit() {

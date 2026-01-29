@@ -179,10 +179,12 @@ export class CaseManagementRoutingModule {
     );
     if (!detailsRoute) return;
     detailsRoute.children?.push(
-      ...this.caseManagementTabConfig.map((tabConfig: CaseManagementTabConfig) => ({
-        path: tabConfig.tabRoute ?? tabConfig.translationKey,
-        component: tabConfig.component,
-      }))
+      ...this.caseManagementTabConfig
+        .filter((tabConfig: CaseManagementTabConfig) => !!tabConfig?.component)
+        .map((tabConfig: CaseManagementTabConfig) => ({
+          path: tabConfig.tabRoute ?? tabConfig.translationKey,
+          component: tabConfig.component,
+        }))
     );
   }
 }
