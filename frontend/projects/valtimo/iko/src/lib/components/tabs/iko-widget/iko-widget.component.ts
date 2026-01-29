@@ -28,6 +28,7 @@ import {IkoWidgetFormioComponent} from '../../widget-formio';
 import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
 import {IkoWidgetTableComponent} from '../../widget-table';
 import {IkoWidgetMapComponent} from '../../widget-map';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -37,6 +38,8 @@ import {IkoWidgetMapComponent} from '../../widget-map';
   imports: [CommonModule, WidgetContainerComponent, FitPageDirective],
 })
 export class IkoWidgetComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly ikoViewKey$ = this.ikoTabService.ikoViewKey$;
   public readonly entryId$ = this.ikoTabService.entryId$;
 

@@ -19,6 +19,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ibanValidator} from './iban.validators';
 import {Subscription} from 'rxjs';
 import {FormioCustomComponent} from '../../../../modules';
+import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * Custom formio component for iban bank accounts.
@@ -30,6 +31,8 @@ import {FormioCustomComponent} from '../../../../modules';
   standalone: false,
 })
 export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public value: string;
   @Input() public disabled = false;
   @Input() public required = false;

@@ -21,13 +21,14 @@
   size="sm"
   showFooter="true"
   (close)="closeModal()"
+  [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>{{ 'quickSearch.addItem' | translate }}</h3>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE">{{ 'quickSearch.addItem' | translate }}</h3>
   </cds-modal-header>
 
-  <form cdsModalContent class="valtimo-qiuck-search-modal__content" [formGroup]="formGroup">
-    <cds-text-label>
+  <form cdsModalContent class="valtimo-qiuck-search-modal__content" [formGroup]="formGroup" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_FORM">
+    <cds-text-label [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE_LABEL">
       {{ 'interface.title' | translate }}
 
       <input
@@ -37,10 +38,11 @@
         maxlength="50"
         [placeholder]="'interface.title' | translate"
         [attr.modal-primary-focus]="true"
+        [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_TITLE_INPUT"
       />
     </cds-text-label>
 
-    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error">
+    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_ERROR">
       <svg cdsIcon="warning--filled" size="16"></svg>
 
       {{ 'quickSearch.duplicateError' | translate }}
@@ -53,15 +55,16 @@
         showClose: false,
         lowContrast: true,
       }"
+      [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_INFO_NOTIFICATION"
     ></cds-inline-notification>
   </form>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL_SAVE_BUTTON">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

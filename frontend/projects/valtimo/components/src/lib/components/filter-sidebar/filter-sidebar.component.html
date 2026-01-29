@@ -24,12 +24,13 @@
     href="javascript:void(0)"
     (click)="toggleFilterSidebar()"
     [ngClass]="this.filterSidebar === 'show' && 'toggle-expanded'"
+    [attr.data-test-id]="TEST_IDS.FILTER_SIDEBAR_TOGGLE"
   >
     <div class="icon-container p-0 bg-transparent">
       <i class="click-able icon shadow mdi mdi-filter-variant"></i>
     </div>
   </a>
-  <aside class="page-aside p-4 mb-4 bg-light filter-holder" *ngIf="this.filterSidebar === 'show'">
+  <aside class="page-aside p-4 mb-4 bg-light filter-holder" *ngIf="this.filterSidebar === 'show'" [attr.data-test-id]="TEST_IDS.FILTER_SIDEBAR">
     <ng-content></ng-content>
   </aside>
 </div>

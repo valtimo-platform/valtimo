@@ -22,15 +22,17 @@
   } as obs"
   class="valtimo-widget-table"
   [class.valtimo-widget-table--compact]="widgetConfiguration?.isCompact"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_CONTAINER"
 >
-  <section class="valtimo-widget-table__header">
-    <div class="valtimo-widget-table__title-container">
+  <section class="valtimo-widget-table__header" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_HEADER">
+    <div class="valtimo-widget-table__title-container" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_TITLE_CONTAINER">
       <valtimo-mdi-icon-viewer
         *ngIf="widgetConfiguration?.icon"
         [mdiIcon]="widgetConfiguration.icon"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+      <span class="widget-title" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_TITLE">{{ widgetConfiguration?.title }}</span>
     </div>
 
     <ng-content></ng-content>
@@ -38,11 +40,12 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="widgetConfiguration"
       [resolvedData]="obs.resolvedData"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
   @if (obs.fields && (obs.widgetData === null || obs.widgetData.length > 0)) {
-    <section class="valtimo-widget-table__content">
+    <section class="valtimo-widget-table__content" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_CONTENT">
       <valtimo-carbon-list
         [header]="false"
         [hideToolbar]="true"
@@ -50,6 +53,7 @@
         [items]="obs.widgetData || []"
         [loading]="obs.widgetData === null"
         [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_LIST"
       >
       </valtimo-carbon-list>
 
@@ -58,6 +62,7 @@
           class="valtimo-widget-table__pagination"
           [model]="$paginationModel()"
           (selectPage)="onSelectPage($event)"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_PAGINATION"
         >
         </cds-pagination-nav>
       } @else if (obs.widgetData === null) {
@@ -75,6 +80,7 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_NO_RESULTS"
     ></valtimo-no-results>
   }
 </cds-tile>

@@ -47,6 +47,7 @@ import {
 import {WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WIDGET_HEIGHT_1X} from '../../constants';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -57,6 +58,8 @@ import {WIDGET_HEIGHT_1X} from '../../constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('widgetBlockContent') private _widgetBlockContentRef: ElementRef<HTMLDivElement>;
   @ViewChild('widgetComponent', {static: true, read: ViewContainerRef})
   public readonly dynamicContainer: ViewContainerRef;

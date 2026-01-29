@@ -15,6 +15,7 @@
  */
 
 import {Component, Input} from '@angular/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-spinner',
@@ -23,6 +24,8 @@ import {Component, Input} from '@angular/core';
   standalone: false,
 })
 export class SpinnerComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() useBootstrapSpinner = true;
   @Input() name: string;
   @Input() type = 'ball-clip-rotate';

@@ -26,21 +26,22 @@
   [title]="title"
   [camera]="camera"
   [uploading]="uploading$ | async"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_DROPZONE_UPLOAD"
 ></valtimo-dropzone>
 
-<div class="file-preview" *ngFor="let resource of _value">
+<div class="file-preview" *ngFor="let resource of _value" data-test-id="valtimo-dropzone-file-preview-{{$index}}">
   <div class="file-preview-name">
-    <a href="#" (click)="downloadFile(resource)">
+    <a href="#" (click)="downloadFile(resource)" data-test-id="valtimo-dropzone-download-link-{{$index}}">
       {{ resource.originalName }}
     </a>
   </div>
   <div class="file-preview-size">
-    <span>
+    <span data-test-id="valtimo-dropzone-file-size-{{$index}}">
       {{ resource.size | filesize }}
     </span>
   </div>
   <div class="file-preview-delete" *ngIf="!disabled">
-    <a (click)="deleteFile(resource.data.resourceId)">
+    <a (click)="deleteFile(resource.data.resourceId)" data-test-id="valtimo-dropzone-delete-link-{{$index}}">
       <i class="icon mdi mdi-delete"></i>
     </a>
   </div>

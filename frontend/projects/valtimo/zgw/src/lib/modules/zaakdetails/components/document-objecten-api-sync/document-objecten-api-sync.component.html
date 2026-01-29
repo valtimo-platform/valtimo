@@ -20,25 +20,25 @@
     [name]="'zaakdetails.title' | translate | lowercase"
   ></valtimo-case-management-draft-warning>
 
-  <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
+  <h2 class="valtimo-objecten-sync__title" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_TITLE">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
     <valtimo-spinner></valtimo-spinner>
   } @else {
     @if (documentObjectenApiSync$ | async; as documentObjectenApiSync) {
       <section class="valtimo-objecten-sync__card-header">
-        <span class="valtimo-objecten-sync__card-title">
+        <span class="valtimo-objecten-sync__card-title" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CARD_TITLE">
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </span>
 
         <div class="valtimo-objecten-sync__card-controls">
-          <button cdsButton="tertiary" (click)="showModal()">
+          <button cdsButton="tertiary" (click)="showModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_EDIT_BUTTON">
             {{ 'interface.edit' | translate }}
 
             <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
           </button>
 
-          <button cdsButton="danger" (click)="remove()">
+          <button cdsButton="danger" (click)="remove()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_DELETE_BUTTON">
             {{ 'interface.delete' | translate }}
 
             <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
@@ -64,7 +64,7 @@
         </div>
       </section>
     } @else {
-      <button cdsButton="primary" (click)="showModal()">
+      <button cdsButton="primary" (click)="showModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_ADD_BUTTON">
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -81,7 +81,7 @@
     showFooter="true"
     (close)="onModalClose()"
   >
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_MODAL_HEADER">
       <h3 cdsModalHeaderHeading>
         {{ 'zaakdetails.editModal.title' | translate }}
       </h3>
@@ -105,20 +105,21 @@
           name="objectManagementConfigurationId"
           [carbonTheme]="currentTheme$ | async"
           (selectedChange)="configSelected($event)"
+          [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CONFIGURATION_SELECT"
         ></v-select>
 
-        <cds-checkbox formControlName="enabled"
-          >{{ 'zaakdetails.editModal.enabled' | translate }}
+        <cds-checkbox formControlName="enabled" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_ENABLED_CHECKBOX">
+          {{ 'zaakdetails.editModal.enabled' | translate }}
         </cds-checkbox>
       </form>
     </section>
 
-    <cds-modal-footer>
-      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+    <cds-modal-footer [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_MODAL_FOOTER">
+      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CANCEL_BUTTON">
         {{ 'interface.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
+      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_SUBMIT_BUTTON">
         {{ 'searchFieldsOverview.submit' | translate }}
       </button>
     </cds-modal-footer>

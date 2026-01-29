@@ -22,6 +22,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {switchMap} from 'rxjs/operators';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,6 +31,8 @@ import {switchMap} from 'rxjs/operators';
   styleUrls: ['./milestone-edit.component.scss'],
 })
 export class MilestoneEditComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public form: FormGroup;
   public milestoneSets: MilestoneSet[] = [];
   public processDefinitions: ProcessDefinition[] = [];

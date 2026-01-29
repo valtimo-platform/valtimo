@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
 import {filter, take, withLatestFrom} from 'rxjs/operators';
@@ -38,6 +38,8 @@ import {
   styleUrls: ['./select-form.component.scss'],
 })
 export class SelectFormComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   public formDisplayValue!: FormDisplayType;
   public formSizeValue!: FormSize;
   public subtitlesValue: string[] = [];

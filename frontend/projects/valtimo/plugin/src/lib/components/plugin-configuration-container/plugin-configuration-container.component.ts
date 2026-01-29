@@ -38,7 +38,7 @@ import {
   PluginConfigurationData,
 } from '../../models';
 import {ActivatedRoute} from '@angular/router';
-import {getCaseManagementRouteParamsAndContext} from '@valtimo/shared';
+import { getCaseManagementRouteParamsAndContext, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-plugin-configuration-container',
@@ -49,6 +49,8 @@ import {getCaseManagementRouteParamsAndContext} from '@valtimo/shared';
 export class PluginConfigurationContainerComponent
   implements OnInit, OnDestroy, Omit<PluginConfigurationComponent, 'pluginId'>
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('pluginConfigurationComponent', {static: true, read: ViewContainerRef})
   public dynamicContainer: ViewContainerRef;
 

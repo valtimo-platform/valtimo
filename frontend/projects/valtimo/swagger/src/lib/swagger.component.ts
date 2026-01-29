@@ -18,7 +18,7 @@ import {AfterViewInit, Component, ElementRef, ViewEncapsulation} from '@angular/
 import {UserProviderService} from '@valtimo/security';
 import SwaggerUI from 'swagger-ui';
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/shared';
+import { ConfigService, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,6 +28,8 @@ import {ConfigService} from '@valtimo/shared';
   encapsulation: ViewEncapsulation.None,
 })
 export class SwaggerComponent implements AfterViewInit {
+  readonly TEST_IDS = TEST_IDS;
+
   private valtimoSwaggerConfig: any;
 
   constructor(

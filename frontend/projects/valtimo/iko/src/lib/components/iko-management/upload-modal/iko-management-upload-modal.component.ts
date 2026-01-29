@@ -48,6 +48,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap
 import {UPLOAD_STEP, STEPS, UPLOAD_STATUS} from './iko-management-upload.constants';
 import {IkoManagementApiService} from '../../../services';
 import {IkoManagementUploadStepComponent} from './step/iko-management-upload-step.component';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -73,6 +74,8 @@ import {IkoManagementUploadStepComponent} from './step/iko-management-upload-ste
   ],
 })
 export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly _open$ = new BehaviorSubject<boolean>(false);
 
   @Input() public set open(value: boolean) {

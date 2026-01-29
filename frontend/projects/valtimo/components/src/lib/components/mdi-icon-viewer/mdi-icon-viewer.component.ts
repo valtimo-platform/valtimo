@@ -16,6 +16,7 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-mdi-icon-viewer',
@@ -26,5 +27,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
   imports: [CommonModule],
 })
 export class MdiIconViewerComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public mdiIcon: string = 'mdi-minus';
 }

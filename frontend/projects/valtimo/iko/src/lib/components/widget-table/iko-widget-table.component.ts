@@ -27,6 +27,7 @@ import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap
 import {TableWidget, WidgetLayoutService, WidgetTableComponent} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { TEST_IDS } from '@valtimo/shared';
 import {HttpParams} from '@angular/common/http';
 
 @Component({
@@ -46,6 +47,8 @@ import {HttpParams} from '@angular/common/http';
   ],
 })
 export class IkoWidgetTableComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   private _widgetConfiguration: TableWidget;
   public readonly widgetConfiguration$ = new BehaviorSubject<TableWidget | null>(null);
   @Input({required: true}) public set widgetConfiguration(value: TableWidget) {

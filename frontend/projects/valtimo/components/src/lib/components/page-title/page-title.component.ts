@@ -26,7 +26,7 @@ import {
 import {Title} from '@angular/platform-browser';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService} from '@valtimo/shared';
+import { ConfigService, TEST_IDS } from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -48,6 +48,8 @@ import {PageHeaderService, PageSubtitleService, PageTitleService} from '../../se
   standalone: false,
 })
 export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class.valtimo-page-title--compact') isCompact!: boolean;
 
   @ViewChild('subtitleVcr', {static: true, read: ViewContainerRef})

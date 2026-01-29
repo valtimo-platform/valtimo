@@ -21,7 +21,7 @@ import {
   RadioValue,
   SelectItem,
 } from '@valtimo/components';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import { CaseManagementParams, ManagementContext, TEST_IDS } from '@valtimo/shared';
 import flatpickr from 'flatpickr';
 import {
   BehaviorSubject,
@@ -51,6 +51,8 @@ import {ZakenApiService} from '../../services';
 export class SetZaakStatusConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() set pluginId(value: string) {

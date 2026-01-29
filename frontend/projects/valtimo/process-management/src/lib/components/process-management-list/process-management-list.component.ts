@@ -30,6 +30,7 @@ import {
   getCaseManagementRouteParams,
   GlobalNotificationService,
   ProcessDefinitionWithPropertiesDto,
+  TEST_IDS
 } from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
@@ -56,6 +57,8 @@ import {getContextObservable} from '../../utils';
   ],
 })
 export class ProcessManagementListComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Output() public readonly processSelected = new EventEmitter<
     ProcessDefinitionResult | 'create'
   >();

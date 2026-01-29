@@ -20,10 +20,7 @@ import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} fr
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective, WidgetModule} from '@valtimo/components';
-import {
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-} from '@valtimo/shared';
+import { getCaseManagementRouteParams, getCaseManagementRouteParamsAndContext, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -59,6 +56,8 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
   ],
 })
 export class FormManagementCreateComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public readonly upload = false;
 
   @Output() public readonly goBackEvent = new EventEmitter<void>();

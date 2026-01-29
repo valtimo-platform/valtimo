@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {GetResultaattypenConfig} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,6 +28,8 @@ import {GetResultaattypenConfig} from '../../models';
 export class GetResultaattypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<GetResultaattypenConfig>;

@@ -23,6 +23,7 @@
   [showMaxFileSize]="true"
   [camera]="false"
   [uploading]="uploading$ | async"
+  [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_DROPZONE"
 ></valtimo-dropzone>
 
 <valtimo-widget>
@@ -32,11 +33,12 @@
     [header]="true"
     [isSearchable]="true"
     [actions]="actions"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_RELATED_DOCUMENTS_LIST"
   >
     <div header>
-      <h3 class="list-header-title">{{ 'Related documents' | translate }}</h3>
+      <h3 class="list-header-title" [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_RELATED_DOCUMENTS_TITLE">{{ 'Related documents' | translate }}</h3>
 
-      <h5 class="list-header-description">
+      <h5 class="list-header-description" [attr.data-test-id]="TEST_IDS.DOCUMENT_UPLOAD_RELATED_DOCUMENTS_DESCRIPTION">
         {{ 'Overview of all documents in this case' | translate }}
       </h5>
     </div>

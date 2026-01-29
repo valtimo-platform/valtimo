@@ -27,7 +27,7 @@ import {
   MoveRowDirection,
   MoveRowEvent,
 } from '@valtimo/components';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {
   TaskListColumn,
   TaskListColumnDisplayTypeParameters,
@@ -57,6 +57,8 @@ import {TaskManagementColumnModalComponent} from '../task-management-column-moda
   providers: [TaskManagementService],
 })
 export class TaskManagementColumnsComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.G10;
 
   private readonly _refreshColumns$ = new BehaviorSubject<null | 'noAnimation'>(null);

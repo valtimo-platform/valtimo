@@ -49,7 +49,7 @@ import {ColumnDefaultSort, IkoListColumnRequest, ListColumnDto} from '../../../.
 import {map} from 'rxjs/operators';
 import {delay, filter, Observable, of, Subscription, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
+import { ModalCloseEvent, ModalMode, TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -75,6 +75,8 @@ import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementListModalComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly $openModal = signal<boolean>(false);
   @Input() public set openModal(value: boolean) {
     this.$openModal.set(value);

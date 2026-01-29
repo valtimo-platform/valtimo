@@ -24,6 +24,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import { TEST_IDS } from '@valtimo/shared';
 
 import BpmnViewer from 'bpmn-js';
 import {ActivatedRoute} from '@angular/router';
@@ -38,6 +39,8 @@ import {PageTitleService} from '@valtimo/components';
   styleUrls: ['./form-link-process-diagram.component.scss'],
 })
 export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   private bpmnViewer: BpmnViewer;
 
   @ViewChild('ref') public el: ElementRef;

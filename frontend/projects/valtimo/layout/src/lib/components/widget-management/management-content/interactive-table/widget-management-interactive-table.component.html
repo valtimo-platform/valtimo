@@ -17,7 +17,7 @@
   <ng-content></ng-content>
 
   <form [formGroup]="formGroup" class="valtimo-widget-management-interactive-table__form">
-    <cds-checkbox formControlName="canStartCase">
+    <cds-checkbox formControlName="canStartCase" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CAN_START_CASE">
       {{ 'ikoManagement.canStartCase' | translate }}
     </cds-checkbox>
 
@@ -30,6 +30,7 @@
         cdsLayer="1"
         [placeholder]="'ikoManagement.rowAction' | translate"
         type="text"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ROW_ACTION_INPUT"
       />
     </cds-text-label>
 
@@ -40,6 +41,7 @@
       [keyColumnTitle]="'interface.name' | translate"
       [minimumAmountOfRows]="0"
       [valueColumnTitle]="'interface.url' | translate"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ACTIONS_INPUT"
     ></valtimo-carbon-multi-input>
   </form>
 </valtimo-widget-management-table>

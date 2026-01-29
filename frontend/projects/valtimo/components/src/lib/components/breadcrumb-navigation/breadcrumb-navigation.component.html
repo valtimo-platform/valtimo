@@ -19,7 +19,8 @@
     class="breadcrumbs-container"
     *ngIf="breadcrumbItems.length > 0"
     [ngClass]="{'--compact': compactMode$ | async}"
+    [attr.data-test-id]="TEST_IDS.BREADCRUMBS_CONTAINER"
   >
-    <cds-breadcrumb [items]="breadcrumbItems"></cds-breadcrumb>
+    <cds-breadcrumb [items]="breadcrumbItems" [attr.data-test-id]="TEST_IDS.BREADCRUMBS"></cds-breadcrumb>
   </div>
 </ng-container>

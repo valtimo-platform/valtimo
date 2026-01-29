@@ -25,6 +25,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-no-results',
@@ -34,6 +35,8 @@ import {
   standalone: false,
 })
 export class CarbonNoResultsComponent implements AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('noResults') private _noResultsRef: ElementRef<HTMLDivElement>;
 
   @Input() action: TemplateRef<any>;

@@ -35,6 +35,7 @@ import {
   DisplayTypeConfigurationComponent,
   WidgetService,
 } from '@valtimo/dashboard';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -44,6 +45,8 @@ import {
 export class WidgetConfigurationContainerComponent
   implements OnInit, OnDestroy, ConfigurationComponent
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('widgetConfigurationComponent', {static: true, read: ViewContainerRef})
   private readonly _dynamicContainer: ViewContainerRef;
 

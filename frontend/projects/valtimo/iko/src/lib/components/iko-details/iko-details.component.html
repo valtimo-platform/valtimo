@@ -19,12 +19,13 @@
   renderInPageHeader
 >
   <ng-template>
-    <cds-tabs class="valtimo-iko-details">
+    <cds-tabs class="valtimo-iko-details" [attr.data-test-id]="TEST_IDS.IKO_DETAILS_TABS">
       @for (tab of obs.tabs; track tab.key) {
         <cds-tab
           [active]="obs.activeTabKey === tab.key"
           [heading]="tab.title"
           (selected)="onTabSelected(tab)"
+          data-test-id="iko-details-tab-{{tab.key}}"
         >
         </cds-tab>
       }
@@ -32,4 +33,4 @@
   </ng-template>
 </ng-container>
 
-<ng-container #content></ng-container>
+<ng-container #content [attr.data-test-id]="TEST_IDS.IKO_DETAILS_CONTENT"></ng-container>

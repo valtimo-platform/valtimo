@@ -18,6 +18,7 @@
   class="case-count-configuration-form"
   *ngIf="{documentItems: documentItems$ | async, operatorItems: operatorItems$} as obs"
   [formGroup]="form"
+  [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM"
 >
   <div class="form__element">
     <cds-dropdown
@@ -28,6 +29,7 @@
       [invalid]="documentDefinition.dirty && documentDefinition.invalid"
       [label]="'documentDefinition' | widgetTranslate: dataSourceKey | async"
       (selected)="documentDefinitionSelected($event)"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_DOCUMENT_DEFINITION_DROPDOWN"
     >
       <cds-dropdown-list [items]="obs?.documentItems || []" type="multi"></cds-dropdown-list>
     </cds-dropdown>
@@ -37,6 +39,7 @@
     <cds-label
       [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
       class="conditions-label"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_CONDITIONS_LABEL"
       >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
@@ -59,6 +62,7 @@
       [keyColumnFlex]="2"
       [dropdownColumnFlex]="1"
       [valueColumnFlex]="1"
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_CONDITIONS_MULTI_INPUT"
     ></valtimo-carbon-multi-input>
   </div>
 </form>

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [margin]="true" [italic]="true">
+<v-paragraph [margin]="true" [italic]="true" [attr.data-test-id]="TEST_IDS.EIGENSCHAP_INFORMATION">
   {{ 'getEigenschapInformation' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 
@@ -24,6 +24,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  [attr.data-test-id]="TEST_IDS.EIGENSCHAP_FORM"
 >
   <v-input
     name="eigenschap"
@@ -35,6 +36,7 @@
     [trim]="true"
     [tooltip]="'eigenschapTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    [attr.data-test-id]="TEST_IDS.EIGENSCHAP_INPUT"
   >
   </v-input>
 
@@ -48,6 +50,7 @@
     [trim]="true"
     [tooltip]="'eigenschapProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    [attr.data-test-id]="TEST_IDS.EIGENSCHAP_PROCESS_VARIABLE_INPUT"
   >
   </v-input>
 </v-form>

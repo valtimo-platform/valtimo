@@ -15,14 +15,14 @@
   -->
 
 <div *ngIf="collection">
-  <dl class="row mb-0" *ngFor="let item of collection">
+  <dl class="row mb-0" *ngFor="let item of collection" data-test-id="collection-item-row-{{$index}}">
     <dd class="col-12 col-md-4 col-lg-3">{{ item.label }}</dd>
     <dt class="col-12 col-md-8 col-lg-9" [innerHTML]="item.value || '-'"></dt>
   </dl>
 </div>
 
 <div *ngIf="object">
-  <dl class="row mb-0" *ngFor="let item of object | keyvalue">
+  <dl class="row mb-0" *ngFor="let item of object | keyvalue" data-test-id="object-item-row-{{$index}}">
     <dd class="col-12 col-md-4 col-lg-3">{{ item.key }}</dd>
     <dt class="col-12 col-md-8 col-lg-9" [innerHTML]="item.value || '-'"></dt>
   </dl>

@@ -21,6 +21,7 @@
     (validEvent)="onValid($event)"
     (valueChangeEvent)="onValueChange($event)"
     [fitPage]="true"
+    [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_EDITOR"
   ></valtimo-editor>
 </ng-container>
 
@@ -34,12 +35,12 @@
       } as obs"
       class="buttons-container"
     >
-      <cds-overflow-menu class="overflow-button">
-        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="showEditModal()">{{
+      <cds-overflow-menu class="overflow-button" [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_MORE_MENU">
+        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="showEditModal()" [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_EDIT_OPTION">{{
           'accessControl.roles.editMetadata' | translate
         }}</cds-overflow-menu-option>
 
-        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="exportPermissions()">{{
+        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="exportPermissions()" [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_EXPORT_OPTION">{{
           'interface.export' | translate
         }}</cds-overflow-menu-option>
 
@@ -47,6 +48,7 @@
           [disabled]="obs.moreDisabled"
           type="danger"
           (selected)="showDeleteModal()"
+          [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_DELETE_OPTION"
           >{{ 'interface.delete' | translate }}</cds-overflow-menu-option
         >
       </cds-overflow-menu>
@@ -56,6 +58,7 @@
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="updatePermissions()"
+        [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_SAVE_BUTTON"
       >
         {{ 'interface.save' | translate }}
 
@@ -70,6 +73,7 @@
     [deleteRowKeys]="obs.selectedRowKeys"
     [showDeleteModal$]="showDeleteModal$"
     (deleteEvent)="onDelete($event)"
+    [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_DELETE_MODAL"
   >
   </valtimo-delete-role-modal>
 
@@ -78,11 +82,12 @@
     [open]="showEditModal$ | async"
     type="edit"
     (closeEvent)="onEdit(obs.selectedRowKeys[0], $event)"
+    [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_EDIT_MODAL"
   ></valtimo-role-metadata-modal>
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-container">
+  <div class="loading-container" [attr.data-test-id]="TEST_IDS.ACCESS_CONTROL_ROLES_LOADING">
     <cds-loading></cds-loading>
   </div>
 </ng-template>

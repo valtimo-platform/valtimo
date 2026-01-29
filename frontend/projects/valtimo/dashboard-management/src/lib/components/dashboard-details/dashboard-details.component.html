@@ -38,6 +38,7 @@
         [dragAndDropDisabled]="obs.dragAndDropDisabled"
         (itemsReordered)="updateWidgetData($event)"
         (rowClicked)="editWidget($event)"
+        [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_WIDGET_LIST"
       >
         <div carbonToolbarContent>
           <ng-container [ngTemplateOutlet]="viewToggle"></ng-container>
@@ -49,6 +50,7 @@
           [action]="addWidgetButton"
           description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
           title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
+          [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_NO_RESULTS"
         ></valtimo-no-results>
       </valtimo-carbon-list>
     } @else {
@@ -57,6 +59,7 @@
         [fitPage]="true"
         [fitPageSpaceAdjustment]="56"
         (saveEvent)="updateWidgetData($event)"
+        [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_JSON_EDITOR"
       >
         <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
       </valtimo-json-editor>
@@ -70,12 +73,14 @@
     [type]="modalType"
     [widgetKey]="obs.editWidgetConfiguration?.key"
     (saveEvent)="refreshWidgets()"
+    [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_WIDGET_MODAL"
   ></valtimo-widget-modal>
 
   <valtimo-edit-dashboard-modal
     [dashboard]="obs.currentDashboard"
     [showModal$]="showEditDashboardModal$"
     (saveEvent)="refreshDashboard()"
+    [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_EDIT_DASHBOARD_MODAL"
   >
   </valtimo-edit-dashboard-modal>
 </ng-container>
@@ -86,6 +91,7 @@
       cdsButton="tertiary"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="editDashboard()"
+      [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_EDIT_BUTTON"
     >
       {{ 'dashboardManagement.widgets.editButton' | translate }}
 
@@ -95,7 +101,7 @@
 </ng-container>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()">
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()" [attr.data-test-id]="TEST_IDS.DASHBOARD_DETAIL_ADD_WIDGET_BUTTON">
     {{ 'dashboardManagement.widgets.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

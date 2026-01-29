@@ -17,6 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-enum-formfield',
@@ -24,6 +25,8 @@ import {FormField} from '../formfield.model';
   standalone: false,
 })
 export class CamundaEnumFormfieldComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public formGroup: UntypedFormGroup;
   public formField: FormField;
 

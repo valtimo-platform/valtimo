@@ -37,7 +37,7 @@ import {
 } from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
-import {Page} from '@valtimo/shared';
+import { Page, TEST_IDS } from '@valtimo/shared';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {DocumentService} from '@valtimo/document';
@@ -72,6 +72,8 @@ import {HttpErrorResponse} from '@angular/common/http';
   ],
 })
 export class CaseWidgetCollectionComponent extends WidgetProcess {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {

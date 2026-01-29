@@ -20,4 +20,5 @@
   [(ngModel)]="selectedItems"
   [settings]="dropdownSettings"
   (onDropDownClose)="onItemsSelected()"
+  [attr.data-test-id]="TEST_IDS.MULTISELECT_DROPDOWN"
 ></ng-multiselect-dropdown>

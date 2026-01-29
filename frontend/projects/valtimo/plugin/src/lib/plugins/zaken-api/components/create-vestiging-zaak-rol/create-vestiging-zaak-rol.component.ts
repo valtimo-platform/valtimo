@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {CreateVestigingZaakRolConfig} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,6 +29,8 @@ import {CreateVestigingZaakRolConfig} from '../../models';
 export class CreateVestigingZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

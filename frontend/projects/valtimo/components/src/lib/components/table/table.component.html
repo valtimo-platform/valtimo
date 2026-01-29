@@ -15,8 +15,8 @@
   -->
 
 <ng-container *ngIf="{items: items$ | async} as obs">
-  <div class="v-table-container">
-    <table class="v-table">
+  <div class="v-table-container" [attr.data-test-id]="TEST_IDS.V_TABLE_CONTAINER">
+    <table class="v-table" [attr.data-test-id]="TEST_IDS.V_TABLE">
       <ng-container *ngTemplateOutlet="tableHead"></ng-container>
       <ng-container *ngTemplateOutlet="tableBody; context: {tableItems: obs.items}"></ng-container>
       <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
@@ -45,7 +45,7 @@
 
 <ng-template #tableBody let-tableItems="tableItems">
   <tbody class="v-table__body" *ngIf="!loading && tableItems && tableItems?.length > 0">
-    <tr *ngFor="let item of tableItems" class="v-table__row">
+    <tr *ngFor="let item of tableItems" class="v-table__row" data-test-id="v-table-row-{{$index}}">
       <ng-container *ngTemplateOutlet="tableCell; context: {item: item}"></ng-container>
       <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item}"></ng-container>
     </tr>
@@ -79,7 +79,7 @@
 <ng-template #tableEditButtonCell let-item="item">
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)">
+      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)" data-test-id="v-table-edit-button-{{$index}}">
         {{ editButtonTranslationKey || 'interface.edit' | translate }}
       </button>
     </span>
@@ -122,7 +122,7 @@
 </ng-template>
 
 <ng-template #paginationContainer let-tableItems="tableItems">
-  <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container">
+  <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_CONTAINER">
     <div class="v-table__pagination-size-container">
       <ng-container
         *ngTemplateOutlet="paginationSizeSelect; context: {paginationObject: paginationObject}"
@@ -149,6 +149,7 @@
       [defaultSelection]="(defaultPaginationSize$ | async) || paginationOptions[0]"
       [disabled]="loading"
       (selectedChange)="setPaginationSize($event)"
+      [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_SIZE_SELECT"
     ></v-select>
   </span>
   <span class="v-table__pagination-size-text">{{
@@ -165,7 +166,8 @@
   <span
     class="v-table__pagination-amount-text"
     *ngIf="!loading && tableItems && paginationObject"
-    >{{
+    [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_SIZE_AMOUNT_TEXT"
+  >{{
       tableItems.length +
         ' ' +
         ('interface.of' | translate) +
@@ -199,15 +201,16 @@
   <div
     class="v-table__pagination-navigation-container"
     *ngIf="paginationObject && paginationObject.collectionSize > paginationObject.size"
+    [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_NAVIGATION_CONTAINER"
   >
     <span *ngIf="paginationObject.page > 1">
-      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading">
+      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_PREVIOUS_BUTTON">
         {{ 'interface.previous' | translate }}
       </button>
     </span>
 
     <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
-      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading">
+      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading" [attr.data-test-id]="TEST_IDS.V_TABLE_PAGINATION_NEXT_BUTTON">
         {{ 'interface.nextArrow' | translate }}
       </button>
     </span>

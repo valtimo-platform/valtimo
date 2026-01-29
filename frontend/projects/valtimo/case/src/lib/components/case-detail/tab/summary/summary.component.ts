@@ -39,6 +39,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {catchError} from 'rxjs/operators';
 import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
+import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -50,6 +51,8 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly caseDefinitionKey: string;
   public readonly documentId!: string;
 
