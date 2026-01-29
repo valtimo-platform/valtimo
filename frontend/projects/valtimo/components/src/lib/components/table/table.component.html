@@ -45,9 +45,9 @@
 
 <ng-template #tableBody let-tableItems="tableItems">
   <tbody class="v-table__body" *ngIf="!loading && tableItems && tableItems?.length > 0">
-    <tr *ngFor="let item of tableItems" class="v-table__row" data-test-id="v-table-row-{{$index}}">
+    <tr *ngFor="let item of tableItems; let rowIndex = index" class="v-table__row" [attr.data-test-id]="'v-table-row-' + rowIndex">
       <ng-container *ngTemplateOutlet="tableCell; context: {item: item}"></ng-container>
-      <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item}"></ng-container>
+      <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item, rowIndex: rowIndex}"></ng-container>
     </tr>
   </tbody>
 </ng-template>
@@ -76,10 +76,10 @@
   </td>
 </ng-template>
 
-<ng-template #tableEditButtonCell let-item="item">
+<ng-template #tableEditButtonCell let-item="item" let-rowIndex="rowIndex">
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)" data-test-id="v-table-edit-button-{{$index}}">
+      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)" [attr.data-test-id]="'v-table-edit-button-' + rowIndex">
         {{ editButtonTranslationKey || 'interface.edit' | translate }}
       </button>
     </span>

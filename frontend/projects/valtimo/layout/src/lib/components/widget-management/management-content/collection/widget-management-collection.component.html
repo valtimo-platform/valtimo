@@ -229,7 +229,7 @@
         }
         @case (WidgetDisplayTypeKey.ENUM) {
           <div class="valtimo-widget-management-collection__enum" formArrayName="values">
-            @for (rowValue of cardForm.get('values')?.controls; track $index) {
+            @for (rowValue of cardForm.get('values')?.controls; track $index; let enumIndex = $index; let enumCount = $count) {
               <form [formGroup]="rowValue" class="valtimo-widget-management-collection__enum-form">
                 <cds-text-label>
                   <v-input-label
@@ -244,7 +244,7 @@
                     [placeholder]="'widgetTabManagement.content.enumValue' | translate"
                     type="text"
                     formControlName="key"
-                    data-test-id="valtimo-widget-management-collection-enum-value-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-collection-enum-value-input-' + enumIndex"
                   />
                 </cds-text-label>
 
@@ -261,17 +261,17 @@
                     [placeholder]="'widgetTabManagement.content.fields.enumDisplay' | translate"
                     type="text"
                     formControlName="value"
-                    data-test-id="valtimo-widget-management-collection-enum-display-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-collection-enum-display-input-' + enumIndex"
                   />
                 </cds-text-label>
 
                 <button
                   cdsButton="danger--ghost"
-                  [disabled]="$count === 1"
+                  [disabled]="enumCount === 1"
                   [iconOnly]="true"
                   class="valtimo-case-management-widget-field-column__delete-button enum"
-                  (click)="onDeleteRowClick(cardForm.get('values'), $index)"
-                  data-test-id="valtimo-widget-management-collection-delete-enum-button-{{$index}}"
+                  (click)="onDeleteRowClick(cardForm.get('values'), enumIndex)"
+                  [attr.data-test-id]="'valtimo-widget-management-collection-delete-enum-button-' + enumIndex"
                 >
                   <svg cdsIcon="trash-can" size="16"></svg>
                 </button>

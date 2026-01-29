@@ -106,10 +106,10 @@
       </div>
     </div>
     <table class="table table-striped mb-5" *ngIf="selectedId.source && selectedId.target">
-      <tr *ngFor="let node of uniqueFlowNodeMap" data-test-id="migration-process-mapping-row-{{$index}}">
+      <tr *ngFor="let node of uniqueFlowNodeMap; let nodeIndex = index" [attr.data-test-id]="'migration-process-mapping-row-' + nodeIndex">
         <td>{{ node.name ? node.name : node.id }}</td>
         <td>
-          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value" data-test-id="migration-process-target-select-{{$index}}">
+          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value" [attr.data-test-id]="'migration-process-target-select-' + nodeIndex">
             <option [value]="null" disabled selected>- Choose Target -</option>
             <option
               *ngFor="let targetFlowNode of getFilteredTargetFlowNodeMap(node.$type)"

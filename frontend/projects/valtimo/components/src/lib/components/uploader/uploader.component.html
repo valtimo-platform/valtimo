@@ -25,13 +25,13 @@
   <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple [attr.data-test-id]="TEST_IDS.UPLOAD_FILE_INPUT" />
 </div>
 <div *ngIf="showFileList">
-  <div class="files-list px-3 py-2" *ngFor="let resource of resources" data-test-id="upload-file-list-item-{{$index}}">
+  <div class="files-list px-3 py-2" *ngFor="let resource of resources; let resourceIndex = index" [attr.data-test-id]="'upload-file-list-item-' + resourceIndex">
     <p class="m-0">
       <strong>{{ resource.name }}</strong
       ><br />
       {{ resource.sizeInBytes | filesize }}
     </p>
-    <button class="delete-file" (click)="deleteResource(resource)" data-test-id="upload-file-delete-button-{{$index}}">
+    <button class="delete-file" (click)="deleteResource(resource)" [attr.data-test-id]="'upload-file-delete-button-' + resourceIndex">
       <i class="icon mdi mdi-delete text-danger"></i>
     </button>
   </div>

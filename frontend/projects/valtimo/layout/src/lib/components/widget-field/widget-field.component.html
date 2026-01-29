@@ -70,9 +70,9 @@
           [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_EMPTY_FIELDS"
         ></valtimo-no-results>
       } @else {
-        @for (column of obs?.widgetPropertyValue; track column.key) {
-          <div class="valtimo-widget-field__column" data-test-id="widget-field-column-{{$index}}">
-            @for (property of column; track property) {
+        @for (column of obs?.widgetPropertyValue; track column.key; let columnIndex = $index) {
+          <div class="valtimo-widget-field__column" data-test-id="widget-field-column-{{columnIndex}}">
+            @for (property of column; track property; let propertyIndex = $index) {
               <div
                 *ngIf="
                   (property?.value !== null &&
@@ -81,9 +81,9 @@
                   !property?.hideWhenEmpty
                 "
                 class="valtimo-widget-field__field"
-                data-test-id="widget-field-property-{{$parent.index}}-{{$index}}"
+                [attr.data-test-id]="'widget-field-property-' + columnIndex + '-' + propertyIndex"
               >
-                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title" data-test-id="widget-field-label-{{$parent.index}}-{{$index}}">
+                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title" [attr.data-test-id]="'widget-field-label-' + columnIndex + '-' + propertyIndex">
                   {{ property?.title }}</label
                 >
 
@@ -92,7 +92,7 @@
                     <cds-skeleton-text [lines]="1" [maxLineWidth]="100"></cds-skeleton-text>
                   } @else {
                     @if (property?.isRawValue) {
-                      <div [innerHTML]="property?.value" data-test-id="widget-field-raw-value-{{$parent.index}}-{{$index}}"></div>
+                      <div [innerHTML]="property?.value" [attr.data-test-id]="'widget-field-raw-value-' + columnIndex + '-' + propertyIndex"></div>
                     } @else {
                       {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
                     }

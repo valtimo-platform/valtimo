@@ -29,10 +29,10 @@
           {{ 'processLinkConfiguration.pluginDescription' | translate }}
         </cds-list-column>
       </cds-list-header>
-      <cds-list-row *ngFor="let item of items" [value]="item.payload" data-test-id="process-link-configuration-row-{{i}}">
+      <cds-list-row *ngFor="let item of items; let i = index" [value]="item.payload" [attr.data-test-id]="'process-link-configuration-row-' + i">
         <cds-list-column>
           <div *ngIf="item.logo">
-            <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" data-test-id="process-link-configuration-logo-{{i}}"/>
+            <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" [attr.data-test-id]="'process-link-configuration-logo-' + i"/>
           </div>
         </cds-list-column>
         <cds-list-column>{{ item.title }}</cds-list-column>

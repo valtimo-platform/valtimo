@@ -14,12 +14,12 @@
   ~ limitations under the License.
   -->
 @if (!$disableActionButton()) {
-  <ng-template #actionButton [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_ACTION_BUTTON_TEMPLATE">
+  <ng-template #actionButton>
     <valtimo-widget-management-action-button [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_ACTION_BUTTON"></valtimo-widget-management-action-button>
   </ng-template>
 }
 
 @if ($selectedWidget(); as selectedWidget) {
-  <ng-container *ngComponentOutlet="selectedWidget.component; content: projectedNodes" [attr.data-test-id]="TEST_IDS.WIDGET_MANAGEMENT_SELECTED_WIDGET_CONTAINER">
+  <ng-container *ngComponentOutlet="selectedWidget.component; content: projectedNodes">
   </ng-container>
 }

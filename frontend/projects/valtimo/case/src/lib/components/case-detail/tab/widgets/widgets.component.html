@@ -14,14 +14,14 @@
   ~ limitations under the License.
   -->
 
-@for (widgetGroup of widgetGroups$ | async; track $index) {
-  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $first}" data-test-id="widget-container-divider-{{$index}}">
+@for (widgetGroup of widgetGroups$ | async; track $index; let groupIndex = $index; let isFirst = $first) {
+  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': isFirst}" [attr.data-test-id]="'widget-container-divider-' + groupIndex">
     {{ widgetGroup.divider.title || '-' }}
   </div>
 
   <valtimo-widget-container
     [widgets]="widgetGroup.widgets"
     [widgetComponentMap]="widgetComponentMap"
-    data-test-id="widget-container-{{$index}}"
+    [attr.data-test-id]="'widget-container-' + groupIndex"
   ></valtimo-widget-container>
 }

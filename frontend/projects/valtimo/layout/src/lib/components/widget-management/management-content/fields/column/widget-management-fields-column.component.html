@@ -25,18 +25,18 @@
   [formGroup]="formGroup"
 >
   <cds-accordion formArrayName="rows" align="start" size="sm">
-    @for (formRow of formRows.controls; track $index) {
+    @for (formRow of formRows.controls; track $index; let rowIndex = $index; let rowCount = $count) {
       <cds-accordion-item
         [title]="fieldTitle"
         [context]="{
-          count: $count,
-          index: $index,
+          count: rowCount,
+          index: rowIndex,
           title: formRow.get('title')?.value,
           defaultSortIndex: data.defaultSortIndex,
         }"
-        [expanded]="$index === 0"
+        [expanded]="rowIndex === 0"
         class="valtimo-widget-management-field-column__item"
-        data-test-id="valtimo-widget-management-field-column-item-{{$index}}"
+        [attr.data-test-id]="'valtimo-widget-management-field-column-item-' + rowIndex"
       >
         <form [formGroup]="formRow" class="valtimo-widget-management-field-column__container">
           <div
@@ -61,7 +61,7 @@
                 [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
                 type="text"
                 formControlName="title"
-                data-test-id="valtimo-widget-management-field-column-title-input-{{$index}}"
+                [attr.data-test-id]="'valtimo-widget-management-field-column-title-input-' + rowIndex"
               />
             </cds-text-label>
 
@@ -72,13 +72,13 @@
               [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
               (selected)="onTypeSelected(formRow, $event)"
               formControlName="type"
-              data-test-id="valtimo-widget-management-field-column-type-dropdown-{{$index}}"
+              [attr.data-test-id]="'valtimo-widget-management-field-column-type-dropdown-' + rowIndex"
             >
               <cds-dropdown-list [items]="getDisplayItemsSelected(formRow)"></cds-dropdown-list>
             </cds-dropdown>
 
             <ng-container
-              *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
+              *ngTemplateOutlet="fieldWidthDropdown; context: {index: rowIndex}"
             ></ng-container>
 
             <cds-text-label class="valtimo-widget-management-field-column__value-field">
@@ -96,7 +96,7 @@
                   [caseDefinitionKey]="data.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
                   [parentItem]="selectedCollection"
-                  data-test-id="valtimo-widget-management-field-column-value-path-selector-{{$index}}"
+                  [attr.data-test-id]="'valtimo-widget-management-field-column-value-path-selector-' + rowIndex"
                 ></valtimo-value-path-selector>
               } @else {
                 <input
@@ -105,7 +105,7 @@
                   [placeholder]="'widgetTabManagement.content.fields.value' | translate"
                   type="text"
                   formControlName="content"
-                  data-test-id="valtimo-widget-management-field-column-value-input-{{$index}}"
+                  [attr.data-test-id]="'valtimo-widget-management-field-column-value-input-' + rowIndex"
                 />
               }
             </cds-text-label>
@@ -129,7 +129,7 @@
                     "
                     type="text"
                     formControlName="currencyCode"
-                    data-test-id="valtimo-widget-management-field-column-currency-code-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-currency-code-input-' + rowIndex"
                   />
                 </cds-text-label>
 
@@ -148,7 +148,7 @@
                     "
                     type="text"
                     formControlName="display"
-                    data-test-id="valtimo-widget-management-field-column-display-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-display-input-' + rowIndex"
                   />
                 </cds-text-label>
 
@@ -170,7 +170,7 @@
                     "
                     type="text"
                     formControlName="digitsInfo"
-                    data-test-id="valtimo-widget-management-field-column-digits-info-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-digits-info-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
@@ -189,7 +189,7 @@
                     "
                     type="text"
                     formControlName="format"
-                    data-test-id="valtimo-widget-management-field-column-date-format-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-date-format-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
@@ -210,20 +210,20 @@
                     "
                     type="text"
                     formControlName="format"
-                    data-test-id="valtimo-widget-management-field-column-date-time-format-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-date-time-format-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
               @case (WidgetDisplayTypeKey.ENUM) {
                 <div class="valtimo-widget-management-field-column__enum" formArrayName="values">
-                  @for (rowValue of formRow.get('values')?.controls; track $index) {
+                  @for (rowValue of formRow.get('values')?.controls; track $index; let enumIndex = $index; let enumCount = $count) {
                     <form
                       [formGroup]="rowValue"
                       class="valtimo-widget-management-field-column__enum-form"
                     >
                       <cds-text-label>
                         <v-input-label
-                          *ngIf="$index === 0"
+                          *ngIf="enumIndex === 0"
                           [title]="'widgetTabManagement.content.fields.enumValue' | translate"
                           [tooltip]="
                             'widgetTabManagement.content.fields.enumValueTooltip' | translate
@@ -236,13 +236,13 @@
                           [placeholder]="'widgetTabManagement.content.fields.enumValue' | translate"
                           type="text"
                           formControlName="key"
-                          data-test-id="valtimo-widget-management-field-column-enum-value-input-{{$index}}-{{$parent.index}}"
+                          [attr.data-test-id]="'valtimo-widget-management-field-column-enum-value-input-' + enumIndex + '-' + rowIndex"
                         />
                       </cds-text-label>
 
                       <cds-text-label>
                         <v-input-label
-                          *ngIf="$index === 0"
+                          *ngIf="enumIndex === 0"
                           [title]="'widgetTabManagement.content.fields.enumDisplay' | translate"
                           [tooltip]="
                             'widgetTabManagement.content.fields.enumDisplayTooltip' | translate
@@ -257,17 +257,17 @@
                           "
                           type="text"
                           formControlName="value"
-                          data-test-id="valtimo-widget-management-field-column-enum-display-input-{{$index}}-{{$parent.index}}"
+                          [attr.data-test-id]="'valtimo-widget-management-field-column-enum-display-input-' + enumIndex + '-' + rowIndex"
                         />
                       </cds-text-label>
 
                       <button
                         cdsButton="danger--ghost"
-                        [disabled]="$count === 1"
+                        [disabled]="enumCount === 1"
                         [iconOnly]="true"
                         class="valtimo-widget-management-field-column__delete-button enum"
-                        (click)="onDeleteRowClick($event, formRow.get('values'), $index)"
-                        data-test-id="valtimo-widget-management-field-column-enum-delete-button-{{$index}}-{{$parent.index}}"
+                        (click)="onDeleteRowClick($event, formRow.get('values'), enumIndex)"
+                        [attr.data-test-id]="'valtimo-widget-management-field-column-enum-delete-button-' + enumIndex + '-' + rowIndex"
                       >
                         <svg cdsIcon="trash-can" size="16"></svg>
                       </button>
@@ -278,7 +278,7 @@
                     cdsButton="primary"
                     size="sm"
                     (click)="onAddEnumValueClick(formRow.get('values'))"
-                    data-test-id="valtimo-widget-management-field-column-add-enum-button-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-add-enum-button-' + rowIndex"
                   >
                     {{ 'widgetTabManagement.content.fields.addEnum' | translate }}
 
@@ -307,7 +307,7 @@
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
-                    data-test-id="valtimo-widget-management-field-column-number-digits-info-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-number-digits-info-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
@@ -332,7 +332,7 @@
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
-                    data-test-id="valtimo-widget-management-field-column-percent-digits-info-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-percent-digits-info-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
@@ -352,7 +352,7 @@
                     "
                     type="text"
                     formControlName="linkText"
-                    data-test-id="valtimo-widget-management-field-column-link-text-input-{{$index}}"
+                    [attr.data-test-id]="'valtimo-widget-management-field-column-link-text-input-' + rowIndex"
                   />
                 </cds-text-label>
               }
@@ -377,12 +377,12 @@
                 "
                 type="text"
                 formControlName="ellipsisCharacterLimit"
-                data-test-id="valtimo-widget-management-field-column-ellipsis-character-limit-input-{{$index}}"
+                [attr.data-test-id]="'valtimo-widget-management-field-column-ellipsis-character-limit-input-' + rowIndex"
               />
             </cds-text-label>
 
             <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty"
-              data-test-id="valtimo-widget-management-field-column-hide-when-empty-checkbox-{{$index}}">
+              [attr.data-test-id]="'valtimo-widget-management-field-column-hide-when-empty-checkbox-' + rowIndex">
               {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
             </cds-checkbox>
 
@@ -392,7 +392,7 @@
             >
               <cds-checkbox
                 formControlName="sortable"
-                (checkedChange)="onSortableCheckChange($index, $event)"
+                (checkedChange)="onSortableCheckChange(rowIndex, $event)"
               >
                 {{ 'listColumn.sortable' | translate }}
               </cds-checkbox>
@@ -406,11 +406,11 @@
                 [defaultSelectionId]="formRow.get('defaultSort')?.value"
                 [warn]="
                   data.defaultSortIndex !== -1 &&
-                  data.defaultSortIndex !== $index &&
+                  data.defaultSortIndex !== rowIndex &&
                   !!formRow.get('sortable')?.value
                 "
                 [warnText]="'widgetTabManagement.content.fields.defaultSortWarning' | translate"
-                (selectedChange)="onSelectedDefaultSortChange($index)"
+                (selectedChange)="onSelectedDefaultSortChange(rowIndex)"
               ></v-select>
             </div>
           </div>

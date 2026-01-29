@@ -16,7 +16,7 @@
 
 <div class="widget-block" [attr.data-carbon-theme]="theme$ | async" [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK">
   <div #widgetBlockContent class="widget-block__content" [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_CONTENT">
-    <ng-template #widgetComponent [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_COMPONENT"></ng-template>
+    <ng-template #widgetComponent></ng-template>
   </div>
 </div>
 
@@ -27,6 +27,5 @@
     theme: theme$ | async,
     blockHeightPx: blockHeightPx$ | async,
     blockWidthPercentage: blockWidthPercentage$ | async,
-  } as obs"
-  [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_CONTAINER">
+  } as obs">
 </ng-container>

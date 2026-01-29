@@ -24,7 +24,7 @@
   [attr.data-test-id]="TEST_IDS.VALTIMO_DEFAULT_PLUGIN_CONFIGURATION"
 >
 </valtimo-default-plugin-configuration>
-<ng-template #pluginConfigurationComponent [attr.data-test-id]="TEST_IDS.VALTIMO_DEFAULT_PLUGIN_CONFIGURATION_TEMPLATE"></ng-template>
-<ng-container *ngIf="noConfigurationComponentAvailable$ | async" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFAULT_PLUGIN_CONFIGURATION_CONTAINER">
+<ng-template #pluginConfigurationComponent></ng-template>
+<ng-container *ngIf="noConfigurationComponentAvailable$ | async">
   <v-paragraph [center]="true" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFAULT_PLUGIN_CONFIGURATION_PARAGRAPH">{{ 'plugin.noConfigurationComponent' | translate }}</v-paragraph>
 </ng-container>
