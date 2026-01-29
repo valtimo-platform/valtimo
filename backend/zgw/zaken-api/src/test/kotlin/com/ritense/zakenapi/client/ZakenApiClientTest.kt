@@ -137,8 +137,8 @@ internal class ZakenApiClientTest {
         assertEquals(zaakUrlAsString, parsedOutput["zaak"])
         assertEquals("title", parsedOutput["titel"])
         assertEquals("description", parsedOutput["beschrijving"])
-        assertNull(parsedOutput["vernietigingsdatum"])
-        assertNull(parsedOutput["status"])
+        assertThat(parsedOutput).doesNotContainKey("vernietigingsdatum")
+        assertThat(parsedOutput).doesNotContainKey("status")
 
         assertEquals(HTTPS_EXAMPLE_COM, result.url)
         assertEquals(HTTPS_EXAMPLE_COM, result.informatieobject)
