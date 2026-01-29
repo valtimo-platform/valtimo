@@ -25,9 +25,19 @@ import {
 } from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  DateTimePickerComponent,
+  FormModule,
+  InputLabelModule,
+  InputModule as ValtimoInputModule,
+  ParagraphModule,
+  SelectModule,
+} from '@valtimo/components';
+import {ButtonModule, IconModule, IconService, InputModule, TimePickerModule} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WidgetFilter, WidgetInteractiveTableEventSearchRequest} from '../../../models';
 
@@ -45,6 +55,13 @@ import {WidgetFilter, WidgetInteractiveTableEventSearchRequest} from '../../../m
     InputModule,
     ReactiveFormsModule,
     FormsModule,
+    InputLabelModule,
+    TimePickerModule,
+    ValtimoInputModule,
+    FormModule,
+    SelectModule,
+    ParagraphModule,
+    DateTimePickerComponent,
   ],
 })
 export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy {
@@ -86,10 +103,21 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     return this.formGroup.get('filters') as FormGroup;
   }
 
+  private readonly BOOLEAN_POSITIVE = 'booleanPositive';
+  private readonly BOOLEAN_NEGATIVE = 'booleanNegative';
+
+  public readonly booleanItems$: Observable<Array<any>> = this.translateService.stream('key').pipe(
+    map(() => [
+      {id: this.BOOLEAN_POSITIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_POSITIVE}`)},
+      {id: this.BOOLEAN_NEGATIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_NEGATIVE}`)},
+    ])
+  );
+
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.register(TrashCan16);
   }
@@ -113,28 +141,69 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this.filtersFormGroup.reset(this.getDefaultFilterValues());
   }
 
+  public onRangeChange(filterKey: string, value: any): void {
+    this.filtersFormGroup.get(`${filterKey}_start`)?.setValue(value?.start ?? '');
+    this.filtersFormGroup.get(`${filterKey}_end`)?.setValue(value?.end ?? '');
+  }
+
   private buildFiltersFormControls(): void {
     this.filters.forEach((filter: WidgetFilter) => {
-      if (!this.filtersFormGroup.get(filter.key)) {
-        this.filtersFormGroup.addControl(filter.key, this.fb.control<string>(''));
+      if (filter.fieldType === 'range') {
+        this.ensureControl(`${filter.key}_start`);
+        this.ensureControl(`${filter.key}_end`);
+        return;
       }
+
+      this.ensureControl(filter.key);
     });
   }
 
-  private getDefaultFilterValues(): Record<string, string> {
-    return Object.fromEntries(
-      this.filters.map(filter => [filter.key, ''])
-    );
+  private ensureControl(key: string): void {
+    if (!this.filtersFormGroup.get(key)) {
+      this.filtersFormGroup.addControl(key, this.fb.control<any>(''));
+    }
+  }
+
+  private getDefaultFilterValues(): Record<string, any> {
+    const defaults: Record<string, any> = {};
+
+    this.filters.forEach(filter => {
+      if (filter.fieldType === 'range') {
+        defaults[`${filter.key}_start`] = '';
+        defaults[`${filter.key}_end`] = '';
+      } else {
+        defaults[filter.key] = '';
+      }
+    });
+
+    return defaults;
   }
 
   private mapFormValueToWidgetInteractiveTableSearch(): WidgetInteractiveTableEventSearchRequest {
-    const formValue = this.formGroup.getRawValue();
-    const filters: Record<string, string> = {};
+    const rawFilters = (this.formGroup.getRawValue().filters ?? {}) as Record<string, any>;
+    const filters: Record<string, any> = {};
 
-    for (const key in formValue.filters) {
-      if (formValue.filters[key]) {
-        filters[key] = formValue.filters[key];
+    for (const filter of this.filters) {
+      if (filter.fieldType === 'range') {
+        const start = rawFilters[`${filter.key}_start`];
+        const end = rawFilters[`${filter.key}_end`];
+
+        const hasStart = this.hasValue(start);
+        const hasEnd = this.hasValue(end);
+
+        if (hasStart || hasEnd) {
+          filters[filter.key] = JSON.stringify({
+            rangeFrom: hasStart ? this.normalizeValue(start, filter.dataType) : null,
+            rangeTo: hasEnd ? this.normalizeValue(end, filter.dataType) : null,
+          });
+        }
+        continue;
       }
+
+      const value = rawFilters[filter.key];
+      if (!this.hasValue(value)) continue;
+
+      filters[filter.key] = this.normalizeValue(value, filter.dataType);
     }
 
     return {
@@ -144,19 +213,59 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
 
   private mapSearchRequestToFormValue(
     searchRequest: WidgetInteractiveTableEventSearchRequest
-  ): { filters?: Record<string, string> } {
-    return {
-      ...(searchRequest.filters && { filters: searchRequest.filters }),
-    };
+  ): {filters?: Record<string, any>} {
+    const result: Record<string, any> = {};
+    const incoming = searchRequest.filters ?? {};
+
+    for (const filter of this.filters) {
+      if (filter.fieldType === 'range') {
+        const raw = incoming[filter.key];
+        if (typeof raw === 'string') {
+          try {
+            const parsed = JSON.parse(raw);
+            result[`${filter.key}_start`] = parsed?.rangeFrom ?? '';
+            result[`${filter.key}_end`] = parsed?.rangeTo ?? '';
+          } catch {
+            result[`${filter.key}_start`] = '';
+            result[`${filter.key}_end`] = '';
+          }
+        }
+        continue;
+      }
+
+      if (incoming[filter.key] !== undefined) {
+        result[filter.key] = incoming[filter.key];
+      }
+    }
+
+    return Object.keys(result).length ? {filters: result} : {};
   }
 
   private setInitialForm(): void {
-    const mappedFormValue = this.mapSearchRequestToFormValue(this._initSearchRequest);
+    const mapped = this.mapSearchRequestToFormValue(this._initSearchRequest);
 
     this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
 
-    if (mappedFormValue.filters) {
-      this.filtersFormGroup.patchValue(this.mapSearchRequestToFormValue(this._initSearchRequest).filters, {emitEvent: false});
+    if (mapped.filters) {
+      this.filtersFormGroup.patchValue(mapped.filters, {emitEvent: false});
     }
+  }
+
+  private normalizeValue(value: any, dataType: string): any {
+    if (value && typeof value === 'object' && 'id' in value) value = (value as any).id;
+
+    if (dataType === 'boolean') {
+      if (value === this.BOOLEAN_POSITIVE) return true;
+      if (value === this.BOOLEAN_NEGATIVE) return false;
+    }
+
+    return value;
+  }
+
+  private hasValue(value: any): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
   }
 }

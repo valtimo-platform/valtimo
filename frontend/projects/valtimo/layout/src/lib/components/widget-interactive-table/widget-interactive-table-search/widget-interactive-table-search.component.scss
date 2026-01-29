@@ -15,15 +15,14 @@
  */
 
 .valtimo-widget-interactive-table-search {
-  display: flex;
   flex-direction: column;
-  width: 360px;
+  display: flex;
   padding: 16px;
+  max-width: 420px;
 
   &__fields {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    align-items: flex-end;
     margin-bottom: 16px;
     gap: 16px;
   }
@@ -38,9 +37,4 @@
     font-size: var(--cds-label-01-font-size);
     color: var(--cds-text-secondary);
   }
-}
-
-::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
-  max-width: max-content !important;
-  width: max-content !important;
 }

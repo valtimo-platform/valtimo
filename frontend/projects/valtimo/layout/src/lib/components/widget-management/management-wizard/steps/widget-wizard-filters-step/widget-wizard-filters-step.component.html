@@ -78,6 +78,12 @@
             >
               <cds-dropdown-list [items]="getFieldTypeDropdownItems(filterRow)"></cds-dropdown-list>
             </cds-dropdown>
+
+            @if ((filterRow.get('dataType')?.value?.id) === 'text') {
+              <cds-dropdown cdsLayer [label]="'searchFieldsOverview.matchType' | translate" formControlName="matchType">
+                <cds-dropdown-list [items]="getMatchTypeDropdownItems(filterRow)"></cds-dropdown-list>
+              </cds-dropdown>
+            }
           </div>
         </form>
       </cds-accordion-item>
