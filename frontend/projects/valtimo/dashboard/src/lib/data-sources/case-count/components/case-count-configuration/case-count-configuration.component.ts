@@ -36,8 +36,7 @@ import {
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import { Operator, TEST_IDS } from '@valtimo/shared';
-import {ExpressionOperator} from '@valtimo/shared';
+import {ExpressionOperator, TEST_IDS} from '@valtimo/shared';
 
 @Component({
   standalone: false,
