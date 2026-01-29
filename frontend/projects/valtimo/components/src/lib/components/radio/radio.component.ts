@@ -26,6 +26,7 @@ import {
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {RadioValue} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-radio',
@@ -34,6 +35,8 @@ import {RadioValue} from '../../models';
   standalone: false,
 })
 export class RadioComponent implements OnInit, OnChanges, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() name = '';
   @Input() title = '';
   @Input() titleTranslationKey = '';

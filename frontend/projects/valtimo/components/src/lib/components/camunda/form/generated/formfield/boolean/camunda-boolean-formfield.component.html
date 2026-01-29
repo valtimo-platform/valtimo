@@ -26,6 +26,7 @@
         type="radio"
         [value]="true"
         [formControlName]="formField.id"
+        [attr.data-test-id]="TEST_IDS.RADIO_YES"
       />
       <span class="custom-control-label custom-control-color">Yes</span>
     </label>
@@ -36,6 +37,7 @@
         type="radio"
         [value]="false"
         [formControlName]="formField.id"
+        [attr.data-test-id]="TEST_IDS.RADIO_NO"
       />
       <span class="custom-control-label custom-control-color">No</span>
     </label>

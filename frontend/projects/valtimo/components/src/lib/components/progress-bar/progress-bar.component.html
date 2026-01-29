@@ -14,6 +14,6 @@
   ~ limitations under the License.
   -->
 
-<div class="progress" style="position: relative">
-  <div class="progress-bar progress-bar-striped indeterminate"></div>
+<div class="progress" style="position: relative" [attr.data-test-id]="TEST_IDS.PROGRESS_CONTAINER">
+  <div class="progress-bar progress-bar-striped indeterminate" [attr.data-test-id]="TEST_IDS.PROGRESS_BAR"></div>
 </div>

@@ -18,7 +18,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
 import {Page, TemplatePayload} from '@valtimo/document';
-import {EnvironmentService} from '@valtimo/shared';
+import { EnvironmentService, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
@@ -34,6 +34,8 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./case-management-list.component.scss'],
 })
 export class CaseManagementListComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 

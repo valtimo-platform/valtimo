@@ -18,6 +18,7 @@ import {Component, EventEmitter, HostBinding, Input, Output} from '@angular/core
 import {MultiInputKeyValue} from '../../../../models';
 import {CommonModule} from '@angular/common';
 import {InputModule} from 'carbon-components-angular';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-single-value',
@@ -27,6 +28,8 @@ import {InputModule} from 'carbon-components-angular';
   imports: [CommonModule, InputModule],
 })
 export class SingleValueComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public readonly value!: MultiInputKeyValue;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;

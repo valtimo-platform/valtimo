@@ -19,6 +19,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-wizard-type-step.component.html',
@@ -28,6 +29,8 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardTypeStepComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly $availableWidgetTypes = computed(() => {
     const availableTypes = this.widgetWizardService.$availableWidgetTypes();
     return !availableTypes

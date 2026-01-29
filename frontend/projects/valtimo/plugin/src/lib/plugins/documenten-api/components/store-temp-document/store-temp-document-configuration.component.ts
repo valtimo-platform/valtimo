@@ -21,6 +21,7 @@ import {DocumentLanguage, DocumentStatus, StoreTempDocumentConfig} from '../../m
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {ConfidentialityLevel} from '../../../documenten-api/models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-store-temp-document-configuration',
@@ -30,6 +31,8 @@ import {ConfidentialityLevel} from '../../../documenten-api/models';
 export class StoreTempDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

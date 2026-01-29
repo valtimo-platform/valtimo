@@ -33,6 +33,7 @@ import {combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {IkoTab} from '../../models';
 import {IkoApiService, IkoTabService} from '../../services';
 import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './iko-details.component.html',
@@ -42,6 +43,8 @@ import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
   imports: [CommonModule, TabsModule, RenderInPageHeaderDirective, ...[IkoTabComponents]],
 })
 export class IkoDetailsComponent implements OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('content', {read: ViewContainerRef, static: true})
   private readonly _container: ViewContainerRef;
 

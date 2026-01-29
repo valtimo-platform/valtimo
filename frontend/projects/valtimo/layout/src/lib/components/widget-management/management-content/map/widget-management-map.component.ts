@@ -45,6 +45,7 @@ import {
 import {debounceTime, Observable, Subscription} from 'rxjs';
 import {GeoJsonSource, WidgetMapContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-map.component.html',
@@ -66,6 +67,8 @@ import {WidgetWizardService} from '../../../../services';
   ],
 })
 export class WidgetManagementMapComponent implements OnDestroy, OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-map';
 
   public readonly $showTitleInput = signal<boolean>(true);

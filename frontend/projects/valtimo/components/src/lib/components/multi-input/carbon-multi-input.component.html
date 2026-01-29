@@ -39,6 +39,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_LABEL"
   >
   </v-input-label>
 
@@ -46,6 +47,7 @@
     <div
       *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
       class="v-multi-input__row"
+      data-test-id="v-multi-input-row-{{i}}"
     >
       @switch (type) {
         @case ('value') {
@@ -54,6 +56,7 @@
             [fullWidth]="fullWidth"
             [disabled]="$disabled()"
             (valueChange)="onValueChange($event.value, $event.inputValue, 'value')"
+            data-test-id="v-multi-input-single-value-{{i}}"
           ></valtimo-single-value>
         }
         @case ('keyValue') {
@@ -67,6 +70,7 @@
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            data-test-id="v-multi-input-key-value-{{i}}"
           ></valtimo-key-value>
         }
         @case ('keyDropdownValue') {
@@ -84,6 +88,7 @@
             [dropdownColumnFlex]="dropdownColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            data-test-id="v-multi-input-key-dropdown-value-{{i}}"
           ></valtimo-key-dropdown-value>
         }
         @case ('arbitraryAmount') {
@@ -97,6 +102,7 @@
             (valueChange)="
               onValueChange($event.value, $event.inputValue, $event.type, $event.arbitraryIndex)
             "
+            data-test-id="v-multi-input-arbitrary-amount-value-{{i}}"
           ></valtimo-arbitrary-amount-value>
         }
         @case ('keyValuePathSelector') {
@@ -114,6 +120,7 @@
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            data-test-id="v-multi-input-key-value-path-selector-{{i}}"
           ></valtimo-key-value-path-selector>
         }
         @case ('valuePathSelectorValue') {
@@ -131,6 +138,7 @@
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            data-test-id="v-multi-input-value-path-selector-value-{{i}}"
           ></valtimo-value-path-selector-value>
         }
         @case ('valuePathSelectorDropdownValue') {
@@ -152,6 +160,7 @@
             [dropdownColumnFlex]="dropdownColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            data-test-id="v-multi-input-value-path-selector-dropdown-value-{{i}}"
           ></valtimo-value-path-selector-dropdown-value>
         }
       }
@@ -164,6 +173,7 @@
         size="md"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
+        data-test-id="v-multi-input-delete-button-{{i}}"
       >
         <svg cdsIcon="trash-can" size="16"></svg>
       </button>
@@ -176,6 +186,7 @@
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
+        [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_ADD_BUTTON"
       >
         {{ vars.addRowText }}
 

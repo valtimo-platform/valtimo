@@ -26,12 +26,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {
-  ConfigService,
-  UploadProvider,
-  ValtimoConfig,
-  ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-} from '@valtimo/shared';
+import { ConfigService, UploadProvider, ValtimoConfig, ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN, TEST_IDS } from '@valtimo/shared';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {CaseDetailTabNotFoundComponent} from '../not-found/not-found.component';
 
@@ -40,6 +35,8 @@ import {CaseDetailTabNotFoundComponent} from '../not-found/not-found.component';
   templateUrl: './documents.component.html',
 })
 export class CaseDetailTabDocumentsComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class.tab--no-margin') noMargin = false;
   @HostBinding('class.tab--no-min-height') noMinHeight = false;
 

@@ -17,7 +17,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {Localization, LocalizationService, MergedLocalizations} from '@valtimo/shared';
+import { Localization, LocalizationService, MergedLocalizations, TEST_IDS } from '@valtimo/shared';
 import {
   ArbitraryInputTitles,
   MultiInputKeyValue,
@@ -34,6 +34,8 @@ import {DOCUMENT} from '@angular/common';
   standalone: false,
 })
 export class TranslationManagementComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly allChangedValuesValid$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);

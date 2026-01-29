@@ -42,6 +42,7 @@
         [trim]="true"
         [margin]="true"
         [widthPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_RSIN_INPUT"
       >
       </v-input>
 
@@ -53,6 +54,7 @@
         [radioValues]="inputTypeOptions$ | async"
         [disabled]="obs.disabled"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_INPUT_TYPE_RADIO"
       >
       </v-radio>
 
@@ -67,6 +69,7 @@
         [trim]="true"
         [margin]="true"
         [widthPx]="700"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ZAAKTYPE_URL_INPUT"
       >
       </v-input>
 
@@ -90,6 +93,7 @@
           (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
         "
         [widthInPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ZAAKTYPE_SELECT"
       ></v-select>
 
       <div class="property-row">
@@ -101,6 +105,7 @@
             [cdsOverflowMenu]="addCasePropertyList"
             [customPane]="true"
             placement="bottom,top"
+            [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_ADD_PROPERTY_BUTTON"
           >
             {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
 
@@ -124,6 +129,7 @@
                   [required]="true"
                   [margin]="true"
                   [presetOptions]="geometryTypes"
+                  [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_GEOMETRY_TYPE_INPUT"
                 />
               }
               @case (CASE_GEOMETRY_COORDINATES) {
@@ -137,6 +143,7 @@
                   (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
                   [required]="true"
                   [margin]="true"
+                  [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_GEOMETRY_COORDINATES_INPUT"
                 />
               }
               @default {
@@ -156,6 +163,7 @@
                   [presetOptions]="
                     property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []
                   "
+                  data-test-id="create-zaak-property-input-{{$index}}"
                 />
               }
             }
@@ -163,7 +171,7 @@
 
           <div class="property-delete-col">
             @if (property !== CASE_GEOMETRY_COORDINATES) {
-              <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+              <button class="btn btn-space delete-button" (click)="removeProperty(property)" data-test-id="create-zaak-property-delete-button-{{$index}}">
                 <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
               </button>
             }
@@ -177,7 +185,7 @@
 <ng-template #addCasePropertyList>
   @for (propertyOption of propertyOptions; track propertyOption) {
     @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
-      <cds-overflow-menu-option (click)="addProperty(propertyOption)">
+      <cds-overflow-menu-option (click)="addProperty(propertyOption)" data-test-id="create-zaak-add-property-option-{{$index}}">
         {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
       </cds-overflow-menu-option>
     }

@@ -24,8 +24,9 @@
   (actionEvent)="onActionEvent($event, obs.widgetData.resolved)"
   (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_INTERACTIVE_TABLE"
   (queryParamsEvent)="onQueryParamsEvent($event)"
 >
 </valtimo-widget-interactive-table>
 
-<valtimo-case-list-actions [navigateAfterSubmit]="false"></valtimo-case-list-actions>
+<valtimo-case-list-actions [navigateAfterSubmit]="false" [attr.data-test-id]="TEST_IDS.VALTIMO_CASE_LIST_ACTIONS"></valtimo-case-list-actions>

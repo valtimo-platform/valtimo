@@ -28,7 +28,7 @@ import {
 import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
-import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
+import { ConfigService, getCaseManagementRouteParams, ValtimoConfig, TEST_IDS } from '@valtimo/shared';
 import {FormIoTagsService} from '../../services/form-io.tags.service';
 import {ActivatedRoute} from '@angular/router';
 
@@ -39,6 +39,8 @@ import {ActivatedRoute} from '@angular/router';
   standalone: false,
 })
 export class FormioBuilderComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly form$ = new BehaviorSubject<object | null>(null);
 
   @Input() public set form(value: object) {
