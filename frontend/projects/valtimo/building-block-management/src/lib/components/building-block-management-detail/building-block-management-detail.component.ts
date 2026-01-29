@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, Optional} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule, PageTitleService, RenderInPageHeaderDirective} from '@valtimo/components';
 import {ButtonModule, DialogModule, IconModule, TabsModule} from 'carbon-components-angular';
@@ -23,6 +23,10 @@ import {TranslatePipe} from '@ngx-translate/core';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {BuildingBlockManagementGeneralComponent} from '../building-block-management-general/building-block-management-general.component';
 import {BuildingBlockManagementDocumentComponent} from '../building-block-management-document/building-block-management-document.component';
+import {
+  BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN,
+  BuildingBlockManagementTabConfig,
+} from '@valtimo/shared';
 import {BuildingBlockManagementTabKey} from '../../models';
 import {take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
@@ -56,9 +60,20 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
   constructor(
     private readonly route: ActivatedRoute,
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    @Optional()
+    @Inject(BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN)
+    public readonly injectedCustomTabs: BuildingBlockManagementTabConfig[]
   ) {
     this.buildingBlockManagementDetailService.setRoute(this.route);
+  }
+
+  public get customTabs(): BuildingBlockManagementTabConfig[] {
+    return (
+      (Array.isArray(this.injectedCustomTabs)
+        ? this.injectedCustomTabs
+        : [this.injectedCustomTabs]) || []
+    ).filter(tab => !!tab);
   }
 
   public ngOnInit() {

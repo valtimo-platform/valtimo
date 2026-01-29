@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
+import {Type} from '@angular/core';
+
 interface BuildingBlockManagementParams {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
 }
 
-export {BuildingBlockManagementParams};
+interface BuildingBlockManagementTabConfig {
+  translationKey: string;
+  component: Type<any>;
+  tabRoute: string;
+}
+
+export {BuildingBlockManagementParams, BuildingBlockManagementTabConfig};

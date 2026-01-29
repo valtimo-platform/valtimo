@@ -10,6 +10,7 @@ import {StartProcessCustomFormComponent} from './start-process-custom-form/start
 import {FormioComponent} from './form-io/form-io.component';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
 import {CustomCaseTabComponent} from './custom-case-tab/custom-case-tab.component';
+import {CustomBuildingBlockTabComponent} from './custom-building-block-tab/custom-building-block-tab.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {NotificationTestComponent} from './notification-test/notification-test.component';
 import {
@@ -22,6 +23,7 @@ import {CustomFormComponent} from './custom-form-component/custom-form.component
 import {CASE_TAB_TOKEN} from '@valtimo/case';
 import {CaseDetailTabZaakobjectenComponent} from '@valtimo/zgw';
 import {CUSTOM_WIDGET_TOKEN} from '@valtimo/layout';
+import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
 
 export const devDeclarations = [
   CustomFormExampleComponent,
@@ -29,6 +31,7 @@ export const devDeclarations = [
   FormioComponent,
   UploadShowcaseComponent,
   CustomCaseTabComponent,
+  CustomBuildingBlockTabComponent,
   CustomMapsTabComponent,
   NotificationTestComponent,
 ];
@@ -65,11 +68,21 @@ export const devProviders = [
       dummy: CustomFormComponent,
     },
   },
+  {
+    provide: BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN,
+    useValue: {
+      translationKey: 'Custom tab',
+      component: CustomBuildingBlockTabComponent,
+      tabRoute: 'custom-tab',
+    },
+    multi: true,
+  },
 ];
 
 export const devTabs: Array<[string, object]> = [
   ['custom-maps', CustomMapsTabComponent],
   ['custom-dossier', CustomCaseTabComponent],
+  ['custom-tab', CustomBuildingBlockTabComponent],
 ];
 
 export const devToolRoutes: Routes = [

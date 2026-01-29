@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../constants';
-import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
+import {InjectionToken} from '@angular/core';
+import {BuildingBlockManagementTabConfig} from '../models';
 
-type BuildingBlockManagementTabKey =
-  | (typeof BUILDING_BLOCK_MANAGEMENT_TABS)[keyof typeof BUILDING_BLOCK_MANAGEMENT_TABS]
-  | string;
+const BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN = new InjectionToken<BuildingBlockManagementTabConfig[]>(
+  'Specify components to display as tabs on the building block management detail page.'
+);
 
-interface BuildingBlockProcessDefinitionItem extends BuildingBlockProcessDefinitionDto {
-  mainText: string;
-}
-
-export {BuildingBlockManagementTabKey, BuildingBlockProcessDefinitionItem};
+export {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN};
