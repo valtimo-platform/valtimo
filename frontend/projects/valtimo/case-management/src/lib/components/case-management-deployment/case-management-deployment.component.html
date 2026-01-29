@@ -55,7 +55,7 @@
           <button
             cdsButton="primary"
             (click)="openFinalizeDraftConfirmationModal()"
-            [disabled]="obs?.caseDefinitionFinalizationCheckResult?.code !== 'OK'"
+            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.finalizable"
             [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_FINALIZE_DRAFT_BUTTON"
           >
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
