@@ -18,4 +18,5 @@
 
 ## Bugfixes
 
-* New bugfix.
+* The `Create Zaak` action for the Zaken Api Plugin now correctly links the created zaak to the
+  case when configured for a building block.
