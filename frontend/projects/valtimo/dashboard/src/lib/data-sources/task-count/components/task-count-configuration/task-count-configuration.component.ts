@@ -33,7 +33,7 @@ import {AbstractControl, FormBuilder} from '@angular/forms';
 import {TaskCountConfiguration} from '../../models';
 import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {ExpressionOperator} from '@valtimo/shared';
+import {ExpressionOperator, TEST_IDS} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -44,6 +44,8 @@ import {ExpressionOperator} from '@valtimo/shared';
 export class TaskCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public dataSourceKey: string;
 
   public readonly form = this.fb.group({

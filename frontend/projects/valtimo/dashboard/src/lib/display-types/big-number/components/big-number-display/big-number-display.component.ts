@@ -16,6 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent, WidgetSeverity} from '../../../../models';
 import {BigNumberData, BigNumberDisplayTypeProperties} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -25,6 +26,8 @@ import {BigNumberData, BigNumberDisplayTypeProperties} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BigNumberDisplayComponent implements DisplayComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() displayTypeKey: string;
   @Input() data: BigNumberData;
   @Input() displayTypeProperties: BigNumberDisplayTypeProperties;

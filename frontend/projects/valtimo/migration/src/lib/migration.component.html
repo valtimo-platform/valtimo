@@ -32,6 +32,7 @@
           id="sourceDef"
           [ngModel]="fields.source.definition"
           (ngModelChange)="loadProcessDefinitionVersions($event, 'source')"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_DEFINITION_SELECT"
         >
           <option [ngValue]="null" selected>- Source Definition -</option>
           <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
@@ -46,6 +47,7 @@
           id="sourceVer"
           [ngModel]="fields.source.version"
           (ngModelChange)="loadProcess($event, 'source')"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_VERSION_SELECT"
         >
           <option [ngValue]="null" selected>- Source Version -</option>
           <option *ngFor="let processVer of selectedVersions.source" [ngValue]="processVer.id">
@@ -60,6 +62,7 @@
           id="targetDef"
           [ngModel]="fields.target.definition"
           (ngModelChange)="loadProcessDefinitionVersions($event, 'target')"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_DEFINITION_SELECT"
         >
           <option [ngValue]="null" selected>- Target Definition -</option>
           <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
@@ -74,6 +77,7 @@
           id="targetVer"
           [ngModel]="fields.target.version"
           (ngModelChange)="loadProcess($event, 'target')"
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_VERSION_SELECT"
         >
           <option [ngValue]="null" selected>- Target Version -</option>
           <option *ngFor="let processVer of selectedVersions.target" [ngValue]="processVer.id">
@@ -89,6 +93,7 @@
           name="source"
           (loaded)="diagramLoaded($event)"
           #sourceDiagram
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_SOURCE_DIAGRAM"
         ></valtimo-migration-process-diagram>
       </div>
       <div class="col-6">
@@ -96,14 +101,15 @@
           name="target"
           (loaded)="diagramLoaded($event)"
           #targetDiagram
+          [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_TARGET_DIAGRAM"
         ></valtimo-migration-process-diagram>
       </div>
     </div>
     <table class="table table-striped mb-5" *ngIf="selectedId.source && selectedId.target">
-      <tr *ngFor="let node of uniqueFlowNodeMap">
+      <tr *ngFor="let node of uniqueFlowNodeMap" data-test-id="migration-process-mapping-row-{{$index}}">
         <td>{{ node.name ? node.name : node.id }}</td>
         <td>
-          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value">
+          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value" data-test-id="migration-process-target-select-{{$index}}">
             <option [value]="null" disabled selected>- Choose Target -</option>
             <option
               *ngFor="let targetFlowNode of getFilteredTargetFlowNodeMap(node.$type)"
@@ -125,6 +131,7 @@
         "
         (click)="migrateProcess()"
         class="btn btn-primary"
+        [attr.data-test-id]="TEST_IDS.MIGRATION_PROCESS_MIGRATE_BUTTON"
       >
         Migrate
         <span *ngIf="processCount !== null" class="badge badge-pill badge-secondary">{{

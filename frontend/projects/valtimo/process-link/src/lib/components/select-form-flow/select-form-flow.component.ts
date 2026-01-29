@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, Page, TEST_IDS } from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
@@ -40,6 +40,8 @@ import {
   styleUrls: ['./select-form-flow.component.scss'],
 })
 export class SelectFormFlowComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   public formDisplayValue!: FormDisplayType;
   public formSizeValue!: FormSize;
   public selectedFormFlowDefinitionId: string;

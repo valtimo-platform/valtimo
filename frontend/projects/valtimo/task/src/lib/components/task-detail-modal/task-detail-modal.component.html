@@ -21,16 +21,18 @@
   (close)="closeModal()"
   valtimoCdsModal
   [minContentHeight]="480"
+  [attr.data-test-id]="TEST_IDS.TASK_DETAIL_MODAL"
 >
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">
-      <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
+      <p class="cds--modal-header__heading cds--type-beta" [attr.data-test-id]="TEST_IDS.TASK_DETAIL_TITLE">{{ (page$ | async)?.title }}</p>
 
-      <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
+      <p class="cds--modal-header__label cds--type-delta" [attr.data-test-id]="TEST_IDS.TASK_DETAIL_SUBTITLE">{{ (page$ | async)?.subtitle }}</p>
 
       <p
         class="cds--modal-header__label cds--type-delta"
         *ngIf="currentIntermediateSave$ | async as currentIntermediateSave"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_LAST_SAVED"
       >
         {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
 
@@ -60,6 +62,7 @@
         cdsIcon="folder--details--reference"
         [vTooltip]="'formManagement.navigateToRelatedCase' | translate"
         (click)="openRelatedCase()"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_RELATED_CASE_BUTTON"
       ></button>
 
       @if (processLinkPreloaded$ | async) {
@@ -67,12 +70,14 @@
           [taskAndProcessLink]="taskAndProcessLink$ | async"
           (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
           (showModalEvent)="onShowModalEvent()"
+          [attr.data-test-id]="TEST_IDS.TASK_DETAIL_INTERMEDIATE_SAVE_WITH_LINK"
         ></valtimo-task-detail-intermediate-save>
       } @else {
         <valtimo-task-detail-intermediate-save
           [task]="task$ | async"
           (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
           (showModalEvent)="onShowModalEvent()"
+          [attr.data-test-id]="TEST_IDS.TASK_DETAIL_INTERMEDIATE_SAVE_WITHOUT_LINK"
         ></valtimo-task-detail-intermediate-save>
       }
     </div>
@@ -85,6 +90,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONTENT_WITH_LINK"
       ></valtimo-task-detail-content>
     } @else {
       <valtimo-task-detail-content
@@ -92,6 +98,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONTENT_WITHOUT_LINK"
       ></valtimo-task-detail-content>
     }
   </div>
@@ -105,6 +112,7 @@
   confirmButtonTextTranslationKey="interface.confirm"
   titleTranslationKey="formManagement.intermediateSave.clear"
   contentTranslationKey="formManagement.intermediateSave.clearConfirm"
+  [attr.data-test-id]="TEST_IDS.TASK_DETAIL_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
@@ -115,6 +123,7 @@
       canModifyTask: canModifyTask$ | async,
     } as obs"
     class="task-actions"
+    [attr.data-test-id]="TEST_IDS.TASK_DETAIL_ASSIGN_USER_CONTAINER"
   >
     <valtimo-assign-user-to-task
       *ngIf="obs.task && assignmentOfTaskChanged"
@@ -122,11 +131,13 @@
       [assigneeId]="obs.task.assignee"
       [canAssignUserToTask]="obs.canAssignUserToTask"
       (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+      [attr.data-test-id]="TEST_IDS.TASK_DETAIL_ASSIGN_USER_TO_TASK"
     ></valtimo-assign-user-to-task>
 
     <valtimo-set-task-due-date
       [task]="obs.task"
       [canModifyTask]="obs.canModifyTask"
+      [attr.data-test-id]="TEST_IDS.TASK_DETAIL_SET_TASK_DUE_DATE"
     ></valtimo-set-task-due-date>
   </div>
 </ng-template>

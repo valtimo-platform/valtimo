@@ -17,7 +17,7 @@
 <div class="container-fluid">
   <div class="row p-4 bg-white">
     <div class="col">
-      <div #ref (window:resize)="onWindowResize()" class="diagram-container"></div>
+      <div #ref (window:resize)="onWindowResize()" class="diagram-container" [attr.data-test-id]="TEST_IDS.DIAGRAM_CONTAINER"></div>
     </div>
   </div>
 </div>
@@ -36,7 +36,7 @@
   <ng-template>
     <div class="analyse-actions">
       <div class="select">
-        <cds-select [label]="'Process'" (change)="setProcessDefinitionKey($event.target.value)">
+        <cds-select [label]="'Process'" (change)="setProcessDefinitionKey($event.target.value)" [attr.data-test-id]="TEST_IDS.ANALYSE_PROCESS_SELECT">
           <option
             *ngFor="let processDefinition of processDefinitions"
             [value]="processDefinition.key"
@@ -45,7 +45,7 @@
             {{ processDefinition.name }}
           </option>
         </cds-select>
-        <cds-select [label]="'Version'" (change)="setProcessDefinitionVersion($event.target.value)">
+        <cds-select [label]="'Version'" (change)="setProcessDefinitionVersion($event.target.value)" [attr.data-test-id]="TEST_IDS.ANALYSE_VERSION_SELECT">
           <option
             *ngFor="let processDefinitionVersion of processDefinitionVersions"
             [value]="processDefinitionVersion.version"
@@ -58,6 +58,7 @@
           [disabled]="!showHeatmap"
           [label]="'Heatmap type'"
           (change)="setHeatmapOption($event.target.value)"
+          [attr.data-test-id]="TEST_IDS.ANALYSE_HEATMAP_TYPE_SELECT"
         >
           <option
             *ngFor="let option of enumHeatmapOptions"
@@ -73,6 +74,7 @@
           class="heatmap-toggle"
           [label]="'Show heatmap'"
           (checkedChange)="toggleShowHeatmap()"
+          [attr.data-test-id]="TEST_IDS.ANALYSE_SHOW_HEATMAP_TOGGLE"
         ></cds-toggle>
       </div>
     </div>

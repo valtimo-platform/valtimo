@@ -19,6 +19,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  [attr.data-test-id]="TEST_IDS.TEMPLATE_GROUP_FORM"
 >
   <v-input
     name="templateGroupName"
@@ -28,6 +29,7 @@
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
+    [attr.data-test-id]="TEST_IDS.TEMPLATE_GROUP_TEMPLATE_GROUP_NAME_INPUT"
   >
   </v-input>
   <v-input
@@ -38,6 +40,7 @@
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
+    [attr.data-test-id]="TEST_IDS.TEMPLATE_GROUP_RESULTING_TEMPLATE_NAME_INPUT"
   >
   </v-input>
 </v-form>

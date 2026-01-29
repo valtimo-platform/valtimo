@@ -23,6 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  [attr.data-test-id]="TEST_IDS.LINK_DOCUMENT_TO_BESLUIT_FORM"
 >
   <v-input
     name="besluitUrl"
@@ -34,6 +35,7 @@
     [trim]="true"
     [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    [attr.data-test-id]="TEST_IDS.LINK_DOCUMENT_TO_BESLUIT_BESLUIT_URL_INPUT"
   >
   </v-input>
   <v-input
@@ -46,6 +48,7 @@
     [trim]="true"
     [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    [attr.data-test-id]="TEST_IDS.LINK_DOCUMENT_TO_BESLUIT_DOCUMENT_URL_INPUT"
   >
   </v-input>
 </v-form>
