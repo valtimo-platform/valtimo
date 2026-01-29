@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,
@@ -45,6 +45,8 @@ import {ProcessManagementService, ProcessManagementStateService} from '../../ser
   ],
 })
 export class ProcessManagementUploadComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly modalOpen$ = this.processManagementStateService.openModal$;
 
   public readonly ACCEPTED_FILES: string[] = ['bpmn'];

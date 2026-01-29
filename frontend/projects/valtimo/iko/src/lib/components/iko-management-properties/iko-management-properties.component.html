@@ -34,6 +34,7 @@
             cdsText
             cdsLayer
             [attr.modal-primary-focus]="true"
+            data-test-id="properties-form-text-input-{{propertyField.key}}"
           />
         </cds-label>
       }
@@ -47,6 +48,7 @@
             [tooltip]="propertyField.tooltip"
             [appendInline]="false"
             [dropUp]="false"
+            data-test-id="properties-form-dropdown-{{propertyField.key}}"
           ></v-select>
         }
       }
@@ -68,6 +70,7 @@
                   cdsLayer
                   [placeholder]="'interface.key' | translate"
                   [attr.modal-primary-focus]="true"
+                  data-test-id="properties-form-key-input-{{propertyField.key}}-{{$index}}"
                 />
                 <input
                   formControlName="value"
@@ -75,12 +78,14 @@
                   cdsLayer
                   [placeholder]="'interface.value' | translate"
                   [attr.modal-primary-focus]="true"
+                  data-test-id="properties-form-value-input-{{propertyField.key}}-{{$index}}"
                 />
                 <button
                   cdsButton="danger--ghost"
                   [disabled]="$count === 1"
                   [iconOnly]="true"
                   (click)="onDeleteRowClick(propertyField.key, $index)"
+                  data-test-id="properties-form-delete-button-{{propertyField.key}}-{{$index}}"
                 >
                   <svg cdsIcon="trash-can" size="16"></svg>
                 </button>
@@ -91,6 +96,7 @@
           <button
             cdsButton="primary"
             (click)="onAddKeyValue(propertyField.key, propertyField.required)"
+            data-test-id="properties-form-add-button-{{propertyField.key}}"
           >
             Add Key Value
             <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

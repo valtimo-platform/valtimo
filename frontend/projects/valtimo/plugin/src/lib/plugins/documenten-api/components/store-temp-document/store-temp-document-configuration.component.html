@@ -29,6 +29,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_FILE_NAME_INPUT"
   ></v-input>
   <v-select
     [items]="confidentialityLevelItems$ | async"
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.confidentialityLevel || CONFIDENTIALITY_LEVEL_ITEMS[3]"
     [tooltip]="'confidentialityLevelTooltip' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_CONFIDENTIALITY_LEVEL_SELECT"
   ></v-select>
   <v-input
     name="title"
@@ -48,6 +50,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'inputTitleTooltip' | pluginTranslate: pluginId | async"
     [trim]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_TITLE_INPUT"
   ></v-input>
   <v-input
     name="description"
@@ -56,6 +59,7 @@
     [defaultValue]="obs.prefill?.description"
     [disabled]="obs.disabled"
     [tooltip]="'inputDescriptionTooltip' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_DESCRIPTION_INPUT"
   ></v-input>
   <v-input
     name="localDocumentLocation"
@@ -66,6 +70,7 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'localDocumentLocationTooltip' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_LOCAL_DOCUMENT_LOCATION_INPUT"
   >
   </v-input>
   <v-input
@@ -76,6 +81,7 @@
     [disabled]="obs.disabled"
     [trim]="true"
     [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_STORED_DOCUMENT_URL_INPUT"
   >
   </v-input>
   <v-select
@@ -87,6 +93,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.taal || LANGUAGE_ITEMS[0]"
     [required]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_LANGUAGE_SELECT"
   ></v-select>
   <v-select
     [items]="statusSelectItems$ | async"
@@ -97,6 +104,7 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.status || STATUS_ITEMS[2]"
     [required]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_STATUS_SELECT"
   ></v-select>
   <v-input
     name="informatieobjecttype"
@@ -108,6 +116,7 @@
     [trim]="true"
     [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_INFORMATIEOBJECTTYPE_INPUT"
   >
   </v-input>
 </v-form>

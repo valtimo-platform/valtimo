@@ -51,6 +51,7 @@ import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
 import {DataTable16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -61,6 +62,8 @@ import {IconService} from 'carbon-components-angular';
 export class VerzoekConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChildren(VModalComponent) mappingModals: QueryList<VModalComponent>;
 
   @Input() save$: Observable<void>;

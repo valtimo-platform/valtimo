@@ -25,7 +25,7 @@ import {
   MultiInputKeyValue,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {Condition, ExpressionOperator, getCaseManagementRouteParams} from '@valtimo/shared';
+import {Condition, ExpressionOperator, getCaseManagementRouteParams, TEST_IDS} from '@valtimo/shared';
 import {
   DropdownModule,
   InputModule,
@@ -53,6 +53,8 @@ import {WidgetWizardService} from '../../../../../services';
   ],
 })
 export class WidgetWizardDisplayConditionsStepComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public readonly params$ = getCaseManagementRouteParams(this.route);

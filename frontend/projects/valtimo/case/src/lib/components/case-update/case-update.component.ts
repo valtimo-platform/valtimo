@@ -16,7 +16,7 @@
 import {Location} from '@angular/common';
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {GlobalNotificationService} from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {TaskService} from '@valtimo/task';
 import moment from 'moment';
@@ -31,6 +31,8 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./case-update.component.scss'],
 })
 export class CaseUpdateComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public task: any;
   public taskId: string;
   public schema: any;

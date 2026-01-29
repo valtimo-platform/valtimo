@@ -18,6 +18,7 @@ import {Component, OnInit, signal} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService, ChoiceField, ChoiceFieldValue, Pagination} from '@valtimo/components';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -26,6 +27,8 @@ import {ChoiceFieldService, ChoiceField, ChoiceFieldValue, Pagination} from '@va
   styleUrls: ['./choice-field-value-list.component.css'],
 })
 export class ChoiceFieldValueListComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public id: string;
   public form: FormGroup;
   public choiceField: ChoiceField;

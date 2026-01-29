@@ -15,9 +15,9 @@
   -->
 
 <div class="valtimo-upload-step__content">
-  <div class="valtimo-upload-step__title">{{ title }}</div>
+  <div class="valtimo-upload-step__title" [attr.data-test-id]="TEST_IDS.VALTIMO_UPLOAD_STEP_TITLE">{{ title }}</div>
 
-  <div class="valtimo-upload-step__message">{{ message }}</div>
+  <div class="valtimo-upload-step__message" [attr.data-test-id]="TEST_IDS.VALTIMO_UPLOAD_STEP_MESSAGE">{{ message }}</div>
 </div>
 
-<img [src]="illustration" alt="{{ illustration }}" class="valtimo-upload-step__illustration" />
+<img [src]="illustration" alt="{{ illustration }}" class="valtimo-upload-step__illustration" [attr.data-test-id]="TEST_IDS.VALTIMO_UPLOAD_STEP_ILLUSTRATION" />

@@ -28,11 +28,7 @@ import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {TabManagementService, TabService} from '../../../../services';
@@ -45,6 +41,8 @@ import {TabManagementService, TabService} from '../../../../services';
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseManagementTabsComponent implements AfterViewInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('tabContentColumn') tabContentColumnTemplate: TemplateRef<any>;
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
   @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;

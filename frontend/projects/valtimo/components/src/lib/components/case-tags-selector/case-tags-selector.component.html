@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label class="case-tag-selector" *ngIf="listItems$ | async as listItems">
+<cds-label class="case-tag-selector" *ngIf="listItems$ | async as listItems" [attr.data-test-id]="TEST_IDS.CASE_TAG_SELECTOR_LABEL">
   {{ 'caseManagement.caseTags.searchFieldTitle' | translate }}
 
   <cds-dropdown
@@ -23,6 +23,7 @@
     [disabled]="disabled"
     selectionFeedback="fixed"
     (selected)="itemSelected($event)"
+    [attr.data-test-id]="TEST_IDS.CASE_TAG_SELECTOR_DROPDOWN"
   >
     <cds-dropdown-list
       [items]="listItems"
@@ -32,10 +33,10 @@
 </cds-label>
 
 <ng-template #colorDropdownItemTemplate let-item="item">
-  <div class="case-tag-selector-dropdown-template">
-    <cds-checkbox [checked]="item.selected"></cds-checkbox>
+  <div class="case-tag-selector-dropdown-template" [attr.data-test-id]="TEST_IDS.CASE_TAG_SELECTOR_DROPDOWN_TEMPLATE">
+    <cds-checkbox [checked]="item.selected" [attr.data-test-id]="TEST_IDS.CASE_TAG_SELECTOR_CHECKBOX"></cds-checkbox>
 
-    <cds-tag class="cds-tag--no-margin" [type]="item?.tagType">
+    <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [attr.data-test-id]="TEST_IDS.CASE_TAG_SELECTOR_TAG">
       {{ item?.content }}
     </cds-tag>
   </div>

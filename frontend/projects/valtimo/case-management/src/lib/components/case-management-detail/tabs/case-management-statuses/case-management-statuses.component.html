@@ -29,6 +29,7 @@
   [actionItems]="ACTION_ITEMS"
   (rowClicked)="openEditModal($event)"
   (itemsReordered)="onItemsReordered($event)"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST"
 >
   <ng-container carbonToolbarContent *ngTemplateOutlet="addStatusButton"></ng-container>
 
@@ -40,6 +41,7 @@
         : ('caseManagement.statuses.noResultsFinalVersion.description' | translate)
     "
     [title]="'caseManagement.statuses.noResults.title' | translate"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_NO_RESULTS"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -49,6 +51,7 @@
   [usedKeys]="usedKeys$ | async"
   [caseDefinitionKey]="caseDefinitionKey$ | async"
   (closeModalEvent)="closeModal($event)"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_STATUS_MODAL"
 ></valtimo-case-management-status-modal>
 
 <valtimo-confirmation-modal
@@ -59,6 +62,7 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="confirmDeleteStatus($event)"
+  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-template #addStatusButton>
@@ -67,6 +71,7 @@
     cdsButton="primary"
     [disabled]="loading$ | async"
     (click)="openAddModal()"
+    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ADD_STATUS_BUTTON"
   >
     {{ 'caseManagement.statuses.add' | translate }}
 

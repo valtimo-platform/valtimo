@@ -37,6 +37,7 @@ import {catchError, filter, map, take, tap} from 'rxjs/operators';
 import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
 import {DocumentService} from '@valtimo/document';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -47,6 +48,8 @@ import {DocumentService} from '@valtimo/document';
 export class DocumentenApiUploaderComponent
   implements FormioCustomComponent<Array<DocumentenApiFileReference>>, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() disabled: boolean;
   @Input() title: string;
   @Input() hideTitle: boolean;

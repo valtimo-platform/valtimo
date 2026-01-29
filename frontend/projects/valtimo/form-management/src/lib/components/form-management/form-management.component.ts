@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {FormManagementCreateComponent} from '../form-management-create';
@@ -38,6 +38,8 @@ import {FormManagementListComponent} from '../form-management-list';
   ],
 })
 export class FormManagementComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly create$ = new BehaviorSubject<boolean>(false);
   public readonly upload$ = new BehaviorSubject<boolean>(false);
 

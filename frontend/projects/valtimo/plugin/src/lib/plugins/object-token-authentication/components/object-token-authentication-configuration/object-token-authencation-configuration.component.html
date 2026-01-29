@@ -20,10 +20,11 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  [attr.data-test-id]="TEST_IDS.OBJECTTOKENAUTHENTICATIONFORM"
 >
   <v-input
     name="configurationTitle"
-    data-test-id="objectTokenAuthenticationConfigurationTitle"
+    [attr.data-test-id]="TEST_IDS.OBJECTTOKENAUTHENTICATIONCONFIGURATIONTITLE"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +37,7 @@
   </v-input>
   <v-input
     name="token"
-    data-test-id="objectTokenAuthenticationToken"
+    [attr.data-test-id]="TEST_IDS.OBJECTTOKENAUTHENTICATIONTOKEN"
     type="password"
     [title]="'token' | pluginTranslate: pluginId | async"
     [margin]="true"

@@ -38,17 +38,19 @@
       size="md"
       [disabled]="loading"
       class="ml-3"
+      [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_DOWNLOAD_BUTTON"
     >
       {{ 'objectManagement.download' | translate }}
       <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
     </button>
-    <a id="downloadAnchorElement" class="d-none"></a>
+    <a id="downloadAnchorElement" class="d-none" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_DOWNLOAD_ANCHOR"></a>
     <button
       (click)="showEditModal()"
       cdsButton="primary"
       size="md"
       [disabled]="loading"
       class="ml-3"
+      [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_EDIT_BUTTON"
     >
       {{ 'objectManagement.editObjecttype' | translate }}
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
@@ -60,7 +62,7 @@
   <valtimo-widget>
     <div class="row bg-white mt-5 mb-2 pl-2 pr-2">
       <div class="col-5 bg-red">
-        <textarea class="w-100 object-schema" disabled rows="25">{{ object | json }}</textarea>
+        <textarea class="w-100 object-schema" disabled rows="25" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_SCHEMA_TEXTAREA">{{ object | json }}</textarea>
       </div>
     </div>
   </valtimo-widget>

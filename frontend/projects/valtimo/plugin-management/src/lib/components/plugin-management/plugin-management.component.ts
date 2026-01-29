@@ -27,6 +27,7 @@ import {map, switchMap, take, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {cloneDeep} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -35,6 +36,8 @@ import {v4 as uuidv4} from 'uuid';
   styleUrls: ['./plugin-management.component.scss'],
 })
 export class PluginManagementComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly fields: ColumnConfig[] = [
     {
       key: 'title',

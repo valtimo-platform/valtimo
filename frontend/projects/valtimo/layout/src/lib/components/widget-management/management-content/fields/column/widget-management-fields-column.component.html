@@ -36,6 +36,7 @@
         }"
         [expanded]="$index === 0"
         class="valtimo-widget-management-field-column__item"
+        data-test-id="valtimo-widget-management-field-column-item-{{$index}}"
       >
         <form [formGroup]="formRow" class="valtimo-widget-management-field-column__container">
           <div
@@ -60,6 +61,7 @@
                 [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
                 type="text"
                 formControlName="title"
+                data-test-id="valtimo-widget-management-field-column-title-input-{{$index}}"
               />
             </cds-text-label>
 
@@ -70,6 +72,7 @@
               [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
               (selected)="onTypeSelected(formRow, $event)"
               formControlName="type"
+              data-test-id="valtimo-widget-management-field-column-type-dropdown-{{$index}}"
             >
               <cds-dropdown-list [items]="getDisplayItemsSelected(formRow)"></cds-dropdown-list>
             </cds-dropdown>
@@ -93,6 +96,7 @@
                   [caseDefinitionKey]="data.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
                   [parentItem]="selectedCollection"
+                  data-test-id="valtimo-widget-management-field-column-value-path-selector-{{$index}}"
                 ></valtimo-value-path-selector>
               } @else {
                 <input
@@ -101,6 +105,7 @@
                   [placeholder]="'widgetTabManagement.content.fields.value' | translate"
                   type="text"
                   formControlName="content"
+                  data-test-id="valtimo-widget-management-field-column-value-input-{{$index}}"
                 />
               }
             </cds-text-label>
@@ -124,6 +129,7 @@
                     "
                     type="text"
                     formControlName="currencyCode"
+                    data-test-id="valtimo-widget-management-field-column-currency-code-input-{{$index}}"
                   />
                 </cds-text-label>
 
@@ -142,6 +148,7 @@
                     "
                     type="text"
                     formControlName="display"
+                    data-test-id="valtimo-widget-management-field-column-display-input-{{$index}}"
                   />
                 </cds-text-label>
 
@@ -163,6 +170,7 @@
                     "
                     type="text"
                     formControlName="digitsInfo"
+                    data-test-id="valtimo-widget-management-field-column-digits-info-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -181,6 +189,7 @@
                     "
                     type="text"
                     formControlName="format"
+                    data-test-id="valtimo-widget-management-field-column-date-format-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -201,6 +210,7 @@
                     "
                     type="text"
                     formControlName="format"
+                    data-test-id="valtimo-widget-management-field-column-date-time-format-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -226,6 +236,7 @@
                           [placeholder]="'widgetTabManagement.content.fields.enumValue' | translate"
                           type="text"
                           formControlName="key"
+                          data-test-id="valtimo-widget-management-field-column-enum-value-input-{{$index}}-{{$parent.index}}"
                         />
                       </cds-text-label>
 
@@ -246,6 +257,7 @@
                           "
                           type="text"
                           formControlName="value"
+                          data-test-id="valtimo-widget-management-field-column-enum-display-input-{{$index}}-{{$parent.index}}"
                         />
                       </cds-text-label>
 
@@ -255,6 +267,7 @@
                         [iconOnly]="true"
                         class="valtimo-widget-management-field-column__delete-button enum"
                         (click)="onDeleteRowClick($event, formRow.get('values'), $index)"
+                        data-test-id="valtimo-widget-management-field-column-enum-delete-button-{{$index}}-{{$parent.index}}"
                       >
                         <svg cdsIcon="trash-can" size="16"></svg>
                       </button>
@@ -265,6 +278,7 @@
                     cdsButton="primary"
                     size="sm"
                     (click)="onAddEnumValueClick(formRow.get('values'))"
+                    data-test-id="valtimo-widget-management-field-column-add-enum-button-{{$index}}"
                   >
                     {{ 'widgetTabManagement.content.fields.addEnum' | translate }}
 
@@ -293,6 +307,7 @@
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
+                    data-test-id="valtimo-widget-management-field-column-number-digits-info-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -317,6 +332,7 @@
                     [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
                     type="text"
                     formControlName="digitsInfo"
+                    data-test-id="valtimo-widget-management-field-column-percent-digits-info-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -336,6 +352,7 @@
                     "
                     type="text"
                     formControlName="linkText"
+                    data-test-id="valtimo-widget-management-field-column-link-text-input-{{$index}}"
                   />
                 </cds-text-label>
               }
@@ -360,10 +377,12 @@
                 "
                 type="text"
                 formControlName="ellipsisCharacterLimit"
+                data-test-id="valtimo-widget-management-field-column-ellipsis-character-limit-input-{{$index}}"
               />
             </cds-text-label>
 
-            <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty">
+            <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty"
+              data-test-id="valtimo-widget-management-field-column-hide-when-empty-checkbox-{{$index}}">
               {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
             </cds-checkbox>
 
@@ -400,7 +419,7 @@
     }
   </cds-accordion>
 
-  <button cdsButton="primary" size="sm" (click)="addField()">
+  <button cdsButton="primary" size="sm" (click)="addField()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELD_COLUMN_ADD_FIELD_BUTTON">
     {{ addTranslateKey | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -429,6 +448,7 @@
       [iconOnly]="true"
       (click)="onDeleteRowClick($event, formRows, index)"
       class="valtimo-widget-management-field-column__delete-button"
+      data-test-id="valtimo-widget-management-field-column-delete-button-{{index}}"
     >
       <svg cdsIcon="trash-can" size="16"></svg>
     </button>
