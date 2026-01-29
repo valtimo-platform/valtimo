@@ -17,7 +17,7 @@ import {Component, Input} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Information16} from '@carbon/icons';
 import {CaseSettings, DocumentService} from '@valtimo/document';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import { CaseManagementParams, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -38,6 +38,8 @@ import {tap} from 'rxjs/operators';
   styleUrl: './case-management-case-handler.component.scss',
 })
 export class CaseManagementCaseHandlerComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public readonly isReadOnly: boolean;
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);

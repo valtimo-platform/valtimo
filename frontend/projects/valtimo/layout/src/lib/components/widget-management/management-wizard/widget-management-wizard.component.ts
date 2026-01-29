@@ -45,6 +45,7 @@ import {
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {WIDGET_STEPS} from './steps';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management-wizard',
@@ -63,6 +64,8 @@ import {WIDGET_STEPS} from './steps';
   ],
 })
 export class WidgetManagementWizardComponent implements OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('wizardStepRenderer', {read: ViewContainerRef})
   private readonly _vcr: ViewContainerRef;
 

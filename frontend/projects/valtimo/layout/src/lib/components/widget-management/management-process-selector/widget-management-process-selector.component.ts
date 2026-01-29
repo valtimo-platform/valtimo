@@ -19,7 +19,7 @@ import {AbstractControl, FormBuilder, ReactiveFormsModule} from '@angular/forms'
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {CaseManagementParams} from '@valtimo/shared';
+import { CaseManagementParams, TEST_IDS } from '@valtimo/shared';
 import {ComboBoxModule, InputModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
@@ -42,6 +42,8 @@ import {WidgetWizardService} from '../../../services';
   ],
 })
 export class WidgetManagementProcessSelectorComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly formGroup = this.fb.group({
     name: this.fb.control<string>({
       value: this.widgetWizardService.$widgetActions()?.[0]?.name ?? '',

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 @if (!!widgetConfiguration.actions[0] && !!widgetConfiguration.actions[0].navigateTo) {
-  <button class="action-button" cdsButton="ghost" (click)="onNavigateButtonClick(widgetConfiguration.actions[0])">
+  <button class="action-button" cdsButton="ghost" (click)="onNavigateButtonClick(widgetConfiguration.actions[0])" [attr.data-test-id]="TEST_IDS.WIDGET_CONFIGURATION_NAVIGATE_BUTTON">
     {{ widgetConfiguration.actions[0].name }}
   </button>
 }

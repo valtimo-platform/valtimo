@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label class="conditions-label">
+<cds-label class="conditions-label" [attr.data-test-id]="TEST_IDS.CONDITIONS_LABEL">
   {{ 'widgetTabManagement.displayConditions.conditions' | translate }}
 </cds-label>
 
@@ -40,4 +40,5 @@
   [keyColumnFlex]="2"
   [dropdownColumnFlex]="1"
   [valueColumnFlex]="1"
+  [attr.data-test-id]="TEST_IDS.CONDITIONS_MULTI_INPUT"
 ></valtimo-carbon-multi-input>

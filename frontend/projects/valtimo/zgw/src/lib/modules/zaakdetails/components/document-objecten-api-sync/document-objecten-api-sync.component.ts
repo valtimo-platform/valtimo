@@ -38,11 +38,7 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {
-  CaseManagementParams,
-  DraftVersionService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import { CaseManagementParams, DraftVersionService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   CheckboxModule,
@@ -84,6 +80,8 @@ import {filter} from 'rxjs/operators';
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);

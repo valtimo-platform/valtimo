@@ -19,6 +19,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {SelectItem} from '@valtimo/components';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-create-zaak-object-configuration',
@@ -29,6 +30,8 @@ import {SelectItem} from '@valtimo/components';
 export class CreateZaakObjectConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() set pluginId(value: string) {
