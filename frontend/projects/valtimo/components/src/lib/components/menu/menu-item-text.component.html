@@ -29,7 +29,7 @@
     {{ obs.titleTranslation + (accent ? ' >' : '') }}
   </span>
 
-  <ng-container *ngTemplateOutlet="overflowTrigger" [attr.data-test-id]="TEST_IDS.MENU_ITEM_OVERFLOW_TRIGGER"></ng-container>
+  <ng-container *ngTemplateOutlet="overflowTrigger"></ng-container>
 
   <cds-overflow-menu
     [customTrigger]="overflowTrigger"
