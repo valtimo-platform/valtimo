@@ -90,7 +90,29 @@ jobs:
         with:
           app_id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
           private_key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
+
+      - name: Check if comment exists via API
+        id: check_comment
+        env:
+          TOKEN: ${{ steps.token.outputs.token }}
+          COMMENT_ID: ${{ steps.message.outputs.comment_id }}
+        run: |
+          set -euo pipefail
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/comments/${COMMENT_ID}")
+
+          if [ "$status_code" -eq 200 ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Comment $COMMENT_ID not found (status $status_code). Skipping update."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Update PR comment
+        if: steps.check_comment.outputs.exists == 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.message.outputs.comment_id }}
