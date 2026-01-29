@@ -28,7 +28,7 @@ import {
   BuildingBlockManagementTabConfig,
 } from '@valtimo/shared';
 import {BuildingBlockManagementTabKey} from '../../models';
-import {take} from 'rxjs';
+import {of, take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 
@@ -69,12 +69,10 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
   }
 
   public get customTabs(): BuildingBlockManagementTabConfig[] {
-    const raw = this.buildingBlockManagementTabConfig;
-    let tabs: BuildingBlockManagementTabConfig[] = [];
-    if (raw) {
-      tabs = Array.isArray(raw) ? raw : [raw];
-    }
-    return tabs.filter(tab => !!tab?.component);
+    return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({
+      ...tab,
+      enabled$: tab.enabled$ ?? of(true),
+    }));
   }
 
   public ngOnInit() {
@@ -90,5 +88,11 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
       if (activeTabKey === tabKey) return;
       this.buildingBlockManagementDetailService.navigateToTab(tabKey);
     });
+  }
+
+  private toArray<T>(value: T | T[] | null | undefined): T[] {
+    if (Array.isArray(value)) return value;
+    if (value) return [value];
+    return [];
   }
 }

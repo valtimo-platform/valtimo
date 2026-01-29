@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {Type} from '@angular/core';
+import {Observable} from 'rxjs';
 
 interface CaseManagementParams {
   caseDefinitionKey: string;
@@ -24,6 +25,7 @@ interface CaseManagementTabConfig {
   translationKey: string;
   component: Type<any>;
   tabRoute?: string;
+  enabled$?: Observable<boolean>;
 }
 
 export {CaseManagementTabConfig, CaseManagementParams};

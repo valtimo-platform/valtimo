@@ -53,16 +53,18 @@
     }
 
     @for (customTab of customTabs; track customTab.tabRoute) {
-      @if ({active: activeTabKey === customTab.tabRoute}; as obs) {
-        <cds-tab
-          [active]="obs.active"
-          [heading]="customTab.translationKey | translate"
-          (selected)="switchTab(customTab.tabRoute)"
-        >
-          @if (obs.active) {
-            <ng-container *ngComponentOutlet="customTab.component"></ng-container>
-          }
-        </cds-tab>
+      @if (customTab.enabled$ | async) {
+        @if ({active: activeTabKey === customTab.tabRoute}; as obs) {
+          <cds-tab
+            [active]="obs.active"
+            [heading]="customTab.translationKey | translate"
+            (selected)="switchTab(customTab.tabRoute)"
+          >
+            @if (obs.active) {
+              <ng-container *ngComponentOutlet="customTab.component"></ng-container>
+            }
+          </cds-tab>
+        }
       }
     }
   </cds-tabs>

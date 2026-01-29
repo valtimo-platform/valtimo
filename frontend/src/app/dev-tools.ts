@@ -23,7 +23,8 @@ import {CustomFormComponent} from './custom-form-component/custom-form.component
 import {CASE_TAB_TOKEN} from '@valtimo/case';
 import {CaseDetailTabZaakobjectenComponent} from '@valtimo/zgw';
 import {CUSTOM_WIDGET_TOKEN} from '@valtimo/layout';
-import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
+import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN, CASE_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
+import {of} from 'rxjs';
 
 export const devDeclarations = [
   CustomFormExampleComponent,
@@ -73,6 +74,16 @@ export const devProviders = [
     useValue: {
       translationKey: 'Custom tab',
       component: CustomBuildingBlockTabComponent,
+      tabRoute: 'custom-tab',
+      enabled$: of(true),
+    },
+    multi: true,
+  },
+  {
+    provide: CASE_MANAGEMENT_TAB_TOKEN,
+    useValue: {
+      translationKey: 'Custom tab',
+      component: CustomCaseTabComponent,
       tabRoute: 'custom-tab',
     },
     multi: true,
