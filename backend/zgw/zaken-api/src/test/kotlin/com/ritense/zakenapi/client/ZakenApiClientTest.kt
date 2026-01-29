@@ -121,7 +121,9 @@ internal class ZakenApiClientTest {
                 informatieobject = HTTPS_EXAMPLE_COM,
                 zaak = zaakUrlAsString,
                 titel = "title",
-                beschrijving = "description"
+                beschrijving = "description",
+                vernietigingsdatum = null,
+                status = null
             )
         )
 
@@ -135,6 +137,8 @@ internal class ZakenApiClientTest {
         assertEquals(zaakUrlAsString, parsedOutput["zaak"])
         assertEquals("title", parsedOutput["titel"])
         assertEquals("description", parsedOutput["beschrijving"])
+        assertNull(parsedOutput["vernietigingsdatum"])
+        assertNull(parsedOutput["status"])
 
         assertEquals(HTTPS_EXAMPLE_COM, result.url)
         assertEquals(HTTPS_EXAMPLE_COM, result.informatieobject)
@@ -204,7 +208,9 @@ internal class ZakenApiClientTest {
                 informatieobject = HTTPS_EXAMPLE_COM,
                 zaak = zaakUri().toASCIIString(),
                 titel = "title",
-                beschrijving = "description"
+                beschrijving = "description",
+                vernietigingsdatum = null,
+                status = null
             )
         )
 
@@ -238,7 +244,9 @@ internal class ZakenApiClientTest {
                     informatieobject = HTTPS_EXAMPLE_COM,
                     zaak = zaakUri().toASCIIString(),
                     titel = "title",
-                    beschrijving = "description"
+                    beschrijving = "description",
+                    vernietigingsdatum = null,
+                    status = null
                 )
             )
         }

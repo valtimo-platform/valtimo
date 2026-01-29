@@ -38,6 +38,8 @@ When creating a process link the following properties have to be entered:
 * **URL to the document.** The complete URL of the document in a Documenten API.
 * **Document title.** The title of the document within the context of the zaak that is stored in the 'zaakinformatieobject' record in the Zaken API.
 * **Document description.** The description of the document within the context of the zaak that is stored in the 'zaakinformatieobject' record in the Zaken API.
+* **Destruction date.** (Optional) The date on which the information object must be destroyed. This field supports date/time in ISO 8601 format and process variables.
+* **Status URL.** (Optional) The URL to the status of the information object. This field supports URLs and process variables.
 
 An example process link configuration:
 
