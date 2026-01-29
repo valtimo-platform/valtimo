@@ -106,6 +106,20 @@ class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource("/actuator/health/readiness", "/actuator/health/liveness")
+    fun `unauthenticated user should have access to health probe endpoints without details`(path: String) {
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, path)
+            .init()
+
+        val response = mockMvc.perform(request).andReturn().response
+        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+
+        assertThrows<PathNotFoundException> {
+            read<Map<String, Any>>(response.contentAsString, "$.components")
+        }
+    }
+
     @Test
     fun `actuator user should have access to configprops endpoint`() {
         val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
