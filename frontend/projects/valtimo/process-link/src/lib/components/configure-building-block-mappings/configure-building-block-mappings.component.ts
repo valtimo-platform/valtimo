@@ -15,6 +15,7 @@
  */
 
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -92,7 +93,7 @@ import {ActivatedRoute} from '@angular/router';
     LayerModule,
   ],
 })
-export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy {
+export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly buildingBlockFields$ = this.buildingBlockStateService.buildingBlockFields$;
 
   public readonly buildingBlockFieldItems$: Observable<Array<SelectItem>> =
@@ -237,6 +238,8 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   private readonly _subscriptions = new Subscription();
   private _syncingFromState = false;
   private _suppressValidation = false;
+  private _inputRefreshHandle: number | null = null;
+  private _destroyed = false;
 
   public get inputs(): FormArray<InputRowFormGroup> {
     return this.inputsForm.controls.inputs;
@@ -277,11 +280,14 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   ) {}
 
   ngOnInit(): void {
-    combineLatest([this.buildingBlockFields$, this.buildingBlockStateService.inputMappings$])
-      .pipe(take(1))
-      .subscribe(([fields, mappings]) => {
-        this.syncInputsFromState(fields, mappings);
-      });
+    this._subscriptions.add(
+      combineLatest([
+        this.buildingBlockFields$,
+        this.buildingBlockStateService.inputMappings$,
+      ]).subscribe(([fields, mappings]) => {
+        this.syncInputsIfNeeded(fields, mappings);
+      })
+    );
 
     this.buildingBlockStateService.outputMappings$.pipe(take(1)).subscribe(mappings => {
       this.syncOutputsFromState(mappings);
@@ -327,7 +333,16 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     );
   }
 
+  public ngAfterViewInit(): void {
+    this.queueInputSourceRefresh();
+  }
+
   public ngOnDestroy(): void {
+    this._destroyed = true;
+    if (this._inputRefreshHandle !== null) {
+      clearTimeout(this._inputRefreshHandle);
+      this._inputRefreshHandle = null;
+    }
     this._subscriptions.unsubscribe();
   }
 
@@ -406,6 +421,72 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     });
     this._syncingFromState = false;
     this.triggerValidation();
+    this.queueInputSourceRefresh();
+  }
+
+  private syncInputsIfNeeded(
+    fields: Array<{name: string; required: boolean}>,
+    mappings: BuildingBlockInputMapping[]
+  ): void {
+    if (this._syncingFromState) {
+      return;
+    }
+
+    const requiredTargets = fields.filter(f => f.required).map(f => f.name);
+    const currentTargets =
+      this.inputs.controls
+        .map(group => group.controls.target.value)
+        .filter((target): target is string => !!target) ?? [];
+    const missingRequired = requiredTargets.some(target => !currentTargets.includes(target));
+    const shouldSync =
+      (this.inputs.length === 0 && (mappings.length > 0 || fields.length > 0)) || missingRequired;
+
+    if (shouldSync) {
+      this.syncInputsFromState(fields, mappings);
+      return;
+    }
+
+    this.applyMappingSources(mappings);
+  }
+
+  private applyMappingSources(mappings: BuildingBlockInputMapping[]): void {
+    const mappingByTarget = new Map<string, BuildingBlockInputMapping>(
+      mappings.filter(mapping => !!mapping.target).map(mapping => [mapping.target, mapping])
+    );
+    let updated = false;
+
+    this._syncingFromState = true;
+    this.inputs.controls.forEach(group => {
+      const target = group.controls.target.value;
+      if (!target) return;
+      const mapping = mappingByTarget.get(target);
+      if (!mapping?.source) return;
+      if (!group.controls.source.value) {
+        group.controls.source.setValue(mapping.source);
+        updated = true;
+      }
+    });
+    this._syncingFromState = false;
+
+    if (updated) {
+      this.triggerValidation();
+      this.queueInputSourceRefresh();
+    }
+  }
+
+  private queueInputSourceRefresh(): void {
+    if (this._inputRefreshHandle !== null) {
+      clearTimeout(this._inputRefreshHandle);
+    }
+    this._inputRefreshHandle = window.setTimeout(() => {
+      if (this._destroyed) return;
+      this.inputs.controls.forEach(group => {
+        const value = group.controls.source.value ?? '';
+        group.controls.source.setValue(value, {emitEvent: false});
+      });
+      this.changeDetectorRef.detectChanges();
+      this._inputRefreshHandle = null;
+    }, 0);
   }
 
   public isSyncTimingSelected(group: OutputRowFormGroup, value: BuildingBlockSyncTiming): boolean {
