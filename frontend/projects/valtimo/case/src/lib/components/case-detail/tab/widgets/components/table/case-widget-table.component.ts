@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListItem, CarbonListModule} from '@valtimo/components';
-import {Page} from '@valtimo/shared';
+import { Page, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   PaginationModel,
@@ -67,6 +67,8 @@ import {HttpErrorResponse} from '@angular/common/http';
   ],
 })
 export class CaseWidgetTableComponent extends WidgetProcess {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {

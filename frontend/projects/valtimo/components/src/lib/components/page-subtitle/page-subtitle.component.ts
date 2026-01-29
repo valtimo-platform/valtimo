@@ -22,6 +22,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {PageHeaderService, PageTitleService} from '../../services';
 import {RenderPageSubtitleDirective} from '../../directives/render-page-subtitle/render-page-subtitle.directive';
 import {RenderPageHeaderDirective} from '../../directives/render-page-header/render-page-header.directive';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-page-subtitle',
@@ -32,6 +33,8 @@ import {RenderPageHeaderDirective} from '../../directives/render-page-header/ren
   encapsulation: ViewEncapsulation.None,
 })
 export class PageSubtitleComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly hasCustomPageSubtitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
     switchMap(() => this.activatedRoute.firstChild.data),

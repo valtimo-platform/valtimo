@@ -24,7 +24,7 @@
 >
   <div role="header">
     <div class="add-title">
-      <h4>{{ 'objectManagement.uploadObjecttype' | translate }}</h4>
+      <h4 [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_UPLOAD_TITLE">{{ 'objectManagement.uploadObjecttype' | translate }}</h4>
     </div>
   </div>
   <div role="content">
@@ -32,13 +32,13 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
+      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_CANCEL_BUTTON">
         {{ 'objectManagement.cancel' | translate }}
       </button>
 
       <button
         cdsButton="primary"
-        (click)="uploadDefinition()"
+        (click)="uploadDefinition()" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_UPLOAD_BUTTON"
         [disabled]="obs.jsonString === '' || obs.disabled"
       >
         {{ 'Upload' | translate }}
@@ -56,6 +56,7 @@
       [subtitle]="'dropzone.objecttypeDef' | translate"
       [externalError$]="error$"
       [maxFiles]="1"
+      [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_DROPZONE"
     ></valtimo-dropzone>
   </ng-container>
 </ng-template>

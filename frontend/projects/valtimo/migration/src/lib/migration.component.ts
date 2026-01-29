@@ -19,6 +19,7 @@ import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,6 +28,8 @@ import {AlertService} from '@valtimo/components';
   styleUrls: ['./migration.component.scss'],
 })
 export class MigrationComponent implements AfterViewInit, AfterViewInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {
     source: [],

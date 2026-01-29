@@ -19,6 +19,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {CreateOrganisatorischeEenheidZaakRolConfig} from '../../models';
 import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-values';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,6 +30,8 @@ import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-val
 export class CreateOrganisatorischeEenheidZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

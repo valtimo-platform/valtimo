@@ -23,6 +23,7 @@ import {ButtonModule} from 'carbon-components-angular';
 import {CustomWidget, WidgetCustomComponent, WidgetLayoutService} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-custom',
@@ -32,6 +33,8 @@ import {IkoApiService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IkoWidgetCustomComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public set widgetConfiguration(value: CustomWidget) {
     if (!value) return;
     this._widgetConfigSubject$.next(value);

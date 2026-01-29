@@ -18,6 +18,7 @@
   [widgetData]="widgetData$ | async"
   [widgetConfiguration]="widgetConfiguration"
   (paginationEvent)="onPaginationEvent($event)"
+  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE"
 >
   @if (widgetConfiguration?.actions?.length === 1) {
     @if (widgetConfiguration.actions[0].processDefinitionKey) {
@@ -25,6 +26,7 @@
         *ngIf="canCreateCamundaExecution$ | async"
         cdsButton="ghost"
         (click)="onProcessStartClick(widgetConfiguration.actions[0])"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_TABLE_PROCESS_START_BUTTON"
       >
         {{ widgetConfiguration.actions[0].name }}
       </button>

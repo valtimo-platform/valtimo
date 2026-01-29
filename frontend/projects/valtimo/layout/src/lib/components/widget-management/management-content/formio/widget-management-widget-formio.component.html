@@ -34,12 +34,14 @@
         cdsText
         [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
         type="text"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_CASE_MANAGEMENT_WIDGET_FORMIO_TITLE_INPUT"
       />
     </cds-text-label>
 
     <valtimo-mdi-icon-selector
       [cdsLayer]="0"
       formControlName="widgetIcon"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CASE_MANAGEMENT_WIDGET_FORMIO_ICON_SELECTOR"
     ></valtimo-mdi-icon-selector>
   </div>
 
@@ -55,6 +57,7 @@
       [disabled]="formListItems.length === 0"
       [dropUp]="false"
       (selected)="componentDropDownChange($event)"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_CASE_MANAGEMENT_WIDGET_FORMIO_FORM_DROPDOWN"
     >
       <cds-dropdown-list [items]="formListItems"> </cds-dropdown-list>
     </cds-dropdown>

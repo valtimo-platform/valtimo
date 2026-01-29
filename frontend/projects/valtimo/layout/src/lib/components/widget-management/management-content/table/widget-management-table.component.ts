@@ -48,6 +48,7 @@ import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '..
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
 import {toObservable} from '@angular/core/rxjs-interop';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management-table',
@@ -71,6 +72,8 @@ import {toObservable} from '@angular/core/rxjs-interop';
   ],
 })
 export class WidgetManagementTableComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-table';
   @Input() public showFirstColumnOption = true;
   @Input() public sortableColumns = false;

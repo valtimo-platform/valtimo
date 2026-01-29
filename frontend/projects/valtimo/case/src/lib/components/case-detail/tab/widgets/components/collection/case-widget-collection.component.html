@@ -29,6 +29,7 @@
         *ngIf="canCreateCamundaExecution$ | async"
         cdsButton="ghost"
         (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_COLLECTION_START_PROCESS_BUTTON"
       >
         {{ obs.widgetConfiguration.actions[0].name }}
       </button>

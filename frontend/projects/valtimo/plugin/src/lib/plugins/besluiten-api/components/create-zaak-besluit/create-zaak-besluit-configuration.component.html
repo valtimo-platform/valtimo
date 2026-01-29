@@ -28,11 +28,11 @@
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
-    <v-paragraph [margin]="true" [italic]="true">
+    <v-paragraph [margin]="true" [italic]="true" [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_INFORMATION">
       {{ 'createZaakBesluitInformation' | pluginTranslate: obs.pluginId | async }}
     </v-paragraph>
 
-    <v-form (valueChange)="formValueChange($event)">
+    <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_FORM">
       <v-radio
         *ngIf="obs.context && obs.context[0] && obs.context[0] === 'case'"
         name="inputTypeBesluitToggle"
@@ -41,6 +41,7 @@
         [radioValues]="inputTypeOptions$ | async"
         [defaultValue]="selectedInputOption$ | async"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_INPUT_TYPE_RADIO"
       >
       </v-radio>
 
@@ -55,6 +56,7 @@
         [trim]="true"
         [tooltip]="'besluittypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_BESLUITTYPE_URL_INPUT"
       >
       </v-input>
 
@@ -71,6 +73,7 @@
           [loading]="!obs.besluitTypeItems"
           [tooltip]="'besluittypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
           [clearSelectionSubject$]="clearBesluitSelection$"
+          [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_BESLUITTYPE_SELECT"
         ></v-select>
       </ng-container>
 
@@ -83,6 +86,7 @@
         [required]="false"
         [tooltip]="'toelichtingTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_TOELICHTING_INPUT"
       >
       </v-input>
 
@@ -96,6 +100,7 @@
         [trim]="true"
         [tooltip]="'bestuursorgaanTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_BESTUURSORGAAN_INPUT"
       >
       </v-input>
 
@@ -106,6 +111,7 @@
         [radioValues]="startDateInputTypeOptions$ | async"
         [defaultValue]="obs.prefill?.inputTypeStartingDateToggle || 'selection'"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_START_DATE_INPUT_TYPE_RADIO"
       >
       </v-radio>
 
@@ -120,6 +126,7 @@
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_INGANGSDATUM_INPUT"
       >
       </v-input>
 
@@ -133,6 +140,7 @@
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_INGANGSDATUM_DATE_PICKER"
       ></v-date-picker>
 
       <v-radio
@@ -142,6 +150,7 @@
         [radioValues]="expirationDateInputTypeOptions$ | async"
         [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle || 'selection'"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_EXPIRATION_DATE_INPUT_TYPE_RADIO"
       >
       </v-radio>
 
@@ -156,6 +165,7 @@
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_VERVALDATUM_INPUT"
       >
       </v-input>
 
@@ -169,6 +179,7 @@
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_VERVALDATUM_DATE_PICKER"
       ></v-date-picker>
 
       <v-select
@@ -181,6 +192,7 @@
         [tooltip]="'vervalredenTooltip' | pluginTranslate: obs.pluginId | async"
         [widthInPx]="350"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_VERVALREDEN_SELECT"
       ></v-select>
 
       <v-date-picker
@@ -192,6 +204,7 @@
         [tooltip]="'publicatiedatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_PUBLICATIEDATUM_DATE_PICKER"
       ></v-date-picker>
 
       <v-date-picker
@@ -203,6 +216,7 @@
         [tooltip]="'verzenddatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_VERZENDDATUM_DATE_PICKER"
       ></v-date-picker>
 
       <v-date-picker
@@ -214,6 +228,7 @@
         [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="100"
         [margin]="true"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_UITERLIJKE_REACTIE_DATUM_DATE_PICKER"
       ></v-date-picker>
 
       <v-input
@@ -225,6 +240,7 @@
         [required]="false"
         [tooltip]="'besluitUrlProcessVariableTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
+        [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_CREATED_BESLUIT_URL_INPUT"
       >
       </v-input>
     </v-form>
@@ -232,7 +248,7 @@
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-container">
+  <div class="loading-container" [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_BESLUIT_LOADING">
     <cds-loading></cds-loading>
   </div>
 </ng-template>

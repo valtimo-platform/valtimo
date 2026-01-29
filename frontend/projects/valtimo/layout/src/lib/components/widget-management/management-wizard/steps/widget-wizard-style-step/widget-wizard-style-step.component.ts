@@ -19,6 +19,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetStyle} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-wizard-style-step.component.html',
@@ -27,6 +28,8 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardStyleStepComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly WidgetStyle = WidgetStyle;
   public readonly $widgetStyle = this.widgetWizardService.$widgetStyle;
 

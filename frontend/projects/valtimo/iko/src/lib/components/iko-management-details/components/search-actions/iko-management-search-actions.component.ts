@@ -37,7 +37,7 @@ import {map, take} from 'rxjs/operators';
 import {IkoSearchActionResponse} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
-import {GlobalNotificationService, ModalMode} from '@valtimo/shared';
+import { GlobalNotificationService, ModalMode, TEST_IDS } from '@valtimo/shared';
 import {HttpResponse} from '@angular/common/http';
 
 @Component({
@@ -56,6 +56,8 @@ import {HttpResponse} from '@angular/common/http';
   ],
 })
 export class IkoManagementSearchActionsComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 

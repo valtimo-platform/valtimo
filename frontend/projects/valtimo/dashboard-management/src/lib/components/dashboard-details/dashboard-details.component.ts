@@ -31,6 +31,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -39,6 +40,8 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardDetailsComponent implements AfterViewInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public modalType: WidgetModalType = 'create';
   public fields!: ColumnConfig[];
   public readonly actionItems: ActionItem[] = [

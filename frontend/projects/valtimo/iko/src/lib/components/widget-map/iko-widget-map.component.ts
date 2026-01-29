@@ -22,6 +22,7 @@ import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-map',
@@ -38,6 +39,8 @@ import {IkoApiService} from '../../services';
   ],
 })
 export class IkoWidgetMapComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public set widgetConfiguration(value: MapWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);

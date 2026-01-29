@@ -32,6 +32,7 @@ import {TranslateService} from '@ngx-translate/core';
 import Dropzone from 'dropzone';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-dropzone',
@@ -40,6 +41,8 @@ import {map} from 'rxjs/operators';
   standalone: false,
 })
 export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('dropzone') dropzoneRef: ElementRef<any>;
 
   @Input() title: string;

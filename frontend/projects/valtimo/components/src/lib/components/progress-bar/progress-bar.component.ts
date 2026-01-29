@@ -15,6 +15,7 @@
  */
 
 import {Component} from '@angular/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-progress-bar',
@@ -22,4 +23,6 @@ import {Component} from '@angular/core';
   styleUrls: ['./progress-bar.component.scss'],
   standalone: false,
 })
-export class ProgressBarComponent {}
+export class ProgressBarComponent {
+  readonly TEST_IDS = TEST_IDS;
+}

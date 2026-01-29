@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal *ngIf="form" [open]="open" (close)="onCloseModal()">
-  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
-    <h3 cdsModalHeaderHeading>
+<cds-modal valtimoCdsModal *ngIf="form" [open]="open" (close)="onCloseModal()" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_TITLE">
       {{
         'caseManagement.tabManagement.editModal.title'
           | translate: {name: tab?.name ?? 'case.tabs.' + tab.key | translate}
@@ -24,19 +24,19 @@
     </h3>
   </cds-modal-header>
 
-  <section [formGroup]="form" cdsModalContent>
+  <section [formGroup]="form" cdsModalContent [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CONTENT">
     <valtimo-tab-form
       [configuredContentKeys]="configuredKeysForEdit"
       [tabType]="tab?.type"
     ></valtimo-tab-form>
   </section>
 
-  <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_FOOTER">
+    <button cdsButton="secondary" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="form.invalid" (click)="editTab()">
+    <button cdsButton="primary" [disabled]="form.invalid" (click)="editTab()" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_UPDATE_BUTTON">
       {{ 'caseManagement.tabManagement.editModal.updateTab' | translate }}
     </button>
   </cds-modal-footer>

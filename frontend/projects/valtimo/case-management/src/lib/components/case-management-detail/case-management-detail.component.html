@@ -28,6 +28,7 @@
       [active]="obs.currentTab === TabEnum.GENERAL"
       [heading]="'caseManagement.tabs.general' | translate"
       (selected)="navigateToTab(TabEnum.GENERAL)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_GENERAL_TAB"
     >
     </cds-tab>
 
@@ -37,6 +38,7 @@
       [active]="obs.currentTab === TabEnum.PROCESSES"
       [heading]="'caseManagement.tabs.processes' | translate"
       (selected)="navigateToTab(TabEnum.PROCESSES)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_PROCESSES_TAB"
     >
     </cds-tab>
 
@@ -46,6 +48,7 @@
       [active]="obs.currentTab === TabEnum.DECISIONS"
       [heading]="'caseManagement.tabs.decision' | translate"
       (selected)="navigateToTab(TabEnum.DECISIONS)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_DECISIONS_TAB"
     >
     </cds-tab>
 
@@ -55,6 +58,7 @@
       [active]="obs.currentTab === TabEnum.DOCUMENT"
       [heading]="'caseManagement.tabs.document' | translate"
       (selected)="navigateToTab(TabEnum.DOCUMENT)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_DOCUMENT_TAB"
     >
     </cds-tab>
 
@@ -64,6 +68,7 @@
       [active]="obs.currentTab === TabEnum.FORMS"
       [heading]="'caseManagement.tabs.forms' | translate"
       (selected)="navigateToTab(TabEnum.FORMS)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_FORMS_TAB"
     >
     </cds-tab>
 
@@ -73,6 +78,7 @@
       [active]="obs.currentTab === TabEnum.FORM_FLOWS"
       [heading]="'caseManagement.tabs.formFlows' | translate"
       (selected)="navigateToTab(TabEnum.FORM_FLOWS)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_FORM_FLOWS_TAB"
     >
     </cds-tab>
 
@@ -82,6 +88,7 @@
       [active]="obs.currentTab === TabEnum.TASKS"
       [heading]="'caseManagement.tabs.tasks' | translate"
       (selected)="navigateToTab(TabEnum.TASKS)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_TASKS_TAB"
     >
     </cds-tab>
 
@@ -91,6 +98,7 @@
       [active]="obs.currentTab === TabEnum.CASE_LIST"
       [heading]="'caseManagement.tabs.caseListTab.title' | translate"
       (selected)="navigateToTab(TabEnum.CASE_LIST)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_CASE_LIST_TAB"
     >
     </cds-tab>
 
@@ -100,6 +108,7 @@
       [active]="obs.currentTab === TabEnum.CASE_DETAILS"
       [heading]="'caseManagement.tabs.caseDetailsTab.title' | translate"
       (selected)="navigateToTab(TabEnum.CASE_DETAILS)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_CASE_DETAILS_TAB"
     >
     </cds-tab>
 
@@ -109,6 +118,7 @@
         [active]="obs.currentTab === injectedTab.translationKey"
         [heading]="injectedTab.translationKey | translate"
         (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
+        data-test-id="case-management-detail-injected-tab-{{injectedTab.translationKey}}"
       >
       </cds-tab>
     }
@@ -125,6 +135,7 @@
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
       [caseDefinitionKey]="caseDefinitionKey$ | async"
       (versionSet)="onVersionSet($event)"
+      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DETAIL_ACTIONS"
     ></valtimo-case-management-detail-actions>
   </ng-template>
 </ng-container>

@@ -17,6 +17,7 @@
 import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
 import {LayoutService} from '../../services/layout.service';
 import {ShellService, UserInterfaceService} from '@valtimo/components';
+import { TEST_IDS } from '@valtimo/shared';
 
 // eslint-disable-next-line no-var
 declare var App;
@@ -28,6 +29,8 @@ declare var App;
   standalone: false,
 })
 export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('mainContent') mainContentRef: ElementRef;
 
   public readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;

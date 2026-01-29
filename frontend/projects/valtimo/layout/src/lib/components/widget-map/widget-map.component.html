@@ -22,14 +22,15 @@
     noVisibleMap: noVisibleMap$ | async,
   } as obs"
 >
-  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-map__header">
-    <h4 class="widget-map__title">{{ obs?.widgetConfiguration?.title }}</h4>
+  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-map__header" [attr.data-test-id]="TEST_IDS.WIDGET_MAP_HEADER">
+    <h4 class="widget-map__title" [attr.data-test-id]="TEST_IDS.WIDGET_MAP_TITLE">{{ obs?.widgetConfiguration?.title }}</h4>
 
     <ng-content></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MAP_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
@@ -37,6 +38,7 @@
     class="widget-map__render"
     #widgetMap
     [hidden]="obs?.isEmptyWidgetData || obs.widgetData === null"
+    [attr.data-test-id]="TEST_IDS.WIDGET_MAP_RENDER"
   ></div>
 
   @if (obs?.isEmptyWidgetData) {
@@ -44,6 +46,7 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
+      [attr.data-test-id]="TEST_IDS.WIDGET_MAP_NO_RESULTS"
     ></valtimo-no-results>
   } @else if (obs.widgetData === null) {
     <div class="widget-map__skeleton">

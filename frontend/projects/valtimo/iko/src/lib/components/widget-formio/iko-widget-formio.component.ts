@@ -27,6 +27,7 @@ import {
 } from '@valtimo/layout';
 import {IkoApiService} from '../../services';
 import {IkoWidgetParams} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 // TODO: remove component, document id is required, which makes no sense for iko
 @Component({
@@ -37,6 +38,8 @@ import {IkoWidgetParams} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IkoWidgetFormioComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
     this._widgetConfigurationSubject$.next(value);

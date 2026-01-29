@@ -42,6 +42,7 @@ import {
   ProcessLinkStateService,
 } from '../../services';
 import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -51,6 +52,8 @@ import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectUIComponentComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});

@@ -27,6 +27,7 @@ import {
 } from '@angular/core';
 import BpmnViewer from 'bpmn-js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-bpmn-js-diagram',
@@ -35,6 +36,8 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   standalone: false,
 })
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   private bpmnViewer: BpmnViewer;
   private heatMapInstance: any;
 

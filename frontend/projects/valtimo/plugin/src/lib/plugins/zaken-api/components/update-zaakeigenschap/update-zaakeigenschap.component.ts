@@ -30,7 +30,7 @@ import {InputOption, UpdateZaakeigenschapConfig} from '../../models';
 import {RadioValue, SelectItem} from '@valtimo/components';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import { CaseManagementParams, ManagementContext, TEST_IDS } from '@valtimo/shared';
 import {map} from 'rxjs/operators';
 
 @Component({
@@ -42,6 +42,8 @@ import {map} from 'rxjs/operators';
 export class UpdateZaakeigenschapComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public save$: Observable<void>;
   @Input() public disabled$: Observable<boolean>;
   @Input() public set pluginId(value: string) {

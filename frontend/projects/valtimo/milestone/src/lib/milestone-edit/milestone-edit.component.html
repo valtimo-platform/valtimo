@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="bg-white p-5">
-          <form [formGroup]="form" (ngSubmit)="updateMilestone()">
+          <form [formGroup]="form" (ngSubmit)="updateMilestone()" [attr.data-test-id]="TEST_IDS.MILESTONE_FORM">
             <div class="form-group row">
               <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title"
                 >Milestone set</label
@@ -47,6 +47,7 @@
                       formControls.milestoneSet.touched && formControls.milestoneSet.errors,
                   }"
                   required
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_MILESTONE_SET_SELECT"
                 >
                   <option value="" selected disabled>Choose a Milestone set</option>
                   <option *ngFor="let milestoneSet of milestoneSets" [value]="milestoneSet.id">
@@ -78,6 +79,7 @@
                     'is-invalid': formControls.title.touched && formControls.title.errors,
                   }"
                   required
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_TITLE_INPUT"
                 />
                 <div
                   *ngIf="formControls.title.touched && formControls.title.errors"
@@ -109,6 +111,7 @@
                   }"
                   required
                   [compareWith]="compareProcessDefinitions"
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_PROCESS_SELECT"
                 >
                   <option value="" disabled>Choose a process</option>
                   <option
@@ -149,6 +152,7 @@
                       formControls.taskDefinitionKey.errors,
                   }"
                   required
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_TASK_SELECT"
                 >
                   <option value="" disabled>Choose a task</option>
                   <option
@@ -189,6 +193,7 @@
                       formControls.plannedIntervalInDays.errors,
                   }"
                   required
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_INTERVAL_INPUT"
                 />
                 <div
                   *ngIf="
@@ -224,6 +229,7 @@
                     'is-invalid': formControls.color.touched && formControls.color.errors,
                   }"
                   required
+                  [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_COLOR_INPUT"
                 />
                 <div
                   *ngIf="formControls.color.touched && formControls.color.errors"
@@ -237,16 +243,16 @@
 
             <div class="row pt-3 mt-1">
               <div class="col-12 col-sm-6 text-left">
-                <a [routerLink]="'/milestones'" class="btn btn-space btn-default">Back</a>
-                <button type="button" class="btn btn-space btn-danger" (click)="delete()">
+                <a [routerLink]="'/milestones'" class="btn btn-space btn-default" [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_BACK_BUTTON">Back</a>
+                <button type="button" class="btn btn-space btn-danger" (click)="delete()" [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_DELETE_BUTTON">
                   Delete
                 </button>
               </div>
               <div class="col-12 col-sm-6 text-right">
-                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                <button class="btn btn-space btn-secondary" type="button" (click)="reset()" [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_RESET_BUTTON">
                   Reset
                 </button>
-                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" [attr.data-test-id]="TEST_IDS.MILESTONE_FORM_SUBMIT_BUTTON">
                   Submit
                 </button>
               </div>

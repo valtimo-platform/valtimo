@@ -26,6 +26,7 @@
 >
   <div class="form__element">
     <cds-dropdown
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_DOCUMENT_DEFINITION_DROPDOWN"
       [appendInline]="true"
       formControlName="documentDefinition"
       [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
@@ -47,6 +48,7 @@
       {{ 'path' | widgetTranslate: dataSourceKey | async }}
 
       <valtimo-value-path-selector
+        [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_PATH_SELECTOR"
         formControlName="path"
         [caseDefinitionKey]="obs.selectedDocumentDefinition"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
@@ -61,6 +63,7 @@
       >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_CONDITIONS_MULTI_INPUT"
       type="valuePathSelectorDropdownValue"
       [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="obs.formValue?.queryConditions"
@@ -89,6 +92,7 @@
       >{{ 'enum' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
+      [attr.data-test-id]="TEST_IDS.CASE_COUNT_CONFIGURATION_FORM_ENUM_MULTI_INPUT"
       [addRowText]="'addDisplay' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="obs.formValue?.enum"
       [fullWidth]="true"

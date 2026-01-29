@@ -34,6 +34,7 @@
       [disabled]="obs.disabled"
       [margin]="true"
       [trim]="true"
+      [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_NOTITIE_URL_INPUT"
     ></v-input>
 
     <div class="row">
@@ -45,6 +46,7 @@
           [cdsOverflowMenu]="addPropertyList"
           [customPane]="true"
           placement="bottom"
+          [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_NOTITIE_ADD_BUTTON"
         >
           {{ 'addPatchZaakNotitieProperty' | pluginTranslate: pluginId | async }}
 
@@ -66,10 +68,11 @@
             [trim]="true"
             [presetOptions]="property.presetOptions"
             (valueChange)="onPropertyChanged(property.name, $event)"
+            data-test-id="patch-zaak-notitie-property-input-{{$index}}"
           />
         </div>
         <div class="col-1">
-            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)" data-test-id="patch-zaak-notitie-remove-button-{{$index}}">
               <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
             </button>
         </div>
@@ -83,6 +86,7 @@
     <cds-overflow-menu-option
       *ngIf="!hasPropertyBeenAdded(propertyOption)"
       (click)="addProperty(propertyOption)"
+      data-test-id="patch-zaak-notitie-add-property-option-{{$index}}"
     >
       {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
     </cds-overflow-menu-option>

@@ -8,6 +8,7 @@ import {
   PatchBesluitPropertyOptions,
 } from '../../models/patch-besluit-properties';
 import {IconService} from 'carbon-components-angular';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -18,6 +19,8 @@ import {IconService} from 'carbon-components-angular';
 export class PatchZaakBesluitConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

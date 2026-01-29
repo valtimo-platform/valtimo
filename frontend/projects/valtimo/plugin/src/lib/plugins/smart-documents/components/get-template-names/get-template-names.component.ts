@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetTemplateNamesConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-get-template-names',
@@ -27,6 +28,8 @@ import {FunctionConfigurationComponent} from '../../../../models';
 export class GetTemplateNamesComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

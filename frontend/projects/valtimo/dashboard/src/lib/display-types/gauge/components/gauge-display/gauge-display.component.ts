@@ -20,6 +20,7 @@ import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
 import {CdsThemeService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,6 +30,8 @@ import {TranslateService} from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GaugeDisplayComponent implements DisplayComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public readonly displayTypeKey: string;
   @Input() public set data(value: GaugeData) {
     if (!value) return;

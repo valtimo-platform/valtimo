@@ -16,6 +16,7 @@
 
 import {Component, HostListener, Input} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-expansion-panel-component',
@@ -24,6 +25,8 @@ import {BehaviorSubject} from 'rxjs';
   standalone: false,
 })
 export class ExpansionPanelComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() hideAboveFoldWhenExpanded = false;
   readonly open$ = new BehaviorSubject<boolean>(false);
 

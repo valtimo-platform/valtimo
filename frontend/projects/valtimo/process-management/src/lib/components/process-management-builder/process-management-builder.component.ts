@@ -45,6 +45,7 @@ import {
   GlobalNotificationService,
   ManagementContext,
   ProcessDefinitionWithPropertiesDto,
+  TEST_IDS
 } from '@valtimo/shared';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -155,6 +156,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   @ViewChild('viewer', {static: false}) viewerElementRef!: ElementRef;
   @ViewChild('viewerPanel', {static: false}) viewerPanelElementRef!: ElementRef;
 
+  readonly TEST_IDS = TEST_IDS;
   private readonly _selectedProcess$ = new BehaviorSubject<
     ProcessDefinitionResult | BuildingBlockProcessDefinitionWithLinksDto | 'create' | null
   >(null);

@@ -39,12 +39,14 @@
     [name]="name"
     [tooltip]="tooltip"
     [required]="required"
+    [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_LABEL"
   >
   </v-input-label>
-  <div class="v-multi-input__rows" #rows>
+  <div class="v-multi-input__rows" #rows [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_ROWS">
     <div
       class="v-multi-input__row"
       *ngFor="let value of values$ | async as values; trackBy: trackByFn; let i = index"
+      data-test-id="v-multi-input-row-{{i}}"
     >
       <div
         class="full-width"
@@ -63,7 +65,7 @@
         ></ng-container>
       </div>
       <div *ngIf="value.expanded === false">
-        <v-paragraph>{{ getFirstValue(value) }}</v-paragraph>
+        <v-paragraph data-test-id="v-multi-input-value-{{i}}">{{ getFirstValue(value) }}</v-paragraph>
       </div>
       <div class="v-multi-input__buttons">
         <div class="v-multi-input__toggle-button">
@@ -73,6 +75,7 @@
             [title]="
               value.expanded ? ('interface.collapse' | translate) : ('interface.expand' | translate)
             "
+            data-test-id="v-multi-input-toggle-button-{{i}}"
           >
             <svg
               [cdsIcon]="value.expanded === true ? 'chevron--up' : 'chevron--down'"
@@ -88,6 +91,7 @@
             size="sm"
             kind="danger"
             [title]="vars.deleteRowText"
+            data-test-id="v-multi-input-delete-button-{{i}}"
           >
             <svg cdsIcon="close" size="16"></svg>
           </cds-icon-button>
@@ -100,6 +104,7 @@
         (click)="addRow()"
         [title]="vars.addRowText"
         [disabled]="(addRowEnabled$ | async) === false || disabled"
+        [attr.data-test-id]="TEST_IDS.V_MULTI_INPUT_ADD_BUTTON"
       >
         <svg cdsIcon="add" size="16"></svg>
 

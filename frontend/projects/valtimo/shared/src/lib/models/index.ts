@@ -38,3 +38,4 @@ export * from './case-management.model';
 export * from './modal.model';
 export * from './display-type.model';
 export * from './building-block-management.model';
+export * from '../generated/generated-backend-types';

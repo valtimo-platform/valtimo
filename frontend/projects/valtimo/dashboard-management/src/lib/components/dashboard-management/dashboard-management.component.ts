@@ -20,6 +20,7 @@ import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
 import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,6 +30,8 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardManagementComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly deleteRowKey$: BehaviorSubject<string> = new BehaviorSubject('');
   public readonly openModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);

@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {DownloadDocumentConfig} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-download-document-configuration',
@@ -27,6 +28,8 @@ import {DownloadDocumentConfig} from '../../models';
 export class DownloadDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

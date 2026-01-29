@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 @if (timelineItems) {
-  <valtimo-timeline [items]="timelineItems"></valtimo-timeline>
+  <valtimo-timeline [items]="timelineItems" [attr.data-test-id]="TEST_IDS.AUDIT_TIMELINE"></valtimo-timeline>
 }
 
 <valtimo-spinner
@@ -23,14 +23,16 @@
   bdColor="rgba(125, 125, 125, 0.35)"
   color="#264251"
   type="square-jelly-box"
+  [attr.data-test-id]="TEST_IDS.AUDIT_SPINNER"
 >
 </valtimo-spinner>
 
 <div
   class="valtimo-audit-pagination"
   *ngIf="pagination && pagination.totalElements > pagination.size"
+  [attr.data-test-id]="TEST_IDS.AUDIT_PAGINATION"
 >
-  <div>
+  <div [attr.data-test-id]="TEST_IDS.AUDIT_PAGINATION_INFO">
     <strong>{{
       'list.currentPage' | translate: {current: pagination.number, total: pagination.totalPages}
     }}</strong>
@@ -54,5 +56,6 @@
     [maxSize]="pagination.size"
     [rotate]="true"
     (pageChange)="onChangePagination(pagination.number)"
+    [attr.data-test-id]="TEST_IDS.AUDIT_PAGINATION_CONTROLS"
   ></ngb-pagination>
 </div>

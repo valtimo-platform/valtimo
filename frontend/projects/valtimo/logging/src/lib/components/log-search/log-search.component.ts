@@ -48,6 +48,7 @@ import {
   LoggingEventSearchRequest,
   LogLevel,
 } from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-log-search',
@@ -69,6 +70,8 @@ import {
   ],
 })
 export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('afterTimestamp') private readonly _afterTimestampDatePicker: DatePicker;
   @ViewChild('beforeTimestamp') private readonly _beforeTimestampDatePicker: DatePicker;
 

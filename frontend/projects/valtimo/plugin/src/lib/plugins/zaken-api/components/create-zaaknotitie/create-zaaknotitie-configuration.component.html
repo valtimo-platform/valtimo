@@ -24,7 +24,7 @@
     {{ 'createZaakNotitieInformation' | pluginTranslate: pluginId | async }}
   </v-paragraph>
 
-  <v-form (valueChange)="onFormValueChanged($event)">
+  <v-form (valueChange)="onFormValueChanged($event)" [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_FORM">
     <v-input
       name="onderwerp"
       [title]="'onderwerp' | pluginTranslate: pluginId | async"
@@ -34,6 +34,7 @@
       [required]="true"
       [trim]="true"
       [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_SUBJECT_INPUT"
     ></v-input>
 
     <v-input
@@ -46,6 +47,7 @@
       [required]="true"
       [trim]="true"
       [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_TEXT_INPUT"
     ></v-input>
 
     <v-input
@@ -57,6 +59,7 @@
       [required]="false"
       [trim]="true"
       [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_CREATED_BY_INPUT"
     ></v-input>
 
     <v-input
@@ -69,6 +72,7 @@
       [trim]="true"
       [fullWidth]="true"
       [presetOptions]="notitieTypeOptions"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_TYPE_INPUT"
     ></v-input>
 
     <v-input
@@ -81,6 +85,7 @@
       [trim]="true"
       [fullWidth]="true"
       [presetOptions]="statusOptions"
+      [attr.data-test-id]="TEST_IDS.CREATE_ZAAK_NOTITIE_STATUS_INPUT"
     ></v-input>
   </v-form>
 </ng-container>

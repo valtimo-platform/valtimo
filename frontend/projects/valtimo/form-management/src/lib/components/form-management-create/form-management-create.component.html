@@ -21,15 +21,16 @@
   [cdsLayer]="0"
   [open]="true"
   (close)="onCloseEvent()"
+  [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseEvent()">
-    <h3 cdsModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseEvent()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_TITLE">
       {{ 'formManagement.add' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form *ngIf="form" [formGroup]="form" (ngSubmit)="createFormDefinition()">
-    <section cdsModalContent [cdsLayer]="1">
+  <form *ngIf="form" [formGroup]="form" (ngSubmit)="createFormDefinition()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_FORM">
+    <section cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_CONTENT">
       <cds-label
         [invalid]="formControls?.name?.touched && formControls?.name?.errors"
         [invalidText]="
@@ -37,6 +38,7 @@
           (formControls?.name?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
           'test'
         "
+        [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_NAME_LABEL"
       >
         {{ 'formManagement.name' | translate }}
 
@@ -47,21 +49,22 @@
           formControlName="name"
           [invalid]="formControls?.name?.touched && formControls?.name?.errors"
           required
+          [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_NAME_INPUT"
         />
       </cds-label>
     </section>
 
-    <cds-modal-footer [cdsLayer]="1">
+    <cds-modal-footer [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_FOOTER">
       <cds-modal-footer>
-        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()">
+        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_BACK_BUTTON">
           {{ 'formManagement.back' | translate }}
         </button>
 
-        <button cdsButton="ghost" (click)="$event.preventDefault(); reset()">
+        <button cdsButton="ghost" (click)="$event.preventDefault(); reset()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_RESET_BUTTON">
           {{ 'formManagement.reset' | translate | translate }}
         </button>
 
-        <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
+        <button [disabled]="form?.invalid" type="submit" cdsButton="primary" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_SUBMIT_BUTTON">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>

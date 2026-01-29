@@ -19,6 +19,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
 import {DocumentService, LoadedValue, ProcessDocumentInstance} from '@valtimo/document';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap, tap} from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,6 +28,8 @@ import {ListItem} from 'carbon-components-angular/dropdown';
   styleUrls: ['./progress.component.scss'],
 })
 export class CaseDetailTabProgressComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   private readonly processDocumentInstances$: Observable<Array<ProcessDocumentInstance>> =
     this.route.paramMap.pipe(
       switchMap((params: ParamMap) =>

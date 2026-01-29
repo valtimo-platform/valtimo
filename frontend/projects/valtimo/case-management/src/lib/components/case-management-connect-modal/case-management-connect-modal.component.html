@@ -27,7 +27,7 @@
       <strong>{{ documentDefinition.id.name }} *</strong>
     </p>
     <div class="input-group mb-3 align-items-center">
-      <select class="form-control" [(ngModel)]="newDocumentProcessDefinition">
+      <select class="form-control" [(ngModel)]="newDocumentProcessDefinition" [attr.data-test-id]="TEST_IDS.CASE_CONNECT_PROCESS_DEFINITION_SELECT">
         <option [ngValue]="null">{{ 'caseManagement.selectProcessDef' | translate }}</option>
         <option
           *ngFor="let processDefinition of processDefinitions"
@@ -51,6 +51,7 @@
           class="custom-control-input"
           type="checkbox"
           [(ngModel)]="newDocumentProcessDefinitionInit"
+          [attr.data-test-id]="TEST_IDS.CASE_CONNECT_PROCESS_CREATES_CASE_CHECKBOX"
         /><span class="custom-control-label custom-control-color">{{
           'processCaseConnection.processCreatesCase' | translate
         }}</span>
@@ -64,6 +65,7 @@
           class="custom-control-input"
           type="checkbox"
           [(ngModel)]="newDocumentProcessDefinitionStartableByUser"
+          [attr.data-test-id]="TEST_IDS.CASE_CONNECT_STARTABLE_WITHIN_CASE_CHECKBOX"
         /><span class="custom-control-label custom-control-color">{{
           'processCaseConnection.startableWithinCase' | translate
         }}</span>
@@ -76,6 +78,7 @@
       class="btn btn-primary"
       data-dismiss="modal"
       [disabled]="!newDocumentProcessDefinition"
+      [attr.data-test-id]="TEST_IDS.CASE_CONNECT_SAVE_BUTTON"
     >
       {{ 'Save' | translate }}
     </button>

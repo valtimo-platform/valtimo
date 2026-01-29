@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {ZakenApiConfig} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -30,6 +31,8 @@ import {ZakenApiConfig} from '../../models';
 export class ZakenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public save$: Observable<void>;
   @Input() public disabled$: Observable<boolean>;
   @Input() public pluginId: string;

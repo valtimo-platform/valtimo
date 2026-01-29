@@ -18,11 +18,11 @@
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <div class="text-right mt-m3px mb-3">
-        <button (click)="showUploadModal()" class="btn btn-secondary btn-space">
+        <button (click)="showUploadModal()" class="btn btn-secondary btn-space" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_UPLOAD_BUTTON">
           <i class="icon mdi mdi-upload mr-1"></i>
           {{ 'objectManagement.uploadObjecttype' | translate }}
         </button>
-        <button (click)="showAddModal()" type="button" class="btn btn-space btn-primary mr-0">
+        <button (click)="showAddModal()" type="button" class="btn btn-space btn-primary mr-0" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_CREATE_BUTTON">
           <i class="icon mdi mdi-plus mr-1"></i>
           {{ 'objectManagement.createObjecttype' | translate }}
         </button>
@@ -43,9 +43,10 @@
           [header]="true"
           paginationIdentifier="objecttypesList"
           (rowClicked)="redirectToDetails($event)"
+          [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_LIST"
         >
           <div header>
-            <h3 class="list-header-title">
+            <h3 class="list-header-title" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_TITLE">
               {{ 'objectManagement.title' | translate }}
               <sup class="ml-1 badge badge-pill badge-primary">{{
                 objecttypesInstances?.length || 0

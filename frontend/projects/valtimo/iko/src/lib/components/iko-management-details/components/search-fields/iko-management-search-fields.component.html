@@ -16,6 +16,7 @@
 
 @if (params$ | async; as params) {
   <valtimo-carbon-list
+    [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_SEARCH_FIELDS_LIST"
     [actionItems]="ACTION_ITEMS"
     [dragAndDrop]="true"
     [fields]="FIELDS"
@@ -29,6 +30,7 @@
     </div>
 
     <valtimo-no-results
+      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_SEARCH_FIELDS_NO_RESULTS"
       [action]="addFieldButton"
       [description]="'ikoManagement.searchFields.noResultsDescription' | translate"
       [title]="'ikoManagement.searchFields.noResultsTitle' | translate"
@@ -37,6 +39,7 @@
 }
 
 <valtimo-iko-management-search-field-modal
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_SEARCH_FIELD_MODAL"
   [open]="fieldModalOpen$ | async"
   [usedKeys]="usedKeys$ | async"
   [modalMode]="$modalMode()"
@@ -45,6 +48,7 @@
 ></valtimo-iko-management-search-field-modal>
 
 <valtimo-confirmation-modal
+  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_SEARCH_FIELD_DELETE_MODAL"
   confirmButtonTextTranslationKey="interface.delete"
   confirmButtonType="danger"
   contentTranslationKey="ikoManagement.searchFields.deleteModalText"
@@ -55,7 +59,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addFieldButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button cdsButton="primary" (click)="openAddModal()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_SEARCH_FIELDS_ADD_BUTTON">
     {{ 'searchFieldsOverview.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

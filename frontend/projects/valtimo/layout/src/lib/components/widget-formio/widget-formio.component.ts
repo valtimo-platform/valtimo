@@ -36,6 +36,7 @@ import {FormioWidgetWidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-formio',
@@ -53,6 +54,8 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetFormioComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
   }

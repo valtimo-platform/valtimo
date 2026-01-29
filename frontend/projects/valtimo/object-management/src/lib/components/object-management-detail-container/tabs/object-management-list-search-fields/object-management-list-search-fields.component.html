@@ -52,6 +52,7 @@
       obs.disableInput ||
       obs.loading
     "
+    [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_DOWNLOAD_LINK"
   >
     {{ 'searchFieldsOverview.download' | translate }}
   </a>
@@ -61,6 +62,7 @@
     size="md"
     [disabled]="obs.loading"
     class="ml-3"
+    [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_ADD_BUTTON"
   >
     {{ 'searchFieldsOverview.add' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -79,16 +81,19 @@
       class="mdi mdi-delete btn btn-outline-danger mr-1"
       (click)="deleteRow(index, $event)"
       [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
+      data-test-id="search-fields-overview-delete-row-button-{{index}}"
     ></i>
     <i
       class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
       (click)="moveRow(index, true, $event, obs.objectId)"
       [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+      data-test-id="search-fields-overview-move-up-button-{{index}}"
     ></i>
     <i
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
       (click)="moveRow(index, false, $event, obs.objectId)"
       [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+      data-test-id="search-fields-overview-move-down-button-{{index}}"
     ></i>
   </div>
 </ng-template>
@@ -102,6 +107,7 @@
     *ngIf="obs.searchFields; else loading"
     [lastColumnTemplate]="moveRowButtonsTemplateRef"
     (rowClicked)="columnRowClicked($event)"
+    [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_LIST"
   >
   </valtimo-carbon-list>
 </ng-template>
@@ -118,6 +124,7 @@
     } as modalObs"
     [open]="modalObs.show"
     (close)="closeModal()"
+    [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_MODAL"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
@@ -146,7 +153,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="title" />
+        <input cdsText formControlName="title" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_TITLE_INPUT" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -162,7 +169,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" />
+        <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_KEY_INPUT" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -174,7 +181,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="path" />
+        <input cdsText formControlName="path" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_PATH_INPUT" />
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -186,7 +193,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <cds-dropdown formControlName="dataType" [disabled]="modalObs.disableInput">
+        <cds-dropdown formControlName="dataType" [disabled]="modalObs.disableInput" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_DATA_TYPE_DROPDOWN">
           <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </cds-label>
@@ -200,7 +207,7 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <cds-dropdown formControlName="fieldType" [disabled]="modalObs.disableInput">
+        <cds-dropdown formControlName="fieldType" [disabled]="modalObs.disableInput" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_FIELD_TYPE_DROPDOWN">
           <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </cds-label>
@@ -216,6 +223,7 @@
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
+        [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_CLOSE_BUTTON"
       >
         {{ 'searchFieldsOverview.close' | translate }}
       </button>
@@ -227,6 +235,7 @@
         [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
+        [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_SAVE_BUTTON"
       >
         {{ 'searchFieldsOverview.save' | translate }}
       </button>
@@ -242,6 +251,7 @@
     confirmButtonTextTranslationKey="searchFieldsOverview.deleteSearchField"
     titleTranslationKey="searchFieldsOverview.searchField"
     contentTranslationKey="searchFieldsOverview.deleteSearchFieldConfirmation"
+    [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_DELETE_MODAL"
   ></valtimo-confirmation-modal>
 </ng-template>
 
@@ -253,11 +263,12 @@
         title: 'searchFieldsOverview.noSearchFieldsConfiguredWarningTitle' | translate,
         showClose: false,
       }"
+      [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_NO_CONFIG_WARNING"
     >
     </cds-notification>
   </div>
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><cds-loading></cds-loading></div>
+  <div class="loading-icon"><cds-loading [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_OVERVIEW_LOADING"></cds-loading></div>
 </ng-template>

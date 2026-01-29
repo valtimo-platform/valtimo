@@ -38,6 +38,7 @@ import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap
 
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-widget-interactive-table',
@@ -60,6 +61,8 @@ import {IkoApiService} from '../../services';
   providers: [CaseListService],
 })
 export class IkoWidgetInteractiveTableComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild(CaseListActionsComponent) listActionsComponent: CaseListActionsComponent;
 
   private _widgetConfiguration: InteractiveTableWidget;

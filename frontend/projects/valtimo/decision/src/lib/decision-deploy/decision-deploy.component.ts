@@ -26,7 +26,7 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
-import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
+import { getCaseManagementRouteParams, getContextObservable, TEST_IDS } from '@valtimo/shared';
 import {DecisionService, DecisionStateService} from '../services';
 
 @Component({
@@ -46,6 +46,8 @@ import {DecisionService, DecisionStateService} from '../services';
   ],
 })
 export class DecisionDeployComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Output() deploySuccessful = new EventEmitter();
 
   public dmn: File | null = null;

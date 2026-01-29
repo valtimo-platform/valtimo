@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
 import {map, Observable, of, switchMap} from 'rxjs';
-import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import { ConfigService, ValtimoConfig, TEST_IDS } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
 import {ShellService} from '../../services/shell.service';
@@ -39,6 +39,8 @@ import {CurrentCarbonTheme, TopbarLogo} from '../../models';
   standalone: false,
 })
 export class TopbarComponent implements OnInit, AfterViewInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class.cds--header') headerClass = true;
 
   @ViewChild('headerVcr', {static: true, read: ViewContainerRef})
