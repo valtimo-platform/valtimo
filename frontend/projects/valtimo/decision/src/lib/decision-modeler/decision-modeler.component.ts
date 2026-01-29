@@ -115,11 +115,7 @@ export class DecisionModelerComponent
     this.context$,
   ]).pipe(
     switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey ?? '',
-        params?.caseDefinitionVersionTag ?? '',
-        context ?? ''
-      )
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context ?? '')
     )
   );
 

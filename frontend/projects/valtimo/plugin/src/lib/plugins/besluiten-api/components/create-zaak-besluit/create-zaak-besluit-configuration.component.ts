@@ -153,7 +153,7 @@ export class CreateZaakBesluitConfigurationComponent
     const sub = this.context$
       .pipe(
         filter(([context]) => {
-          if (context === 'independent') {
+          if (context === 'independent' || context === 'buildingBlock') {
             this.selectedInputOption$.next('text');
             this.loading$.next(false);
           }

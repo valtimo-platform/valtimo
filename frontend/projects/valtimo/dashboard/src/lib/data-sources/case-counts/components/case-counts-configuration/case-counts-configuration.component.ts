@@ -48,6 +48,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {isEqual} from 'lodash';
 import {Add16, TrashCan16} from '@carbon/icons';
 import { Operator, TEST_IDS } from '@valtimo/shared';
+import {ExpressionOperator} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -137,14 +138,7 @@ export class CaseCountsConfigurationComponent
     )
   );
 
-  private readonly _OPERATORS: Array<Operator> = [
-    Operator.NOT_EQUAL_TO,
-    Operator.EQUAL_TO,
-    Operator.GREATER_THAN,
-    Operator.GREATER_THAN_OR_EQUAL_TO,
-    Operator.LESS_THAN,
-    Operator.LESS_THAN_OR_EQUAL_TO,
-  ];
+  private readonly _OPERATORS: Array<ExpressionOperator> = ['!=', '==', '>', '>=', '<', '<='];
 
   public readonly operatorItems$: Observable<Array<ListItemWithId>> = this.translateService
     .stream('key')

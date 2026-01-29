@@ -1,0 +1,7 @@
+{
+    "key": "subsidy-calculator",
+    "name": "Subsidie Berekening",
+    "description": "Berekent de energietoeslag op basis van huishoudgegevens. Verifieert de aanvrager via huishoudenverificatie en bepaalt het uiteindelijke subsidiebedrag.",
+    "versionTag": "1.0.0",
+    "final": false
+}

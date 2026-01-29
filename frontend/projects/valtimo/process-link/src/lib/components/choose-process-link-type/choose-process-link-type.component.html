@@ -34,7 +34,7 @@
           size="xl"
           class="process-link-type-button"
           [disabled]="!availableProcessLinkType.enabled"
-          [vTooltip]="'processLinkTypeDisabledTooltip.' + processLinkTypeId | translate"
+          [vTooltip]="getTooltipKey(processLinkTypeId) | translate"
           [onBottom]="true"
           [tooltipDisabled]="availableProcessLinkType.enabled"
           data-test-id="process-link-configuration-button-{{processLinkTypeId}}"

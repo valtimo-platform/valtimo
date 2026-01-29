@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
-import { EnvironmentService, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
-import {IconService, Notification} from 'carbon-components-angular';
+import {EnvironmentService, GlobalNotificationService, TEST_IDS} from '@valtimo/shared';
+import {IconService, Notification, NotificationContent} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
 import * as semver from 'semver';
-import {CaseDefinition} from '../../models/case-deployment.model';
+import {CaseDefinition, CaseDefinitionFinalizationCheckResult} from '../../models';
 import {CaseManagementService} from '../../services';
 
 @Component({
@@ -191,6 +191,45 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       return Object.entries(releaseInformationData).map(([key, value]) => ({key, value}));
     })
   );
+
+  private readonly _deploymentNotificationObject$ = new BehaviorSubject<NotificationContent>(null);
+  public readonly deploymentNotificationObject$ =
+    this._deploymentNotificationObject$.asObservable();
+
+  public readonly caseDefinitionFinalizationCheckResult$: Observable<CaseDefinitionFinalizationCheckResult> =
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(
+      switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+        this.caseManagementService.getCaseDefinitionFinalizationCheck(
+          caseDefinitionKey,
+          caseDefinitionVersionTag
+        )
+      ),
+      switchMap(res =>
+        this.translateService.stream('key').pipe(
+          tap(() => {
+            switch (res.code) {
+              case 'OK':
+                this._deploymentNotificationObject$.next(null);
+                break;
+              case 'BUILDING_BLOCK_NOT_FINAL':
+                this._deploymentNotificationObject$.next({
+                  type: 'warning',
+                  title: this.translateService.instant(
+                    'caseManagement.deployment.notFinalizableWarning.title'
+                  ),
+                  message: this.translateService.instant(
+                    `caseManagement.deployment.notFinalizableWarning.${res.code}`
+                  ),
+                  showClose: false,
+                  lowContrast: true,
+                });
+                break;
+            }
+          }),
+          map(() => res)
+        )
+      )
+    );
 
   private _currentNotification!: Notification;
 

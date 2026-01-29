@@ -25,6 +25,7 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
   selector: 'valtimo-create-organisatorische-eenheid-zaak-rol-configuration',
   templateUrl: './create-organisatorische-eenheid-zaak-rol.component.html',
+  styleUrls: ['./create-organisatorische-eenheid-zaak-rol.component.scss'],
 })
 export class CreateOrganisatorischeEenheidZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -63,9 +64,10 @@ export class CreateOrganisatorischeEenheidZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      formValue.identificatie &&
-      formValue.naam &&
-      formValue.isGehuisvestIn
+      (
+        formValue.identificatie ||
+        formValue.naam
+      )
     );
 
     this._valid$.next(valid);

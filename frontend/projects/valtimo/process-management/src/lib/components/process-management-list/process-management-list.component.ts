@@ -24,7 +24,14 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import { EditPermissionsService, EnvironmentService, getCaseManagementRouteParams, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {
+  EditPermissionsService,
+  EnvironmentService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+  ProcessDefinitionWithPropertiesDto,
+  TEST_IDS
+} from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
@@ -57,7 +64,9 @@ export class ProcessManagementListComponent {
   >();
 
   public readonly $context = this.processManagementService.$context;
-  public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
+  public readonly processToDelete$ = new BehaviorSubject<ProcessDefinitionWithPropertiesDto | null>(
+    null
+  );
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -78,11 +87,7 @@ export class ProcessManagementListComponent {
     this.context$,
   ]).pipe(
     switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
+      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context);
     })
   );
 

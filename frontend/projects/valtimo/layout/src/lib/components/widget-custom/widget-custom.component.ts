@@ -122,6 +122,7 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
           }
 
           const componentRef = this._customWidgetContainerRef.createComponent(customComponent);
+          componentRef.setInput('widgetConfiguration', widgetConfig);
           Object.entries(widgetConfig.properties.componentValue).forEach(([key, value]) => {
             componentRef.setInput(key, value);
           });

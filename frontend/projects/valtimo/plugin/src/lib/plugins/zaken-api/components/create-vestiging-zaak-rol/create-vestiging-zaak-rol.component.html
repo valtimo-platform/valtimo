@@ -13,94 +13,105 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<v-form
-  (valueChange)="formValueChange($event)"
+<ng-container
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
-  } as obs"
->
-  <v-input
-    name="roltypeUrl"
-    [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
-    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.roltypeUrl"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_ROLTYPE_URL_INPUT"
-  >
-  </v-input>
+  } as obs">
+  <div class="notification--margin">
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        message: 'createZaakrolVestigingIdentifierFieldsInformation' | pluginTranslate: pluginId | async,
+        showClose: false,
+        lowContrast: true
+      }"
+    >
+    </cds-inline-notification>
+  </div>
 
-  <v-input
-    name="rolToelichting"
-    [title]="'rolToelichting' | pluginTranslate: pluginId | async"
-    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.rolToelichting"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_ROL_TOELICHTING_INPUT"
-  >
-  </v-input>
+  <v-form (valueChange)="formValueChange($event)">
+    <v-input
+      name="roltypeUrl"
+      [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
+      [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.roltypeUrl"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_ROLTYPE_URL_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="vestigingsNummer"
-    [title]="'vestigingsNummer' | pluginTranslate: pluginId | async"
-    [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.vestigingsNummer"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_VESTIGINGS_NUMMER_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="rolToelichting"
+      [title]="'rolToelichting' | pluginTranslate: pluginId | async"
+      [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.rolToelichting"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [margin]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_ROL_TOELICHTING_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="handelsnaam"
-    [title]="'handelsnaam' | pluginTranslate: pluginId | async"
-    [tooltip]="'handelsnaamTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.handelsnaam"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_HANDELSNAAM_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="vestigingsNummer"
+      [title]="'vestigingsNummer' | pluginTranslate: pluginId | async"
+      [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.vestigingsNummer"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_VESTIGINGS_NUMMER_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="kvkNummer"
-    [title]="'kvkNummer' | pluginTranslate: pluginId | async"
-    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.kvkNummer"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_KVK_NUMMER_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="handelsnaam"
+      [title]="'handelsnaam' | pluginTranslate: pluginId | async"
+      [tooltip]="'handelsnaamTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.handelsnaam"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_HANDELSNAAM_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="resultProcessVariable"
-    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-    [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.resultProcessVariable"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.FORM_RESULT_PROCESS_VARIABLE_INPUT"
-  >
-  </v-input>
-</v-form>
+    <v-input
+      name="kvkNummer"
+      [title]="'kvkNummer' | pluginTranslate: pluginId | async"
+      [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.kvkNummer"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_KVK_NUMMER_INPUT"
+    >
+    </v-input>
+
+    <v-input
+      name="resultProcessVariable"
+      [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+      [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.resultProcessVariable"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.FORM_RESULT_PROCESS_VARIABLE_INPUT"
+    >
+    </v-input>
+  </v-form>
+</ng-container>

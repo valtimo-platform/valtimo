@@ -18,7 +18,7 @@ import {ActivatedRoute} from '@angular/router';
 import { CaseManagementParams, getCaseManagementRouteParams, Page, TEST_IDS } from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
+import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
 import {
   FormDefinitionListItem,
@@ -26,7 +26,6 @@ import {
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormSize,
-  ProcessLinkEditMode,
 } from '../../models';
 import {
   ProcessLinkButtonService,
@@ -137,9 +136,14 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
@@ -174,19 +178,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-          return;
-        }
-
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
       });
   }
 
@@ -211,19 +203,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         } as FormFlowProcessLinkCreateRequestDto;
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
-          return;
-        }
-
-        this.processLinkService.saveProcessLink(createRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkCreateEvent(createRequest);
       });
   }
 }

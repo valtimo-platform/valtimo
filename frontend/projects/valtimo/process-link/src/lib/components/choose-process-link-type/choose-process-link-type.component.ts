@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import {Component, Inject, OnDestroy, Optional} from '@angular/core';
+import {Component} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {FormCustomComponentConfig, ProcessLinkType} from '../../models';
-import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
-import {map, Subscription} from 'rxjs';
+import {UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../../constants';
 import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
@@ -35,7 +33,17 @@ export class ChooseProcessLinkTypeComponent {
 
   constructor(private readonly processLinkStateService: ProcessLinkStateService) {}
 
-  selectProcessLinkType(processLinkTypeId: string): void {
+  public getTooltipKey(processLinkTypeId: string): string {
+    if (
+      this.processLinkStateService.isBuildingBlockContext() &&
+      UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK.includes(processLinkTypeId)
+    ) {
+      return 'processLinkTypeDisabledTooltip.buildingBlockUnsupported';
+    }
+    return 'processLinkTypeDisabledTooltip.' + processLinkTypeId;
+  }
+
+  public selectProcessLinkType(processLinkTypeId: string): void {
     this.processLinkStateService.selectProcessLinkType(processLinkTypeId);
   }
 }

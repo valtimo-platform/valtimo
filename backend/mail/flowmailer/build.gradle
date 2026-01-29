@@ -68,6 +68,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
     testImplementation project(":backend:core")
+    testImplementation(project(':backend:building-block'))
     testImplementation project(":backend:test-utils-common")
     testImplementation project(":backend:mail")
     testImplementation project(':backend:resource')

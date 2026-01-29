@@ -93,8 +93,8 @@
               @if ($widgetContext() === 'case') {
                 <valtimo-value-path-selector
                   formControlName="content"
-                  [caseDefinitionKey]="data.params?.caseDefinitionKey ?? 'bezwaar'"
-                  [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag ?? '1.0.1'"
+                  [caseDefinitionKey]="data.params?.caseDefinitionKey"
+                  [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
                   [parentItem]="selectedCollection"
                   data-test-id="valtimo-widget-management-field-column-value-path-selector-{{$index}}"
                 ></valtimo-value-path-selector>

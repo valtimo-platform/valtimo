@@ -24,6 +24,7 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
   selector: 'valtimo-create-vestiging-zaak-rol-configuration',
   templateUrl: './create-vestiging-zaak-rol.component.html',
+  styleUrls: ['./create-vestiging-zaak-rol.component.scss'],
 })
 export class CreateVestigingZaakRolComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -60,9 +61,11 @@ export class CreateVestigingZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      formValue.handelsnaam &&
-      formValue.kvkNummer &&
-      formValue.vestigingsNummer
+      (
+        formValue.handelsnaam ||
+        formValue.kvkNummer ||
+        formValue.vestigingsNummer
+      )
     );
 
     this._valid$.next(valid);

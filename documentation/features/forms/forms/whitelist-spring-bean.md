@@ -57,21 +57,21 @@ Form flow offers a single bean out of the box. The `ValtimoFormFlow bean`. This 
 
 <details>
 
-<summary>Completing a Camunda user task</summary>
+<summary>Completing a Operaton user task</summary>
 
-The method below completes a Camunda user task. If there is submission data available, it will _not_ be saved.
+The method below completes a Operaton user task. If there is submission data available, it will _not_ be saved.
 
 ```spel
 ${valtimoFormFlow.completeTask(additionalProperties)}
 ```
 
-The method below completes a Camunda user task _and_ saves the submission data into a default location in the json document.
+The method below completes a Operaton user task _and_ saves the submission data into a default location in the json document.
 
 </details>
 
 <details>
 
-<summary>Completing a Camunda user task and saving submission data</summary>
+<summary>Completing a Operaton user task and saving submission data</summary>
 
 ```spel
 ${valtimoFormFlow.completeTask(additionalProperties, step.submissionData)}
@@ -101,9 +101,9 @@ The document JSON will get an extra `submission` field with all data from the `s
 
 <details>
 
-<summary>Completing a Camunda user task and saving submission data to defined location</summary>
+<summary>Completing a Operaton user task and saving submission data to defined location</summary>
 
-The method below completes a Camunda user task and saves the submission data into a location of your choosing. The third parameter decides where the submission data should be saved. The third parameter expects a map from which the key defines the location where the data should be saved, and the value is a location inside the `step.submissionData`.
+The method below completes a Operaton user task and saves the submission data into a location of your choosing. The third parameter decides where the submission data should be saved. The third parameter expects a map from which the key defines the location where the data should be saved, and the value is a location inside the `step.submissionData`.
 
 ```spel
 ${valtimoFormFlow.completeTask(additionalProperties, step.submissionData, {'doc:/address/streetName':'/street', 'pv:approved':'/approval'})}
@@ -129,7 +129,7 @@ The data will be added to the document JSON. If data was already present in the 
 }
 ```
 
-The Camunda process will get an extra variable:
+The Operaton process will get an extra variable:
 
 ```json
 {
@@ -169,7 +169,7 @@ A new document is created with this data. If the submission path is referencing 
 }
 ```
 
-The Camunda process will be started with a process variable:
+The Operaton process will be started with a process variable:
 
 ```json
 {
@@ -209,7 +209,7 @@ The data will be added to the document JSON. If data was already present in the 
 }
 ```
 
-The Camunda process will be started with a process variable:
+The Operaton process will be started with a process variable:
 
 ```json
 {

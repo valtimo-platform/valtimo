@@ -36,11 +36,11 @@ import org.mockito.kotlin.verify
 class JsonSchemaDocumentDefinitionImporterTest(
     @Mock private val documentDefinitionService: JsonSchemaDocumentDefinitionService
 ) {
-    private lateinit var importer: JsonSchemaDocumentDefinitionImporter
+    private lateinit var importer: CaseJsonSchemaDocumentDefinitionImporter
 
     @BeforeEach
     fun before() {
-        importer = JsonSchemaDocumentDefinitionImporter(documentDefinitionService)
+        importer = CaseJsonSchemaDocumentDefinitionImporter(documentDefinitionService)
     }
 
     @Test

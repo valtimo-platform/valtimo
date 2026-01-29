@@ -297,9 +297,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this._subscriptions.add(
       combineLatest([this._headerItems$, this._items$, this._skeletonRowCount$]).subscribe(
         ([headers, items, skeletonRowCount]) => {
-          let rowCount = items.length > 0 ? items.length : skeletonRowCount;
+          let rowCount = items?.length > 0 ? items?.length : skeletonRowCount;
 
-          if (items.length === 0 && this.pagination?.size) {
+          if (items?.length === 0 && this.pagination?.size) {
             rowCount = this.pagination.size;
           }
           if (!this.hideToolbar) {

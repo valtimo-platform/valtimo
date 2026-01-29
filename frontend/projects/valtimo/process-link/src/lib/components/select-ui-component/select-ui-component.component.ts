@@ -25,18 +25,16 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   map,
   Observable,
   Subscription,
   switchMap,
   take,
   tap,
+  withLatestFrom,
 } from 'rxjs';
-import {
-  FormCustomComponentConfig,
-  ProcessLinkEditMode,
-  UIComponentProcessLinkUpdateRequestDto,
-} from '../../models';
+import {FormCustomComponentConfig, UIComponentProcessLinkUpdateRequestDto} from '../../models';
 import {ListItem} from 'carbon-components-angular';
 import {
   ProcessLinkButtonService,
@@ -111,9 +109,14 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
@@ -140,15 +143,7 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
         activityId: selectedProcessLink.activityId,
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(updateRequest);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(updateRequest).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
-      });
+      this.stateService.sendProcessLinkUpdateEvent(updateRequest);
     });
   }
 
@@ -165,12 +160,8 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
             activityId: modalParams.element.id,
           };
 
-          if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-            this.stateService.sendProcessLinkCreateEvent(createRequest);
-            return [];
-          }
-
-          return this.processLinkService.saveProcessLink(createRequest);
+          this.stateService.sendProcessLinkCreateEvent(createRequest);
+          return [];
         })
       )
       .subscribe({

@@ -18,13 +18,11 @@ import {Component} from '@angular/core';
 import {
   PluginStateService,
   ProcessLinkButtonService,
-  ProcessLinkService,
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import { ConfigService, TEST_IDS } from '@valtimo/shared';
-import {ProcessLinkEditMode} from '../../models';
+import {ConfigService, TEST_IDS} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -49,6 +47,7 @@ export class ProcessLinkModalComponent {
   public readonly saving$ = this.stateService.saving$;
   public readonly typeOfSelectedProcessLink$ = this.stateService.typeOfSelectedProcessLink$;
   public readonly viewModelEnabled$ = this.stateService.viewModelEnabled$;
+  public readonly isEditing$ = this.stateService.isEditing$;
   public readonly selectedPluginConfiguration$ =
     this.pluginStateService.selectedPluginConfiguration$;
 
@@ -60,7 +59,6 @@ export class ProcessLinkModalComponent {
     private readonly stepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginStateService: PluginStateService,
-    private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
     private readonly configService: ConfigService
   ) {}
@@ -83,24 +81,9 @@ export class ProcessLinkModalComponent {
 
   unlinkButtonClick(): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkDeleteEvent({
-          activityId: selectedProcessLink.activityId,
-        });
-
-        return;
-      }
-
-      this.stateService.startSaving();
-
-      this.processLinkService.deleteProcessLink(selectedProcessLink.id).subscribe(
-        () => {
-          this.stateService.closeModal();
-        },
-        () => {
-          this.stateService.stopSaving();
-        }
-      );
+      this.processLinkStateService.sendProcessLinkDeleteEvent({
+        activityId: selectedProcessLink.activityId,
+      });
     });
   }
 

@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-Form flow can be used without Valtimo. This module provides the bare minimum to implement form flows, without any dependencies to Valtimo or Camunda.
+Form flow can be used without Valtimo. This module provides the bare minimum to implement form flows, without any dependencies to Valtimo or Operaton.
 
 In order to use form flow, the `form-flow` module needs to be added as a dependency. The following can be added to your project, depending on whether Maven or Gradle is used:
 

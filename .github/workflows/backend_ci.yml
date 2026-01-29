@@ -7,9 +7,6 @@ on:
       - .github/workflows/backend_*.yml
       - backend/**
   pull_request:
-    branches:
-      - next-minor
-      - rc/*
     paths:
       - .github/workflows/backend_*.yml
       - backend/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NotificationContent, NotificationModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, combineLatest, map} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
@@ -31,10 +31,9 @@ import { TEST_IDS } from '@valtimo/shared';
 })
 export class CaseManagementDraftWarningComponent {
   readonly TEST_IDS = TEST_IDS;
-
-  private readonly _name$ = new BehaviorSubject<string>('');
+  private readonly _name$ = new BehaviorSubject<string>('-');
   @Input() public set name(value: string) {
-    this._name$.next(value);
+    this._name$.next(value || '-');
   }
   public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
     this._name$,

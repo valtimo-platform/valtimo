@@ -14,123 +14,136 @@
   ~ limitations under the License.
   -->
 
-<v-form
-  (valueChange)="formValueChange($event)"
+<ng-container
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
   [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM"
 >
-  <v-input
-    name="roltypeUrl"
-    [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
-    [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.roltypeUrl"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROLTYPE_URL_INPUT"
-  >
-  </v-input>
+  <div class="notification--margin">
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        message: 'createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation' | pluginTranslate: pluginId | async,
+        showClose: false,
+        lowContrast: true
+      }"
+    >
+    </cds-inline-notification>
+  </div>
 
-  <v-input
-    name="rolToelichting"
-    [title]="'rolToelichting' | pluginTranslate: pluginId | async"
-    [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.rolToelichting"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROL_TOELICHTING_INPUT"
-  >
-  </v-input>
+  <v-form (valueChange)="formValueChange($event)">
+    <v-input
+      name="roltypeUrl"
+      [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
+      [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.roltypeUrl"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROLTYPE_URL_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="identificatie"
-    [title]="'identificatie' | pluginTranslate: pluginId | async"
-    [tooltip]="'identificatieOrganisatorischeEenheidTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.identificatie"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IDENTIFICATIE_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="rolToelichting"
+      [title]="'rolToelichting' | pluginTranslate: pluginId | async"
+      [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.rolToelichting"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_ROL_TOELICHTING_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="naam"
-    [title]="'naam' | pluginTranslate: pluginId | async"
-    [tooltip]="'naamTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.naam"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_NAAM_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="identificatie"
+      [title]="'identificatie' | pluginTranslate: pluginId | async"
+      [tooltip]="'identificatieOrganisatorischeEenheidTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.identificatie"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IDENTIFICATIE_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="isGehuisvestIn"
-    [title]="'isGehuisvestIn' | pluginTranslate: pluginId | async"
-    [tooltip]="'isGehuisvestInTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.isGehuisvestIn"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IS_GEHUISVEST_IN_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="naam"
+      [title]="'naam' | pluginTranslate: pluginId | async"
+      [tooltip]="'naamTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.naam"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_NAAM_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="afwijkendeNaamBetrokkene"
-    [title]="'afwijkendeNaamBetrokkene' | pluginTranslate: pluginId | async"
-    [tooltip]="'afwijkendeNaamBetrokkeneTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.afwijkendeNaamBetrokkene"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_AFWIJKENDE_NAAM_BETROKKENE_INPUT"
-  >
-  </v-input>
+    <v-input
+      name="isGehuisvestIn"
+      [title]="'isGehuisvestIn' | pluginTranslate: pluginId | async"
+      [tooltip]="'isGehuisvestInTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.isGehuisvestIn"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_IS_GEHUISVEST_IN_INPUT"
+    >
+    </v-input>
 
-  <v-radio
-    name="indicatieMachtiging"
-    [title]="'indicatieMachtiging' | pluginTranslate: pluginId | async"
-    [tooltip]="'indicatieMachtigingTooltip' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.indicatieMachtiging"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [margin]="true"
-    [fullWidth]="true"
-    [radioValues]="INDICATIE_MACHTIGING_VALUES"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_INDICATIE_MACHTIGING_RADIO"
-  >
-  </v-radio>
+    <v-input
+      name="afwijkendeNaamBetrokkene"
+      [title]="'afwijkendeNaamBetrokkene' | pluginTranslate: pluginId | async"
+      [tooltip]="'afwijkendeNaamBetrokkeneTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.afwijkendeNaamBetrokkene"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_AFWIJKENDE_NAAM_BETROKKENE_INPUT"
+    >
+    </v-input>
 
-  <v-input
-    name="resultProcessVariable"
-    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-    [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
-    [defaultValue]="obs.prefill?.resultProcessVariable"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [margin]="true"
-    [trim]="true"
-    [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_RESULT_PROCESS_VARIABLE_INPUT"
-  >
-  </v-input>
-</v-form>
+    <v-radio
+      name="indicatieMachtiging"
+      [title]="'indicatieMachtiging' | pluginTranslate: pluginId | async"
+      [tooltip]="'indicatieMachtigingTooltip' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.indicatieMachtiging"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [fullWidth]="true"
+      [radioValues]="INDICATIE_MACHTIGING_VALUES"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_INDICATIE_MACHTIGING_RADIO"
+    >
+    </v-radio>
+
+    <v-input
+      name="resultProcessVariable"
+      [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+      [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+      [defaultValue]="obs.prefill?.resultProcessVariable"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [margin]="true"
+      [trim]="true"
+      [fullWidth]="true"
+      [attr.data-test-id]="TEST_IDS.ROLTYPE_FORM_RESULT_PROCESS_VARIABLE_INPUT"
+    >
+    </v-input>
+  </v-form>
+</ng-container>

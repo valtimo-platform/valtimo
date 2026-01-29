@@ -16,7 +16,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtimo/plugin';
 import {combineLatest, Observable, of, Subscription} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
+import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
 import { TEST_IDS } from '@valtimo/shared';
 
 import {
@@ -88,6 +88,8 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
   private openBackButtonSubscription(): void {
     this.buttonService.backButtonClick$
       .pipe(
+        withLatestFrom(this.processLinkStateService.isEditing$),
+        filter(([, isEditing]) => !isEditing),
         switchMap(() => this.stepService.hasOneProcessLinkType$),
         take(1)
       )
@@ -98,9 +100,14 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
   private openNextButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.nextButtonClick$.subscribe(() => {
-        this.stepService.setConfigurePluginActionSteps();
-      })
+      this.buttonService.nextButtonClick$
+        .pipe(
+          withLatestFrom(this.processLinkStateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stepService.setConfigurePluginActionSteps();
+        })
     );
   }
 }

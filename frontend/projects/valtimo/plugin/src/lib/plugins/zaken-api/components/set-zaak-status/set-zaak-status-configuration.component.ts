@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,7 +244,7 @@ export class SetZaakStatusConfigurationComponent
     const contextSub = this.context$
       .pipe(
         filter(([context]) => {
-          if (context === 'independent') {
+          if (context === 'independent' || context === 'buildingBlock') {
             this.selectedInputOption$.next('text');
             this.loading$.next(false);
           }

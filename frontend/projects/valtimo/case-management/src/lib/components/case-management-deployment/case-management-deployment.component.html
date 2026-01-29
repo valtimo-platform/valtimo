@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,8 +22,18 @@
     notificationContent: notificationContent$ | async,
     canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
     isGloballyActive: isGloballyActive$ | async,
+    caseDefinitionFinalizationCheckResult: caseDefinitionFinalizationCheckResult$ | async,
+    deploymentNotificationObject: deploymentNotificationObject$ | async,
   } as obs"
 >
+  <cds-notification
+    *ngIf="
+      obs.canUpdateGlobalConfiguration && obs.isDraftVersion && obs.deploymentNotificationObject
+    "
+    class="deployment-warning-notification"
+    [notificationObj]="obs.deploymentNotificationObject"
+  ></cds-notification>
+
   <div class="header-buttons">
     <button cdsButton="secondary" (click)="goBack()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_BACK_BUTTON">
       {{ 'caseManagement.deployment.buttons.back' | translate }}
@@ -42,7 +52,12 @@
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
           </button>
 
-          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_FINALIZE_DRAFT_BUTTON">
+          <button
+            cdsButton="primary"
+            (click)="openFinalizeDraftConfirmationModal()"
+            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.code !== 'OK'"
+            [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_FINALIZE_DRAFT_BUTTON"
+          >
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
             <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
           </button>
