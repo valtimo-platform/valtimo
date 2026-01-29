@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
@@ -567,10 +568,14 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
         val zaaktypeUrl = zaaktypeUri()
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
+            .thenReturn(documentId)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -595,7 +600,8 @@ internal class ZakenApiPluginTest {
         val plugin = zakenApiPlugin(
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -627,6 +633,7 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -640,6 +647,9 @@ internal class ZakenApiPluginTest {
         val caseGeometryType = GeometryType.POINT.key
         val caseGeometryCoordinates = "[4.932921, 52.370085]"
         val mainCase = zaakUrl("123")
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
+            .thenReturn(documentId)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -664,7 +674,8 @@ internal class ZakenApiPluginTest {
         val plugin = zakenApiPlugin(
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -1662,7 +1673,8 @@ internal class ZakenApiPluginTest {
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
         objectMapper: ObjectMapper = mock(),
-        zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock(),
+        caseDocumentResolver: CaseDocumentResolver = mock()
     ): ZakenApiPlugin {
         return ZakenApiPlugin(
             client = zakenApiClient,
@@ -1675,7 +1687,8 @@ internal class ZakenApiPluginTest {
             platformTransactionManager = platformTransactionManager,
             valueResolverService = valueResolverService,
             objectMapper = objectMapper,
-            zaakNotitieLinkRepository = zaakNotitieLinkRepository
+            zaakNotitieLinkRepository = zaakNotitieLinkRepository,
+            caseDocumentResolver = caseDocumentResolver
         ).apply {
             this.url = url
             this.authenticationPluginConfiguration = authenticationMock
