@@ -6,16 +6,20 @@
 
 ## New Features
 
-* **New feature title**
+* **Orange status tag**
 
-  New feature explanation.
+  Added a new orange status tag to the UI for enhanced visibility of specific case statuses.
 
 ## Enhancements
 
-* **New enhancement title**
+* **Enhanced testability with data-test-id attributes**
 
-  New enhancement explanation.
+  Added `data-test-id` attributes to various UI components to facilitate automated testing.
 
 ## Bugfixes
 
-* New bugfix.
+* **ZGW: Documenten API document deletion**
+
+  When deleting a case (zaak), linked documents are now only deleted from the Documenten API if they are not
+  linked to any other cases. If a document is linked to multiple cases, only the relationship between the
+  case and the document is removed.
