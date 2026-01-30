@@ -56,14 +56,6 @@ jobs:
       envName: ${{ inputs.env_name }}
       source_sha: ${{ inputs.commit_sha }}
 
-  neither_changed:
-    needs:
-      - detect_changes
-    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No frontend or backend changes detected; skipping test environment setup."
-
   comment_on_pr:
     if: ${{ (needs.detect_changes.outputs.frontend_changed == 'true' || needs.detect_changes.outputs.backend_changed == 'true') && github.event.pull_request.number }}
     runs-on: ubuntu-latest
@@ -130,11 +122,11 @@ jobs:
             "${DISPATCH_URL}" \
             -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\",\"githubCommentId\":\"${COMMENT_ID}\"}}"
 
-  only_frontend_changed:
+  retag_existing_backend_image:
     needs:
       - detect_changes
       - create_test_environment
-    if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
+    if: ${{ needs.detect_changes.outputs.backend_changed != 'true' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.backend_hash.outputs.image_tag }}
@@ -185,21 +177,21 @@ jobs:
 
   tag_backend_test_env_image:
     needs:
-      - only_frontend_changed
+      - retag_existing_backend_image
     uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
       target: gzac-backend
       env_name: ${{ inputs.env_name }}
-      contents_sha: ${{ needs.only_frontend_changed.outputs.contents_sha }}
-      image_to_tag: ${{ needs.only_frontend_changed.outputs.image_tag }}
+      contents_sha: ${{ needs.retag_existing_backend_image.outputs.contents_sha }}
+      image_to_tag: ${{ needs.retag_existing_backend_image.outputs.image_tag }}
       source_sha: ${{ github.event.pull_request.base.sha || inputs.commit_sha }}
 
-  only_backend_changed:
+  retag_existing_frontend_image:
     needs:
       - detect_changes
       - create_test_environment
-    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
+    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.frontend_hash.outputs.image_tag }}
@@ -250,13 +242,13 @@ jobs:
 
   tag_frontend_test_env_image:
     needs:
-      - only_backend_changed
+      - retag_existing_frontend_image
       - determine_test_env
     uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
       target: gzac-frontend
       env_name: ${{ inputs.env_name }}
-      contents_sha: ${{ needs.only_backend_changed.outputs.contents_sha }}
-      image_to_tag: ${{ needs.only_backend_changed.outputs.image_tag }}
+      contents_sha: ${{ needs.retag_existing_frontend_image.outputs.contents_sha }}
+      image_to_tag: ${{ needs.retag_existing_frontend_image.outputs.image_tag }}
       source_sha: ${{ github.event.pull_request.base.sha || inputs.commit_sha }}
