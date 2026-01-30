@@ -12,9 +12,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Added vernietigingsdatum and status to Link document to zaak**
 
-  New enhancement explanation.
+  The 'Link document to zaak' plugin action now supports two additional optional properties: `vernietigingsdatum` (destruction date) and `status`. These properties are included in the 'zaakinformatieobject' request when linking a document to a zaak.
 
 ## Bugfixes
 

@@ -103,7 +103,14 @@ internal class ZakenApiPluginTest {
             authenticationMock = authenticationMock
         )
 
-        plugin.linkDocumentToZaak(executionMock, documentUrl(), "titel", "beschrijving")
+        plugin.linkDocumentToZaak(
+            execution = executionMock,
+            documentUrl = documentUrl(),
+            titel = "titel",
+            beschrijving = "beschrijving",
+            vernietigingsdatum = "2025-12-31T23:59:59Z",
+            statusUrl = "https://example.com/statustypen/1"
+        )
 
         val captor = argumentCaptor<LinkDocumentRequest>()
         verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
@@ -113,6 +120,8 @@ internal class ZakenApiPluginTest {
         assertEquals(zaakUrl(), request.zaak)
         assertEquals("titel", request.titel)
         assertEquals("beschrijving", request.beschrijving)
+        assertEquals("2025-12-31T23:59:59Z", request.vernietigingsdatum)
+        assertEquals("https://example.com/statustypen/1", request.status)
     }
 
     @Test
@@ -153,6 +162,8 @@ internal class ZakenApiPluginTest {
         assertEquals(zaakUrl(), request.zaak)
         assertEquals("titel", request.titel)
         assertEquals("beschrijving", request.beschrijving)
+        assertEquals(null, request.vernietigingsdatum)
+        assertEquals(null, request.status)
     }
 
     @Test

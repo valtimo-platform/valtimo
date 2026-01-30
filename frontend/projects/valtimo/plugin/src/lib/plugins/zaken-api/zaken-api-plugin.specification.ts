@@ -102,6 +102,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijving: 'Documentbeschrijving',
       beschrijvingTooltip:
         '(Optioneel) Vult het beschrijving veld in de metadata van de link tussen de Zaak en het Document',
+      vernietigingsdatum: 'Vernietigingsdatum',
+      vernietigingsdatumTooltip:
+        '(Optioneel) De datum waarop het document van de zaak verwijderd moet worden. Dit veld ondersteunt datum/tijd in ISO 8601 formaat en proces variabelen.',
+      documentStatusUrl: 'Status URL',
+      documentStatusUrlTooltip:
+        '(Optioneel) De referentie naar de bij Zaak behorende Status waarvoor het document relevant is (geweest).',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       authenticationPluginConfigurationTooltip:
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
@@ -345,6 +351,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijving: 'Document description',
       beschrijvingTooltip:
         '(Optional) Fills the description field in the metadata of the link between the Zaak and the Document',
+      vernietigingsdatum: 'Destruction date',
+      vernietigingsdatumTooltip:
+        '(Optional) The date on which the document should be removed from the zaak. This field supports date/time in ISO 8601 format and process variables.',
+      documentStatusUrl: 'Status URL',
+      documentStatusUrlTooltip:
+        '(Optional) The reference to the Status associated with the Zaak for which the document is (or was) relevant. This field supports URLs and process variables.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       authenticationPluginConfigurationTooltip:
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
