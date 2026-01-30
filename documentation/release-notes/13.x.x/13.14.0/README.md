@@ -24,3 +24,9 @@
 ## Bugfixes
 
 * The case detail context menu now only shows the Unassign action when the user has the assign permission.
+
+* **ZGW: Documenten API document deletion**
+
+  When deleting a case (zaak), linked documents are now only deleted from the Documenten API if they are not
+  linked to any other cases. If a document is linked to multiple cases, only the relationship between the
+  case and the document is removed.
