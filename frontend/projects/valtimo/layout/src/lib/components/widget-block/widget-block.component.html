@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-<div class="widget-block" [attr.data-carbon-theme]="theme$ | async" [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK">
-  <div #widgetBlockContent class="widget-block__content" [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_CONTENT">
-    <ng-template #widgetComponent [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_COMPONENT"></ng-template>
+<div class="widget-block" [attr.data-carbon-theme]="theme$ | async">
+  <div #widgetBlockContent class="widget-block__content">
+    <ng-template #widgetComponent></ng-template>
   </div>
 </div>
 
@@ -28,5 +28,4 @@
     blockHeightPx: blockHeightPx$ | async,
     blockWidthPercentage: blockWidthPercentage$ | async,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.WIDGET_BLOCK_CONTAINER">
-</ng-container>
+></ng-container>

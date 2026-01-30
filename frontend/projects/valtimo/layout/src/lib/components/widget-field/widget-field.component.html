@@ -23,15 +23,14 @@
     noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <section *ngIf="obs?.widgetConfiguration?.title" class="valtimo-widget-field__header" [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_HEADER">
+  <section *ngIf="obs?.widgetConfiguration?.title" class="valtimo-widget-field__header">
     <div class="valtimo-widget-field__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration.icon"
-        [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="valtimo-widget-field__title" [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_TITLE">{{ obs?.widgetConfiguration?.title }}</h4>
+      <h4 class="valtimo-widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
     </div>
 
     <ng-content></ng-content>
@@ -39,7 +38,6 @@
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
@@ -48,7 +46,6 @@
       [collapseVertically]="true"
       [description]="'widgets.noData' | translate"
       [smallPadding]="true"
-      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_NO_RESULTS"
     ></valtimo-no-results>
   } @else {
     <div
@@ -60,18 +57,16 @@
         'valtimo-widget-field__render-three-columns': renderVertically() === 3,
         'valtimo-widget-field__container': renderVertically() === 4,
       }"
-      [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_CONTAINER"
     >
       @if (obs.widgetData && obs.noVisibleFields) {
         <valtimo-no-results
           [collapseVertically]="true"
           [description]="'widgets.emptyFields' | translate"
           [smallPadding]="true"
-          [attr.data-test-id]="TEST_IDS.WIDGET_FIELD_EMPTY_FIELDS"
         ></valtimo-no-results>
       } @else {
         @for (column of obs?.widgetPropertyValue; track column.key) {
-          <div class="valtimo-widget-field__column" data-test-id="widget-field-column-{{$index}}">
+          <div class="valtimo-widget-field__column">
             @for (property of column; track property) {
               <div
                 *ngIf="
@@ -81,9 +76,8 @@
                   !property?.hideWhenEmpty
                 "
                 class="valtimo-widget-field__field"
-                data-test-id="widget-field-property-{{$parent.index}}-{{$index}}"
               >
-                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title" data-test-id="widget-field-label-{{$parent.index}}-{{$index}}">
+                <label class="valtimo-widget-field__field-label" [attr.title]="property?.title">
                   {{ property?.title }}</label
                 >
 
@@ -92,7 +86,7 @@
                     <cds-skeleton-text [lines]="1" [maxLineWidth]="100"></cds-skeleton-text>
                   } @else {
                     @if (property?.isRawValue) {
-                      <div [innerHTML]="property?.value" data-test-id="widget-field-raw-value-{{$parent.index}}-{{$index}}"></div>
+                      <div [innerHTML]="property?.value"></div>
                     } @else {
                       {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
                     }

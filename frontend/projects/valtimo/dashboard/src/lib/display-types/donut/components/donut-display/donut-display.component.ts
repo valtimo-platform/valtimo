@@ -19,7 +19,6 @@ import {DonutData, DonutDisplayTypeProperties} from '../../models';
 import {type ChartTabularData, DonutChartOptions} from '@carbon/charts-angular';
 import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, filter, map, Observable} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,8 +28,6 @@ import { TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DonutDisplayComponent implements DisplayComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public readonly displayTypeKey: string;
   @Input() public set data(value: DonutData) {
     if (!value) return;

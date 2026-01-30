@@ -18,7 +18,6 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {SmartDocumentsConfig} from '../../models';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-smart-documents-configuration',
@@ -29,8 +28,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class SmartDocumentsConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

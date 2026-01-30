@@ -17,31 +17,31 @@
 @if (items$ | async; as items) {
   <ul class="timeline mb-0 py-5">
     @for (item of items; track item.customData.id) {
-      <li class="timeline-item status-done" data-test-id="timeline-item-{{$index}}">
+      <li class="timeline-item status-done">
         <div class="timeline-date">
-          <span data-test-id="timeline-date-{{$index}}">{{ item.date }}</span>
+          <span>{{ item.date }}</span>
 
           <br />
 
-          <span data-test-id="timeline-time-{{$index}}">{{ item.time }}</span>
+          <span>{{ item.time }}</span>
         </div>
 
         <div class="timeline-content" *ngIf="actions$ | async as actions">
           <div class="timeline-header">
-            <span class="timeline-author" data-test-id="timeline-author-{{$index}}">{{ item.user }}</span>
+            <span class="timeline-author">{{ item.user }}</span>
 
             <br />
 
-            <p class="timeline-activity" data-test-id="timeline-activity-{{$index}}">{{ item.activity }}</p>
+            <p class="timeline-activity">{{ item.activity }}</p>
 
-            <p class="timeline-summary" data-test-id="timeline-summary-{{$index}}">
+            <p class="timeline-summary">
               {{ item.summaryTranslationKey | translate: item.summaryTranslationParams }}
             </p>
           </div>
 
-          <cds-overflow-menu *ngIf="item.supportedActionIds?.length > 0" data-test-id="timeline-action-menu-{{$index}}">
+          <cds-overflow-menu *ngIf="item.supportedActionIds?.length > 0">
             @for (actionId of item.supportedActionIds; track actionId) {
-              <cds-overflow-menu-option (click)="actions[actionId].callback(item, $event)" data-test-id="timeline-action-{{$index}}-{{$index2}}">
+              <cds-overflow-menu-option (click)="actions[actionId].callback(item, $event)">
                 <i
                   *ngIf="!!actions[actionId].icon"
                   class="icon mdi"

@@ -15,7 +15,6 @@
  */
 
 import {Component} from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-layout-public',
@@ -23,6 +22,4 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./layout-public.component.scss'],
   standalone: false,
 })
-export class LayoutPublicComponent {
-  readonly TEST_IDS = TEST_IDS;
-}
+export class LayoutPublicComponent {}

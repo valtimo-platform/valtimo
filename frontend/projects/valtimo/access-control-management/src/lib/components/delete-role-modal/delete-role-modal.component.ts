@@ -16,7 +16,6 @@
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Observable} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -25,8 +24,6 @@ import { TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteRoleModalComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() deleteRowKeys: Array<string>;
   @Input() showDeleteModal$: Observable<boolean>;
   @Output() deleteEvent = new EventEmitter<Array<string>>();

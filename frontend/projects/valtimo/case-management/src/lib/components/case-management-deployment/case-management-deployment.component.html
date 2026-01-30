@@ -35,7 +35,7 @@
   ></cds-notification>
 
   <div class="header-buttons">
-    <button cdsButton="secondary" (click)="goBack()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_BACK_BUTTON">
+    <button cdsButton="secondary" (click)="goBack()">
       {{ 'caseManagement.deployment.buttons.back' | translate }}
       <svg cdsIcon="return" size="16" class="cds--btn__icon"></svg>
     </button>
@@ -46,7 +46,6 @@
             *ngIf="caseDefinitionVersions.length === 1 || !obs.isGloballyActive"
             cdsButton="danger"
             (click)="openDeleteDraftModal()"
-            [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_DELETE_DRAFT_BUTTON"
           >
             {{ 'caseManagement.deployment.buttons.delete' | translate }}
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
@@ -55,15 +54,14 @@
           <button
             cdsButton="primary"
             (click)="openFinalizeDraftConfirmationModal()"
-            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.code !== 'OK'"
-            [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_FINALIZE_DRAFT_BUTTON"
+            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.finalizable"
           >
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
             <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
           </button>
         </div>
       } @else {
-        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_CREATE_DRAFT_BUTTON">
+        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
           {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
           <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
         </button>
@@ -129,7 +127,6 @@
         showClose: false,
         lowContrast: true,
       }"
-      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_RELEASE_VERSION_WARNING"
     >
     </cds-notification>
   </div>
@@ -166,7 +163,6 @@
   cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.title"
   contentTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.description"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_DELETE_DRAFT_CONFIRMATION_MODAL"
 >
 </valtimo-confirmation-modal>
 
@@ -180,14 +176,12 @@
   confirmButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.confirm"
   cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_FINALIZE_DRAFT_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <valtimo-case-management-create-draft-version
   [open]="showCreateDraftVersionConfirmationModal$ | async"
   [caseDefinitionPayload]="caseDefinitionPayload$ | async"
   (closeModal)="onCloseCreateDraftVersionModal($event)"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_DEPLOYMENT_CREATE_DRAFT_VERSION"
 ></valtimo-case-management-create-draft-version>
 
 <ng-template #loadingMessage let-translationKey="translationKey">

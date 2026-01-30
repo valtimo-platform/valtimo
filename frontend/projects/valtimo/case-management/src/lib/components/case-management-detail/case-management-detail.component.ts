@@ -24,7 +24,12 @@ import {
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
 import {DocumentDefinition} from '@valtimo/document';
-import { CaseManagementParams, CaseManagementTabConfig, ConfigService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  CaseManagementTabConfig,
+  ConfigService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {Tab} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
 import {TabEnum} from '../../models';
@@ -38,8 +43,6 @@ import {CaseDetailService, TabService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
   private _params: CaseManagementParams | undefined;

@@ -15,13 +15,12 @@
   -->
 
 @for (widgetGroup of widgetGroups$ | async; track $index) {
-  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $first}" data-test-id="widget-container-divider-{{$index}}">
+  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $first}">
     {{ widgetGroup.divider.title || '-' }}
   </div>
 
   <valtimo-widget-container
     [widgets]="widgetGroup.widgets"
     [widgetComponentMap]="widgetComponentMap"
-    data-test-id="widget-container-{{$index}}"
   ></valtimo-widget-container>
 }

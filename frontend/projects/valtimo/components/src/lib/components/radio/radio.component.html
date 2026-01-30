@@ -21,7 +21,6 @@
     'v-input--small-margin': smallMargin,
   }"
   (click)="stopRadioEventPropagation($event)"
-  [attr.data-test-id]="TEST_IDS.RADIO_GROUP_CONTAINER"
 >
   <ng-container *ngTemplateOutlet="inputTitle"></ng-container>
   <ng-container *ngTemplateOutlet="radioInput"></ng-container>
@@ -36,7 +35,6 @@
     [tooltip]="tooltip"
     [required]="required"
     [small]="smallLabel"
-    [attr.data-test-id]="TEST_IDS.RADIO_GROUP_LABEL"
   >
   </v-input-label>
 </ng-template>
@@ -47,9 +45,8 @@
     [disabled]="disabled"
     [ngModel]="radioValue$ | async"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-test-id]="TEST_IDS.RADIO_GROUP"
   >
-    <cds-radio *ngFor="let radio of radioValues; let i = index" [value]="radio.value" [disabled]="radio.disabled" data-test-id="radio-group-option-{{i}}">
+    <cds-radio *ngFor="let radio of radioValues" [value]="radio.value" [disabled]="radio.disabled">
       {{ radio.titleTranslationKey ? (radio.titleTranslationKey | translate) : radio.title }}
     </cds-radio>
   </cds-radio-group>

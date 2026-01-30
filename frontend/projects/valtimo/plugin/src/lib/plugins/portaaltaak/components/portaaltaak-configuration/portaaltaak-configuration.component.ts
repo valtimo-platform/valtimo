@@ -23,7 +23,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {SelectItem} from '@valtimo/components';
 import {ProcessService} from '@valtimo/process';
 import {ObjectService} from '../../services';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -34,8 +33,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class PortaaltaakConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

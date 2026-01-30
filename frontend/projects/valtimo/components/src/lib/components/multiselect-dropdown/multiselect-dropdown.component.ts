@@ -15,7 +15,6 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-multiselect-dropdown',
@@ -24,8 +23,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class MultiselectDropdownComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() selectedItems: Array<string>;
   @Input() items = [];
   @Input() placeHolder: string;

@@ -21,7 +21,6 @@ import {
   DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
 } from '../../modules';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './case-management-zgw-general.component.html',
@@ -36,6 +35,4 @@ import { TEST_IDS } from '@valtimo/shared';
     DocumentenApiVersionComponent,
   ],
 })
-export class CaseManagementZgwGeneralComponent {
-  readonly TEST_IDS = TEST_IDS;
-}
+export class CaseManagementZgwGeneralComponent {}
