@@ -3,6 +3,6 @@ Closing or merging this PR will automatically delete the test environment. Pushi
 Progress:
 
 - [x] Created test environment
-- [ ] Waiting for frontend and backend images with tag `"testEnv.${TEST_ENV_NAME}\_commit.\<commit sha\>\_contents.\<contents sha\>\_build.\<build number\>"`. Check the GitHub Actions logs for progress on the build / image tagging.
+- [ ] Waiting for frontend and backend images with tag `"testEnv.${TEST_ENV_NAME}_commit.<commit sha>_contents.<contents sha>_build.<build number>"`. Check the GitHub Actions logs for progress on the build / image tagging.
 - [ ] Starting test environment
 - [ ] Waiting for environment to run

@@ -117,7 +117,7 @@ jobs:
           tags: |
             type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
             type=raw,value=commit-${{ github.sha }}
-            type=raw,value=contents-${{ steps.frontend_tree.outputs.tree }}
+            type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false
 
