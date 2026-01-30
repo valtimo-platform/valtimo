@@ -28,12 +28,11 @@
         showClose: false,
         lowContrast: true
       }"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_IDENTIFIER_FIELDS_INFORMATION"
     >
     </cds-inline-notification>
   </div>
 
-  <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_FORM">
+  <v-form (valueChange)="formValueChange($event)">
     <v-input
       name="roltypeUrl"
       [title]="'roltypeUrl' | pluginTranslate: pluginId | async"
@@ -44,7 +43,6 @@
       [trim]="true"
       [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ROLTYPE_URL_INPUT"
     >
     </v-input>
 
@@ -57,7 +55,6 @@
       [required]="true"
       [margin]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ROL_TOELICHTING_INPUT"
     >
     </v-input>
 
@@ -71,7 +68,6 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_INN_NNP_ID_INPUT"
     >
     </v-input>
 
@@ -85,7 +81,6 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_ANN_IDENTIFICATIE_INPUT"
     >
     </v-input>
 
@@ -99,7 +94,6 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_KVK_NUMMER_INPUT"
     >
     </v-input>
 
@@ -113,7 +107,6 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_VESTIGINGS_NUMMER_INPUT"
     >
     </v-input>
 
@@ -127,7 +120,6 @@
       [margin]="true"
       [trim]="true"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.CREATE_ZAAKROL_NIET_NATUURLIJK_PERSOON_RESULT_PROCESS_VARIABLE_INPUT"
     >
     </v-input>
   </v-form>

@@ -23,7 +23,6 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.BESLUITTYPE_FORM"
 >
   <v-input
     name="besluittype"
@@ -35,7 +34,6 @@
     [trim]="true"
     [tooltip]="'besluittypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.BESLUITTYPE_INPUT"
   >
   </v-input>
   <v-input
@@ -48,7 +46,6 @@
     [trim]="true"
     [tooltip]="'besluitProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
-    [attr.data-test-id]="TEST_IDS.PROCESS_VARIABLE_INPUT"
   >
   </v-input>
 </v-form>

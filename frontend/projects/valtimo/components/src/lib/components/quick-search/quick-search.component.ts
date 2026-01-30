@@ -33,7 +33,6 @@ import {QuickSearchItem} from '../../models';
 import {QuickSearchStateService} from '../../services';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 import {QuickSearchModalComponent} from './modal/quick-search-modal.component';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-quick-search',
@@ -54,8 +53,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class QuickSearchComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly $modalOpen = this.quickSearchStateService.$modalOpen;
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly $itemToDelete = signal<QuickSearchItem | null>(null);

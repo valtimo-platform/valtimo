@@ -22,11 +22,10 @@
     modalType: modalType$ | async,
     prefillObject: prefillObject$ | async,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_MODAL"
 >
   <div role="header">
     <div class="add-title">
-      <h4 [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_TITLE">
+      <h4>
         {{
           (obs.modalType === 'add'
             ? 'objectManagement.createObjecttype'
@@ -46,11 +45,11 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_CANCEL_BUTTON">
+      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
         {{ 'objectManagement.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_SAVE_BUTTON">
+      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid">
         {{
           (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
         }}
@@ -61,14 +60,13 @@
 
 <ng-template #form let-prefillObject="prefillObject" let-modalType="modalType">
   <ng-container *ngIf="showForm$ | async">
-    <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_FORM">
+    <v-form (valueChange)="formValueChange($event)">
       <v-input
         *ngIf="modalType === 'edit'"
         hidden
         [disabled]="true"
         [defaultValue]="prefillObject?.id"
         name="id"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_ID_INPUT"
       ></v-input>
 
       <v-input
@@ -79,7 +77,6 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.title"
         name="title"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_TITLE_INPUT"
       ></v-input>
 
       <ng-container
@@ -97,7 +94,6 @@
           [title]="'objectManagement.labels.objects' | translate"
           [defaultSelectionId]="prefillObject?.objectenApiPluginConfigurationId"
           [required]="true"
-          [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_OBJECTS_SELECT"
         ></v-select>
 
         <v-select
@@ -109,7 +105,6 @@
           [defaultSelectionId]="prefillObject?.objecttypenApiPluginConfigurationId"
           [required]="true"
           (selectedChange)="selectObjectType($event)"
-          [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_OBJECTTYPES_SELECT"
         ></v-select>
       </ng-container>
 
@@ -121,7 +116,6 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.objecttypeId"
         name="objecttypeId"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_OBJECTTYPE_ID_INPUT"
       ></v-input>
 
       <v-input
@@ -134,7 +128,6 @@
         [min]="1"
         type="number"
         name="objecttypeVersion"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_OBJECTTYPE_VERSION_INPUT"
       ></v-input>
 
       <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">
@@ -146,7 +139,6 @@
           [title]="'objectManagement.labels.formDefinitionView' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionView' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionView"
-          [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_FORM_DEFINITION_VIEW_SELECT"
         ></v-select>
 
         <v-select
@@ -157,7 +149,6 @@
           [title]="'objectManagement.labels.formDefinitionEdit' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionEdit' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionEdit"
-          [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_FORM_DEFINITION_EDIT_SELECT"
         ></v-select>
       </ng-container>
 
@@ -168,7 +159,6 @@
         [tooltip]="'objectManagement.tooltips.showInDataMenu' | translate"
         name="showInDataMenu"
         [defaultValue]="prefillObject?.showInDataMenu"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MANAGEMENT_SHOW_IN_DATA_MENU_CHECKBOX"
       ></v-input>
     </v-form>
   </ng-container>

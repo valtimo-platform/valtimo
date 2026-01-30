@@ -20,11 +20,10 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.SMARTDOCUMENTS_FORM"
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.SMARTDOCUMENTSCONFIGURATIONTITLE"
+    data-test-id="smartDocumentsConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    [attr.data-test-id]="TEST_IDS.SMARTDOCUMENTSURL"
+    data-test-id="smartDocumentsUrl"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +48,7 @@
   </v-input>
   <v-input
     name="username"
-    [attr.data-test-id]="TEST_IDS.SMARTDOCUMENTSUSERNAME"
+    data-test-id="smartDocumentsUsername"
     [title]="'username' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -61,7 +60,7 @@
   </v-input>
   <v-input
     name="password"
-    [attr.data-test-id]="TEST_IDS.SMARTDOCUMENTSPASSWORD"
+    data-test-id="smartDocumentsPassword"
     type="password"
     [title]="'password' | pluginTranslate: pluginId | async"
     [margin]="true"

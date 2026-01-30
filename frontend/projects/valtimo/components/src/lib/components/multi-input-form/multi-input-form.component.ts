@@ -30,7 +30,6 @@ import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {IconService} from 'carbon-components-angular';
 import {Add16, ChevronDown16, ChevronUp16, Close16} from '@carbon/icons';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-multi-input-form',
@@ -39,8 +38,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class MultiInputFormComponent implements OnInit, OnChanges, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() name = '';
   @Input() title = '';
   @Input() titleTranslationKey = '';
