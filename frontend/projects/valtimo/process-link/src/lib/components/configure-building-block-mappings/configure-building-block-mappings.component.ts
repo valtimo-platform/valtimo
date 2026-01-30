@@ -184,11 +184,13 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public readonly sourceIsCase$ = new BehaviorSubject<boolean>(true);
+  public readonly sourceIsIndependent$ = new BehaviorSubject<boolean>(false);
 
   /**
    * Returns the name of the source/target context in mappings.
    * When in a building block context, shows the parent building block name.
    * When in a case context, shows the case name.
+   * When in an independent process context, shows the process label.
    */
   public readonly sourceContextName$: Observable<string> = combineLatest([
     this.params$,
@@ -197,6 +199,7 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     switchMap(([caseParams, bbParams]) => {
       if (bbParams?.buildingBlockDefinitionKey && bbParams?.buildingBlockDefinitionVersionTag) {
         this.sourceIsCase$.next(false);
+        this.sourceIsIndependent$.next(false);
         // We're in a building block context - fetch the parent building block name
         return this.buildingBlockApiService
           .getBuildingBlockDefinition(
@@ -206,12 +209,16 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
           .pipe(map(def => def?.name ?? bbParams.buildingBlockDefinitionKey));
       } else if (caseParams?.caseDefinitionKey && caseParams?.caseDefinitionVersionTag) {
         this.sourceIsCase$.next(true);
+        this.sourceIsIndependent$.next(false);
         // We're in a case context - fetch the case name
         return this.buildingBlockApiService
           .getCaseDefinition(caseParams.caseDefinitionKey, caseParams.caseDefinitionVersionTag)
           .pipe(map(def => def?.name ?? caseParams.caseDefinitionKey));
       }
-      return of(this.translateService.instant('processLinkConfiguration.buildingBlock.case'));
+      // We're in an independent process context
+      this.sourceIsCase$.next(false);
+      this.sourceIsIndependent$.next(true);
+      return of(this.translateService.instant('processLinkConfiguration.buildingBlock.process'));
     })
   );
 
