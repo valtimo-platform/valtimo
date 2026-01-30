@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.OBJECTTYPENAPICONFIGURATIONTITLE"
+    data-test-id="objecttypenApiConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    [attr.data-test-id]="TEST_IDS.OBJECTTYPENAPIURL"
+    data-test-id="objecttypenApiUrl"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -54,7 +54,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      [attr.data-test-id]="TEST_IDS.OBJECTTYPENAPIAUTHENTICATIONPLUGINCONFIGURATION"
+      data-test-id="objecttypenApiAuthenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

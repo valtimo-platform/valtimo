@@ -31,7 +31,6 @@ import {
 import {take} from 'rxjs/operators';
 import {FormioForm} from '@formio/angular';
 import {CommonModule} from '@angular/common';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-object-type',
@@ -41,8 +40,6 @@ import { TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, TableModule, ParagraphModule, VModalModule, FormIoModule],
 })
 export class CaseDetailTabObjectTypeComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('viewObjectModal') viewObjectModal: VModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));

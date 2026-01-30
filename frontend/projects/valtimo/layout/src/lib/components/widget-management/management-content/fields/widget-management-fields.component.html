@@ -31,14 +31,12 @@
       cdsText
       [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
       type="text"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_TITLE_INPUT"
     />
   </cds-text-label>
 
   <valtimo-mdi-icon-selector
     [cdsLayer]="1"
     formControlName="widgetIcon"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ICON_SELECTOR"
   ></valtimo-mdi-icon-selector>
 </form>
 
@@ -51,7 +49,6 @@
       [heading]="columnHeading"
       [context]="{index: $index, count: $count}"
       (selected)="onTabSelected($index)"
-      data-test-id="valtimo-widget-management-fields-tab-{{$index}}"
     >
       <valtimo-widget-management-fields-column
         *ngIf="activeTab() === $index"
@@ -59,7 +56,6 @@
         [columnData]="$selectedWidgetContent()?.[$index]"
         [showHideWhenEmptyCheckbox]="true"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
-        data-test-id="valtimo-widget-management-fields-column-{{$index}}"
       ></valtimo-widget-management-fields-column>
     </cds-tab>
   }
@@ -69,7 +65,6 @@
     [heading]="addColumn"
     [id]="'addColumn'"
     class="valtimo-widget-management-fields__add"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ADD_COLUMN_TAB"
   ></cds-tab>
 </cds-tabs>
 
@@ -78,7 +73,6 @@
     cdsButton="ghost"
     [iconOnly]="true"
     (click)="$event.stopImmediatePropagation(); onAddColumnClick()"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_FIELDS_ADD_COLUMN_BUTTON"
   >
     <svg cdsIcon="add" size="16"></svg>
   </button>
@@ -94,7 +88,6 @@
       [iconOnly]="true"
       size="sm"
       (click)="onDeleteColumnClick(data.index)"
-      data-test-id="valtimo-widget-management-fields-delete-column-button-{{data.index}}"
     >
       <svg cdsIcon="close" size="16"></svg>
     </button>

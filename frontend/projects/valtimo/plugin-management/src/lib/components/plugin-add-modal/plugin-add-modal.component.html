@@ -20,35 +20,32 @@
   [disabled]="inputDisabled$ | async"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()" [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_MODAL">
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()" [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_MODAL_HEADER">
-      <v-stepper-header [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_MODAL_HEADER_TITLE"></v-stepper-header>
+  <cds-modal valtimoCdsModal #pluginAddModal [open]="open" (close)="hide()">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
+      <v-stepper-header></v-stepper-header>
     </cds-modal-header>
     <section cdsModalContent>
       <v-stepper-content>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0" [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_STEP_0">
-          <valtimo-plugin-add-select [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_SELECT"></valtimo-plugin-add-select>
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
+          <valtimo-plugin-add-select></valtimo-plugin-add-select>
         </v-stepper-step>
-        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1" [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_STEP_1">
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
           <valtimo-plugin-configure
             (valid)="onValid($event)"
             (configuration)="onConfiguration($event)"
-            [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_CONFIGURE"
           ></valtimo-plugin-configure>
         </v-stepper-step>
       </v-stepper-content>
     </section>
-    <cds-modal-footer [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_MODAL_FOOTER">
+    <cds-modal-footer>
       <v-stepper-footer class="stepper-footer">
         <v-stepper-footer-step
           nextButtonTranslationKey="pluginManagement.addSteps.step1"
           [nextButtonEnabled]="selectedPluginDefinition$ | async"
-          [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_FOOTER_STEP_0"
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginManagement.addSteps.complete"
           [completeButtonEnabled]="configurationValid$ | async"
-          [attr.data-test-id]="TEST_IDS.PLUGIN_ADD_FOOTER_STEP_1"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </cds-modal-footer>

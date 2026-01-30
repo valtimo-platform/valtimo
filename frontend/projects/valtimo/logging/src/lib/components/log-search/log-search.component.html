@@ -28,7 +28,6 @@
         [attr.data-carbon-theme]="theme"
         formControlName="likeFormattedMessage"
         [placeholder]="'logging.columns.formattedMessage' | translate"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_MESSAGE_INPUT"
       />
     </cds-text-label>
 
@@ -39,7 +38,6 @@
       [appendInline]="true"
       [label]="'logging.columns.level' | translate"
       [placeholder]="'logging.columns.level' | translate"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_LEVEL_DROPDOWN"
     >
       <cds-dropdown-list [items]="logLevelItems"></cds-dropdown-list>
     </cds-dropdown>
@@ -53,10 +51,9 @@
           placeholder="DD-MM-YYYY"
           [dateFormat]="'d-m-Y'"
           (valueChange)="onDateSelected('afterTimestamp', $event)"
-          [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_AFTER_DATE_PICKER"
         ></cds-date-picker>
 
-        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="afterTime" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_AFTER_TIME_PICKER">
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="afterTime">
         </cds-timepicker>
       </div>
 
@@ -68,10 +65,9 @@
           placeholder="DD-MM-YYYY"
           [dateFormat]="'d-m-Y'"
           (valueChange)="onDateSelected('beforeTimestamp', $event)"
-          [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_BEFORE_DATE_PICKER"
         ></cds-date-picker>
 
-        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="beforeTime" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_BEFORE_TIME_PICKER">
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="beforeTime">
         </cds-timepicker>
       </div>
     </div>
@@ -88,7 +84,6 @@
             [attr.data-carbon-theme]="theme"
             formControlName="key"
             [placeholder]="'interface.key' | translate"
-            data-test-id="valtimo-log-search-property-key-input-{{$index}}"
           />
         </cds-text-label>
 
@@ -98,7 +93,6 @@
             [attr.data-carbon-theme]="theme"
             formControlName="value"
             [placeholder]="'interface.value' | translate"
-            data-test-id="valtimo-log-search-property-value-input-{{$index}}"
           />
         </cds-text-label>
 
@@ -108,21 +102,20 @@
           iconOnly="true"
           type="button"
           (click)="removePropertySearchField($index)"
-          data-test-id="valtimo-log-search-remove-property-button-{{$index}}"
         >
           <svg cdsIcon="trash-can" size="16"></svg>
         </button>
       </form>
     }
 
-    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_ADD_PROPERTY_BUTTON">
+    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()">
       {{ 'logging.search.addProperty' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
   </section>
 
-  <button cdsButton="tertiary" type="button" (click)="onClearFilter()" [attr.data-test-id]="TEST_IDS.VALTIMO_LOG_SEARCH_CLEAR_BUTTON">
+  <button cdsButton="tertiary" type="button" (click)="onClearFilter()">
     {{ 'interface.clear' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

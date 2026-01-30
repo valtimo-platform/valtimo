@@ -31,7 +31,6 @@
     [dragAndDrop]="true"
     [dragAndDropDisabled]="dragAndDropDisabled() || !(hasEditPermissions$ | async)"
     (itemsReordered)="onItemsReorderedEvent($event)"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_LIST"
   >
     <ng-container carbonToolbarContent>
       <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
@@ -41,7 +40,6 @@
       [action]="addTabButton"
       [description]="'case.tabs.noResultsDescription' | translate"
       [title]="'case.tabs.noResults' | translate"
-      [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
@@ -62,7 +60,7 @@
   </ng-template>
 
   <ng-template #addTabButton>
-    <button cdsButton="primary" *ngIf="obs.hasEditPermissions" (click)="openAddTabModal()" [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ADD_TAB_BUTTON">
+    <button cdsButton="primary" *ngIf="obs.hasEditPermissions" (click)="openAddTabModal()">
       {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -74,7 +72,6 @@
     [params]="obs.routeParams"
     [open]="openAddModal$ | async"
     (closeModalEvent)="onCloseAddModalEvent($event)"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_ADD_TAB_MODAL"
   ></valtimo-case-management-add-tab-modal>
 
   <valtimo-case-management-edit-tab-modal
@@ -82,7 +79,6 @@
     [tab]="tab$ | async"
     (closeModalEvent)="onCloseEditModalEvent($event)"
     [open]="openEditModal$ | async"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_EDIT_TAB_MODAL"
   ></valtimo-case-management-edit-tab-modal>
 
   <valtimo-confirmation-modal
@@ -93,6 +89,5 @@
     [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="caseManagement.tabManagement.deleteModal.title"
     (confirmEvent)="onConfirmEvent($event)"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_CONFIRMATION_MODAL"
   ></valtimo-confirmation-modal>
 </ng-container>

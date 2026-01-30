@@ -42,7 +42,7 @@ import {
   UploadProviderService,
 } from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
-import { ConfigService, Direction, TEST_IDS } from '@valtimo/shared';
+import {ConfigService, Direction} from '@valtimo/shared';
 import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -89,8 +89,6 @@ import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-mo
   ],
 })
 export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 

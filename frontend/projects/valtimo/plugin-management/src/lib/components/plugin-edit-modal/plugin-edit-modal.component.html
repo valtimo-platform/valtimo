@@ -20,31 +20,28 @@
   [open]="open"
   (close)="hide()"
   *ngIf="{selectedConfiguration: selectedPluginConfiguration$ | async} as obs"
-  [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()" [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_HEADER">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
     {{
       obs.selectedConfiguration?.title +
         ' - ' +
         ('title' | pluginTranslate: obs.selectedConfiguration?.pluginDefinition?.key | async)
     }}
   </cds-modal-header>
-  <section cdsModalContent [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_CONTENT">
+  <section cdsModalContent>
     <valtimo-plugin-edit
       (valid)="onPluginValid($event)"
       (configuration)="onPluginConfiguration($event)"
-      [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_PLUGIN_EDIT"
     ></valtimo-plugin-edit>
   </section>
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_FOOTER">
-    <button cdsButton="danger" (click)="delete()" [disabled]="inputDisabled$ | async" [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_DELETE_BUTTON">
+  <cds-modal-footer>
+    <button cdsButton="danger" (click)="delete()" [disabled]="inputDisabled$ | async">
       {{ 'pluginManagement.remove' | translate }}
     </button>
     <button
       cdsButton="primary"
       [disabled]="(configurationValid$ | async) === false || (inputDisabled$ | async)"
       (click)="save()"
-      [attr.data-test-id]="TEST_IDS.PLUGIN_EDIT_MODAL_SAVE_BUTTON"
     >
       {{ 'pluginManagement.save' | translate }}
     </button>

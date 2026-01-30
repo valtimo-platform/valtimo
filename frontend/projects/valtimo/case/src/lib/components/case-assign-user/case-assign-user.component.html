@@ -43,7 +43,6 @@
     [style]="'underlinedText'"
     [width]="250"
     class="case-candidates-dropdown"
-    [attr.data-test-id]="TEST_IDS.ASSIGN_DOCUMENT_DROPDOWN"
   >
   </valtimo-searchable-dropdown-select>
 </ng-template>
@@ -67,7 +66,6 @@
       (clearSelection)="unassignDocument()"
       (itemSelected)="assignDocument($event)"
       class="case-candidates-dropdown"
-      [attr.data-test-id]="TEST_IDS.ASSIGN_DOCUMENT_DROPDOWN"
     >
     </valtimo-searchable-dropdown-select>
   </ng-container>
@@ -75,6 +73,6 @@
 
 <ng-template #loadingUsers>
   <h5>
-    <b [attr.data-test-id]="TEST_IDS.ASSIGN_DOCUMENT_LOADING_TEXT">{{ 'assignDocument.fetchingUsers' | translate }}</b>
+    <b>{{ 'assignDocument.fetchingUsers' | translate }}</b>
   </h5>
 </ng-template>

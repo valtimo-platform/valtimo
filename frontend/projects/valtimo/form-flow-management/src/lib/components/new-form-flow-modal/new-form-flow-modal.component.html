@@ -20,17 +20,16 @@
   [title]="'formFlow.add' | translate"
   valtimoCdsModal
   (close)="onCancel()"
-  [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_TITLE">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
       {{ 'formFlow.add' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CONTENT">
+  <section cdsModalContent>
     <form [formGroup]="form">
-      <cds-label [invalid]="key.dirty && key.invalid" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_KEY_LABEL">
+      <cds-label [invalid]="key.dirty && key.invalid">
         {{ 'formFlow.key' | translate }}
 
         <input
@@ -39,18 +38,17 @@
           placeholder="{{ 'formFlow.key' | translate }}"
           [attr.modal-primary-focus]="true"
           [invalid]="key.dirty && key.invalid"
-          [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_KEY_INPUT"
         />
       </cds-label>
     </form>
   </section>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_FOOTER">
-    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CANCEL_BUTTON">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CREATE_BUTTON">
+    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary">
       {{ 'interface.create' | translate }}
     </button>
   </cds-modal-footer>

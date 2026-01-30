@@ -34,9 +34,9 @@
   } as obs"
 >
   <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
-    <cds-modal-header (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_MODAL_HEADER">
-      <h2 cdsModalHeaderLabel [attr.data-test-id]="TEST_IDS.PROCESS_LINK_MODAL_TITLE">{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
-      <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.PROCESS_LINK_MODAL_SUBTITLE">
+    <cds-modal-header (closeSelect)="closeModal()">
+      <h2 cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
+      <h3 cdsModalHeaderHeading>
         {{
           'processLinkConfiguration.modalTitle'
             | translate: {processStepName: obs.processStepName || '-'}
@@ -69,10 +69,10 @@
   <div [ngClass]="{hidden: obs.saving}">
     <ng-container>
       <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
-        <valtimo-choose-process-link-type [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CHOOSE_PROCESS_LINK_TYPE"></valtimo-choose-process-link-type>
+        <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
       </ng-container>
       <ng-container *ngIf="obs.currentStepId === 'selectForm'">
-        <valtimo-select-form attr.data-test-id]="TEST_IDS.PROCESS_LINK_SELECT_FORM">></valtimo-select-form>
+        <valtimo-select-form></valtimo-select-form>
         <br />
         <cds-toggle
           *ngIf="showViewModelToggle"
@@ -81,11 +81,10 @@
           [offText]="'processLinkConfiguration.toggleViewModel.checkboxDescription' | translate"
           [checked]="viewModelEnabled$ | async"
           (checkedChange)="toggleCheckedChange($event)"
-          [attr.data-test-id]="TEST_IDS.PROCESS_LINK_TOGGLE_VIEW_MODEL"
         ></cds-toggle>
       </ng-container>
       <ng-container *ngIf="obs.currentStepId === 'selectFormFlow'">
-        <valtimo-select-form-flow [attr.data-test-id]="TEST_IDS.PROCESS_LINK_SELECT_FORM_FLOW"></valtimo-select-form-flow>
+        <valtimo-select-form-flow></valtimo-select-form-flow>
       </ng-container>
 
       <ng-container
@@ -94,7 +93,7 @@
           obs.currentStepId === 'choosePluginDefinition'
         "
       >
-        <valtimo-select-plugin-configuration [attr.data-test-id]="TEST_IDS.PROCESS_LINK_SELECT_PLUGIN_CONFIGURATION"></valtimo-select-plugin-configuration>
+        <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
 
       <ng-container *ngIf="obs.currentStepId === 'selectBuildingBlock'">
@@ -102,13 +101,12 @@
       </ng-container>
 
       <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
-        <valtimo-select-plugin-action [attr.data-test-id]="TEST_IDS.PROCESS_LINK_SELECT_PLUGIN_ACTION"></valtimo-select-plugin-action>
+        <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
 
       <ng-container *ngIf="obs.currentStepId === 'configurePluginAction'">
         <valtimo-plugin-action-configuration
           [selectedPluginConfiguration$]="selectedPluginConfiguration$"
-          [attr.data-test-id]="TEST_IDS.PROCESS_LINK_PLUGIN_ACTION_CONFIGURATION"
         ></valtimo-plugin-action-configuration>
       </ng-container>
 
@@ -122,7 +120,7 @@
     </ng-container>
 
     <ng-container *ngIf="obs.currentStepId === 'uiComponent'">
-      <valtimo-select-ui-component [attr.data-test-id]="TEST_IDS.PROCESS_LINK_SELECT_UI_COMPONENT"></valtimo-select-ui-component>
+      <valtimo-select-ui-component></valtimo-select-ui-component>
     </ng-container>
   </div>
 </ng-template>
@@ -130,7 +128,7 @@
 <ng-template #footer let-obs="obs">
   <cds-modal-footer *ngIf="!obs.saving">
     <div class="cancel-button">
-      <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CANCEL_BUTTON">
+      <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
         {{ 'processLinkConfiguration.cancel' | translate }}
       </button>
     </div>
@@ -140,7 +138,6 @@
         cdsButton="danger--primary"
         *ngIf="obs.isEditing"
         (click)="unlinkButtonClick()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_UNLINK_BUTTON"
       >
         {{ 'processLinkConfiguration.unlink' | translate }}
       </button>
@@ -148,7 +145,6 @@
         *ngIf="obs.showBackButton && !obs.saving"
         cdsButton="secondary"
         (click)="backButtonClick()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_BACK_BUTTON"
       >
         {{ 'processLinkConfiguration.back' | translate }}
       </button>
@@ -157,7 +153,6 @@
         *ngIf="obs.showNextButton && !obs.saving"
         [disabled]="!obs.enableNextButton"
         (click)="nextButtonClick()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_NEXT_BUTTON"
       >
         {{ 'processLinkConfiguration.next' | translate }}
       </button>
@@ -166,7 +161,6 @@
         *ngIf="obs.showSaveButton && !obs.saving"
         [disabled]="!obs.enableSaveButton"
         (click)="saveButtonClick()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_SAVE_BUTTON"
       >
         {{ 'processLinkConfiguration.complete' | translate }}
       </button>

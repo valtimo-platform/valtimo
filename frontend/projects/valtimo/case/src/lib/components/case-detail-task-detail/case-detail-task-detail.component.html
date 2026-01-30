@@ -31,7 +31,7 @@
       (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
     ></valtimo-task-detail-intermediate-save>
 
-    <button cdsButton="ghost" [iconOnly]="true" (click)="onClose()" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_CLOSE_BUTTON">
+    <button cdsButton="ghost" [iconOnly]="true" (click)="onClose()">
       <svg cdsIcon="close" size="16"></svg>
     </button>
   </section>
@@ -41,11 +41,11 @@
     [class.valtimo-case-detail-task-detail__body--compact]="compactMode$ | async"
   >
     <div class="title-container">
-      <p class="valtimo-case-detail-task-detail__title" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_TITLE">{{ pageValue()?.title }}</p>
+      <p class="valtimo-case-detail-task-detail__title">{{ pageValue()?.title }}</p>
 
-      <p class="cds--modal-header__label cds--type-delta" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_SUBTITLE">{{ pageValue()?.subtitle }}</p>
+      <p class="cds--modal-header__label cds--type-delta">{{ pageValue()?.subtitle }}</p>
 
-      <p *ngIf="obs.intermediateSaveValue" class="cds--modal-header__label" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_INTERMEDIATE_SAVE_INFO">
+      <p *ngIf="obs.intermediateSaveValue" class="cds--modal-header__label">
         {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
 
         {{
@@ -69,12 +69,10 @@
             [canAssignUserToTask]="obs.canAssignUserToTask"
             [taskId]="obs.task.id"
             [assigneeId]="obs.task.assignee"
-            [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_ASSIGN_USER_TO_TASK"
           ></valtimo-assign-user-to-task>
 
           <valtimo-set-task-due-date
             [canModifyTask]="obs.canModifyTask"
-            [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_SET_TASK_DUE_DATE"
           ></valtimo-set-task-due-date>
         }
       </div>
@@ -84,7 +82,6 @@
       [taskAndProcessLink]="obs.taskAndProcessLink"
       (activeChange)="onActiveChangeEvent($event)"
       (formSubmit)="onFormSubmitEvent()"
-      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL_CONTENT"
     ></valtimo-task-detail-content>
   </section>
 </div>

@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.CATALOGIAPICONFIGURATIONTITLE"
+    data-test-id="catalogiApiConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +37,7 @@
 
   <v-input
     name="url"
-    [attr.data-test-id]="TEST_IDS.CATALOGIAPIURL"
+    data-test-id="catalogiApiUrl"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -55,7 +55,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      [attr.data-test-id]="TEST_IDS.CATALOGAPIAUTHENTICATIONPLUGINCONFIGURATION"
+      data-test-id="catalogApiAuthenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

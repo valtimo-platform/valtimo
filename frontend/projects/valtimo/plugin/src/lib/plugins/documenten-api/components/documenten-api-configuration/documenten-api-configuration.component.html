@@ -20,11 +20,10 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.DOCUMENTENAPICONFIGURATIONFORM"
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTENAPICONFIGURATIONTITLE"
+    data-test-id="documentenApiConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTENAPIURL"
+    data-test-id="documentenApiUrl"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -50,7 +49,7 @@
   </v-input>
   <v-input
     name="bronorganisatie"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTENAPIBRONORGANISATIE"
+    data-test-id="documentenApiBronorganisatie"
     type="digitOnly"
     [title]="'bronorganisatie' | pluginTranslate: pluginId | async"
     [margin]="true"
@@ -70,7 +69,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      [attr.data-test-id]="TEST_IDS.DOCUMENTENAPIAUTHENTICATIONPLUGINCONFIGURATION"
+      data-test-id="documentenApiAuthenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
@@ -84,7 +83,7 @@
       [items]="pObs.apiVersionItems"
       [margin]="true"
       name="apiVersion"
-      [attr.data-test-id]="TEST_IDS.DOCUMENTENAPIAPIVERSION"
+      data-test-id="documentenApiApiVersion"
       [title]="'apiVersion' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.apiVersion"

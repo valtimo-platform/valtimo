@@ -24,7 +24,6 @@ import {
 } from '../../services';
 import {of, switchMap, tap} from 'rxjs';
 import {ModalService} from '@valtimo/components';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -34,8 +33,6 @@ import { TEST_IDS } from '@valtimo/shared';
   providers: [ProcessLinkStateService, ProcessLinkStepService, ProcessLinkButtonService],
 })
 export class ProcessLinkComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   constructor(
     private readonly processLinkService: ProcessLinkService,
     private readonly stateService: ProcessLinkStateService,

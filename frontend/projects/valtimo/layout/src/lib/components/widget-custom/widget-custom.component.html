@@ -20,37 +20,33 @@
     widgetData: widgetData$ | async,
   } as obs"
   class="custom-widget"
-  [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTAINER"
 >
-  <section class="custom-widget__header" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_HEADER">
-    <div class="custom-widget__title-container" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TITLE_CONTAINER">
+  <section class="custom-widget__header">
+    <div class="custom-widget__title-container">
       <valtimo-mdi-icon-viewer
         *ngIf="obs.widgetConfiguration?.icon"
         [mdiIcon]="obs.widgetConfiguration?.icon"
-        [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_ICON"
       ></valtimo-mdi-icon-viewer>
 
-      <h4 class="custom-widget__title" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TITLE">{{ obs.widgetConfiguration?.title || '-' }}</h4>
+      <h4 class="custom-widget__title">{{ obs.widgetConfiguration?.title || '-' }}</h4>
     </div>
 
-    <ng-content [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTENT_SLOT"></ng-content>
+    <ng-content></ng-content>
 
     <valtimo-widget-action-button
       [widgetConfiguration]="obs.widgetConfiguration"
       [resolvedData]="obs.widgetData"
-      [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_ACTION_BUTTON"
     ></valtimo-widget-action-button>
   </section>
 
-  <div class="custom-widget__content" [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_CONTENT">
-    <ng-template #customWidgetContainer [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_TEMPLATE"></ng-template>
+  <div class="custom-widget__content">
+    <ng-template #customWidgetContainer></ng-template>
 
     @if (noCustomComponentAvailable()) {
       <valtimo-no-results
         [collapseVertically]="true"
         [description]="'widgets.noCustomComponentDescription' | translate"
         [smallPadding]="true"
-        [attr.data-test-id]="TEST_IDS.CUSTOM_WIDGET_NO_RESULTS"
       ></valtimo-no-results>
     }
   </div>

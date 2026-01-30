@@ -21,7 +21,6 @@
     cdsIcon="save"
     [vTooltip]="'formManagement.intermediateSave.save' | translate"
     (click)="saveCurrentProgress()"
-    [attr.data-test-id]="TEST_IDS.INTERMEDIATE_SAVE_SAVE_BUTTON"
   ></button>
 
   <button
@@ -31,7 +30,6 @@
     [disabled]="!currentIntermediateSave"
     [vTooltip]="'formManagement.intermediateSave.clear' | translate"
     (click)="revertSaveClick()"
-    [attr.data-test-id]="TEST_IDS.INTERMEDIATE_SAVE_REVERT_BUTTON"
   ></button>
 }
 
@@ -43,5 +41,4 @@
   confirmButtonTextTranslationKey="interface.confirm"
   titleTranslationKey="formManagement.intermediateSave.clear"
   contentTranslationKey="formManagement.intermediateSave.clearConfirm"
-  [attr.data-test-id]="TEST_IDS.INTERMEDIATE_SAVE_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>

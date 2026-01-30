@@ -24,7 +24,6 @@
       class="btn btn-primary btn-sm searchable-dropdown__size"
       (click)="openDropdown()"
       [style.width.px]="width"
-      [attr.data-test-id]="TEST_IDS.SEARCHABLE_DROPDOWN_BUTTON"
     >
       {{ buttonText }}
     </button>
@@ -34,7 +33,6 @@
       class="searchable-dropdown__underline-button"
       (click)="openDropdown()"
       [style.width.px]="width"
-      [attr.data-test-id]="TEST_IDS.SEARCHABLE_DROPDOWN_UNDERLINED_TEXT"
     >
       <b>
         {{ buttonText }}
@@ -51,7 +49,6 @@
         [ngClass]="{disabled: disabled}"
         [placeholder]="searchText"
         [formControl]="searchTerm"
-        [attr.data-test-id]="TEST_IDS.SEARCHABLE_DROPDOWN_SEARCH_INPUT"
       />
       {{ search.focus() }}
     </div>
@@ -76,7 +73,6 @@
             (mouseenter)="hoverOverButton(item.id)"
             (mouseleave)="resetFocus()"
             [style.width.px]="width"
-            data-test-id="searchable-dropdown-item-button-{{item.id}}"
           >
             <span class="searchable-dropdown__button-text">
               {{ item.text }}
@@ -93,7 +89,6 @@
   <div
     class="searchable-dropdown__button searchable-dropdown__size disabled"
     [style.width.px]="width"
-    [attr.data-test-id]="TEST_IDS.SEARCHABLE_DROPDOWN_NO_RESULTS"
   >
     <span class="searchable-dropdown__button-text">{{ noResultsText }}</span>
   </div>
