@@ -100,7 +100,7 @@ services:
     # ZGW
 
     openzaak:
-        image: openzaak/open-zaak:1.20.0
+        image: openzaak/open-zaak:1.25.0
         container_name: gzac-docker-compose-openzaak
         platform: linux/amd64
         profiles:
@@ -122,6 +122,7 @@ services:
             - DJANGO_SUPERUSER_PASSWORD=admin
             - SENDFILE_BACKEND=django_sendfile.backends.simple
             - NOTIFICATIONS_DISABLED=true
+            - ZAAKNOTITIES_ENABLED=true
             - DISABLE_2FA=True
         ports:
             - "8001:8000"
