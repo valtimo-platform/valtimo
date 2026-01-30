@@ -34,7 +34,6 @@ import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WIDGET_1X_HEIGHT} from '../../constants';
 import Muuri from 'muuri';
 import {Router} from '@angular/router';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -44,8 +43,6 @@ import { TEST_IDS } from '@valtimo/shared';
   providers: [WidgetLayoutService],
 })
 export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChildren('widgetConfiguration') private _widgetConfigurationRefs: QueryList<
     ElementRef<HTMLDivElement>
   >;

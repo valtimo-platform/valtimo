@@ -9,12 +9,10 @@
     (paginationClicked)="onPaginationClicked($event)"
     (paginationSet)="onPaginationSet($event)"
     (rowClicked)="onRowClicked($event)"
-    [attr.data-test-id]="TEST_IDS.FAILED_NOTIFICATIONS_PAGE_LIST"
   >
     <valtimo-no-results
       [title]="'zgw.notifications.failed.noResults.title' | translate"
       [description]="'zgw.notifications.failed.noResults.description' | translate"
-      [attr.data-test-id]="TEST_IDS.FAILED_NOTIFICATIONS_PAGE_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
@@ -24,6 +22,5 @@
     [retryInProgress]="retryInProgress$ | async"
     (closeModalEvent)="onCloseModal()"
     (retryEvent)="onRetry()"
-    [attr.data-test-id]="TEST_IDS.FAILED_NOTIFICATIONS_PAGE_DETAIL_MODAL"
   ></valtimo-notificaties-api-failed-notification-detail>
 </div>

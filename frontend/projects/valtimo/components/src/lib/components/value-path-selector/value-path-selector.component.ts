@@ -67,7 +67,7 @@ import {
 } from '../../models';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import { getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -96,8 +96,6 @@ import {ActivatedRoute} from '@angular/router';
   ],
 })
 export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class.value-path-selector--margin-bottom') private _showMargin: boolean = false;
   @HostBinding('class.value-path-selector--margin-bottom-lg') private _showMarginLg: boolean =
     false;

@@ -20,14 +20,13 @@
     [label]="'widgetTabManagement.actionButtonLabel' | translate"
     [dropUp]="false"
     (selected)="onTypeSelected($event)"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ACTION_BUTTON_DROPDOWN"
   >
     <cds-dropdown-list [items]="dropdownItems$ | async"></cds-dropdown-list>
   </cds-dropdown>
 }
 
 @if ((buttonType$ | async) === 'process') {
-  <valtimo-widget-management-process-selector [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ACTION_BUTTON_PROCESS_SELECTOR"></valtimo-widget-management-process-selector>
+  <valtimo-widget-management-process-selector></valtimo-widget-management-process-selector>
 } @else {
   <form class="valtimo-widget-management-action-button__form" [formGroup]="formGroup">
     <cds-text-label>
@@ -37,7 +36,6 @@
         cdsText
         formControlName="navigateTo"
         [placeholder]="'widgetTabManagement.externalLink.linkPlaceholder' | translate"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ACTION_BUTTON_LINK_INPUT"
       />
     </cds-text-label>
 
@@ -48,7 +46,6 @@
         cdsText
         formControlName="name"
         [placeholder]="'widgetTabManagement.externalLink.buttonTextPlaceholder' | translate"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_ACTION_BUTTON_TEXT_INPUT"
       />
     </cds-text-label>
   </form>

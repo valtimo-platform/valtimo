@@ -30,7 +30,6 @@
   [dragAndDropDisabled]="!(hasEditPermissions$ | async)"
   (itemsReordered)="onItemsReorderedEvent($event)"
   (rowClicked)="openEditModal($event)"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAGS_LIST"
 >
   <ng-container carbonToolbarContent *ngTemplateOutlet="addTagButton"></ng-container>
 
@@ -42,7 +41,6 @@
         : ('caseManagement.caseTags.noResultsFinalVersion.description' | translate)
     "
     [title]="'caseManagement.caseTags.noResults.title' | translate"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAGS_NO_RESULTS"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -53,7 +51,6 @@
   [caseDefinitionKey]="caseDefinitionKey$ | async"
   [caseDefinitionVersionTag]="caseDefinitionVersionTag$ | async"
   (closeModalEvent)="closeModal($event)"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAGS_MODAL"
 ></valtimo-case-management-tags-modal>
 
 <valtimo-confirmation-modal
@@ -64,7 +61,6 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
   (confirmEvent)="confirmDeleteCaseTag($event)"
-  [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAGS_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-template #addTagButton>
@@ -73,7 +69,6 @@
     cdsButton="primary"
     [disabled]="loading$ | async"
     (click)="openAddModal()"
-    [attr.data-test-id]="TEST_IDS.CASE_MANAGEMENT_TAGS_ADD_BUTTON"
   >
     {{ 'caseManagement.caseTags.add' | translate }}
 

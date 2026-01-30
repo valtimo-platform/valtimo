@@ -30,7 +30,6 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {CASES_WITHOUT_STATUS_KEY} from '../../constants';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-status-selector',
@@ -41,8 +40,6 @@ import { TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, DropdownModule, CheckboxModule, InputModule, TranslateModule, TagModule],
 })
 export class StatusSelectorComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public set statuses(value: InternalCaseStatus[]) {
     this._statuses$.next(
       (value || []).map(status => ({

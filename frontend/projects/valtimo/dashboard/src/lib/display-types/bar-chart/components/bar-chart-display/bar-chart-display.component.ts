@@ -19,7 +19,6 @@ import {BarChartData, BarChartDisplayTypeProperties} from '../../models';
 import {BarChartOptions, type ChartTabularData, ScaleTypes} from '@carbon/charts';
 import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, filter, map, Observable} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -29,8 +28,6 @@ import { TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BarChartDisplayComponent implements DisplayComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public readonly displayTypeKey: string;
   @Input() public set data(value: BarChartData) {
     if (!value) return;

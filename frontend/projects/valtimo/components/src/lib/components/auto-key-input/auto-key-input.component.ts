@@ -34,7 +34,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import { ModalMode, TEST_IDS } from '@valtimo/shared';
+import {ModalMode} from '@valtimo/shared';
 import {Close16, Edit16} from '@carbon/icons';
 import {filter} from 'rxjs/operators';
 
@@ -68,8 +68,6 @@ import {filter} from 'rxjs/operators';
 export class AutoKeyInputComponent
   implements ControlValueAccessor, Validators, OnChanges, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
 

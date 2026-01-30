@@ -26,7 +26,6 @@
   } as state"
 >
   <valtimo-carbon-list
-    [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_LIST"
     [items]="state.columns"
     [loading]="state.loading"
     [fields]="FIELDS"
@@ -38,7 +37,7 @@
     (rowClicked)="onRowClicked($event)"
   >
     <div carbonToolbarContent>
-      <button cdsButton="primary" (click)="onCreateButtonClicked()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_ADD_COLUMN_BUTTON">
+      <button cdsButton="primary" (click)="onCreateButtonClicked()">
         {{ 'ikoManagement.addColumn' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -46,7 +45,6 @@
     </div>
 
     <valtimo-no-results
-      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_NO_RESULTS"
       [title]="'listColumn.noConfigWarningTitle' | translate"
       [description]="'listColumn.noConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
@@ -54,7 +52,6 @@
   </valtimo-carbon-list>
 
   <valtimo-iko-management-list-modal
-    [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_LIST_MODAL"
     [openModal]="state.openModal"
     [listColumns]="state.ikoListColumnDtos"
     [selectedListColumn]="state.selectedListColumn"
@@ -63,7 +60,6 @@
   ></valtimo-iko-management-list-modal>
 
   <valtimo-confirmation-modal
-    [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_CONFIRMATION_MODAL"
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="ikoManagement.searchActions.deleteModalText"

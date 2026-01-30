@@ -316,7 +316,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_TEXT_RANGE_START_INPUT_0"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -328,7 +327,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_TEXT_RANGE_END_INPUT_0"
       >
       </v-input>
     </v-form>
@@ -363,7 +361,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_NUMBER_RANGE_START_INPUT_0"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -377,7 +374,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_NUMBER_RANGE_END_INPUT_0"
       >
       </v-input>
     </v-form>
@@ -409,7 +405,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_DATE_RANGE_START_INPUT_0"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -419,7 +414,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_DATE_RANGE_END_INPUT_0"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -451,7 +445,6 @@
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
       [appendInline]="false"
-      [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_BOOLEAN_SELECT_0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -477,7 +470,6 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
-    [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_DATETIME_INPUT_0"
   ></v-date-picker>
 </ng-template>
 
@@ -507,7 +499,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_DATETIME_RANGE_START_INPUT_0"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -518,7 +509,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_DATETIME_RANGE_END_INPUT_0"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -556,7 +546,6 @@
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
       [appendInline]="false"
-      [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_SINGLE_SELECT_DROPDOWN_0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -594,7 +583,6 @@
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
       [appendInline]="false"
-      [attr.data-test-id]="TEST_IDS.SEARCH_FIELD_MULTI_SELECT_DROPDOWN_0"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -625,7 +613,6 @@
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
         id="clear"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_CLEAR_BUTTON"
       >
         <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
 
@@ -640,7 +627,6 @@
         (click)="saveSearch()"
         type="button"
         id="save"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_SAVE_BUTTON"
       >
         <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
 
@@ -657,7 +643,6 @@
         "
         type="button"
         id="search"
-        [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_SEARCH_BUTTON"
       >
         <svg cdsIcon="search" size="16" class="cds--btn__icon"></svg>
 

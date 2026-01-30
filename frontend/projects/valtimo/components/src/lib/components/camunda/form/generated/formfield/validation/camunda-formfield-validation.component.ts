@@ -17,7 +17,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-formfield-validation',
@@ -25,8 +24,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaFormfieldValidationComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public formGroup: UntypedFormGroup;
   @Input() public formField: FormField;
 

@@ -20,11 +20,11 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
-  <v-paragraph [margin]="true" [italic]="true" [attr.data-test-id]="TEST_IDS.GET_RESULTAATTYPEN_INFORMATION">
+  <v-paragraph [margin]="true" [italic]="true">
     {{ 'getResultaattypenInformation' | pluginTranslate: pluginId  | async }}
   </v-paragraph>
 
-  <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.GET_RESULTAATTYPEN_FORM">
+  <v-form (valueChange)="formValueChange($event)">
     <v-input
       name="processVariable"
       [title]="'processVariable' | pluginTranslate: pluginId | async"
@@ -35,7 +35,6 @@
       [trim]="true"
       [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.GET_RESULTAATTYPEN_PROCESS_VARIABLE_INPUT"
     >
     </v-input>
 
@@ -49,7 +48,6 @@
       [trim]="true"
       [tooltip]="'zaakTypeUrlTooltip' | pluginTranslate: pluginId | async"
       [fullWidth]="true"
-      [attr.data-test-id]="TEST_IDS.GET_RESULTAATTYPEN_ZAAK_TYPE_URL_INPUT"
     >
     </v-input>
   </v-form>

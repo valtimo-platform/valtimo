@@ -32,7 +32,7 @@ import {DocumentMigrationConflictRequest, DocumentMigrationPatch, LoadedValue} f
 import {CaseMigrationService} from '../../services';
 import {WatsonHealthStackedMove16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
@@ -41,8 +41,6 @@ import {TranslateService} from '@ngx-translate/core';
   templateUrl: './case-migration.component.html',
 })
 export class CaseMigrationComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
   public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(
     null

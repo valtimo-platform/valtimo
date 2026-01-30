@@ -61,12 +61,10 @@
                       'is-invalid': formControls.name.touched && formControls.name.errors,
                     }"
                     required
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_KEY_INPUT"
                   />
                   <div
                     *ngIf="formControls.name.touched && formControls.name.errors"
                     class="invalid-feedback"
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_KEY_ERROR"
                   >
                     <div *ngIf="formControls.name.errors.required">
                       Choice field value key is required
@@ -91,12 +89,10 @@
                       'is-invalid': formControls.value.touched && formControls.value.errors,
                     }"
                     required
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_VALUE_INPUT"
                   />
                   <div
                     *ngIf="formControls.value.touched && formControls.value.errors"
                     class="invalid-feedback"
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_VALUE_ERROR"
                   >
                     <div *ngIf="formControls.value.errors.required">
                       Choice field value is required
@@ -121,12 +117,10 @@
                       'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors,
                     }"
                     required
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SEQUENCE_INPUT"
                   />
                   <div
                     *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors"
                     class="invalid-feedback"
-                    [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SEQUENCE_ERROR"
                   >
                     <div *ngIf="formControls.sortOrder.errors.required">
                       Choice field value sequence is required
@@ -141,7 +135,7 @@
                 >
                 <div class="col-12 col-sm-8 col-lg-6">
                   <div class="switch-button switch-button-sm switch-button-success">
-                    <input type="checkbox" formControlName="deprecated" id="deprecated" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_DEPRECATED_CHECKBOX"/><span>
+                    <input type="checkbox" formControlName="deprecated" id="deprecated" /><span>
                       <label for="deprecated"></label
                     ></span>
                   </div>
@@ -150,13 +144,13 @@
 
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'../'" class="btn btn-space btn-default" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_BACK_BUTTON">Back</a>
+                  <a [routerLink]="'../'" class="btn btn-space btn-default">Back</a>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_RESET_BUTTON">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
                     Reset
                   </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" [attr.data-test-id]="TEST_IDS.CHOICE_FIELD_SUBMIT_BUTTON">
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
                     Submit
                   </button>
                 </div>

@@ -15,7 +15,6 @@
  */
 
 import {Component, Input} from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -24,8 +23,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./case-management-upload-step.component.scss'],
 })
 export class CaseManagementUploadStepComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() illustration!: string;
   @Input() message!: string;
   @Input() title!: string;

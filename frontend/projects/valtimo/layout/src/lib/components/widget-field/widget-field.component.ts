@@ -41,7 +41,6 @@ import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -64,8 +63,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class') public hostClasses = 'valtimo-widget-field';
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;

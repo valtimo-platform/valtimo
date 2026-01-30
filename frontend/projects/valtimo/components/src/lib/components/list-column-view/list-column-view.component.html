@@ -16,7 +16,7 @@
 
 @if (disabled) {
   <cds-tooltip [description]="'listViewColumns.disabledTooltip' | translate">
-    <button [disabled]="disabled" iconOnly="true" cdsButton="ghost" [attr.data-test-id]="TEST_IDS.LIST_VIEW_COLUMNS_DISABLED_BUTTON">
+    <button [disabled]="disabled" iconOnly="true" cdsButton="ghost">
       <svg cdsIcon="view--off" size="16"></svg>
     </button>
   </cds-tooltip>
@@ -30,23 +30,22 @@
     [offset]="{x: 2, y: 64}"
     placement="bottom"
     (openChange)="onOpenChange($event)"
-    [attr.data-test-id]="TEST_IDS.LIST_VIEW_COLUMNS_OVERFLOW_MENU"
   >
   </cds-overflow-menu>
 }
 
 <ng-template #customTrigger>
-  <button iconOnly="true" cdsButton="ghost" (click)="onOpenChange()" [attr.data-test-id]="TEST_IDS.LIST_VIEW_COLUMNS_TRIGGER_BUTTON">
+  <button iconOnly="true" cdsButton="ghost" (click)="onOpenChange()">
     <svg cdsIcon="view--off" size="16"></svg>
   </button>
 
-  <cds-tag type="blue" class="valtimo-list-column-view__tag" [attr.data-test-id]="TEST_IDS.LIST_VIEW_COLUMNS_TAG">
+  <cds-tag type="blue" class="valtimo-list-column-view__tag">
     {{ $checkedItemsCount() }}/{{ $availableFields().length }}
   </cds-tag>
 </ng-template>
 
 <ng-template #visibleColumns>
-  <section class="valtimo-list-column-view__container" (click)="$event.stopImmediatePropagation()" [attr.data-test-id]="TEST_IDS.LIST_VIEW_COLUMNS_CONTAINER">
+  <section class="valtimo-list-column-view__container" (click)="$event.stopImmediatePropagation()">
     <cds-label>{{ 'listViewColumns.label' | translate }}</cds-label>
 
     <div class="valtimo-list-column-view__content">
@@ -58,13 +57,12 @@
           [disabled]="field.selected && $checkedItemsCount() === 1"
           [checked]="field.selected"
           (checkedChange)="onCheckedChange($event, field.key)"
-          data-test-id="list-view-columns-checkbox-{{$index}}"
         >
           {{ field.label }}
         </cds-checkbox>
 
         @if (field.selected && $checkedItemsCount() === 1) {
-          <div class="valtimo-list-column-view__warning" data-test-id="list-view-columns-warning-{{$index}}">
+          <div class="valtimo-list-column-view__warning">
             <svg cdsIcon="warning--alt--filled" size="16"></svg>
 
             {{ 'listViewColumns.warning' | translate }}

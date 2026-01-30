@@ -18,7 +18,7 @@
   <cds-label>
     {{ 'caseManagement.tabManagement.addModal.tabNameLabel' | translate }}
 
-    <input cdsText formControlName="name" [attr.modal-primary-focus]="true" [attr.data-test-id]="TEST_IDS.TAB_FORM_MODAL_TAB_NAME_INPUT" />
+    <input cdsText formControlName="name" [attr.modal-primary-focus]="true" />
   </cds-label>
 
   <cds-label [invalid]="!!isKeyError()" [invalidText]="getKeyErrorMessage() | translate">
@@ -30,7 +30,6 @@
       pattern="[a-zA-Z0-9\-]+"
       [invalid]="!!isKeyError()"
       [attr.modal-primary-focus]="true"
-      [attr.data-test-id]="TEST_IDS.TAB_FORM_MODAL_TAB_KEY_INPUT"
     />
   </cds-label>
 
@@ -44,7 +43,6 @@
     [label]="'caseManagement.tabManagement.contentLabels.' + tabType | translate"
     (search)="onSearch($event)"
     (selected)="onSelected($event)"
-    [attr.data-test-id]="TEST_IDS.TAB_FORM_MODAL_CONTENT_KEY_COMBO_BOX"
   >
     <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
   </cds-combo-box>
@@ -56,6 +54,5 @@
     [checked]="showTasks?.value"
     (checkedChange)="toggleCheckedChange($event)"
     [disabled]="disableTaskListVisibleToggle()"
-    [attr.data-test-id]="TEST_IDS.TAB_FORM_MODAL_VISIBLE_TOGGLE"
   ></cds-toggle>
 </form>

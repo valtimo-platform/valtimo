@@ -23,14 +23,14 @@
   [title]="state.title"
   valtimoCdsModal
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
       {{ state.title }}
     </h3>
   </cds-modal-header>
 
-  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-tab-form" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_FORM">
-    <cds-label [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE_LABEL">
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-tab-form">
+    <cds-label>
       {{ 'ikoManagement.tabTitle' | translate }}
 
       <input
@@ -38,7 +38,6 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'ikoManagement.tabTitlePlaceholder' | translate }}"
-        [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TITLE_INPUT"
       />
     </cds-label>
 
@@ -49,7 +48,6 @@
       [usedKeys]="usedKeys"
       [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
-      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -60,7 +58,6 @@
       [items]="tabTypeSelectItems"
       titleTranslationKey="ikoManagement.tabTypeTitle"
       [appendInline]="false"
-      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_TYPE_SELECT"
     ></v-select>
 
     <valtimo-iko-management-properties
@@ -70,8 +67,8 @@
     />
   </form>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_FOOTER">
-    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_CANCEL_BUTTON">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -79,7 +76,6 @@
       [disabled]="form.invalid || form.disabled || !form.dirty"
       cdsButton="primary"
       (click)="addTab()"
-      [attr.data-test-id]="TEST_IDS.IKO_TAB_MODAL_SAVE_BUTTON"
     >
       {{ 'interface.save' | translate }}
     </button>

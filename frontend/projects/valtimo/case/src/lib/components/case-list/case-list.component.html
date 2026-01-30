@@ -47,7 +47,7 @@
 
   <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
-  <valtimo-quick-search [attr.data-test-id]="TEST_IDS.CASE_LIST_QUICK_SEARCH" (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
+  <valtimo-quick-search (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
 
   <ng-container *ngIf="obs.loaded; else loading">
     <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -108,7 +108,7 @@
     (sortChanged)="sortChanged($event)"
   >
     <ng-container carbonToolbarActions>
-      <button cdsButton="primary" [attr.data-test-id]="TEST_IDS.CASE_LIST_BULK_ASSIGN_BUTTON" (click)="showAssignModal()">
+      <button cdsButton="primary" (click)="showAssignModal()">
         {{ 'case.bulkAssign.assign' | translate }}
       </button>
     </ng-container>
@@ -225,7 +225,6 @@
     *ngIf="canCreateCase$ | async"
     cdsButton="primary"
     [disabled]="disableStartButton$ | async"
-    [attr.data-test-id]="TEST_IDS.CASE_LIST_START_CASE_BUTTON"
     (click)="startCase()"
   >
     {{ 'Start Case' | translate }}
@@ -239,7 +238,6 @@
     *ngIf="canCreateCase$ | async"
     cdsButton="primary"
     [disabled]="disableStartButton$ | async"
-    [attr.data-test-id]="TEST_IDS.CASE_LIST_START_CASE_BUTTON_NO_RESULT"
     (click)="startCase()"
   >
     {{ 'Start Case' | translate }}
