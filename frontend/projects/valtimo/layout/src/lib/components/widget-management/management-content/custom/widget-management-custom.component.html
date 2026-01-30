@@ -22,6 +22,7 @@
   <div class="valtimo-widget-management-custom__title-container">
     <cds-text-label
       class="valtimo-widget-management-fields__input valtimo-widget-management-custom__title-input"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CUSTOM_TITLE_INPUT"
     >
       <v-input-label
         [title]="'widgetTabManagement.content.widgetTitle' | translate"
@@ -34,12 +35,14 @@
         cdsText
         [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
         type="text"
+        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CUSTOM_WIDGET_TITLE_INPUT"
       />
     </cds-text-label>
 
     <valtimo-mdi-icon-selector
       [cdsLayer]="0"
       formControlName="widgetIcon"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CUSTOM_ICON_SELECTOR"
     ></valtimo-mdi-icon-selector>
   </div>
 
@@ -54,6 +57,7 @@
       [placeholder]="'widgetTabManagement.content.custom.placeholder' | translate"
       [disabled]="componentListItems.length === 0"
       (selected)="componentDropDownChange($event)"
+      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CUSTOM_COMPONENT_DROPDOWN"
     >
       <cds-dropdown-list [items]="componentListItems"> </cds-dropdown-list>
     </cds-dropdown>
@@ -72,5 +76,6 @@
     (valueChange)="onKeyValueChange($event)"
     [keyColumnFlex]="1"
     [valueColumnFlex]="1"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_CUSTOM_MULTI_INPUT"
   ></valtimo-carbon-multi-input>
 </form>

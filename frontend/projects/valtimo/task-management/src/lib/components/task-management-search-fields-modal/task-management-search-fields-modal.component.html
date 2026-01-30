@@ -13,9 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<cds-modal [open]="open" showFooter="true" (close)="onCancel()">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>
+<cds-modal [open]="open" showFooter="true" (close)="onCancel()" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MODAL">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MODAL_TITLE">
       {{ (!prefillData ? 'searchFieldsOverview.add' : 'searchFieldsOverview.edit') | translate }}
     </h3>
   </cds-modal-header>
@@ -24,11 +24,13 @@
     cdsModalContent
     [formGroup]="form"
     class="valtimo-task-management-search-fields-modal__content"
+    [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MODAL_FORM"
   >
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_TITLE_CONTAINER">
       <v-input-label
         [title]="'searchFieldsOverview.title' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_TITLE_LABEL"
       >
       </v-input-label>
 
@@ -41,10 +43,11 @@
       />
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_KEY_CONTAINER">
       <v-input-label
         [title]="'searchFieldsOverview.key' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_KEY_LABEL"
       >
       </v-input-label>
 
@@ -57,10 +60,11 @@
       />
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_PATH_CONTAINER">
       <v-input-label
         [title]="'searchFieldsOverview.path' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_PATH_LABEL"
       >
       </v-input-label>
 
@@ -68,13 +72,15 @@
         formControlName="path"
         [caseDefinitionKey]="caseDefinitionKey$ | async"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_PATH_SELECTOR"
       ></valtimo-value-path-selector>
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DATATYPE_CONTAINER">
       <v-input-label
         [title]="'searchFieldsOverview.dataType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DATATYPE_LABEL"
       >
       </v-input-label>
 
@@ -82,16 +88,18 @@
         cdsLayer
         data-testid="task-management-search-dataType"
         formControlName="dataType"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DATATYPE_DROPDOWN"
       >
         <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </div>
 
     @if (dataTypeValue === TaskListSearchFieldDataType.TEXT) {
-      <div class="valtimo-task-management-search-fields-modal__input">
+      <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MATCHTYPE_CONTAINER">
         <v-input-label
           [title]="'searchFieldsOverview.matchType' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MATCHTYPE_LABEL"
         >
         </v-input-label>
 
@@ -99,16 +107,18 @@
           cdsLayer
           data-testid="task-management-search-matchType"
           formControlName="matchType"
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MATCHTYPE_DROPDOWN"
         >
           <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
     }
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_FIELDTYPE_CONTAINER">
       <v-input-label
         [title]="'searchFieldsOverview.fieldType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_FIELDTYPE_LABEL"
       >
       </v-input-label>
 
@@ -116,6 +126,7 @@
         cdsLayer
         data-testid="task-management-search-fieldType"
         formControlName="fieldType"
+        [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_FIELDTYPE_DROPDOWN"
       >
         <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
@@ -126,10 +137,11 @@
       (fieldTypeValue === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
         fieldTypeValue === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN)
     ) {
-      <div class="valtimo-task-management-search-fields-modal__input">
+      <div class="valtimo-task-management-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNDATAPROVIDER_CONTAINER">
         <v-input-label
           [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNDATAPROVIDER_LABEL"
         >
         </v-input-label>
 
@@ -137,6 +149,7 @@
           data-testid="task-management-search-dropdownDataProvider"
           formControlName="dropdownDataProvider"
           cdsLayer
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNDATAPROVIDER_DROPDOWN"
         >
           <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
@@ -146,11 +159,13 @@
         <div
           class="valtimo-task-management-search-fields-modal__list"
           formArrayName="dropdownValues"
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNVALUES_CONTAINER"
         >
           <v-input-label
             [title]="'searchFieldsOverview.dropdownListValues' | translate"
             [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
             [noMargin]="true"
+            [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNLISTVALUES_LABEL"
           >
           </v-input-label>
 
@@ -158,8 +173,9 @@
             <form
               [formGroup]="dropdownValue"
               class="valtimo-task-management-search-fields-modal__dropdown-values"
+              data-test-id="task-management-search-dropdownValue-row-{{$index}}"
             >
-              <cds-text-label>
+              <cds-text-label data-test-id="task-management-search-dropdownKey-label-{{$index}}">
                 {{ 'interface.value' | translate }}
 
                 <input
@@ -171,7 +187,7 @@
                 />
               </cds-text-label>
 
-              <cds-text-label>
+              <cds-text-label data-test-id="task-management-search-dropdownValue-label-{{$index}}">
                 {{ 'interface.display' | translate }}
 
                 <input
@@ -189,6 +205,7 @@
                 [disabled]="$count === 1"
                 [iconOnly]="true"
                 (click)="removeDropdownValue($index)"
+                data-test-id="task-management-search-deleteEnum-button-{{$index}}"
               >
                 <svg cdsIcon="trash-can" size="16"></svg>
               </button>
@@ -199,6 +216,7 @@
             data-testid="task-management-search-addDropdownValue"
             cdsButton="primary"
             (click)="addDropdownValue()"
+            [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_ADDDROPDOWNVALUE_BUTTON"
           >
             {{ 'interface.addRow' | translate }}
 
@@ -211,13 +229,14 @@
           [hideToolbar]="true"
           [fields]="DROPDOWN_FIELDS"
           [items]="dropdownReadonlyItems$ | async"
+          [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_DROPDOWNREADONLYITEMS_LIST"
         ></valtimo-carbon-list>
       }
     }
   </form>
 
-  <cds-modal-footer>
-    <button data-testid="task-management-search-cancel" cdsButton="ghost" (click)="onCancel()">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_MODAL_FOOTER">
+    <button data-testid="task-management-search-cancel" cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -226,6 +245,7 @@
       cdsButton="primary"
       [disabled]="form.invalid"
       (click)="onSave()"
+      [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_SAVE_BUTTON"
     >
       {{ 'interface.save' | translate }}
     </button>

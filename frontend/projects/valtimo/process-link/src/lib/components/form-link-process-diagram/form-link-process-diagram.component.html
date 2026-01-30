@@ -17,31 +17,33 @@
 <div class="container-fluid">
   <div class="row p-4 bg-white">
     <div class="col">
-      <div #ref class="diagram-container"></div>
+      <div #ref class="diagram-container" [attr.data-test-id]="TEST_IDS.DIAGRAM_CONTAINER"></div>
     </div>
   </div>
 </div>
 <div class="p-4 text-center legenda-holder">
-  <span>Click on a User Task to specify a form definition for that User Task.</span>
+  <span [attr.data-test-id]="TEST_IDS.DIAGRAM_INSTRUCTIONS">Click on a User Task to specify a form definition for that User Task.</span>
 </div>
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
     <div class="form-link-dossier-actions">
-      <cds-select [label]="'Process'" (change)="setProcessDefinitionKey($event.target.value)"
-        ><option
+      <cds-select [label]="'Process'" (change)="setProcessDefinitionKey($event.target.value)" [attr.data-test-id]="TEST_IDS.DIAGRAM_PROCESS_SELECT">
+        <option
           *ngFor="let processDefinition of processDefinitions"
           [value]="processDefinition.key"
           [selected]="processDefinitionKey === processDefinition.key"
+          data-test-id="diagram-process-option-{{$index}}"
         >
           {{ processDefinition.name }}
         </option>
       </cds-select>
-      <cds-select [label]="'Version'" (change)="setProcessDefinitionVersion($event.target.value)">
+      <cds-select [label]="'Version'" (change)="setProcessDefinitionVersion($event.target.value)" [attr.data-test-id]="TEST_IDS.DIAGRAM_VERSION_SELECT">
         <option
           *ngFor="let processDefinitionVersion of processDefinitionVersions"
           [value]="processDefinitionVersion.version"
           [selected]="processDefinitionVersion.version === version"
+          data-test-id="diagram-version-option-{{$index}}"
         >
           {{ processDefinitionVersion.version }}
         </option>

@@ -36,7 +36,7 @@ import {
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {ExpressionOperator} from '@valtimo/shared';
+import {ExpressionOperator, TEST_IDS} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -47,6 +47,8 @@ import {ExpressionOperator} from '@valtimo/shared';
 export class CaseCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public dataSourceKey: string;
 
   public readonly form = this.fb.group({

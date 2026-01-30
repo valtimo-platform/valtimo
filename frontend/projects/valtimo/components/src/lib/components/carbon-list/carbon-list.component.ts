@@ -76,6 +76,7 @@ import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonListDragAndDropService} from './services';
 import {EllipsisPipe} from '../../pipes';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-carbon-list',
@@ -86,6 +87,8 @@ import {EllipsisPipe} from '../../pipes';
   standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
@@ -294,9 +297,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this._subscriptions.add(
       combineLatest([this._headerItems$, this._items$, this._skeletonRowCount$]).subscribe(
         ([headers, items, skeletonRowCount]) => {
-          let rowCount = items.length > 0 ? items.length : skeletonRowCount;
+          let rowCount = items?.length > 0 ? items?.length : skeletonRowCount;
 
-          if (items.length === 0 && this.pagination?.size) {
+          if (items?.length === 0 && this.pagination?.size) {
             rowCount = this.pagination.size;
           }
           if (!this.hideToolbar) {

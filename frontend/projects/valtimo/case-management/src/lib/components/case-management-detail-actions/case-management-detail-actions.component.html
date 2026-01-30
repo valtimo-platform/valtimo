@@ -43,6 +43,7 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selector"
+    [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_VERSION_SELECTOR"
     selectionFeedback="fixed"
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
@@ -80,6 +81,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
+    [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_DEPLOYMENT_BUTTON"
     [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
@@ -99,6 +101,7 @@
   >
     <cds-overflow-menu-option
       [id]="'exportDocumentDefinition'"
+      [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_EXPORT_DOCUMENT_DEFINITION"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
       >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
@@ -106,6 +109,7 @@
 
     <cds-overflow-menu-option
       [id]="'setGlobalActiveVersion'"
+      [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_SET_GLOBAL_ACTIVE_VERSION"
       [disabled]="obs.selectedVersionIsGloballyActive"
       (selected)="openGlobalActiveVersionModal()"
       >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
@@ -114,7 +118,7 @@
 </ng-template>
 
 <ng-template #customTrigger>
-  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
+  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'" [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_MORE_BUTTON">
     {{ 'caseManagement.more' | translate }}
 
     <svg
@@ -136,7 +140,7 @@
 </ng-template>
 
 <ng-template #readOnly let-obs="obs">
-  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue">{{
+  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue" [attr.data-test-id]="TEST_IDS.CASE_ACTIONS_READ_ONLY_TAG">{{
     'caseManagement.readonly' | translate
   }}</cds-tag>
 </ng-template>

@@ -26,7 +26,7 @@ import {
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
+import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,
@@ -52,6 +52,8 @@ import {BehaviorSubject, map, Observable, startWith, Subscription} from 'rxjs';
   ],
 })
 export class FormManagementUploadComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public readonly show$: Observable<boolean>;
 
   @Output() public readonly definitionUploaded: EventEmitter<any> = new EventEmitter();

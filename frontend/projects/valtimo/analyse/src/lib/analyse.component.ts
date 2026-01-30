@@ -15,6 +15,7 @@
  */
 
 import {Component} from '@angular/core';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -22,4 +23,6 @@ import {Component} from '@angular/core';
   templateUrl: './analyse.component.html',
   styleUrls: ['./analyse.component.scss'],
 })
-export class AnalyseComponent {}
+export class AnalyseComponent {
+  readonly TEST_IDS = TEST_IDS;
+}

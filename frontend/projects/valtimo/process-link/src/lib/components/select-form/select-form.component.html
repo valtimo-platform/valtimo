@@ -20,7 +20,7 @@
     saving: saving$ | async,
   } as obs"
 >
-  <p class="step-description">
+  <p class="step-description" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_DESCRIPTION">
     {{ 'processLinkConfiguration.chooseFormDescription' | translate }}
   </p>
   <div class="select-form">
@@ -31,6 +31,7 @@
       [placeholder]="'interface.typeToSearch' | translate"
       (selected)="selectFormDefinition($event)"
       [label]="'processLinkSteps.selectForm' | translate"
+      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_FORM_SELECT"
       ><cds-dropdown-list></cds-dropdown-list
     ></cds-combo-box>
     <br />
@@ -40,6 +41,7 @@
       (formDisplayValue)="selectedFormDisplayValue($event)"
       (formSizeValue)="selectedFormSizeValue($event)"
       (subtitlesValue)="selectedSubtitlesValue($event)"
+      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_FORM_DISPLAY_CONFIGURATION"
     ></valtimo-form-display-configuration>
   </div>
 </ng-container>

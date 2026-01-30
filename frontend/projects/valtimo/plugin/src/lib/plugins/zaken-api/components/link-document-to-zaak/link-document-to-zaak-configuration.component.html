@@ -23,6 +23,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
+  [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM"
 >
   <v-input
     name="documentUrl"
@@ -34,6 +35,7 @@
     [trim]="true"
     [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_URL_INPUT"
   >
   </v-input>
   <v-input
@@ -46,6 +48,7 @@
     [trim]="true"
     [tooltip]="'titelTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_TITLE_INPUT"
   >
   </v-input>
   <v-input
@@ -56,6 +59,29 @@
     [disabled]="obs.disabled"
     [required]="false"
     [tooltip]="'beschrijvingTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+    [attr.data-test-id]="TEST_IDS.DOCUMENT_FORM_DESCRIPTION_INPUT"
+  >
+  </v-input>
+  <v-input
+    name="vernietigingsdatum"
+    [title]="'vernietigingsdatum' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.vernietigingsdatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'vernietigingsdatumTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+  <v-input
+    name="statusUrl"
+    [title]="'documentStatusUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.statusUrl"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'documentStatusUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

@@ -29,7 +29,7 @@ import {
   tap,
 } from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {ConfigService, DefinitionColumn} from '@valtimo/shared';
+import { ConfigService, DefinitionColumn, TEST_IDS } from '@valtimo/shared';
 import {ListField, MultiInputValues} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -51,6 +51,8 @@ import {
   styleUrls: ['./object-management-list-columns.component.scss'],
 })
 export class ObjectManagementListColumnsComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild('moveRowButtons') public moveRowButtonsTemplateRef: TemplateRef<any>;
   readonly downloadName$ = new BehaviorSubject<string>('');
   readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);

@@ -50,6 +50,7 @@ import {
 } from '@valtimo/layout';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-widget-formio',
@@ -59,6 +60,8 @@ import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
     this.baseDocumentId = value;

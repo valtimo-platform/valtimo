@@ -19,6 +19,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetDensity, WidgetStyle} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-wizard-density-step.component.html',
@@ -27,6 +28,8 @@ import {WidgetWizardService} from '../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardDensityStepComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly WidgetDensity = WidgetDensity;
   public readonly $widgetDensity = this.widgetWizardService.$widgetDensity;
 

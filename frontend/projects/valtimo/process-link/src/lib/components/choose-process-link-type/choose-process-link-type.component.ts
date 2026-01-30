@@ -17,6 +17,7 @@
 import {Component} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
 import {UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../../constants';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -25,6 +26,8 @@ import {UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../../constants'
   styleUrls: ['./choose-process-link-type.component.scss'],
 })
 export class ChooseProcessLinkTypeComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;
 

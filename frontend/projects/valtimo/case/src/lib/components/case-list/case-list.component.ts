@@ -44,16 +44,7 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {
-  AssigneeFilter,
-  CaseListTab,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/shared';
+import { AssigneeFilter, CaseListTab, ConfigService, DefinitionColumn, Direction, SearchField, SearchFieldValues, SortState, TEST_IDS } from '@valtimo/shared';
 import {Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
@@ -121,6 +112,8 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
   @ViewChild(CaseListActionsComponent) listActionsComponent: CaseListActionsComponent;
   @ViewChild(Tabs) tabsComponent: Tabs;

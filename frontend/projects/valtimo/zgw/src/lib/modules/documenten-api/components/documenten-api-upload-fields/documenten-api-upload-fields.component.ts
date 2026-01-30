@@ -25,11 +25,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -64,6 +60,8 @@ import {take} from 'rxjs/operators';
   ],
 })
 export class DocumentenApiUploadFieldsComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);

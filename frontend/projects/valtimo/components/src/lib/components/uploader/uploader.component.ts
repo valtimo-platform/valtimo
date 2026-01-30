@@ -16,6 +16,7 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {S3Resource, S3Service} from '@valtimo/resource';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-uploader',
@@ -24,6 +25,8 @@ import {S3Resource, S3Service} from '@valtimo/resource';
   standalone: false,
 })
 export class UploaderComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public resources: any = [];
   @Output() resourcesChanged: EventEmitter<any> = new EventEmitter();
   @Output() resourceRegistered: EventEmitter<S3Resource> = new EventEmitter();

@@ -43,6 +43,7 @@ import {
   WidgetInteractiveTableContent,
 } from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   templateUrl: './widget-management-interactive-table.component.html',
@@ -64,6 +65,8 @@ import {WidgetWizardService} from '../../../../services';
   ],
 })
 export class WidgetManagementInteractiveTableComponent implements OnInit, OnDestroy {
+  readonly TEST_IDS = TEST_IDS;
+
   @HostBinding('class') public readonly class = 'valtimo-widget-management-interactive-table';
 
   public formGroup = this.fb.group({

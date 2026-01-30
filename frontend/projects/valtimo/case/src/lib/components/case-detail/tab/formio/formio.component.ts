@@ -32,6 +32,7 @@ import {FormioForm} from '@formio/angular';
 import {catchError} from 'rxjs/operators';
 import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -40,6 +41,8 @@ import {SseService} from '@valtimo/sse';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseDetailTabFormioComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly formNotFound$ = new BehaviorSubject<string>('');
   public readonly noFormSpecified$ = new BehaviorSubject<boolean>(false);

@@ -16,6 +16,7 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownButtonStyle, DropdownItem} from '../../models';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-searchable-dropdown-select',
@@ -24,6 +25,8 @@ import {DropdownButtonStyle, DropdownItem} from '../../models';
   standalone: false,
 })
 export class SearchableDropdownSelectComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() style: DropdownButtonStyle;
   @Input() items: Array<DropdownItem>;
   @Input() buttonText: string;

@@ -15,9 +15,9 @@
   -->
 
 <section class="valtimo-gauge-widget__header">
-  <h3 class="valtimo-gauge-widget__title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-gauge-widget__title" [attr.data-test-id]="TEST_IDS.VALTIMO_GAUGE_WIDGET_TITLE">{{ displayTypeProperties.title }}</h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-gauge-widget__subtitle">
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-gauge-widget__subtitle" [attr.data-test-id]="TEST_IDS.VALTIMO_GAUGE_WIDGET_SUBTITLE">
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>
@@ -29,5 +29,6 @@
     class="n-chart"
     [data]="chartData"
     [options]="gaugeChartOptions$ | async"
+    [attr.data-test-id]="TEST_IDS.VALTIMO_GAUGE_WIDGET_CHART"
   ></ibm-gauge-chart>
 </section>

@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {FormBuilder, Validators} from '@angular/forms';
 import {Role, RoleMetadataModal} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -26,6 +27,8 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoleMetadataModalComponent {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() open = false;
   @Input() type: RoleMetadataModal = 'add';
   @Input() set defaultKeyValue(value: string) {

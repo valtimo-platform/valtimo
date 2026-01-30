@@ -21,6 +21,7 @@ import {v4 as uuidv4} from 'uuid';
 import {ModalService} from '../../services/modal.service';
 import {IconService} from 'carbon-components-angular';
 import {Close16} from '@carbon/icons';
+import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-modal',
@@ -29,6 +30,8 @@ import {Close16} from '@carbon/icons';
   standalone: false,
 })
 export class VModalComponent implements OnInit {
+  readonly TEST_IDS = TEST_IDS;
+
   @Input() appearingDelayMs = 140;
   @Input() maxWidthPx!: number;
   @Input() hideFooter = false;
