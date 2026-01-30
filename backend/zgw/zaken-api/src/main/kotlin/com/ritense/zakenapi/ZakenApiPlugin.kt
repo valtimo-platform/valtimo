@@ -155,7 +155,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty documentUrl: String,
         @PluginActionProperty titel: String?,
-        @PluginActionProperty beschrijving: String?
+        @PluginActionProperty beschrijving: String?,
+        @PluginActionProperty vernietigingsdatum: String? = null,
+        @PluginActionProperty statusUrl: String? = null
     ) {
         withLoggingContext(
             DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT to documentUrl
@@ -171,10 +173,12 @@ class ZakenApiPlugin(
             }
 
             val request = LinkDocumentRequest(
-                documentUrl,
-                zaakUrl.toString(),
-                titel,
-                beschrijving
+                informatieobject = documentUrl,
+                zaak = zaakUrl.toString(),
+                titel = titel,
+                beschrijving = beschrijving,
+                vernietigingsdatum = vernietigingsdatum,
+                status = statusUrl
             )
             client.linkDocument(authenticationPluginConfiguration, url, request)
             logger.info { "Document with URL '$documentUrl' linked successfully to zaak with URL '$zaakUrl'" }
@@ -204,10 +208,12 @@ class ZakenApiPlugin(
         }
 
         val request = LinkDocumentRequest(
-            documentUrl,
-            zaakUrl.toString(),
-            metadata["title"] as String?,
-            metadata["description"] as String?,
+            informatieobject = documentUrl,
+            zaak = zaakUrl.toString(),
+            titel = metadata["title"] as String?,
+            beschrijving = metadata["description"] as String?,
+            vernietigingsdatum = null,
+            status = null
         )
         client.linkDocument(authenticationPluginConfiguration, url, request)
         logger.info { "Linked uploaded document with URL '$documentUrl' to zaak with URL '$zaakUrl'" }
