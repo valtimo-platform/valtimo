@@ -6,15 +6,15 @@
 
 ## New Features
 
-* **Orange status tag**
+* **New feature title**
 
-  Added a new orange status tag to the UI for enhanced visibility of specific case statuses.
+  New feature explanation.
 
 ## Enhancements
 
-* **Enhanced testability with data-test-id attributes**
+* **New enhancement title**
 
-  Added `data-test-id` attributes to various UI components to facilitate automated testing.
+  New enhancement explanation.
 
 ## Bugfixes
 
