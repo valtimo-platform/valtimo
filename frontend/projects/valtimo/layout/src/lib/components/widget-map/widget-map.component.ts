@@ -41,7 +41,6 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import {FullScreen, defaults, Zoom} from 'ol/control';
 import {Icon, Fill, Stroke, Style} from 'ol/style';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-map',
@@ -62,8 +61,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetMapComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class') public readonly class = 'widget-map';
 
   @ViewChild('widgetMap') private _widgetMapRef: ElementRef<HTMLDivElement>;

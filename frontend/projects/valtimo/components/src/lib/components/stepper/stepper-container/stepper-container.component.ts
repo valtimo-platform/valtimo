@@ -17,7 +17,6 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {StepperService} from '../../../services/stepper.service';
 import {Subject, Subscription} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -30,8 +29,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class StepperContainerComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() returnToFirstStepSubject$!: Subject<boolean>;
   @Input()
   set disabled(disabled: boolean) {

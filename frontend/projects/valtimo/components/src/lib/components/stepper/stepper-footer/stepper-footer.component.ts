@@ -16,7 +16,6 @@
 
 import {AfterContentInit, Component, ContentChildren, QueryList} from '@angular/core';
 import {StepperFooterStepComponent} from '../stepper-footer-step/stepper-footer-step.component';
-import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -28,8 +27,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class StepperFooterComponent implements AfterContentInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @ContentChildren(StepperFooterStepComponent)
   footerStepComponents!: QueryList<StepperFooterStepComponent>;
 

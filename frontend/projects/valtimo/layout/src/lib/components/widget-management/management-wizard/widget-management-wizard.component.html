@@ -21,31 +21,29 @@
   valtimoCdsModal
   class="valtimo-widget-management-wizard"
   (close)="onClose()"
-  [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_TITLE">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading>
       {{ 'widgetTabManagement.wizard.' + (editMode ? 'edit' : 'create') | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-widget-management-wizard__content" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_CONTENT">
+  <section cdsModalContent class="valtimo-widget-management-wizard__content">
     <cds-progress-indicator
       [current]="$currentStepIndex()"
       [spacing]="'equal'"
       [steps]="steps$ | async"
       (stepSelected)="onStepSelected($event)"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_PROGRESS"
     >
     </cds-progress-indicator>
 
-    <p [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_STEP_LABEL">{{ stepLabel$ | async }}</p>
+    <p>{{ stepLabel$ | async }}</p>
 
     <ng-template #wizardStepRenderer></ng-template>
   </section>
 
-  <cds-modal-footer class="valtimo-widget-management-wizard__footer" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_FOOTER">
-    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()" [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_CANCEL_BUTTON">
+  <cds-modal-footer class="valtimo-widget-management-wizard__footer">
+    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -55,7 +53,6 @@
         cdsButton="secondary"
         [disabled]="$backButtonDisabled()"
         (click)="onBackButtonClick()"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_BACK_BUTTON"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -66,7 +63,6 @@
       cdsButton="primary"
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_WIDGET_MANAGEMENT_WIZARD_NEXT_BUTTON"
     >
       {{
         'interface.' + ($currentStepIndex() === (numberOfSteps$ | async) - 1 ? 'save' : 'next')

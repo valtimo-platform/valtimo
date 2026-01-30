@@ -19,7 +19,6 @@ import {combineLatest, map, Observable, Subscription} from 'rxjs';
 import {BreadcrumbItem} from 'carbon-components-angular';
 import {BreadcrumbService} from './breadcrumb.service';
 import {PageHeaderService, PageTitleService} from '../../services';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-breadcrumb-navigation',
@@ -29,8 +28,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class.valtimo-breadcrumb-navigation--compact') isCompact!: boolean;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;

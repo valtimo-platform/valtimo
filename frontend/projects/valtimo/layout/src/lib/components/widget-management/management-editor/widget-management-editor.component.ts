@@ -26,7 +26,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import { ModalMode, TEST_IDS } from '@valtimo/shared';
+import {ModalMode} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
@@ -68,8 +68,6 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
   ],
 })
 export class WidgetManagementEditorComponent implements OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;

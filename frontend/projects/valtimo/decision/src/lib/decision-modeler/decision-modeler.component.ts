@@ -55,7 +55,14 @@ import {
   ModalModule,
   SelectModule,
 } from 'carbon-components-angular';
-import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, getContextObservable, GlobalNotificationService, ManagementContext, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  getContextObservable,
+  GlobalNotificationService,
+  ManagementContext,
+} from '@valtimo/shared';
 import {ArrowLeft16, Deploy16, Download16} from '@carbon/icons';
 
 declare const $: any;
@@ -84,8 +91,6 @@ export class DecisionModelerComponent
   extends PendingChangesComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
-  readonly TEST_IDS = TEST_IDS;
-
   private CLASS_NAMES = {
     drd: 'dmn-icon-lasso-tool',
     decisionTable: 'dmn-icon-decision-table',

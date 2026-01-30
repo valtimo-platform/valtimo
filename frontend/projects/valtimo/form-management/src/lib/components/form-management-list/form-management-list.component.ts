@@ -28,7 +28,14 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import { DraftVersionService, EditPermissionsService, EnvironmentService, getCaseManagementRouteParams, getCaseManagementRouteParamsAndContext, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {
+  DraftVersionService,
+  EditPermissionsService,
+  EnvironmentService,
+  getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -62,8 +69,6 @@ import {getContextObservable} from '../../utils';
   ],
 })
 export class FormManagementListComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Output() public readonly navigateToCreateEvent = new EventEmitter<void>();
   @Output() public readonly navigateToUploadEvent = new EventEmitter<void>();
   @Output() public readonly navigateToEditEvent = new EventEmitter<string>();
