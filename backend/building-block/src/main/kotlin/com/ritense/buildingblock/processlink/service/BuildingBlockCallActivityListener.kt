@@ -175,9 +175,9 @@ class BuildingBlockCallActivityListener(
             target to resolvedValues[sourceKey]
         }
 
-        // Separate process variable targets (pv:) from document targets (doc:, case:, etc.)
+        // Separate process variable targets (pv:) from other targets (doc:, case:, etc.)
         val pvTargets = valuesToHandle.filter { it.key.startsWith("pv:") }
-        val docTargets = valuesToHandle.filter { !it.key.startsWith("pv:") }
+        val otherTargets = valuesToHandle.filter { !it.key.startsWith("pv:") }
 
         // Handle process variable targets - write to parent process variables
         if (pvTargets.isNotEmpty()) {
@@ -185,7 +185,7 @@ class BuildingBlockCallActivityListener(
         }
 
         // Handle document targets - write to parent building block doc or case doc
-        if (docTargets.isNotEmpty()) {
+        if (otherTargets.isNotEmpty()) {
             val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
                 val parentInstance = buidingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
                     ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
@@ -194,7 +194,7 @@ class BuildingBlockCallActivityListener(
                 buildingBlockInstance.caseDocumentId
                     ?: throw IllegalStateException("Cannot write doc: output mappings for building block without a case document")
             }
-            valueResolverService.handleValues(targetDocumentId, docTargets)
+            valueResolverService.handleValues(targetDocumentId, otherTargets)
         }
     }
 
