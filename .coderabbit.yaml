@@ -3,16 +3,17 @@
 
 reviews:
   profile: "chill"
+  high_level_summary_in_walkthrough: true
   changed_files_summary: false
   sequence_diagrams: false
-  estimate_code_review_effort: false
+  estimate_code_review_effort: true
   assess_linked_issues: false
   related_issues: false
   related_prs: false
   suggested_labels: false
-  suggested_reviewers: false
+  suggested_reviewers: true
   in_progress_fortune: false
-  poem: false
+  poem: true
   enable_prompt_for_ai_agents: false
 
   auto_review:
@@ -24,10 +25,20 @@ reviews:
       - "next-minor"
       - "next-major"
       - "feature/*"
+      - "rc/12.*"
+      - "rc/13.*"
 
   finishing_touches:
     docstrings:
       enabled: false
+
+  pre_merge_checks:
+    docstrings:
+      mode: off
+    title:
+      mode: off
+    description:
+      mode: off
 
   path_instructions:
     - path: "**/*.{kt,java,ts,html}"
