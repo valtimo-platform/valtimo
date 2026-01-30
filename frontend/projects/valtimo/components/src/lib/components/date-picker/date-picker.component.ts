@@ -34,7 +34,6 @@ import {German} from 'flatpickr/dist/l10n/de';
 import {english} from 'flatpickr/dist/l10n/default';
 import Locale = flatpickr.Locale;
 import CustomLocale = flatpickr.CustomLocale;
-import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -46,8 +45,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class.full-width') fullWidthClass = false;
 
   @ViewChild('datePickerElement') datePickerElement!: ElementRef<HTMLInputElement>;

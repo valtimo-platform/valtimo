@@ -35,7 +35,6 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_LABEL_TITLE"
   >
   </v-input-label>
 </ng-template>
@@ -60,7 +59,6 @@
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_TEXT_INPUT"
   />
 </ng-template>
 
@@ -80,7 +78,6 @@
     [rows]="rows"
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_TEXTAREA_INPUT"
   ></textarea>
 </ng-template>
 
@@ -110,11 +107,10 @@
         (ngModelChange)="onValueChange($event)"
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
-        [attr.data-test-id]="TEST_IDS.V_INPUT_PASSWORD_INPUT"
       />
 
       <div class="v-input__password-icon">
-        <cds-icon-button align="top" (click)="toggleShowPassword()" [attr.data-test-id]="TEST_IDS.V_INPUT_TOGGLE_PASSWORD_BUTTON">
+        <cds-icon-button align="top" (click)="toggleShowPassword()">
           <svg cdsIcon="{{ obs.showPassword ? 'view-off' : 'view' }}" size="16"></svg>
         </cds-icon-button>
       </div>
@@ -143,7 +139,6 @@
     [placeholder]="placeholder"
     [style.width.px]="widthPx"
     type="number"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_NUMBER_INPUT"
   />
 </ng-template>
 
@@ -167,19 +162,17 @@
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
     type="text"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_DIGIT_ONLY_INPUT"
   />
 </ng-template>
 
 <ng-template #checkboxInput>
-  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)" [attr.data-test-id]="TEST_IDS.V_INPUT_CHECKBOX_CONTAINER">
+  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
     <cds-checkbox
       [attr.data-testid]="dataTestId"
       [disabled]="disabled"
       [name]="name"
       [ngModel]="inputValue$ | async"
       (ngModelChange)="onValueChange($event)"
-      [attr.data-test-id]="TEST_IDS.V_INPUT_CHECKBOX"
     >
     </cds-checkbox>
   </div>
@@ -193,15 +186,14 @@
       'v-input--small-margin': smallMargin,
     }"
     class="v-input--preset-options"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_PRESETS_CONTAINER"
   >
-    <span [attr.data-test-id]="TEST_IDS.V_INPUT_PRESETS_TITLE">{{ presetsTitle }}:</span>
+    <span>{{ presetsTitle }}:</span>
 
     @for (preset of presetOptions; track $index) {
       @if (!$first) {
         |
       }
-      <a (click)="presetWithValue(preset)" class="v-input--preset-option" data-test-id="v-input-preset-option-{{$index}}">{{ preset }}</a>
+      <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
     }
   </div>
 </ng-template>
@@ -225,6 +217,5 @@
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
-    [attr.data-test-id]="TEST_IDS.V_INPUT_BSN_INPUT"
   />
 </ng-template>

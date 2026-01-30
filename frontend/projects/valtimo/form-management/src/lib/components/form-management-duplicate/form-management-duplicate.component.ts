@@ -32,7 +32,7 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
 import {CommonModule} from '@angular/common';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import { GlobalNotificationService, ManagementContext, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService, ManagementContext} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-management-duplicate-modal',
@@ -52,8 +52,6 @@ import { GlobalNotificationService, ManagementContext, TEST_IDS } from '@valtimo
   ],
 })
 export class FormManagementDuplicateComponent extends BaseModal implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   public duplicateForm!: FormGroup;
 
   public get duplicateFormName(): FormControl {

@@ -30,14 +30,12 @@
   showFooter="true"
   class="valtimo-definition-uploader"
   (close)="onCloseModal()"
-  [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_MODAL"
 >
   <cds-modal-header
     [showCloseButton]="obs.showCloseButton"
     (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_HEADER"
   >
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_TITLE">
+    <h3 cdsModalHeaderHeading>
       {{ 'caseManagement.importDefinition.title' | translate }}
     </h3>
   </cds-modal-header>
@@ -50,7 +48,6 @@
         "
         [title]="'caseManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
         [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_STEP"
       >
       </valtimo-case-management-upload-step>
     </ng-template>
@@ -65,23 +62,21 @@
         buttonType="primary"
         formControlName="file"
         class="valtimo-definition-uploader__file-uploader"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FILE_UPLOADER"
       >
       </cds-file-uploader>
 
       <ng-container *ngIf="!obs.nextButtonDisabled">
-        <cds-inline-notification [notificationObj]="obs.notificationObj" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_NOTIFICATION"></cds-inline-notification>
+        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
 
         <div class="valtimo-uploader__checkbox">
           <cds-checkbox
             [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
             (checkedChange)="onCheckedChange($event)"
-            [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CHECKBOX"
           >
             {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
           </cds-checkbox>
 
-          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CHECKBOX_ERROR">
+          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
             <svg cdsIcon="warning--filled" size="16"></svg>
 
             {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
@@ -96,21 +91,18 @@
       [label]="'caseManagement.importDefinition.progressBar.label' | translate"
       [status]="obs.uploadStatus"
       [helperText]="'caseManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_PROGRESS_BAR"
     ></cds-progress-bar>
   </section>
 
   <cds-modal-footer
     class="valtimo-definition-uploader__footer"
     [class.valtimo-definition-uploader__footer--double]="obs.activeStep === UPLOAD_STEP.PLUGINS"
-    [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FOOTER"
   >
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
       (click)="onCloseModal(obs.isStepAfterUpload)"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_CANCEL_BUTTON"
     >
       {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
     </button>
@@ -120,7 +112,6 @@
         *ngIf="obs.backButtonEnabled"
         cdsButton="secondary"
         (click)="onBackClick(obs.activeStep)"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_BACK_BUTTON"
       >
         {{ 'interface.back' | translate }}
       </button>
@@ -130,7 +121,6 @@
         cdsButton="primary"
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_NEXT_BUTTON"
       >
         {{
           (obs.activeStep === UPLOAD_STEP.FILE_SELECT
@@ -145,7 +135,6 @@
         class="valtimo-definition-uploader__cancel"
         cdsButton="primary"
         (click)="onCloseModal(true)"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_UPLOADER_FINISH_BUTTON"
       >
         {{ 'interface.finish' | translate }}
       </button>

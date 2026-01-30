@@ -15,19 +15,18 @@
   -->
 
 <div class="main-content container-fluid" *ngIf="{loading: loading$ | async} as obs">
-  <h4 class="title" [attr.data-test-id]="TEST_IDS.DASHBOARD_OPEN_TASKS_TITLE">
+  <h4 class="title">
     {{ 'dashboard.openTasks.title' | translate }}
     <sup *ngIf="obs.loading === false" class="ml-1 badge badge-pill badge-primary">{{
       openTasks?.length
     }}</sup>
   </h4>
   <ng-container *ngIf="obs.loading === false; else loading">
-    <valtimo-widget [attr.data-test-id]="TEST_IDS.DASHBOARD_OPEN_TASKS_WIDGET">
+    <valtimo-widget>
       <valtimo-carbon-list
         [items]="openTasks"
         [fields]="openTaskFields"
         (rowClicked)="rowOpenTaskClick($event)"
-        [attr.data-test-id]="TEST_IDS.DASHBOARD_OPEN_TASKS_LIST"
       ></valtimo-carbon-list>
     </valtimo-widget>
   </ng-container>
@@ -35,10 +34,9 @@
     #taskDetail
     (formSubmit)="getOpenTasks()"
     (assignmentOfTaskChanged)="getOpenTasks()"
-    [attr.data-test-id]="TEST_IDS.DASHBOARD_TASK_DETAIL_MODAL"
   ></valtimo-task-detail-modal>
 </div>
 
 <ng-template #loading>
-  <valtimo-spinner [attr.data-test-id]="TEST_IDS.DASHBOARD_LOADING_SPINNER"></valtimo-spinner>
+  <valtimo-spinner></valtimo-spinner>
 </ng-template>

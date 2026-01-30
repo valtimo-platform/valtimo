@@ -38,7 +38,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
-import { Page, TEST_IDS, SortState } from '@valtimo/shared';
+import {Page, SortState} from '@valtimo/shared';
 import {
   ButtonModule,
   ContextMenuModule,
@@ -85,8 +85,6 @@ import {HttpParams} from '@angular/common/http';
   ],
 })
 export class WidgetInteractiveTableComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class') public readonly class = 'valtimo-widget-interactive-table';
   private _widgetConfiguration: InteractiveTableWidget;
 

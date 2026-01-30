@@ -22,7 +22,6 @@ import {ObjectManagementService} from '../../services/object-management.service'
 import {Objecttype} from '../../models/object-management.model';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
 import {Router} from '@angular/router';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,8 +30,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./object-management-list.component.scss'],
 })
 export class ObjectManagementListComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);

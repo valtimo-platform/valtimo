@@ -22,7 +22,7 @@ import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/compone
 import {Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
-import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,8 +31,6 @@ import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./access-control-editor.component.scss'],
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly saveDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly editorDisabled$ = new BehaviorSubject<boolean>(false);

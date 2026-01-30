@@ -43,7 +43,12 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import { ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {
+  ConfigService,
+  FORM_VIEW_MODEL_TOKEN,
+  FormViewModel,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -114,8 +119,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
-
-  readonly TEST_IDS = TEST_IDS;
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);

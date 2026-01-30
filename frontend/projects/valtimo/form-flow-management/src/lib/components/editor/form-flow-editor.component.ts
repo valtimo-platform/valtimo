@@ -23,7 +23,11 @@ import {
   PageHeaderService,
   PageTitleService,
 } from '@valtimo/components';
-import { CaseManagementParams, getCaseManagementRouteParams, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -47,8 +51,6 @@ import formFlowSchemaJson from './formflow.schema.json';
   styleUrls: ['./form-flow-editor.component.scss'],
 })
 export class FormFlowEditorComponent implements OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);

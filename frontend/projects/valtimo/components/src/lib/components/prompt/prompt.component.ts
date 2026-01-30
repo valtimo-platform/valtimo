@@ -18,7 +18,6 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Observable} from 'rxjs';
 import {delay} from 'rxjs/operators';
 import {PromptService} from '../../services/prompt.service';
-import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -30,8 +29,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class PromptComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() appearingDelayMs = 140;
   @Input() maxWidthPx!: number;
 
