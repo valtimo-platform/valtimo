@@ -71,6 +71,7 @@
       </button>
       <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
       <button
+        *ngIf="showOptionalButton"
         data-testid="confirmation-modal-optional"
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"

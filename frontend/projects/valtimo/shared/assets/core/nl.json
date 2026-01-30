@@ -1306,7 +1306,12 @@
       "description": "Alleen BPMN-bestanden worden ondersteund.",
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
-      "failure": "Deployment mislukt"
+      "failure": "Deployment mislukt",
+      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok",
+      "replaceTitle": "Bestaand proces vervangen?",
+      "replaceContent": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok. Wilt u dit vervangen?",
+      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok: {{duplicates}}. Wilt u dit vervangen?",
+      "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten"
