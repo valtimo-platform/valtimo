@@ -24,7 +24,7 @@ reviews:
     base_branches:
       - "next-minor"
       - "next-major"
-      - "feature/*"
+      - "feature/.*"
       - "rc/12.*"
       - "rc/13.*"
 
