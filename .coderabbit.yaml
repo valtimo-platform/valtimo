@@ -6,14 +6,14 @@ reviews:
   high_level_summary_in_walkthrough: true
   changed_files_summary: false
   sequence_diagrams: false
-  estimate_code_review_effort: true
+  estimate_code_review_effort: false
   assess_linked_issues: false
   related_issues: false
   related_prs: false
   suggested_labels: false
-  suggested_reviewers: true
+  suggested_reviewers: false
   in_progress_fortune: false
-  poem: true
+  poem: false
   enable_prompt_for_ai_agents: false
 
   auto_review:
