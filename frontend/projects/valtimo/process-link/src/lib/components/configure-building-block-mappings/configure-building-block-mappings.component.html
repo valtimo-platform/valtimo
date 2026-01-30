@@ -23,7 +23,9 @@
     sourceContextName: (sourceContextName$ | async),
     targetBuildingBlockName: (targetBuildingBlockName$ | async),
     sourceIsCase: (sourceIsCase$ | async),
+    sourceIsIndependent: (sourceIsIndependent$ | async),
     caseLabelTranslation: ('Case' | translate),
+    processLabelTranslation: ('processLinkConfiguration.buildingBlock.process' | translate),
     buildingBlockLabelTranslation:
       ('processLinkConfiguration.buildingBlock.selectLabel' | translate),
   };
@@ -38,9 +40,12 @@
       <div class="mapping-header input">
         <v-input-label
           [title]="
-            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
-            ': ' +
-            obs.sourceContextName
+            (obs.sourceIsIndependent
+              ? obs.processLabelTranslation
+              : obs.sourceIsCase
+                ? obs.caseLabelTranslation
+                : obs.buildingBlockLabelTranslation) +
+            (obs.sourceIsIndependent ? '' : ': ' + obs.sourceContextName)
           "
         />
 
@@ -53,19 +58,23 @@
         @for (group of inputs.controls; let inputIndex = $index; track inputIndex) {
           <div class="mapping-row input" [formGroup]="group">
             <div class="mapping-part">
-              <valtimo-value-path-selector
-                [cdsLayer]="2"
-                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
-                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="
-                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
-                "
-                [appendInline]="false"
-                [dropUp]="false"
-                [formControl]="group.get('source')"
-              ></valtimo-value-path-selector>
+              @if (obs.sourceIsIndependent) {
+                <input [cdsLayer]="2" cdsText formControlName="source" [placeholder]="'pv:'" />
+              } @else {
+                <valtimo-value-path-selector
+                  [cdsLayer]="2"
+                  [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                  [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                  [buildingBlockDefinitionVersionTag]="
+                    obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                  "
+                  [appendInline]="false"
+                  [dropUp]="false"
+                  [formControl]="group.get('source')"
+                ></valtimo-value-path-selector>
+              }
 
               <div class="arrow">→</div>
             </div>
@@ -142,9 +151,12 @@
 
         <v-input-label
           [title]="
-            (obs.sourceIsCase ? obs.caseLabelTranslation : obs.buildingBlockLabelTranslation) +
-            ': ' +
-            obs.sourceContextName
+            (obs.sourceIsIndependent
+              ? obs.processLabelTranslation
+              : obs.sourceIsCase
+                ? obs.caseLabelTranslation
+                : obs.buildingBlockLabelTranslation) +
+            (obs.sourceIsIndependent ? '' : ': ' + obs.sourceContextName)
           "
         />
 
@@ -178,20 +190,24 @@
             </div>
 
             <div class="mapping-part">
-              <valtimo-value-path-selector
-                [cdsLayer]="2"
-                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-                [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-                [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
-                [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
-                [buildingBlockDefinitionVersionTag]="
-                  obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
-                "
-                [formControl]="group.get('target')"
-                [appendInline]="false"
-                [filterItems]="getUsedCaseTargetsForRow$(group) | async"
-                [dropUp]="true"
-              ></valtimo-value-path-selector>
+              @if (obs.sourceIsIndependent) {
+                <input [cdsLayer]="2" cdsText formControlName="target" [placeholder]="'pv:'" />
+              } @else {
+                <valtimo-value-path-selector
+                  [cdsLayer]="2"
+                  [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+                  [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
+                  [buildingBlockDefinitionVersionTag]="
+                    obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
+                  "
+                  [formControl]="group.get('target')"
+                  [appendInline]="false"
+                  [filterItems]="getUsedCaseTargetsForRow$(group) | async"
+                  [dropUp]="true"
+                ></valtimo-value-path-selector>
+              }
             </div>
 
             <div class="mapping-part">
