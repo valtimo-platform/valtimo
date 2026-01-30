@@ -46,7 +46,13 @@ import {
   ValtimoCdsModalDirective,
   WidgetModule,
 } from '@valtimo/components';
-import { DraftVersionService, EnvironmentService, getCaseManagementRouteParams, getCaseManagementRouteParamsAndContext, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {
+  DraftVersionService,
+  EnvironmentService,
+  getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {
   ButtonModule,
   DialogModule,
@@ -99,8 +105,6 @@ import {FormManagementUploadComponent} from '../form-management-upload';
   ],
 })
 export class FormManagementEditComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class') public readonly class = 'valtimo-form-management-edit';
 
   @Output() public readonly deleteEvent = new EventEmitter<void>();

@@ -35,7 +35,6 @@
       *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.hasSelection)"
       (mouseenter)="onMouseEnterAssignee()"
       (mouseleave)="onMouseLeaveAssignee()"
-      [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER"
     >
       <div
         class="assignee-text element"
@@ -44,7 +43,6 @@
             ? vars.hasSelection && !obs.mouseIsOverAssignee
             : vars.hasSelection,
         }"
-        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_ASSIGNEE_TEXT"
       >
         <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
 
@@ -61,7 +59,6 @@
         [disabled]="obs.disabled"
         size="sm"
         (click)="unassignTask()"
-        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_REMOVE_BUTTON"
       >
         {{ 'assignTask.remove' | translate }}
       </button>
@@ -73,7 +70,6 @@
         [isOpen]="open$ | async"
         [ngClass]="{active: !vars.hasSelection}"
         (onOpen)="clear()"
-        [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_TOGGLETIP"
       >
         <button
           cdsToggletipButton
@@ -81,7 +77,6 @@
           cdsButton="tertiary"
           size="sm"
           class="set-assignee-button"
-          [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_SET_ASSIGNEE_BUTTON"
         >
           {{ 'assignTask.buttonText' | translate }}
 
@@ -92,7 +87,6 @@
           cdsToggletipContent
           [attr.data-carbon-theme]="toggletipTheme$ | async"
           class="assign-task-popover-content"
-          [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_TOGGLETIP_CONTENT"
         >
           <cds-combo-box
             *ngIf="!vars.hasSelection"
@@ -105,7 +99,6 @@
             [disabled]="obs.disabled"
             (selected)="onUserSelect($event)"
             (clear)="clear()"
-            [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_COMBO_BOX"
           >
             <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
           </cds-combo-box>
@@ -115,7 +108,6 @@
             class="submit-task-button"
             [disabled]="!obs.selectedUserId || obs.disabled"
             (click)="onSubmitButtonClick()"
-            [attr.data-test-id]="TEST_IDS.ASSIGN_USER_CONTAINER_SUBMIT_BUTTON"
           >
             {{ 'assignTask.submitButtonText' | translate }}
 

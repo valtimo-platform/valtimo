@@ -18,7 +18,6 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {map, switchMap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {PluginConfigurationData} from '@valtimo/plugin';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -27,8 +26,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./plugin-edit.component.scss'],
 })
 export class PluginEditComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();

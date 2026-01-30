@@ -27,8 +27,8 @@
     } as vars"
   >
     @if (!obs.loaded && !vars.noWidgetsConfigured) {
-      <div class="loading-container" [attr.data-test-id]="TEST_IDS.WIDGETS_LOADING_CONTAINER">
-        <cds-loading [attr.data-test-id]="TEST_IDS.WIDGETS_LOADING"></cds-loading>
+      <div class="loading-container">
+        <cds-loading></cds-loading>
       </div>
     }
 
@@ -37,18 +37,16 @@
         [title]="'widgets.noWidgets' | translate"
         [description]="'widgets.noWidgetsDescription' | translate"
         illustration="valtimo-layout/img/no-widgets.svg"
-        [attr.data-test-id]="TEST_IDS.WIDGETS_NO_RESULTS"
       ></valtimo-no-results>
     }
 
-    <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'" [attr.data-test-id]="TEST_IDS.WIDGETS_CONTAINER_WRAPPER">
-      <div #widgetsContainer class="widgets-container" [attr.data-test-id]="TEST_IDS.WIDGETS_CONTAINER">
+    <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
+      <div #widgetsContainer class="widgets-container">
         @for (widget of (widgetsWithUuids$ | async) || []; track widget.uuid) {
           <valtimo-widget-block
             [widget]="widget"
             [widgetComponentMap]="widgetComponentMap$ | async"
             [widgetParams]="widgetParams"
-            data-test-id="widgets-widget-block-{{$index}}"
           ></valtimo-widget-block>
         }
       </div>

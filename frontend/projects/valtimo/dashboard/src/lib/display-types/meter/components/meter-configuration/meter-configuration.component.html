@@ -23,7 +23,7 @@
     >
       {{ 'formTitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" [attr.data-test-id]="TEST_IDS.FORM_TITLE_INPUT" />
+      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" />
     </cds-label>
   </div>
 
@@ -35,7 +35,7 @@
     >
       {{ 'subtitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" [attr.data-test-id]="TEST_IDS.FORM_SUBTITLE_INPUT" />
+      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" />
     </cds-label>
   </div>
 </form>

@@ -18,7 +18,6 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AlertService} from '@valtimo/components';
 import moment from 'moment';
-import { TEST_IDS } from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey'));
 
@@ -29,8 +28,6 @@ moment.locale(localStorage.getItem('langKey'));
   styleUrls: ['./password.component.css'],
 })
 export class PasswordComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   public profile: any;
   public errorMsg: string;
   public form: FormGroup;

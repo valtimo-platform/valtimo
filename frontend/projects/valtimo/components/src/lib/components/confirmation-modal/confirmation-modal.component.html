@@ -28,10 +28,9 @@
     optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
   } as obs"
   (close)="closeModal()"
-  [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_TITLE">
+    <h3 cdsModalHeaderHeading>
       {{
         (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
           title ||
@@ -40,26 +39,25 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CONTENT">
+  <section cdsModalContent>
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
 
-    <div class="modal-body-content" [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_BODY">
+    <div class="modal-body-content">
       <ng-content></ng-content>
     </div>
   </section>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_FOOTER">
+  <cds-modal-footer>
     <ng-container>
       <button
         data-testid="confirmation-modal-close"
         [attr.modal-primary-focus]="true"
         [cdsButton]="cancelButtonType"
         (click)="closeModal()"
-        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CANCEL"
       >
         {{
           (cancelButtonTextTranslationKey !== obs.cancelButtonTranslation
@@ -71,11 +69,11 @@
       </button>
       <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
       <button
+        *ngIf="showOptionalButton"
         data-testid="confirmation-modal-optional"
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"
         (click)="onOptional()"
-        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_OPTIONAL_BUTTON"
       >
         {{
           (optionalButtonTextTranslationKey !== obs.optionalButtonTranslation
@@ -90,7 +88,6 @@
         [attr.modal-primary-focus]="true"
         [cdsButton]="confirmButtonType"
         (click)="onConfirm()"
-        [attr.data-test-id]="TEST_IDS.CONFIRMATION_MODAL_CONFIRM_BUTTON"
       >
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation

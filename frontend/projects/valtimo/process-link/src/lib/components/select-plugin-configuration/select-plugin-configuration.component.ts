@@ -31,7 +31,6 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {PluginListItem} from '../../models';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -40,8 +39,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   readonly isBuildingBlockContext$ = this.stateService.context$.pipe(
     map(context => context === 'buildingBlock')
   );

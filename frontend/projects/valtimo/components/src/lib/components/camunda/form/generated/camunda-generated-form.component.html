@@ -31,7 +31,6 @@
           type="button"
           (click)="back()"
           id="back-button"
-          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_BACK_BUTTON"
         >
           Back
         </button>
@@ -40,7 +39,6 @@
           type="button"
           (click)="reset()"
           id="reset-button"
-          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_RESET_BUTTON"
         >
           Reset
         </button>
@@ -49,7 +47,6 @@
           [disabled]="!formGroup.disabled && !formGroup.valid"
           type="submit"
           id="submit-button"
-          [attr.data-test-id]="TEST_IDS.FORM_CONTAINER_SUBMIT_BUTTON"
         >
           Submit
         </button>

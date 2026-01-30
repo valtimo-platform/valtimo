@@ -47,7 +47,7 @@ import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtim
 import {TranslateService} from '@ngx-translate/core';
 import {isEqual} from 'lodash';
 import {Add16, TrashCan16} from '@carbon/icons';
-import {ExpressionOperator, TEST_IDS} from '@valtimo/shared';
+import {ExpressionOperator} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -58,8 +58,6 @@ import {ExpressionOperator, TEST_IDS} from '@valtimo/shared';
 export class CaseCountsConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public dataSourceKey: string;
 
   private readonly _EMPTY_QUERY_ITEM_VALUE: CaseCountsQueryItemForm = {

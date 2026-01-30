@@ -42,7 +42,6 @@ import {
 } from '@valtimo/layout';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-widget-custom',
@@ -52,8 +51,6 @@ import { TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseWidgetCustomComponent extends WidgetProcess {
-  readonly TEST_IDS = TEST_IDS;
-
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {

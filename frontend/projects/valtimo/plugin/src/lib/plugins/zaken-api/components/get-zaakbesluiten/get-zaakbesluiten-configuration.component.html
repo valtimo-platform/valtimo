@@ -20,7 +20,6 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.RESULT_PROCESS_VARIABLE_FORM"
 >
   <v-input
     name="resultProcessVariable"
@@ -31,6 +30,5 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'resultProcessVariableTooltip' | pluginTranslate: pluginId | async"
-    [attr.data-test-id]="TEST_IDS.RESULT_PROCESS_VARIABLE_INPUT"
   ></v-input>
 </v-form>

@@ -30,7 +30,7 @@ import {
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
-import { CaseManagementParams, ManagementContext, TEST_IDS } from '@valtimo/shared';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
@@ -51,8 +51,6 @@ import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 export class CreateZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

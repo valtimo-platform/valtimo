@@ -16,7 +16,6 @@
 
 import {Component, Input} from '@angular/core';
 import {animate, style, transition, trigger} from '@angular/animations';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,7 +30,5 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class TooltipComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() text = '';
 }

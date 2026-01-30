@@ -26,10 +26,9 @@
   valtimoCdsModal
   class="valtimo-definition-create"
   (close)="onCloseModal()"
-  [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_MODAL"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_TITLE">
+    <h3 cdsModalHeaderHeading>
       {{ 'caseManagement.createDefinition.modalTitle' | translate }}
     </h3>
   </cds-modal-header>
@@ -51,7 +50,6 @@
         placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_NAME_INPUT"
       />
     </cds-label>
 
@@ -72,7 +70,6 @@
           [invalid]="!!obs.idError"
           [placeholder]="'caseManagement.createDefinition.keyPlaceholder' | translate"
           [attr.modal-primary-focus]="true"
-          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_KEY_INPUT"
         />
 
         <button
@@ -82,7 +79,6 @@
           [iconOnly]="true"
           size="md"
           (click)="enableEdit()"
-          [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_EDIT_BUTTON"
         >
           <svg cdsIcon="edit" size="16"></svg>
         </button>
@@ -106,7 +102,6 @@
         [invalid]="!!obs.versionError"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_VERSION_INPUT"
       />
     </cds-label>
 
@@ -128,17 +123,16 @@
         [cols]="150"
         [attr.modal-primary-focus]="true"
         (focusout)="onFocusOut()"
-        [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_DESCRIPTION_TEXTAREA"
       ></textarea>
     </cds-textarea-label>
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_CANCEL_BUTTON">
+    <button cdsButton="ghost" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)" [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_SAVE_BUTTON">
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

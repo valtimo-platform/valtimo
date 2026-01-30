@@ -19,7 +19,7 @@ import {ApiTabType, DefaultTabs} from '@valtimo/case';
 import {ListItem} from 'carbon-components-angular';
 import {combineLatest, map, startWith, Subscription} from 'rxjs';
 import {TabService} from '../../../../../services';
-import { ConfigService, TEST_IDS } from '@valtimo/shared';
+import {ConfigService} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -30,8 +30,6 @@ import {ActivatedRoute} from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TabFormComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public tabType: ApiTabType;
 
   public disableTaskListVisibleToggle = signal(false);

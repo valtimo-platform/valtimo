@@ -26,7 +26,6 @@
 >
   <div class="form__element">
     <cds-dropdown
-      [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_DOCUMENT_DEFINITION_DROPDOWN"
       [appendInline]="true"
       formControlName="documentDefinition"
       [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
@@ -39,19 +38,18 @@
     </cds-dropdown>
   </div>
 
-  <cds-label class="conditions__label" [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_COUNTS_LABEL">{{
+  <cds-label class="conditions__label">{{
     'counts' | widgetTranslate: dataSourceKey | async
   }}</cds-label>
 
-  <p class="conditions__helper-text cds--form__helper-text" [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_COUNTS_HELPER_TEXT">
+  <p class="conditions__helper-text cds--form__helper-text">
     {{ 'countsHelperText' | widgetTranslate: dataSourceKey | async }}
   </p>
 
   @for (_ of queryItemsList$ | async; track $index; let i = $index) {
-    <cds-tile class="count-tile" [cdsLayer]="1" data-test-id="case-counts-configuration-form-count-tile-{{i}}">
+    <cds-tile class="count-tile" [cdsLayer]="1">
       <div class="count-tile__input" [cdsLayer]="0">
         <v-input
-          data-test-id="case-counts-configuration-form-count-title-input-{{i}}"
           [title]="'countTitle' | widgetTranslate: dataSourceKey | async"
           [margin]="true"
           [defaultValue]="obs.queryItemsValue[i]?.label"
@@ -63,7 +61,6 @@
         </v-input>
 
         <valtimo-carbon-multi-input
-          data-test-id="case-counts-configuration-form-count-conditions-input-{{i}}"
           type="valuePathSelectorDropdownValue"
           [disabled]="formDisabled"
           [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
@@ -88,7 +85,6 @@
 
       <div class="count-tile__delete-button">
         <cds-icon-button
-          data-test-id="case-counts-configuration-form-count-delete-button-{{i}}"
           [disabled]="formDisabled || i < 2"
           (click)="deleteCount(i)"
           kind="danger"
@@ -103,7 +99,6 @@
   <button
     class="add-count-button"
     cdsButton="primary"
-    [attr.data-test-id]="TEST_IDS.CASE_COUNTS_CONFIGURATION_FORM_ADD_COUNT_BUTTON"
     [disabled]="formDisabled"
     (click)="addQueryItem()"
   >

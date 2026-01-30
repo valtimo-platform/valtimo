@@ -38,7 +38,6 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-documenten-api-tag-modal',
@@ -59,8 +58,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public caseDefinitionKey!: string;
   @Input() public open = false;
 

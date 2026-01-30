@@ -17,7 +17,6 @@
 import {Component} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-long-formfield',
@@ -25,8 +24,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaLongFormfieldComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   public formGroup: UntypedFormGroup;
   public formField: FormField;
 

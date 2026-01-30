@@ -28,7 +28,6 @@
     *ngIf="camera"
     type="button"
     class="btn btn-primary px-3 webcam-button"
-    [attr.data-test-id]="TEST_IDS.DROPZONE_CAMERA_BUTTON"
   >
     <i class="icon mdi mdi-camera" aria-hidden="true"></i>
   </button>
@@ -38,12 +37,12 @@
 </form>
 
 <ng-template #body>
-  <h2 *ngIf="!hideTitle" class="mb-4 mt-2" [attr.data-test-id]="TEST_IDS.DROPZONE_TITLE">{{ title || ('dropzone.drop' | translate) }}</h2>
-  <span *ngIf="subtitle" class="note mb-3" [attr.data-test-id]="TEST_IDS.DROPZONE_SUBTITLE">{{ subtitle }}</span>
-  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font" [attr.data-test-id]="TEST_IDS.DROPZONE_ACCEPTED_FILES"
+  <h2 *ngIf="!hideTitle" class="mb-4 mt-2">{{ title || ('dropzone.drop' | translate) }}</h2>
+  <span *ngIf="subtitle" class="note mb-3">{{ subtitle }}</span>
+  <span *ngIf="showAcceptedFiles && acceptedFiles" class="note mb-3 small-font"
   >{{ 'dropzone.acceptedFiles' | translate }}<b>{{ acceptedFiles }}</b></span
   >
-  <span *ngIf="showMaxFileSize" class="note mb-3 small-font" [attr.data-test-id]="TEST_IDS.DROPZONE_MAX_FILE_SIZE"
+  <span *ngIf="showMaxFileSize" class="note mb-3 small-font"
     >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
   >
   <ng-container *ngTemplateOutlet="preview"></ng-container>
@@ -58,7 +57,7 @@
     } as obs"
   >
     <ng-container *ngIf="obs.externalError || obs.errorMessage">
-      <div class="alert alert-danger mt-2 mb-0" [attr.data-test-id]="TEST_IDS.DROPZONE_ERROR_MESSAGE">
+      <div class="alert alert-danger mt-2 mb-0">
         <div class="message">
           {{ obs.externalError || obs.errorMessage }}
         </div>
@@ -66,7 +65,7 @@
     </ng-container>
 
     <ng-container *ngIf="!hideFilePreview && obs.file && !obs.externalError && !obs.errorMessage">
-      <div class="file" [attr.data-test-id]="TEST_IDS.DROPZONE_FILE_PREVIEW">
+      <div class="file">
         <i class="icon mdi mdi-file-text mr-2"></i>
         <span class="note">{{ obs.file.name }}</span>
         <span class="note file-size">- {{ obs.file.size | filesize: 2 }}</span>
@@ -76,11 +75,11 @@
 </ng-template>
 
 <ng-template #progressBar>
-  <div class="progress-bar-container" [attr.data-test-id]="TEST_IDS.DROPZONE_PROGRESS_BAR_CONTAINER">
+  <div class="progress-bar-container">
     <valtimo-progress-bar></valtimo-progress-bar>
   </div>
 </ng-template>
 
 <ng-template #webcam>
-  <valtimo-webcam (imageSaved)="webcamImageSaved($event)" [attr.data-test-id]="TEST_IDS.DROPZONE_WEBCAM"></valtimo-webcam>
+  <valtimo-webcam (imageSaved)="webcamImageSaved($event)"></valtimo-webcam>
 </ng-template>

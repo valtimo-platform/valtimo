@@ -21,7 +21,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {CreatePortalTaskConfig, FormType, OtherReceiver, Receiver} from '../../models';
 import {SelectItem, ValuePathSelectorPrefix} from '@valtimo/components';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -32,8 +31,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class CreatePortalTaskComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

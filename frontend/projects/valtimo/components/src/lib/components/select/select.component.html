@@ -38,7 +38,6 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
-    [attr.data-test-id]="TEST_IDS.V_SELECT_CONTAINER_TITLE"
   >
   </v-input-label>
 
@@ -62,8 +61,7 @@
     [warnText]="warnText"
     (clear)="clear()"
     (selected)="setSelected($event)"
-    [attr.data-test-id]="TEST_IDS.V_SELECT_CONTAINER_COMBO_BOX"
   >
-    <cds-dropdown-list [items]="vars?.items || []" [attr.data-test-id]="TEST_IDS.V_SELECT_CONTAINER_DROPDOWN_LIST"></cds-dropdown-list>
+    <cds-dropdown-list [items]="vars?.items || []"></cds-dropdown-list>
   </cds-combo-box>
 </div>

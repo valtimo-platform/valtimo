@@ -15,12 +15,9 @@
  */
 
 import {Component} from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
   templateUrl: './not-found.component.html',
 })
-export class CaseDetailTabNotFoundComponent {
-  readonly TEST_IDS = TEST_IDS;
-}
+export class CaseDetailTabNotFoundComponent {}
