@@ -11,18 +11,19 @@ on:
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
     outputs:
-      tagged_image:
-        description: "Tag of the Docker image that was built"
-        value: ${{ jobs.build_image.outputs.image_tag }}
-
-env:
-  ORG_GRADLE_PROJECT_includeDev: false
-
-# Defaults removed as gradlew is now in root
+      built_test_image:
+        description: "Tag of the test Docker image that was built"
+        # Equal to the first tag of 'generate_tags' step. Can't use its output directly because of the matrix job, so we reconstruct it.
+        value: ${{ github.head_ref || github.ref_name }}-test.${{ github.run_number }}
 
 jobs:
   assemble:
+    strategy:
+      matrix:
+        build_type: ["production", "test"]
+
     runs-on: ubuntu-latest
+    name: "assemble-${{ matrix.build_type }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,7 +40,7 @@ jobs:
           name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
-      - run: ./gradlew -PincludeDev=false :backend:app:gzac:assemble
+      - run: ./gradlew -PincludeDev=${{ matrix.build_type == 'test'}} :backend:app:gzac:assemble
 
       - name: Prepare deployment folder
         run: |
@@ -49,18 +50,19 @@ jobs:
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
         with:
-          name: gzac-app-backend-deployment
+          name: gzac-app-backend-deployment-${{ matrix.build_type }}
           path: backend/deployment/
           retention-days: 1
 
   build_image:
+    strategy:
+      matrix:
+        build_type: ["production", "test"]
     runs-on: ubuntu-latest
     needs: assemble
     permissions:
       contents: read
       packages: write
-    outputs:
-      image_tag: ${{ steps.primary_tag.outputs.tag }}
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
@@ -85,22 +87,16 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
-            type=raw,value=commit-${{ github.sha }}
-            type=raw,value=contents-${{ steps.backend_tree.outputs.tree }}
+            type=raw,value=${{ env.BRANCH_NAME }}-${{ matrix.build_type }}.${{ github.run_number }}
+            type=raw,value=commit-${{ matrix.build_type }}-${{ github.sha }}
+            type=raw,value=contents-${{ matrix.build_type }}-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
-
-      - name: Extract primary image tag
-        id: primary_tag
-        run: |
-          full_tag='${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}'
-          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: gzac-app-backend-deployment
+          name: gzac-app-backend-deployment-${{ matrix.build_type }}
           path: backend/deployment/
 
       - name: Set up Buildx
