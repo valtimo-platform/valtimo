@@ -215,7 +215,7 @@ jobs:
         run: |
           HASH=$(git rev-parse HEAD:frontend)
           echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-test-${HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
