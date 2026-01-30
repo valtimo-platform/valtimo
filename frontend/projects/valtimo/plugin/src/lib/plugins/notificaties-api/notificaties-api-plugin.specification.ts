@@ -34,6 +34,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      authHeader: 'Authenticatie header',
+      authHeaderTooltip: 'Secret van de authenticatie header voor de callback URL.',
     },
     en: {
       title: 'Notificaties API',
@@ -46,6 +48,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
+      authHeader: 'Authentication header',
+      authHeaderTooltip: 'Secret value in Authentication header for the callback URL.',
     },
   },
 };

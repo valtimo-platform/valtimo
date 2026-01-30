@@ -61,6 +61,18 @@
     placeholder="https://{gzac-back-end-url}/api/v1/notificatiesapi/callback"
   >
   </v-input>
+  <v-input
+    name="authHeader"
+    [title]="'authHeader' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.authHeader"
+    [required]="false"
+    [trim]="true"
+    [tooltip]="'authHeaderTooltip' | pluginTranslate: pluginId | async"
+    type="password"
+  >
+  </v-input>
   <ng-container
     *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
   >
