@@ -38,7 +38,6 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetsService} from '../../widgets.service';
@@ -61,8 +60,6 @@ import {WidgetProcess} from '../widget-process/widget-process';
   ],
 })
 export class CaseWidgetMapComponent extends WidgetProcess {
-  readonly TEST_IDS = TEST_IDS;
-
   private readonly _documentId$ = new BehaviorSubject<string>('');
 
   @Input({required: true}) public set documentId(value: string) {

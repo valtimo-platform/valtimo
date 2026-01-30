@@ -20,7 +20,6 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM"
 >
   <v-input
     name="uri"
@@ -32,7 +31,6 @@
     [required]="false"
     [trim]="true"
     [widthPx]="350"
-    [attr.data-test-id]="TEST_IDS.CONFIGURATION_URI_INPUT"
   ></v-input>
 
   <v-input
@@ -45,6 +43,5 @@
     [required]="false"
     [trim]="true"
     [widthPx]="350"
-    [attr.data-test-id]="TEST_IDS.CONFIGURATION_BEAN_INPUT"
   ></v-input>
 </v-form>

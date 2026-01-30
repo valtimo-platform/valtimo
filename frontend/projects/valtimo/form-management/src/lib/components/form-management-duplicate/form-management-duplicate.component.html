@@ -21,16 +21,15 @@
   [cdsLayer]="0"
   [open]="true"
   (close)="closeModal()"
-  [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_TITLE">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
       {{ 'formManagement.duplicate' | translate }}
     </h3>
   </cds-modal-header>
 
   <form [formGroup]="duplicateForm">
-    <section cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_CONTENT">
+    <section cdsModalContent [cdsLayer]="1">
       <cds-label
         [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
         [invalidText]="
@@ -38,7 +37,6 @@
           (duplicateFormName?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
           'Error'
         "
-        [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_NAME_LABEL"
       >
         {{ 'formManagement.name' | translate }}
 
@@ -49,18 +47,17 @@
           formControlName="duplicateFormName"
           [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
           required
-          [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_NAME_INPUT"
         />
       </cds-label>
     </section>
 
-    <cds-modal-footer [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_FOOTER">
+    <cds-modal-footer [cdsLayer]="1">
       <cds-modal-footer>
-        <button cdsButton="secondary" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_CANCEL_BUTTON">
+        <button cdsButton="secondary" (click)="closeModal()">
           {{ 'interface.cancel' | translate }}
         </button>
 
-        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()" [attr.data-test-id]="TEST_IDS.FORM_MANAGEMENT_CREATE_MODAL_SUBMIT_BUTTON">
+        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>

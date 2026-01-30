@@ -33,7 +33,6 @@
       'v-modal-backdrop--disappearing': obs.disappearing,
       'v-modal-backdrop--mouse-on-backdrop': !obs.mouseInsideModal,
     }"
-    [attr.data-test-id]="TEST_IDS.MODAL_BACKDROP"
   >
     <ng-container
       *ngTemplateOutlet="modal; context: {appearing: obs.appearing, disappearing: obs.disappearing}"
@@ -47,7 +46,6 @@
     (mouseenter)="modalMouseEnter()"
     (mouseleave)="modalMouseLeave()"
     [style.max-width.px]="maxWidthPx"
-    [attr.data-test-id]="TEST_IDS.MODAL_CONTAINER"
   >
     <ng-container
       *ngTemplateOutlet="modalHeader; context: {appearing: appearing, disappearing: disappearing}"
@@ -58,14 +56,14 @@
 </ng-template>
 
 <ng-template #modalHeader let-appearing="appearing" let-disappearing="disappearing">
-  <div class="v-modal__header" [attr.data-test-id]="TEST_IDS.MODAL_HEADER">
+  <div class="v-modal__header">
     <ng-content select="div[role=header]"></ng-content>
     <div class="v-modal__header-overflow">
       <div class="v-modal__header-overflow-gradient"></div>
       <div class="v-modal__header-overflow-bg"></div>
     </div>
     <div class="v-modal__header-buttons">
-      <button cdsButton="ghost" iconOnly="true" (click)="closeModal()" size="sm" [attr.data-test-id]="TEST_IDS.MODAL_CLOSE_BUTTON">
+      <button cdsButton="ghost" iconOnly="true" (click)="closeModal()" size="sm">
         <svg cdsIcon="close" size="16"></svg>
       </button>
     </div>
@@ -73,13 +71,13 @@
 </ng-template>
 
 <ng-template #modalContent>
-  <div class="v-modal__content" [attr.data-test-id]="TEST_IDS.MODAL_CONTENT">
+  <div class="v-modal__content">
     <ng-content select="div[role=content]"></ng-content>
   </div>
 </ng-template>
 
 <ng-template #modalFooter>
-  <div class="v-modal__footer" [ngClass]="{'v-modal__footer--hidden': hideFooter}" [attr.data-test-id]="TEST_IDS.MODAL_FOOTER">
+  <div class="v-modal__footer" [ngClass]="{'v-modal__footer--hidden': hideFooter}">
     <ng-content select="div[role=footer]"></ng-content>
   </div>
 </ng-template>

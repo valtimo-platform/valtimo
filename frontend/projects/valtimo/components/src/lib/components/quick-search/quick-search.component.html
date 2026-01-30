@@ -27,7 +27,6 @@
         [valtimoContextMenu]="contextMenuTpl"
         [contextData]="item"
         (click)="onItemClick(item)"
-        data-test-id="quick-search-tag-{{$index}}"
       >
         {{ item.title }}
       </cds-tag>
@@ -37,7 +36,6 @@
   <valtimo-quick-search-modal
     [existingItems]="obs.quickSearchItems"
     (closeEvent)="onModalCloseEvent($event, obs.paramsToSave)"
-    [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_MODAL"
   ></valtimo-quick-search-modal>
 
   <valtimo-confirmation-modal
@@ -48,11 +46,10 @@
     [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="quickSearch.deleteModalTitle"
     (confirmEvent)="onDeleteConfirm($event)"
-    [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_CONFIRMATION_MODAL"
   ></valtimo-confirmation-modal>
 
   <ng-template #contextMenuTpl let-data="data" let-close="close">
-    <cds-overflow-menu-option (click)="deleteItem(data); close()" [attr.data-test-id]="TEST_IDS.QUICK_SEARCH_DELETE_OPTION">
+    <cds-overflow-menu-option (click)="deleteItem(data); close()">
       {{ 'interface.delete' | translate }}
 
       <svg cdsIcon="trash-can" size="16"></svg
