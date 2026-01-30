@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -21,9 +21,9 @@ import {ActivatedRoute} from '@angular/router';
   templateUrl: './custom-building-block-tab.component.html',
   standalone: false,
 })
-export class CustomBuildingBlockTabComponent implements OnInit {
-  private buildingBlockDefinitionKey: string;
-  private buildingBlockDefinitionVersionTag: string;
+export class CustomBuildingBlockTabComponent {
+  public buildingBlockDefinitionKey: string;
+  public buildingBlockDefinitionVersionTag: string;
 
   constructor(private route: ActivatedRoute) {
     const snapshot = this.route.snapshot.paramMap;
@@ -31,6 +31,4 @@ export class CustomBuildingBlockTabComponent implements OnInit {
     this.buildingBlockDefinitionVersionTag =
       snapshot.get('buildingBlockDefinitionVersionTag') || '';
   }
-
-  ngOnInit() {}
 }
