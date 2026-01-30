@@ -150,7 +150,7 @@ jobs:
         run: |
           HASH=$(git rev-parse HEAD:backend)
           echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-test-${HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -173,7 +173,7 @@ jobs:
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
           else
-            echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
+            echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git tree hash (${CONTENTS_HASH})." >&2
             echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
             echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
             echo "To fix this:" >&2
