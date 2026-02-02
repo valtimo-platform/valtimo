@@ -28,6 +28,8 @@ interface LinkDocumentToZaakConfig {
   documentUrl: string;
   titel: string;
   beschrijving: string;
+  vernietigingsdatum?: string;
+  statusUrl?: string;
 }
 
 interface GetZaakInformatieobjectenConfig {

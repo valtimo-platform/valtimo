@@ -19,7 +19,6 @@ import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular
 import {FormField} from './formfield/formfield.model';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
 import {Location} from '@angular/common';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-camunda-generated-form',
@@ -27,8 +26,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaGeneratedFormComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @Output() submitted: EventEmitter<any> = new EventEmitter<any>();
   @Input() formFields: FormField[] = [];
   public formGroup: UntypedFormGroup;

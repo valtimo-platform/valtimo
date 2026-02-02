@@ -83,7 +83,6 @@ import {
   WidgetType,
 } from '../../../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-widget-management-fields-column',
@@ -111,8 +110,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @HostBinding('class') public readonly class = 'valtimo-widget-management-field-column';
   @Input({required: true}) public columnData: FieldsWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';

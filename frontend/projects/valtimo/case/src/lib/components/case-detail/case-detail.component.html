@@ -23,13 +23,13 @@
       observeSize
       (heightChange)="onMainContentHeaderHeightChange($event)"
     >
-      <valtimo-case-detail-header-widget [attr.data-test-id]="TEST_IDS.CASE_DETAIL_HEADER_WIDGET"></valtimo-case-detail-header-widget>
+      <valtimo-case-detail-header-widget></valtimo-case-detail-header-widget>
 
       <ng-container *ngIf="caseTags$ | async as caseTags">
         @if ((caseTags || []).length > 0) {
-          <div class="spacing-case-tags" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TAGS_CONTAINER">
+          <div class="spacing-case-tags">
             @for (tag of caseTags; track tag) {
-              <cds-tag size="sm" [type]="tag.tagType" data-test-id="case-detail-tag-{{$index}}">
+              <cds-tag size="sm" [type]="tag.tagType">
                 {{ tag.title }}
               </cds-tag>
             }
@@ -41,13 +41,12 @@
 
       <ng-template #tabs>
         <ng-container *ngIf="{activeTab: activeTab$ | async} as obs">
-          <cds-tabs *ngIf="tabLoader" type="inline" class="case-detail-tabs" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TABS">
+          <cds-tabs *ngIf="tabLoader" type="inline" class="case-detail-tabs">
             <cds-tab
               *ngFor="let tab of tabLoader.tabs"
               [active]="tab.name === (activeTabName$ | async)"
               heading="{{ tab | tabTranslate | async }}"
               (selected)="onTabSelected(tab, obs.activeTab)"
-              data-test-id="case-detail-tab-{{$index}}"
             ></cds-tab>
           </cds-tabs>
         </ng-container>
@@ -92,8 +91,8 @@
             class="card-body bg-white p-5 position-relative tab-container"
             [class.tab-container--compact]="compactMode$ | async"
           >
-            <div *ngIf="loadingTabs$ | async" class="loading-container" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_LOADING_CONTAINER">
-              <cds-loading [attr.data-test-id]="TEST_IDS.CASE_DETAIL_LOADING_INDICATOR"></cds-loading>
+            <div *ngIf="loadingTabs$ | async" class="loading-container">
+              <cds-loading></cds-loading>
             </div>
 
             <valtimo-no-results
@@ -101,7 +100,6 @@
               description="{{ 'case.noAccess.description' | translate }}"
               title="{{ 'case.noAccess.title' | translate }}"
               illustration="valtimo-layout/img/emptystate-not-authorised.svg"
-              [attr.data-test-id]="TEST_IDS.CASE_DETAIL_NO_ACCESS_MESSAGE"
             >
             </valtimo-no-results>
 
@@ -109,7 +107,6 @@
               *ngIf="tabContentObs.noTabsConfigured"
               [description]="'case.tabs.noResultsDescription' | translate"
               [title]="'case.tabs.noResults' | translate"
-              [attr.data-test-id]="TEST_IDS.CASE_DETAIL_NO_TABS_MESSAGE"
             ></valtimo-no-results>
 
             <ng-template #tabContainer></ng-template>
@@ -125,13 +122,12 @@
           [maxSize]="tabContentObs.caseDetailLayout.rightPanelMaxWidth"
         >
           @if (tabContentObs.showTaskList) {
-            <div class="task-panel" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_PANEL">
+            <div class="task-panel">
               @if (!tabContentObs.taskAndProcessLinkOpenedInPanel) {
                 <valtimo-case-detail-task-list
                   [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
                   (taskClickEvent)="onTaskClickEvent($event)"
                   (formSubmitEvent)="onFormSubmitEvent()"
-                  [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_LIST"
                 ></valtimo-case-detail-task-list>
               }
 
@@ -141,7 +137,6 @@
                   (activeChange)="onActiveChangeEvent($event)"
                   (closeEvent)="onTaskDetailsClose()"
                   (formSubmit)="onFormSubmitEvent()"
-                  [attr.data-test-id]="TEST_IDS.CASE_DETAIL_TASK_DETAIL"
                 >
                 </valtimo-case-detail-task-detail>
               }
@@ -156,7 +151,6 @@
     [isAdmin]="isAdmin$ | async"
     (formSubmit)="onFormSubmitEvent()"
     #supportingProcessStartModal
-    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_SUPPORTING_PROCESS_MODAL"
   ></valtimo-case-supporting-process-start-modal>
 </div>
 
@@ -188,7 +182,6 @@
       [documentId]="document.id"
       [hasPermission]="canAssign"
       (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
-      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_ASSIGN_USER"
     ></valtimo-case-assign-user>
   </div>
 </ng-template>
@@ -198,18 +191,21 @@
     *ngIf="canClaim && canHaveAssignee"
     [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
     (click)="claimAssignee()"
-    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_CLAIM_BUTTON"
   >
     {{ 'case.claimAssigneeCase' | translate }}
   </cds-overflow-menu-option>
 </ng-template>
 
-<ng-template #unassignButton let-canHaveAssignee="canHaveAssignee" let-assigneeId="assigneeId">
+<ng-template
+  #unassignButton
+  let-canAssign="canAssign"
+  let-canHaveAssignee="canHaveAssignee"
+  let-assigneeId="assigneeId"
+>
   <cds-overflow-menu-option
-    *ngIf="canHaveAssignee"
+    *ngIf="canHaveAssignee && canAssign"
     [disabled]="!assigneeId"
     (selected)="unassignAssignee()"
-    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_UNASSIGN_BUTTON"
   >
     {{ 'assignDocument.remove' | translate }}
   </cds-overflow-menu-option>
@@ -221,7 +217,6 @@
     [disabled]="isDeleting$ | async"
     (click)="deleteDocument()"
     type="danger"
-    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_DELETE_BUTTON"
   >
     {{ 'case.delete.delete' | translate }}
   </cds-overflow-menu-option>
@@ -233,7 +228,6 @@
     cdsButton="primary"
     [disabled]="processDefinitionCaseDefinitions.length === 0"
     [ngbTooltip]="processDefinitionCaseDefinitions.length === 0 ? 'No action' : null"
-    [attr.data-test-id]="TEST_IDS.CASE_DETAIL_START_PROCESS_BUTTON"
   >
     {{ 'case.startSubProcess' | translate }}
 
@@ -248,7 +242,6 @@
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="case.delete.delete"
   (confirmEvent)="onConfirmDelete()"
-  [attr.data-test-id]="TEST_IDS.CASE_DETAIL_CONFIRMATION_MODAL"
 ></valtimo-confirmation-modal>
 
 <ng-container renderInPageHeader [fullWidth]="true">
@@ -268,11 +261,10 @@
         document: document$ | async,
         caseStatus: caseStatus$ | async,
       } as obs"
-      [attr.data-test-id]="TEST_IDS.CASE_DETAIL_ACTIONS"
     >
       <div class="case-status-assign-custom-title" [ngClass]="{'--compact': compactMode$ | async}">
         @if (obs.caseStatus) {
-          <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_STATUS_TAG">{{
+          <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title">{{
             obs.caseStatus.title
           }}</cds-tag>
         }
@@ -293,14 +285,13 @@
         <ng-container *ngTemplateOutlet="caseDetailHeader"></ng-container>
       </div>
 
-      <div class="buttons-container" [attr.data-test-id]="TEST_IDS.CASE_DETAIL_BUTTONS_CONTAINER">
+      <div class="buttons-container">
         <cds-overflow-menu
           [ngClass]="{'--compact': compactMode$ | async}"
           *ngIf="obs.canHaveAssignee || obs.canDelete"
           flip="true"
           [offset]="(compactMode$ | async) ? {y: 48, x: -4} : {y: 48, x: 4}"
           class="overflow-button assign-overflow"
-          [attr.data-test-id]="TEST_IDS.CASE_DETAIL_ASSIGN_OVERFLOW_MENU"
         >
           <ng-container
             *ngTemplateOutlet="
@@ -313,7 +304,11 @@
           <ng-container
             *ngTemplateOutlet="
               unassignButton;
-              context: {canHaveAssignee: obs.canHaveAssignee, assigneeId: obs.assigneeId}
+              context: {
+                canAssign: obs.canAssign,
+                canHaveAssignee: obs.canHaveAssignee,
+                assigneeId: obs.assigneeId,
+              }
             "
           >
           </ng-container>
@@ -329,13 +324,11 @@
           [customTrigger]="customStartTrigger"
           [offset]="{y: 48, x: 35}"
           class="overflow-button case-detail-overflow"
-          [attr.data-test-id]="TEST_IDS.CASE_DETAIL_PROCESS_OVERFLOW_MENU"
         >
           <cds-overflow-menu-option
             *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
             [attr.title]="processDefinitionCaseDefinition.displayName"
             (click)="startProcess(processDefinitionCaseDefinition)"
-            data-test-id="case-detail-process-option-{{$index}}"
           >
             {{ processDefinitionCaseDefinition.displayName }}
           </cds-overflow-menu-option>

@@ -22,14 +22,13 @@
   }"
 >
   <cds-label [disabled]="disabled">
-    <span class="label-with-tooltip" [attr.data-test-id]="TEST_IDS.V_INPUT_LABEL_CONTAINER_LABEL">
+    <span class="label-with-tooltip">
       {{ displayTitle$ | async }}
 
       <v-tooltip-icon
         *ngIf="tooltip || tooltipTranslationKey"
         [disabled]="disabled"
         [tooltip]="tooltipTranslationKey ? (tooltipTranslationKey | translate) : tooltip"
-        [attr.data-test-id]="TEST_IDS.V_INPUT_LABEL_CONTAINER_TOOLTIP_ICON"
       ></v-tooltip-icon>
     </span>
 

@@ -20,11 +20,10 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.BESLUITENAPICONFIGURATIONFORM"
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.BESLUITENAPICONFIGURATIONTITLE"
+    data-test-id="besluitenApiConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +36,7 @@
   </v-input>
   <v-input
     name="rsin"
-    [attr.data-test-id]="TEST_IDS.BESLUITENAPIRSIN"
+    data-test-id="besluitenApiRsin"
     [title]="'rsin' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -50,7 +49,7 @@
   </v-input>
   <v-input
     name="url"
-    [attr.data-test-id]="TEST_IDS.BESLUITENAPIURL"
+    data-test-id="besluitenApiUrl"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -68,7 +67,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      [attr.data-test-id]="TEST_IDS.BESLUITENAPIAUTHENTICATIONPLUGINCONFIGURATION"
+      data-test-id="besluitenApiAuthenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

@@ -35,7 +35,7 @@ import {
 import {IkoManagementApiService} from '../../../../services';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import { getDisplayTypeParametersView, ModalCloseEvent, ModalMode, TEST_IDS } from '@valtimo/shared';
+import {getDisplayTypeParametersView, ModalCloseEvent, ModalMode} from '@valtimo/shared';
 import {ListColumnDto} from '../../../../models';
 import {IkoManagementListModalComponent} from '../list-modal/list-modal.component';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -57,8 +57,6 @@ import {toObservable} from '@angular/core/rxjs-interop';
   ],
 })
 export class IkoManagementListComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly $openModal = signal<boolean>(false);
   public readonly openConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly $loading = signal<boolean>(true);

@@ -23,7 +23,6 @@ import {PatchZaakNotitieConfig, PropertyFormField} from '../../models';
 import {PatchZaakNotitieProperties, PatchZaakNotitiePropertyOptions} from '../../models/patch-zaaknotitie-properties';
 import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
 import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -34,8 +33,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class PatchZaakNotitieConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() save$: Observable<void>;

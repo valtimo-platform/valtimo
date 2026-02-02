@@ -22,10 +22,9 @@
   [open]="open"
   size="sm"
   (close)="onClose()"
-  [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL_HEADER">
+    <h3 cdsModalHeaderHeading>
       {{ 'zgw.tags.addModal.header' | translate }}
     </h3>
   </cds-modal-header>
@@ -40,7 +39,6 @@
           ) | translate: {maxlength: value?.errors?.maxlength?.requiredLength}
         "
         [invalid]="value.dirty && value.invalid"
-        [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL_VALUE_LABEL"
       >
         {{ 'zgw.tags.fields.value' | translate }}
 
@@ -49,18 +47,17 @@
           formControlName="value"
           [attr.modal-primary-focus]="true"
           [invalid]="value.dirty && value.invalid"
-          [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL_VALUE_INPUT"
         />
       </cds-label>
     </form>
   </section>
 
   <cds-modal-footer [cdsLayer]="1">
-    <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL_CANCEL_BUTTON">
+    <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="invalid || pristine || obs.disabled" (click)="addTag()" [attr.data-test-id]="TEST_IDS.ADD_TAG_MODAL_ADD_BUTTON">
+    <button cdsButton="primary" [disabled]="invalid || pristine || obs.disabled" (click)="addTag()">
       {{ 'interface.add' | translate }}
     </button>
   </cds-modal-footer>

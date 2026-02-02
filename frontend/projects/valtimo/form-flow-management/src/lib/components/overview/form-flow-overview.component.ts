@@ -17,7 +17,13 @@ import {ChangeDetectionStrategy, Component, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, CarbonListComponent, ColumnConfig, ViewType} from '@valtimo/components';
-import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, GlobalNotificationService, Page, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+  Page,
+} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {FormFlowDefinition, ListFormFlowDefinition} from '../../models';
 import {FormFlowService} from '../../services';
@@ -28,8 +34,6 @@ import {FormFlowService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormFlowOverviewComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   public readonly FIELDS: ColumnConfig[] = [
