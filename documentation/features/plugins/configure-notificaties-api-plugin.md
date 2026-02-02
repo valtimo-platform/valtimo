@@ -20,6 +20,7 @@ To configure this plugin the following properties have to be entered (in additio
 
 * **Notificaties API URL (`url`).** Contains the complete base URL of the Notificaties API to connect to. This generally includes the path `/api/v1/`.
 * **Callback URL (`callbackUrl`).** Contains the complete callback url of Valtimo the Notificaties API will send updates on subscriptions to.
+* **Callback URL (`callbackUrl`).** Contains the auth header token the Notificaties API will include in the callback request.
 * **Authentication plugin configuration (`authenticationPluginConfiguration`).** Reference to another plugin configuration that will be used to add authentication to any request performed on the Notificaties API. If no option is available in this field a plugin has to be configured that is able to authenticate for the specific application that hosts the Notificaties API.
 
 An example plugin configuration:&#x20;
