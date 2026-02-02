@@ -65,7 +65,7 @@
         "properties": {
             "url": "${VALTIMO_NOTIFICATIES_API_URL}",
             "callbackUrl": "${VALTIMO_API_URL}notificatiesapi/callback",
-            "authenticationPluginConfiguration": "df36cd33-d0dd-429a-a8ad-e16f307ac434",
+            "authenticationPluginConfiguration": "df36cd33-d0dd-429a-a8ad-e16f307ac434"
         }
     },
     {
