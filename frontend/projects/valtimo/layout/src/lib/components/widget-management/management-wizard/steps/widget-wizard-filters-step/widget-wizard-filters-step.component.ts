@@ -194,26 +194,26 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   }
 
   private createFilterFormGroup(filter?: WidgetFilter): FormGroup {
-    const dataTypeId = filter?.dataType ?? 'text';
-    const fieldTypeId = filter?.fieldType ?? 'single';
-    const matchTypeId = filter?.matchType ?? 'exact';
+    const dataTypeId = filter?.dataType;
+    const fieldTypeId = filter?.fieldType;
+    const matchTypeId = filter?.matchType;
 
     return this.fb.group({
       title: this.fb.control<string>(filter?.title ?? '', Validators.required),
       key: this.fb.control<string>(filter?.key ?? '', Validators.required),
 
       dataType: this.fb.control<ListItem | null>(
-        this.DATA_TYPE_ITEMS.find(i => i.id === dataTypeId) ?? this.DATA_TYPE_ITEMS[0],
+        this.DATA_TYPE_ITEMS.find(item => item.id === dataTypeId) ?? null,
         Validators.required
       ),
 
       fieldType: this.fb.control<ListItem | null>(
-        this.FIELD_TYPE_ITEMS.find(i => i.id === fieldTypeId) ?? this.FIELD_TYPE_ITEMS[0],
+        this.FIELD_TYPE_ITEMS.find(item => item.id === fieldTypeId) ?? null,
         Validators.required
       ),
 
       matchType: this.fb.control<ListItem | null>(
-        this.MATCH_TYPE_ITEMS.find(i => i.id === matchTypeId) ?? this.MATCH_TYPE_ITEMS[0],
+        this.MATCH_TYPE_ITEMS.find(item => item.id === matchTypeId) ?? null,
         Validators.required
       ),
     });
@@ -243,9 +243,9 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
         const mappedFilters: WidgetFilter[] = (filters ?? []).map(filter => ({
           title: filter.title,
           key: filter.key,
-          dataType: this.getListItemId(filter.dataType) ?? 'text',
-          fieldType: this.getListItemId(filter.fieldType) ?? 'single',
-          matchType: this.getListItemId(filter.matchType) ?? 'exact',
+          dataType: this.getListItemId(filter.dataType) ?? null,
+          fieldType: this.getListItemId(filter.fieldType) ?? null,
+          matchType: this.getListItemId(filter.matchType) ?? null,
         }));
 
         this.widgetWizardService.$widgetContent.update(
@@ -262,7 +262,7 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
 
   public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
     const value = filterRow.get('dataType')?.value as ListItem | null;
-    const selectedId = value?.id ?? 'text';
+    const selectedId = value?.id ?? null;
 
     return this.DATA_TYPE_ITEMS.map(item => ({
       ...item,
@@ -271,18 +271,23 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   }
 
   public getFieldTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const value = filterRow.get('fieldType')?.value as ListItem | null;
-    const selectedId = value?.id ?? 'single';
+    const fieldType = filterRow.get('fieldType')?.value as ListItem | null;
+    const selectedId = fieldType?.id ?? null;
 
-    return this.FIELD_TYPE_ITEMS.map(item => ({
-      ...item,
-      selected: item.id === selectedId,
-    }));
+    const dataType = filterRow.get('dataType')?.value as ListItem | null;
+    const isText = dataType?.id === 'text';
+
+    return this.FIELD_TYPE_ITEMS
+      .filter(item => isText || (item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown'))
+      .map(item => ({
+        ...item,
+        selected: item.id === selectedId,
+      }));
   }
 
   public getMatchTypeDropdownItems(filterRow: FormGroup): ListItem[] {
     const value = filterRow.get('matchType')?.value as ListItem | null;
-    const selectedId = value?.id ?? 'exact';
+    const selectedId = value?.id ?? null;
 
     return this.MATCH_TYPE_ITEMS.map(item => ({
       ...item,
