@@ -34,8 +34,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
-      authHeader: 'Authenticatie header',
-      authHeaderTooltip: 'Secret van de authenticatie header voor de callback URL.',
+      authHeader: 'Authenticatie header (herstart server vereist)',
+      authHeaderTooltip: 'Secret van de authenticatie header voor de callback URL. Als niet ingevuld wordt een random secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
     },
     en: {
       title: 'Notificaties API',
@@ -48,8 +48,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
-      authHeader: 'Authentication header',
-      authHeaderTooltip: 'Secret value in Authentication header for the callback URL.',
+      authHeader: 'Authentication header (restart server required)',
+      authHeaderTooltip: 'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
     },
   },
 };
