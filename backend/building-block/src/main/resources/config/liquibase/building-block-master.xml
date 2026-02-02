@@ -39,4 +39,5 @@
     <include file="changelog/20251120-add-building-block-process-link-mappings.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251209-add-building-block-instance-activity-id.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20260114-add-parent-building-block-instance-id.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260130-make-case-document-id-nullable.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

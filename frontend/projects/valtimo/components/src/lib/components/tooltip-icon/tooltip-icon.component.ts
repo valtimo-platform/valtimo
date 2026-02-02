@@ -15,7 +15,6 @@
  */
 
 import {Component, Input} from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-tooltip-icon',
@@ -24,8 +23,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class TooltipIconComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() tooltip = '';
   @Input() disabled = false;
 }

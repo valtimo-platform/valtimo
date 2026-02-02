@@ -34,6 +34,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.LinkDocumentRequest
@@ -120,7 +121,8 @@ class ZakenApiPlugin(
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
-    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
+    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
+    private val caseDocumentResolver: CaseDocumentResolver
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -274,7 +276,7 @@ class ZakenApiPlugin(
             val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
             createZaak(
-                documentId = documentId,
+                documentId = caseDocumentResolver.resolveCaseDocumentId(documentId),
                 rsin = rsin,
                 zaaktypeUrl = zaaktypeUrl,
                 description = description,
@@ -309,6 +311,8 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$documentId'" }
+            val caseDocumentId = zaakUrlProvider
+
             val existingZaakUrl = try {
                 zaakUrlProvider.getZaakUrl(documentId)
             } catch (e: ZaakInstanceLinkNotFoundException) {

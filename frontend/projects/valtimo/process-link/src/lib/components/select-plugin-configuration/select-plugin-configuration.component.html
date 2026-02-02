@@ -15,11 +15,11 @@
   -->
 
 <ng-container *ngIf="listItems$ | async as items; else loading">
-  <p class="step-description" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_DESCRIPTION">
+  <p class="step-description">
     {{ pageHeaderText$ | async | translate }}
   </p>
-  <div class="list-container" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_LIST_CONTAINER">
-    <cds-structured-list (selected)="selected($event)" selection="true" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_STRUCTURED_LIST">
+  <div class="list-container">
+    <cds-structured-list (selected)="selected($event)" selection="true">
       <cds-list-header>
         <cds-list-column nowrap="true"></cds-list-column>
         <cds-list-column nowrap="true">
@@ -29,10 +29,10 @@
           {{ 'processLinkConfiguration.pluginDescription' | translate }}
         </cds-list-column>
       </cds-list-header>
-      <cds-list-row *ngFor="let item of items" [value]="item.payload" data-test-id="process-link-configuration-row-{{i}}">
+      <cds-list-row *ngFor="let item of items" [value]="item.payload">
         <cds-list-column>
           <div *ngIf="item.logo">
-            <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" data-test-id="process-link-configuration-logo-{{i}}"/>
+            <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" />
           </div>
         </cds-list-column>
         <cds-list-column>{{ item.title }}</cds-list-column>
@@ -43,7 +43,7 @@
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-container" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_LOADING_CONTAINER">
-    <cds-loading [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_LOADING"></cds-loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
   </div>
 </ng-template>

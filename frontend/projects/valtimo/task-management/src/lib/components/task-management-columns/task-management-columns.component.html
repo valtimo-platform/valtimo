@@ -25,7 +25,6 @@
   } as obs"
 >
   <valtimo-carbon-list
-    [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_LIST"
     [actionItems]="actionItems"
     [items]="obs.taskListColumns"
     [loading]="obs.loadingColumns"
@@ -38,7 +37,6 @@
     <ng-container carbonToolbarContent [ngTemplateOutlet]="addButton"></ng-container>
 
     <valtimo-no-results
-      [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_NO_RESULTS"
       [action]="addButton"
       [title]="'listColumn.noConfigWarningTitle' | translate"
       [description]="'listColumn.noConfigWarning' | translate"
@@ -47,7 +45,6 @@
   </valtimo-carbon-list>
 
   <valtimo-task-management-column-modal
-    [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_COLUMN_MODAL"
     [taskListColumns]="obs.cachedTaskListColumns"
     [type]="obs.modalType"
     [show]="obs.showModal"
@@ -57,7 +54,6 @@
   ></valtimo-task-management-column-modal>
 
   <valtimo-confirmation-modal
-    [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_CONFIRMATION_MODAL"
     [showModalSubject$]="showDeleteModal$"
     [outputOnConfirm]="deleteColumnKey$ | async"
     (confirmEvent)="deleteColumnConfirmation($event, obs.caseDefinitionKey)"
@@ -73,7 +69,6 @@
     cdsButton="primary"
     [disabled]="disabled$ | async"
     (click)="showModal('add')"
-    [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_ADD_BUTTON"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

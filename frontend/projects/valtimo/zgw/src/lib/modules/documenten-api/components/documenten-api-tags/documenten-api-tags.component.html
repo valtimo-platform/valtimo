@@ -38,12 +38,11 @@
     (paginationClicked)="paginationClicked($event)"
     (paginationSet)="paginationSet($event)"
     (search)="searchTermEntered($event)"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_LIST"
   >
     <ng-container carbonToolbarContent *ngTemplateOutlet="addButtton"></ng-container>
 
     <ng-container carbonToolbarActions>
-      <button cdsButton="primary" (click)="showDeleteMultipleModal()" [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_DELETE_BUTTON">
+      <button cdsButton="primary" (click)="showDeleteMultipleModal()">
         {{ 'interface.delete' | translate }}
         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </button>
@@ -54,7 +53,6 @@
       [action]="addButtton"
       title="{{ 'zgw.tags.list.noResultsTitle' | translate }}"
       description="{{ 'zgw.tags.list.noResultsDescription' | translate }}"
-      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_NO_RESULTS"
     ></valtimo-no-results>
 
     <valtimo-no-results
@@ -62,7 +60,6 @@
       title="{{ 'zgw.tags.search.noResultsTitle' | translate }}"
       description="{{ 'zgw.tags.search.noResultsDescription' | translate }}"
       illustration="valtimo-layout/img/emptystate-no-result.svg"
-      [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_SEARCH_NO_RESULTS"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
@@ -70,7 +67,6 @@
     [open]="!obs.addModalClosed"
     [caseDefinitionKey]="obs.caseDefinitionKey"
     (closeModalEvent)="closeModal($event)"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_MODAL"
   ></valtimo-documenten-api-tag-modal>
 
   <valtimo-confirmation-modal
@@ -81,7 +77,6 @@
     titleTranslationKey="interface.delete"
     [outputOnConfirm]="obs.tagToDelete"
     (confirmEvent)="confirmDeleteTag($event)"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_CONFIRMATION_MODAL"
   ></valtimo-confirmation-modal>
 
   <valtimo-confirmation-modal
@@ -98,11 +93,10 @@
       itemsOnCurrentPage: obs.documentTags.length,
     }"
     (confirmEvent)="confirmDeleteMultipleTag($event)"
-    [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_CONFIRMATION_MODAL_MULTIPLE"
   ></valtimo-confirmation-modal>
 
   <ng-template #addButtton>
-    <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()" [attr.data-test-id]="TEST_IDS.DOCUMENTEN_API_TAG_ADD_BUTTON">
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()">
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
       {{ 'zgw.tags.add' | translate }}
     </button>

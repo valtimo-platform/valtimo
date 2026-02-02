@@ -18,13 +18,11 @@
   class="task-count-configuration-form"
   *ngIf="{operatorItems: operatorItems$} as obs"
   [formGroup]="form"
-  [attr.data-test-id]="TEST_IDS.TASK_COUNT_CONFIGURATION_FORM"
 >
   <div class="form__element conditions-multi-input">
     <cds-label
       [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
       class="conditions-label"
-      [attr.data-test-id]="TEST_IDS.TASK_COUNT_CONFIGURATION_CONDITIONS_LABEL"
       >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
@@ -40,7 +38,6 @@
       type="keyDropdownValue"
       (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"
-      [attr.data-test-id]="TEST_IDS.TASK_COUNT_CONFIGURATION_MULTI_INPUT"
     ></valtimo-carbon-multi-input>
   </div>
 </form>

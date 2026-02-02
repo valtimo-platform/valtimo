@@ -29,7 +29,6 @@ import {SkeletonModule} from 'carbon-components-angular';
 import {map, Observable, startWith, switchMap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PageHeaderService, PageSubtitleService, PageTitleService} from '../../services';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-page-actions',
@@ -40,8 +39,6 @@ import { TEST_IDS } from '@valtimo/shared';
   encapsulation: ViewEncapsulation.None,
 })
 export class PageActionsComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('pageActionsVcr', {static: true, read: ViewContainerRef})
   private readonly _pageActionsVcr!: ViewContainerRef;
   @ViewChild('pageActions')

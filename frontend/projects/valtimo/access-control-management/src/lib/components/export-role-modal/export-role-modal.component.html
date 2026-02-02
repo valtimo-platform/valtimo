@@ -22,23 +22,22 @@
   showFooter="true"
   [title]="vars.title"
   (close)="onCancel()"
-  [attr.data-test-id]="TEST_IDS.EXPORT_MODAL"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.EXPORT_MODAL_TITLE">
+    <h3 cdsModalHeaderHeading>
       {{ vars.title }}
     </h3>
   </cds-modal-header>
 
   <section cdsModalContent>
     <div class="export-buttons">
-      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('unified')" [attr.data-test-id]="TEST_IDS.EXPORT_MODAL_UNIFIED_BUTTON">
+      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('unified')">
         {{ 'accessControl.roles.singleExport' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="document" size="16"></svg>
       </button>
 
-      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('separate')" [attr.data-test-id]="TEST_IDS.EXPORT_MODAL_SEPARATE_BUTTON">
+      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('separate')">
         {{ 'accessControl.roles.multipleExport' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="copy--file" size="16"></svg>
@@ -47,7 +46,7 @@
   </section>
 
   <cds-modal-footer>
-    <button [disabled]="disabled" cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.EXPORT_MODAL_CANCEL_BUTTON">
+    <button [disabled]="disabled" cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -55,7 +54,6 @@
       [disabled]="!vars.selectedType || disabled"
       cdsButton="primary"
       (click)="onConfirm(vars.selectedType)"
-      [attr.data-test-id]="TEST_IDS.EXPORT_MODAL_CONFIRM_BUTTON"
     >
       {{ vars.title }}
     </button>

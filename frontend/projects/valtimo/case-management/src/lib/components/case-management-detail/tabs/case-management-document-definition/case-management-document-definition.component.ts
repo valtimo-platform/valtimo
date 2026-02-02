@@ -25,7 +25,11 @@ import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16} from '@carbon/icons';
 import {ConfirmationModalComponent, EditorModel, PageHeaderService} from '@valtimo/components';
 import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/document';
-import { CaseManagementParams, EditPermissionsService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
@@ -38,8 +42,6 @@ import {CaseDetailService} from '../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDocumentDefinitionComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('cancelModal') public cancelModal: ConfirmationModalComponent;
   @Input() caseDefinitionKey: string;
   @Output() cancelRedirect = new EventEmitter();

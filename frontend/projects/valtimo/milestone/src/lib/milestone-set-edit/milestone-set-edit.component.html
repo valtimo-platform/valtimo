@@ -44,12 +44,10 @@
                     'is-invalid': formControls.title.touched && formControls.title.errors,
                   }"
                   required
-                  [attr.data-test-id]="TEST_IDS.MILESTONE_SET_TITLE_INPUT"
                 />
                 <div
                   *ngIf="formControls.title.touched && formControls.title.errors"
                   class="invalid-feedback"
-                  [attr.data-test-id]="TEST_IDS.MILESTONE_SET_TITLE_ERROR"
                 >
                   <div *ngIf="formControls.title.errors.required">Title is required</div>
                 </div>
@@ -58,16 +56,16 @@
 
             <div class="row pt-3 mt-1">
               <div class="col-12 col-sm-6 text-left">
-                <a [routerLink]="'/milestones'" class="btn btn-space btn-default" [attr.data-test-id]="TEST_IDS.MILESTONE_SET_BACK_BUTTON">Back</a>
-                <button type="button" class="btn btn-space btn-danger" (click)="delete()" [attr.data-test-id]="TEST_IDS.MILESTONE_SET_DELETE_BUTTON">
+                <a [routerLink]="'/milestones'" class="btn btn-space btn-default">Back</a>
+                <button type="button" class="btn btn-space btn-danger" (click)="delete()">
                   Delete
                 </button>
               </div>
               <div class="col-12 col-sm-6 text-right">
-                <button class="btn btn-space btn-secondary" type="button" (click)="reset()" [attr.data-test-id]="TEST_IDS.MILESTONE_SET_RESET_BUTTON">
+                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
                   Reset
                 </button>
-                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid" [attr.data-test-id]="TEST_IDS.MILESTONE_SET_SUBMIT_BUTTON">
+                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
                   Submit
                 </button>
               </div>

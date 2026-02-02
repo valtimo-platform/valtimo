@@ -39,12 +39,11 @@
       (allValuesValidEvent)="validChange($event)"
       (valueChange)="valueChange($event)"
       addRowTranslationKey="translationManagement.add"
-      [attr.data-test-id]="TEST_IDS.TRANSLATION_MANAGEMENT_MULTI_INPUT"
     ></valtimo-carbon-multi-input>
   </ng-container>
 
   <ng-template #loading>
-    <div class="loading-container" [attr.data-test-id]="TEST_IDS.TRANSLATION_MANAGEMENT_LOADING_CONTAINER"><cds-loading [attr.data-test-id]="TEST_IDS.TRANSLATION_MANAGEMENT_LOADING"></cds-loading></div>
+    <div class="loading-container"><cds-loading></cds-loading></div>
   </ng-template>
 
   <valtimo-confirmation-modal
@@ -60,7 +59,6 @@
     titleTranslationKey="translationManagement.modalTitle"
     contentTranslationKey="translationManagement.modalContent"
     [spacerAfterCancelButton]="true"
-    [attr.data-test-id]="TEST_IDS.TRANSLATION_MANAGEMENT_CONFIRMATION_MODAL"
   ></valtimo-confirmation-modal>
 
   <ng-container renderInPageHeader>
@@ -70,7 +68,6 @@
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="showModal()"
         [disabled]="!obs.allChangedValuesValid || obs.disabled || !obs.valuesChanged"
-        [attr.data-test-id]="TEST_IDS.TRANSLATION_MANAGEMENT_SAVE_BUTTON"
       >
         {{ 'interface.save' | translate }}
 
