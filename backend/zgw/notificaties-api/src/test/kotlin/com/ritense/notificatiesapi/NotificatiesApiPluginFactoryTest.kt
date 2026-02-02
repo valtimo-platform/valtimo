@@ -36,14 +36,12 @@ internal class NotificatiesApiPluginFactoryTest {
     fun `should create NotificatiesApiPlugin`() {
         val pluginService = mock<PluginService>()
         val client = mock<NotificatiesApiClient>()
-        val abonnementLinkRepository = mock<NotificatiesApiAbonnementLinkRepository>()
 
         whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
 
         val factory = NotificatiesApiPluginFactory(
             pluginService,
-            client,
-            abonnementLinkRepository
+            client
         )
 
         val notificatiesApiPluginProperties: String = """

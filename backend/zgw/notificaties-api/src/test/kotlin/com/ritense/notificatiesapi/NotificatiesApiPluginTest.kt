@@ -54,7 +54,7 @@ internal class NotificatiesApiPluginTest {
         pluginConfigurationId = PluginConfigurationId(UUID.randomUUID())
         notificatiesApiConfigurationId = NotificatiesApiConfigurationId(pluginConfigurationId.id)
 
-        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient, abonnementLinkRepository)
+        plugin = NotificatiesApiPlugin(pluginConfigurationId, notificatiesApiClient)
             .apply {
                 url = URI("http://example.com")
                 callbackUrl = URI("http://example.com/callback")
