@@ -38,7 +38,7 @@ data class InternalCaseStatus(
     @Column(name = "internal_case_status_order")
     val order: Int,
 
-    @Column(name = "internal_case_retention_period")
+    @Column(name = "internal_case_retention_period_in_days")
     val retentionPeriodInDays: Int,
 
     @Column(name = "internal_case_status_color")
