@@ -23,6 +23,7 @@ import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.mail.MailSender
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
@@ -66,6 +67,9 @@ abstract class BaseIntegrationTest {
     @MockitoSpyBean
     lateinit var buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService
 
+    @MockitoSpyBean
+    lateinit var operatonRepositoryService: OperatonRepositoryService
+
     @Autowired
     lateinit var applicationEventPublisher: ApplicationEventPublisher
 
@@ -80,6 +84,7 @@ abstract class BaseIntegrationTest {
             buildingBlockDocumentDefinitionService,
             buildingBlockProcessService,
             buildingBlockPluginDefinitionService,
+            operatonRepositoryService,
             applicationEventPublisher
         ).filter { mockingDetails(it).isMock || mockingDetails(it).isSpy }
             .forEach { reset(it) }

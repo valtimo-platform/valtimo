@@ -153,10 +153,9 @@ class IndependentProcessBuildingBlockIT @Autowired constructor(
             documentService.modifyDocument(buildingBlockDocument, updatedContent)
         }
 
-        // Complete the building block process - this should trigger output mapping
         runtimeService.correlateMessage("test-ready", instance.documentId.toString())
 
-        // Verify the process variable was set from the building block document (use history since process completed)
+        // Use history since process completed
         val result = historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("result")
@@ -222,10 +221,9 @@ class IndependentProcessBuildingBlockIT @Autowired constructor(
             documentService.modifyDocument(doc, updatedContent)
         }
 
-        // Complete the building block process
         runtimeService.correlateMessage("test-ready", instance.documentId.toString())
 
-        // Verify output was mapped to process variable (use history since process completed)
+        // Use history since process completed
         val outputResult = historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("outputResult")
