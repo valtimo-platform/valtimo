@@ -20,7 +20,7 @@ import {TagColor} from '@valtimo/shared';
 interface InternalCaseStatus {
   key: string;
   title: string;
-  retentionPeriod: number;
+  retentionPeriodInDays: number;
   visibleInCaseListByDefault: boolean;
   color: TagColor;
   documentDefinitionName?: string;

@@ -111,7 +111,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("house", internalCaseStatus.id.caseDefinitionKey)
         assertEquals("house123", internalCaseStatus.id.key)
         assertEquals("456", internalCaseStatus.title)
-        assertEquals(-1, internalCaseStatus.retentionPeriod)
+        assertEquals(-1, internalCaseStatus.retentionPeriodInDays)
         assertTrue(internalCaseStatus.visibleInCaseListByDefault)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
@@ -236,7 +236,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("house123", internalCaseStatus.id.key)
         assertEquals("789", internalCaseStatus.title)
         assertFalse(internalCaseStatus.visibleInCaseListByDefault)
-        assertEquals(123, internalCaseStatus.retentionPeriod)
+        assertEquals(123, internalCaseStatus.retentionPeriodInDays)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 
@@ -249,7 +249,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     key = "house123",
                     title = "456",
                     visibleInCaseListByDefault = true,
-                    retentionPeriod = 190,
+                    retentionPeriodInDays = 190,
                     color = GRAY
                 )
             )
@@ -277,7 +277,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("house123", internalCaseStatus.id.key)
         assertEquals("789", internalCaseStatus.title)
         assertFalse(internalCaseStatus.visibleInCaseListByDefault)
-        assertEquals(-1, internalCaseStatus.retentionPeriod)
+        assertEquals(-1, internalCaseStatus.retentionPeriodInDays)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
     }
 

@@ -89,7 +89,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
                     .andExpect(jsonPath("$[0].caseDefinitionName").value(status.id.caseDefinitionKey))
                     .andExpect(jsonPath("$[0].title").value(status.title))
                     .andExpect(jsonPath("$[0].order").value(status.order))
-                    .andExpect(jsonPath("$[0].retentionPeriod").value(status.retentionPeriod))
+                    .andExpect(jsonPath("$[0].retentionPeriodInDays").value(status.retentionPeriodInDays))
                     .andExpect(jsonPath("$[0].color").value(status.color.name))
             }
     }
@@ -111,7 +111,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
                     .andExpect(jsonPath("$[1].caseDefinitionName").value(status.id.caseDefinitionKey))
                     .andExpect(jsonPath("$[1].title").value(status.title))
                     .andExpect(jsonPath("$[1].order").value(status.order))
-                    .andExpect(jsonPath("$[1].retentionPeriod").value(status.retentionPeriod))
+                    .andExpect(jsonPath("$[1].retentionPeriodInDays").value(status.retentionPeriodInDays))
                     .andExpect(jsonPath("$[1].color").value(status.color.name))
             }
     }
@@ -123,7 +123,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
                         "key": "test",
                         "title": "Test",
                         "visibleInCaseListByDefault": false,
-                        "retentionPeriod": 365,
+                        "retentionPeriodInDays": 365,
                         "color": "RED"
                     }
                 """.trimIndent()
@@ -143,7 +143,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
             .andExpect(jsonPath("$.caseDefinitionName").value(caseDefinitionName))
             .andExpect(jsonPath("$.title").value("Test"))
             .andExpect(jsonPath("$.order").value(0))
-            .andExpect(jsonPath("$.retentionPeriod").value(365))
+            .andExpect(jsonPath("$.retentionPeriodInDays").value(365))
             .andExpect(jsonPath("$.color").value("RED"))
     }
 
@@ -170,7 +170,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
                         .andExpect(jsonPath("$[$i].caseDefinitionName").value(caseDefinitionName))
                         .andExpect(jsonPath("$[$i].title").value(dto.title))
                         .andExpect(jsonPath("$[$i].order").value(i))
-                        .andExpect(jsonPath("$[$i].retentionPeriod").value(dto.retentionPeriod))
+                        .andExpect(jsonPath("$[$i].retentionPeriodInDays").value(dto.retentionPeriodInDays))
                         .andExpect(jsonPath("$[$i].color").value(dto.color.name))
                 }
 
@@ -221,7 +221,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
 
     private fun InternalCaseStatus.toUpdateOrderRequestDto(): InternalCaseStatusUpdateOrderRequestDto {
         return InternalCaseStatusUpdateOrderRequestDto(
-            this.id.key, this.title, this.visibleInCaseListByDefault, this.retentionPeriod, this.color
+            this.id.key, this.title, this.visibleInCaseListByDefault, this.retentionPeriodInDays, this.color
         )
     }
 
@@ -231,7 +231,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
             this.title,
             this.visibleInCaseListByDefault,
             0,
-            this.retentionPeriod,
+            this.retentionPeriodInDays,
             this.color
         )
     }
@@ -242,7 +242,7 @@ class InternalCaseStatusResourceTest : BaseTest() {
             this.title,
             this.visibleInCaseListByDefault,
             order,
-            this.retentionPeriod,
+            this.retentionPeriodInDays,
             this.color
         )
     }

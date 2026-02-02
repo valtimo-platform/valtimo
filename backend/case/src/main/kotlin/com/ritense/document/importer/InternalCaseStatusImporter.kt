@@ -54,7 +54,7 @@ class InternalCaseStatusImporter(
                             it.key,
                             it.title,
                             it.visibleInCaseListByDefault,
-                            it.retentionPeriod,
+                            it.retentionPeriodInDays,
                             it.color
                         )
                     )
@@ -66,7 +66,7 @@ class InternalCaseStatusImporter(
                             it.key,
                             it.title,
                             it.visibleInCaseListByDefault,
-                            it.retentionPeriod,
+                            it.retentionPeriodInDays,
                             it.color
                         )
                     )

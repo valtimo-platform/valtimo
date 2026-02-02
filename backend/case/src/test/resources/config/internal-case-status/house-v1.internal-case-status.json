@@ -6,7 +6,7 @@
             "caseDefinitionName": "house",
             "title": "Suspended",
             "visibleInCaseListByDefault": false,
-            "retentionPeriod": 50,
+            "retentionPeriodInDays": 50,
             "color": "GRAY"
         },
         {
@@ -14,8 +14,7 @@
             "caseDefinitionName": "house",
             "title": "Closed",
             "visibleInCaseListByDefault": false,
-            "retentionPeriod": 100,
-
+            "retentionPeriodInDays": 100,
             "color": "GRAY"
         },
         {
@@ -23,7 +22,7 @@
             "caseDefinitionName": "house",
             "title": "Started",
             "visibleInCaseListByDefault": true,
-            "retentionPeriod": -1,
+            "retentionPeriodInDays": -1,
             "color": "GRAY"
         }
     ]

@@ -2,21 +2,21 @@
     {
         "key": "aanvraag-ontvangen",
         "title": "Aanvraag ontvangen",
-        "retentionPeriod": -1,
+        "retentionPeriodInDays": -1,
         "visibleInCaseListByDefault": true,
         "color": "BLUE"
     },
     {
         "key": "in-behandeling",
         "title": "In behandeling",
-        "retentionPeriod": -1,
+        "retentionPeriodInDays": -1,
         "visibleInCaseListByDefault": true,
         "color": "PURPLE"
     },
     {
         "key": "informatieverzoek-uitgezet",
         "title": "Informatieverzoek uitgezet",
-        "retentionPeriod": 365,
+        "retentionPeriodInDays": 365,
         "visibleInCaseListByDefault": true,
         "color": "GREEN"
     }

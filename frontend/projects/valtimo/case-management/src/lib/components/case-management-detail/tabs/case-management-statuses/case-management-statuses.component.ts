@@ -203,7 +203,7 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
         viewType: ViewType.BOOLEAN,
       },
       {
-        key: 'retentionPeriod',
+        key: 'retentionPeriodInDays',
         label: 'caseManagement.statuses.columns.retentionPeriod',
         viewType: ViewType.TEMPLATE,
         template: this.retentionPeriodColumnTemplate,

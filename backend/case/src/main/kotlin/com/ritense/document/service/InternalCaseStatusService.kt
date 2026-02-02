@@ -98,7 +98,7 @@ class InternalCaseStatusService(
                 request.title,
                 request.visibleInCaseListByDefault,
                 currentInternalCaseStatuses.size,
-                request.retentionPeriod,
+                request.retentionPeriodInDays,
                 request.color
             )
         )
@@ -121,7 +121,7 @@ class InternalCaseStatusService(
             oldInternalCaseStatus.copy(
                 title = request.title,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
-                retentionPeriod = request.retentionPeriod,
+                retentionPeriodInDays = request.retentionPeriodInDays,
                 color = request.color
             )
         )
@@ -150,7 +150,7 @@ class InternalCaseStatusService(
                 title = request.title,
                 order = index,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
-                retentionPeriod = request.retentionPeriod,
+                retentionPeriodInDays = request.retentionPeriodInDays,
                 color = request.color
             )
         }

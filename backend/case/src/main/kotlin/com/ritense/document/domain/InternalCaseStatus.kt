@@ -39,7 +39,7 @@ data class InternalCaseStatus(
     val order: Int,
 
     @Column(name = "internal_case_retention_period")
-    val retentionPeriod: Int,
+    val retentionPeriodInDays: Int,
 
     @Column(name = "internal_case_status_color")
     @Enumerated(EnumType.STRING)

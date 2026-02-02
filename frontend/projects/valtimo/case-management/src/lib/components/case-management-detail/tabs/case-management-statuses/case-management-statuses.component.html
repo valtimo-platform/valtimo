@@ -81,11 +81,11 @@
 </ng-template>
 
 <ng-template #retentionPeriodColumnTemplate let-data="data">
-  @if (data?.item?.retentionPeriod === 0) {
+  @if (data?.item?.retentionPeriodInDays === 0) {
     {{ 'caseManagement.statuses.columns.deletedImmediately' | translate }}
-  } @else if (data?.item?.retentionPeriod === -1 ) {
+  } @else if (data?.item?.retentionPeriodInDays === -1 ) {
     {{ '-' }}
   } @else {
-    {{ data?.item?.retentionPeriod }}
+    {{ data?.item?.retentionPeriodInDays }}
   }
 </ng-template>

@@ -22,7 +22,7 @@ const CASE_WITHOUT_STATUS_STATUS: InternalCaseStatus = {
   key: CASES_WITHOUT_STATUS_KEY,
   documentDefinitionName: '',
   title: '',
-  retentionPeriod: 0,
+  retentionPeriodInDays: 0,
   color: TagColor.Gray,
   visibleInCaseListByDefault: false,
 };
