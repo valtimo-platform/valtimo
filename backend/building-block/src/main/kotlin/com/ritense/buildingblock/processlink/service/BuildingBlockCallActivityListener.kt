@@ -26,6 +26,9 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
@@ -39,6 +42,7 @@ class BuildingBlockCallActivityListener(
     private val buidingBlockInstanceService: BuildingBlockInstanceService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
+    private val operatonRepositoryService: OperatonRepositoryService,
 ) {
 
     @EventListener(
@@ -54,27 +58,19 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
-            // Check if we're inside a parent building block (nested building block scenario)
             val parentBuildingBlockInstance = findParentBuildingBlockInstance(execution)
+            val isIndependentProcess = parentBuildingBlockInstance == null && isIndependentProcess(execution)
 
-            // Determine if this is an independent process (no case, no parent building block)
-            val isIndependentProcess = parentBuildingBlockInstance == null && execution.businessKey == null
-
-            // For nested building blocks, use the root case document ID from the parent chain
-            // For top-level building blocks under a case, use the execution's business key (which is the case document ID)
-            // For independent processes, caseDocumentId is null
             val rootCaseDocumentId: UUID? = when {
                 parentBuildingBlockInstance != null -> parentBuildingBlockInstance.caseDocumentId
-                execution.businessKey != null -> UUID.fromString(execution.businessKey)
-                else -> null // Independent process
+                !isIndependentProcess && execution.businessKey != null -> UUID.fromString(execution.businessKey)
+                else -> null
             }
 
-            // The source document for input mappings: parent building block document or case document
-            // For independent processes, this is null (inputs come from process variables)
             val sourceDocumentId: UUID? = when {
                 parentBuildingBlockInstance != null -> parentBuildingBlockInstance.documentId
-                execution.businessKey != null -> UUID.fromString(execution.businessKey)
-                else -> null // Independent process
+                !isIndependentProcess && execution.businessKey != null -> UUID.fromString(execution.businessKey)
+                else -> null
             }
 
             val buildingBlockInstance = this.createBuildingBlock(
@@ -85,11 +81,20 @@ class BuildingBlockCallActivityListener(
                 activityId = activityId,
                 parentBuildingBlockInstanceId = parentBuildingBlockInstance?.id
             )
-            // Set as local variable on the call activity execution for two purposes:
-            // 1. The BPMN expression #{buildingBlockDocumentId} reads this to set the child process's business key
-            // 2. onCallActivityEnd reads this to perform output mappings when the building block completes
+            // Used by BPMN #{buildingBlockDocumentId} expression and onCallActivityEnd for output mappings
             execution.setVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
+    }
+
+    /**
+     * Independent process = version tag doesn't start with "CD:" (case) or "BB:" (building block).
+     */
+    private fun isIndependentProcess(execution: DelegateExecution): Boolean {
+        val processDefinition = operatonRepositoryService.findProcessDefinitionById(execution.processDefinitionId)
+        val versionTag = processDefinition?.versionTag ?: return true
+
+        return !versionTag.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX) &&
+            !versionTag.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)
     }
 
     /**
