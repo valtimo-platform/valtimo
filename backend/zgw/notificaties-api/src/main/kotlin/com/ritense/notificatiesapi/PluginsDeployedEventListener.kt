@@ -94,12 +94,7 @@ class PluginsDeployedEventListener(
                 .getNotificatiesApiPlugin().notificatiesApiConfigurationId.id
         }
 
-        val authKey =
-            if (notificatiesApiPluginInstance.isAuthHeaderInitialized() && notificatiesApiPluginInstance.authHeader.isNotEmpty()) {
-                notificatiesApiPluginInstance.authHeader
-            } else {
-                createRandomKey()
-            }
+        val authKey = notificatiesApiPluginInstance.authHeader?.takeIf { it.isNotEmpty() } ?: createRandomKey()
 
         ensureKanalenExist(
             kanalen.map { it.naam }.toSet(),

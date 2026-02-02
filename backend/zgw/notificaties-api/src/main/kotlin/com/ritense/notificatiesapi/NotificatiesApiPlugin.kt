@@ -48,9 +48,7 @@ class NotificatiesApiPlugin(
     lateinit var callbackUrl: URI
 
     @PluginProperty(key = "authHeader", secret = false, required = false)
-    lateinit var authHeader: String
-
-    fun isAuthHeaderInitialized(): Boolean = this::authHeader.isInitialized
+    var authHeader: String? = null
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication

@@ -120,8 +120,6 @@ class PluginsDeployedEventListenerTest {
             .thenReturn(mock())
         whenever(notificatiesApiPlugin.callbackUrl)
             .thenReturn(URI("http://localhost:9999/callback"))
-        whenever(notificatiesApiPlugin.isAuthHeaderInitialized())
-            .thenReturn(true)
         whenever(notificatiesApiPlugin.authHeader)
             .thenReturn("12345")
         whenever(client.createAbonnement(any(), any(), any<Abonnement>()))
@@ -172,8 +170,6 @@ class PluginsDeployedEventListenerTest {
             .thenReturn(mock())
         whenever(notificatiesApiPlugin.callbackUrl)
             .thenReturn(URI("http://localhost:9999/callback"))
-        whenever(notificatiesApiPlugin.isAuthHeaderInitialized())
-            .thenReturn(false)
         whenever(client.createAbonnement(any(), any(), any<Abonnement>()))
             .thenReturn(Abonnement(
                 "http://localhost:9999/nothing/456",
