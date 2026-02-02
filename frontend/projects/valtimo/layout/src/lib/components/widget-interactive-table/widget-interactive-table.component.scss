@@ -62,6 +62,6 @@
 }
 
 ::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
-  max-width: max-content !important;
-  width: max-content !important;
+  width: min(50vw, 420px) !important;
+  max-width: min(50vw, 420px) !important;
 }

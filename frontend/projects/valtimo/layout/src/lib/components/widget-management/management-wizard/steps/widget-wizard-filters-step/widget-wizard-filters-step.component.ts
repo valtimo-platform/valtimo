@@ -213,8 +213,7 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       ),
 
       matchType: this.fb.control<ListItem | null>(
-        this.MATCH_TYPE_ITEMS.find(item => item.id === matchTypeId) ?? null,
-        Validators.required
+        this.MATCH_TYPE_ITEMS.find(item => item.id === matchTypeId) ?? null
       ),
     });
   }
