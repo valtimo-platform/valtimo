@@ -6,7 +6,7 @@ Access to the processes can be configured through access control. More informati
 
 ### Resources and actions
 
-<table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.valtimo.camunda.domain.CamundaTask</code></td><td><code>assign</code></td><td>Allows assigning users to a task.</td></tr><tr><td></td><td><code>assignable</code></td><td>Allows users to be assigned to a task.</td></tr><tr><td></td><td><code>claim</code></td><td>Allows claiming of a task.</td></tr><tr><td></td><td><code>complete</code></td><td>Allows completion of a task.</td></tr><tr><td></td><td><code>view</code></td><td>Allows viewing of a task.</td></tr><tr><td></td><td><code>view_list</code></td><td>Allows viewing of tasks.</td></tr><tr><td><code>com.ritense.valtimo.camunda.domain.CamundaIdentityLink</code></td><td></td><td></td></tr></tbody></table>
+<table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonTask</code></td><td><code>assign</code></td><td>Allows assigning users to a task.</td></tr><tr><td></td><td><code>assignable</code></td><td>Allows users to be assigned to a task.</td></tr><tr><td></td><td><code>claim</code></td><td>Allows claiming of a task.</td></tr><tr><td></td><td><code>complete</code></td><td>Allows completion of a task.</td></tr><tr><td></td><td><code>view</code></td><td>Allows viewing of a task.</td></tr><tr><td></td><td><code>view_list</code></td><td>Allows viewing of tasks.</td></tr><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonIdentityLink</code></td><td></td><td></td></tr></tbody></table>
 
 Task identity links have no actions currently. As a result, they can only be used as part of container conditions. See the example here on how to use this.
 
@@ -19,12 +19,12 @@ Task identity links have no actions currently. As a result, they can only be use
 {% code overflow="wrap" %}
 ```json
 {
-    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
     "action": "view",
     "conditions": [
         {
             "type": "container",
-            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaIdentityLink",
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
             "conditions": [
                 {
                     "type": "field",
@@ -48,7 +48,7 @@ Task identity links have no actions currently. As a result, they can only be use
 {% code overflow="wrap" %}
 ```json
 {
-    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
+    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
     "action": "claim",
     "conditions": [
         {

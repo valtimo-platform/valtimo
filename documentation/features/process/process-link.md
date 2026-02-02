@@ -1,6 +1,6 @@
 # Process links
 
-Process actions can be attached to Camunda activities through process links. Configured actions will be executed when the process reached the desired activity. This makes it possible to extend the functionality of a process beyond what Camunda offers through BPMN.
+Process actions can be attached to Operaton activities through process links. Configured actions will be executed when the process reached the desired activity. This makes it possible to extend the functionality of a process beyond what Operaton offers through BPMN.
 
 Currently, the following types of process-links are supported by Valtimo:
 
@@ -116,7 +116,7 @@ This ensures that only environment variables matching the given patterns are ava
 
 ## Editing process links
 
-Process links that have been attached to Camunda activities, can also be edited. Admin privileges are required to edit process links.
+Process links that have been attached to Operaton activities, can also be edited. Admin privileges are required to edit process links.
 
 * Go to the `Admin` menu
 * Go to the `Process links v2 (beta)` menu
@@ -130,7 +130,7 @@ Process links that have been attached to Camunda activities, can also be edited.
 
 ## Unlinking process links
 
-Process links that have been attached to Camunda activities, can also be unlinked (deleted). Admin privileges are required to unlink/delete process links.
+Process links that have been attached to Operaton activities, can also be unlinked (deleted). Admin privileges are required to unlink/delete process links.
 
 * Go to the `Admin` menu
 * Go to the `Process links v2 (beta)` menu

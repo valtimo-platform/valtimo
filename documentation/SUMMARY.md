@@ -18,7 +18,7 @@
     * [Core modules](fundamentals/getting-started/modules/core/README.md)
       * [Audit](fundamentals/getting-started/modules/core/audit.md)
       * [Authorization](fundamentals/getting-started/modules/core/authorization.md)
-      * [Operaton](fundamentals/getting-started/modules/core/camunda-webapps.md)
+      * [Operaton](fundamentals/getting-started/modules/core/operaton-webapps.md)
       * [Case](fundamentals/getting-started/modules/core/case.md)
       * [Contract](fundamentals/getting-started/modules/core/contract.md)
       * [Core](fundamentals/getting-started/modules/core/core.md)
@@ -164,6 +164,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.14.0](release-notes/13.x.x/13.14.0/README.md)
   * [13.13.0](release-notes/13.x.x/13.13.0/README.md)
   * [13.12.0](release-notes/13.x.x/13.12.0/README.md)
   * [13.11.0](release-notes/13.x.x/13.11.0/README.md)

@@ -1,7 +1,7 @@
 # 13.13.0
 
 {% hint style="info" %}
-**Release date xx-xx-2026**
+**Release date 28-01-2026**
 {% endhint %}
 
 ## Migration
@@ -18,6 +18,15 @@
   be moved between environments by importing and exporting their definitions.
   
   Learn more in [Building blocks](../../../features/building-blocks/README.md).
+
+* **IKO**
+
+  IKO is a component designed to support service delivery by providing an integrated, up-to-date overview of customer (
+  Klantbeeld) and object (Objectbeeld) data. It acts as an API gateway that aggregates information from multiple backend
+  sources into a single unified response, enabling employees to assist citizens, businesses, and institutions more
+  effectively and transparently.
+
+  Learn more at Learn more at [IKO documentation](https://docs.integraal-klant-objectbeeld.nl/).
 
 
 * **Setting case retention date**
@@ -45,3 +54,4 @@
 ## Bugfixes
 
 * **Tasks are now no longer closed when another user changes the task assignee.**
+* **LockProvider configuration now supports specifying the `timezone` via configuration properties and defaults to `UTC` if not specified.**

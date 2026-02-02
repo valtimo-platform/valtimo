@@ -1909,6 +1909,7 @@
       "addInput": "Input toevoegen",
       "addOutput": "Sync toevoegen",
       "case": "Dossier",
+      "process": "Proces",
       "buildingBlock": "Bouwblok",
       "targetPlaceholder": "Selecteer doel",
       "outputSource": "Bouwblok-output",
