@@ -17,7 +17,6 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
-import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
