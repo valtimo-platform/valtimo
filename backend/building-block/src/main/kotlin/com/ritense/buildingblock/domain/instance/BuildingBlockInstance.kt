@@ -42,8 +42,9 @@ open class BuildingBlockInstance(
     // TODO: if we only link to document IDs then this could be document id.
     //  This is easier for supporting nested building blocks in the future, but ideally we have
     //  case instance as well so we can use blueprint instance id instead.
-    @Column(name = "case_document_id", nullable = false)
-    val caseDocumentId: UUID,
+    // Note: nullable = true to support building blocks started from independent processes (not under a case)
+    @Column(name = "case_document_id", nullable = true)
+    val caseDocumentId: UUID? = null,
 
     @Column(name = "activity_id", nullable = false)
     val activityId: String,

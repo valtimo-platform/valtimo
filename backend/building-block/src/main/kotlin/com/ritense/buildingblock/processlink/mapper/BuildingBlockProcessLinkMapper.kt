@@ -187,12 +187,19 @@ class BuildingBlockProcessLinkMapper(
      * Determines if this is a nested building block link (a building block referencing another building block).
      * Nested building block links don't require a CaseDefinitionId since they inherit plugin configurations
      * from the root process link at runtime.
+     *
+     * Also validates that the blueprintId is valid:
+     * - CaseDefinitionId for case processes
+     * - BuildingBlockDefinitionId for nested building blocks
+     * - null for independent processes (not under a case)
      */
     private fun isNestedBuildingBlockLink(blueprintId: BlueprintId?, processDefinitionId: String): Boolean {
         val isNested = blueprintId is BuildingBlockDefinitionId ||
             processDefinitionBuildingBlockDefinitionRepository.existsByIdProcessDefinitionIdId(processDefinitionId)
 
-        if (!isNested) {
+        val isIndependentProcess = blueprintId == null
+
+        if (!isNested && !isIndependentProcess) {
             require(blueprintId is CaseDefinitionId) {
                 "CaseDefinitionId is required for building-block process links in case processes"
             }
