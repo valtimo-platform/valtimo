@@ -45,7 +45,14 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { ConfigService, Page, SearchField, SearchFieldValues, SortState, TaskListTab, TEST_IDS } from '@valtimo/shared';
+import {
+  ConfigService,
+  Page,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+  TaskListTab,
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
@@ -89,8 +96,6 @@ moment.locale(localStorage.getItem('langKey') || '');
   ],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
 
   @HostListener('window:popstate', ['$event'])

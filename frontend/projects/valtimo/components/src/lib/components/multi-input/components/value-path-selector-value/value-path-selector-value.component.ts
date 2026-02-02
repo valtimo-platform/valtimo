@@ -25,7 +25,6 @@ import {CommonModule} from '@angular/common';
 import {InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ValuePathSelectorComponent} from '../../../value-path-selector';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-value-path-selector-value',
@@ -41,8 +40,6 @@ import { TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class ValuePathSelectorValueComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public readonly keyColumnTitle!: string;
   @Input() public readonly valueColumnTitle!: string;
   @Input() public readonly index!: number;

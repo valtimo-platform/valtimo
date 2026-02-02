@@ -19,7 +19,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NotificationContent, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-management-draft-warning',
@@ -30,7 +29,6 @@ import { TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, NotificationModule, TranslateModule],
 })
 export class CaseManagementDraftWarningComponent {
-  readonly TEST_IDS = TEST_IDS;
   private readonly _name$ = new BehaviorSubject<string>('-');
   @Input() public set name(value: string) {
     this._name$.next(value || '-');

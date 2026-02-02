@@ -19,7 +19,6 @@ import {MilestoneService} from '../milestone.service';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AlertService} from '@valtimo/components';
 import {Router} from '@angular/router';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -28,8 +27,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./milestone-set-create.component.scss'],
 })
 export class MilestoneSetCreateComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   public form: FormGroup;
 
   constructor(

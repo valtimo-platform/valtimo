@@ -18,12 +18,11 @@
   <v-input-label
     [title]="labelTranslationKey | translate"
     [tooltip]="tooltipTranslationKey | translate"
-    [attr.data-test-id]="TEST_IDS.ICON_SELECTOR_LABEL"
   >
   </v-input-label>
 
-  <div class="mdi-icon-selector" [attr.data-test-id]="TEST_IDS.ICON_SELECTOR_CONTAINER">
-    <span class="mdi-icon-preview mdi" [ngClass]="(value$ | async) || 'mdi-minus'" [attr.data-test-id]="TEST_IDS.ICON_SELECTOR_PREVIEW"></span>
+  <div class="mdi-icon-selector">
+    <span class="mdi-icon-preview mdi" [ngClass]="(value$ | async) || 'mdi-minus'"></span>
 
     <cds-combo-box
       [items]="(items$ | async) || []"
@@ -33,7 +32,6 @@
       [appendInline]="appendInline"
       [dropUp]="dropUp"
       (blur)="onTouched()"
-      [attr.data-test-id]="TEST_IDS.ICON_SELECTOR_COMBO_BOX"
     >
       <cds-dropdown-list [listTpl]="iconListTemplate"></cds-dropdown-list>
     </cds-combo-box>
@@ -41,7 +39,7 @@
 </cds-text-label>
 
 <ng-template #iconListTemplate let-item="item">
-  <div class="mdi-list-item" data-test-id="icon-selector-item-{{$index}}">
+  <div class="mdi-list-item">
     <span class="mdi" [ngClass]="item.key" aria-hidden="true"></span>
 
     <span>{{ item.content }}</span>

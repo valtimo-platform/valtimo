@@ -15,14 +15,13 @@
   -->
 
 @if (activeTab$ | async; as activeTab) {
-  <cds-tabs type="contained" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_TABS">
+  <cds-tabs type="contained">
     <cds-tab
       [active]="activeTab === TaskManagementTab.COLUMNS"
       [heading]="'taskManagement.columns' | translate"
       (selected)="setActiveTab(TaskManagementTab.COLUMNS)"
-      [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_COLUMNS_TAB"
     >
-      <valtimo-task-management-columns *ngIf="activeTab === TaskManagementTab.COLUMNS" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_COLUMNS">
+      <valtimo-task-management-columns *ngIf="activeTab === TaskManagementTab.COLUMNS">
       </valtimo-task-management-columns>
     </cds-tab>
 
@@ -30,9 +29,8 @@
       [active]="activeTab === TaskManagementTab.SEARCH_FIELDS"
       [heading]="'taskManagement.searchFields' | translate"
       (selected)="setActiveTab(TaskManagementTab.SEARCH_FIELDS)"
-      [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_FIELDS_TAB"
     >
-      <valtimo-task-management-search-fields *ngIf="activeTab === TaskManagementTab.SEARCH_FIELDS" [attr.data-test-id]="TEST_IDS.TASK_MANAGEMENT_SEARCH_FIELDS">
+      <valtimo-task-management-search-fields *ngIf="activeTab === TaskManagementTab.SEARCH_FIELDS">
       </valtimo-task-management-search-fields>
     </cds-tab>
   </cds-tabs>

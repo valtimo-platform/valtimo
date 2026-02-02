@@ -37,7 +37,7 @@ import {
   PageHeaderService,
   PageTitleService,
 } from '@valtimo/components';
-import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   CaseStatusService,
   CaseTag,
@@ -93,8 +93,6 @@ import {WidgetsService} from './tab/widgets/widgets.service';
   providers: [CaseTabService, CaseDetailLayoutService, ObserveSizeDirective],
 })
 export class CaseDetailComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: CaseSupportingProcessStartModalComponent;
 

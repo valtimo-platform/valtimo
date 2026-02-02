@@ -46,7 +46,7 @@ import {filter, map, Observable, switchMap, take} from 'rxjs';
 import {IkoManagementApiService} from '../../../../../services';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {PropertiesFormComponent} from '../../../../iko-management-properties/iko-management-properties.component';
-import { ModalMode, TEST_IDS } from '@valtimo/shared';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-action-modal',
@@ -68,8 +68,6 @@ import { ModalMode, TEST_IDS } from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchActionModalComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {

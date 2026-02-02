@@ -21,7 +21,6 @@
     cdsToggletipButton
     [removeClassnames]="['cds--toggletip-button']"
     cdsButton="ghost"
-    [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_IMPORT_BUTTON"
   >
     {{ 'processLinkConfiguration.importConfiguration' | translate }}
 
@@ -32,7 +31,6 @@
     cdsToggletipContent
     [attr.data-carbon-theme]="toggletipTheme$ | async"
     class="process-link-configuration-select"
-    [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_SELECT"
   >
     <cds-dropdown
       [label]="'processLinkConfiguration.process' | translate"
@@ -40,12 +38,10 @@
       (selected)="processSelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
-      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_PROCESS_DROPDOWN"
     >
       <cds-dropdown-list
         [items]="processListItems$ | async"
         onclick="event.stopPropagation()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_PROCESS_DROPDOWN_LIST"
       ></cds-dropdown-list>
     </cds-dropdown>
 
@@ -56,12 +52,10 @@
       (selected)="versionSelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
-      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_VERSION_DROPDOWN"
     >
       <cds-dropdown-list
         [items]="versionListItems$ | async"
         onclick="event.stopPropagation()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_VERSION_DROPDOWN_LIST"
       ></cds-dropdown-list>
     </cds-dropdown>
 
@@ -72,17 +66,14 @@
       (selected)="activitySelected($event)"
       [appendInline]="true"
       [cdsLayer]="1"
-      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_ACTIVITY_DROPDOWN"
     >
       <cds-dropdown-list
         [items]="activityListItems$ | async"
         onclick="event.stopPropagation()"
-        [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_ACTIVITY_DROPDOWN_LIST"
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1"
-            [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CONFIGURATION_IMPORT_SUBMIT_BUTTON">
+    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>

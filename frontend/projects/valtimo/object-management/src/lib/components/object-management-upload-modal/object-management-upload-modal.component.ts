@@ -32,7 +32,6 @@ import {ObjectManagementService} from '../../services/object-management.service'
 import {TranslateService} from '@ngx-translate/core';
 import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
 import {VModalComponent, ModalService} from '@valtimo/components';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -41,8 +40,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./object-management-upload-modal.component.scss'],
 })
 export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('objectManagementUploadModal') objectManagementUploadModal: VModalComponent;
   @Input() objecttypes?: Objecttype[];
 

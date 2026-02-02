@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {map, Observable, Subscription} from 'rxjs';
-import { ConfigService, TEST_IDS } from '@valtimo/shared';
+import {ConfigService} from '@valtimo/shared';
 import {ObjectStateService} from '../../services/object-state.service';
 import {ObjectService} from '../../services/object.service';
 import {TabEnum} from '../../services/tab.enum';
@@ -30,8 +30,6 @@ import {TabService} from '../../services/tab.service';
   styleUrls: ['./object-detail-container.component.scss'],
 })
 export class ObjectDetailContainerComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   public currentTab: TabEnum;
   public caseListColumn!: boolean;
 

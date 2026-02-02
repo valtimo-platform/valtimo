@@ -34,7 +34,6 @@ import {DatePickerComponent} from '../date-picker/date-picker.component';
 import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
 import {RadioComponent} from '../radio/radio.component';
 import {ValuePathSelectorComponent} from '../value-path-selector/value-path-selector.component';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'v-form',
@@ -43,8 +42,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class FormComponent implements AfterContentInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ContentChildren(InputComponent) inputComponents!: QueryList<InputComponent>;
   @ContentChildren(SelectComponent) selectComponents!: QueryList<SelectComponent>;
   @ContentChildren(CarbonMultiInputComponent)

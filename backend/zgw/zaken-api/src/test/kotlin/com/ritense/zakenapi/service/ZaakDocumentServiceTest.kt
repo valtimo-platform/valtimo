@@ -203,6 +203,11 @@ class ZaakDocumentServiceTest {
         whenever(doc1.informatieobject).thenReturn(URI("http://localhost/doc/1"))
         whenever(doc2.informatieobject).thenReturn(URI("http://localhost/doc/2"))
 
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(URI("http://localhost/doc/1")))
+            .thenReturn(listOf(doc1))
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(URI("http://localhost/doc/2")))
+            .thenReturn(listOf(doc2))
+
         service.deleteRelatedInformatieObjecten(documentUrl)
 
         val zaakDocumentCaptor = argumentCaptor<URI>()
@@ -210,6 +215,32 @@ class ZaakDocumentServiceTest {
 
         assertEquals(URI("http://localhost/doc/1"), zaakDocumentCaptor.firstValue)
         assertEquals(URI("http://localhost/doc/2"), zaakDocumentCaptor.secondValue)
+    }
+
+    @Test
+    fun `should only delete the link between informatie object and zaak when the informatie object is linked to multiple zaken`() {
+        val documentUrl = URI("http://localhost/zaak/1")
+        val zaakApiPlugin = mock<ZakenApiPlugin>()
+
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zaakApiPlugin)
+        val doc1 = mock<ZaakInformatieObject>()
+        val otherZaakDoc = mock<ZaakInformatieObject>()
+
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(documentUrl)).thenReturn(listOf(doc1))
+
+        val doc1Url = URI("http://localhost/doc/1")
+        val relationUrl = URI("http://localhost/zaak-informatieobject/1")
+        whenever(doc1.informatieobject).thenReturn(doc1Url)
+        whenever(doc1.url).thenReturn(relationUrl)
+
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(doc1Url))
+            .thenReturn(listOf(doc1, otherZaakDoc))
+
+        service.deleteRelatedInformatieObjecten(documentUrl)
+
+        verify(documentenApiService, times(0)).deleteInformatieObject(any())
+        verify(zaakApiPlugin).deleteZaakInformatieobject(relationUrl)
     }
 
     private fun createZaakInformatieObjecten(zaakUrl: URI, count: Int = 5): List<ZaakInformatieObject> {

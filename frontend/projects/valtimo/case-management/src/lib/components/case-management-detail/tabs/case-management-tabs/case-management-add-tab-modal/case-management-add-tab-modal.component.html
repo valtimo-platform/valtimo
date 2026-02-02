@@ -16,7 +16,7 @@
 
 <cds-modal valtimoCdsModal *ngIf="{selectedTabType: selectedTabType$ | async} as obs" [open]="open">
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()" [cdsLayer]="1">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.ADD_TAB_MODAL_TITLE">
+    <h3 cdsModalHeaderHeading>
       {{
         !obs.selectedTabType
           ? ('caseManagement.tabManagement.addModal.title'
@@ -33,7 +33,7 @@
     ></valtimo-tab-form>
 
     <ng-template #tabTypeSelection>
-      <span [attr.data-test-id]="TEST_IDS.ADD_TAB_MODAL_DESCRIPTION"> {{ 'caseManagement.tabManagement.addModal.description' | translate }} </span>
+      <span> {{ 'caseManagement.tabManagement.addModal.description' | translate }} </span>
 
       <div *ngIf="tabTypes$ | async as tabTypes" class="valtimo-add-tab-modal__types">
         <cds-tooltip
@@ -49,7 +49,6 @@
             cdsButton="secondary"
             [disabled]="tabType.disabled"
             (click)="onTabTypeSelect(tabType.type)"
-            data-test-id="add-tab-modal-tab-type-button-{{$index}}"
           >
             {{ tabType.title | translate }}
 
@@ -61,16 +60,16 @@
   </section>
 
   <cds-modal-footer class="valtimo-add-tab-modal__footer" [cdsLayer]="1">
-    <button class="valtimo-add-tab-modal__cancel" cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.ADD_TAB_MODAL_CANCEL_BUTTON">
+    <button class="valtimo-add-tab-modal__cancel" cdsButton="ghost" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <div class="valtimo-add-tab-modal__actions" *ngIf="obs.selectedTabType">
-      <button cdsButton="secondary" (click)="backClick()" [attr.data-test-id]="TEST_IDS.ADD_TAB_MODAL_BACK_BUTTON">
+      <button cdsButton="secondary" (click)="backClick()">
         {{ 'interface.back' | translate }}
       </button>
 
-      <button cdsButton="primary" [disabled]="form.invalid" (click)="addTab(obs.selectedTabType)" [attr.data-test-id]="TEST_IDS.ADD_TAB_MODAL_ADD_BUTTON">
+      <button cdsButton="primary" [disabled]="form.invalid" (click)="addTab(obs.selectedTabType)">
         {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
       </button>
     </div>
