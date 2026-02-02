@@ -34,9 +34,9 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1fr 1fr 180px 180px;
-    align-items: flex-end;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
+    align-items: flex-end;
   }
 
   &__title {
