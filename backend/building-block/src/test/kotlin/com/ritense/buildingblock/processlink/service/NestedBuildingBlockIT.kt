@@ -37,6 +37,9 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -153,6 +156,20 @@ class NestedBuildingBlockIT @Autowired constructor(
                 .id()
                 .getId()
         }
+
+        // Mock version tags for isIndependentProcess() check
+        val caseProcessDefinition = mock<OperatonProcessDefinition> {
+            on { versionTag } doReturn "${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}nested-test-case:1.0.0"
+        }
+        val bb1ProcessDefinition = mock<OperatonProcessDefinition> {
+            on { versionTag } doReturn "${OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX}bb-level-1:1.0.0"
+        }
+        val bb2ProcessDefinition = mock<OperatonProcessDefinition> {
+            on { versionTag } doReturn "${OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX}bb-level-2:1.0.0"
+        }
+        doReturn(caseProcessDefinition).whenever(operatonRepositoryService).findProcessDefinitionById("case-process")
+        doReturn(bb1ProcessDefinition).whenever(operatonRepositoryService).findProcessDefinitionById("bb-level-1-process")
+        doReturn(bb2ProcessDefinition).whenever(operatonRepositoryService).findProcessDefinitionById("bb-level-2-process")
     }
 
     @Test

@@ -38,7 +38,7 @@ class BuildingBlockInstanceService(
     @Transactional
     fun create(
         newDocumentRequest: NewDocumentRequest,
-        caseDocumentId: UUID,
+        caseDocumentId: UUID?,
         activityId: String,
         parentBuildingBlockInstanceId: UUID? = null
     ): BuildingBlockInstance {

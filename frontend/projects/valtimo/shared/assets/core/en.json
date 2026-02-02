@@ -1866,6 +1866,7 @@
       "addInput": "Add input",
       "addOutput": "Add sync",
       "case": "Case",
+      "process": "Process",
       "buildingBlock": "Building block",
       "targetPlaceholder": "Select target",
       "outputSource": "Building block output",
