@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.exception.BuildingBlockProcessDefinitionKeyAlreadyExistsException
@@ -34,9 +35,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
+import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -82,6 +85,10 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
             authorizationService,
             buildingBlockDefinitionChecker
         )
+
+        lenient().doAnswer { invocation -> invocation.getArgument<ProcessDefinitionBuildingBlockDefinition>(0) }
+            .whenever(processDefinitionBuildingBlockDefinitionRepository)
+            .save(any<ProcessDefinitionBuildingBlockDefinition>())
     }
 
     @Test
@@ -101,7 +108,7 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
             )
         ).thenReturn(listOf(existingLink))
 
-        doNothing().whenever(authorizationService).requirePermission(any())
+        doNothing().whenever(authorizationService).requirePermission(any<AuthorizationRequest<Any>>())
         doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
             buildingBlockDefinitionId
         )
@@ -131,7 +138,7 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
         @Suppress("UNCHECKED_CAST")
         val duplicates = exception.parameters["duplicateProcessDefinitions"] as List<DuplicateProcessDefinitionDescriptor>
         assertTrue(duplicates.any { it.key == "building-block-process" && it.name == "Building block process" })
-        verify(processDefinitionBuildingBlockDefinitionRepository).findAllByIdBuildingBlockDefinitionId(
+        verify(processDefinitionBuildingBlockDefinitionRepository, times(2)).findAllByIdBuildingBlockDefinitionId(
             buildingBlockDefinitionId
         )
         verifyNoInteractions(processDeploymentService)
@@ -153,7 +160,7 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
             )
         ).thenReturn(listOf(existingLink))
 
-        doNothing().whenever(authorizationService).requirePermission(any())
+        doNothing().whenever(authorizationService).requirePermission(any<AuthorizationRequest<Any>>())
         doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
             buildingBlockDefinitionId
         )
