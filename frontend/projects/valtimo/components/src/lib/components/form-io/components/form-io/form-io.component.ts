@@ -43,7 +43,7 @@ import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/oper
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
-import { ConfigService, ValtimoConfig, TEST_IDS } from '@valtimo/shared';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {Formio} from 'formiojs';
 import {
@@ -61,8 +61,6 @@ import {
   standalone: false,
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() set options(optionsValue: ValtimoFormioOptions) {
     this.options$.next(optionsValue);
   }
@@ -163,8 +161,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
-    Formio.setProjectUrl(location.origin);
-    Formio.authUrl = location.origin;
+    if (!Formio.projectUrlSet) {
+      Formio.setBaseUrl(location.origin);
+      Formio.setProjectUrl(location.origin);
+      Formio.authUrl = location.origin;
+    }
 
     this.openRouteSubscription();
     this.errors$.next([]);

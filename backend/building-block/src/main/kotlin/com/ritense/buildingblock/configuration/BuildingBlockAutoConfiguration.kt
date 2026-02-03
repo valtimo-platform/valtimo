@@ -374,11 +374,13 @@ class BuildingBlockAutoConfiguration {
         buildingBLockInstanceService: BuildingBlockInstanceService,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        operatonRepositoryService: OperatonRepositoryService,
     ) = BuildingBlockCallActivityListener(
         processLinkService,
         buildingBLockInstanceService,
         valueResolverService,
-        objectMapper
+        objectMapper,
+        operatonRepositoryService
     )
 
     @Bean

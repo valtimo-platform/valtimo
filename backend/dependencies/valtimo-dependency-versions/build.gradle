@@ -26,6 +26,7 @@ dependencies {
     constraints {
         api(project(":backend:audit"))
         api(project(":backend:authorization"))
+        api(project(":backend:building-block"))
         api(project(":backend:case"))
         api(project(":backend:changelog"))
         api(project(":backend:command-handling"))

@@ -31,7 +31,6 @@
       'logging.noResults.' + (obs.isSearchActive ? 'searchDescription' : 'description') | translate
     "
     [title]="'logging.noResults.title' | translate"
-    [attr.data-test-id]="TEST_IDS.LOGGING_NO_RESULTS"
   ></valtimo-no-results>
 
   <button
@@ -43,7 +42,6 @@
     [offset]="{x: 0, y: 47}"
     cdsButton="ghost"
     placement="bottom"
-    [attr.data-test-id]="TEST_IDS.LOGGING_FILTER_BUTTON"
   >
     <svg cdsIcon="filter" size="16"></svg>
   </button>
@@ -53,19 +51,17 @@
   [open]="logDetailsOpen$ | async"
   [logEvent]="selectedLogEvent$ | async"
   (closeModalEvent)="onCloseModalEvent()"
-  [attr.data-test-id]="TEST_IDS.LOGGING_DETAILS_MODAL"
 ></valtimo-log-details>
 
 <ng-template #logSearch>
   <valtimo-log-search
     [initSearchRequest]="searchRequest$ | async"
     (searchSubmitEvent)="onSearchSubmitEvent($event)"
-    [attr.data-test-id]="TEST_IDS.LOGGING_SEARCH"
   ></valtimo-log-search>
 </ng-template>
 
 <ng-template #clearSearchButton>
-  <button cdsButton="primary" (click)="onClearFilter()" [attr.data-test-id]="TEST_IDS.LOGGING_CLEAR_FILTER_BUTTON">
+  <button cdsButton="primary" (click)="onClearFilter()">
     {{ 'interface.clear' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

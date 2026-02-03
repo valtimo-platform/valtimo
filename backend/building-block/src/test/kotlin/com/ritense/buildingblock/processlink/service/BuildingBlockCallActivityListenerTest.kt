@@ -28,6 +28,9 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -50,12 +53,14 @@ class BuildingBlockCallActivityListenerTest {
     private val buidingBlockInstanceService = mock<BuildingBlockInstanceService>()
     private val valueResolverService = mock<ValueResolverService>()
     private val objectMapper = MapperSingleton.get()
+    private val operatonRepositoryService = mock<OperatonRepositoryService>()
 
     private val listener = BuildingBlockCallActivityListener(
         processLinkService,
         buidingBlockInstanceService,
         valueResolverService,
         objectMapper,
+        operatonRepositoryService,
     )
 
     @Test
@@ -89,8 +94,12 @@ class BuildingBlockCallActivityListenerTest {
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
-        // No parent building block instance because we're calling from a case process
         whenever(buidingBlockInstanceService.getByDocumentId(caseDocumentId)).thenReturn(null)
+
+        val processDefinition = mock<OperatonProcessDefinition> {
+            on { versionTag } doReturn "${OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX}my-case:1.0.0"
+        }
+        whenever(operatonRepositoryService.findProcessDefinitionById("case-process")).thenReturn(processDefinition)
 
         val requestCaptor = argumentCaptor<NewDocumentRequest>()
         whenever(

@@ -35,7 +35,7 @@
 <ng-template #cancelButton let-disabled="disabled">
   <button
     cdsButton="secondary"
-    [attr.data-test-id]="TEST_IDS.STEPPERFOOTERCANCELBUTTON"
+    data-test-id="stepperFooterCancelButton"
     (click)="cancel()"
     [disabled]="disabled"
   >
@@ -48,7 +48,7 @@
 </ng-template>
 
 <ng-template #nextButton let-disabled="disabled">
-  <button cdsButton="primary" [disabled]="!nextButtonEnabled || disabled" (click)="goToNextStep()" [attr.data-test-id]="TEST_IDS.STEPPERFOOTERNEXTBUTTON">
+  <button cdsButton="primary" [disabled]="!nextButtonEnabled || disabled" (click)="goToNextStep()">
     {{
       nextButtonTranslationKey
         ? (nextButtonTranslationKey | translate)
@@ -58,7 +58,7 @@
 </ng-template>
 
 <ng-template #completeButton let-disabled="disabled">
-  <button cdsButton="primary" [disabled]="!completeButtonEnabled || disabled" (click)="complete()" [attr.data-test-id]="TEST_IDS.STEPPERFOOTERCOMPLETEBUTTON">
+  <button cdsButton="primary" [disabled]="!completeButtonEnabled || disabled" (click)="complete()">
     {{
       completeButtonTranslationKey
         ? (completeButtonTranslationKey | translate)

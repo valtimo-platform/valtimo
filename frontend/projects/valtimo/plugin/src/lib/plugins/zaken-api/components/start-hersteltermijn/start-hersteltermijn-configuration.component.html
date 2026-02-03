@@ -21,10 +21,10 @@
   } as obs"
 >
   <ng-container>
-    <v-paragraph [margin]="true" [italic]="true" [attr.data-test-id]="TEST_IDS.START_HERSTELTERMIJN_INFORMATION">
+    <v-paragraph [margin]="true" [italic]="true">
       {{ 'startHersteltermijnInformation' | pluginTranslate: pluginId | async }}
     </v-paragraph>
-    <v-form (valueChange)="formValueChange($event)" [attr.data-test-id]="TEST_IDS.START_HERSTELTERMIJN_FORM">
+    <v-form (valueChange)="formValueChange($event)">
       <v-input
         name="maxDurationInDays"
         [min]="1"
@@ -36,7 +36,6 @@
         [trim]="true"
         [tooltip]="'maxDurationInDaysTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
-        [attr.data-test-id]="TEST_IDS.START_HERSTELTERMIJN_MAX_DURATION_INPUT"
       >
       </v-input>
     </v-form>

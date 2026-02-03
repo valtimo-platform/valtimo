@@ -20,11 +20,10 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.OPENZAAKCONFIGURATIONFORM"
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.OPENZAAKCONFIGURATIONTITLE"
+    data-test-id="openZaakConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -37,7 +36,7 @@
   </v-input>
   <v-input
     name="clientId"
-    [attr.data-test-id]="TEST_IDS.OPENZAAKCLIENTID"
+    data-test-id="openZaakClientId"
     [title]="'clientId' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -50,7 +49,7 @@
   </v-input>
   <v-input
     name="clientSecret"
-    [attr.data-test-id]="TEST_IDS.OPENZAAKCLIENTSECRET"
+    data-test-id="openZaakClientSecret"
     type="password"
     [title]="'clientSecret' | pluginTranslate: pluginId | async"
     [margin]="true"

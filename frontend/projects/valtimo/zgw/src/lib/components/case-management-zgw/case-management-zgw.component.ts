@@ -26,7 +26,11 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CaseManagementDraftWarningComponent} from '@valtimo/case-management';
-import { CaseManagementParams, DraftVersionService, getCaseManagementRouteParams, TEST_IDS } from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  DraftVersionService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
 import {ZgwTab, ZgwTabEnum} from '../../models';
@@ -48,8 +52,6 @@ import {CaseManagementZgwGeneralComponent} from '../case-management-zgw-general/
   imports: [CommonModule, TabsModule, TranslateModule, CaseManagementDraftWarningComponent],
 })
 export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild('zgwTabContent', {read: ViewContainerRef})
   private _zgwTabContent: ViewContainerRef;
 

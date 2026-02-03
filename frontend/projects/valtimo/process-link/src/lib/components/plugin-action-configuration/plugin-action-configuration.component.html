@@ -17,7 +17,6 @@
 <valtimo-import-plugin-configuration
   [pluginActionKey]="functionKey$ | async"
   (configurationEvent)="onImportConfiguration($event)"
-  [attr.data-test-id]="TEST_IDS.VALTIMO_IMPORT_PLUGIN_CONFIGURATION"
 ></valtimo-import-plugin-configuration>
 
 <valtimo-plugin-configuration-container
@@ -30,5 +29,4 @@
   (valid)="onValid($event)"
   (configuration)="onConfiguration($event)"
   type="function"
-  [attr.data-test-id]="TEST_IDS.VALTIMO_PLUGIN_CONFIGURATION_CONTAINER"
 ></valtimo-plugin-configuration-container>

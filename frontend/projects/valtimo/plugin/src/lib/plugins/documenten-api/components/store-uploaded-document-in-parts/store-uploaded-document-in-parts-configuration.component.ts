@@ -17,7 +17,6 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {Observable, Subscription} from 'rxjs';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-store-uploaded-document-in-parts-configuration',
@@ -27,8 +26,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class StoreUploadedDocumentInPartsConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

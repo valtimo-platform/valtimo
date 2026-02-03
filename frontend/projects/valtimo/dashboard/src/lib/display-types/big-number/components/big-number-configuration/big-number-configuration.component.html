@@ -23,7 +23,7 @@
     >
       {{ 'formTitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" [attr.data-test-id]="TEST_IDS.FORM_TITLE_INPUT" />
+      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" />
     </cds-label>
   </div>
 
@@ -35,7 +35,7 @@
     >
       {{ 'subtitle' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" [attr.data-test-id]="TEST_IDS.FORM_SUBTITLE_INPUT" />
+      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" />
     </cds-label>
   </div>
 
@@ -47,12 +47,12 @@
     >
       {{ 'label' | widgetTranslate: displayTypeKey | async }}
 
-      <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" [attr.data-test-id]="TEST_IDS.FORM_LABEL_INPUT" />
+      <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" />
     </cds-label>
   </div>
 
   <div class="form__element">
-    <cds-checkbox formControlName="useKPI" [attr.data-test-id]="TEST_IDS.FORM_USE_KPI_CHECKBOX">
+    <cds-checkbox formControlName="useKPI">
       {{ 'useKPI' | widgetTranslate: displayTypeKey | async }}
     </cds-checkbox>
   </div>
@@ -67,7 +67,6 @@
           [invalid]="lowSeverityThreshold.dirty && lowSeverityThreshold.invalid"
           formControlName="lowSeverityThreshold"
           type="number"
-          [attr.data-test-id]="TEST_IDS.FORM_LOW_SEVERITY_THRESHOLD_INPUT"
         />
       </cds-label>
     </div>
@@ -83,7 +82,6 @@
           formControlName="mediumSeverityThreshold"
           [invalid]="mediumSeverityThreshold.dirty && mediumSeverityThreshold.invalid"
           type="number"
-          [attr.data-test-id]="TEST_IDS.FORM_MEDIUM_SEVERITY_THRESHOLD_INPUT"
         />
       </cds-label>
     </div>
@@ -99,7 +97,6 @@
           formControlName="highSeverityThreshold"
           [invalid]="highSeverityThreshold.dirty && highSeverityThreshold.invalid"
           type="number"
-          [attr.data-test-id]="TEST_IDS.FORM_HIGH_SEVERITY_THRESHOLD_INPUT"
         />
       </cds-label>
     </div>
