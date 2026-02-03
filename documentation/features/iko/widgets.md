@@ -116,11 +116,10 @@ Actions add buttons to a widget that allow users to perform operations. Actions 
 
 ### Action types
 
-| Type | Description |
-|------|-------------|
-| Link | Navigate to a URL. |
-| Create new case | Show a dropdown with available case definitions. User selects one and the start form opens. |
-| Start process | Start a specific process configured by the administrator. |
+| Type           | Description |
+|----------------|-------------|
+| Link           | Navigate to a URL. |
+| Can start case | Show a dropdown with available case definitions. User selects one and the start form opens. |
 
 ### Configuring a link action
 
@@ -141,9 +140,9 @@ Link actions navigate the user to a specified URL. The URL can contain placehold
 | Link-URL (with variables) | `https://example.com/details/${iko:/person/bsn}` |
 | Button label | View details |
 
-### Configuring create new case
+### Configuring can start case
 
-The "Create new case" action displays a button with a dropdown menu. The dropdown shows all available GZAC case definitions. When the user selects a case definition, the start form for that case opens.
+The "Can start case" action displays a button with a dropdown menu. The dropdown shows all available GZAC case definitions. When the user selects a case definition, the start form for that case opens.
 
 Enable this action by setting `canStartCase` to `true` in the widget properties.
 
