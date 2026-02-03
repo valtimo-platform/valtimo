@@ -194,6 +194,7 @@ public class ValtimoProperties {
 
     public static class Process {
         private boolean systemProcessUpdatable = false;
+        private int callDepthWarningThreshold = 100;
 
         public boolean isSystemProcessUpdatable() {
             return systemProcessUpdatable;
@@ -201,6 +202,14 @@ public class ValtimoProperties {
 
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
             this.systemProcessUpdatable = systemProcessUpdatable;
+        }
+
+        public int getCallDepthWarningThreshold() {
+            return callDepthWarningThreshold;
+        }
+
+        public void setCallDepthWarningThreshold(int callDepthWarningThreshold) {
+            this.callDepthWarningThreshold = callDepthWarningThreshold;
         }
     }
 }
