@@ -29,7 +29,7 @@
 
 * **Building blocks can now be used in independent processes**
 
-  Building blocks can now be invoked from standalone processes that are not associated with a case. Independent processes can pass data to building blocks via input mappings using process variables (`pv:` prefix) and receive results via output mappings back to process variables. The UI for configuring building block mappings automatically adapts to show the appropriate input fields when configuring independent processes.
+  Building blocks can now be invoked from independent processes that are not associated with a case. Independent processes can pass data to building blocks via input mappings using process variables (`pv:` prefix) and receive results via output mappings back to process variables. The UI for configuring building block mappings automatically adapts to show the appropriate input fields when configuring independent processes.
 
 ## Bugfixes
 
