@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  ConfirmationModalModule,
+  RenderInBodyComponent,
+} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -25,7 +30,7 @@ import {
   LayerModule,
   ModalModule,
 } from 'carbon-components-angular';
-import {from, map, startWith, switchMap} from 'rxjs';
+import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {ProcessLinkService} from '@valtimo/process-link';
 
@@ -42,11 +47,15 @@ import {ProcessLinkService} from '@valtimo/process-link';
     LayerModule,
     ReactiveFormsModule,
     ButtonModule,
+    ConfirmationModalModule,
+    RenderInBodyComponent,
   ],
 })
 export class BuildingBlockManagementProcessUploadComponent {
   public readonly modalOpen$ =
     this.buildingBlockManagementDetailService.showProcessDefinitionUploadModal$;
+  public readonly showReplaceConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  public replaceModalContent = '';
 
   public readonly ACCEPTED_FILES: string[] = ['bpmn'];
 
@@ -75,7 +84,7 @@ export class BuildingBlockManagementProcessUploadComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public uploadProcessBpmn(): void {
+  public uploadProcessBpmn(replace: boolean = false): void {
     const bpmnFile = this.form.value?.file?.values()?.next()?.value?.file;
 
     if (!bpmnFile) return;
@@ -88,7 +97,8 @@ export class BuildingBlockManagementProcessUploadComponent {
             null,
             `${bpmnXml}`,
             this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-            this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag
+            this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+            replace
           )
         )
       )
@@ -101,12 +111,60 @@ export class BuildingBlockManagementProcessUploadComponent {
           this.closeModal();
           this.buildingBlockManagementDetailService.reloadProcessDefinitions();
         },
-        error: () => {
+        error: (error: unknown) => {
+          const duplicateKey = error instanceof HttpErrorResponse && error.status === 409;
+          if (duplicateKey) {
+            this.replaceModalContent = this.buildReplaceModalContent(error);
+            this.showReplaceConfirmationModal$.next(true);
+            return;
+          }
+
           this.notificationService.showNotification({
             type: 'error',
             title: this.translateService.instant('processManagement.upload.failure'),
           });
         },
       });
+  }
+
+  public confirmReplace(): void {
+    this.replaceModalContent = '';
+    this.uploadProcessBpmn(true);
+  }
+
+  public clearReplaceModal(): void {
+    this.replaceModalContent = '';
+  }
+
+  private getDuplicateKeyMessage(error: HttpErrorResponse): string | null {
+    const response = error.error;
+    const duplicates =
+      response?.duplicateProcessDefinitions || response?.parameters?.duplicateProcessDefinitions;
+    if (Array.isArray(duplicates) && duplicates.length > 0) {
+      const duplicateList = duplicates
+        .map(item => {
+          if (!item?.key) return null;
+          return item.name ? `${item.key} (${item.name})` : item.key;
+        })
+        .filter(Boolean)
+        .join(', ');
+      if (duplicateList) {
+        return this.translateService.instant(
+          'processManagement.upload.replaceContentWithDuplicates',
+          {
+            duplicates: duplicateList,
+          }
+        );
+      }
+    }
+
+    return null;
+  }
+
+  private buildReplaceModalContent(error: HttpErrorResponse): string {
+    return (
+      this.getDuplicateKeyMessage(error) ||
+      this.translateService.instant('processManagement.upload.replaceContent')
+    );
   }
 }
