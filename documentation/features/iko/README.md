@@ -1,6 +1,6 @@
-# 👤 IKO Client
+# 👤 IKO
 
-The IKO Client module displays integrated customer and object data to case workers and provides a management interface for configuring the presentation.
+The IKO module displays integrated customer and object data to case workers and provides a management interface for configuring the presentation.
 
 {% hint style="info" %}
 This module requires an active IKO Server installation. The IKO Server is a separate component that retrieves data from backend sources.
