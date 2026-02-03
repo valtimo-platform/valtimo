@@ -20,7 +20,6 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
-import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfiguration
@@ -36,8 +35,7 @@ import java.net.URI
 )
 class NotificatiesApiPlugin(
     pluginConfigurationId: PluginConfigurationId,
-    private val client: NotificatiesApiClient,
-    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
+    private val client: NotificatiesApiClient
 ) {
     val notificatiesApiConfigurationId = NotificatiesApiConfigurationId(pluginConfigurationId.id)
 
@@ -48,6 +46,9 @@ class NotificatiesApiPlugin(
     @Url
     @PluginProperty(key = "callbackUrl", secret = false)
     lateinit var callbackUrl: URI
+
+    @PluginProperty(key = "authHeader", secret = false, required = false)
+    var authHeader: String? = null
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
