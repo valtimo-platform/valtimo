@@ -57,4 +57,5 @@
     <include file="changelog/20250902-add-hidden-case-list-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251117-add-widget-icon.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251125-add-widget-is-compact.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260203-add-widget-color.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
