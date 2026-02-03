@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-import {Type} from '@angular/core';
-import {Observable} from 'rxjs';
+import {InjectionToken} from '@angular/core';
+import {BuildingBlockManagementTabConfig} from '../models';
 
-interface BuildingBlockManagementParams {
-  buildingBlockDefinitionKey: string;
-  buildingBlockDefinitionVersionTag: string;
-}
+const BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN = new InjectionToken<BuildingBlockManagementTabConfig[]>(
+  'Specify components to display as tabs on the building block management detail page.'
+);
 
-interface BuildingBlockManagementTabConfig {
-  translationKey: string;
-  component: Type<any>;
-  tabRoute: string;
-  enabled$?: Observable<boolean>;
-}
-
-export {BuildingBlockManagementParams, BuildingBlockManagementTabConfig};
+export {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN};

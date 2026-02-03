@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@ import {Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
-  selector: 'app-custom-case-tab',
-  templateUrl: './custom-case-tab.component.html',
-  styleUrls: ['./custom-case-tab.component.scss'],
+  selector: 'app-custom-building-block-tab',
+  templateUrl: './custom-building-block-tab.component.html',
   standalone: false,
 })
-export class CustomCaseTabComponent {
-  private documentDefinitionName: string;
-  private documentId: string;
+export class CustomBuildingBlockTabComponent {
+  public buildingBlockDefinitionKey: string;
+  public buildingBlockDefinitionVersionTag: string;
 
   constructor(private route: ActivatedRoute) {
     const snapshot = this.route.snapshot.paramMap;
-    this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
-    this.documentId = snapshot.get('documentId') || '';
+    this.buildingBlockDefinitionKey = snapshot.get('buildingBlockDefinitionKey') || '';
+    this.buildingBlockDefinitionVersionTag =
+      snapshot.get('buildingBlockDefinitionVersionTag') || '';
   }
 }
