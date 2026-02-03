@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,13 @@ export class CaseDetailTabAuditComponent implements OnInit {
           auditRecord.auditEvent.className ===
           'com.ritense.document.event.DocumentRetentionPeriodSetEvent'
         ) {
-          auditRecord.auditEvent['retentionDate'] = moment(
-            auditRecord.auditEvent['retentionDate']
-          ).format('DD MMM YYYY HH:mm');
+          const rawRetentionDate = auditRecord.auditEvent['retentionDate'];
+          if (rawRetentionDate) {
+            const retentionMoment = moment(rawRetentionDate);
+            if (retentionMoment.isValid()) {
+              auditRecord.auditEvent['retentionDate'] = retentionMoment.format('DD MMM YYYY HH:mm');
+            }
+          }
         }
         const occurredOn = moment(auditRecord.metaData.occurredOn);
         const fromNow = occurredOn.fromNow();
