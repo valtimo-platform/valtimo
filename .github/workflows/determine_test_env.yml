@@ -37,7 +37,7 @@ jobs:
           GITHUB_SHA="${{ github.sha }}"
 
           if [[ -n "${INPUT_ENV_NAME}" ]]; then
-            ENV_NAME="${INPUT_ENV_NAME}"
+            ENV_NAME=$(echo "${REF_NAME}" | sed 's/[\/+|<>,;_]/-/g' | tr '[:upper:]' '[:lower:]')
           elif [[ -n "${PR_NUMBER}" ]]; then
             ENV_NAME="pr${PR_NUMBER}"
           elif [[ -n "${REF_NAME}" ]]; then
