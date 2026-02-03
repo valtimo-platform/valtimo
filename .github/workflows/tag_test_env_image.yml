@@ -87,7 +87,7 @@ jobs:
 
       - name: Tag image for test environment
         env:
-          IMAGE_TO_TAG: "${{ steps.sanitize_image_to_tag.outputs.tags[0] }}"
+          IMAGE_TO_TAG: "${{ fromJson(steps.sanitize_image_to_tag.outputs.json).tags[0] }}"
           CONTENTS_SHA: "${{ inputs.contents_sha }}"
           SOURCE_SHA: "${{ inputs.source_sha || needs.determine_test_env.outputs.source_sha }}"
           ENV_NAME: "${{ needs.determine_test_env.outputs.name }}"
