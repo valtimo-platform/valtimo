@@ -75,10 +75,19 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Sanitize image to tag
+        id: sanitize_image_to_tag
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ inputs.target }}
+          tags: |
+            type=raw,value=${{ inputs.image_to_tag }}
+          flavor: |
+            latest=false
+
       - name: Tag image for test environment
         env:
-          IMAGE: "ghcr.io/${{ github.repository }}/${{ inputs.target }}"
-          IMAGE_TO_TAG: "${{ inputs.image_to_tag }}"
+          IMAGE_TO_TAG: "${{ steps.sanitize_image_to_tag.outputs.tags[0] }}"
           CONTENTS_SHA: "${{ inputs.contents_sha }}"
           SOURCE_SHA: "${{ inputs.source_sha || needs.determine_test_env.outputs.source_sha }}"
           ENV_NAME: "${{ needs.determine_test_env.outputs.name }}"
@@ -90,7 +99,7 @@ jobs:
           fi
           SOURCE_SHA_SHORT=${SOURCE_SHA:0:10}
           CONTENTS_SHA_SHORT=${CONTENTS_SHA:0:10}
-          TEST_ENV_TAG="testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
+          TEST_ENV_TAG="ghcr.io/${{ github.repository }}/${{ inputs.target }}/testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
           docker buildx imagetools create \
-            --tag "${IMAGE}:${TEST_ENV_TAG}" \
-            "${IMAGE}:${IMAGE_TO_TAG}"
+            --tag "${TEST_ENV_TAG}" \
+            "${IMAGE_TO_TAG}"
