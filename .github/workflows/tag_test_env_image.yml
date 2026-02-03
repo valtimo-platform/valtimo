@@ -79,7 +79,7 @@ jobs:
         id: sanitize_image_to_tag
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/valtimo${{ inputs.target }}
+          images: ghcr.io/valtimo/${{ inputs.target }}
           tags: |
             type=raw,value=${{ inputs.image_to_tag }}
           flavor: |
