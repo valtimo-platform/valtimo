@@ -344,8 +344,8 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         }
         this.internalStatus = internalCaseStatus;
         if (internalCaseStatus != null && internalCaseStatus.getRetentionPeriodInDays() >= 0) {
-            logger.info("Internal status set to {}", internalCaseStatus.getRetentionPeriodInDays());
             this.retentionDate = LocalDateTime.now().plusDays(this.internalStatus.getRetentionPeriodInDays());
+            logger.info("Retention date set using period of {} days", internalCaseStatus.getRetentionPeriodInDays());
         } else {
             this.retentionDate = null;
         }
