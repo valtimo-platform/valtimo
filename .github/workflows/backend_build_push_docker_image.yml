@@ -77,10 +77,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sanitize branch name
-        id: sanitize_branch
-        run: echo "branch=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[\/+|<>,;_]/-/g' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-
       - name: Resolve backend tree hash
         id: backend_tree
         run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
@@ -91,7 +87,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
           tags: |
-            type=raw,value=${{ steps.sanitize_branch.outputs.branch }}-${{ matrix.build_type }}.${{ github.run_number }}
+            type=raw,value=${{ env.BRANCH_NAME }}-${{ matrix.build_type }}.${{ github.run_number }}
             type=raw,value=commit-${{ matrix.build_type }}-${{ github.sha }}
             type=raw,value=contents-${{ matrix.build_type }}-${{ steps.backend_tree.outputs.tree }}
           flavor: |

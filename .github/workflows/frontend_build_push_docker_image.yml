@@ -107,10 +107,6 @@ jobs:
         id: frontend_tree
         run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
 
-      - name: Sanitize branch name
-        id: sanitize_branch
-        run: echo "branch=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[\/+|<>,;_]/-/g' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
@@ -119,7 +115,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
           tags: |
-            type=raw,value=${{ steps.sanitize_branch.outputs.branch }}.${{ github.run_number }}
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
             type=raw,value=commit-${{ github.sha }}
             type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
