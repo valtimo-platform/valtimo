@@ -79,7 +79,7 @@ jobs:
         id: sanitize_image_to_tag
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/${{ inputs.target }}
+          images: ghcr.io/valtimo${{ inputs.target }}
           tags: |
             type=raw,value=${{ inputs.image_to_tag }}
           flavor: |
@@ -99,7 +99,7 @@ jobs:
           fi
           SOURCE_SHA_SHORT=${SOURCE_SHA:0:10}
           CONTENTS_SHA_SHORT=${CONTENTS_SHA:0:10}
-          TEST_ENV_TAG="ghcr.io/${{ github.repository }}/${{ inputs.target }}/testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
+          TEST_ENV_TAG="ghcr.io/${{ github.repository }}/${{ inputs.target }}:testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
           docker buildx imagetools create \
             --tag "${TEST_ENV_TAG}" \
             "${IMAGE_TO_TAG}"
