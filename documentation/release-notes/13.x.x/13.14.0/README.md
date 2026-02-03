@@ -37,3 +37,4 @@
   case when configured for a building block.
 
 * The case detail context menu now only shows the Unassign action when the user has the assign permission.
+* Made case definition and building block upload modals more consistent.

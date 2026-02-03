@@ -21,6 +21,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {WarningFilled16} from '@carbon/icons';
@@ -31,6 +32,7 @@ import {FileItem, IconService, NotificationContent} from 'carbon-components-angu
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.constants';
 import {CaseManagementService} from '../../services';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: false,
@@ -69,10 +71,18 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD].includes(activeStep)
     )
   );
+  public readonly $warningChecked = signal(false);
+
   public readonly nextButtonDisabled$: Observable<boolean> = combineLatest([
     this.activeStep$,
     this._disabled$,
-  ]).pipe(map(([activeStep, disabled]) => activeStep !== UPLOAD_STEP.PLUGINS && disabled));
+    toObservable(this.$warningChecked),
+  ]).pipe(
+    map(([activeStep, disabled, warningChecked]) => {
+      const warningNotChecked = activeStep === UPLOAD_STEP.FILE_SELECT && !warningChecked;
+      return warningNotChecked || (activeStep !== UPLOAD_STEP.PLUGINS && disabled);
+    })
+  );
   public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
     this.translateService.stream('interface.warning'),
     this.translateService.stream('caseManagement.importDefinition.overwriteWarning'),
@@ -91,8 +101,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   public form: FormGroup = this.fb.group({
     file: this.fb.control(new Set<any>(), [Validators.required]),
   });
-
-  private _checked = false;
 
   private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
   private readonly _subscriptions = new Subscription();
@@ -119,7 +127,7 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
         if (!fileItem) {
           this._disabled$.next(true);
           this.showCheckboxError$.next(false);
-          this._checked = false;
+          this.$warningChecked.set(false);
           return;
         }
 
@@ -158,7 +166,7 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this._checked) {
+    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this.$warningChecked()) {
       this.showCheckboxError$.next(true);
       return;
     }
@@ -172,7 +180,7 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   }
 
   public onCheckedChange(checked: boolean): void {
-    this._checked = checked;
+    this.$warningChecked.set(checked);
 
     if (!checked) {
       return;
@@ -274,6 +282,10 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       this.activeStep$.next(UPLOAD_STEP.PLUGINS);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
       this.showCheckboxError$.next(false);
+      this.form.reset({file: new Set<any>()});
+      this._importFile$.next('');
+      this._disabled$.next(true);
+      this.$warningChecked.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }
