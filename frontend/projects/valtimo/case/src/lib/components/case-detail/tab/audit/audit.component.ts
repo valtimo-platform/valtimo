@@ -62,6 +62,14 @@ export class CaseDetailTabAuditComponent implements OnInit {
     this.documentService.getAuditLog(this.documentId, pageNumber).subscribe(page => {
       const timelineItems: TimelineItemImpl[] = [];
       page.content.forEach(auditRecord => {
+        if (
+          auditRecord.auditEvent.className ===
+          'com.ritense.document.event.DocumentRetentionPeriodSetEvent'
+        ) {
+          auditRecord.auditEvent['retentionDate'] = moment(
+            auditRecord.auditEvent['retentionDate']
+          ).format('DD MMM YYYY HH:mm');
+        }
         const occurredOn = moment(auditRecord.metaData.occurredOn);
         const fromNow = occurredOn.fromNow();
         timelineItems.push(

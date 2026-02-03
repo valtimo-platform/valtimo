@@ -378,7 +378,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         return Optional.ofNullable(retentionDate);
     }
 
-
     @Override
     public Optional<LocalDateTime> modifiedOn() {
         return Optional.ofNullable(modifiedOn);

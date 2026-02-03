@@ -130,8 +130,6 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final EntityManager entityManager;
 
-    private final DateTimeFormatter retentionDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
     public JsonSchemaDocumentService(
         JsonSchemaDocumentRepository documentRepository,
         JsonSchemaDocumentDefinitionService documentDefinitionService,
@@ -853,7 +851,7 @@ public class JsonSchemaDocumentService implements DocumentService {
                     LocalDateTime.now(),
                     AuditHelper.getActor(),
                     documentId.getId(),
-                    document.retentionDate().get().format(retentionDateFormatter)
+                    document.retentionDate().get()
                 )
             );
             outboxService.send(() ->

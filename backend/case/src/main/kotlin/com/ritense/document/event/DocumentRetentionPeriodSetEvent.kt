@@ -33,7 +33,7 @@ class DocumentRetentionPeriodSetEvent @JsonCreator constructor(
     occurredOn: LocalDateTime,
     user: String,
     private var documentId: UUID,
-    private var retentionDate: String
+    private var retentionDate: LocalDateTime
 ) : AuditMetaData(UUID.randomUUID(), origin, occurredOn, user), AuditEvent {
 
     init {
@@ -45,7 +45,7 @@ class DocumentRetentionPeriodSetEvent @JsonCreator constructor(
         this.documentId = documentId
     }
 
-    fun setRetentionDate(retentionDate: String) {
+    fun setRetentionDate(retentionDate: LocalDateTime) {
         this.retentionDate = retentionDate
     }
 
@@ -55,7 +55,7 @@ class DocumentRetentionPeriodSetEvent @JsonCreator constructor(
 
     @JsonProperty
     @JsonView(AuditView.Public::class)
-    fun getRetentionDate(): String = retentionDate
+    fun getRetentionDate(): LocalDateTime = retentionDate
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
