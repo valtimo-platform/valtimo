@@ -14,7 +14,6 @@ see [Process Exchange building blocks](../../fundamentals/process-exchange/build
 Building blocks are useful when:
 
 * The same subprocess is needed in multiple cases.
-* You want to reuse process logic in standalone processes outside of a case context.
 * You want one place to update a shared step.
 * You want a consistent way to pass data in and get results back.
 
