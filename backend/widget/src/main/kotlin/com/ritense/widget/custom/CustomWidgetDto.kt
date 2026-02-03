@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.validation.Valid
 import java.util.UUID
@@ -29,6 +30,7 @@ data class CustomWidgetDto(
     override val key: String,
     override val title: String,
     override val icon: String?,
+    override val color: WidgetColor? = null,
     override val width: Int,
     override val highContrast: Boolean,
     override val isCompact: Boolean?,
@@ -41,6 +43,7 @@ data class CustomWidgetDto(
         key = key,
         title = title,
         icon = icon,
+        color = color ?: WidgetColor.WHITE,
         width = width,
         order = order,
         highContrast = highContrast,

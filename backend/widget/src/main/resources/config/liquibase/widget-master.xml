@@ -36,4 +36,5 @@
     <include file="changelog/20251117-add-widget-icon-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251125-add-widget-is-compact-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20260106-add-tab-properties.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260203-add-widget-color-column.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

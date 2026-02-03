@@ -18,6 +18,7 @@ package com.ritense.case_.widget.collection
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.CaseWidgetMapper
+import com.ritense.widget.domain.WidgetColor
 import java.util.Collections.emptyList
 
 class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, CollectionCaseWidgetDto> {
@@ -29,6 +30,7 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
         key = entity.id.key,
         title = entity.title,
         icon = entity.icon,
+        color = entity.color,
         width = entity.width,
         actions = entity.actions,
         displayConditions = entity.displayConditions,
@@ -41,6 +43,7 @@ class CollectionCaseWidgetMapper:CaseWidgetMapper<CollectionCaseWidget, Collecti
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
         icon = dto.icon,
+        color = dto.color ?: WidgetColor.WHITE,
         width = dto.width,
         highContrast = dto.highContrast,
         isCompact = dto.isCompact,
