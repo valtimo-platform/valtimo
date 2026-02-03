@@ -8,13 +8,13 @@ This module requires an active IKO Server installation. The IKO Server is a sepa
 
 ## What is IKO?
 
-IKO stands for **Integraal Klant- en Objectbeeld** (Integrated Customer and Object View). The purpose of IKO is to provide case workers with a complete picture of the customer or object for which a case is running.
+IKO stands for **Integraal Klant- en Objectbeeld**. The purpose of IKO is to provide case workers with a complete overview of the customer or object for which a case is running.
 
 IKO consists of two components:
 
-| Component | Description |
-|-----------|-------------|
-| **IKO Server** | A separate component (Spring Boot application based on Apache Camel) that retrieves data from multiple backend sources to build a complete view. The IKO Server has its own management interface (outside scope of this documentation). |
+| Component | Description                                                                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **IKO Server** | A separate application that retrieves data from multiple backend sources to build a complete view. The IKO Server has its own management interface. See the [IKO Server documentation](https://docs.integraal-klant-objectbeeld.nl/). |
 | **IKO Client** | Implemented in Valtimo as a module. Displays the aggregated data to the case worker and provides a management interface for configuring the presentation. |
 
 <figure><img src="../../.gitbook/assets/iko/iko-overview.png" alt="IKO detail screen showing customer data"><figcaption><p>IKO detail screen with customer information displayed in widgets.</p></figcaption></figure>
@@ -25,7 +25,7 @@ The IKO Server can retrieve data from various backend sources, such as:
 
 - BRP (Basisregistratie Personen).
 - KVK (Kamer van Koophandel).
-- ZGW APIs (Zaakgericht Werken).
+- ZGW APIs (Zaakgericht Werken APIs).
 - Domain registrations.
 
 ## Why use IKO?
@@ -53,7 +53,7 @@ With IKO, all this information is aggregated and displayed on a single screen. T
 
 Case workers can access the IKO view in two ways:
 
-1. **Manual search**: Via the search screen, the case worker can search by BSN, surname + date of birth, or address.
+1. **Manual search**: Via the search screen, the case worker can search using the configured search criteria. For example: BSN, surname + date of birth, or address.
 2. **Direct link from case**: On the case detail screen, a widget can be configured with a button that opens the IKO view. The identifier (such as BSN or KVK number) is automatically passed from the case document.
 
 {% hint style="info" %}

@@ -15,9 +15,6 @@ Search Actions define the available search methods for a View. Each Search Actio
 
 ## Configuration
 
-{% tabs %}
-{% tab title="Via UI" %}
-
 ### Adding a search action
 
 1. Navigate to **Admin → IKO**.
@@ -41,113 +38,13 @@ For each Search Action, one or more search fields are configured:
 | Field type | Input type (see table below). |
 | Required | Whether the field is mandatory. |
 
-<figure><img src="../../.gitbook/assets/iko/search-field-config.png" alt="Search field configuration"><figcaption><p>Configure search fields with data type, field type, and validation.</p></figcaption></figure>
+<figure><img width="500px" src="../../.gitbook/assets/iko/search-field-config.png" alt="Search field configuration"><figcaption><p>Configure search fields with data type, field type, and validation.</p></figcaption></figure>
 
 {% hint style="info" %}
 The order of search fields can be adjusted via drag & drop.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/iko/search-screen-user.png" alt="Search screen as seen by users"><figcaption><p>The search screen as displayed to case workers.</p></figcaption></figure>
-
-{% endtab %}
-
-{% tab title="Via IDE" %}
-
-Search actions and fields can be configured through autodeployment.
-
-### File structure
-
-```
-config/global/iko/{view-name}/
-├── {name}.iko-search-action.json
-└── {name}.iko-search-field.json
-```
-
-### Search actions example
-
-{% code title="customer.iko-search-action.json" %}
-```json
-{
-  "ikoViewKey": "customer",
-  "ikoSearchActions": [
-    {
-      "key": "bsn",
-      "title": "Search by BSN",
-      "properties": {
-        "endpointQueryParameters": {
-          "type": "RaadpleegMetBurgerservicenummer"
-        }
-      }
-    },
-    {
-      "key": "name-birthdate",
-      "title": "Search by name and date of birth",
-      "properties": {
-        "endpointQueryParameters": {
-          "type": "ZoekMetGeslachtsnaamEnGeboortedatum"
-        }
-      }
-    }
-  ]
-}
-```
-{% endcode %}
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `ikoViewKey` | string | Yes | Reference to parent view. |
-| `ikoSearchActions` | array | Yes | List of search actions. |
-| `ikoSearchActions[].key` | string | Yes | Unique identifier. |
-| `ikoSearchActions[].title` | string | Yes | Display name. |
-| `ikoSearchActions[].properties` | object | No | Action-specific properties. |
-
-### Search fields example
-
-{% code title="name-birthdate.iko-search-field.json" %}
-```json
-{
-  "ikoViewKey": "customer",
-  "ikoSearchActionKey": "name-birthdate",
-  "ikoSearchFields": [
-    {
-      "key": "surname",
-      "title": "Surname",
-      "path": "familyName",
-      "dataType": "text",
-      "fieldType": "single",
-      "matchType": "exact",
-      "required": true
-    },
-    {
-      "key": "birthdate",
-      "title": "Date of birth",
-      "path": "birthDate",
-      "dataType": "date",
-      "fieldType": "single",
-      "matchType": "exact",
-      "required": true
-    }
-  ]
-}
-```
-{% endcode %}
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `ikoViewKey` | string | Yes | Reference to parent view. |
-| `ikoSearchActionKey` | string | Yes | Reference to search action. |
-| `ikoSearchFields` | array | Yes | List of search fields. |
-| `ikoSearchFields[].key` | string | Yes | Unique identifier. |
-| `ikoSearchFields[].title` | string | No | Display label. |
-| `ikoSearchFields[].path` | string | Yes | Path to data field in query. |
-| `ikoSearchFields[].dataType` | string | Yes | Data type (see table below). |
-| `ikoSearchFields[].fieldType` | string | Yes | Input type (see table below). |
-| `ikoSearchFields[].matchType` | string | No | Match strategy (`exact` or `like`). |
-| `ikoSearchFields[].dropdownDataProvider` | string | No | Data provider for dropdown options. |
-| `ikoSearchFields[].required` | boolean | No | Whether the field is required. Default: `false`. |
-
-{% endtab %}
-{% endtabs %}
 
 ## Data types
 

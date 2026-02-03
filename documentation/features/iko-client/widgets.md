@@ -19,14 +19,11 @@ The detail screen is divided into 4 columns. Each widget occupies a configurable
 | `map` | Geographic map display. | Location. |
 | `divider` | Visual separation between widgets. | Grouping related widgets. |
 
-<figure><img src="../../.gitbook/assets/iko/widget-fields-example.png" alt="Fields widget example"><figcaption><p>A fields widget displaying customer data.</p></figcaption></figure>
+<figure><img width="500px" src="../../.gitbook/assets/iko/widget-fields-example.png" alt="Fields widget example"><figcaption><p>A fields widget displaying customer data.</p></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/iko/widget-interactive-table-example.png" alt="Interactive table widget example"><figcaption><p>An interactive table widget with sorting and a link action.</p></figcaption></figure>
 
 ## Configuration
-
-{% tabs %}
-{% tab title="Via UI" %}
 
 ### Widget configuration wizard
 
@@ -58,7 +55,7 @@ The screen is divided into 4 columns. Select how many columns the widget should 
 | Default | Normal spacing between elements. |
 | Compact | Reduced spacing for more content in less space. |
 
-<figure><img src="../../.gitbook/assets/iko/widget-wizard-step3.png" alt="Widget wizard step 3"><figcaption><p>Select the widget density.</p></figcaption></figure>
+<figure><img width="600px" src="../../.gitbook/assets/iko/widget-wizard-step3.png" alt="Widget wizard step 3"><figcaption><p>Select the widget density.</p></figcaption></figure>
 
 #### Step 4: Choose widget style
 
@@ -67,9 +64,7 @@ The screen is divided into 4 columns. Select how many columns the widget should 
 | Default | Normal display for regular content. |
 | High contrast | Inverted colors for emphasis. In light mode the widget appears dark, in dark mode the widget appears light. |
 
-<figure><img src="../../.gitbook/assets/iko/widget-wizard-step4.png" alt="Widget wizard step 4"><figcaption><p>Select the widget style.</p></figcaption></figure>
-
-<figure><img src="../../.gitbook/assets/iko/widget-high-contrast.png" alt="High contrast comparison"><figcaption><p>Comparison of default and high contrast styles.</p></figcaption></figure>
+<figure><img width="600px" src="../../.gitbook/assets/iko/widget-wizard-step4.png" alt="Widget wizard step 4"><figcaption><p>Select the widget style.</p></figcaption></figure>
 
 #### Step 5: Choose widget content
 
@@ -99,173 +94,9 @@ Configure conditions that determine when the widget is shown. If multiple condit
 
 ### JSON editor
 
-For advanced configuration, switch to the JSON editor. The JSON editor allows direct editing of the widget configuration. See the "Via IDE" tab for the JSON schema reference.
+For advanced configuration, switch to the JSON editor. The JSON editor allows direct editing of the widget configuration.
 
-<figure><img src="../../.gitbook/assets/iko/visual-vs-json-editor.png" alt="Visual and JSON editor toggle"><figcaption><p>Switch between visual editor and JSON editor.</p></figcaption></figure>
-
-{% endtab %}
-
-{% tab title="Via IDE" %}
-
-Widgets can be configured through autodeployment.
-
-### File structure
-
-```
-config/global/iko/{view-name}/
-└── {name}.iko-widget.json
-```
-
-### Base widget schema
-
-All widgets share these base properties:
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `type` | string | Yes | Widget type (discriminator). |
-| `key` | string | Yes | Unique identifier. |
-| `title` | string | Yes | Widget title. |
-| `icon` | string | No | Icon name. |
-| `width` | integer | Yes | Width in columns (1-4). |
-| `highContrast` | boolean | Yes | Enable high contrast style. |
-| `isCompact` | boolean | No | Enable compact density. |
-| `actions` | array | No | Widget actions (see Actions section). |
-| `displayConditions` | array | No | Conditions for showing the widget. |
-| `properties` | object | Yes | Type-specific properties. |
-
-### Fields widget example
-
-{% code title="general.iko-widget.json" %}
-```json
-{
-  "ikoViewKey": "customer",
-  "ikoTabKey": "general",
-  "ikoWidgets": [
-    {
-      "type": "fields",
-      "key": "personal-data",
-      "title": "Personal Data",
-      "width": 2,
-      "highContrast": true,
-      "isCompact": false,
-      "actions": [],
-      "displayConditions": [],
-      "properties": {
-        "columns": [
-          [
-            {
-              "key": "name",
-              "title": "Name",
-              "value": "iko:/person/name/fullName"
-            },
-            {
-              "key": "birthdate",
-              "title": "Date of birth",
-              "value": "iko:/person/birth/date/date",
-              "displayProperties": {
-                "type": "date",
-                "format": "DD-MM-YYYY",
-                "hideWhenEmpty": false
-              }
-            }
-          ],
-          [
-            {
-              "key": "bsn",
-              "title": "BSN",
-              "value": "iko:/person/burgerservicenummer"
-            }
-          ]
-        ]
-      }
-    }
-  ]
-}
-```
-{% endcode %}
-
-### Collection widget example
-
-{% code title="nationalities.iko-widget.json" %}
-```json
-{
-  "type": "collection",
-  "key": "nationalities",
-  "title": "Nationalities",
-  "width": 1,
-  "highContrast": false,
-  "properties": {
-    "collection": "iko:/person/nationalities",
-    "defaultPageSize": 4,
-    "title": {
-      "value": "/nationality/description"
-    },
-    "fields": [
-      {
-        "key": "nationality",
-        "title": "Nationality",
-        "value": "/nationality/description",
-        "width": "full"
-      },
-      {
-        "key": "startDate",
-        "title": "Start date",
-        "value": "/dateStartValidity/longFormat",
-        "width": "half"
-      }
-    ]
-  }
-}
-```
-{% endcode %}
-
-### Interactive table widget example
-
-{% code title="cases.iko-widget.json" %}
-```json
-{
-  "type": "interactive-table",
-  "key": "cases",
-  "title": "Running Cases",
-  "width": 4,
-  "highContrast": false,
-  "actions": [
-    {
-      "type": "link",
-      "url": "https://example.com/cases",
-      "label": "View all cases"
-    }
-  ],
-  "properties": {
-    "collection": "iko:/cases",
-    "defaultPageSize": 10,
-    "canStartCase": true,
-    "columns": [
-      {
-        "key": "identification",
-        "title": "Case number",
-        "value": "identification",
-        "sortable": true
-      },
-      {
-        "key": "startdate",
-        "title": "Start date",
-        "value": "startdate",
-        "sortable": true,
-        "defaultSort": "DESC",
-        "displayProperties": {
-          "type": "date",
-          "format": "DD-MM-YYYY"
-        }
-      }
-    ]
-  }
-}
-```
-{% endcode %}
-
-{% endtab %}
-{% endtabs %}
+<figure><img width="900px" src="../../.gitbook/assets/iko/visual-vs-json-editor.png" alt="Visual and JSON editor toggle"><figcaption><p>Switch between visual editor and JSON editor.</p></figcaption></figure>
 
 ## Widget order
 
@@ -283,8 +114,6 @@ A divider is a special widget type that creates visual separation between groups
 
 Actions add buttons to a widget that allow users to perform operations. Actions appear in the top-right corner of the widget.
 
-<figure><img src="../../.gitbook/assets/iko/widget-action-example.png" alt="Widget with action button"><figcaption><p>A widget with an action button.</p></figcaption></figure>
-
 ### Action types
 
 | Type | Description |
@@ -298,6 +127,7 @@ Actions add buttons to a widget that allow users to perform operations. Actions 
 Link actions navigate the user to a specified URL. The URL can contain placeholders to include dynamic data.
 
 <figure><img src="../../.gitbook/assets/iko/widget-action-link-config.png" alt="Link action configuration"><figcaption><p>Configure a link action with URL and button label.</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/iko/widget-action-link.png" alt="Link action configuration"><figcaption><p>Configure a link action with URL and button label.</p></figcaption></figure>
 
 | Field | Description |
 |-------|-------------|
@@ -317,14 +147,8 @@ The "Create new case" action displays a button with a dropdown menu. The dropdow
 
 Enable this action by setting `canStartCase` to `true` in the widget properties.
 
-### Configuring start process
-
-The "Start process" action starts a specific process. Unlike "Create new case", the process is configured by the administrator in the widget settings, not selected by the user.
-
-| Field | Description |
-|-------|-------------|
-| Process definition | The process to start. |
-| Button label | The text displayed on the button. |
+<figure><img src="../../.gitbook/assets/iko/widget-action-start-new-case-config.png" alt="Link action configuration"><figcaption><p>Configure a link action with URL and button label.</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/iko/widget-action-start-new-case-button.png" alt="Link action configuration"><figcaption><p>Configure a link action with URL and button label.</p></figcaption></figure>
 
 ## Display properties (optional)
 
