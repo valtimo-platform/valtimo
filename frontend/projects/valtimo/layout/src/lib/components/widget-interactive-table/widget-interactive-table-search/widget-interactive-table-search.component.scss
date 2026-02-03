@@ -43,29 +43,34 @@
     grid-column: 1 / -1;
   }
 
-  &__filter-field--range .multiple-search-fields {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    column-gap: 8px;
-    align-items: center;
-  }
-
-  &__filter-field--range .to-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    margin: 0;
-  }
-
   &__label {
     font-size: var(--cds-label-01-font-size);
     color: var(--cds-text-secondary);
   }
 }
 
+::ng-deep .multiple-search-fields {
+  display: flex !important;
+  flex-direction: row !important ;
+  align-items: center !important;
+}
+
+.to-text {
+  margin-inline-start: 8px;
+  margin-inline-end: 8px;
+}
+
 ::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
   inline-size: unset !important;
+  width: 180px !important;
+}
+
+::ng-deep v-input input {
+  background-color: var(--cds-layer-02) !important;
+}
+
+::ng-deep v-select input {
+  background-color: var(--cds-layer-02) !important;
 }
 
 ::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
