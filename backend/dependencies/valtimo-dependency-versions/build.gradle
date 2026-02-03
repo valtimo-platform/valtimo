@@ -111,11 +111,6 @@ dependencies {
 
         api("com.rabbitmq:amqp-client:${amqpCLientVersion}")
         api("io.github.oshai:kotlin-logging:${kotlinLoggingVersion}")
-
-        // TODO: Remove this later. This is a temporary override because the current 3.27.6 version
-        //  pulled in through operaton has vulnerabilties and no operaton fix is available as
-        //  of 03-02-2026ß
-        api("org.assertj:assertj-core:3.27.7")
     }
 }
 
