@@ -24,6 +24,8 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
+import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +43,7 @@ import java.util.Optional
 class BuildingBlockDefinitionExporterTest(
     @Mock private val repository: BuildingBlockDefinitionRepository,
     @Mock private val documentDefinitionService: DocumentDefinitionService,
+    @Mock private val formDefinitionRepository: FormDefinitionRepository,
 ) {
 
     private val objectMapper = ObjectMapper()
@@ -50,7 +53,7 @@ class BuildingBlockDefinitionExporterTest(
 
     @BeforeEach
     fun setUp() {
-        exporter = BuildingBlockDefinitionExporter(objectMapper, repository, documentDefinitionService)
+        exporter = BuildingBlockDefinitionExporter(objectMapper, repository, documentDefinitionService, formDefinitionRepository)
     }
 
     @Test
@@ -67,6 +70,11 @@ class BuildingBlockDefinitionExporterTest(
 
         whenever(repository.findById(buildingBlockDefinitionId)).thenReturn(Optional.of(definition))
         whenever(documentDefinitionService.findByBlueprintId(buildingBlockDefinitionId)).thenReturn(Optional.of(documentDefinition))
+        whenever(formDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK,
+            buildingBlockDefinitionId.key,
+            buildingBlockDefinitionId.versionTag
+        )).thenReturn(emptyList())
 
         val result = exporter.export(BuildingBlockDefinitionExportRequest(buildingBlockDefinitionId))
 

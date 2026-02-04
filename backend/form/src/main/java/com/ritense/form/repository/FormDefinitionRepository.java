@@ -116,6 +116,9 @@ public interface FormDefinitionRepository extends JpaRepository<FormIoFormDefini
 
     @Deprecated(since = "13.14", forRemoval = true)
     default Optional<FormIoFormDefinition> findByNameAndCaseDefinitionId(String name, CaseDefinitionId caseDefinitionId) {
+        if (caseDefinitionId == null) {
+            return findByNameAndBlueprintIdIsNull(name);
+        }
         return findByNameAndBlueprintId(
             name,
             BlueprintType.CASE,
