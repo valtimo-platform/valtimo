@@ -18,6 +18,8 @@
 
   **Main change:** The core Form.io library has been renamed from `formiojs` to `@formio/js`.
 
-## Bugfixes
+## Bug Fixes
 
-* New bugfix.
+- Fixed an issue where the Form.io custom component **Document Picker** did not show any files**.
+- Fixed file uploads so they now consistently use the correct **upload process** when uploading files.
+
