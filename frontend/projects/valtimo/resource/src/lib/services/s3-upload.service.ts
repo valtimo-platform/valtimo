@@ -60,7 +60,7 @@ export class S3UploadService implements UploadService {
 
   getResources(documentId: string): Observable<Array<ResourceReference>> {
     return this.http.get<any>(`${this.valtimoEndpointUri}v1/document/${documentId}`).pipe(
-      map(document => document.relatedFiles),
+      map(document => document.relatedFiles ?? []),
       map(resources =>
         resources.map(relatedFile => ({
           filename: relatedFile.fileName,
