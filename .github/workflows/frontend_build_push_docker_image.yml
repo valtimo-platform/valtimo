@@ -12,7 +12,7 @@ on:
         type: "string"
 
     outputs:
-      tagged_image:
+      built_image:
         description: "The Docker image tag"
         value: ${{ jobs.build_image.outputs.image_tag }}
 
@@ -115,8 +115,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
-            type=raw,value=commit-${{ github.sha }}
+            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
+            type=raw,value=commit-test-${{ github.sha }}
             type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false

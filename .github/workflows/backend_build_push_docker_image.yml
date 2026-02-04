@@ -13,8 +13,13 @@ on:
     outputs:
       built_test_image:
         description: "Tag of the test Docker image that was built"
-        # Equal to the first tag of 'generate_tags' step. Can't use its output directly because of the matrix job, so we reconstruct it.
-        value: ${{ github.head_ref || github.ref_name }}-test.${{ github.run_number }}
+        value: ${{ fromJson(jobs.generate_tags.outputs.test_tags)[0] }}
+      built_prod_image:
+        description: "Tag of the production Docker image that was built"
+        value: ${{ fromJson(jobs.generate_tags.outputs.production_tags)[0] }}
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   assemble:
@@ -54,17 +59,52 @@ jobs:
           path: backend/deployment/
           retention-days: 1
 
+  generate_tags:
+    runs-on: ubuntu-latest
+    outputs:
+      test_tags: ${{ steps.generate_tags_test.outputs.tags }}
+      production_tags: ${{steps.generate_tags_production.outputs.tags }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Resolve backend tree hash
+        id: backend_tree
+        run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
+      - name: Generate image tags (test)
+        id: generate_tags_test
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-backend
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
+            type=raw,value=commit-test-${{ github.sha }}
+            type=raw,value=contents-test-${{ steps.backend_tree.outputs.tree }}
+          flavor: |
+            latest=false
+
+      - name: Generate image tags (production)
+        id: generate_tags_production
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-backend
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}-production.${{ github.run_number }}
+            type=raw,value=commit-production-${{ github.sha }}
+            type=raw,value=contents-production-${{ steps.backend_tree.outputs.tree }}
+          flavor: |
+            latest=false
+
   build_image:
     strategy:
       matrix:
         build_type: ["production", "test"]
     runs-on: ubuntu-latest
-    needs: assemble
+    needs:
+      - assemble
+      - generate_tags
     permissions:
       contents: read
       packages: write
-    env:
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout repository
@@ -76,22 +116,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Resolve backend tree hash
-        id: backend_tree
-        run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
-
-      - name: Generate image tags
-        id: generate_tags
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/gzac-backend
-          tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-${{ matrix.build_type }}.${{ github.run_number }}
-            type=raw,value=commit-${{ matrix.build_type }}-${{ github.sha }}
-            type=raw,value=contents-${{ matrix.build_type }}-${{ steps.backend_tree.outputs.tree }}
-          flavor: |
-            latest=false
 
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
@@ -111,6 +135,6 @@ jobs:
           file: ./backend/deployment/Dockerfile
           context: backend/deployment/
           push: true
-          tags: ${{ steps.generate_tags.outputs.tags }}
+          tags: ${{ matrix.build_type == 'production' && needs.generate_tags.outputs.production_tags || needs.generate_tags.outputs.test_tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

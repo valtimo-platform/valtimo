@@ -1,7 +1,0 @@
-{
-    "key": "vastleggen-besluit",
-    "name": "Vastleggen besluit",
-    "description": "Dit building block ondersteunt het vastleggen van een formeel besluit binnen een zaakproces. Het faciliteert het ophalen van het juiste besluittype, het aanmaken van een besluit met bijbehorende ingangsdatum en toelichting, en het koppelen van een document aan dat besluit. Hiermee wordt het volledige besluitvormingsproces consistent, herbruikbaar en gestandaardiseerd afgehandeld.",
-    "versionTag": "1.2.0",
-    "final": false
-}
