@@ -8,6 +8,13 @@
             "validate": {
                 "required": true
             },
+            "dataSrc": "custom",
+            "dataType": "string",
+            "valueProperty": "value",
+            "asyncValues": true,
+            "data": {
+                "custom": "values = instance.getResources()"
+            },
             "input": true
         },
         {

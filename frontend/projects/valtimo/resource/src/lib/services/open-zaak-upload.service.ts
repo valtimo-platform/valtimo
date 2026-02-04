@@ -20,9 +20,9 @@ import {ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   DocumentenApiFileReference,
-  OpenZaakResource,
   ResourceDto,
   ResourceFile,
+  ResourceReference,
   UploadService,
 } from '../models';
 import {OpenZaakService} from './open-zaak.service';
@@ -72,6 +72,10 @@ export class OpenZaakUploadService implements UploadService {
     return this.openZaakService.getResource(resourceId);
   }
 
+  getResources(documentId: string): Observable<Array<ResourceReference>> {
+    return this.openZaakService.getResources(documentId);
+  }
+
   checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
     return this.http
       .get<{
@@ -82,20 +86,21 @@ export class OpenZaakUploadService implements UploadService {
       .pipe(map(res => res.processCaseLinkExists));
   }
 
-  private getResourceFile(result: OpenZaakResource): ResourceFile {
+  private getResourceFile(result: DocumentenApiFileReference): ResourceFile {
+    const extension = result.filename.split('.').pop();
     return {
       customUpload: true,
-      originalName: result.name,
+      originalName: result.filename,
       size: result.sizeInBytes,
-      url: '/api/resource/' + result.resourceId + '/download',
+      url: `/api/v1/resource/${result.id}/download`,
       storage: 'openZaak',
-      type: result.extension,
+      type: extension,
       data: {
-        createdOn: result.createdOn as any as string,
-        name: result.name,
+        createdOn: Date(),
+        name: result.filename,
         sizeInBytes: result.sizeInBytes,
-        resourceId: result.resourceId,
-        extension: result.extension,
+        resourceId: result.id,
+        extension: extension,
       },
     };
   }

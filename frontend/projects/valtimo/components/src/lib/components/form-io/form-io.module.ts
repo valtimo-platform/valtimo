@@ -37,7 +37,7 @@ import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import {FitPageDirective} from '../../directives/fit-page/fit-page.directive';
-import * as bootstrap4Mod from '@formio/bootstrap/bootstrap4';
+import bootstrap4 from '@formio/bootstrap/bootstrap4';
 
 @NgModule({
   imports: [
@@ -83,6 +83,6 @@ import * as bootstrap4Mod from '@formio/bootstrap/bootstrap4';
 })
 export class FormIoModule {
   constructor() {
-    Formio.use((bootstrap4Mod as any)?.default?.default ?? bootstrap4Mod);
+    Formio.use((bootstrap4 as any)?.default ?? bootstrap4);
   }
 }
