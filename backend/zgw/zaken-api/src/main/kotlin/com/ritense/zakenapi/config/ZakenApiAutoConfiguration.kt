@@ -115,7 +115,8 @@ class ZakenApiAutoConfiguration {
         platformTransactionManager: PlatformTransactionManager,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
-        zaakNotitieLinkRepository: ZaakNotitieLinkRepository
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
+        caseDocumentResolver: CaseDocumentResolver,
     ) = ZakenApiPluginFactory(
         pluginService,
         zakenApiClient,
@@ -127,7 +128,8 @@ class ZakenApiAutoConfiguration {
         platformTransactionManager,
         valueResolverService,
         objectMapper,
-        zaakNotitieLinkRepository
+        zaakNotitieLinkRepository,
+        caseDocumentResolver
     )
 
     @Bean

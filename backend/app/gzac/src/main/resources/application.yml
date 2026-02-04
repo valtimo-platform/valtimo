@@ -13,6 +13,8 @@ management:
             show-details: when_authorized
             roles:
                 - ROLE_ACTUATOR
+            probes:
+                enabled: true
 
 spring:
     profiles:

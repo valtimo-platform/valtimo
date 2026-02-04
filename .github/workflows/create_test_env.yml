@@ -56,16 +56,7 @@ jobs:
       envName: ${{ inputs.env_name }}
       source_sha: ${{ inputs.commit_sha }}
 
-  neither_changed:
-    needs:
-      - detect_changes
-    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No frontend or backend changes detected; skipping test environment setup."
-
   comment_on_pr:
-    if: ${{ (needs.detect_changes.outputs.frontend_changed == 'true' || needs.detect_changes.outputs.backend_changed == 'true') && github.event.pull_request.number }}
     runs-on: ubuntu-latest
     needs:
       - detect_changes
@@ -111,7 +102,6 @@ jobs:
     needs:
       - detect_changes
       - comment_on_pr
-    if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' || needs.detect_changes.outputs.backend_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Create or update test environment
@@ -130,11 +120,11 @@ jobs:
             "${DISPATCH_URL}" \
             -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\",\"githubCommentId\":\"${COMMENT_ID}\"}}"
 
-  only_frontend_changed:
+  retag_existing_backend_image:
     needs:
       - detect_changes
       - create_test_environment
-    if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
+    if: ${{ needs.detect_changes.outputs.backend_changed != 'true' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.backend_hash.outputs.image_tag }}
@@ -150,7 +140,7 @@ jobs:
         run: |
           HASH=$(git rev-parse HEAD:backend)
           echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-test-${HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -173,7 +163,7 @@ jobs:
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
           else
-            echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
+            echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git tree hash (${CONTENTS_HASH})." >&2
             echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
             echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
             echo "To fix this:" >&2
@@ -185,21 +175,21 @@ jobs:
 
   tag_backend_test_env_image:
     needs:
-      - only_frontend_changed
+      - retag_existing_backend_image
     uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
       target: gzac-backend
       env_name: ${{ inputs.env_name }}
-      contents_sha: ${{ needs.only_frontend_changed.outputs.contents_sha }}
-      image_to_tag: ${{ needs.only_frontend_changed.outputs.image_tag }}
+      contents_sha: ${{ needs.retag_existing_backend_image.outputs.contents_sha }}
+      image_to_tag: ${{ needs.retag_existing_backend_image.outputs.image_tag }}
       source_sha: ${{ github.event.pull_request.base.sha || inputs.commit_sha }}
 
-  only_backend_changed:
+  retag_existing_frontend_image:
     needs:
       - detect_changes
       - create_test_environment
-    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
+    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' }}
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.frontend_hash.outputs.image_tag }}
@@ -215,7 +205,7 @@ jobs:
         run: |
           HASH=$(git rev-parse HEAD:frontend)
           echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-test-${HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -238,8 +228,7 @@ jobs:
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
           else
-            echo "Frontend was unchanged in this PR, so an attempt was made to re-use a frontend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
-            echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
+            echo "Frontend was unchanged in this PR, so an attempt was made to re-use a frontend image tagged with its Git tree hash (${CONTENTS_HASH})." >&2            echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
             echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
             echo "To fix this:" >&2
             echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built frontend image, manually tag it for the test environment." >&2
@@ -250,13 +239,13 @@ jobs:
 
   tag_frontend_test_env_image:
     needs:
-      - only_backend_changed
+      - retag_existing_frontend_image
       - determine_test_env
     uses: ./.github/workflows/tag_test_env_image.yml
     secrets: inherit
     with:
       target: gzac-frontend
       env_name: ${{ inputs.env_name }}
-      contents_sha: ${{ needs.only_backend_changed.outputs.contents_sha }}
-      image_to_tag: ${{ needs.only_backend_changed.outputs.image_tag }}
+      contents_sha: ${{ needs.retag_existing_frontend_image.outputs.contents_sha }}
+      image_to_tag: ${{ needs.retag_existing_frontend_image.outputs.image_tag }}
       source_sha: ${{ github.event.pull_request.base.sha || inputs.commit_sha }}

@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -100,7 +101,8 @@ class BuildingBlockProcessResource(
         @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
         @RequestPart(name = "processDefinitionId") processDefinitionId: String?,
-        @RequestPart(name = "main", required = false) main: Boolean? = false
+        @RequestPart(name = "main", required = false) main: Boolean? = false,
+        @RequestParam(name = "replace", required = false) replace: Boolean? = false
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
             buildingBlockDefinitionProcessDefinitionService.deployProcessDefinitionAndProcessLinks(
@@ -109,7 +111,8 @@ class BuildingBlockProcessResource(
                 bpmn,
                 processLinks,
                 processDefinitionId,
-                main ?: false
+                main ?: false,
+                replace ?: false
             )
         }
 
