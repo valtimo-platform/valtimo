@@ -19,6 +19,7 @@ package com.ritense.form.service.impl;
 import static com.ritense.logging.LoggingContextKt.withLoggingContext;
 
 import com.ritense.form.domain.FormDefinition;
+import com.ritense.form.domain.FormDefinitionBlueprintId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
@@ -143,7 +144,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
                     UUID.randomUUID(),
                     request.getName(),
                     request.getFormDefinition(),
-                    null,
+                    (FormDefinitionBlueprintId) null,
                     request.isReadOnly()
                 )
             );
@@ -163,7 +164,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
                 throw new IllegalArgumentException("Duplicate name for new form: " + request.getName());
             }
             return formDefinitionRepository.save(
-                new FormIoFormDefinition(
+                FormIoFormDefinition.forCase(
                     UUID.randomUUID(),
                     request.getName(),
                     request.getFormDefinition(),

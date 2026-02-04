@@ -2258,7 +2258,11 @@
     "tabs": {
       "general": "Algemeen",
       "document": "Document",
-      "processes": "Processen"
+      "processes": "Processen",
+      "forms": "Formulieren"
+    },
+    "formDefinition": {
+      "name": "Naam"
     },
     "metadata": {
       "title": "Algemene informatie"

@@ -255,9 +255,11 @@
             onDelete="CASCADE"/>
     </changeSet>
 
+    <!-- Legacy changesets for existing DBs with case_definition_key column -->
     <changeSet id="11" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="case_definition_key"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
@@ -280,6 +282,7 @@
     <changeSet id="12-fixed" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="case_definition_key"/>
             <dbms type="mysql"/>
         </preConditions>
         <sql>
@@ -302,6 +305,7 @@
     <changeSet id="13" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="case_definition_key"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
@@ -323,6 +327,7 @@
     <changeSet id="14-fixed" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="case_definition_key"/>
             <dbms type="mysql"/>
         </preConditions>
         <sql>
@@ -336,6 +341,97 @@
             left join form_io_form_definition fd2
                 on fd2.case_definition_key = cwtw.case_definition_key
                 and fd2.case_definition_version_tag = cwtw.case_definition_version_tag
+                and fd2.name = fd.name
+            where fd2.id is null
+        </sql>
+    </changeSet>
+
+    <!-- New changesets for new DBs with blueprint_key column (after form module renamed columns) -->
+    <changeSet id="11-blueprint" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="blueprint_key"/>
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            insert into form_io_form_definition
+            (id, name, form_definition, read_only, blueprint_type, blueprint_key, blueprint_version_tag)
+            select gen_random_uuid(), fd.name, fd.form_definition, fd.read_only, 'CASE', ct.case_definition_key, ct.case_definition_version_tag
+            from case_tab ct
+            join form_io_form_definition fd
+                on ct.type = 'FORMIO'
+                and fd.name = ct.content_key
+                and fd.blueprint_key is null
+            left join form_io_form_definition fd2
+                on fd2.blueprint_key = ct.case_definition_key
+                and fd2.blueprint_version_tag = ct.case_definition_version_tag
+                and fd2.name = fd.name
+            where fd2.id is null
+        </sql>
+    </changeSet>
+
+    <changeSet id="12-blueprint" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="blueprint_key"/>
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            insert into form_io_form_definition
+            (id, name, form_definition, read_only, blueprint_type, blueprint_key, blueprint_version_tag)
+            select UUID_TO_BIN(UUID()), fd.name, fd.form_definition, fd.read_only, 'CASE', ct.case_definition_key, ct.case_definition_version_tag
+            from case_tab ct
+            join form_io_form_definition fd
+                on ct.type = 'FORMIO'
+                and fd.name = ct.content_key
+                and fd.blueprint_key is null
+            left join form_io_form_definition fd2
+                on fd2.blueprint_key = ct.case_definition_key
+                and fd2.blueprint_version_tag = ct.case_definition_version_tag
+                and fd2.name = fd.name
+            where fd2.id is null
+        </sql>
+    </changeSet>
+
+    <changeSet id="13-blueprint" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="blueprint_key"/>
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            insert into form_io_form_definition
+            (id, name, form_definition, read_only, blueprint_type, blueprint_key, blueprint_version_tag)
+            select gen_random_uuid(), fd.name, fd.form_definition, fd.read_only, 'CASE', cwtw.case_definition_key, cwtw.case_definition_version_tag
+            from case_widget_tab_widget cwtw
+            join form_io_form_definition fd
+                on fd.name = cwtw.properties->>'formDefinitionName'
+                and fd.blueprint_key is null
+            left join form_io_form_definition fd2
+                on fd2.blueprint_key = cwtw.case_definition_key
+                and fd2.blueprint_version_tag = cwtw.case_definition_version_tag
+                and fd2.name = fd.name
+            where fd2.id is null
+        </sql>
+    </changeSet>
+
+    <changeSet id="14-blueprint" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="form_io_form_definition"/>
+            <columnExists tableName="form_io_form_definition" columnName="blueprint_key"/>
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            insert into form_io_form_definition
+            (id, name, form_definition, read_only, blueprint_type, blueprint_key, blueprint_version_tag)
+            select UUID_TO_BIN(UUID()), fd.name, fd.form_definition, fd.read_only, 'CASE', cwtw.case_definition_key, cwtw.case_definition_version_tag
+            from case_widget_tab_widget cwtw
+            join form_io_form_definition fd
+                on fd.name = JSON_EXTRACT(cwtw.properties, '$.formDefinitionName')
+                and fd.blueprint_key is null
+            left join form_io_form_definition fd2
+                on fd2.blueprint_key = cwtw.case_definition_key
+                and fd2.blueprint_version_tag = cwtw.case_definition_version_tag
                 and fd2.name = fd.name
             where fd2.id is null
         </sql>

@@ -26,6 +26,7 @@ import {
   ProcessManagementBuilderComponent,
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
+import {FormManagementEditComponent} from '@valtimo/form-management';
 
 const routes: Routes = [
   {
@@ -42,6 +43,7 @@ const routes: Routes = [
       title: 'buildingBlockManagement.detail.title',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
+      context: 'buildingBlock',
     },
   },
   {
@@ -60,6 +62,17 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'Process details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORMS}/:formDefinitionId`,
+    component: FormManagementEditComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'formManagement.edit.title',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
       context: 'buildingBlock',
