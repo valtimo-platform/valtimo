@@ -87,7 +87,10 @@ export class OpenZaakUploadService implements UploadService {
   }
 
   private getResourceFile(result: DocumentenApiFileReference): ResourceFile {
-    const extension = result.filename.split('.').pop();
+    const extension =
+      result.filename && result.filename.includes('.')
+        ? result.filename.split('.').pop() || ''
+        : '';
     return {
       customUpload: true,
       originalName: result.filename,

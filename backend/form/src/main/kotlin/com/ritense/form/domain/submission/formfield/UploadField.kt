@@ -82,18 +82,18 @@ data class UploadField(
                     applicationEventPublisher.publishEvent(
                         DocumentRelatedFileSubmittedEvent(document.id()?.id, resourceId, document.definitionId().name())
                     )
-                }
-
-                val tempResourceId = getTempResourceId(resourceNode)
-                if (tempResourceId != null) {
-                    logger.debug { "tempfile $tempResourceId" }
-                    applicationEventPublisher.publishEvent(
-                        TemporaryResourceSubmittedEvent(
-                            tempResourceId,
-                            document.id()!!.id,
-                            document.definitionId().name()
+                } else {
+                    val tempResourceId = getTempResourceId(resourceNode)
+                    if (tempResourceId != null) {
+                        logger.debug { "tempfile $tempResourceId" }
+                        applicationEventPublisher.publishEvent(
+                            TemporaryResourceSubmittedEvent(
+                                tempResourceId,
+                                document.id()!!.id,
+                                document.definitionId().name()
+                            )
                         )
-                    )
+                    }
                 }
             }
             processed = true
