@@ -65,7 +65,7 @@ class CallDepthExecutionListener(
         val superExecution = execution.processInstance?.superExecution
         return if (superExecution != null) {
             var depth = findAndSetParentDepthIfNotPresent(superExecution)
-            if (superExecution.processInstance.processDefinitionId != execution.processInstance.processInstanceId) {
+            if (superExecution.processInstance.processInstanceId != execution.processInstance.processInstanceId) {
                 ++depth
             }
             execution.setVariableLocal(CALL_DEPTH_VARIABLE, depth)
