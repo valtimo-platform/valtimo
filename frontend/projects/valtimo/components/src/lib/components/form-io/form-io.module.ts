@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormioComponent} from './components/form-io/form-io.component';
 import {FormioBuilderComponent} from './components/form-io-builder/form-io-builder.component';
-import {FormioAppConfig, FormioModule} from '@formio/angular';
+import {Formio, FormioAppConfig, FormioModule} from '@formio/angular';
 import {getFormioAppConfig} from './formio-config';
 import {FormIoUploaderComponent} from './components/form-io-uploader/form-io-uploader.component';
 import {DropzoneModule} from '../dropzone/dropzone.module';
@@ -36,6 +36,8 @@ import {FormioValueResolverSelectorComponent} from './components/formio-value-re
 import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
+import {FitPageDirective} from '../../directives/fit-page/fit-page.directive';
+import * as bootstrap4Mod from '@formio/bootstrap/bootstrap4';
 
 @NgModule({
   imports: [
@@ -50,6 +52,7 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
     ReactiveFormsModule,
     FormioValueResolverSelectorComponent,
     LayerModule,
+    FitPageDirective,
   ],
   declarations: [
     FormioComponent,
@@ -78,4 +81,8 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
     },
   ],
 })
-export class FormIoModule {}
+export class FormIoModule {
+  constructor() {
+    Formio.use((bootstrap4Mod as any)?.default?.default ?? bootstrap4Mod);
+  }
+}

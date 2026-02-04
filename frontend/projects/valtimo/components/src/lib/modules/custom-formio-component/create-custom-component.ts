@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Components, Utils as FormioUtils} from 'formiojs';
+import {Components, Utils as FormioUtils} from '@formio/js';
 import {FormioCustomComponentInfo, FormioCustomElement, FormioEvent} from './elements.common';
 import {clone, isArray, isNil} from 'lodash';
 import {BuilderInfo, ExtendedComponentSchema} from '../../models';

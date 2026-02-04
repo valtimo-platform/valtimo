@@ -114,10 +114,11 @@ export class OpenZaakService {
     );
   }
 
-  public upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {
+  // TODO: delete
+  public upload(file: File, caseDefinitionKey: string): Observable<OpenZaakResource> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    formData.append('documentDefinitionName', documentDefinitionName);
+    formData.append('caseDefinitionKey', caseDefinitionKey);
 
     return this.http.post<OpenZaakResource>(
       `${this.valtimoApiConfig.endpointUri}v1/resource/upload-open-zaak`,

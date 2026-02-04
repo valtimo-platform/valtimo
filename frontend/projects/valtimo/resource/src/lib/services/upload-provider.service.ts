@@ -53,10 +53,10 @@ export class UploadProviderService implements UploadService {
 
   uploadFile(
     file: File,
-    documentDefinitionName?: string,
+    caseDefinitionKey?: string,
     documentId?: string
   ): Observable<ResourceFile> {
-    return this.uploadService.uploadFile(file, documentDefinitionName, documentId);
+    return this.uploadService.uploadFile(file, caseDefinitionKey, documentId);
   }
 
   getResource(resourceId: string): Observable<ResourceDto> {

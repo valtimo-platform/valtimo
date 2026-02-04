@@ -14,40 +14,14 @@
  * limitations under the License.
  */
 
-export const formIoUploaderEditForm = () => ({
-  components: [
-    {key: 'type', type: 'hidden'},
-    {
-      type: 'textfield',
-      input: true,
-      key: 'label',
-      label: 'Label',
-      placeholder: 'Label',
-      validate: {
-        required: true,
-      },
-    },
-    {
-      type: 'checkbox',
-      input: true,
-      inputType: 'checkbox',
-      key: 'validate.required',
-      label: 'Required',
-      validate: {
-        required: false,
-      },
-    },
-    {
-      type: 'textfield',
-      input: true,
-      key: 'key',
-      label: 'Property Name',
-      placeholder: 'Property Name',
-      tooltip: 'The name of this field in the API endpoint.',
-      validate: {
-        required: true,
-      },
-    },
+import {Components} from '@formio/js';
+
+const TextfieldEditForm = Components.components.textfield.editForm;
+
+export const formIoUploaderEditForm = () => {
+  const editForm = TextfieldEditForm();
+
+  const customComponents = [
     {
       type: 'textfield',
       input: true,
@@ -55,6 +29,7 @@ export const formIoUploaderEditForm = () => ({
       label: 'Title',
       placeholder: 'Title',
       tooltip: 'Leave empty to use the default title',
+      weight: 10,
       validate: {
         required: false,
       },
@@ -65,6 +40,7 @@ export const formIoUploaderEditForm = () => ({
       inputType: 'checkbox',
       key: 'customOptions.hideTitle',
       label: 'Hide title',
+      weight: 11,
       validate: {
         required: false,
       },
@@ -76,6 +52,7 @@ export const formIoUploaderEditForm = () => ({
       label: 'Subtitle',
       placeholder: 'Title',
       tooltip: 'Leave empty to hide subtitle',
+      weight: 12,
       validate: {
         required: false,
       },
@@ -87,6 +64,7 @@ export const formIoUploaderEditForm = () => ({
       label: 'Maximum file size',
       placeholder: 'Maximum file size',
       defaultValue: 5,
+      weight: 13,
       validate: {
         required: true,
       },
@@ -97,6 +75,7 @@ export const formIoUploaderEditForm = () => ({
       inputType: 'checkbox',
       key: 'customOptions.hideMaxFileSize',
       label: 'Hide maximum file size',
+      weight: 14,
       validate: {
         required: false,
       },
@@ -107,9 +86,20 @@ export const formIoUploaderEditForm = () => ({
       inputType: 'checkbox',
       key: 'customOptions.camera',
       label: 'Allow camera uploads',
+      weight: 15,
       validate: {
         required: false,
       },
     },
-  ],
-});
+  ];
+
+  const tabsComponent = editForm.components.find(component => component.key === 'tabs');
+  if (tabsComponent) {
+    const displayTab = tabsComponent.components.find(tab => tab.key === 'display');
+    if (displayTab) {
+      displayTab.components.unshift(...customComponents);
+    }
+  }
+
+  return editForm;
+};
