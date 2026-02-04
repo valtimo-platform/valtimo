@@ -2,13 +2,28 @@
     "display": "form",
     "components": [
         {
-            "label": "File Upload",
             "key": "files",
+            "mask": false,
             "type": "valtimo-file",
+            "input": true,
+            "label": "File Upload",
+            "tableView": false,
+            "spellcheck": true,
+            "applyMaskOn": "change",
+            "inputFormat": "plain",
+            "customOptions": {
+                "title": "",
+                "camera": false,
+                "subtitle": "",
+                "hideTitle": false,
+                "maxFileSize": 5,
+                "hideMaxFileSize": false
+            },
+            "validateWhenHidden": false,
+            "truncateMultipleSpaces": false,
             "validate": {
                 "required": true
-            },
-            "input": true
+            }
         },
         {
             "type": "button",
