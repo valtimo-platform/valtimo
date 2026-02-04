@@ -115,6 +115,10 @@ dependencies {
         api("com.rabbitmq:amqp-client:${amqpCLientVersion}")
         api("jakarta.inject:jakarta.inject-api:${jakartaInjectVersion}")
         api("io.github.microutils:kotlin-logging:${kotlinLoggingVersion}")
+        api("commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}")
+        api("commons-fileupload:commons-fileupload:${commonsFileuploadVersion}")
+        api("com.ibm.icu:icu4j:${icu4jVersion}")
+        api("org.assertj:assertj-core:${assertjCoreVersion}")
     }
 }
 

@@ -15,9 +15,9 @@
  */
 
 
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     id "idea"
@@ -84,6 +84,15 @@ configurations {
         // Globally exclude JUnit4, will not be on the testCompileClasspath thus
         exclude group: 'junit', module: 'junit'
     }
+    // Exclude log4j 1.x from Dokka's transitive dependencies (security fix)
+    dokkaPlugin {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.jetbrains.intellij.deps', module: 'log4j'
+    }
+    dokkaRuntime {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.jetbrains.intellij.deps', module: 'log4j'
+    }
 }
 
 allprojects {
@@ -104,6 +113,10 @@ allprojects {
                 dependency "io.netty:netty-codec:${nettyCodecVersionOverride}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+                dependency "commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}"
+                dependency "commons-fileupload:commons-fileupload:${commonsFileuploadVersion}"
+                dependency "com.ibm.icu:icu4j:${icu4jVersion}"
+                dependency "org.assertj:assertj-core:${assertjCoreVersion}"
             }
         }
 
