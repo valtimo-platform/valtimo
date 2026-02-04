@@ -107,7 +107,6 @@ allprojects {
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
                 dependency "commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}"
                 dependency "commons-fileupload:commons-fileupload:${commonsFileuploadVersion}"
-                dependency "com.ibm.icu:icu4j:${icu4jVersion}"
                 dependency "org.assertj:assertj-core:${assertjCoreVersion}"
             }
         }
