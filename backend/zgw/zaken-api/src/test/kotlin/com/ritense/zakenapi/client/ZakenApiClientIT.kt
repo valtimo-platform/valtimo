@@ -93,6 +93,8 @@ internal class ZakenApiClientIT @Autowired constructor(
                 zaak = "https://localhost:56273/zaken/1234",
                 titel = "titel",
                 beschrijving = "beschrijving",
+                vernietigingsdatum = null,
+                status = null
             )
         )
     }
@@ -109,6 +111,8 @@ internal class ZakenApiClientIT @Autowired constructor(
                     zaak = "https://localhost:56273/zaken/1234",
                     titel = "titel",
                     beschrijving = "beschrijving",
+                    vernietigingsdatum = null,
+                    status = null
                 )
             )
         }

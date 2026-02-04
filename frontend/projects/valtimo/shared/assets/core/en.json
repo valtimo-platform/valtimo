@@ -1275,7 +1275,12 @@
       "description": "Only BPMN files are supported.",
       "buttonText": "Select file",
       "success": "Deployment successful",
-      "failure": "Deployment failed"
+      "failure": "Deployment failed",
+      "duplicateKey": "A process with the same key already exists in this building block",
+      "replaceTitle": "Replace existing process?",
+      "replaceContent": "A process with the same key already exists in this building block. Do you want to replace it?",
+      "replaceContentWithDuplicates": "A process with the same key already exists in this building block: {{duplicates}}. Do you want to replace it?",
+      "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user"
@@ -1866,6 +1871,7 @@
       "addInput": "Add input",
       "addOutput": "Add sync",
       "case": "Case",
+      "process": "Process",
       "buildingBlock": "Building block",
       "targetPlaceholder": "Select target",
       "outputSource": "Building block output",

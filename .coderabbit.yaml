@@ -1,0 +1,80 @@
+# CodeRabbit Configuration
+# For more information, see https://docs.coderabbit.ai/getting-started/configuration
+
+reviews:
+  profile: "chill"
+  high_level_summary_in_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  enable_prompt_for_ai_agents: false
+
+  auto_review:
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+      - "github-actions[bot]"
+    base_branches:
+      - "next-minor"
+      - "next-major"
+      - "feature/.*"
+      - "rc/12.*"
+      - "rc/13.*"
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+
+  pre_merge_checks:
+    docstrings:
+      mode: off
+    title:
+      mode: off
+    description:
+      mode: off
+
+  path_instructions:
+    - path: "**/*.{kt,java,ts,html}"
+      instructions: |
+        Please verify that each file starts with the standard license header.
+        For .kt, .java, and .ts files, it should look like:
+        /*
+         * Copyright 2015-2026 Ritense BV, the Netherlands.
+         *
+         * Licensed under EUPL, Version 1.2 (the "License");
+         * you may not use this file except in compliance with the License.
+         * You may obtain a copy of the License at
+         *
+         * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+         *
+         * Unless required by applicable law or agreed to in writing, software
+         * distributed under the License is distributed on an "AS IS" basis,
+         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         * See the License for the specific language governing permissions and
+         * limitations under the License.
+         */
+
+        For .html files, it should look like:
+        <!--
+          ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+          ~
+          ~ Licensed under EUPL, Version 1.2 (the "License");
+          ~ you may not use this file except in compliance with the License.
+          ~ You may obtain a copy of the License at
+          ~
+          ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+          ~
+          ~ Unless required by applicable law or agreed to in writing, software
+          ~ distributed under the License is distributed on an "AS IS" basis,
+          ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          ~ See the License for the specific language governing permissions and
+          ~ limitations under the License.
+          -->
+        Note: The copyright year might be slightly different (e.g., 2015-2024), which is acceptable. If the header is missing or significantly different, please flag it.
