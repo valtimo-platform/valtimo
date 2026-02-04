@@ -47,6 +47,10 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
+checkstyle {
+    toolVersion = "12.3.1"
+}
+
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
 dependencies {
     subprojects { subproject ->
