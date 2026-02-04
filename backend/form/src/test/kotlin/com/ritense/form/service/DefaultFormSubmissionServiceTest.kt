@@ -30,6 +30,7 @@ import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentSequenceGeneratorService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.impl.DefaultFormSubmissionService
@@ -349,7 +350,7 @@ class DefaultFormSubmissionServiceTest {
 
     private fun formDefinitionOf(formDefinitionId: String, caseDefinitionId: CaseDefinitionId): FormIoFormDefinition {
         val formDefinition = rawFormDefinition(formDefinitionId)
-        return FormIoFormDefinition(UUID.randomUUID(), "form-example", formDefinition, caseDefinitionId, false)
+        return FormIoFormDefinition(UUID.randomUUID(), "form-example", formDefinition, FormDefinitionBlueprintId.forCase(caseDefinitionId), false)
     }
 
     private fun rawFormDefinition(formDefinitionId: String): String {

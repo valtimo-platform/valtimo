@@ -17,6 +17,7 @@
 package com.ritense.form.mapper
 
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
@@ -197,7 +198,7 @@ internal class FormProcessLinkMapperTest {
             UUID.randomUUID(),
             "testing",
             "{}",
-            CaseDefinitionId.of("house", "1.0.0"),
+            FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("house", "1.0.0")),
             true
         )
         val formProcessLink = FormProcessLink(
