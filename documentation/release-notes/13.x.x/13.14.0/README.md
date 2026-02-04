@@ -4,12 +4,6 @@
 **Release date 04-02-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Added vernietigingsdatum and status to Link document to zaak**
