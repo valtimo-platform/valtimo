@@ -19,7 +19,7 @@ import {Observable} from 'rxjs';
 
 let formioParams: Observable<{caseDefinitionKey: ''; caseDefinitionVersionTag: ''}>;
 
-const modiyEditFormApiKeyInput = (editForm: any): void => {
+const modifyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
     ?.find(element => element?.key === 'tabs')
     ?.components?.find(element => element?.key === 'api')
@@ -62,4 +62,4 @@ const addValueResolverSelectorToEditform = (editForm: any, params: any): void =>
   return editForm;
 };
 
-export {modiyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};
+export {modifyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};

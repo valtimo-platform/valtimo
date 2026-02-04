@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export const formioValueResolverSelectorEditForm = () => ({
-  components: [{key: 'type', type: 'hidden'}],
-});
+import {Components} from '@formio/js';
+
+const TextfieldEditForm = Components.components.textfield.editForm;
+
+export const formioValueResolverSelectorEditForm = () => {
+  const editForm = TextfieldEditForm();
+  return editForm;
+};

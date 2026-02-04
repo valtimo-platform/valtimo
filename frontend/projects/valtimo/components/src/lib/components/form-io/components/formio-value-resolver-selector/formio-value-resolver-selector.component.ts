@@ -33,8 +33,8 @@ export class FormioValueResolverSelectorComponent implements FormioCustomCompone
   @Output() public readonly valueChange = new EventEmitter<string>();
 
   public readonly defaultValue$ = new BehaviorSubject<string>('');
-  public readonly caseDefinitionKey$ = formioParams.pipe(map(params => params?.caseDefinitionKey));
-  public readonly caseDefinitionVersionTag$ = formioParams.pipe(
+  public readonly caseDefinitionKey$ = formioParams?.pipe(map(params => params?.caseDefinitionKey));
+  public readonly caseDefinitionVersionTag$ = formioParams?.pipe(
     map(params => params?.caseDefinitionVersionTag)
   );
   private _value!: string;

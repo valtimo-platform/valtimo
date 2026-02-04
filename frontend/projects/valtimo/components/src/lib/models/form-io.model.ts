@@ -19,8 +19,19 @@ import {
   ErrorsOptions,
   FormioBeforeSubmit,
   FormioHookOptions,
-  FormioOptions,
+  AngularFormioOptions,
 } from '@formio/angular';
+
+interface FormioOptions extends AngularFormioOptions {
+  language?: string;
+  i18n?: object;
+  fileService?: object;
+  hooks?: FormioHookOptions;
+  readonly?: boolean;
+  decimalSeparator?: string;
+  thousandsSeparator?: string;
+  [key: string]: any;
+}
 
 interface FormioSubmission {
   data: {
@@ -161,6 +172,7 @@ export {
   AlertsOptionsImpl,
   FormioOptionsImpl,
   ValtimoFormioOptions,
+  FormioOptions,
   ValidateOptions,
   BuilderInfo,
   ComponentSchema,

@@ -15,17 +15,16 @@
  */
 
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
-import {Components} from 'formiojs';
+import {Components} from '@formio/js';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioOptions} from '@formio/angular/';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
-  modiyEditFormApiKeyInput,
+  modifyEditFormApiKeyInput,
 } from './form-io-builder.utils';
-import {ValtimoFormioOptions} from '../../../../models';
+import {FormioOptions, ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
 import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
@@ -73,6 +72,7 @@ export class FormioBuilderComponent implements OnInit {
 
       const defaultOptions = {
         ...options,
+        noDefaultSubmitButton: true,
         ...(formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
@@ -113,7 +113,7 @@ export class FormioBuilderComponent implements OnInit {
     const originalEditForm = Components.baseEditForm;
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
-      modiyEditFormApiKeyInput(editForm);
+      modifyEditFormApiKeyInput(editForm);
       addValueResolverSelectorToEditform(editForm, params);
 
       return editForm;
