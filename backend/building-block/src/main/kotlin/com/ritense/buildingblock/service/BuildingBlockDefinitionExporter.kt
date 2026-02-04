@@ -25,6 +25,10 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
+import com.ritense.exporter.request.BuildingBlockFormDefinitionExportRequest
+import com.ritense.exporter.request.ExportRequest
+import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
@@ -34,6 +38,7 @@ class BuildingBlockDefinitionExporter(
     private val objectMapper: ObjectMapper,
     val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val documentDefinitionService: DocumentDefinitionService,
+    private val formDefinitionRepository: FormDefinitionRepository,
 ) : Exporter<BuildingBlockDefinitionExportRequest> {
     override fun supports() = BuildingBlockDefinitionExportRequest::class.java
 
@@ -62,8 +67,11 @@ class BuildingBlockDefinitionExporter(
                 )
         )
 
-        return ExportResult(definitionExport, createDocumentDefinitionExportRequest(definition.id))
+        val relatedExportRequests = mutableSetOf<ExportRequest>()
+        relatedExportRequests.addAll(createDocumentDefinitionExportRequest(definition.id))
+        relatedExportRequests.addAll(createFormDefinitionExportRequests(definition.id))
 
+        return ExportResult(definitionExport, relatedExportRequests)
     }
 
     private fun createDocumentDefinitionExportRequest(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDocumentDefinitionExportRequest> {
@@ -78,6 +86,20 @@ class BuildingBlockDefinitionExporter(
         } else {
             emptySet()
         }
+    }
+
+    private fun createFormDefinitionExportRequests(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockFormDefinitionExportRequest> {
+        val forms = formDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK,
+            buildingBlockDefinitionId.key,
+            buildingBlockDefinitionId.versionTag
+        )
+        return forms.map { form ->
+            BuildingBlockFormDefinitionExportRequest(
+                form.name,
+                buildingBlockDefinitionId
+            )
+        }.toSet()
     }
 
     companion object {

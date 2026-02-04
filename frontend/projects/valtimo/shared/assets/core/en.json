@@ -2222,7 +2222,11 @@
     "tabs": {
       "general": "General",
       "document": "Document",
-      "processes": "Processes"
+      "processes": "Processes",
+      "forms": "Forms"
+    },
+    "formDefinition": {
+      "name": "Name"
     },
     "metadata": {
       "title": "General information"

@@ -39,5 +39,6 @@
     <include file="changelog/20241111-subtitles-to-process-link.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250219-form-major13-upgrade.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250812-process-link-subtitles-to-jsonb.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260204-form-definition-blueprint-id.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

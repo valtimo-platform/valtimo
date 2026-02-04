@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import {ManagementContext} from '@valtimo/shared';
+package com.ritense.buildingblock.web.rest.dto
 
-interface FormManagementParams {
-  caseDefinitionKey?: string;
-  caseDefinitionVersionTag?: string;
-  buildingBlockDefinitionKey?: string;
-  buildingBlockDefinitionVersionTag?: string;
-}
-
-interface FormManagementRouteData {
-  [key: string]: any;
-  context: ManagementContext;
-}
-
-export {FormManagementParams, FormManagementRouteData};
+data class UpdateBuildingBlockFormDefinitionDto(
+    val name: String,
+    val formDefinition: String
+)

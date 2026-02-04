@@ -41,6 +41,9 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefin
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFieldService
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
@@ -54,6 +57,7 @@ import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitio
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
+import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
@@ -63,6 +67,7 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.exporter.ExportService
+import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -451,7 +456,8 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         documentDefinitionService: DocumentDefinitionService,
-    ) = BuildingBlockDefinitionExporter(objectMapper, buildingBlockDefinitionRepository, documentDefinitionService)
+        formDefinitionRepository: FormDefinitionRepository,
+    ) = BuildingBlockDefinitionExporter(objectMapper, buildingBlockDefinitionRepository, documentDefinitionService, formDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkExporter::class)
@@ -515,4 +521,38 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             processDefinitionBuildingBlockDefinitionRepository
         )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionService::class)
+    fun buildingBlockFormDefinitionService(
+        formDefinitionRepository: FormDefinitionRepository,
+        definitionChecker: BuildingBlockDefinitionChecker
+    ): BuildingBlockFormDefinitionService {
+        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormManagementResource::class)
+    fun buildingBlockFormManagementResource(
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormManagementResource {
+        return BuildingBlockFormManagementResource(buildingBlockFormDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionExporter::class)
+    fun buildingBlockFormDefinitionExporter(
+        objectMapper: ObjectMapper,
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormDefinitionExporter {
+        return BuildingBlockFormDefinitionExporter(objectMapper, buildingBlockFormDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionImporter::class)
+    fun buildingBlockFormDefinitionImporter(
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormDefinitionImporter {
+        return BuildingBlockFormDefinitionImporter(buildingBlockFormDefinitionService)
+    }
 }
