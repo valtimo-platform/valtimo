@@ -31,9 +31,15 @@ import {WIDGET_COLOR_ILLUSTRATION_MAP, WIDGET_COLOR_ITEMS} from '../../../../../
 export class WidgetWizardAppearanceStepComponent {
   public readonly $widgetColor = this.widgetWizardService.$widgetColor;
 
+  private readonly colorTranslationKeyMap: Partial<Record<WidgetColor, string>> = {
+    [WidgetColor.HIGHCONTRAST]: 'highContrast',
+  };
+
   public readonly colorTiles: WidgetColorTile[] = WIDGET_COLOR_ITEMS.map(color => ({
     color,
-    labelKey: `widgetTabManagement.appearance.backgroundColor.colors.${color.toLowerCase()}`,
+    labelKey: `widgetTabManagement.appearance.backgroundColor.colors.${
+      this.colorTranslationKeyMap[color] ?? color.toLowerCase()
+    }`,
     illustration: WIDGET_COLOR_ILLUSTRATION_MAP[color],
   }));
 
