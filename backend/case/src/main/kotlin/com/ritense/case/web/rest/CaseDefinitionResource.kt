@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.case.web.rest
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
@@ -385,6 +386,17 @@ class CaseDefinitionResource(
                 canUpdateGlobalConfiguration = caseDefinitionChecker.canUpdateGlobalConfiguration(),
             )
         )
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/finalizable")
+    fun checkIfCaseDefinitionIsFinalizable(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<CaseDefinitionFinalizationCheckResult> {
+        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+        val result = service.isCaseDefinitionFinalizable(caseDefinitionId)
+        return ResponseEntity.ok(result)
     }
 
     companion object {

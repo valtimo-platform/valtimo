@@ -37,6 +37,7 @@
     [items]="obs.widgetData || []"
     [initialSortState]="$initialSortState()"
     [loading]="obs.widgetData === null"
+    [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
     [pagination]="$paginationModel()"
     [paginatorConfig]="$paginatorConfig()"
     (paginationClicked)="onPaginationClicked($event)"

@@ -21,6 +21,9 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
 import com.ritense.valtimo.event.ProcessDefinitionDetached
 import org.springframework.context.event.EventListener
@@ -38,11 +41,17 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDeleted::class)
     fun handleProcessDefinitionDeletedEvent(event: ProcessDefinitionDeleted) {
-        if (event.caseDefinitionId != null) {
-            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                ProcessDefinitionId(event.processDefinitionId),
-                event.caseDefinitionId!!
-            )
+        if (event.blueprintId != null) {
+            if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == event.blueprintId?.getTagPrefix()) {
+                processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                    ProcessDefinitionId(event.processDefinitionId),
+                    event.blueprintId!! as CaseDefinitionId
+                )
+            } else if (OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX == event.blueprintId?.getTagPrefix()) {
+                // TODO: how do we handle building blocks being deleted?
+            } else {
+                // TODO Do we need to react on something still?
+            }
 
         }
         processLinkService.deleteProcessLinksForProcessDefinition(event.processDefinitionId)
@@ -51,10 +60,10 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDetached::class)
     fun handleProcessDefinitionDetachedEvent(event: ProcessDefinitionDetached) {
-        if (event.caseDefinitionId != null) {
+        if (event.blueprintId != null && event.blueprintId is CaseDefinitionId) {
             processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
                 ProcessDefinitionId(event.processDefinitionId),
-                event.caseDefinitionId!!
+                event.blueprintId!! as CaseDefinitionId
             )
         }
     }

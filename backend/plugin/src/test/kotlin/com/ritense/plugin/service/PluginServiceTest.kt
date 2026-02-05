@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import com.ritense.plugin.domain.PluginActionDefinition
 import com.ritense.plugin.domain.PluginActionDefinitionId
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.exception.PluginPropertyParseException
@@ -41,8 +42,6 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Validation
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.delegate.DelegateTask
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -53,9 +52,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.env.Environment
 import java.util.Optional
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -98,7 +100,8 @@ internal class PluginServiceTest {
             applicationEventPublisher,
             encryptionService,
             environment,
-            mock()
+            mock(),
+            null
         ))
     }
 
@@ -300,13 +303,14 @@ internal class PluginServiceTest {
     fun `should invoke delegateExecution method`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -328,13 +332,14 @@ internal class PluginServiceTest {
     fun `should invoke delegateExecution method with optional argument not in properties`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action-optional",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-optional"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -356,13 +361,14 @@ internal class PluginServiceTest {
     fun `should throw exception when invoking delegateExecution method with resolved variable where result does not match argument type`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":\"test:some-value\"}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":\"test:some-value\"}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -381,16 +387,120 @@ internal class PluginServiceTest {
     }
 
     @Test
+    fun `should resolve plugin configuration via building block resolver`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val pluginServiceWithResolver = spy(
+            PluginService(
+                pluginDefinitionRepository,
+                pluginConfigurationRepository,
+                pluginActionDefinitionRepository,
+                pluginProcessLinkRepository,
+                listOf(pluginFactory),
+                MapperSingleton.get(),
+                valueResolverService,
+                pluginConfigurationSearchRepository,
+                Validation.buildDefaultValidatorFactory().validator,
+                applicationEventPublisher,
+                encryptionService,
+                environment,
+                mock(),
+                resolver
+            )
+        )
+
+        val execution = mock<DelegateExecution>()
+        val resolvedConfigurationId = UUID.randomUUID()
+        whenever(resolver.resolve(execution, "zaken-api")).thenReturn(resolvedConfigurationId)
+
+        val pluginDefinition = newPluginDefinition()
+        val pluginConfiguration = PluginConfiguration(
+            PluginConfigurationId.existingId(resolvedConfigurationId),
+            "title",
+            MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode,
+            pluginDefinition
+        )
+        val testDependency = mock<TestDependency>()
+
+        whenever(pluginConfigurationRepository.getReferenceById(any())).thenReturn(pluginConfiguration)
+        whenever(pluginFactory.canCreate(any())).thenReturn(true)
+        whenever(pluginFactory.create(any())).thenReturn(TestPlugin(testDependency))
+        whenever(execution.processInstanceId).thenReturn("test")
+        whenever(valueResolverService.resolveValues(any(), any(), any())).thenReturn(mapOf("test" to 123))
+
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
+            pluginConfigurationReference = PluginConfigurationReference(
+                PluginConfigurationReferenceType.BUILDING_BLOCK,
+                "zaken-api"
+            ),
+            pluginActionDefinitionKey = "test-action"
+        )
+
+        pluginServiceWithResolver.invoke(execution, processLink)
+
+        verify(resolver).resolve(execution, "zaken-api")
+        verify(testDependency).processInt(123)
+    }
+
+    @Test
+    fun `should throw when building block resolver cannot resolve configuration`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val pluginServiceWithResolver = spy(
+            PluginService(
+                pluginDefinitionRepository,
+                pluginConfigurationRepository,
+                pluginActionDefinitionRepository,
+                pluginProcessLinkRepository,
+                listOf(pluginFactory),
+                MapperSingleton.get(),
+                valueResolverService,
+                pluginConfigurationSearchRepository,
+                Validation.buildDefaultValidatorFactory().validator,
+                applicationEventPublisher,
+                encryptionService,
+                environment,
+                mock(),
+                resolver
+            )
+        )
+
+        val execution = mock<DelegateExecution>()
+        whenever(resolver.resolve(execution, "zaken-api")).thenReturn(null)
+
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().createObjectNode(),
+            pluginConfigurationReference = PluginConfigurationReference(
+                PluginConfigurationReferenceType.BUILDING_BLOCK,
+                "zaken-api"
+            ),
+            pluginActionDefinitionKey = "test-action"
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            pluginServiceWithResolver.invoke(execution, processLink)
+        }
+    }
+
+    @Test
     fun `should throw exception when invoking delegateExecution method with variable where argument type doesn't match`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":\"some-value\"}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":\"some-value\"}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -412,13 +522,14 @@ internal class PluginServiceTest {
         val task = mock<DelegateTask>()
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action-task",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-task"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -443,13 +554,14 @@ internal class PluginServiceTest {
         val task = mock<DelegateTask>()
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":\"test:some-value\"}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action-task",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":\"test:some-value\"}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-task"
         )
 
         val pluginDefinition = newPluginDefinition()
@@ -474,13 +586,14 @@ internal class PluginServiceTest {
         val task = mock<DelegateTask>()
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            "process",
-            "activity",
-            MapperSingleton.get().readTree("{\"test\":\"some-value\"}") as ObjectNode,
-            PluginConfigurationId.newId(),
-            "test-action-task",
-            ActivityTypeWithEventName.SERVICE_TASK_START
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":\"some-value\"}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-task"
         )
 
         val pluginDefinition = newPluginDefinition()

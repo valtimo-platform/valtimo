@@ -19,6 +19,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, Observable, Subscription, interval, map, of, take, tap} from 'rxjs';
 import {
+  BlueprintContext,
   ValuePathItem,
   ValuePathResponse,
   ValuePathSelectorCache,
@@ -34,8 +35,7 @@ import {isEqual} from 'lodash';
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
   private _prefixes: (ValuePathSelectorPrefix | string)[];
-  private _caseDefinitionKey: string;
-  private _caseDefinitionVersionTag: string;
+  private _currentCacheKey: string;
 
   private _cache: ValuePathSelectorCache = {};
   private _caseDefinitionCache$ = new BehaviorSubject<CaseDefinition[] | null>(null);
@@ -63,19 +63,18 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     return this._caseDefinitionCache$.asObservable();
   }
 
-  public getResolvableKeys(
+  /**
+   * Get resolvable keys for a given blueprint context (case definition or building block).
+   */
+  public getResolvableKeysForContext(
     prefixes: ValuePathSelectorPrefix[],
-    caseDefinitionKey: string,
-    type: ValuePathType = ValuePathType.FIELD,
-    caseDefinitionVersionTag: string = null
+    context: BlueprintContext,
+    type: ValuePathType = ValuePathType.FIELD
   ): Observable<ValuePathItem[]> {
     this._prefixes = prefixes;
-    this._caseDefinitionKey = caseDefinitionKey;
-    this._caseDefinitionVersionTag = caseDefinitionVersionTag;
+    this._currentCacheKey = this.buildCacheKey(context);
 
-    const url = !caseDefinitionVersionTag
-      ? `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/keys`
-      : `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/keys`;
+    const url = this.buildUrl(context);
 
     const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = this._prefixes.filter(
       (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
@@ -112,6 +111,21 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     );
   }
 
+  private buildCacheKey(context: BlueprintContext): string {
+    return `${context.type}:${context.key}:${context.versionTag ?? ''}`;
+  }
+
+  private buildUrl(context: BlueprintContext): string {
+    if (context.type === 'building-block') {
+      return `/management/v1/value-resolver/building-block/${context.key}/version/${context.versionTag}/keys`;
+    }
+    // case definition
+    if (!context.versionTag) {
+      return `/management/v1/value-resolver/case-definition/${context.key}/keys`;
+    }
+    return `/management/v1/value-resolver/case-definition/${context.key}/version/${context.versionTag}/keys`;
+  }
+
   private openClearCacheSubscription(): void {
     this._subscriptions.add(
       interval(60 * 1000).subscribe(() => {
@@ -125,7 +139,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     prefix: ValuePathSelectorPrefix | string,
     type: ValuePathType
   ): ValuePathItem[] | undefined {
-    return this._cache[this._caseDefinitionKey]?.[this._caseDefinitionVersionTag]?.[prefix]?.[type];
+    return this._cache[this._currentCacheKey]?.[prefix]?.[type];
   }
 
   private mapCollectionItem(item: ValuePathResponse, parentPath?: string): ValuePathItem[] {
@@ -165,9 +179,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     );
 
     const tempCache: ValuePathSelectorCache = {
-      [this._caseDefinitionKey]: {
-        [this._caseDefinitionVersionTag]: prefixResults,
-      },
+      [this._currentCacheKey]: prefixResults,
     };
 
     this._cache = deepmerge(this._cache, tempCache);

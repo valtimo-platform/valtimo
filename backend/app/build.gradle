@@ -9,4 +9,5 @@ jar {
 repositories {
     mavenCentral()
     mavenLocal()
+    gradlePluginPortal()
 }

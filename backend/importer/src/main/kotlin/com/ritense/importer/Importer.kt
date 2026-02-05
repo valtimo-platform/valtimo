@@ -28,4 +28,6 @@ interface Importer {
     fun afterImport(request: ImportRequest) {}
 
     fun partOfCaseDefinition() : Boolean = true
+
+    fun partOfBuildingBlockDefinition() : Boolean = false
 }

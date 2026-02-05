@@ -112,7 +112,16 @@ public class ProcessDocumentResource {
                 new OperatonProcessInstanceId(processInstanceId))));
     }
 
+    @Deprecated(since = "Since v13", forRemoval = true)
     @GetMapping("/v1/process-document/instance/document/{documentId}")
+    public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstancesV1(
+        @PathVariable UUID documentId
+    ) {
+        return ResponseEntity.ok(
+            processDocumentAssociationService.findProcessDocumentInstanceDtosWithoutBuildingBlocks(JsonSchemaDocumentId.existingId(documentId)));
+    }
+
+    @GetMapping("/v2/process-document/instance/document/{documentId}")
     public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstances(
         @PathVariable UUID documentId
     ) {

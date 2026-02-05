@@ -1,0 +1,7 @@
+{
+    "key": "bb-case",
+    "name": "bb-case",
+    "versionTag": "1.0.0",
+    "canHaveAssignee": true,
+    "autoAssignTasks": true
+}

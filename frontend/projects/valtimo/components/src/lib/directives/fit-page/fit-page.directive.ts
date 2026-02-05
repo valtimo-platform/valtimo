@@ -31,7 +31,7 @@ import {DOCUMENT} from '@angular/common';
 @Directive({selector: '[fitPage]', standalone: true})
 export class FitPageDirective implements AfterViewInit, OnDestroy {
   @Input() spaceAdjustment: number = 0;
-  @Input() disabled = false;
+  @Input() fitPageDisabled = false;
   @Input() disableOverflow = false;
 
   private readonly _subscriptions = new Subscription();
@@ -51,7 +51,7 @@ export class FitPageDirective implements AfterViewInit, OnDestroy {
       ]).subscribe(([pageHeadHeight, compactMode]) => {
         const nativeElement = this.elementRef?.nativeElement;
 
-        if (nativeElement && !this.disabled) {
+        if (nativeElement && !this.fitPageDisabled) {
           this.addDocumentOverflowStyle();
           this.renderer.setStyle(
             nativeElement,
