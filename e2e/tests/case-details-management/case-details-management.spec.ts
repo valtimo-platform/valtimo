@@ -167,6 +167,30 @@ test.describe('Case management', () => {
           );
         });
       });
+
+      test('Read-only states', async () => {
+        //Act
+        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.STABLE);
+
+        //Assert
+        await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
+          'ng-reflect-is-read-only',
+          'true'
+        );
+        await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
+          'ng-reflect-is-read-only',
+          'true'
+        );
+        await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute('disabled');
+        await expect(caseDetailsManagementPage.externalFormUrl).toHaveAttribute(
+          'ng-reflect-is-read-only',
+          'true'
+        );
+        await expect(caseDetailsManagementPage.externalFormDescription).toHaveAttribute(
+          'ng-reflect-is-read-only',
+          'true'
+        );
+      });
     });
 
     test('Export case definition', async () => {
