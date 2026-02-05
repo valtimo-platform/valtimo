@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import {
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
-import {BasicWidget, WidgetType} from './widget.model';
+import {BasicWidget, WidgetColor, WidgetType} from './widget.model';
 import {WidgetWizardTypeStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
 import {WidgetWizardStyleStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
@@ -33,12 +33,14 @@ import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-m
 import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
 import {WidgetWizardDensityStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
 import {WidgetWizardFiltersStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-filters-step/widget-wizard-filters-step.component';
+import {WidgetWizardAppearanceStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-appearance-step/widget-wizard-appearance-step.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
   WIDTH = 'width',
   DENSITY = 'density',
   STYLE = 'style',
+  APPEARANCE = 'appearance',
   CONTENT = 'content',
   FILTERS = 'filters',
   DISPLAY_CONDITIONS = 'displayConditions',
@@ -78,6 +80,7 @@ const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
   [WidgetWizardStep.DENSITY]: WidgetWizardDensityStepComponent,
   [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
+  [WidgetWizardStep.APPEARANCE]: WidgetWizardAppearanceStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
   [WidgetWizardStep.FILTERS]: WidgetWizardFiltersStepComponent,
   [WidgetWizardStep.DISPLAY_CONDITIONS]: WidgetWizardDisplayConditionsStepComponent,
@@ -147,6 +150,19 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
   [WidgetStyle.HIGH_CONTRAST]: 'widgetTabManagement.style.highContrast.title',
 };
 
+const WIDGET_COLOR_LABELS: {[key in WidgetColor]: string} = {
+  [WidgetColor.YELLOW]: 'widgetTabManagement.appearance.backgroundColor.colors.yellow',
+  [WidgetColor.ORANGE]: 'widgetTabManagement.appearance.backgroundColor.colors.orange',
+  [WidgetColor.RED]: 'widgetTabManagement.appearance.backgroundColor.colors.red',
+  [WidgetColor.BROWN]: 'widgetTabManagement.appearance.backgroundColor.colors.brown',
+  [WidgetColor.GREEN]: 'widgetTabManagement.appearance.backgroundColor.colors.green',
+  [WidgetColor.TURQOISE]: 'widgetTabManagement.appearance.backgroundColor.colors.turqoise',
+  [WidgetColor.PURPLE]: 'widgetTabManagement.appearance.backgroundColor.colors.purple',
+  [WidgetColor.PERIWINKLE]: 'widgetTabManagement.appearance.backgroundColor.colors.periwinkle',
+  [WidgetColor.BLUE]: 'widgetTabManagement.appearance.backgroundColor.colors.blue',
+  [WidgetColor.WHITE]: 'widgetTabManagement.appearance.backgroundColor.colors.white',
+};
+
 const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
   [WidgetDensity.DEFAULT]: 'widgetTabManagement.density.default.title',
   [WidgetDensity.COMPACT]: 'widgetTabManagement.density.compact.title',
@@ -154,6 +170,7 @@ const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
 
 export {
   AVAILABLE_WIDGETS,
+  WIDGET_COLOR_LABELS,
   WIDGET_DENSITY_LABELS,
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,

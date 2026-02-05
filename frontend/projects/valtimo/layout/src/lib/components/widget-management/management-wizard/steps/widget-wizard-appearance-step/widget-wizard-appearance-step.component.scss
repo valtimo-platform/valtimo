@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
-export * from './custom-widget-token';
-export * from './widget.constants';
-export * from './widget-management.constants';
-export * from './widget-color.constants';
+:host {
+  display: block;
+}
+
+.widget-appearance {
+  &__color-grid fieldset {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  &__color-tile {
+    .cds--tile-content {
+      align-items: center;
+      text-align: center;
+    }
+
+    img {
+      width: 100%;
+      max-width: 200px;
+      align-self: center;
+    }
+  }
+}

@@ -807,6 +807,7 @@
       "highContrast": "High contrast",
       "type": "Type",
       "width": "Width",
+      "color": "Color",
       "density": "Density"
     },
     "list": {
@@ -840,6 +841,7 @@
       "steps": {
         "content": "Choose widget content",
         "style": "Choose widget style",
+        "appearance": "Choose widget appearance",
         "type": "Choose widget type",
         "width": "Choose widget width",
         "density": "Choose widget density",
@@ -878,6 +880,24 @@
       "description": "Select the desired style for the widget",
       "default": {"title": "Default", "description": "For regular content"},
       "highContrast": {"title": "High contrast", "description": "For higher priority content"}
+    },
+    "appearance": {
+      "description": "Select the appearance for the widget.",
+      "backgroundColor": {
+        "label": "Widget background color",
+        "colors": {
+          "yellow": "Yellow",
+          "orange": "Orange",
+          "red": "Red",
+          "brown": "Brown",
+          "green": "Green",
+          "turqoise": "Turquoise",
+          "purple": "Purple",
+          "periwinkle": "Periwinkle",
+          "blue": "Blue",
+          "white": "Default"
+        }
+      }
     },
     "density": {
       "description": "Select the desired density for the widget",
