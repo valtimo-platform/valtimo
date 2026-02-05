@@ -45,6 +45,9 @@ export class ShellService implements OnDestroy {
   );
   private readonly _isResizing$ = new BehaviorSubject<boolean>(false);
   private readonly _collapsibleWidescreenMenu$ = new BehaviorSubject<boolean>(false);
+  private readonly _sideBarPinned$ = new BehaviorSubject<boolean>(
+    localStorage.getItem('sidenavPinned') === 'true'
+  );
   private readonly _mainContentResized$ = new Subject<null>();
   private sidenavWidthOnClick!: number;
   private xOnClick!: number;
@@ -73,6 +76,10 @@ export class ShellService implements OnDestroy {
 
   get collapsibleWidescreenMenu$(): Observable<boolean> {
     return this._collapsibleWidescreenMenu$.asObservable();
+  }
+
+  get sideBarPinned$(): Observable<boolean> {
+    return this._sideBarPinned$.asObservable();
   }
 
   get mainContentResized$(): Observable<null> {
@@ -132,6 +139,20 @@ export class ShellService implements OnDestroy {
     this._contentElement$.next(element);
   }
 
+  toggleSideBarPin(): void {
+    const isPinned = this._sideBarPinned$.getValue();
+    this.setSideBarPinned(!isPinned);
+  }
+
+  setSideBarPinned(pinned: boolean): void {
+    this._sideBarPinned$.next(pinned);
+    localStorage.setItem('sidenavPinned', String(pinned));
+
+    if (pinned) {
+      this._sideBarExpanded$.next(true);
+    }
+  }
+
   setCollapsibleWidescreenMenu(collapsible: boolean) {
     this._collapsibleWidescreenMenu$.next(collapsible);
 
@@ -187,6 +208,7 @@ export class ShellService implements OnDestroy {
       this._contentElement$,
       this._resizeBorderElement$,
       this._collapsibleWidescreenMenu$,
+      this._sideBarPinned$,
     ]).subscribe(
       ([
         largeScreen,
@@ -195,24 +217,28 @@ export class ShellService implements OnDestroy {
         contentElement,
         resizeBorderElement,
         collapsibleWidescreenMenu,
+        sideBarPinned,
       ]) => {
-        if (
-          (!largeScreen || collapsibleWidescreenMenu) &&
-          sidenavElement &&
-          contentElement &&
-          resizeBorderElement
-        ) {
+        if (!sidenavElement || !contentElement || !resizeBorderElement) {
+          return;
+        }
+
+        if (!largeScreen || collapsibleWidescreenMenu) {
+          // Small screen or collapsible widescreen: no inline styles
           this.renderer.removeStyle(sidenavElement, 'min-width');
           this.renderer.removeStyle(sidenavElement, 'width');
           this.renderer.removeStyle(sidenavElement, 'transition');
           this.renderer.removeStyle(contentElement, 'padding-left');
           this.renderer.addClass(resizeBorderElement, 'resize-border--invisible');
-        } else if (
-          largeScreen &&
-          sidenavElement &&
-          contentElement &&
-          typeof sidenavWidth === 'number'
-        ) {
+        } else if (largeScreen && !sideBarPinned) {
+          // Large screen, unpinned (rail mode): no inline styles, let CSS handle it
+          this.renderer.removeStyle(sidenavElement, 'min-width');
+          this.renderer.removeStyle(sidenavElement, 'width');
+          this.renderer.removeStyle(sidenavElement, 'transition');
+          this.renderer.removeStyle(contentElement, 'padding-left');
+          this.renderer.addClass(resizeBorderElement, 'resize-border--invisible');
+        } else if (largeScreen && sideBarPinned && typeof sidenavWidth === 'number') {
+          // Large screen, pinned: apply resize styles
           const pixelWidth = `${sidenavWidth}px`;
           this.renderer.setStyle(sidenavElement, 'min-width', `${pixelWidth}`);
           this.renderer.setStyle(sidenavElement, 'width', `${pixelWidth}`);

@@ -19,7 +19,9 @@
   class="cds--content"
   [ngClass]="{
     'cds--content--sidebar':
-      (sideBarExpanded$ | async) && (collapsibleWidescreenMenu$ | async) === false,
+      (sideBarExpanded$ | async) && (collapsibleWidescreenMenu$ | async) === false && (sideBarPinned$ | async),
+    'cds--content--rail':
+      (collapsibleWidescreenMenu$ | async) === false && (sideBarPinned$ | async) === false,
   }"
   #mainContent
   [attr.data-test-id]="TEST_IDS.VALTIMO_MAIN_CONTENT"

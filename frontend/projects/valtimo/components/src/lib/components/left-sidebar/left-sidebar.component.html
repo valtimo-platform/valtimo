@@ -19,16 +19,25 @@
     closestSequence: closestSequence$ | async,
     overflowMenuSequence: overflowMenuSequence$ | async,
     sideBarExpanded: sideBarExpanded$ | async,
+    sideBarPinned: sideBarPinned$ | async,
+    isRailMode: isRailMode$ | async,
     menuItemsLoaded: menuItemsLoaded$ | async,
     menuItems: menuItems$ | async,
   } as obs"
   [allowExpansion]="false"
+  [rail]="obs.isRailMode"
   [expanded]="obs.sideBarExpanded"
+  (mouseenter)="onSidenavMouseEnter()"
+  (mouseleave)="onSidenavMouseLeave()"
   [attr.data-test-id]="TEST_IDS.SIDENAV_CONTAINER"
 >
   <ng-container *ngIf="obs.menuItemsLoaded; else loadingTemplate">
     <ng-container *ngFor="let menuItem of obs.menuItems">
       <ng-container *ngIf="!menuItem.children">
+        <div class="rail-only-icon">
+          <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
+        </div>
+
         <ng-container
           *ngTemplateOutlet="
             topMenuItem;
@@ -102,6 +111,36 @@
       </ng-container>
     </ng-container>
   </ng-container>
+
+  <div class="sidenav-pin-container">
+    <button
+      class="sidenav-pin-button"
+      (click)="togglePin()"
+      [attr.title]="obs.sideBarPinned ? 'Unpin sidebar' : 'Pin sidebar'"
+    >
+      <svg
+        *ngIf="!obs.sideBarPinned"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 32 32"
+        fill="currentColor"
+      >
+        <path d="M28.59 13.31L18.7 3.41l-1.42 1.42 1.38 1.37L12.4 12.8a9.42 9.42 0 0 0-4.75.69l6.36 6.36-8.48 8.49 1.42 1.42 8.48-8.49 6.36 6.36a9.42 9.42 0 0 0 .69-4.75l6.6-6.26 1.38 1.38z"/>
+      </svg>
+      <svg
+        *ngIf="obs.sideBarPinned"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 32 32"
+        fill="currentColor"
+      >
+        <path d="M28.59 13.31L18.7 3.41l-1.42 1.42 1.38 1.37L12.4 12.8a9.42 9.42 0 0 0-4.75.69l6.36 6.36-8.48 8.49 1.42 1.42 8.48-8.49 6.36 6.36a9.42 9.42 0 0 0 .69-4.75l6.6-6.26 1.38 1.38z"/>
+        <line x1="2" y1="30" x2="30" y2="2" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
+  </div>
 </cds-sidenav>
 
 <ng-template #subMenuIcon let-menuItem="menuItem">

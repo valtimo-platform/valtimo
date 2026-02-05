@@ -36,6 +36,7 @@ export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
   public readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly sideBarPinned$ = this.shellService.sideBarPinned$;
 
   private _observer!: ResizeObserver;
 

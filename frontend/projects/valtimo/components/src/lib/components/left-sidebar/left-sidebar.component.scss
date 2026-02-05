@@ -115,12 +115,8 @@
   height: 100%;
 }
 
-::ng-deep .cds--side-nav--ux {
-  width: 0;
-}
-
 ::ng-deep .cds--side-nav--expanded {
-  width: 16rem;
+  inline-size: 16rem;
 }
 
 ::ng-deep .cds--side-nav__header-divider {
@@ -198,8 +194,19 @@
     overflow-x: hidden !important;
     overflow-y: auto !important;
 
-    &:not(.cds--side-nav--expanded) {
-      width: 0;
+    // Collapsed: width 0, but NOT in rail mode
+    &:not(.cds--side-nav--expanded):not(.cds--side-nav--rail) {
+      inline-size: 0;
+    }
+
+    // Rail mode collapsed: show 48px rail
+    &.cds--side-nav--rail:not(.cds--side-nav--expanded) {
+      inline-size: 3rem;
+    }
+
+    // Rail mode expanded (hover): full width overlay
+    &.cds--side-nav--rail.cds--side-nav--expanded {
+      inline-size: 16rem;
     }
   }
 }
@@ -208,4 +215,84 @@
   display: flex;
   width: 100%;
   justify-content: center;
+}
+
+// Pin button
+.sidenav-pin-container {
+  margin-top: auto;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sidenav-pin-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--cds-text-secondary, #525252);
+  border-radius: 4px;
+  transition: background-color 0.11s cubic-bezier(0.2, 0, 1, 0.9);
+
+  &:hover {
+    background-color: var(--cds-background-hover, rgba(141, 141, 141, 0.12));
+    color: var(--cds-text-primary, #161616);
+  }
+}
+
+// Icons for childless items: only visible in rail collapsed state
+.rail-only-icon {
+  display: none;
+}
+
+// Rail mode collapsed: hide text, submenu content, show only icons
+::ng-deep .cds--side-nav--rail:not(.cds--side-nav--expanded) {
+  // Clip all overflow to hide text that extends past 3rem
+  .cds--side-nav__items {
+    overflow: hidden !important;
+  }
+
+  // Completely remove text labels from layout (display: none, not just opacity)
+  .cds--side-nav__link-text,
+  .cds--side-nav__submenu-title,
+  valtimo-menu-item-text,
+  .case-count {
+    display: none;
+  }
+
+  // Hide submenu chevron arrow
+  .cds--side-nav__submenu-chevron {
+    display: none;
+  }
+
+  // Hide expanded submenu children
+  cds-sidenav-menu .cds--side-nav__menu {
+    display: none;
+  }
+
+  // Restyle icon containers: center icon in the 48px rail width
+  .menu-item-icon-container {
+    left: 0;
+    width: 3rem;
+    text-align: center;
+
+    i {
+      width: auto;
+      display: inline-block;
+    }
+  }
+
+  // Show childless item icons in rail collapsed
+  .rail-only-icon {
+    display: block;
+  }
+
+  // Pin button: center in rail
+  .sidenav-pin-container {
+    justify-content: center;
+  }
 }

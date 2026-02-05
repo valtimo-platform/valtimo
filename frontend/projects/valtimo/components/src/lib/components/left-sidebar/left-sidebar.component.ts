@@ -25,7 +25,7 @@ import {
 import {Router} from '@angular/router';
 import { MenuItem, ConfigService, TEST_IDS } from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {map, take} from 'rxjs/operators';
 
 import {ShellService} from '../../services/shell.service';
 import {MenuService} from '../menu/services/menu.service';
@@ -64,9 +64,14 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   public readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
   public readonly menuItemsLoaded$ = this.menuService.menuItemsLoaded$;
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  public readonly sideBarPinned$ = this.shellService.sideBarPinned$;
   public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
   public readonly overflowMenuSequence$ = new BehaviorSubject<string>('');
   public readonly disableCaseCount$: Observable<boolean>;
+  public readonly isRailMode$: Observable<boolean> = combineLatest([
+    this.shellService.largeScreen$,
+    this.shellService.sideBarPinned$,
+  ]).pipe(map(([largeScreen, pinned]) => largeScreen && !pinned));
 
   private _breakpointSubscription!: Subscription;
   private _breakpointsInitialized = false;
@@ -136,6 +141,26 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     window.open(url, '_blank');
   }
 
+  public onSidenavMouseEnter(): void {
+    this.isRailMode$.pipe(take(1)).subscribe(isRail => {
+      if (isRail) {
+        this.shellService.setSideBarExpanded(true);
+      }
+    });
+  }
+
+  public onSidenavMouseLeave(): void {
+    this.isRailMode$.pipe(take(1)).subscribe(isRail => {
+      if (isRail) {
+        this.shellService.setSideBarExpanded(false);
+      }
+    });
+  }
+
+  public togglePin(): void {
+    this.shellService.toggleSideBarPin();
+  }
+
   private openBreakpointSubscription(): void {
     this.breakpointObserver
       .observe(['(max-width: 1055px)', '(min-width: 1056px)'])
@@ -143,27 +168,27 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
         combineLatest([
           this.shellService.sideBarExpanded$,
           this.shellService.collapsibleWidescreenMenu$,
+          this.shellService.sideBarPinned$,
         ])
           .pipe(take(1))
-          .subscribe(([sideBarExpanded, collapsibleWidescreenMenu]) => {
+          .subscribe(([sideBarExpanded, collapsibleWidescreenMenu, sideBarPinned]) => {
             const breakpoints = state.breakpoints;
             const breakpointKeys = Object.keys(breakpoints);
             const smallScreen = breakpoints[breakpointKeys[0]];
             const largeScreen = breakpoints[breakpointKeys[1]];
 
             if (!this._breakpointsInitialized) {
-              if (smallScreen || collapsibleWidescreenMenu) {
+              if (smallScreen || collapsibleWidescreenMenu || !sideBarPinned) {
                 this.shellService.collapseSideBar();
               }
               this._breakpointsInitialized = true;
             }
 
             if (!collapsibleWidescreenMenu) {
-              if (
-                (this._lastSmallScreen && largeScreen && !sideBarExpanded) ||
-                (this._lastLargeScreen && smallScreen && sideBarExpanded)
-              ) {
-                this.shellService.toggleSideBar();
+              if (this._lastSmallScreen && largeScreen && !sideBarExpanded && sideBarPinned) {
+                this.shellService.setSideBarExpanded(true);
+              } else if (this._lastLargeScreen && smallScreen && sideBarExpanded) {
+                this.shellService.setSideBarExpanded(false);
               }
             }
 
