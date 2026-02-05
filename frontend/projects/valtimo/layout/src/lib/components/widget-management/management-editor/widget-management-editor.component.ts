@@ -277,13 +277,10 @@ export class WidgetManagementEditorComponent implements OnDestroy {
 
   private getWidgetColorLabel(widget: BasicWidget): string {
     const color =
-      this.widgetSupportsColor(widget.type) && widget.color
-        ? widget.color
-        : WidgetColor.WHITE;
+      this.widgetSupportsColor(widget.type) && widget.color ? widget.color : WidgetColor.WHITE;
 
     return this.translateService.instant(
-      WIDGET_COLOR_LABELS[color] ??
-      'widgetTabManagement.appearance.backgroundColor.colors.white'
+      WIDGET_COLOR_LABELS[color] ?? 'widgetTabManagement.appearance.backgroundColor.colors.white'
     );
   }
 
