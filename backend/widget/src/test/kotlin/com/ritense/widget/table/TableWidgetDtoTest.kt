@@ -52,4 +52,34 @@ class TableWidgetDtoTest {
 
         assertEquals(WidgetColor.WHITE, entity.color)
     }
+
+    @Test
+    fun `toEntity should set color to HIGHCONTRAST when highContrast is true and color is null`() {
+        val dto = TableWidgetDto(
+            key = "key",
+            title = "title",
+            icon = null,
+            color = null,
+            width = 2,
+            highContrast = true,
+            isCompact = null,
+            actions = emptyList(),
+            displayConditions = emptyList(),
+            properties = TableWidgetProperties(
+                collection = "collection",
+                defaultPageSize = 10,
+                columns = listOf(
+                    TableWidgetProperties.Column(
+                        key = "name",
+                        title = "Name",
+                        value = "$.name"
+                    )
+                )
+            )
+        )
+
+        val entity = dto.toEntity(UUID.randomUUID(), 0) as TableWidget
+
+        assertEquals(WidgetColor.HIGHCONTRAST, entity.color)
+    }
 }

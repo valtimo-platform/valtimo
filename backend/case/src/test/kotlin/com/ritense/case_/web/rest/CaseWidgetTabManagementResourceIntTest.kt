@@ -114,6 +114,6 @@ class CaseWidgetTabManagementResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.widgets[0].key").value(caseWidgetTabDto.widgets[0].key))
             .andExpect(jsonPath("$.widgets[0].color").value("WHITE"))
             .andExpect(jsonPath("$.widgets[1].key").value(caseWidgetTabDto.widgets[1].key))
-            .andExpect(jsonPath("$.widgets[1].color").value("WHITE"))
+            .andExpect(jsonPath("$.widgets[1].color").value("HIGHCONTRAST"))
     }
 }

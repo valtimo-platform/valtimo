@@ -18,7 +18,7 @@ package com.ritense.case_.widget.custom
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.CaseWidgetMapper
-import com.ritense.widget.domain.WidgetColor
+import com.ritense.widget.domain.resolveWidgetColor
 import java.util.Collections.emptyList
 
 class CustomCaseWidgetMapper : CaseWidgetMapper<CustomCaseWidget, CustomCaseWidgetDto> {
@@ -40,7 +40,7 @@ class CustomCaseWidgetMapper : CaseWidgetMapper<CustomCaseWidget, CustomCaseWidg
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
         icon = dto.icon,
-        color = dto.color ?: WidgetColor.WHITE,
+        color = resolveWidgetColor(dto.color, dto.highContrast),
         width = dto.width,
         highContrast = dto.highContrast,
         isCompact = dto.isCompact,
