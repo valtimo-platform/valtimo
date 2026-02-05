@@ -20,6 +20,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20250613-major-13-migration.xml">
 
     <changeSet author="Ritense" id="1">
+        <validCheckSum>9:b8bf4e04ca5c7f49b26c1bce0307321a</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>

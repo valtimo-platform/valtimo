@@ -20,6 +20,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20230913-move-object-management-id.xml">
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:ef2f112c3afaca8b5c8b342e2631ecd2</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>

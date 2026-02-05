@@ -21,6 +21,7 @@
 
 
     <changeSet author="Ritense" id="1">
+        <validCheckSum>9:450f78a012c2436d4160130cf3797a5e</validCheckSum>
         <createTable tableName="iko_repository_config">
             <column name="key" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
@@ -38,6 +39,7 @@
     </changeSet>
 
     <changeSet author="Ritense" id="2">
+        <validCheckSum>9:ed80f389d8df0a811454ab413074ac15</validCheckSum>
         <createTable tableName="iko_data_aggregate">
             <column name="key" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
@@ -61,6 +63,7 @@
     </changeSet>
 
     <changeSet author="Ritense" id="3">
+        <validCheckSum>9:c1294d075ab430e3de5a8b96779d10bb</validCheckSum>
         <createTable tableName="iko_data_request">
             <column name="key" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>

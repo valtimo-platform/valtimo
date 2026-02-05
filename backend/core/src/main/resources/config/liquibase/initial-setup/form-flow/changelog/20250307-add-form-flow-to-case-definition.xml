@@ -398,6 +398,7 @@
     </changeSet>
 
     <changeSet id="22" author="Ritense">
+        <validCheckSum>9:fe1d1e5680d896b472a2ae0768bba94b</validCheckSum>
         <validCheckSum>9:c1ac5d86013c9859ae5e3e9ac6d9f462</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="form_io_form_definition"/>

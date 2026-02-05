@@ -22,6 +22,7 @@
 
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:c029998ad11f081d873398deba7c7cdf</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>
@@ -32,6 +33,7 @@
     </changeSet>
 
     <changeSet id="2" author="Ritense">
+        <validCheckSum>9:3b94f27dc03bd1cf7dc63e146275952d</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
         </preConditions>

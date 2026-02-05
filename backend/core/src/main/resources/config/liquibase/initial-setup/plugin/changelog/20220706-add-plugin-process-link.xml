@@ -21,6 +21,7 @@
 
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:5c250feca79cdb2a13c7cf26017f257b</validCheckSum>
         <createTable tableName="plugin_process_link">
             <column name="plugin_process_link_id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>

@@ -20,6 +20,7 @@
 
 
     <changeSet author="Ritense" id="1">
+        <validCheckSum>9:fb17bc88ebd845af8cfe9ce00f284494</validCheckSum>
         <createTable tableName="dropdown_list">
             <column name="dropdown_key" type="VARCHAR(64)">
                 <constraints nullable="false"/>

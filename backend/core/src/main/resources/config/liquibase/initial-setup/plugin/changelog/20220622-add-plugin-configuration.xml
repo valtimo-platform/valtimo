@@ -21,6 +21,7 @@
 
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:cd37eecbb8a5e0afd1642eeb0ec39ed6</validCheckSum>
         <createTable tableName="plugin_configuration">
             <column name="plugin_configuration_key" type="varchar(256)">
                 <constraints primaryKey="true" nullable="false"/>

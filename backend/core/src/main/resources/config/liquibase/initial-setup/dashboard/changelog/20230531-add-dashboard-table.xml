@@ -41,6 +41,7 @@
     </changeSet>
 
     <changeSet author="Ritense" id="2">
+        <validCheckSum>9:e85bede3c4bc5d57b139c1466ce9c173</validCheckSum>
         <createTable tableName="dashboard_widget_configuration">
             <column name="key" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
@@ -75,6 +76,7 @@
     </changeSet>
 
     <changeSet id="4" author="Ritense">
+        <validCheckSum>9:cfa7f8dc5ff268d1fb78293e02006820</validCheckSum>
         <addColumn tableName="dashboard_widget_configuration">
             <column name="display_type_properties" type="${jsonType}">
             </column>
@@ -82,6 +84,7 @@
     </changeSet>
 
     <changeSet id="6" author="Ritense">
+        <validCheckSum>9:59c4687a1e7e387986c4a6e68fd01180</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
             <sqlCheck expectedResult="1">
@@ -99,6 +102,7 @@
     </changeSet>
 
     <changeSet id="7" author="Ritense">
+        <validCheckSum>9:fe25473e8e64e480b498f5116bd058d2</validCheckSum>
         <addNotNullConstraint tableName="dashboard_widget_configuration"
                               columnName="display_type_properties"
                               defaultNullValue="{}"

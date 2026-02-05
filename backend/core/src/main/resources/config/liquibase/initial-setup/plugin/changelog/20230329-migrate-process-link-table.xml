@@ -21,6 +21,7 @@
 
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:e8b4076a7812e5e8a52ab689761bbd3f</validCheckSum>
         <preConditions onFail="CONTINUE">
             <tableExists tableName="process_link"/>
         </preConditions>
