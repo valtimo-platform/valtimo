@@ -48,6 +48,7 @@ enum WidgetColor {
   PERIWINKLE = 'PERIWINKLE',
   BLUE = 'BLUE',
   WHITE = 'WHITE',
+  HIGHCONTRAST = 'HIGHCONTRAST',
 }
 
 interface WidgetColorTile {

@@ -37,7 +37,6 @@ import {combineLatest, filter, map, Observable, Subscription, switchMap, take} f
 import {
   WIDGET_COLOR_LABELS,
   WIDGET_DENSITY_LABELS,
-  WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
@@ -98,17 +97,15 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   public readonly secondaryLabels$: Observable<Record<string, string>> = combineLatest([
     toObservable(this.widgetWizardService.$selectedWidget),
     toObservable(this.widgetWizardService.$widgetWidth),
-    toObservable(this.widgetWizardService.$widgetStyle),
     toObservable(this.widgetWizardService.$widgetDensity),
     toObservable(this.widgetWizardService.$widgetColor),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedStyle, selectedDensity, selectedColor]) => {
+    map(([selectedWidget, selectedWidth, selectedDensity, selectedColor]) => {
       const type = selectedWidget?.type ?? '';
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
         [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
-        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle ?? ''] ?? '',
         [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
         [WidgetWizardStep.APPEARANCE]: selectedColor ? WIDGET_COLOR_LABELS[selectedColor] : '',
       };

@@ -17,14 +17,12 @@ import {WidgetWizardContentStepComponent} from './widget-wizard-content-step/wid
 import {WidgetWizardDensityStepComponent} from './widget-wizard-density-step/widget-wizard-density-step.component';
 import {WidgetWizardDisplayConditionsStepComponent} from './widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 import {WidgetWizardAppearanceStepComponent} from './widget-wizard-appearance-step/widget-wizard-appearance-step.component';
-import {WidgetWizardStyleStepComponent} from './widget-wizard-style-step/widget-wizard-style-step.component';
 import {WidgetWizardTypeStepComponent} from './widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from './widget-wizard-width-step/widget-wizard-width-step.component';
 import {WidgetWizardFiltersStepComponent} from './widget-wizard-filters-step/widget-wizard-filters-step.component';
 
 export const WIDGET_STEPS = [
   WidgetWizardContentStepComponent,
-  WidgetWizardStyleStepComponent,
   WidgetWizardAppearanceStepComponent,
   WidgetWizardDensityStepComponent,
   WidgetWizardTypeStepComponent,

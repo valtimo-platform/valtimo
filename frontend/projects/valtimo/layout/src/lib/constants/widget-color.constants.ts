@@ -29,6 +29,7 @@ type WidgetColorTheme = Record<WidgetColorThemeVariant, WidgetColorVariant>;
 
 const WIDGET_COLOR_ITEMS: WidgetColor[] = [
   WidgetColor.WHITE,
+  WidgetColor.HIGHCONTRAST,
   WidgetColor.BLUE,
   WidgetColor.PERIWINKLE,
   WidgetColor.PURPLE,
@@ -47,6 +48,20 @@ const DEFAULT_WIDGET_COLOR_THEME: WidgetColorTheme = {
 
 const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
   [WidgetColor.WHITE]: DEFAULT_WIDGET_COLOR_THEME,
+  [WidgetColor.HIGHCONTRAST]: {
+    light: {
+      text: '#F4F4F4',
+      accent: '#393939',
+      background: '#161616',
+      layer: '#262626',
+    },
+    dark: {
+      text: '#161616',
+      accent: '#C6C6C6',
+      background: '#FFFFFF',
+      layer: '#F4F4F4',
+    },
+  },
   [WidgetColor.BLUE]: {
     light: {
       text: '#314A5EFF',
@@ -186,6 +201,7 @@ const WIDGET_COLOR_ILLUSTRATION_MAP: Record<WidgetColor, string> = {
   [WidgetColor.PERIWINKLE]: 'valtimo-layout/img/widget-management/color/periwinkle.svg',
   [WidgetColor.BLUE]: 'valtimo-layout/img/widget-management/color/blue.svg',
   [WidgetColor.WHITE]: 'valtimo-layout/img/widget-management/color/default.svg',
+  [WidgetColor.HIGHCONTRAST]: 'valtimo-layout/img/widget-management/color/highContrast.svg',
 };
 
 export {
