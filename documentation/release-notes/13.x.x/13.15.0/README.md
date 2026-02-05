@@ -23,4 +23,3 @@
 - Fixed an issue where the Form.io custom component **Document Picker** did not show any files.
 - Fixed an issue where the Form.io custom component **Valtimo File Upload** failed to upload files.
 - Fixed file uploads so they now consistently use the correct **upload process** when uploading files.
-
