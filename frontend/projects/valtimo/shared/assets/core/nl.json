@@ -826,6 +826,7 @@
       "highContrast": "Hoog contrast",
       "type": "Type",
       "width": "Breedte",
+      "color": "Kleur",
       "density": "Dichtheid"
     },
     "list": {
@@ -859,6 +860,7 @@
       "steps": {
         "content": "Kies widget-inhoud",
         "style": "Kies widget-stijl",
+        "appearance": "Kies widget-uiterlijk",
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
         "density": "Kies widgetdichtheid",
@@ -899,6 +901,24 @@
       "highContrast": {
         "title": "Hoog contrast",
         "description": "Voor inhoud met een hogere prioriteit"
+      }
+    },
+    "appearance": {
+      "description": "Selecteer het uiterlijk voor de widget.",
+      "backgroundColor": {
+        "label": "Widget achtergrondkleur",
+        "colors": {
+          "yellow": "Geel",
+          "orange": "Oranje",
+          "red": "Rood",
+          "brown": "Bruin",
+          "green": "Groen",
+          "turqoise": "Turkoois",
+          "purple": "Paars",
+          "periwinkle": "Lila",
+          "blue": "Blauw",
+          "white": "Standaard"
+        }
       }
     },
     "density": {

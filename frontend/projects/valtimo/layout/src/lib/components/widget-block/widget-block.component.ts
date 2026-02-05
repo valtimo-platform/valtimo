@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,13 @@ import {
   Subscription,
   tap,
 } from 'rxjs';
-import {WidgetComponentMap, WidgetWithUuid} from '../../models';
+import {WidgetColor, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {WIDGET_HEIGHT_1X} from '../../constants';
+import {
+  WIDGET_COLOR_THEME_MAP,
+  WIDGET_HEIGHT_1X,
+  type WidgetColorVariant,
+} from '../../constants';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -126,6 +130,10 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     })
   );
 
+  public readonly widgetColorTokens$ = combineLatest([this.widget$, this.theme$]).pipe(
+    map(([widgetConfiguration, theme]) => this.getWidgetColorVariant(widgetConfiguration, theme))
+  );
+
   private readonly _subscriptions = new Subscription();
 
   private _observer!: ResizeObserver;
@@ -179,5 +187,22 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
         }
       )
     );
+  }
+
+  private getWidgetColorVariant(
+    widgetConfiguration: WidgetWithUuid,
+    theme: CARBON_THEME
+  ): WidgetColorVariant {
+    const colorKey = widgetConfiguration.color ?? WidgetColor.WHITE;
+    const palette = WIDGET_COLOR_THEME_MAP[colorKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE];
+    const variantKey = this.isLightTheme(theme) ? 'light' : 'dark';
+
+    return (
+      palette[variantKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][variantKey]
+    );
+  }
+
+  private isLightTheme(theme: CARBON_THEME): boolean {
+    return theme === CARBON_THEME.G10 || theme === CARBON_THEME.WHITE;
   }
 }

@@ -37,6 +37,25 @@ enum WidgetType {
   MAP = 'map',
 }
 
+enum WidgetColor {
+  YELLOW = 'YELLOW',
+  ORANGE = 'ORANGE',
+  RED = 'RED',
+  BROWN = 'BROWN',
+  GREEN = 'GREEN',
+  TURQOISE = 'TURQOISE',
+  PURPLE = 'PURPLE',
+  PERIWINKLE = 'PERIWINKLE',
+  BLUE = 'BLUE',
+  WHITE = 'WHITE',
+}
+
+interface WidgetColorTile {
+  color: WidgetColor;
+  labelKey: string;
+  illustration: string;
+}
+
 type WidgetWidth = 1 | 2 | 3 | 4;
 type CollectionFieldWidth = 'half' | 'full';
 
@@ -53,6 +72,7 @@ interface BasicWidget {
   icon?: string;
   width: WidgetWidth;
   highContrast: boolean;
+  color?: WidgetColor;
   key: string;
   properties?: WidgetContentProperties;
   isCompact?: boolean;
@@ -236,4 +256,6 @@ export {
   WidgetComponentMap,
   WidgetContext,
   WidgetGroup,
+  WidgetColor,
+  WidgetColorTile
 };
