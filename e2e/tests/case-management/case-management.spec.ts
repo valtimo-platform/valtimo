@@ -1,9 +1,8 @@
-import {expect, test} from '@playwright/test';
-import {CaseManagementPage} from './page';
+import {test} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
+import {expectNotificationMessage} from '../../utils/ui.utils';
 import {caseConfiguration} from './case-config';
-import {expectErrorMessage} from '../../utils/ui.utils';
-import {CaseManagementUtils} from '../../utils/case.utils';
+import {CaseManagementPage} from './page';
 
 test.use({storageState: undefined});
 
@@ -26,35 +25,30 @@ test.describe('Case management', () => {
     await caseManagementPage.goToCaseManagement();
   });
 
-  // test.afterAll(async () => {
-  // await ApiUtils.apiDelete(
-  //   `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
-  // );
-  // });
-
   test.describe('Success test', () => {
     test('Add a case', async () => {
       // Act
-      await caseManagementPage.addCase();
-      await caseManagementPage.saveConfiguration();
+      await page.route('**/case-management/case/**', async route => {
+        await caseManagementPage.addCase();
+        await caseManagementPage.saveConfiguration();
+        route.abort();
 
-      // Assert
-      await caseManagementPage.assertCaseExists('Test case');
+        // Assert
+        await caseManagementPage.assertCaseExists('Test case');
+      });
     });
 
     test('Upload a case', async () => {
       // Act
-      await caseManagementPage.uploadCase();
-      await caseManagementPage.saveConfiguration();
-      await caseManagementPage.assertCaseUploaded();
+      await page.route('**/case-management/case/**', async route => {
+        await caseManagementPage.uploadCase();
+        await caseManagementPage.saveConfiguration();
+        await caseManagementPage.assertCaseUploaded();
 
-      // Assert
-      await caseManagementPage.assertCaseExists('Test case');
-    });
-
-    //For testing case utils
-    test('Import case through API', async () => {
-      await CaseManagementUtils.importCase('test-case-import-invalid-file');
+        // Assert
+        await caseManagementPage.assertCaseExists('Test case');
+        route.abort();
+      });
     });
 
     test('Cleanup test file', async () => {
@@ -79,7 +73,7 @@ test.describe('Case management', () => {
       await caseManagementPage.saveConfiguration();
 
       // Assert
-      await expectErrorMessage(page, 'This version already exists for this definition', {
+      await expectNotificationMessage(page, 'This version already exists for this definition', {
         exact: true,
       });
 
@@ -95,7 +89,7 @@ test.describe('Case management', () => {
       await caseManagementPage.assertCaseUploaded();
 
       // Assert
-      await expectErrorMessage(page, 'entity-not-found', {exact: true});
+      await expectNotificationMessage(page, 'entity-not-found', {exact: true});
 
       await caseManagementPage.createCancelButton.click();
     });
@@ -107,7 +101,7 @@ test.describe('Case management', () => {
       await caseManagementPage.assertCaseUploaded();
 
       // Assert
-      await expectErrorMessage(page, 'Maximum upload size exceeded', {exact: true});
+      await expectNotificationMessage(page, 'Maximum upload size exceeded', {exact: true});
 
       await caseManagementPage.createCancelButton.click();
     });

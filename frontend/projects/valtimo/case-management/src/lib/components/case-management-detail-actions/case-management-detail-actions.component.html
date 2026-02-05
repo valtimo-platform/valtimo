@@ -61,7 +61,7 @@
 
 <ng-template #versionItemTemplate let-item="item">
   <div
-    [attr.data-test-id]="item['data-test-id']"
+    [attr.data-test-id]="item?.['data-test-id']"
     *ngIf="item?.isAllVersionsOption; else regularVersionTemplate"
   >
     <span>{{ item?.content }}</span>
@@ -69,12 +69,17 @@
   </div>
 
   <ng-template #regularVersionTemplate>
-    <div [attr.data-test-id]="item['data-test-id']" class="version-selector-dropdown-template">
+    <div [attr.data-test-id]="item?.['data-test-id']" class="version-selector-dropdown-template">
       <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
         {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
       </cds-tag>
 
-      <cds-tag *ngIf="item?.active" data-test-id="globally-active-case-version" class="cds-tag--no-margin" type="high-contrast">
+      <cds-tag
+        *ngIf="item?.active"
+        data-test-id="globally-active-case-version"
+        class="cds-tag--no-margin"
+        type="high-contrast"
+      >
         {{ 'caseManagement.globallyActive' | translate }}
       </cds-tag>
     </div>

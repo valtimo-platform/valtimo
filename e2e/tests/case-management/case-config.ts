@@ -35,6 +35,6 @@ export const caseConfiguration: CaseManagementConfiguration = {
       value: 'Testing a case definition...',
     },
   ],
-  caseKey: 'test-case-import',
+  caseKey: 'test-case',
   caseVersion: '1.0.0',
 };
