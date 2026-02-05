@@ -65,24 +65,22 @@
       >
       </cds-file-uploader>
 
-      <ng-container *ngIf="!obs.nextButtonDisabled">
-        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+      <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
 
-        <div class="valtimo-uploader__checkbox">
-          <cds-checkbox
-            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
-            (checkedChange)="onCheckedChange($event)"
-          >
-            {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
-          </cds-checkbox>
+      <div class="valtimo-uploader__checkbox">
+        <cds-checkbox
+          [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+          (checkedChange)="onCheckedChange($event)"
+        >
+          {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
+        </cds-checkbox>
 
-          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
-            <svg cdsIcon="warning--filled" size="16"></svg>
+        <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
+          <svg cdsIcon="warning--filled" size="16"></svg>
 
-            {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
-          </div>
+          {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
         </div>
-      </ng-container>
+      </div>
     </form>
 
     <cds-progress-bar

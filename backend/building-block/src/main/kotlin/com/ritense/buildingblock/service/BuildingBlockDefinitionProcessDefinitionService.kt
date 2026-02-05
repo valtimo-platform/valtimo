@@ -22,6 +22,8 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
+import com.ritense.buildingblock.exception.BuildingBlockProcessDefinitionKeyAlreadyExistsException
+import com.ritense.buildingblock.exception.DuplicateProcessDefinitionDescriptor
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
@@ -45,6 +47,7 @@ import org.operaton.bpm.model.bpmn.instance.Process
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
 @Service
@@ -179,7 +182,8 @@ class BuildingBlockDefinitionProcessDefinitionService(
         bpmn: MultipartFile,
         processLinks: List<ProcessLinkCreateRequestDto>,
         currentProcessDefinitionId: String?,
-        main: Boolean
+        main: Boolean,
+        replace: Boolean = false
     ): ProcessDefinitionId? {
         denyAuthorization()
 
@@ -188,6 +192,22 @@ class BuildingBlockDefinitionProcessDefinitionService(
             buildingBlockDefinitionVersionTag
         )
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+        val uploadedProcessKeys = getUploadedProcessKeys(bpmn)
+        val linksToReplace = if (replace) {
+            findProcessDefinitionLinksByKey(
+                buildingBlockDefinitionId,
+                uploadedProcessKeys,
+                currentProcessDefinitionId
+            )
+        } else {
+            assertNoDuplicateProcessDefinitionKeys(
+                buildingBlockDefinitionId,
+                uploadedProcessKeys,
+                currentProcessDefinitionId
+            )
+            emptyList()
+        }
+        val replacementHasMain = linksToReplace.any { it.main }
 
         val deployedProcessDefinitionId = processDeploymentService.deployProcessDefinitionAndProcessLinks(
             buildingBlockDefinitionId,
@@ -197,7 +217,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         ) ?: return null
 
         val existingLink = findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
-        val mainFlag = existingLink?.main ?: main
+        val mainFlag = existingLink?.main ?: (main || replacementHasMain)
 
         val newLink = createOrReplaceLink(
             buildingBlockDefinitionId,
@@ -211,6 +231,9 @@ class BuildingBlockDefinitionProcessDefinitionService(
         }
 
         setProcessVersionTag(deployedProcessDefinitionId.id, buildingBlockDefinitionId)
+        if (linksToReplace.isNotEmpty()) {
+            deleteProcessDefinitionLinks(linksToReplace)
+        }
 
         return deployedProcessDefinitionId
     }
@@ -441,6 +464,73 @@ class BuildingBlockDefinitionProcessDefinitionService(
             bpmnModelInstance,
             buildingBlockDefinitionId
         )
+    }
+
+    private fun getUploadedProcessKeys(bpmn: MultipartFile): Set<String> {
+        val bpmnModelInstance = Bpmn.readModelFromStream(ByteArrayInputStream(bpmn.bytes))
+        val uploadedProcessKeys = bpmnModelInstance.getDefinitions()
+            .getChildElementsByType(Process::class.java)
+            .mapNotNull { it.id }
+            .toSet()
+
+        if (uploadedProcessKeys.isEmpty()) {
+            throw IllegalStateException("No process definitions found in BPMN file")
+        }
+
+        return uploadedProcessKeys
+    }
+
+    private fun assertNoDuplicateProcessDefinitionKeys(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        uploadedProcessKeys: Set<String>,
+        currentProcessDefinitionId: String?
+    ) {
+        val existingKeys = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .filter { link -> currentProcessDefinitionId == null || link.id.processDefinitionId.id != currentProcessDefinitionId }
+            .mapNotNull { it.processDefinitionKey }
+            .toSet()
+
+        val duplicateKeys = uploadedProcessKeys.intersect(existingKeys)
+        if (duplicateKeys.isNotEmpty()) {
+            val duplicateProcessDefinitions = processDefinitionBuildingBlockDefinitionRepository
+                .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+                .filter { link -> link.processDefinitionKey != null && duplicateKeys.contains(link.processDefinitionKey) }
+                .map { link ->
+                    DuplicateProcessDefinitionDescriptor(
+                        key = link.processDefinitionKey!!,
+                        name = link.processDefinitionName
+                    )
+                }
+            throw BuildingBlockProcessDefinitionKeyAlreadyExistsException(
+                buildingBlockDefinitionId,
+                duplicateProcessDefinitions
+            )
+        }
+    }
+
+    private fun findProcessDefinitionLinksByKey(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        uploadedProcessKeys: Set<String>,
+        currentProcessDefinitionId: String?
+    ): List<ProcessDefinitionBuildingBlockDefinition> {
+        return processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .filter { link ->
+                link.processDefinitionKey != null &&
+                    uploadedProcessKeys.contains(link.processDefinitionKey) &&
+                    (currentProcessDefinitionId == null || link.id.processDefinitionId.id != currentProcessDefinitionId)
+            }
+    }
+
+    private fun deleteProcessDefinitionLinks(
+        linksToReplace: List<ProcessDefinitionBuildingBlockDefinition>
+    ) {
+        linksToReplace.forEach { link ->
+            processDefinitionBuildingBlockDefinitionRepository.delete(link)
+            operatonProcessService.deleteProcessDefinition(link.id.processDefinitionId.id)
+            processLinkService.deleteProcessLinksForProcessDefinition(link.id.processDefinitionId.id)
+        }
     }
 
     private fun denyAuthorization() {
