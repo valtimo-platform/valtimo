@@ -61,10 +61,7 @@ export class CreateOrganisatorischeEenheidZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      (
-        formValue.identificatie ||
-        formValue.naam
-      )
+      (formValue.identificatie || formValue.naam)
     );
 
     this._valid$.next(valid);

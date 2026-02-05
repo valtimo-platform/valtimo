@@ -90,7 +90,10 @@
                 ></valtimo-menu-item-text>
 
                 <ng-container
-                  *ngTemplateOutlet="countTemplate; context: {count: vars.count, disableCaseCount: vars.disableCaseCount}"
+                  *ngTemplateOutlet="
+                    countTemplate;
+                    context: {count: vars.count, disableCaseCount: vars.disableCaseCount}
+                  "
                 ></ng-container>
               </cds-sidenav-item>
             </ng-container>

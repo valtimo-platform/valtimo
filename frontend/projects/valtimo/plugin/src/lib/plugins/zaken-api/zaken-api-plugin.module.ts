@@ -28,7 +28,8 @@ import {
 } from '@valtimo/components';
 import {
   ButtonModule,
-  DatePickerInputModule, DatePickerModule,
+  DatePickerInputModule,
+  DatePickerModule,
   DialogModule,
   IconModule,
   LoadingModule,

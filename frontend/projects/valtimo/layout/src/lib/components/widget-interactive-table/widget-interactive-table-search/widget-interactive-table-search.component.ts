@@ -122,9 +122,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   }
 
   private getDefaultFilterValues(): Record<string, string> {
-    return Object.fromEntries(
-      this.filters.map(filter => [filter.key, ''])
-    );
+    return Object.fromEntries(this.filters.map(filter => [filter.key, '']));
   }
 
   private mapFormValueToWidgetInteractiveTableSearch(): WidgetInteractiveTableEventSearchRequest {
@@ -142,11 +140,11 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     };
   }
 
-  private mapSearchRequestToFormValue(
-    searchRequest: WidgetInteractiveTableEventSearchRequest
-  ): { filters?: Record<string, string> } {
+  private mapSearchRequestToFormValue(searchRequest: WidgetInteractiveTableEventSearchRequest): {
+    filters?: Record<string, string>;
+  } {
     return {
-      ...(searchRequest.filters && { filters: searchRequest.filters }),
+      ...(searchRequest.filters && {filters: searchRequest.filters}),
     };
   }
 
@@ -156,7 +154,10 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
 
     if (mappedFormValue.filters) {
-      this.filtersFormGroup.patchValue(this.mapSearchRequestToFormValue(this._initSearchRequest).filters, {emitEvent: false});
+      this.filtersFormGroup.patchValue(
+        this.mapSearchRequestToFormValue(this._initSearchRequest).filters,
+        {emitEvent: false}
+      );
     }
   }
 }

@@ -316,11 +316,7 @@
 <ng-template #modalFooter let-modalObs="modalObs">
   <cds-modal-footer [cdsLayer]="1">
     <ng-container>
-      <button
-        cdsButton="ghost"
-        (click)="closeModal()"
-        [disabled]="modalObs.disableInput"
-      >
+      <button cdsButton="ghost" (click)="closeModal()" [disabled]="modalObs.disableInput">
         {{ 'interface.cancel' | translate }}
       </button>
 

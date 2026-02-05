@@ -19,7 +19,7 @@ export const PatchZaakNotitiePropertyOptions = [
   'tekst',
   'aangemaaktDoor',
   'notitieType',
-  'status'
+  'status',
 ] as const;
 
 export type PatchZaakNotitieProperties = (typeof PatchZaakNotitiePropertyOptions)[number];

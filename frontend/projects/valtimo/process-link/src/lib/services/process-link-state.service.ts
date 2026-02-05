@@ -27,7 +27,10 @@ import {
 import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
-import {FORM_CUSTOM_COMPONENT_TOKEN, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../constants';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK,
+} from '../constants';
 import {ManagementContext} from '@valtimo/shared';
 import {BuildingBlockStateService} from './building-block-state.service';
 

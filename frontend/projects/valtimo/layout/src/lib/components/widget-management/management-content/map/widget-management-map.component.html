@@ -37,10 +37,7 @@
 
 <ng-content></ng-content>
 
-<form
-  class="valtimo-widget-management-map-layer"
-  [formGroup]="form"
->
+<form class="valtimo-widget-management-map-layer" [formGroup]="form">
   <cds-accordion formArrayName="geoJsonSources" align="start" size="sm">
     @for (formGeoJsonSource of formGeoJsonSources.controls; track $index) {
       <cds-accordion-item

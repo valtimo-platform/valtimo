@@ -124,10 +124,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       .pipe(catchError(() => of(null)));
   }
 
-  public getCaseDefinition(
-    key: string,
-    versionTag: string
-  ): Observable<{name: string} | null> {
+  public getCaseDefinition(key: string, versionTag: string): Observable<{name: string} | null> {
     return this.httpClient
       .get<{name: string}>(
         this.getApiUrl(`management/v1/case-definition/${key}/version/${versionTag}`),

@@ -50,7 +50,11 @@
   </form>
 
   <cds-modal-footer [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_FOOTER">
-    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_CANCEL_BUTTON">
+    <button
+      cdsButton="ghost"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="TEST_IDS.DIVIDER_MODAL_CANCEL_BUTTON"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

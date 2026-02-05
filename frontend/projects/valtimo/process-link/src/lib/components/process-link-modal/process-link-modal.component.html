@@ -127,7 +127,12 @@
 
 <ng-template #footer let-obs="obs">
   <cds-modal-footer *ngIf="!obs.saving">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CANCEL_BUTTON">
+    <button
+      cdsButton="ghost"
+      (click)="closeModal()"
+      [disabled]="obs.disabled"
+      [attr.data-test-id]="TEST_IDS.PROCESS_LINK_CANCEL_BUTTON"
+    >
       {{ 'processLinkConfiguration.cancel' | translate }}
     </button>
     <div class="footer-spacer"></div>

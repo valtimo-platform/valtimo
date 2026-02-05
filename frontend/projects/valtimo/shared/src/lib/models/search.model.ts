@@ -25,7 +25,6 @@ type SearchFieldFieldType =
   | 'single-select-dropdown'
   | 'multi-select-dropdown';
 
-
 type SearchFieldBoolean = 'booleanPositive' | 'booleanNegative';
 
 type BooleanValueSingle = boolean;

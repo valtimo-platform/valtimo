@@ -24,7 +24,12 @@
     </h3>
   </cds-modal-header>
 
-  <section [formGroup]="form" cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CONTENT">
+  <section
+    [formGroup]="form"
+    cdsModalContent
+    [cdsLayer]="1"
+    [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CONTENT"
+  >
     <valtimo-tab-form
       [configuredContentKeys]="configuredKeysForEdit"
       [tabType]="tab?.type"
@@ -32,7 +37,11 @@
   </section>
 
   <cds-modal-footer [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_FOOTER">
-    <button cdsButton="ghost" (click)="onCloseModal()" [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CANCEL_BUTTON">
+    <button
+      cdsButton="ghost"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="TEST_IDS.TAB_MANAGEMENT_MODAL_CANCEL_BUTTON"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

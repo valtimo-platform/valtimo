@@ -434,7 +434,9 @@ export class ProcessLinkStepService {
         break;
       case 'plugin':
         const selectionLabel =
-          this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+          this._context === 'buildingBlock'
+            ? 'choosePluginDefinition'
+            : 'choosePluginConfiguration';
         // Plugin has 3 config steps: select config, select action, configure action
         this._steps$.next([
           {label: selectionLabel},

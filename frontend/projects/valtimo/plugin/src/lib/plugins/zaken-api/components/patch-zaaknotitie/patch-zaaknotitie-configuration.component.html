@@ -17,7 +17,7 @@
 <ng-container
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
   <v-paragraph [margin]="true" [italic]="true">
@@ -69,9 +69,9 @@
           />
         </div>
         <div class="col-1">
-            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
-              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-            </button>
+          <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+          </button>
         </div>
       </div>
     }

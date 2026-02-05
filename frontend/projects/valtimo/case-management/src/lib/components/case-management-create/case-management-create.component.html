@@ -33,7 +33,12 @@
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1" class="valtimo-definition-create__content">
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    [cdsLayer]="1"
+    class="valtimo-definition-create__content"
+  >
     <cds-label>
       {{ 'caseManagement.createDefinition.name' | translate }}
 

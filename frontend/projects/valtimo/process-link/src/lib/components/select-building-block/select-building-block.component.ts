@@ -23,7 +23,17 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
-import {catchError, filter, map, Observable, of, shareReplay, Subscription, tap, withLatestFrom} from 'rxjs';
+import {
+  catchError,
+  filter,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  Subscription,
+  tap,
+  withLatestFrom,
+} from 'rxjs';
 
 @Component({
   standalone: false,
