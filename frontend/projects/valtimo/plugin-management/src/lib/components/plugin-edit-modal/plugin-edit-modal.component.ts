@@ -24,7 +24,6 @@ import {
   PluginManagementService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -33,8 +32,6 @@ import { TEST_IDS } from '@valtimo/shared';
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
 export class PluginEditModalComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public readonly open = false;
   @Input() public readonly saveNewConfiguration = false;
 

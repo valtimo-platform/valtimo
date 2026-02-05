@@ -46,7 +46,7 @@ import {IconService} from 'carbon-components-angular';
 import {DocumentService} from '@valtimo/document';
 // @ts-ignore
 import {FolderDetailsReference16} from '@carbon/icons';
-import {GlobalNotificationService, TEST_IDS} from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -58,8 +58,6 @@ moment.locale(localStorage.getItem('langKey') || '');
   encapsulation: ViewEncapsulation.None,
 })
 export class TaskDetailModalComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent!: TaskDetailIntermediateSaveComponent;
 

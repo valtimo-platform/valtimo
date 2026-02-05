@@ -21,7 +21,6 @@ import {DownloadService, ResourceDto, ResourceFile, UploadProviderService} from 
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';
 import {FormIoDomService} from '../../services/form-io-dom.service';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-io-uploader',
@@ -30,8 +29,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class FormIoUploaderComponent implements FormioCustomComponent<Array<ResourceFile>> {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() disabled: boolean;
   @Input() title: string;
   @Input() hideTitle: boolean;

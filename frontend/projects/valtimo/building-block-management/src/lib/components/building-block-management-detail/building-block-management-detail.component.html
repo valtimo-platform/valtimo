@@ -14,40 +14,59 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs *ngIf="activeTabKey$ | async as activeTabKey" type="line">
-  <cds-tab
-    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL} as obs"
-    [active]="obs.active"
-    [heading]="'buildingBlockManagement.tabs.general' | translate"
-    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL)"
-  >
-    <valtimo-building-block-management-general
-      *ngIf="obs.active"
-    ></valtimo-building-block-management-general>
-  </cds-tab>
+@if (activeTabKey$ | async; as activeTabKey) {
+  <cds-tabs type="line">
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.general' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-general></valtimo-building-block-management-general>
+        }
+      </cds-tab>
+    }
 
-  <cds-tab
-    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT} as obs"
-    [active]="obs.active"
-    [heading]="'buildingBlockManagement.tabs.document' | translate"
-    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT)"
-  >
-    <valtimo-building-block-management-document
-      *ngIf="obs.active"
-    ></valtimo-building-block-management-document>
-  </cds-tab>
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.document' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-document></valtimo-building-block-management-document>
+        }
+      </cds-tab>
+    }
 
-  <cds-tab
-    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES} as obs"
-    [active]="obs.active"
-    [heading]="'buildingBlockManagement.tabs.processes' | translate"
-    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES)"
-  >
-    <valtimo-building-block-management-processes
-      *ngIf="obs.active"
-    ></valtimo-building-block-management-processes>
-  </cds-tab>
-</cds-tabs>
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.processes' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-processes></valtimo-building-block-management-processes>
+        }
+      </cds-tab>
+    }
+
+    @for (customTab of customTabs; track customTab.tabRoute) {
+      @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
+        <cds-tab
+          [active]="obs.active"
+          [heading]="customTab.translationKey | translate"
+          (selected)="switchTab(customTab.tabRoute)"
+        >
+          @if (obs.active) {
+            <ng-container *ngComponentOutlet="customTab.component"></ng-container>
+          }
+        </cds-tab>
+      }
+    }
+  </cds-tabs>
+}
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>

@@ -40,7 +40,6 @@ import {
   ModalModule,
   NotificationModule,
 } from 'carbon-components-angular';
-import { TEST_IDS } from '@valtimo/shared';
 
 import {CARBON_CONSTANTS} from '../../../constants';
 import {ValtimoCdsModalDirective} from '../../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
@@ -66,8 +65,6 @@ import {QuickSearchStateService} from '../../../services';
   ],
 })
 export class QuickSearchModalComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public existingItems: QuickSearchItem[] = [];
   @Output() public readonly closeEvent = new EventEmitter<string | null>();
 

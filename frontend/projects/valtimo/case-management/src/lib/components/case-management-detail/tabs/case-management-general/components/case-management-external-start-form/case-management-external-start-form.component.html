@@ -17,13 +17,12 @@
 <cds-tile
   class="external-case-form-container"
   *ngIf="{params: params$ | async, caseSettings: caseSettings$ | async} as obs"
-  [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER"
 >
-  <h4 class="external-case-form-container__title" [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_TITLE">
+  <h4 class="external-case-form-container__title">
     {{ 'caseManagement.externalStartForm.title' | translate }}
   </h4>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_FORM">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle
       valtimoReadOnly
       [isReadOnly]="isReadOnly"
@@ -32,10 +31,9 @@
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
       onText="{{ 'caseManagement.externalStartForm.enabledToggleOn' | translate }}"
       offText="{{ 'caseManagement.externalStartForm.enabledToggleOff' | translate }}"
-      [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_ENABLED_TOGGLE"
     ></cds-toggle>
 
-    <cds-label [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_EXTERNAL_URL_LABEL">
+    <cds-label>
       {{ 'caseManagement.externalStartForm.externalUrl' | translate }}
 
       <input
@@ -48,11 +46,10 @@
           isReadOnly ? '-' : ('caseManagement.externalStartForm.externalUrlPlaceholder' | translate)
         "
         maxlength="512"
-        [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_EXTERNAL_URL_INPUT"
       />
     </cds-label>
 
-    <cds-label [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_DESCRIPTION_LABEL">
+    <cds-label>
       {{ 'caseManagement.externalStartForm.description' | translate }}
 
       <input
@@ -65,7 +62,6 @@
           isReadOnly ? '-' : ('caseManagement.externalStartForm.descriptionPlaceholder' | translate)
         "
         maxlength="512"
-        [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_DESCRIPTION_INPUT"
       />
     </cds-label>
 
@@ -74,7 +70,6 @@
       cdsButton="primary"
       type="submit"
       [disabled]="!form.valid || isReadOnly"
-      [attr.data-test-id]="TEST_IDS.EXTERNAL_CASE_FORM_CONTAINER_SUBMIT_BUTTON"
     >
       {{ 'caseManagement.externalStartForm.apply' | translate }}
     </button>

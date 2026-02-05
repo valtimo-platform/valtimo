@@ -21,7 +21,6 @@ import {ValuePathSelectorComponent} from '../../../value-path-selector/value-pat
 import {ValuePathSelectorPrefix} from '../../../../models';
 import {BehaviorSubject, map} from 'rxjs';
 import {formioParams} from '../form-io-builder/form-io-builder.utils';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-formio-value-resolver-selector',
@@ -30,8 +29,6 @@ import { TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, ValuePathSelectorComponent],
 })
 export class FormioValueResolverSelectorComponent implements FormioCustomComponent<string> {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public readonly disabled: boolean;
   @Output() public readonly valueChange = new EventEmitter<string>();
 

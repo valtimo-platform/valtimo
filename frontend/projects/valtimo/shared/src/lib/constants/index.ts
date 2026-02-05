@@ -20,4 +20,4 @@ export * from './form-view-model-token';
 export * from './error.constants';
 export * from './case-configuration-extensions-token';
 export * from './iko.token';
-export * from './test-ids';
+export * from './building-block-management-tab-token';

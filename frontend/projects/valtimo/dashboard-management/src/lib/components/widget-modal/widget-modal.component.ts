@@ -27,7 +27,7 @@ import {
 import {FormBuilder, Validators} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ConfigurationOutput,
   DashboardWidgetConfiguration,
@@ -58,8 +58,6 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class WidgetModalComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public showModal$: Observable<boolean>;
   @Input() public type: WidgetModalType;
   @Input() public dashboard: DashboardItem;

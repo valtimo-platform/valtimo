@@ -16,7 +16,7 @@
 
 <ng-container *ngIf="pluginFunctions$ | async as pluginFunctions; else loading">
   <div class="choose-plugin-action" *ngIf="pluginFunctions?.length > 0">
-    <p class="step-description" [attr.data-test-id]="TEST_IDS.CHOOSE_PLUGIN_ACTION_DESCRIPTION">
+    <p class="step-description">
       {{ 'processLinkConfiguration.choosePluginActionDescription' | translate }}
     </p>
     <div class="action-tiles">
@@ -24,13 +24,11 @@
         [multiple]="false"
         *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
         (selected)="selected($event)"
-        [attr.data-test-id]="TEST_IDS.CHOOSE_PLUGIN_ACTION_TILE_GROUP"
       >
         <cds-selection-tile
           *ngFor="let pluginFunction of pluginFunctions"
           [value]="stringify(pluginFunction)"
           [selected]="false"
-          data-test-id="choose-plugin-action-tile-{{$index}}"
           >{{
             pluginFunction.key | pluginTranslate: obs.selectedPluginDefinition.key | async
           }}</cds-selection-tile
@@ -44,13 +42,13 @@
 </ng-container>
 
 <ng-template #noPluginFunctionsTemplate>
-  <p class="step-description" [attr.data-test-id]="TEST_IDS.CHOOSE_PLUGIN_ACTION_NO_PLUGIN_FUNCTIONS">
+  <p class="step-description">
     {{ 'processLink.noPluginFunctions' | translate }}
   </p>
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-container" [attr.data-test-id]="TEST_IDS.CHOOSE_PLUGIN_ACTION_LOADING">
+  <div class="loading-container">
     <cds-loading></cds-loading>
   </div>
 </ng-template>

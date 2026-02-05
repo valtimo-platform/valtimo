@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 
-<div #carbonPlaceHolder class="carbon-placeholder" [attr.data-test-id]="TEST_IDS.LAYOUT_CARBON_PLACEHOLDER"></div>
+<div #carbonPlaceHolder class="carbon-placeholder"></div>
 
-<valtimo-global-notification [attr.data-test-id]="TEST_IDS.LAYOUT_GLOBAL_NOTIFICATION"></valtimo-global-notification>
-<valtimo-layout-public *ngIf="layoutType === 'public'" [attr.data-test-id]="TEST_IDS.LAYOUT_PUBLIC_LAYOUT"></valtimo-layout-public>
-<valtimo-layout-internal *ngIf="layoutType === 'internal'" [attr.data-test-id]="TEST_IDS.LAYOUT_INTERNAL_LAYOUT"></valtimo-layout-internal>
+<valtimo-global-notification></valtimo-global-notification>
+<valtimo-layout-public *ngIf="layoutType === 'public'"></valtimo-layout-public>
+<valtimo-layout-internal *ngIf="layoutType === 'internal'"></valtimo-layout-internal>

@@ -18,14 +18,12 @@
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
   class="valtimo-widget-wizard-step__content"
-  [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_SELECTION"
 >
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="1"
     [selected]="$widgetWidth() === 1"
     [disabled]="$fieldsColumnsLength() > 1"
-    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_SMALL_TILE"
   >
     <h3>{{ 'widgetTabManagement.width.small.title' | translate }}</h3>
 
@@ -34,7 +32,6 @@
     <img
       src="valtimo-layout/img/widget-management/width/quarter.svg"
       [alt]="'widgetTabManagement.width.small.title' | translate"
-      [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_SMALL_IMAGE"
     />
   </cds-selection-tile>
 
@@ -43,7 +40,6 @@
     [value]="2"
     [selected]="$widgetWidth() === 2"
     [disabled]="$fieldsColumnsLength() > 2"
-    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_MEDIUM_TILE"
   >
     <h3>{{ 'widgetTabManagement.width.medium.title' | translate }}</h3>
 
@@ -52,7 +48,6 @@
     <img
       src="valtimo-layout/img/widget-management/width/half.svg"
       [alt]="'widgetTabManagement.width.medium.title' | translate"
-      [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_MEDIUM_IMAGE"
     />
   </cds-selection-tile>
 
@@ -61,7 +56,6 @@
     [value]="3"
     [selected]="$widgetWidth() === 3"
     [disabled]="$fieldsColumnsLength() > 3"
-    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_LARGE_TILE"
   >
     <h3>{{ 'widgetTabManagement.width.large.title' | translate }}</h3>
 
@@ -70,7 +64,6 @@
     <img
       src="valtimo-layout/img/widget-management/width/three-quarters.svg"
       [alt]="'widgetTabManagement.width.large.title' | translate"
-      [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_LARGE_IMAGE"
     />
   </cds-selection-tile>
 
@@ -78,7 +71,6 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="4"
     [selected]="$widgetWidth() === 4"
-    [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_XTRA_LARGE_TILE"
   >
     <h3>{{ 'widgetTabManagement.width.xtraLarge.title' | translate }}</h3>
 
@@ -87,7 +79,6 @@
     <img
       src="valtimo-layout/img/widget-management/width/full-width.svg"
       [alt]="'widgetTabManagement.width.xtraLarge.title' | translate"
-      [attr.data-test-id]="TEST_IDS.WIDGET_WIZARD_STEP_WIDTH_XTRA_LARGE_IMAGE"
     />
   </cds-selection-tile>
 </cds-tile-group>

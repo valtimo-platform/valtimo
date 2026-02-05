@@ -21,16 +21,15 @@
   showFooter="true"
   [title]="'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate"
   (close)="onCancel()"
-  [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
       {{ 'ikoManagement.searchActions.' + modalMode + 'ActionTitle' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form cdsModalContent [formGroup]="formGroup" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_FORM">
-    <cds-label [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE_LABEL">
+  <form cdsModalContent [formGroup]="formGroup">
+    <cds-label>
       {{ 'interface.title' | translate }}
 
       <input
@@ -39,7 +38,6 @@
         cdsLayer
         placeholder="{{ 'interface.title' | translate }}"
         [attr.modal-primary-focus]="true"
-        [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_TITLE_INPUT"
       />
     </cds-label>
 
@@ -50,7 +48,6 @@
       formControlName="key"
       labelTranslationKey="ikoManagement.keyTitle"
       placeholderTranslationKey="interface.key"
-      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_KEY_INPUT"
     >
     </valtimo-auto-key-input>
 
@@ -58,16 +55,15 @@
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"
       [prefillData]="$prefillData()?.properties"
-      [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_PROPERTIES"
     />
   </form>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_FOOTER">
-    <button cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_CANCEL_BUTTON">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onSave()" [attr.data-test-id]="TEST_IDS.IKO_MANAGEMENT_MODAL_SAVE_BUTTON">
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onSave()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

@@ -52,5 +52,5 @@ jobs:
     secrets: inherit
     with:
       target: "gzac-frontend"
-      image_to_tag: ${{ needs.build_and_push_image.outputs.tagged_image }}
+      image_to_tag: ${{ needs.build_and_push_image.outputs.built_image }}
       contents_sha: ${{ needs.build_and_test_libraries.outputs.contents_sha }}

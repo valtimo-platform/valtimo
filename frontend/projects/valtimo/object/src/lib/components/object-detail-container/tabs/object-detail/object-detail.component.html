@@ -38,12 +38,12 @@
 </ng-container>
 
 <ng-template #buttons let-obs="obs">
-  <button [disabled]="obs.disableInput" (click)="openModal()" cdsButton="primary" size="md" [attr.data-test-id]="TEST_IDS.OBJECT_EDIT_BUTTON">
+  <button [disabled]="obs.disableInput" (click)="openModal()" cdsButton="primary" size="md">
     {{ 'object.editObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 
-  <button (click)="deleteObject()" cdsButton="danger" size="md" class="ml-3" [attr.data-test-id]="TEST_IDS.OBJECT_DELETE_BUTTON">
+  <button (click)="deleteObject()" cdsButton="danger" size="md" class="ml-3">
     {{ 'object.deleteObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
   </button>
@@ -69,7 +69,7 @@
     [open]="modalObs.show"
     (close)="closeModal()"
   >
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.OBJECT_MODAL_HEADER">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
         {{ 'object.editObject' | translate }}
       </h3>
@@ -96,7 +96,6 @@
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MODAL_CLOSE_BUTTON"
       >
         {{ 'object.close' | translate }}
       </button>
@@ -105,7 +104,6 @@
         [attr.modal-primary-focus]="true"
         (click)="saveObject()"
         [disabled]="modalObs.disableInput || modalObs.formValid === false"
-        [attr.data-test-id]="TEST_IDS.OBJECT_MODAL_SAVE_BUTTON"
       >
         {{ 'object.save' | translate }}
       </button>

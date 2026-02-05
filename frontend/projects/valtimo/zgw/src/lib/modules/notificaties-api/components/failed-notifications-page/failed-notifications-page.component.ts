@@ -29,7 +29,7 @@ import {BehaviorSubject, finalize, map, Observable, switchMap, tap} from 'rxjs';
 import {FailedNotification, FailedNotificationPageRequest} from '../../models';
 import {FailedNotificationsService} from '../../services';
 import {FailedNotificationDetailComponent} from '../failed-notification-detail/failed-notification-detail.component';
-import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-notificaties-api-failed-notifications-page',
@@ -40,8 +40,6 @@ import { GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationsPageComponent {
-  readonly TEST_IDS = TEST_IDS;
-
   private readonly _DEFAULT_SORT = 'receivedAt,desc';
 
   public readonly loading$ = new BehaviorSubject<boolean>(false);

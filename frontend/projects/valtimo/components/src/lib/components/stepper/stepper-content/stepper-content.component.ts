@@ -17,7 +17,6 @@
 import {AfterContentInit, Component, ContentChildren, QueryList} from '@angular/core';
 import {StepperStepComponent} from '../stepper-step/stepper-step.component';
 import {StepperService} from '../../../services/stepper.service';
-import { TEST_IDS } from '@valtimo/shared';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -29,8 +28,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class StepperContentComponent implements AfterContentInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @ContentChildren(StepperStepComponent) stepComponents!: QueryList<StepperStepComponent>;
 
   constructor(private readonly stepperService: StepperService) {}

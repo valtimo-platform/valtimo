@@ -22,7 +22,6 @@ import {DecisionXml} from '../models';
 import DmnViewer from 'dmn-js';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 import {TranslateModule} from '@ngx-translate/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-decision-display',
@@ -33,8 +32,6 @@ import { TEST_IDS } from '@valtimo/shared';
   imports: [CommonModule, RouterModule, TranslateModule],
 })
 export class DecisionDisplayComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   public viewer: DmnViewer;
   private decisionId: string;
   public decisionXml: string;

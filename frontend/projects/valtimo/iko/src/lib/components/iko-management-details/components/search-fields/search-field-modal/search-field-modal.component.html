@@ -14,25 +14,25 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" showFooter="true" (close)="onCancel()" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL">
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_HEADER">
-    <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_TITLE">
+<cds-modal [open]="open" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
       {{ (!prefillData ? 'searchFieldsOverview.add' : 'searchFieldsOverview.edit') | translate }}
     </h3>
   </cds-modal-header>
 
-  <form cdsModalContent [formGroup]="formGroup" class="valtimo-search-fields-modal__content" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_FORM">
-    <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_TITLE_INPUT">
+  <form cdsModalContent [formGroup]="formGroup" class="valtimo-search-fields-modal__content">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.title' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
       >
       </v-input-label>
 
-      <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_TITLE_INPUT_FIELD" />
+      <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer />
     </div>
 
-    <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_KEY_INPUT">
+    <div class="valtimo-search-fields-modal__input">
       <valtimo-auto-key-input
         [mode]="modalMode"
         [usedKeys]="usedKeys"
@@ -44,14 +44,14 @@
       </valtimo-auto-key-input>
     </div>
 
-    <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_PATH_INPUT">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.path' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
       >
       </v-input-label>
 
-      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_PATH_INPUT_FIELD" />
+      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" />
 
       <!-- TODO: When BE value resolver is in place -->
       <!-- <valtimo-value-path-selector
@@ -61,40 +61,40 @@
       ></valtimo-value-path-selector> -->
     </div>
 
-    <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DATA_TYPE_INPUT">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.dataType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
       >
       </v-input-label>
 
-      <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DATA_TYPE_DROPDOWN">
+      <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
         <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </div>
 
     @if (dataTypeValue === SearchFieldDataType.TEXT) {
-      <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_MATCH_TYPE_INPUT">
+      <div class="valtimo-search-fields-modal__input">
         <v-input-label
           [title]="'searchFieldsOverview.matchType' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
         >
         </v-input-label>
 
-        <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_MATCH_TYPE_DROPDOWN">
+        <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
           <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
     }
 
-    <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_FIELD_TYPE_INPUT">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.fieldType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
       >
       </v-input-label>
 
-      <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_FIELD_TYPE_DROPDOWN">
+      <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
         <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -105,7 +105,6 @@
       [label]="'searchFieldsOverview.required' | translate"
       [onText]="'searchFieldsOverview.requiredEnabled' | translate"
       [offText]="'searchFieldsOverview.requiredDisabled' | translate"
-      [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_REQUIRED_TOGGLE"
     ></cds-toggle>
 
     @if (
@@ -113,7 +112,7 @@
       (fieldTypeValue === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
         fieldTypeValue === SearchFieldFieldType.MULTI_SELECT_DROPDOWN)
     ) {
-      <div class="valtimo-search-fields-modal__input" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_DATA_PROVIDER_INPUT">
+      <div class="valtimo-search-fields-modal__input">
         <v-input-label
           [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
@@ -124,14 +123,13 @@
           data-testid="-search-dropdownDataProvider"
           formControlName="dropdownDataProvider"
           cdsLayer
-          [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_DATA_PROVIDER_DROPDOWN"
         >
           <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
 
       @if (dropdownDataProviderValue === SearchDropdownDataProvider.DATABASE) {
-        <div class="valtimo-search-fields-modal__list" formArrayName="dropdownValues" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUES_LIST">
+        <div class="valtimo-search-fields-modal__list" formArrayName="dropdownValues">
           <v-input-label
             [title]="'searchFieldsOverview.dropdownListValues' | translate"
             [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
@@ -140,8 +138,8 @@
           </v-input-label>
 
           @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
-            <form [formGroup]="dropdownValue" class="valtimo-search-fields-modal__dropdown-values" data-test-id="search-fields-modal-dropdown-value-row-{{$index}}">
-              <cds-text-label [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUE_KEY_LABEL">
+            <form [formGroup]="dropdownValue" class="valtimo-search-fields-modal__dropdown-values">
+              <cds-text-label>
                 {{ 'interface.value' | translate }}
 
                 <input
@@ -150,11 +148,10 @@
                   type="text"
                   formControlName="key"
                   cdsLayer
-                  [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUE_KEY_INPUT"
                 />
               </cds-text-label>
 
-              <cds-text-label [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUE_DISPLAY_LABEL">
+              <cds-text-label>
                 {{ 'interface.display' | translate }}
 
                 <input
@@ -163,7 +160,6 @@
                   type="text"
                   formControlName="value"
                   cdsLayer
-                  [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUE_DISPLAY_INPUT"
                 />
               </cds-text-label>
 
@@ -173,7 +169,6 @@
                 [disabled]="$count === 1"
                 [iconOnly]="true"
                 (click)="removeDropdownValue($index)"
-                [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_DROPDOWN_VALUE_DELETE_BUTTON"
               >
                 <svg cdsIcon="trash-can" size="16"></svg>
               </button>
@@ -184,7 +179,6 @@
             data-testid="-search-addDropdownValue"
             cdsButton="primary"
             (click)="addDropdownValue()"
-            [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_ADD_DROPDOWN_VALUE_BUTTON"
           >
             {{ 'interface.addRow' | translate }}
 
@@ -195,8 +189,8 @@
     }
   </form>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_FOOTER">
-    <button data-testid="-search-cancel" cdsButton="ghost" (click)="onCancel()" [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_CANCEL_BUTTON">
+  <cds-modal-footer>
+    <button data-testid="-search-cancel" cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -205,7 +199,6 @@
       cdsButton="primary"
       [disabled]="formGroup.invalid"
       (click)="onSave()"
-      [attr.data-test-id]="TEST_IDS.SEARCH_FIELDS_MODAL_SAVE_BUTTON"
     >
       {{ 'interface.save' | translate }}
     </button>

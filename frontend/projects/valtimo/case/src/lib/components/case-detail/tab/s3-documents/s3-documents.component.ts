@@ -21,7 +21,7 @@ import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/reso
 import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import { ConfigService, GlobalNotificationService, TEST_IDS } from '@valtimo/shared';
+import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {PromptService} from '@valtimo/components';
 
 @Component({
@@ -30,8 +30,6 @@ import {PromptService} from '@valtimo/components';
   templateUrl: './s3-documents.component.html',
 })
 export class CaseDetailTabS3DocumentsComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   public readonly documentId: string;
   public readonly caseDefinitionKey: string;
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;

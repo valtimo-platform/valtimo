@@ -15,7 +15,12 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import { SearchField, SearchFieldBoolean, SearchFieldValue, SearchFieldValues, TEST_IDS } from '@valtimo/shared';
+import {
+  SearchField,
+  SearchFieldBoolean,
+  SearchFieldValue,
+  SearchFieldValues,
+} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
 import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
@@ -30,8 +35,6 @@ import {ChevronDown16, ChevronUp16} from '@carbon/icons';
   standalone: false,
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() public loading!: boolean;
   @Input() public set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);

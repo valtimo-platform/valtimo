@@ -16,7 +16,6 @@
 
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -24,8 +23,6 @@ import { TEST_IDS } from '@valtimo/shared';
   templateUrl: './exact-redirect.component.html',
 })
 export class ExactRedirectComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {

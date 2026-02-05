@@ -23,7 +23,6 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_FORM"
 >
   <v-input
     name="templateGroup"
@@ -34,7 +33,6 @@
     [required]="true"
     [trim]="true"
     placeholder=""
-    [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_TEMPLATE_GROUP_INPUT"
   >
   </v-input>
   <v-input
@@ -46,7 +44,6 @@
     [required]="true"
     [trim]="true"
     placeholder=""
-    [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_TEMPLATE_NAME_INPUT"
   >
   </v-input>
   <v-input
@@ -59,7 +56,6 @@
     [required]="true"
     [trim]="true"
     placeholder=""
-    [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_RESULTING_DOCUMENT_PROCESS_VARIABLE_NAME_INPUT"
   >
   </v-input>
   <v-select
@@ -71,7 +67,6 @@
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.format"
     [required]="true"
-    [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_FORMAT_SELECT"
   ></v-select>
 
   <valtimo-carbon-multi-input
@@ -95,6 +90,5 @@
     [valueColumnFlex]="2"
     [keyColumnTitle]="'key' | pluginTranslate: pluginId | async"
     [valueColumnTitle]="'value' | pluginTranslate: pluginId | async"
-    [attr.data-test-id]="TEST_IDS.GENERATE_DOCUMENT_TEMPLATE_DATA_INPUT"
   ></valtimo-carbon-multi-input>
 </v-form>

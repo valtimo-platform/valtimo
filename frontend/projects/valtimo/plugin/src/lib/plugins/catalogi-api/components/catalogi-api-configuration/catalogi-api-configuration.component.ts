@@ -20,7 +20,6 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {CatalogiApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -31,8 +30,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class CatalogiApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
