@@ -19,7 +19,7 @@ package com.ritense.case_.widget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.domain.tab.TestCaseWidgetTabWidget
 import com.ritense.case_.web.rest.dto.TestCaseWidgetTabWidgetDto
-import com.ritense.widget.domain.WidgetColor
+import com.ritense.widget.domain.resolveWidgetColor
 
 class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseWidgetTabWidgetDto> {
 
@@ -28,7 +28,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
             CaseWidgetTabWidgetId(dto.key),
             dto.title,
             dto.icon,
-            dto.color ?: WidgetColor.WHITE,
+            resolveWidgetColor(dto.color, dto.highContrast),
             index,
             dto.width,
             dto.highContrast,
