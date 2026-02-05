@@ -46,11 +46,7 @@ import {
 } from 'rxjs';
 import {WidgetColor, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {
-  WIDGET_COLOR_THEME_MAP,
-  WIDGET_HEIGHT_1X,
-  type WidgetColorVariant,
-} from '../../constants';
+import {WIDGET_COLOR_THEME_MAP, WIDGET_HEIGHT_1X, type WidgetColorVariant} from '../../constants';
 
 @Component({
   selector: 'valtimo-widget-block',
@@ -130,7 +126,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     })
   );
 
-  public readonly widgetColorTokens$ = combineLatest([this.widget$, this.theme$]).pipe(
+  public readonly widgetColors$ = combineLatest([this.widget$, this.theme$]).pipe(
     map(([widgetConfiguration, theme]) => this.getWidgetColorVariant(widgetConfiguration, theme))
   );
 
@@ -194,12 +190,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     theme: CARBON_THEME
   ): WidgetColorVariant {
     const colorKey = widgetConfiguration.color ?? WidgetColor.WHITE;
-    const palette = WIDGET_COLOR_THEME_MAP[colorKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE];
-    const variantKey = this.isLightTheme(theme) ? 'light' : 'dark';
+    const widgetColor =
+      WIDGET_COLOR_THEME_MAP[colorKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE];
+    const themeType = this.isLightTheme(theme) ? 'light' : 'dark';
 
-    return (
-      palette[variantKey] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][variantKey]
-    );
+    return widgetColor[themeType] ?? WIDGET_COLOR_THEME_MAP[WidgetColor.WHITE][themeType];
   }
 
   private isLightTheme(theme: CARBON_THEME): boolean {

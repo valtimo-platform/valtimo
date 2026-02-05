@@ -257,5 +257,5 @@ export {
   WidgetContext,
   WidgetGroup,
   WidgetColor,
-  WidgetColorTile
+  WidgetColorTile,
 };
