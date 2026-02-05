@@ -43,6 +43,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--widget-text-color, var(--cds-text-primary));
+
+    .mdi-icon-preview {
+      color: var(--widget-text-color, var(--cds-text-primary)) !important;
+    }
   }
 
   &__container {
@@ -113,7 +118,7 @@
     .valtimo-widget-field {
       &__column {
         gap: 8px;
-        border-left: 1px solid var(--cds-border-subtle-01);
+        border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
         padding-left: 16px;
       }
 
@@ -135,7 +140,7 @@
 
       &__render > * {
         padding-left: 16px;
-        border-left: 1px solid var(--cds-border-subtle-01);
+        border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
       }
     }
   }
