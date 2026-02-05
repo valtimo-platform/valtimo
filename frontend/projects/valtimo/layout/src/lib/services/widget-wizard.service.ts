@@ -22,7 +22,6 @@ import {
   WidgetContentProperties,
   WidgetContext,
   WidgetDensity,
-  WidgetStyle,
   WidgetType,
   WidgetTypeSelection,
   WidgetWidth,
@@ -43,7 +42,7 @@ export class WidgetWizardService {
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
 
-  public readonly $widgetStyle: WritableSignal<WidgetStyle | null> = signal(null);
+  public readonly $widgetHighContrast: WritableSignal<boolean> = signal(false);
 
   public readonly $widgetColor: WritableSignal<WidgetColor | null> = signal(null);
 
@@ -78,7 +77,6 @@ export class WidgetWizardService {
     WidgetWizardStep.TYPE,
     WidgetWizardStep.WIDTH,
     WidgetWizardStep.DENSITY,
-    WidgetWizardStep.STYLE,
     WidgetWizardStep.APPEARANCE,
     WidgetWizardStep.CONTENT,
     WidgetWizardStep.FILTERS,
@@ -92,7 +90,6 @@ export class WidgetWizardService {
       [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
-      [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
       [WidgetWizardStep.APPEARANCE]: !!this.$widgetColor(),
       [WidgetWizardStep.CONTENT]:
         !!this.$widgetContent() &&
@@ -169,7 +166,7 @@ export class WidgetWizardService {
     icon: this.$widgetIcon() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
     width: this.$widgetWidth() || this._defaultWidth || 4,
-    highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
+    highContrast: this.$widgetHighContrast(),
     color: this.$widgetColor() ?? WidgetColor.WHITE,
     isCompact: this.$widgetDensity() === WidgetDensity.COMPACT,
     properties: this.$widgetContent() ?? ({} as any),
@@ -187,7 +184,7 @@ export class WidgetWizardService {
       this.$currentStep.set(WidgetWizardStep.TYPE);
       this.$selectedWidget.set(null);
       this.$widgetWidth.set(this._defaultWidth || null);
-      this.$widgetStyle.set(null);
+      this.$widgetHighContrast.set(false);
       this.$widgetColor.set(null);
       this.$widgetContent.set(null);
       this.$widgetTitle.set(null);
@@ -208,7 +205,6 @@ export class WidgetWizardService {
       WidgetWizardStep.TYPE,
       WidgetWizardStep.WIDTH,
       WidgetWizardStep.DENSITY,
-      WidgetWizardStep.STYLE,
       WidgetWizardStep.APPEARANCE,
       WidgetWizardStep.CONTENT,
       WidgetWizardStep.FILTERS,
