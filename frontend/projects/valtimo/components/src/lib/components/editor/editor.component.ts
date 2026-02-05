@@ -85,6 +85,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._layoutSubscription?.unsubscribe();
+    if (this._editor) {
+      const model = this._editor.getModel();
+      this._editor.dispose();
+      model?.dispose();
+    }
   }
 
   private openLayoutSubscription(): void {
@@ -183,6 +188,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorEvents();
     this.updateModel();
+
+    // Ensure layout is recalculated after container dimensions are set by fitPage directive
+    requestAnimationFrame(() => {
+      this._editor?.layout();
+    });
   }
 
   private initJsonSchemaValidation() {
