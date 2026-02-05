@@ -40,7 +40,6 @@ import {
   Widget,
   WidgetColor,
   WidgetDensity,
-  WidgetStyle,
   WidgetType,
   WidgetTypeTags,
   WidgetWidth,
@@ -254,9 +253,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
     this.widgetWizardService.$widgetIcon.set(widget.icon ?? null);
-    this.widgetWizardService.$widgetStyle.set(
-      widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
-    );
+    this.widgetWizardService.$widgetHighContrast.set(!!widget.highContrast);
     this.widgetWizardService.$widgetColor.set(widget.color ?? WidgetColor.WHITE);
     this.widgetWizardService.$widgetWidth.set(
       widget.width || this.widgetWizardService.defaultWidth

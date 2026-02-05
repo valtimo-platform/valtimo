@@ -859,7 +859,6 @@
       "edit": "Widget bewerken",
       "steps": {
         "content": "Kies widget-inhoud",
-        "style": "Kies widget-stijl",
         "appearance": "Kies widget-uiterlijk",
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
@@ -895,19 +894,12 @@
       "large": {"title": "Groot", "subtitle": "Bevat maximaal 3 kolommen met inhoud"},
       "xtraLarge": {"title": "Xtra Groot", "subtitle": "Bevat maximaal 4 kolommen met inhoud"}
     },
-    "style": {
-      "description": "Selecteer de gewenste stijl voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
-      "highContrast": {
-        "title": "Hoog contrast",
-        "description": "Voor inhoud met een hogere prioriteit"
-      }
-    },
     "appearance": {
       "description": "Selecteer het uiterlijk voor de widget.",
       "backgroundColor": {
         "label": "Widget achtergrondkleur",
         "colors": {
+          "highContrast": "Hoog contrast",
           "yellow": "Geel",
           "orange": "Oranje",
           "red": "Rood",

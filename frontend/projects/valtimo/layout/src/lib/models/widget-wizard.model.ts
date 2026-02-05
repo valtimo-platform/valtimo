@@ -27,7 +27,6 @@ import {WidgetManagementInteractiveTableComponent} from '../components/widget-ma
 import {BasicWidget, WidgetColor, WidgetType} from './widget.model';
 import {WidgetWizardTypeStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
-import {WidgetWizardStyleStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
 import {WidgetWizardContentStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
 import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
@@ -39,7 +38,6 @@ enum WidgetWizardStep {
   TYPE = 'type',
   WIDTH = 'width',
   DENSITY = 'density',
-  STYLE = 'style',
   APPEARANCE = 'appearance',
   CONTENT = 'content',
   FILTERS = 'filters',
@@ -50,11 +48,6 @@ enum WidgetWizardCloseEventType {
   CANCEL = 'cancel',
   CREATE = 'create',
   EDIT = 'edit',
-}
-
-enum WidgetStyle {
-  DEFAULT = 'default',
-  HIGH_CONTRAST = 'high-contrast',
 }
 
 enum WidgetDensity {
@@ -79,7 +72,6 @@ const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.TYPE]: WidgetWizardTypeStepComponent,
   [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
   [WidgetWizardStep.DENSITY]: WidgetWizardDensityStepComponent,
-  [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
   [WidgetWizardStep.APPEARANCE]: WidgetWizardAppearanceStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
   [WidgetWizardStep.FILTERS]: WidgetWizardFiltersStepComponent,
@@ -145,11 +137,6 @@ const WIDGET_WIDTH_LABELS: {[key: number]: string} = {
   4: 'widgetTabManagement.width.xtraLarge.title',
 };
 
-const WIDGET_STYLE_LABELS: {[key: string]: string} = {
-  [WidgetStyle.DEFAULT]: 'widgetTabManagement.style.default.title',
-  [WidgetStyle.HIGH_CONTRAST]: 'widgetTabManagement.style.highContrast.title',
-};
-
 const WIDGET_COLOR_LABELS: {[key in WidgetColor]: string} = {
   [WidgetColor.YELLOW]: 'widgetTabManagement.appearance.backgroundColor.colors.yellow',
   [WidgetColor.ORANGE]: 'widgetTabManagement.appearance.backgroundColor.colors.orange',
@@ -161,6 +148,7 @@ const WIDGET_COLOR_LABELS: {[key in WidgetColor]: string} = {
   [WidgetColor.PERIWINKLE]: 'widgetTabManagement.appearance.backgroundColor.colors.periwinkle',
   [WidgetColor.BLUE]: 'widgetTabManagement.appearance.backgroundColor.colors.blue',
   [WidgetColor.WHITE]: 'widgetTabManagement.appearance.backgroundColor.colors.white',
+  [WidgetColor.HIGHCONTRAST]: 'widgetTabManagement.appearance.backgroundColor.colors.white',
 };
 
 const WIDGET_DENSITY_LABELS: {[key: string]: string} = {
@@ -172,10 +160,8 @@ export {
   AVAILABLE_WIDGETS,
   WIDGET_COLOR_LABELS,
   WIDGET_DENSITY_LABELS,
-  WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetDensity,
-  WidgetStyle,
   WidgetTypeSelection,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
