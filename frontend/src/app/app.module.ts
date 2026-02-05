@@ -124,6 +124,15 @@ import {IkoModule} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
+import {SmtpMailPluginModule, smtpmailPluginSpecification} from '@valtimo-plugins/smtpmail';
+import {
+  DocumentGeneratorPluginModule,
+  documentGeneratorPluginSpecification,
+  MailTemplatePluginModule,
+  mailTemplatePluginSpecification,
+  TextTemplatePluginModule,
+  textTemplatePluginSpecification,
+} from '@valtimo-plugins/freemarker';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -209,6 +218,10 @@ export function tabsFactory() {
     WidgetModule,
     IkoModule,
     BuildingBlockManagementModule,
+    SmtpMailPluginModule,
+    DocumentGeneratorPluginModule,
+    MailTemplatePluginModule,
+    TextTemplatePluginModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -231,6 +244,10 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
+        smtpmailPluginSpecification,
+        documentGeneratorPluginSpecification,
+        mailTemplatePluginSpecification,
+        textTemplatePluginSpecification,
       ],
     },
     ...(environment.production ? [] : devProviders),
