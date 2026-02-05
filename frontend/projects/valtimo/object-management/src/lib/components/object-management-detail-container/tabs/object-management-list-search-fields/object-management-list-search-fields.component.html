@@ -212,12 +212,11 @@
   <cds-modal-footer>
     <ng-container>
       <button
-        cdsButton="secondary"
-        [attr.modal-primary-focus]="true"
+        cdsButton="ghost"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
       >
-        {{ 'searchFieldsOverview.close' | translate }}
+        {{ 'interface.cancel' | translate }}
       </button>
       <button
         cdsButton="primary"

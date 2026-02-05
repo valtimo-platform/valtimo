@@ -113,8 +113,8 @@
       </form>
     </section>
 
-    <cds-modal-footer>
-      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+    <cds-modal-footer [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_MODAL_FOOTER">
+      <button cdsButton="ghost" (click)="onModalClose()" [disabled]="false" [attr.data-test-id]="TEST_IDS.VALTIMO_OBJECTEN_SYNC_CANCEL_BUTTON">
         {{ 'interface.cancel' | translate }}
       </button>
 

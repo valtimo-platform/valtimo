@@ -4,6 +4,7 @@
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
 .claude
+bin/
 
 ### IntelliJ IDEA ###
 .idea

@@ -53,8 +53,8 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" type="button" (click)="onClose()">
-      {{ 'interface.close' | translate }}
+    <button cdsButton="ghost" type="button" (click)="onClose()" [attr.data-test-id]="TEST_IDS.FAILED_NOTIFICATION_DETAIL_CLOSE_BUTTON">
+      {{ 'interface.cancel' | translate }}
     </button>
     <button
       cdsButton="primary"

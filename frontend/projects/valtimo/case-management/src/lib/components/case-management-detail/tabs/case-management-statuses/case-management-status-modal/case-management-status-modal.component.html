@@ -113,7 +113,7 @@
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
+  <button cdsButton="ghost" (click)="onClose()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.STATUS_MODAL_CANCEL_BUTTON">
     {{ 'interface.cancel' | translate }}
   </button>
 

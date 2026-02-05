@@ -83,8 +83,8 @@
     </form>
   </section>
 
-  <cds-modal-footer>
-    <button cdsButton="secondary" (click)="close()" [disabled]="obs.disabled">
+  <cds-modal-footer [attr.data-test-id]="TEST_IDS.CASE_TAG_MODAL_FOOTER">
+    <button cdsButton="ghost" (click)="close()" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.CASE_TAG_CANCEL_BUTTON">
       {{ 'interface.cancel' | translate }}
     </button>
 

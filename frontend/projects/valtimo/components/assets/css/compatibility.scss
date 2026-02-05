@@ -182,6 +182,10 @@ valtimo-modal {
 }
 
 .case-detail-overflow {
+  .cds--btn--primary .cds--btn__icon,
+  .cds--btn--primary .cds--btn__icon path {
+    fill: currentColor !important;
+  }
   &.--compact {
     button {
       min-block-size: 32px !important;
