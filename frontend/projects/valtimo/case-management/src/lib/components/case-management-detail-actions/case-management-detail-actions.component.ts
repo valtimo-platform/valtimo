@@ -168,8 +168,6 @@ export class CaseManagementDetailActionsComponent {
         'data-test-id': 'caseSeeAllVersionsButton',
       };
 
-      console.log([...mapping, allVersionsItem]);
-
       return [...mapping, allVersionsItem];
     })
   );

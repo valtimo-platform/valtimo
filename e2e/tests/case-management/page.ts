@@ -91,12 +91,7 @@ export class CaseManagementPage {
   }
 
   async uploadCaseConfiguration(archiveName: string) {
-    const filePath = path.resolve(
-      process.cwd(),
-      'assets',
-      'case-import-archives',
-      archiveName
-    );
+    const filePath = path.resolve(process.cwd(), 'assets', 'case-import-archives', archiveName);
     await this.fileUploader.locator('input.cds--file-input[type="file"]').setInputFiles(filePath);
   }
 

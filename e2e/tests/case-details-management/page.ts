@@ -1,6 +1,10 @@
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
-import {caseConfiguration, CaseManagementFieldMap} from './case-config';
+import {
+  caseConfiguration,
+  caseExternalFormConfiguration,
+  CaseManagementFieldMap,
+} from './case-config';
 import path from 'path';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
@@ -30,11 +34,47 @@ export class CaseDetailsManagementPage {
   }
 
   get setActiveVersionButton() {
-    return this.page.getByRole('menuitem', { name: 'Set as active version' });
+    return this.page.getByRole('menuitem', {name: 'Set as active version'});
   }
 
   get seeAllVersionsButton() {
     return this.page.getByTestId('caseSeeAllVersionsButton');
+  }
+
+  get caseHandlerCanHaveHandlerToggle() {
+    return this.page.getByTestId('caseHandlerCanHaveHandler').locator('.cds--toggle__switch');
+  }
+
+  get caseHandlerCanHaveHandler() {
+    return this.page.getByTestId('caseHandlerCanHaveHandler');
+  }
+
+  get caseHandlerAutomaticallyAssignToggle() {
+    return this.page.getByTestId('caseHandlerAutomaticallyAssign').locator('.cds--toggle__switch');
+  }
+
+  get caseHandlerAutomaticallyAssign() {
+    return this.page.getByTestId('caseHandlerAutomaticallyAssign');
+  }
+
+  get hasExternalForm() {
+    return this.page.getByTestId('caseManagementHasExternalForm').getByRole('switch');
+  }
+
+  get hasExternalFormToggle() {
+    return this.page.getByTestId('caseManagementHasExternalForm').locator('.cds--toggle__switch');
+  }
+
+  get externalFormUrl() {
+    return this.page.getByTestId('caseManagementExternalFormUrl');
+  }
+
+  get externalFormDescription() {
+    return this.page.getByTestId('caseManagementExternalFormDescription');
+  }
+
+  get externalFormSave() {
+    return this.page.getByTestId('caseManagementExternalFormSave');
   }
 
   get confirmationModalContinueButton() {
@@ -56,10 +96,7 @@ export class CaseDetailsManagementPage {
 
   async switchCaseVersionViaDropdown(caseVersion: string) {
     await this.versionSelectDropdown.click();
-    await this.page
-        .getByRole('listbox')
-        .getByTestId(`caseVersion${caseVersion}`)
-        .click();
+    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
   }
 
   async switchCaseVersionViaList(caseVersion: string) {
@@ -93,5 +130,11 @@ export class CaseDetailsManagementPage {
     await item.click();
     await this.confirmationModalContinueButton.click();
     await this.confirmationModalSetActiveButton.click();
+  }
+
+  async fillInExternalForm() {
+    await this.externalFormUrl.fill(caseExternalFormConfiguration.url);
+    await this.externalFormDescription.fill(caseExternalFormConfiguration.description);
+    await this.externalFormSave.click();
   }
 }
