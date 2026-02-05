@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './building-block-state.service';
 export * from './form-flow.service';
 export * from './plugin-state.service';
 export * from './process-link.service';
@@ -23,3 +24,4 @@ export * from './process-link-button.service';
 export * from './form-flow-component.service';
 export * from './url-resolver.service';
 export * from './url-validator.service';
+export * from './process-link-building-block-api.service';

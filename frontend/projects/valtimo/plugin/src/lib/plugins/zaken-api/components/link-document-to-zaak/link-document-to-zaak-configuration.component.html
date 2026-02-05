@@ -59,4 +59,26 @@
     [fullWidth]="true"
   >
   </v-input>
+  <v-input
+    name="vernietigingsdatum"
+    [title]="'vernietigingsdatum' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.vernietigingsdatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'vernietigingsdatumTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+  <v-input
+    name="statusUrl"
+    [title]="'documentStatusUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.statusUrl"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'documentStatusUrlTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
 </v-form>

@@ -15,6 +15,7 @@
  */
 
 export * from './alert.model';
+export * from './blueprint-context.model';
 export * from './button.model';
 export * from './carbon-list.model';
 export * from './carbon-pagination.model';
@@ -48,3 +49,4 @@ export * from './value-path-selector.model';
 export * from './menu.model';
 export * from './list-hidden-column.model';
 export * from './version.model';
+export * from './schema-editor.model';

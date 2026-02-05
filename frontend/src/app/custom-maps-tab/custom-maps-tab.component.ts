@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'app-custom-maps-tab',
@@ -22,8 +22,6 @@ import {Component, OnInit} from '@angular/core';
   styleUrls: ['./custom-maps-tab.component.scss'],
   standalone: false,
 })
-export class CustomMapsTabComponent implements OnInit {
+export class CustomMapsTabComponent {
   constructor() {}
-
-  ngOnInit() {}
 }

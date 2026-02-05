@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,11 @@ import {Page} from '@valtimo/document';
 import {map, Observable, tap} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
-import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
+import {
+  CaseDefinition,
+  CaseDefinitionFinalizationCheckResult,
+  DraftVersion,
+} from '../models/case-deployment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -155,6 +159,17 @@ export class CaseManagementService extends BaseApiService {
         `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
       ),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public getCaseDefinitionFinalizationCheck(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDefinitionFinalizationCheckResult> {
+    return this.httpClient.get<CaseDefinitionFinalizationCheckResult>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/finalizable`
+      )
     );
   }
 }

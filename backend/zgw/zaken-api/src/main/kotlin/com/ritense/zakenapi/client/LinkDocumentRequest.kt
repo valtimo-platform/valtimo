@@ -23,5 +23,7 @@ class LinkDocumentRequest(
     val informatieobject: String,
     val zaak: String,
     val titel: String?,
-    val beschrijving: String?
+    val beschrijving: String?,
+    val vernietigingsdatum: String?,
+    val status: String?
 )

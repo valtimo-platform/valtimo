@@ -102,6 +102,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijving: 'Documentbeschrijving',
       beschrijvingTooltip:
         '(Optioneel) Vult het beschrijving veld in de metadata van de link tussen de Zaak en het Document',
+      vernietigingsdatum: 'Vernietigingsdatum',
+      vernietigingsdatumTooltip:
+        '(Optioneel) De datum waarop het document van de zaak verwijderd moet worden. Dit veld ondersteunt datum/tijd in ISO 8601 formaat en proces variabelen.',
+      documentStatusUrl: 'Status URL',
+      documentStatusUrlTooltip:
+        '(Optioneel) De referentie naar de bij Zaak behorende Status waarvoor het document relevant is (geweest).',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       authenticationPluginConfigurationTooltip:
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
@@ -177,7 +183,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       datumStatusGezetTooltip: 'Datum/tijd waarde van het zaakstatus.',
       datumStatusGezetInvalidText: 'Datum en tijd mogen niet in de toekomst liggen.',
       statustoelichting: 'Zaakstatus toelichting',
-      statustoelichtingTooltip: 'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
+      statustoelichtingTooltip:
+        'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
       'create-zaakresultaat': 'Zaakresultaat aanmaken',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
@@ -288,15 +295,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectIdentificatie: 'Object identificatie',
       'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
       resultProcessVariable: 'Resultaat process variable',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
       'create-zaaknotitie': 'Zaak-notitie aanmaken',
-      createZaakNotitieInformation: 'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
+      createZaakNotitieInformation:
+        'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
       'patch-zaaknotitie': 'Zaak-notitie bijwerken',
-      patchZaakNotitieInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak-notitie gekoppeld aan de Zaak in de Zaken API bij te werken.',
+      patchZaakNotitieInformation:
+        'Deze actie maakt het mogelijk eigenschappen van de Zaak-notitie gekoppeld aan de Zaak in de Zaken API bij te werken.',
       addPatchZaakNotitieProperty: 'Voeg parameter toe',
       zaakNotitieUrl: 'Zaak-notitie URL',
       zaakNotitieUrlTooltip: 'De URL referentie naar de Zaak-notitie in de Zaken API.',
@@ -305,6 +315,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       aangemaaktDoor: 'Aangemaakt door',
       notitieType: 'Notitietype',
       status: 'Status',
+      createZaakrolMedewerkerIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de medewerker:<br/>- Identificatie<br/>- Achternaam',
+      createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de organisatorische eenheid:<br/>- Identificatie<br/>- Naam',
+      createZaakrolVestigingIdentifierFieldsInformation:
+        'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de vestiging:<br/>- Vestigingsnummer<br/>- Handelsnaam<br/>- KVK-nummer',
     },
     en: {
       title: 'Zaken API',
@@ -335,6 +351,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijving: 'Document description',
       beschrijvingTooltip:
         '(Optional) Fills the description field in the metadata of the link between the Zaak and the Document',
+      vernietigingsdatum: 'Destruction date',
+      vernietigingsdatumTooltip:
+        '(Optional) The date on which the document should be removed from the zaak. This field supports date/time in ISO 8601 format and process variables.',
+      documentStatusUrl: 'Status URL',
+      documentStatusUrlTooltip:
+        '(Optional) The reference to the Status associated with the Zaak for which the document is (or was) relevant. This field supports URLs and process variables.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       authenticationPluginConfigurationTooltip:
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
@@ -526,11 +548,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
-      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result is stored.',
       'create-zaaknotitie': 'Create Zaak-notitie',
-      createZaakNotitieInformation: 'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
+      createZaakNotitieInformation:
+        'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
       'patch-zaaknotitie': 'Update Zaak-notitie',
-      patchZaakNotitieInformation: 'This action allows you to update properties of the Zaak-notitie linked to the Zaak in the Zaken API.',
+      patchZaakNotitieInformation:
+        'This action allows you to update properties of the Zaak-notitie linked to the Zaak in the Zaken API.',
       addPatchZaakNotitieProperty: 'Add property',
       zaakNotitieUrl: 'Zaak-notitie URL',
       zaakNotitieUrlTooltip: 'The reference URL to the Zaak-notitie in the Zaken API',
@@ -539,6 +564,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       aangemaaktDoor: 'Created by',
       notitieType: 'Note type',
       status: 'Status',
+      createZaakrolMedewerkerIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the employee:<br/>- Identification<br/>- Last name',
+      createZaakrolOrganisatorischeEenheidIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the organizational unit:<br/>- Identification<br/>- Name',
+      createZaakrolVestigingIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the branch:<br/>- Branch number<br/>- Trade name<br/>- Chamber of Commerce number',
     },
   },
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,20 @@
 package com.ritense.processlink.repository
 
 import com.ritense.plugin.domain.PluginProcessLink
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface ValtimoPluginProcessLinkRepository : BaseProcessLinkRepository<PluginProcessLink> {
     fun findByPluginActionDefinitionKey(pluginActionDefinitionKey: String): List<PluginProcessLink>
+
+    @Query(
+        "SELECT DISTINCT link.pluginConfigurationReference.pluginDefinitionKey " +
+            "FROM PluginProcessLink link " +
+            "WHERE link.pluginConfigurationReference.type = com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK " +
+            "AND link.processDefinitionId IN :processDefinitionIds " +
+            "AND link.pluginConfigurationReference.pluginDefinitionKey IS NOT NULL"
+    )
+    fun findPluginDefinitionKeysByProcessDefinitionIds(
+        @Param("processDefinitionIds") processDefinitionIds: Collection<String>
+    ): List<String>
 }

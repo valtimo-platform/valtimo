@@ -1,4 +1,4 @@
-timezone: etc/UTC
+timezone: Etc/UTC
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
@@ -83,3 +83,5 @@ management:
             show-details: when_authorized
             roles:
                 - ROLE_ACTUATOR
+            probes:
+                enabled: true

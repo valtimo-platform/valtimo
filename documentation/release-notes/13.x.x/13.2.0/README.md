@@ -16,8 +16,8 @@
 ## Bugfixes
 
 * The migration issues from valtimo 12 to 13 where migrating forms in MySQL could cause the application to break have been fixed.
-* Prevent errors on the case details page by no longer break when related process instances have been deleted (for instance by the history TTL of Camunda).
-* An error where the class whitelist for use in scripting (valtimo.camunda.scripting.allowedClasses) did not get properly loaded into the scrip engine has been fixed.
+* Prevent errors on the case details page by no longer break when related process instances have been deleted (for instance by the history TTL of Operaton).
+* An error where the class whitelist for use in scripting (valtimo.operaton.scripting.allowedClasses) did not get properly loaded into the scrip engine has been fixed.
 * Some Dutch translations in the confirmation messages have been corrected.
 * An issue with removal of Case Geometry property has been fixed.
 * Empty icons show on widget config cards have been improved.

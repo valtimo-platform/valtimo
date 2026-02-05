@@ -16,7 +16,11 @@
 
 package com.ritense.valtimo.operaton.domain
 
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -95,7 +99,13 @@ class OperatonProcessDefinition(
         return result
     }
 
-    fun getCaseDefinitionId(): CaseDefinitionId? {
-        return CaseDefinitionId.fromProcessVersionTag(versionTag)
+    fun getBlueprintId(): BlueprintId? {
+        return if (versionTag?.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX) == true) {
+            return BuildingBlockDefinitionId.fromProcessVersionTag(versionTag)
+        } else if (versionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX) == true) {
+            CaseDefinitionId.fromProcessVersionTag(versionTag)
+        } else {
+            return null
+        }
     }
 }
