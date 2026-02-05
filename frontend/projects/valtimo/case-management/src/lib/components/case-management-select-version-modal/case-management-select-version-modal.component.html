@@ -43,12 +43,10 @@
     </valtimo-carbon-list>
   </section>
 
-  <cds-modal-footer [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_FOOTER">
+  <cds-modal-footer>
     <button
       cdsButton="ghost"
-      (click)="onCloseModal()"
-      [attr.data-test-id]="TEST_IDS.ALL_VERSIONS_MODAL_CLOSE_BUTTON"
-    >
+      (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
   </cds-modal-footer>

@@ -27,7 +27,7 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.FORM_FLOW_MODAL_CONTENT">
+  <section cdsModalContent [cdsLayer]="1">
     <form [formGroup]="form">
       <cds-label [invalid]="key.dirty && key.invalid">
         {{ 'formFlow.key' | translate }}

@@ -207,12 +207,11 @@
       </div>
     </form>
 
-    <cds-modal-footer [attr.data-test-id]="TEST_IDS.LIST_COLUMN_MODAL_FOOTER">
+    <cds-modal-footer>
       <button
         (click)="closeModal()"
         cdsButton="ghost"
         [disabled]="obs.disabled"
-        [attr.data-test-id]="TEST_IDS.LIST_COLUMN_CLOSE_BUTTON"
       >
         {{ 'interface.cancel' | translate }}
       </button>

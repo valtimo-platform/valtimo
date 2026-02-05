@@ -14,17 +14,10 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  *ngIf="{
+<cds-modal *ngIf="{
     versionError: versionError$ | async,
     createDraftDescription: createDraftDescription$ | async,
-  } as obs"
-  valtimoCdsModal
-  showFooter="true"
-  class="valtimo-definition-create"
-  [open]="open"
-  (close)="onCloseModal()"
->
+  } as obs" valtimoCdsModal showFooter="true" class="valtimo-definition-create" [open]="open" (close)="onCloseModal()">
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
       {{ 'caseManagement.createDefinition.modalTitle' | translate }}
@@ -32,10 +25,7 @@
   </cds-modal-header>
 
   <div cdsModalContent [cdsLayer]="1">
-    <p
-      class="valtimo-definition-create__description"
-      [attr.data-test-id]="TEST_IDS.VALTIMO_DEFINITION_CREATE_DESCRIPTION"
-    >
+    <p class="valtimo-definition-create__description">
       {{ obs.createDraftDescription }}
     </p>
 
@@ -43,77 +33,48 @@
       <cds-label>
         {{ 'caseManagement.createDefinition.name' | translate }}
 
-        <cds-tooltip
-          [caret]="true"
-          [description]="'caseManagement.createDefinition.nameTooltip' | translate"
-        >
+        <cds-tooltip [caret]="true" [description]="'caseManagement.createDefinition.nameTooltip' | translate">
           <svg cdsIcon="information" size="16"></svg>
         </cds-tooltip>
 
-        <input
-          formControlName="name"
-          cdsText
-          placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
-          [cdsLayer]="1"
-          [attr.modal-primary-focus]="true"
-        />
+        <input formControlName="name" cdsText
+          placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}" [cdsLayer]="1"
+          [attr.modal-primary-focus]="true" />
       </cds-label>
 
       <cds-label>
         {{ 'caseManagement.createDefinition.key' | translate }}
 
-        <cds-tooltip
-          [caret]="true"
-          [description]="'caseManagement.createDefinition.keyTooltip' | translate"
-        >
+        <cds-tooltip [caret]="true" [description]="'caseManagement.createDefinition.keyTooltip' | translate">
           <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
         </cds-tooltip>
 
-        <input
-          formControlName="caseDefinitionKey"
-          cdsText
-          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
-          [cdsLayer]="1"
-        />
+        <input formControlName="caseDefinitionKey" cdsText
+          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}" [cdsLayer]="1" />
       </cds-label>
 
       <cds-label [invalid]="!!obs.versionError" [invalidText]="obs.versionError | translate">
         {{ 'caseManagement.createDefinition.version' | translate }}
 
-        <cds-tooltip
-          [caret]="true"
-          [description]="'caseManagement.createDefinition.versionTooltip' | translate"
-        >
+        <cds-tooltip [caret]="true" [description]="'caseManagement.createDefinition.versionTooltip' | translate">
           <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
         </cds-tooltip>
 
-        <input
-          formControlName="caseDefinitionVersion"
-          cdsText
-          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
-          [cdsLayer]="1"
-          [invalid]="!!obs.versionError"
-        />
+        <input formControlName="caseDefinitionVersion" cdsText
+          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}" [cdsLayer]="1"
+          [invalid]="!!obs.versionError" />
       </cds-label>
 
       <cds-textarea-label>
         {{ 'caseManagement.createDefinition.description' | translate }}
 
-        <cds-tooltip
-          [caret]="true"
-          [description]="'caseManagement.createDefinition.descriptionTooltip' | translate"
-        >
+        <cds-tooltip [caret]="true" [description]="'caseManagement.createDefinition.descriptionTooltip' | translate">
           <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
         </cds-tooltip>
 
-        <textarea
-          cdsTextArea
-          formControlName="description"
-          placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}"
-          [cdsLayer]="1"
-          [rows]="3"
-          [cols]="150"
-        ></textarea>
+        <textarea cdsTextArea formControlName="description"
+          placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}" [cdsLayer]="1"
+          [rows]="3" [cols]="150"></textarea>
       </cds-textarea-label>
     </form>
   </div>
