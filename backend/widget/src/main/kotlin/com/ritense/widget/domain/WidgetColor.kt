@@ -26,5 +26,6 @@ enum class WidgetColor {
     PURPLE,
     PERIWINKLE,
     BLUE,
+    HIGHCONTRAST,
     WHITE
 }
