@@ -1,0 +1,57 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20250601-create-building-block-process-link.xml">
+
+
+    <changeSet id="1" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="process_link"/>
+        </preConditions>
+
+        <createTable tableName="building_block_process_link">
+            <column name="process_link_id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="building_block_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="building_block_definition_version_tag" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plugin_configuration_mappings" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="building_block_process_link"
+            baseColumnNames="process_link_id"
+            referencedTableName="process_link"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            constraintName="fk_bb_process_link_base"/>
+
+        <createIndex indexName="idx_bb_process_link_bb" tableName="building_block_process_link">
+            <column name="building_block_definition_key"/>
+            <column name="building_block_definition_version_tag"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
