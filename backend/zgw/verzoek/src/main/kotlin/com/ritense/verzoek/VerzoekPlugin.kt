@@ -30,6 +30,7 @@ import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.CopyStrategy
@@ -39,13 +40,14 @@ import jakarta.validation.Valid
 import jakarta.validation.ValidationException
 import org.semver4j.Semver
 import kotlin.jvm.optionals.getOrNull
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
 @Plugin(
     key = "verzoek",
     title = "Verzoek",
-    description = "Handles verzoeken"
+    description = "Handles verzoeken",
+    dependencies = [PluginDependency.ZAAK_TYPE_LINK]
 )
 class VerzoekPlugin(
     private val caseDefinitionService: CaseDefinitionService,
@@ -89,7 +91,7 @@ class VerzoekPlugin(
                                 caseDefinitionVersionTag = property.caseDefinitionVersionTag,
                             )
                                 ?: error("No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'.")
-                            documentDefinitionService.findByCaseDefinitionId(caseDefinition.id).getOrNull()
+                            documentDefinitionService.findByBlueprintId(caseDefinition.id).getOrNull()
                                 ?: error("No Document Definition found for Case Definition: ${caseDefinition.id}")
                         }
                         val documentPath = it.target.substringAfter(delimiter = ":")

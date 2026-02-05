@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink.mapper
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -29,9 +30,11 @@ class PluginProcessLinkDeployDto(
     override val processDefinitionId: String,
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
-    val pluginConfigurationId: UUID,
+    val pluginConfigurationId: UUID? = null,
     val pluginActionDefinitionKey: String,
     val actionProperties: ObjectNode? = JsonNodeFactory.instance.objectNode(),
+    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
+    val pluginDefinitionKey: String? = null,
 ) : ProcessLinkDeployDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

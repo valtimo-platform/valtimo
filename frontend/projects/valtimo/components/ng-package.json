@@ -36,6 +36,8 @@
     "@types/topojson",
     "@tadashi/currency",
     "semver",
-    "muuri"
+    "muuri",
+    "ajv",
+    "vanilla-jsoneditor"
   ]
 }

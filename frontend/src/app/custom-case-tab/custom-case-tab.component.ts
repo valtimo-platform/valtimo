@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {Component} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-custom-case-tab',
@@ -22,7 +22,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./custom-case-tab.component.scss'],
   standalone: false,
 })
-export class CustomCaseTabComponent implements OnInit {
+export class CustomCaseTabComponent {
   private documentDefinitionName: string;
   private documentId: string;
 
@@ -31,6 +31,4 @@ export class CustomCaseTabComponent implements OnInit {
     this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
     this.documentId = snapshot.get('documentId') || '';
   }
-
-  ngOnInit() {}
 }

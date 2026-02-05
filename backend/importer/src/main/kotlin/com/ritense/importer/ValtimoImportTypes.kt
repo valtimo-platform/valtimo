@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,17 @@ class ValtimoImportTypes {
         const val GLOBAL_DECISION_DEFINITION = "globaldecisiondefinition"
         const val PROCESS_DOCUMENT_LINK = "processdocumentlink"
         const val PROCESS_LINK = "processlink"
+        const val GLOBAL_PROCESS_LINK = "globalprocesslink"
         const val SEARCH = "search"
         const val SEARCH_FIELD = "searchField"
         const val CASE_HEADER_WIDGET = "caseheaderwidget"
+        const val BUILDING_BLOCK_DEFINITION = "buildingblockdefinition"
+        const val BUILDING_BLOCK_PROCESS_DEFINITION = "buildingblockprocessdefinition"
+        const val BUILDING_BLOCK_MAIN_PROCESS_DEFINITION = "buildingblockmainprocessdefinition"
+        const val BUILDING_BLOCK_DECISION_DEFINITION = "buildingblockdecisiondefinition"
+        const val BUILDING_BLOCK_DOCUMENT_DEFINITION = "buildingblockdocumentdefinition"
+        const val BUILDING_BLOCK_ARTWORK = "buildingblockartwork"
+        const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"

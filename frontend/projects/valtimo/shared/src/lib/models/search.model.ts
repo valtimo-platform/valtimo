@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {SearchFieldMatchType} from '../generated';
+
 type SearchFieldDataType = 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'bsn';
 
 type SearchFieldFieldType =
@@ -23,7 +25,6 @@ type SearchFieldFieldType =
   | 'single-select-dropdown'
   | 'multi-select-dropdown';
 
-type SearchFieldMatchType = 'exact' | 'like';
 
 type SearchFieldBoolean = 'booleanPositive' | 'booleanNegative';
 

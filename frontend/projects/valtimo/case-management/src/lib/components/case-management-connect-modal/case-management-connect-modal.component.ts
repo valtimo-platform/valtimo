@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,10 @@ export class CaseManagementConnectModalComponent implements OnInit {
     if (!this.documentDefinition) {
       return;
     }
-    const {key, versionTag} = this.documentDefinition.id.caseDefinitionId;
+    const {blueprintKey, blueprintVersionTag} = this.documentDefinition.id.blueprintId;
     this.processDocumentDefinitionExists = {};
     this.documentService
-      .findProcessDocumentDefinitionsByVersion(key, versionTag)
+      .findProcessDocumentDefinitionsByVersion(blueprintKey, blueprintVersionTag)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         processDocumentDefinitions.forEach(
           (processDocumentDefinition: ProcessDocumentDefinition) => {
@@ -99,8 +99,8 @@ export class CaseManagementConnectModalComponent implements OnInit {
 
     const request: ProcessDocumentDefinitionRequest = {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
-      caseDefinitionKey: this.documentDefinition.id.caseDefinitionId.key,
-      caseDefinitionVersionTag: `${this.documentDefinition.id.caseDefinitionId.key}`,
+      caseDefinitionKey: this.documentDefinition.id.blueprintId.blueprintKey,
+      caseDefinitionVersionTag: `${this.documentDefinition.id.blueprintId.blueprintVersionTag}`,
       processDefinitionKey: this.newDocumentProcessDefinition.key,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
     };

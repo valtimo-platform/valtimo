@@ -566,6 +566,10 @@
           "createdDate": "Gemaakt op",
           "description": "Beschrijving"
         }
+      },
+      "notFinalizableWarning": {
+        "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
+        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn."
       }
     },
     "processLinkNotification": {
@@ -806,7 +810,7 @@
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
-      "description": "Bij het bijwerken van {name} verandert de {name} voor alle versies van dit dossiertype. Niet alleen voor de geselecteerde versie!"
+      "description": "Bij het bijwerken van {{name}} verandert de {{name}} voor alle versies van dit dossiertype. Niet alleen voor de geselecteerde versie!"
     }
   },
   "widgetTabManagement": {
@@ -1302,7 +1306,12 @@
       "description": "Alleen BPMN-bestanden worden ondersteund.",
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
-      "failure": "Deployment mislukt"
+      "failure": "Deployment mislukt",
+      "duplicateKey": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok",
+      "replaceTitle": "Bestaand proces vervangen?",
+      "replaceContent": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok. Wilt u dit vervangen?",
+      "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel in dit bouwblok: {{duplicates}}. Wilt u dit vervangen?",
+      "replaceConfirm": "Vervangen"
     },
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten"
@@ -1487,7 +1496,15 @@
     "noTranslationFound": "Geen vertaling gevonden",
     "url": "URL"
   },
-  "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
+  "taskDetail": {
+    "taskCreated": "Aangemaakt op",
+    "taskCompleted": "is succesvol afgerond",
+    "assignedNotificationTitle": "Taak toegewezen",
+    "assignedNotificationContent": "De taak is toegewezen aan",
+    "unassignedNotificationTitle": "Taak niet meer toegewezen",
+    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
+    "unknownAssignee": "onbekend"
+  },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
     "header": "Gebruiker toewijzen aan deze taak",
@@ -1852,6 +1869,7 @@
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
     "choosePluginConfigurationDescription": "Kies hier de plugin-configuratie die je aan de processtap wilt koppelen.",
+    "choosePluginDefinitionDescription": "Kies de plugin-definitie die je aan de processtap wilt koppelen.",
     "choosePluginActionDescription": "Kies de actie die je met de plugin wilt uitvoeren.",
     "chooseForm": "Selecteer formulier",
     "cancel": "Annuleren",
@@ -1871,14 +1889,50 @@
     "selectVersion": "Selecteer een versie",
     "activity": "Procesactiviteit",
     "selectActivity": "Selecteer een procesactiviteit",
-    "noProcess": "Geen uploadproces"
+    "noProcess": "Geen uploadproces",
+    "buildingBlock": {
+      "name": "Naam",
+      "description": "Omschrijving",
+      "selectLabel": "Bouwblok",
+      "emptyState": "Geen bouwblokken beschikbaar. Maak eerst een bouwblok aan.",
+      "noRequirements": "Dit bouwblok vereist geen pluginconfiguraties.",
+      "nestedBuildingBlockInfo": "Pluginconfiguraties worden overgenomen van het bovenliggende bouwblok.",
+      "configurationLabel": "Pluginconfiguratie",
+      "pluginLabel": "Plugin",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "versionLabel": "Kies bouwblokversie",
+      "versionPlaceholder": "Selecteer een versie",
+      "inputTitle": "Input",
+      "outputTitle": "Sync",
+      "addInput": "Input toevoegen",
+      "addOutput": "Sync toevoegen",
+      "case": "Dossier",
+      "process": "Proces",
+      "buildingBlock": "Bouwblok",
+      "targetPlaceholder": "Selecteer doel",
+      "outputSource": "Bouwblok-output",
+      "syncTiming": "Sync-moment",
+      "selectedBuildingBlockFieldPlaceholder": "Selecteer een veld...",
+      "sync": {
+        "title": "Synchroniseren",
+        "continuous": "Continu",
+        "end": "Einde"
+      },
+      "pluginDependenciesWarning": {
+        "title": "Afhankelijkheden",
+        "zaakInstanceAndTypeLink": "Dit bouwblok heeft mogelijk zowel een zaakinstantiekoppeling als een zaaktypekoppeling nodig, die zijn geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
+        "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
+        "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
+      }
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formulier",
     "form-flow": "FormFlow",
     "url": "URL",
-    "ui-component": "UI Component"
+    "ui-component": "UI Component",
+    "building-block": "Bouwblok"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -1902,18 +1956,23 @@
     },
     "selectFormFlow": "Selecteer je FormFlow",
     "choosePluginConfiguration": "Kies plugin-configuratie",
+    "choosePluginDefinition": "Kies plugin-definitie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
     "addSubtitle": "Ondertitel toevoegen",
-    "uiComponent": "Selecteer UI component"
+    "uiComponent": "Selecteer UI component",
+    "selectBuildingBlock": "Selecteer bouwblok",
+    "configureBuildingBlockPlugins": "Configureer plugin mappings",
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
-    "ui-component": "Er zijn geen maatwerkcomponenten geregistreerd maak er een aan om deze optie te kunnen gebruiken."
+    "ui-component": "Er zijn geen maatwerkcomponenten geregistreerd. Maak er een aan om deze optie te kunnen gebruiken.",
+    "buildingBlockUnsupported": "Dit type proceskoppeling wordt nog niet ondersteund voor bouwblokken."
   },
   "processLinkUrlInvalid": "Ongeldige URL {{ URL }}",
   "accessControl": {
@@ -2151,6 +2210,117 @@
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   },
+  "buildingBlockManagement": {
+    "title": "Bouwblokken",
+    "listColumns": {
+      "name": "Naam",
+      "key": "Sleutel",
+      "versionTag": "Versie"
+    },
+    "detail": {
+      "title": "Bouwblokdetails"
+    },
+    "actions": {
+      "more": "Meer",
+      "makeFinal": "Maak versie definitief",
+      "createDraft": "Nieuwe conceptversie",
+      "finalize": {
+        "success": "Conceptversie is definitief gemaakt",
+        "error": "Definitief maken van conceptversie mislukt"
+      },
+      "draft": {
+        "title": "Conceptversie aanmaken",
+        "version": "Nieuwe versietag",
+        "placeholder": "Nieuwe versietag",
+        "confirm": "Conceptversie aanmaken",
+        "success": "Conceptversie aangemaakt",
+        "error": "Conceptversie aanmaken mislukt"
+      }
+    },
+    "noResults": {
+      "title": "Er zijn geen bouwblokken",
+      "description": "Voeg een bouwblok toe om te beginnen"
+    },
+    "createDefinition": {
+      "modalTitle": "Bouwblok aanmaken",
+      "name": "Naam",
+      "nameTooltip": "De naam van het bouwblok.",
+      "namePlaceholder": "Naam invoeren",
+      "keyTitle": "Sleutel",
+      "keyPlaceHolder": "De sleutel wordt hier automatisch gegenereerd",
+      "version": "Versie",
+      "versionTooltip": "De versietag van het bouwblok.",
+      "versionPlaceholder": "Versie invoeren",
+      "description": "Beschrijving",
+      "descriptionTooltip": "Een korte beschrijving van de functie die het bouwblok biedt.",
+      "descriptionPlaceholder": "Beschrijving invoeren"
+    },
+    "tabs": {
+      "general": "Algemeen",
+      "document": "Document",
+      "processes": "Processen"
+    },
+    "metadata": {
+      "title": "Algemene informatie"
+    },
+    "processDefinition": {
+      "title": "Bouwsteen-procesdefinitie",
+      "name": "Naam",
+      "key": "Sleutel",
+      "mainText": "Hoofdproces",
+      "markAsMain": "Maak hoofdproces"
+    },
+    "importDefinition": {
+      "title": "Bouwblokdefinitie importeren",
+      "overwriteWarning": "Als je bouwblokdefinitie configuraties, modellen en/of definities bevat met dezelfde naam of identifier als die al in het systeem aanwezig zijn, worden deze overschreven.",
+      "startUpload": "Upload starten",
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties kunnen worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
+      "info": {
+        "title": "Let op",
+        "message": "Controleer vóór het importeren dat de plug-inconfiguraties of procesdefinities waarnaar dit bouwblok verwijst al aanwezig zijn in het systeem."
+      },
+      "upload": {
+        "title": "Bestand uploaden",
+        "description": "Maximale bestandsgrootte is 500 KB. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "buttonText": "Bestand selecteren"
+      },
+      "progressBar": {
+        "active": "Dit kan even duren",
+        "error": "Bouwblokdefinitie kon niet worden geïmporteerd. Er is niets geïmporteerd door een fout aan onze kant. Probeer het later opnieuw. Als het probleem aanhoudt, neem contact op met de supportafdeling.",
+        "finished": "Bouwblokdefinitie succesvol geïmporteerd",
+        "label": "Bouwblokdefinitie importeren"
+      },
+      "invalidJsonError": {
+        "text": "Zorg ervoor dat het bestand een geldige JSON-waarde bevat.",
+        "title": "Het bestand bevat een fout."
+      },
+      "steps": {
+        "plugins": {
+          "message": "Dit bouwblok kan plug-ins gebruiken. Zorg dat je deze correct configureert.",
+          "title": "Plug-inconfiguratie"
+        }
+      }
+    },
+    "artwork": {
+      "title": "Illustratie",
+      "fileUploaderTitle": "Selecteer illustratie voor dit bouwblok",
+      "fileUploaderDescription": "Maximale bestandsgrootte is 10 MB. Alleen .png-afbeeldingen worden ondersteund. Zorg ervoor dat de achtergrond van de afbeelding transparant is.",
+      "fileUploaderButton": "Bestand kiezen",
+      "deleteConfirmationModalText": "Weet u zeker dat u deze illustratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "plugins": {
+      "title": "Gebruikte plugins",
+      "noPluginsUsed": "Dit bouwblok gebruikt geen plugins"
+    },
+    "overflowMenu": {
+      "export": "Exporteer \"{{value}}\"",
+      "exportSuccessTitle": "Download start binnenkort",
+      "preparingDownload": "Download aan het voorbereiden"
+    }
+  },
   "mdiIcons": {
     "mdi-home": "Home",
     "mdi-home-city": "Woonplaats",
@@ -2349,5 +2519,10 @@
     "mdi-clipboard-text-clock": "Klembord Tekst Klok",
     "mdi-clipboard-text-play": "Klembord Tekst Afspelen",
     "mdi-clipboard-flow": "Klembord Stroom"
+  },
+  "schemaEditor": {
+    "rootObject": "Hoofdniveau",
+    "manageRequiredFields": "Vereiste velden beheren",
+    "requiredFields": "Vereiste velden"
   }
 }

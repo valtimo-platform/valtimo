@@ -16,6 +16,7 @@
 
 package com.ritense
 
+import com.ritense.audit.service.AuditEventProcessor
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
@@ -88,6 +89,9 @@ class BaseIntegrationTest: BaseTest() {
 
     @MockitoBean
     lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
+
+    @MockitoBean
+    lateinit var auditEventProcessor: AuditEventProcessor
 
     @MockitoSpyBean
     lateinit var resourcePatternResolver: ResourcePatternResolver

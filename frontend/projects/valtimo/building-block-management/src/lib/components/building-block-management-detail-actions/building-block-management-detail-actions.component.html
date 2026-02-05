@@ -1,0 +1,126 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="building-block-actions"
+  *ngIf="{
+    isFinal: isFinal$ | async,
+  } as obs"
+>
+  <div class="building-block-metadata">
+    <valtimo-building-block-management-version-selector></valtimo-building-block-management-version-selector>
+  </div>
+
+  <div class="building-block-buttons">
+    <ng-template #trigger>
+      <button cdsButton="tertiary">
+        {{ 'buildingBlockManagement.actions.more' | translate }}
+        <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
+      </button>
+    </ng-template>
+
+    <cds-overflow-menu
+      [customTrigger]="trigger"
+      class="overflow-button"
+      valtimoCdsOverflowButton
+      [width]="250"
+      [offset]="{y: 48, x: 37}"
+    >
+      <cds-overflow-menu-option
+        [id]="'exportBuildingBlock'"
+        (selected)="export()"
+        [disabled]="(actionInProgress$ | async) || (exporting$ | async)"
+      >
+        {{
+          'buildingBlockManagement.overflowMenu.export'
+            | translate: {value: buildingBlockName$ | async}
+        }}
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        *ngIf="!obs.isFinal"
+        [disabled]="actionInProgress$ | async"
+        (selected)="finalizeDraft()"
+      >
+        {{ 'buildingBlockManagement.actions.makeFinal' | translate }}
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        *ngIf="obs.isFinal"
+        [disabled]="actionInProgress$ | async"
+        (selected)="openDraftModal()"
+      >
+        {{ 'buildingBlockManagement.actions.createDraft' | translate }}
+      </cds-overflow-menu-option>
+    </cds-overflow-menu>
+  </div>
+</div>
+
+<ng-template #exportingMessage>
+  <div class="exporting-message">
+    <span class="cds--inline-notification__title">{{
+      'buildingBlockManagement.overflowMenu.preparingDownload' | translate
+    }}</span>
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>
+
+<cds-modal
+  *ngIf="{open: showDraftModal$ | async} as obs"
+  [open]="obs.open"
+  showFooter="true"
+  valtimoCdsModal
+  (close)="closeDraftModal()"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeDraftModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'buildingBlockManagement.actions.draft.title' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="draftForm" cdsModalContent class="bb-management-actions__modal" [cdsLayer]="1">
+    <div class="cds--text-input__field-wrapper">
+      <cds-label
+        [disabled]="draftForm.disabled"
+        [invalid]="versionTag.touched && versionTag.invalid"
+      >
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.actions.draft.version' | translate }}
+        </span>
+
+        <input
+          formControlName="versionTag"
+          cdsText
+          placeholder="{{ 'buildingBlockManagement.actions.draft.placeholder' | translate }}"
+        />
+      </cds-label>
+    </div>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeDraftModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="draftForm.invalid || (actionInProgress$ | async)"
+      (click)="createDraft()"
+    >
+      {{ 'buildingBlockManagement.actions.draft.confirm' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

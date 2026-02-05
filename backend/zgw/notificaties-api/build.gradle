@@ -43,6 +43,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinCoroutinesVersion"
 
     //test
+    testImplementation(project(":backend:building-block"))
     testImplementation project(':backend:core')
     testImplementation project(':backend:test-utils-common')
     testImplementation "org.springframework.boot:spring-boot-starter-test"

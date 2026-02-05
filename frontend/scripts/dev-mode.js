@@ -41,7 +41,11 @@ function createRebuildLock() {
 
 function removeRebuildLock() {
   if (fs.existsSync(rebuildLockFilePath)) {
-    fs.rmSync(rebuildLockFilePath);
+    try {
+      fs.rmSync(rebuildLockFilePath);
+    } catch (err) {
+      console.error(`Failed to remove rebuild lock: ${err.message}`);
+    }
   }
 }
 
@@ -64,6 +68,11 @@ async function runNext() {
           stdio: 'inherit',
           shell: true,
         });
+
+        startProc.on('error', err => {
+          console.error('Failed to start app:', err);
+        });
+
         activeProcesses.push(startProc);
         hasStartedApp = true;
       } else {
@@ -84,10 +93,12 @@ async function runNext() {
     createRebuildLock();
 
     const buildProc = spawn(initialBuildCmd, {shell: true});
+    let output = '';
 
     buildProc.stdout.on('data', data => {
       const str = data.toString();
       process.stdout.write(str);
+      output += str;
 
       if (str.includes('Built Angular Package')) {
         console.log(`Initial library build done for: @valtimo/${libName}\n`);
@@ -100,6 +111,10 @@ async function runNext() {
           shell: true,
         });
 
+        watcherProc.on('error', err => {
+          console.error(`Watcher error for @valtimo/${libName}:`, err);
+        });
+
         activeProcesses.push(watcherProc);
         current++;
         runNext();
@@ -109,11 +124,29 @@ async function runNext() {
     buildProc.stderr.on('data', data => {
       process.stderr.write(data.toString());
     });
+
+    buildProc.on('error', err => {
+      console.error(`Failed to start build for @valtimo/${libName}:`, err);
+      removeRebuildLock();
+      process.exit(1);
+    });
+
+    buildProc.on('exit', code => {
+      if (code !== 0 && code !== null && !output.includes('Built Angular Package')) {
+        console.error(`Build failed for @valtimo/${libName} with code ${code}`);
+        removeRebuildLock();
+        process.exit(1);
+      }
+    });
   } else {
     console.log(`\nSkipping initial library build for: @valtimo/${libName}, starting watcher...\n`);
     const watcherProc = spawn(chokidarCmd, {
       stdio: 'inherit',
       shell: true,
+    });
+
+    watcherProc.on('error', err => {
+      console.error(`Watcher error for @valtimo/${libName}:`, err);
     });
 
     activeProcesses.push(watcherProc);
@@ -122,11 +155,18 @@ async function runNext() {
   }
 }
 
+let isCleaningUp = false;
+
 function cleanup() {
+  if (isCleaningUp) return;
+  isCleaningUp = true;
+
   console.log('\nCleaning up child processes and temp files...\n');
   activeProcesses.forEach(p => {
     try {
-      p.kill();
+      if (p && !p.killed) {
+        p.kill();
+      }
     } catch (err) {
       console.error('Failed to kill process:', err);
     }
