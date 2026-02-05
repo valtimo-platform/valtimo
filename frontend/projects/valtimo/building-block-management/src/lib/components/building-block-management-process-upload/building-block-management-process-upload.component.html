@@ -46,3 +46,16 @@
     </button>
   </cds-modal-footer>
 </cds-modal>
+
+<valtimo-render-in-body>
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="processManagement.upload.replaceConfirm"
+    confirmButtonType="danger"
+    cancelButtonTextTranslationKey="interface.cancel"
+    [content]="replaceModalContent"
+    [showModalSubject$]="showReplaceConfirmationModal$"
+    titleTranslationKey="processManagement.upload.replaceTitle"
+    (confirmEvent)="confirmReplace()"
+    (cancelEvent)="clearReplaceModal()"
+  ></valtimo-confirmation-modal>
+</valtimo-render-in-body>

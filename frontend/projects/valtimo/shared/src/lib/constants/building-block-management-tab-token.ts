@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.client
+import {InjectionToken} from '@angular/core';
+import {BuildingBlockManagementTabConfig} from '../models';
 
-import com.fasterxml.jackson.annotation.JsonInclude
+const BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN = new InjectionToken<BuildingBlockManagementTabConfig[]>(
+  'Specify components to display as tabs on the building block management detail page.'
+);
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-class LinkDocumentRequest(
-    val informatieobject: String,
-    val zaak: String,
-    val titel: String?,
-    val beschrijving: String?,
-    val vernietigingsdatum: String?,
-    val status: String?
-)
+export {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN};

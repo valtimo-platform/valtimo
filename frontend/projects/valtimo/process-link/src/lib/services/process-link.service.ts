@@ -15,7 +15,7 @@
  */
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 
 import {
@@ -123,7 +123,8 @@ export class ProcessLinkService {
     processDefinitionId: string | null,
     processXml: string | null,
     buildingBlockKey: string,
-    buildingBlockVersionTag: string
+    buildingBlockVersionTag: string,
+    replace: boolean = false
   ) {
     const formData = new FormData();
     const processLinksBlob = new Blob(
@@ -146,7 +147,11 @@ export class ProcessLinkService {
 
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/building-block/${buildingBlockKey}/version/${buildingBlockVersionTag}/process-definition/${processDefinitionId}`,
-      formData
+      formData,
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '409'),
+        params: replace ? new HttpParams().set('replace', 'true') : undefined,
+      }
     );
   }
 

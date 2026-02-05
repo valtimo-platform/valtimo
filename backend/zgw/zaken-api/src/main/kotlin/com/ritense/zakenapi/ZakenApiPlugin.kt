@@ -34,6 +34,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.LinkDocumentRequest
@@ -120,7 +121,8 @@ class ZakenApiPlugin(
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
-    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
+    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository,
+    private val caseDocumentResolver: CaseDocumentResolver
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -155,7 +157,9 @@ class ZakenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty documentUrl: String,
         @PluginActionProperty titel: String?,
-        @PluginActionProperty beschrijving: String?
+        @PluginActionProperty beschrijving: String?,
+        @PluginActionProperty vernietigingsdatum: String? = null,
+        @PluginActionProperty statusUrl: String? = null
     ) {
         withLoggingContext(
             DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT to documentUrl
@@ -171,10 +175,12 @@ class ZakenApiPlugin(
             }
 
             val request = LinkDocumentRequest(
-                documentUrl,
-                zaakUrl.toString(),
-                titel,
-                beschrijving
+                informatieobject = documentUrl,
+                zaak = zaakUrl.toString(),
+                titel = titel,
+                beschrijving = beschrijving,
+                vernietigingsdatum = vernietigingsdatum,
+                status = statusUrl
             )
             client.linkDocument(authenticationPluginConfiguration, url, request)
             logger.info { "Document with URL '$documentUrl' linked successfully to zaak with URL '$zaakUrl'" }
@@ -204,10 +210,12 @@ class ZakenApiPlugin(
         }
 
         val request = LinkDocumentRequest(
-            documentUrl,
-            zaakUrl.toString(),
-            metadata["title"] as String?,
-            metadata["description"] as String?,
+            informatieobject = documentUrl,
+            zaak = zaakUrl.toString(),
+            titel = metadata["title"] as String?,
+            beschrijving = metadata["description"] as String?,
+            vernietigingsdatum = null,
+            status = null
         )
         client.linkDocument(authenticationPluginConfiguration, url, request)
         logger.info { "Linked uploaded document with URL '$documentUrl' to zaak with URL '$zaakUrl'" }
@@ -268,7 +276,7 @@ class ZakenApiPlugin(
             val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
 
             createZaak(
-                documentId = documentId,
+                documentId = caseDocumentResolver.resolveCaseDocumentId(documentId),
                 rsin = rsin,
                 zaaktypeUrl = zaaktypeUrl,
                 description = description,
@@ -303,6 +311,8 @@ class ZakenApiPlugin(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
         ) {
             logger.debug { "Starting creation of zaak of zaaktype with URL '$zaaktypeUrl' for document with id '$documentId'" }
+            val caseDocumentId = zaakUrlProvider
+
             val existingZaakUrl = try {
                 zaakUrlProvider.getZaakUrl(documentId)
             } catch (e: ZaakInstanceLinkNotFoundException) {

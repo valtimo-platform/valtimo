@@ -121,8 +121,13 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakInstanceUrl" }
 
-        zakenApiPlugin.getZaakInformatieObjecten(zaakInstanceUrl)
-            .map { documentenApiService.deleteInformatieObject(it.informatieobject) }
+        zakenApiPlugin.getZaakInformatieObjecten(zaakInstanceUrl).forEach { zaakInformatieobject ->
+            if (zakenApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(zaakInformatieobject.informatieobject).size == 1) {
+                documentenApiService.deleteInformatieObject(zaakInformatieobject.informatieobject)
+            } else {
+                zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url)
+            }
+        }
     }
 
     private fun check(shouldCheck: Boolean, columnKey: DocumentenApiColumnKey, version: DocumentenApiVersion) {

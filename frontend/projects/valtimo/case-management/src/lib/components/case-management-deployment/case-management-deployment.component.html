@@ -54,7 +54,7 @@
           <button
             cdsButton="primary"
             (click)="openFinalizeDraftConfirmationModal()"
-            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.code !== 'OK'"
+            [disabled]="!obs?.caseDefinitionFinalizationCheckResult?.finalizable"
           >
             {{ 'caseManagement.deployment.buttons.finalize' | translate }}
             <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
