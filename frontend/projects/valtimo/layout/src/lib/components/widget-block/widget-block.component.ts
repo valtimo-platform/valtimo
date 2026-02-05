@@ -114,21 +114,19 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     filter(documentId => !!documentId)
   );
 
-  public readonly theme$ = combineLatest([this.cdsThemeService.currentTheme$, this.widget$]).pipe(
-    map(([currentTheme, widgetConfiguration]) => {
-      return currentTheme === CurrentCarbonTheme.G10
-        ? widgetConfiguration.highContrast
-          ? CARBON_THEME.G100
-          : CARBON_THEME.G10
-        : widgetConfiguration.highContrast
-          ? CARBON_THEME.WHITE
-          : CARBON_THEME.G90;
-    })
+  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
+    map(currentTheme =>
+      currentTheme === CurrentCarbonTheme.G10
+        ? CARBON_THEME.G10
+        : CARBON_THEME.G90
+    )
   );
 
   public readonly widgetColors$ = combineLatest([this.widget$, this.theme$]).pipe(
-    map(([widgetConfiguration, theme]) => this.getWidgetColorVariant(widgetConfiguration, theme))
-  );
+    map(([widgetConfiguration, theme]) =>
+      this.getWidgetColorVariant(widgetConfiguration, theme)
+    )
+  )
 
   private readonly _subscriptions = new Subscription();
 

@@ -16,11 +16,13 @@
 
 .valtimo-widget-collection {
   padding: 24px;
+  color: var(--widget-text-color, var(--cds-text-primary));
 
   .cds--label {
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+    color: inherit;
 
     cds-skeleton-text {
       margin: 16px 0 0 0;
@@ -40,10 +42,7 @@
     gap: 8px;
 
     valtimo-mdi-icon-viewer .mdi-icon-preview {
-      color: var(
-        --widget-accent-color,
-        var(--widget-text-color, var(--cds-text-primary))
-      );
+      color:var(--widget-text-color, var(--cds-text-primary));
     }
   }
 

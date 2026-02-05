@@ -16,6 +16,8 @@
 
 .valtimo-widget-table {
   padding: 24px;
+  background-color: var(--widget-background-color, var(--cds-layer));
+  color: var(--widget-text-color, var(--cds-text-primary));
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -32,10 +34,7 @@
     gap: 8px;
 
     valtimo-mdi-icon-viewer .mdi-icon-preview {
-      color: var(
-        --widget-accent-color,
-        var(--widget-text-color, var(--cds-text-primary))
-      );
+      color: var(--widget-text-color, var(--cds-text-primary));
     }
   }
 
@@ -43,6 +42,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
+    color: inherit;
 
     valtimo-carbon-list {
       width: 100%;
@@ -112,5 +112,9 @@
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;
+  }
+
+  .valtimo-no-results__content {
+    color: var(--widget-text-color, var(--cds-text-primary)) !important;
   }
 }
