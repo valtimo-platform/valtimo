@@ -30,7 +30,6 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
-    [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_CONFIGURATION_TITLE_INPUT"
   >
   </v-input>
   <v-input
@@ -41,7 +40,6 @@
     [disabled]="obs.disabled"
     [required]="true"
     [trim]="true"
-    [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_CLIENT_ID_INPUT"
   ></v-input>
   <v-input
     name="clientSecret"
@@ -50,11 +48,10 @@
     [defaultValue]="obs.prefill?.clientSecret"
     [disabled]="obs.disabled"
     [required]="true"
-    [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_CLIENT_SECRET_INPUT"
   >
   </v-input>
 
-  <button cdsButton="secondary" (click)="openAuthenticationWindow()" [attr.data-test-id]="TEST_IDS.CONFIGURATION_FORM_AUTHORIZATION_BUTTON">
+  <button cdsButton="secondary" (click)="openAuthenticationWindow()">
     <svg cdsIcon="close" size="16"></svg>
     Give authorization
   </button>

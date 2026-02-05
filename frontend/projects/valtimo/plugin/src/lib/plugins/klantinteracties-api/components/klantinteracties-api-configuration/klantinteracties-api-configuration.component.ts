@@ -29,7 +29,6 @@ import {
 import {KlantinteractiesApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -39,8 +38,6 @@ import { TEST_IDS } from '@valtimo/shared';
 export class KlantinteractiesApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

@@ -16,7 +16,7 @@
 <valtimo-render-in-body>
   <cds-modal [open]="modalOpen$ | async" size="sm" valtimoCdsModal [minContentHeight]="480">
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
-      ><h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.PROCESS_START_MODAL_TITLE">
+      ><h3 cdsModalHeaderHeading>
         {{ modalTitle }}
       </h3>
     </cds-modal-header>
@@ -47,7 +47,6 @@
         <div
           class="bg-warning text-black mb-0 p-3 text-center"
           [translate]="'formManagement.noFormDefinitionFoundAdmin'"
-          [attr.data-test-id]="TEST_IDS.PROCESS_START_MODAL_NO_FORM_ADMIN_MESSAGE"
         ></div>
         <div class="mb-0 mt-4 p-3 text-center">
           <button
@@ -55,7 +54,6 @@
             class="btn btn-secondary btn-space"
             id="process-link-button"
             type="button"
-            [attr.data-test-id]="TEST_IDS.PROCESS_START_MODAL_PROCESS_LINK_BUTTON"
           >
             {{ 'formManagement.gotoProcessLinksButton' | translate }}
           </button>
@@ -66,7 +64,6 @@
         <div
           class="bg-warning text-black mb-0 p-3 text-center"
           [translate]="'formManagement.noFormDefinitionFoundUser'"
-          [attr.data-test-id]="TEST_IDS.PROCESS_START_MODAL_NO_FORM_USER_MESSAGE"
         ></div>
       }
     </section>

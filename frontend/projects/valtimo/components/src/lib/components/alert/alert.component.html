@@ -21,7 +21,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-body p-0">
-            <button class="close" type="button" (click)="removeAlert(alert)" [attr.data-test-id]="TEST_IDS.ALERT_CLOSE_BUTTON">
+            <button class="close" type="button" (click)="removeAlert(alert)">
               <span class="mdi mdi-close" aria-hidden="true"></span>
             </button>
             <div class="icon">
@@ -35,7 +35,7 @@
             <button
               class="{{ confirmation.class }} mr-2"
               *ngFor="let confirmation of alert.confirmations"
-              (click)="alertConfirm(alert, confirmation.value)" data-test-id="alert-confirmation-button-{{$index}}"
+              (click)="alertConfirm(alert, confirmation.value)"
             >
               {{ confirmation.label }}
             </button>
@@ -53,13 +53,13 @@
         <button
           class="{{ confirmation.class }} mr-2"
           *ngFor="let confirmation of alert.confirmations"
-          (click)="alertConfirm(alert, confirmation.value)" data-test-id="alert-confirmation-button-{{$index}}"
+          (click)="alertConfirm(alert, confirmation.value)"
         >
           {{ confirmation.label }}
         </button>
       </div>
     </div>
-    <button class="close" type="button" (click)="removeAlert(alert)" [attr.data-test-id]="TEST_IDS.ALERT_CLOSE_BUTTON">
+    <button class="close" type="button" (click)="removeAlert(alert)">
       <span class="mdi mdi-close" aria-hidden="true"></span>
     </button>
   </div>

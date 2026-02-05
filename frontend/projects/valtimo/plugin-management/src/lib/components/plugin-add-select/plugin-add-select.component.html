@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
-  <div class="plugin-definition__grid" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_GRID">
+  <div class="plugin-definition__grid">
     <ng-container
       *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
     ></ng-container>
@@ -29,7 +29,7 @@
 </ng-container>
 
 <ng-template #noPluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <div *ngIf="pluginDefinitions?.length === 0" class="plugin-definition__no-results" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_NO_RESULTS">
+  <div *ngIf="pluginDefinitions?.length === 0" class="plugin-definition__no-results">
     <v-paragraph [center]="true" [fullWidth]="true">{{
       'pluginManagement.noDefinitions' | translate
     }}</v-paragraph>
@@ -37,37 +37,35 @@
 </ng-template>
 
 <ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <cds-tile-group [multiple]="false" (selected)="selectPluginDefinition($event)" [cdsLayer]="1" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_TILE_GROUP">
+  <cds-tile-group [multiple]="false" (selected)="selectPluginDefinition($event)" [cdsLayer]="1">
     <cds-selection-tile
-      *ngFor="let pluginDefinition of pluginDefinitions; let i = index"
+      *ngFor="let pluginDefinition of pluginDefinitions"
       [value]="pluginDefinition"
       [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
-      data-test-id="plugin-definition-tile-{{i}}"
     >
       <img
         class="plugin-definition-logo"
         [title]="'title' | pluginTranslate: pluginDefinition.key | async"
         [src]="pluginDefinition.pluginLogoBase64"
-        data-test-id="plugin-definition-logo-{{i}}"
       />
 
-      <h5 data-test-id="plugin-definition-title-{{i}}">{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
+      <h5>{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
 
-      <p data-test-id="plugin-definition-description-{{i}}">{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
+      <p>{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
     </cds-selection-tile>
   </cds-tile-group>
 </ng-template>
 
 <ng-template #loading>
-  <div class="plugin-definition__grid" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_GRID">
-    <ng-container *ngTemplateOutlet="loadingCard" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_CARD_0"></ng-container>
-    <ng-container *ngTemplateOutlet="loadingCard" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_CARD_1"></ng-container>
-    <ng-container *ngTemplateOutlet="loadingCard" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_CARD_2"></ng-container>
+  <div class="plugin-definition__grid">
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #loadingCard>
-  <div class="plugin-definition__item" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_ITEM">
-    <cds-loading size="sm" [attr.data-test-id]="TEST_IDS.PLUGIN_DEFINITION_LOADING_SPINNER"></cds-loading>
+  <div class="plugin-definition__item">
+    <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

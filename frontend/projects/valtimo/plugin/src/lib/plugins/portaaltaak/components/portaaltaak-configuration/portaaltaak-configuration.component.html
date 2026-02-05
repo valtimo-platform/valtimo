@@ -20,11 +20,10 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
-  [attr.data-test-id]="TEST_IDS.PORTAALTAAK_FORM"
 >
   <v-input
     name="configurationTitle"
-    [attr.data-test-id]="TEST_IDS.PORTAALTAAKCONFIGURATIONTITLE"
+    data-test-id="portaaltaakConfigurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -42,7 +41,7 @@
       [items]="notificatiesApiPluginSelectItems"
       [margin]="true"
       name="notificatiesApiPluginConfiguration"
-      [attr.data-test-id]="TEST_IDS.PORTAALTAAKNOTIFICATIESAPIPLUGINCONFIGURATION"
+      data-test-id="portaaltaakNotificatiesApiPluginConfiguration"
       [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
@@ -58,7 +57,7 @@
       [items]="objectManagementConfigurationItems"
       [margin]="true"
       name="objectManagementConfigurationId"
-      [attr.data-test-id]="TEST_IDS.PORTAALTAAKOBJECTMANAGEMENTCONFIGURATION"
+      data-test-id="portaaltaakObjectManagementConfiguration"
       [title]="'objectManagementConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.objectManagementConfigurationId"
@@ -72,7 +71,7 @@
       [items]="vars.processSelectItems"
       [margin]="true"
       name="completeTaakProcess"
-      [attr.data-test-id]="TEST_IDS.PORTAALTAAKCOMPLETETAAKPROCESS"
+      data-test-id="portaaltaakCompleteTaakProcess"
       [title]="'completeTaakProcess' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.completeTaakProcess"

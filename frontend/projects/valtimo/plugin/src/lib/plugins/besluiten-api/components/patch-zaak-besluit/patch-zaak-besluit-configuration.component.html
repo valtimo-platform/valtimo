@@ -19,7 +19,6 @@
       [trim]="true"
       [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
       [widthPx]="350"
-      [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_BESLUIT_BESLUIT_URL_INPUT"
     ></v-input>
 
     <div class="row">
@@ -31,7 +30,6 @@
           [customPane]="true"
           placement="bottom"
           class="add-button"
-          [attr.data-test-id]="TEST_IDS.PATCH_ZAAK_BESLUIT_ADD_PROPERTY_BUTTON"
         >
           {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
           <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -53,12 +51,11 @@
             [tooltip]="translationKeyFor(property + 'Tooltip') | pluginTranslate: pluginId | async"
             [widthPx]="350"
             (valueChange)="onPropertyChanged(property, $event)"
-            data-test-id="patch-zaak-besluit-property-input-{{$index}}"
           ></v-input>
         </div>
 
         <div class="col-1">
-          <button class="btn btn-space delete-button" (click)="removeProperty(property)" data-test-id="patch-zaak-besluit-remove-property-button-{{$index}}">
+          <button class="btn btn-space delete-button" (click)="removeProperty(property)">
             <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
           </button>
         </div>
@@ -72,7 +69,6 @@
     <cds-overflow-menu-option
       *ngIf="!hasPropertyBeenAdded(propertyOption)"
       (click)="addProperty(propertyOption)"
-      data-test-id="patch-zaak-besluit-add-property-option-{{$index}}"
     >
       {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
     </cds-overflow-menu-option>

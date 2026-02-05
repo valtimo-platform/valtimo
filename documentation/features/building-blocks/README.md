@@ -2,7 +2,7 @@
 
 Building blocks let you package a reusable subprocess with its own data model and version it separately from cases.
 This allows them to use their own data and configuration. You can use the same building block in multiple case
-definitions and across environments, while keeping a clear input and output contract.
+definitions, independent processes, and across environments, while keeping a clear input and output contract.
 
 {% hint style="info" %}
 This feature is different from the Process Exchange building blocks that you download and copy into projects. For those,
@@ -141,6 +141,17 @@ your environment.
 
 * Click **Complete** to save the process link.
 * Save and deploy the updated case process.
+
+## Use a building block in an independent process
+
+Building blocks can also be used in independent processes that are not associated with a case or a building block. The
+setup is the same as described above, except for input and output mappings.
+
+Independent processes use **process variables** instead of document fields for data exchange with building blocks.
+Use the `pv:` prefix to indicate a process variable in your mappings.
+
+* **Inputs**: `pv:customerName` maps the process variable `customerName` to a building block input field.
+* **Outputs**: A building block output field mapped to `pv:result` writes the value to the process variable `result`.
 
 ## Import and export building blocks
 

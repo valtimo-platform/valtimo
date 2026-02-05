@@ -41,10 +41,9 @@
       title="{{ translations.title }}"
       class="widget-modal"
       (close)="closeModal()"
-      [attr.data-test-id]="TEST_IDS.WIDGET_MODAL"
     >
-      <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_HEADER">
-        <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_TITLE">
+      <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+        <h3 cdsModalHeaderHeading>
           {{ translations.title }}
         </h3>
       </cds-modal-header>
@@ -99,7 +98,6 @@
           formControlName="title"
           [invalid]="title.dirty && title.invalid"
           [attr.modal-primary-focus]="true"
-          [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_TITLE_INPUT"
         />
       </cds-label>
     </div>
@@ -113,7 +111,6 @@
         [invalid]="dataSource.dirty && dataSource.invalid"
         [label]="'dashboardManagement.widgets.form.dataSource' | translate"
         (selected)="dataSourceSelected($event)"
-        [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_DATA_SOURCE_DROPDOWN"
       >
         <cds-dropdown-list [items]="obs.dataSourceItems" type="multi"></cds-dropdown-list>
       </cds-dropdown>
@@ -136,7 +133,6 @@
         [invalidText]="'dashboardManagement.widgets.form.displayTypeHelperText' | translate"
         [label]="'dashboardManagement.widgets.form.displayType' | translate"
         (selected)="displayTypeSelected($event)"
-        [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_DISPLAY_TYPE_DROPDOWN"
       >
         <cds-dropdown-list [items]="obs.displayTypeItems" type="multi"></cds-dropdown-list>
       </cds-dropdown>
@@ -158,7 +154,7 @@
       >
         {{ 'dashboardManagement.widgets.form.url' | translate }}
 
-        <input cdsText formControlName="url" [invalid]="url.dirty && url.invalid" [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_URL_INPUT" />
+        <input cdsText formControlName="url" [invalid]="url.dirty && url.invalid" />
       </cds-label>
     </div>
   </form>
@@ -171,7 +167,7 @@
       displayTypeConfiguration: displayTypeConfiguration$ | async,
     } as obs"
   >
-    <button cdsButton="ghost" [disabled]="vars.disabled" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_CANCEL_BUTTON">
+    <button cdsButton="ghost" [disabled]="vars.disabled" (click)="closeModal()">
       {{ 'dashboardManagement.widgets.cancel' | translate }}
     </button>
 
@@ -184,7 +180,6 @@
         vars.disabled
       "
       (click)="save()"
-      [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_SAVE_BUTTON"
     >
       {{ 'dashboardManagement.widgets.save' | translate }}
     </button>
@@ -192,11 +187,11 @@
 </ng-template>
 
 <ng-template #deleteButtons let-vars="vars">
-  <button cdsButton="secondary" [disabled]="vars.disabled" (click)="closeModal()" [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_CANCEL_BUTTON">
+  <button cdsButton="secondary" [disabled]="vars.disabled" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
 
-  <button cdsButton="danger" [disabled]="vars.disabled" (click)="delete()" [attr.data-test-id]="TEST_IDS.WIDGET_MODAL_DELETE_BUTTON">
+  <button cdsButton="danger" [disabled]="vars.disabled" (click)="delete()">
     {{ 'dashboardManagement.widgets.delete' | translate }}
   </button>
 </ng-template>

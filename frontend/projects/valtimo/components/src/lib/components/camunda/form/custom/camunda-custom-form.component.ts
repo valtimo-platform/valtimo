@@ -22,7 +22,6 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { TEST_IDS } from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-custom-form',
@@ -31,8 +30,6 @@ import { TEST_IDS } from '@valtimo/shared';
   standalone: false,
 })
 export class CamundaCustomFormComponent implements OnInit {
-  readonly TEST_IDS = TEST_IDS;
-
   @Input() componentName: string;
   @ViewChild('customFormContainer', {read: ViewContainerRef, static: true}) viewContainerRef;
 

@@ -32,9 +32,9 @@
     sortItems: sortItems$ | async,
   } as obs"
 >
-  <cds-modal size="sm" [open]="obs.show" valtimoCdsModal (close)="closeModal()" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_MODAL">
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_MODAL_HEADER">
-      <h3 cdsModalHeaderHeading [attr.data-test-id]="TEST_IDS.LIST_COLUMN_MODAL_TITLE">
+  <cds-modal size="sm" [open]="obs.show" valtimoCdsModal (close)="closeModal()">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+      <h3 cdsModalHeaderHeading>
         {{
           obs.type === 'add'
             ? ('listColumn.addButtonText' | translate)
@@ -43,7 +43,7 @@
       </h3>
     </cds-modal-header>
 
-    <form cdsModalContent [formGroup]="formGroup" class="list-column-form" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_FORM">
+    <form cdsModalContent [formGroup]="formGroup" class="list-column-form">
       <div class="cds--text-input__field-wrapper">
         <cds-label [disabled]="obs.disabled">
           <span class="label-with-tooltip">
@@ -55,7 +55,7 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="title" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_TITLE_INPUT" />
+          <input cdsText cdsLayer formControlName="title" />
         </cds-label>
       </div>
 
@@ -74,7 +74,7 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="key" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_KEY_INPUT" />
+          <input cdsText cdsLayer formControlName="key" />
         </cds-label>
       </div>
 
@@ -89,7 +89,7 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="path" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_PATH_INPUT" />
+          <input cdsText cdsLayer formControlName="path" />
         </cds-label>
       </div>
 
@@ -109,7 +109,6 @@
             cdsLayer
             formControlName="displayType"
             [disabled]="obs.disabled"
-            [attr.data-test-id]="TEST_IDS.LIST_COLUMN_DISPLAY_TYPE_DROPDOWN"
           >
             <cds-dropdown-list [items]="obs.viewTypeItems"></cds-dropdown-list>
           </cds-dropdown>
@@ -127,7 +126,7 @@
             ></v-tooltip-icon>
           </span>
 
-          <input cdsText cdsLayer formControlName="dateFormat" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_DATE_FORMAT_INPUT" />
+          <input cdsText cdsLayer formControlName="dateFormat" />
         </cds-label>
       </div>
 
@@ -149,7 +148,6 @@
             [defaultValues]="obs.enumValues"
             type="keyValue"
             (valueChange)="enumValueChange($event)"
-            [attr.data-test-id]="TEST_IDS.LIST_COLUMN_ENUM_INPUT"
           ></valtimo-carbon-multi-input>
         </cds-label>
       </div>
@@ -176,7 +174,6 @@
             [keyColumnTitle]="'viewTypeConverter.Yes' | translate"
             [valueColumnTitle]="'viewTypeConverter.No' | translate"
             (valueChange)="yesNoValueChange($event)"
-            [attr.data-test-id]="TEST_IDS.LIST_COLUMN_YES_NO_INPUT"
           ></valtimo-carbon-multi-input>
         </cds-label>
       </div>
@@ -203,7 +200,6 @@
             [disabled]="obs.disabled"
             cdsLayer
             *ngIf="obs.sortItems"
-            [attr.data-test-id]="TEST_IDS.LIST_COLUMN_DEFAULT_SORT_DROPDOWN"
           >
             <cds-dropdown-list [items]="obs.sortItems"></cds-dropdown-list>
           </cds-dropdown>
@@ -211,8 +207,8 @@
       </div>
     </form>
 
-    <cds-modal-footer [attr.data-test-id]="TEST_IDS.LIST_COLUMN_MODAL_FOOTER">
-      <button (click)="closeModal()" cdsButton="secondary" [disabled]="obs.disabled" [attr.data-test-id]="TEST_IDS.LIST_COLUMN_CLOSE_BUTTON">
+    <cds-modal-footer>
+      <button (click)="closeModal()" cdsButton="secondary" [disabled]="obs.disabled">
         {{ 'listColumn.close' | translate }}
       </button>
 
@@ -220,7 +216,6 @@
         (click)="save()"
         cdsButton="primary"
         [disabled]="obs.disabled || formGroup.invalid || (obs.showEnum && !obs.enumValid)"
-        [attr.data-test-id]="TEST_IDS.LIST_COLUMN_SAVE_BUTTON"
       >
         {{ 'listColumn.save' | translate }}
       </button>
