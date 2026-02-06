@@ -21,7 +21,7 @@
               "path": "./webpack.config.js"
             },
             "aot": false,
-            "outputPath": "deployment/dist",
+            "outputPath": "deployment/valtimo-angular-console",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -96,8 +96,7 @@
               "hammerjs",
               "camunda-bpmn-moddle/lib",
               "object-refs",
-              "heatmap.js-fixed",
-              "formiojs"
+              "heatmap.js-fixed"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
@@ -151,7 +150,7 @@
               ]
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",

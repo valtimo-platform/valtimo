@@ -1,65 +1,120 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
-import {NgxLoggerLevel} from 'ngx-logger';
+/*
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   CaseListTab,
+  DefinitionColumn,
   IncludeFunction,
+  Language,
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
   TaskListTab,
   UploadProvider,
-  ValtimoConfig
+  ValtimoConfig,
 } from '@valtimo/shared';
+import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config';
-import {DARK_MODE_LOGO_BASE_64, LOGO_BASE_64} from './logo';
+import {cspHeaderParamsDev} from './csp';
+import {
+  DARK_MODE_LOGO_BASE_64,
+  DARK_MODE_LOGO_BASE_64_PNG,
+  LOGO_BASE_64,
+  LOGO_BASE_64_PNG,
+} from './logo';
 
-const defaultDefinitionColumns = [
+const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
     propertyName: 'sequence',
     translationKey: 'referenceNumber',
-    sortable: true
+    sortable: true,
   },
   {
     propertyName: 'createdBy',
     translationKey: 'createdBy',
-    sortable: true
+    sortable: true,
   },
   {
     propertyName: 'createdOn',
     translationKey: 'createdOn',
     sortable: true,
     viewType: 'date',
-    default: true
+    default: true,
   },
   {
     propertyName: 'modifiedOn',
     translationKey: 'lastModified',
     sortable: true,
-    viewType: 'date'
+    viewType: 'date',
   },
   {
     propertyName: 'assigneeFullName',
     translationKey: 'assigneeFullName',
-    sortable: true
-  }
+    sortable: true,
+  },
 ];
 
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
-  production: true,
+  production: false,
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
-      {roles: [ROLE_USER], link: ['/'], title: 'Dashboard', iconClass: 'icon mdi mdi-view-dashboard', sequence: 0},
-      {roles: [ROLE_USER], title: 'Cases', iconClass: 'icon mdi mdi-layers', sequence: 1, children: []},
-      {roles: [ROLE_USER], title: 'Objects', iconClass: 'icon mdi mdi-archive', sequence: 2, includeFunction: IncludeFunction.ObjectManagementEnabled},
-      {roles: [ROLE_USER], link: ['/tasks'], title: 'Tasks', iconClass: 'icon mdi mdi-check-all', sequence: 3},
-      {roles: [ROLE_USER], link: ['/analysis'], title: 'Analysis', iconClass: 'icon mdi mdi-chart-bar', sequence: 4},
       {
-        roles: [ROLE_ADMIN], title: 'Admin', iconClass: 'icon mdi mdi-tune', sequence: 5, children: [
+        roles: [ROLE_USER],
+        link: ['/'],
+        title: 'Dashboard',
+        iconClass: 'icon mdi mdi-view-dashboard',
+        sequence: 0,
+      },
+      {
+        roles: [ROLE_USER],
+        title: 'Cases',
+        iconClass: 'icon mdi mdi-layers',
+        sequence: 1,
+        children: [],
+      },
+      {
+        roles: [ROLE_USER],
+        title: 'Objects',
+        iconClass: 'icon mdi mdi-archive',
+        sequence: 2,
+        includeFunction: IncludeFunction.ObjectManagementEnabled,
+      },
+      {
+        roles: [ROLE_USER],
+        link: ['/tasks'],
+        title: 'Tasks',
+        iconClass: 'icon mdi mdi-check-all',
+        sequence: 3,
+      },
+      {
+        roles: [ROLE_USER],
+        link: ['/analysis'],
+        title: 'Analysis',
+        iconClass: 'icon mdi mdi-chart-bar',
+        sequence: 4,
+      },
+      {
+        roles: [ROLE_ADMIN],
+        title: 'Admin',
+        iconClass: 'icon mdi mdi-tune',
+        sequence: 5,
+        children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {
             link: ['/building-block-management'],
@@ -100,28 +155,32 @@ export const environment: ValtimoConfig = {
         ],
       },
       {
-        roles: [ROLE_DEVELOPER], title: 'Development', iconClass: 'icon mdi mdi-code', sequence: 6, children: [
-          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1}
-        ]
-      }
-    ]
+        roles: [ROLE_DEVELOPER],
+        title: 'Development',
+        iconClass: 'icon mdi mdi-code',
+        sequence: 6,
+        children: [
+          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
+        ],
+      },
+    ],
   },
   whitelistedDomains: ['localhost:4200'],
   mockApi: {
-    endpointUri: window['env']['mockApiUri'] || '/mock-api/'
+    endpointUri: window['env']['mockApiUri'] || '/mock-api/',
   },
   valtimoApi: {
-    endpointUri: window['env']['apiUri'] || '/api/'
+    endpointUri: window['env']['apiUri'] || '/api/',
   },
   swagger: {
-    endpointUri: window['env']['swaggerUri'] || '/v3/api-docs'
+    endpointUri: window['env']['swaggerUri'] || '/v3/api-docs',
   },
   logger: {
-    level: NgxLoggerLevel.TRACE
+    level: NgxLoggerLevel.TRACE,
   },
-  definitions: { cases: [] },
+  definitions: {cases: []},
   openZaak: {
-    catalogus: window['env']['openZaakCatalogusId'] || '8225508a-6840-413e-acc9-6422af120db1'
+    catalogus: window['env']['openZaakCatalogusId'] || '8225508a-6840-413e-acc9-6422af120db1',
   },
   uploadProvider: UploadProvider.DOCUMENTEN_API,
   defaultDefinitionTable: defaultDefinitionColumns,
@@ -140,6 +199,6 @@ export const environment: ValtimoConfig = {
     returnToLastUrlAfterTokenExpiration: true,
     showPlantATreeButton: false,
     showUserNameInTopBar: true,
-    sortFilesByDate: true
-  }
+    sortFilesByDate: true,
+  },
 };
