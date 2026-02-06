@@ -22,8 +22,10 @@ dependencies {
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
 
-    implementation "com.ritense.valtimoplugins:freemarker:8.1.0"
-    implementation "com.ritense.valtimoplugins:smtpmail:2.0.0"
+    // Plugins
+    implementation("com.ritense.valtimo:smartdocuments")
+    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
+    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"
