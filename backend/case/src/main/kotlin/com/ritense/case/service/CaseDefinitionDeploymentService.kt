@@ -21,12 +21,10 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockImporterRan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.StringUtils
-import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.stereotype.Service
@@ -43,8 +41,7 @@ class CaseDefinitionDeploymentService(
     val caseDefinitionRepository: CaseDefinitionRepository,
     val changelogDeployer: ChangelogDeployer,
 ) {
-    @Order(Ordered.LOWEST_PRECEDENCE)
-    @EventListener(ApplicationReadyEvent::class)
+    @EventListener(BuildingBlockImporterRan::class)
     fun deployOnStartup() {
         deployCase()
         deployGlobal()
@@ -68,7 +65,9 @@ class CaseDefinitionDeploymentService(
                     }
             resources.forEach { (_, files) ->
                 runWithoutAuthorization {
-                    valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAllByFinalTrue().map { it.id })
+                    valtimoImportService.importCaseDefinition(
+                        files,
+                        caseDefinitionRepository.findAllByFinalTrue().map { it.id })
                 }
             }
             setLatestToActiveIfNoneIsActive()

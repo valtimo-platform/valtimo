@@ -73,7 +73,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
         val pessimisticProperties = DocumentProperties(DocumentProperties.Locking(vr))
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
 
-        val valueResolver = DocumentJsonValueResolverFactory(
+        val valueResolver = CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,
@@ -97,7 +97,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
         val optimisticProperties = DocumentProperties(null)
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
 
-        val valueResolver = DocumentJsonValueResolverFactory(
+        val valueResolver = CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,
@@ -134,7 +134,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
             Unit
         }
 
-        val valueResolver = DocumentJsonValueResolverFactory(
+        val valueResolver = CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,
@@ -166,7 +166,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
             throw modifyException
         }
 
-        val valueResolver = DocumentJsonValueResolverFactory(
+        val valueResolver = CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,

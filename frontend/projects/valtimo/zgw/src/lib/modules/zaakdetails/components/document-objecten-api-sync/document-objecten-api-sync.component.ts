@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,11 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, switchMap, tap, of} from 'rxjs';
+import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
 
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
+import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-document-objecten-api-sync',
@@ -86,7 +87,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
-  private readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
+  public readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
     switchMap(params =>
       this.documentService.getDocumentDefinitionByVersion(
         params?.caseDefinitionKey ?? '',
@@ -151,10 +152,11 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public loadDocumentenObjectenApiSync(): void {
     this._documentDefinition$
       .pipe(
+        filter(documentDefinition => !!documentDefinition?.id?.blueprintId),
         switchMap((documentDefinition: DocumentDefinition) =>
           this.documentObjectenApiSyncService.getDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag
           )
         )
       )
@@ -171,8 +173,8 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.deleteDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag
           )
         ),
         tap(() => {
@@ -188,8 +190,8 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.updateDocumentObjectenApiSync(
-            documentDefinition.id.caseDefinitionId.key,
-            documentDefinition.id.caseDefinitionId.versionTag,
+            documentDefinition.id.blueprintId.blueprintKey,
+            documentDefinition.id.blueprintId.blueprintVersionTag,
             {
               objectManagementConfigurationId: formValues.objectManagementConfigurationId ?? '',
               enabled: !!formValues.enabled,

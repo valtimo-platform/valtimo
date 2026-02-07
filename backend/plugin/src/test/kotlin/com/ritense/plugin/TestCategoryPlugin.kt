@@ -19,12 +19,17 @@ package com.ritense.plugin
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 
 @Plugin(
     key = "test-category-plugin",
     title = "Test category plugin",
-    description = "This is a test plugin used to verify category plugin framework functionality"
+    description = "This is a test plugin used to verify category plugin framework functionality",
+    dependencies = [
+        PluginDependency.ZAAK_INSTANCE_LINK,
+        PluginDependency.ZAAK_TYPE_LINK
+    ]
 )
 class TestCategoryPlugin : TestPluginCategory {
 

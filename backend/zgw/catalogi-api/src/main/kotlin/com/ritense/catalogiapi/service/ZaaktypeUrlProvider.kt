@@ -19,8 +19,11 @@ package com.ritense.catalogiapi.service
 import com.ritense.catalogiapi.exception.ZaakTypeLinkNotFoundException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.net.URI
+import java.util.UUID
 
 interface ZaaktypeUrlProvider {
     @Throws(ZaakTypeLinkNotFoundException::class)
     fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI
+    @Throws(ZaakTypeLinkNotFoundException::class)
+    fun getZaaktypeUrl(documentId: UUID): URI
 }

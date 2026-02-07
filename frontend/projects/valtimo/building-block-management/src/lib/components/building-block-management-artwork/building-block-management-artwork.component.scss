@@ -1,0 +1,70 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.building-block-management-artwork {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--cds-layer-01);
+  max-width: 625px;
+
+  &__title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  &__preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--cds-layer-02);
+    padding: 12px;
+    min-height: 180px;
+  }
+
+  &__image {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+  }
+
+  &__buttons {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 12px;
+
+    button[cdsButton] {
+      min-width: 100px;
+    }
+  }
+}
+
+.label-with-tooltip {
+  display: flex;
+  align-items: center;
+}
+
+.loading-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px;
+}

@@ -29,6 +29,7 @@ import {
   EnvironmentService,
   getCaseManagementRouteParams,
   GlobalNotificationService,
+  ProcessDefinitionWithPropertiesDto,
 } from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
@@ -60,7 +61,9 @@ export class ProcessManagementListComponent {
   >();
 
   public readonly $context = this.processManagementService.$context;
-  public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
+  public readonly processToDelete$ = new BehaviorSubject<ProcessDefinitionWithPropertiesDto | null>(
+    null
+  );
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -81,11 +84,7 @@ export class ProcessManagementListComponent {
     this.context$,
   ]).pipe(
     switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
+      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context);
     })
   );
 

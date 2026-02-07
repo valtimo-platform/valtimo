@@ -1,0 +1,12 @@
+[
+    {
+        "processDefinitionKey": "processlink-autodeploy",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "formflow-one-task-process",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

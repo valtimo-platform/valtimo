@@ -18,13 +18,12 @@ import {ActivatedRoute} from '@angular/router';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {filter, take, withLatestFrom} from 'rxjs/operators';
 import {
   FormDefinitionListItem,
   FormDisplayType,
   FormProcessLinkUpdateRequestDto,
   FormSize,
-  ProcessLinkEditMode,
 } from '../../models';
 import {
   ProcessLinkButtonService,
@@ -138,9 +137,14 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stateService.setInitial();
-      })
+      this.buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(this.stateService.isEditing$),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(() => {
+          this.stateService.setInitial();
+        })
     );
   }
 
@@ -183,19 +187,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-          return;
-        }
-
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
       });
   }
 
@@ -226,19 +218,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           }),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
-          return;
-        }
-
-        this.processLinkService.saveProcessLink(createRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
+        this.stateService.sendProcessLinkCreateEvent(createRequest);
       });
   }
 }

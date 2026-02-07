@@ -18,10 +18,7 @@
                     "type": "field",
                     "field": "documentDefinitionId.caseDefinitionId.key",
                     "operator": "in",
-                    "value": [
-                        "leningen",
-                        "bezwaar"
-                    ]
+                    "value": ["leningen", "bezwaar"]
                 },
                 {
                     "type": "field",
@@ -33,10 +30,7 @@
         },
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "actions": [
-                "view_list",
-                "export"
-            ],
+            "actions": ["view_list", "export"],
             "roleKey": "ROLE_USER",
             "conditions": [
                 {
@@ -64,10 +58,7 @@
                     "type": "field",
                     "field": "documentDefinitionId.name",
                     "operator": "in",
-                    "value": [
-                        "leningen",
-                        "bezwaar"
-                    ]
+                    "value": ["leningen", "bezwaar"]
                 }
             ]
         },
@@ -115,10 +106,7 @@
                             "type": "field",
                             "field": "id.name",
                             "operator": "in",
-                            "value": [
-                                "leningen",
-                                "bezwaar"
-                            ]
+                            "value": ["leningen", "bezwaar"]
                         }
                     ]
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
 import com.ritense.case.service.TaskColumnService
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
@@ -65,6 +66,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -158,7 +160,8 @@ class CaseAutoConfiguration {
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
         caseDefinitionChecker: CaseDefinitionChecker,
-        applicationEventPublisher: ApplicationEventPublisher
+        applicationEventPublisher: ApplicationEventPublisher,
+        caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
     ): CaseDefinitionService {
         return CaseDefinitionService(
             caseDefinitionListColumnRepository,
@@ -168,7 +171,8 @@ class CaseAutoConfiguration {
             valueResolverService,
             authorizationService,
             applicationEventPublisher,
-            caseDefinitionChecker
+            caseDefinitionChecker,
+            caseDefinitionFinalizationCheckersProvider
         )
     }
 

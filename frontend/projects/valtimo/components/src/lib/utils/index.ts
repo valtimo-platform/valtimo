@@ -15,3 +15,4 @@
  */
 
 export * from './carbon.utils';
+export * from './schema-editor.utils';

@@ -38,6 +38,8 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.url.domain.URLProcessLink
 import com.ritense.processlink.url.domain.URLVariables
 import com.ritense.processlink.url.web.rest.dto.URLSubmissionResult
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -80,7 +82,7 @@ class URLProcessLinkService(
             taskInstanceId,
             documentDefinitionNameToUse,
             processDefinition.key,
-            processDefinition.getCaseDefinitionId()
+            processDefinition.getBlueprintId()
         )
 
         return dispatchRequest(
@@ -124,14 +126,14 @@ class URLProcessLinkService(
         taskInstanceId: String?,
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): Request {
         return if (processLink.activityType == ActivityTypeWithEventName.START_EVENT_START) {
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
                     processDefinitionKey,
-                    caseDefinitionId
+                    blueprintId
                 )
             } else {
                 modifyDocumentAndStartProcessRequest(
@@ -152,17 +154,47 @@ class URLProcessLinkService(
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
         processDefinitionKey: String,
-        caseDefinitionId: CaseDefinitionId?,
+        blueprintId: BlueprintId?,
     ): NewDocumentAndStartProcessRequest {
-        return NewDocumentAndStartProcessRequest(
-            processDefinitionKey,
-            NewDocumentRequest(
-                documentDefinitionName,
-                caseDefinitionId?.key,
-                caseDefinitionId?.versionTag?.version,
-                objectMapper.createObjectNode()
-            )
-        )
+        return when (blueprintId) {
+            is CaseDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
+                        objectMapper.createObjectNode()
+                    )
+                )
+            }
+
+            is BuildingBlockDefinitionId -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        blueprintId.key,
+                        blueprintId.versionTag.version,
+                        objectMapper.createObjectNode()
+                    )
+                )
+            }
+
+            else -> {
+                NewDocumentAndStartProcessRequest(
+                    processDefinitionKey,
+                    NewDocumentRequest(
+                        documentDefinitionName,
+                        null,
+                        null,
+                        objectMapper.createObjectNode()
+                    )
+                )
+            }
+        }
     }
 
     private fun modifyDocumentAndStartProcessRequest(

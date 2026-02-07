@@ -104,13 +104,15 @@
     </cds-tab>
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
-      <cds-tab
-        class="no-padding-left-right no-padding-top-bottom"
-        [active]="obs.currentTab === injectedTab.translationKey"
-        [heading]="injectedTab.translationKey | translate"
-        (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
-      >
-      </cds-tab>
+      @if (injectedTab.enabled$ | async) {
+        <cds-tab
+          class="no-padding-left-right no-padding-top-bottom"
+          [active]="obs.currentTab === injectedTab.translationKey"
+          [heading]="injectedTab.translationKey | translate"
+          (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
+        >
+        </cds-tab>
+      }
     }
   </cds-tabs>
 

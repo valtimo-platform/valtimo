@@ -33,7 +33,7 @@ import com.ritense.processdocument.domain.listener.StartEventFromCallActivityLis
 import com.ritense.processdocument.domain.listener.StartEventListener;
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository;
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory;
+import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory;
 import com.ritense.processdocument.resolver.DocumentTableValueResolver;
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
@@ -179,7 +179,7 @@ public class ProcessDocumentAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(DocumentJsonValueResolverFactory.class)
+    @ConditionalOnMissingBean(CaseDocumentJsonValueResolverFactory.class)
     public ValueResolverFactory documentJsonValueResolver(
         ProcessDocumentService processDocumentService,
         DocumentService documentService,
@@ -187,7 +187,7 @@ public class ProcessDocumentAutoConfiguration {
         ObjectMapper objectMapper,
         DocumentProperties documentProperties
     ) {
-        return new DocumentJsonValueResolverFactory(
+        return new CaseDocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,
             documentDefinitionService,
