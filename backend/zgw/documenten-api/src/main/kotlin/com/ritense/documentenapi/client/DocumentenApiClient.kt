@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.documentenapi.DocumentenApiAuthentication
+import com.ritense.documentenapi.authorization.ZgwResourcePermission
+import com.ritense.documentenapi.authorization.ZgwResourcePermissionActionProvider
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
 import com.ritense.documentenapi.event.DocumentDeleted
@@ -175,14 +177,25 @@ class DocumentenApiClient(
         requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
 
         if (!authorizationService.hasPermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
+                EntityAuthorizationRequest(
+                    ZgwResourcePermission::class.java,
+                    ZgwResourcePermissionActionProvider.VIEW_LIST,
+                    ZgwResourcePermission()
+                )
             )
-        )) {
+        ) {
             return org.springframework.data.domain.Page.empty(pageable)
         }
+
+//        if (!authorizationService.hasPermission(
+//            EntityAuthorizationRequest(
+//                ResourcePermission::class.java,
+//                ResourcePermissionActionProvider.VIEW_LIST,
+//                ResourcePermission()
+//            )
+//        )) {
+//            return org.springframework.data.domain.Page.empty(pageable)
+//        }
 
         val pageToRequest = ((pageable.pageSize * pageable.pageNumber) / ITEMS_PER_PAGE) + 1
         val result =
