@@ -17,14 +17,14 @@
 import {UrlUtils, ValtimoConfig} from '@valtimo/shared';
 
 const getFormioAppConfig = (config: ValtimoConfig) => {
-  const origin = window.location.origin;
+  const baseUrl = UrlUtils.formatUrlTrailingSlash(
+    `${window.location.origin}${config.valtimoApi.endpointUri}`,
+    false
+  );
 
   return {
-    appUrl: origin,
-    apiUrl: UrlUtils.formatUrlTrailingSlash(
-      `${window.location.origin}${config.valtimoApi.endpointUri}`,
-      false
-    ),
+    appUrl: baseUrl,
+    apiUrl: baseUrl,
     icons: 'fontawesome',
     formOnly: false,
   };

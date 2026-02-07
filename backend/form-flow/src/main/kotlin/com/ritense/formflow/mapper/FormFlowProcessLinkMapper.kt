@@ -37,6 +37,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.operaton.bpm.engine.repository.ProcessDefinition
@@ -129,12 +130,10 @@ class FormFlowProcessLinkMapper(
         }
     }
 
-    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
+    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         return withLoggingContext(ProcessDefinition::class, createRequestDto.processDefinitionId) {
-            if (caseDefinitionId == null) {
-                //TODO: change exception type
-                throw RuntimeException("Case definition id is required for creating a new process link with form flow")
-            }
+            val caseDefinitionId = blueprintId as? CaseDefinitionId
+                ?: throw RuntimeException("Case definition id is required for creating a new process link with form flow")
 
             createRequestDto as FormFlowProcessLinkCreateRequestDto
             if (formFlowService.findDefinition(createRequestDto.formFlowDefinitionKey, caseDefinitionId) == null) {
@@ -156,11 +155,13 @@ class FormFlowProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
+            val caseDefinitionId = blueprintId as? CaseDefinitionId
+                ?: throw RuntimeException("Case definition id is required for updating a process link with form flow")
             updateRequestDto as FormFlowProcessLinkUpdateRequestDto
-            if (formFlowService.findDefinition(updateRequestDto.formFlowDefinitionKey, caseDefinitionId!!) == null) {
+            if (formFlowService.findDefinition(updateRequestDto.formFlowDefinitionKey, caseDefinitionId) == null) {
                 throw RuntimeException("FormFlow definition not found with id ${updateRequestDto.formFlowDefinitionKey}")
             }
             FormFlowProcessLink(

@@ -35,6 +35,8 @@
       "@valtimo/access-control-management/*": ["dist/valtimo/access-control-management/*"],
       "@valtimo/security": ["dist/valtimo/security"],
       "@valtimo/security/*": ["dist/valtimo/security/*"],
+      "@valtimo/building-block-management": ["dist/valtimo/building-block-management"],
+      "@valtimo/building-block-management/*": ["dist/valtimo/building-block-management/*"],
       "@valtimo/case": ["dist/valtimo/case"],
       "@valtimo/case/*": ["dist/valtimo/case/*"],
       "@valtimo/process": ["dist/valtimo/process"],
@@ -356,6 +358,12 @@
     },
     {
       "path": "./projects/valtimo/iko/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-management/tsconfig.spec.json"
     }
   ]
 }

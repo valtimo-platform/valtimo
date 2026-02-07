@@ -57,7 +57,7 @@ interface BasicWidget {
   properties?: WidgetContentProperties;
   isCompact?: boolean;
   actions?: WidgetAction[];
-  displayConditions: Array<Condition>;
+  displayConditions: Array<Condition<string>>;
 }
 
 interface FieldsWidgetValue {

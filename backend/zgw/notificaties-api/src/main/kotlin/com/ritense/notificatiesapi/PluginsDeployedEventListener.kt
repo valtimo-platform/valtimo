@@ -94,7 +94,9 @@ class PluginsDeployedEventListener(
                 .getNotificatiesApiPlugin().notificatiesApiConfigurationId.id
         }
 
-        val authKey = currentNotificatiesApiAbonnementLink?.auth ?: createRandomKey()
+        val authKey = notificatiesApiPluginInstance.authHeader?.takeIf { it.isNotBlank() }
+            ?: currentNotificatiesApiAbonnementLink?.auth?.takeIf { it.isNotBlank() }
+            ?: createRandomKey()
 
         ensureKanalenExist(
             kanalen.map { it.naam }.toSet(),
@@ -104,7 +106,7 @@ class PluginsDeployedEventListener(
 
         val currentNotificatiesApiAbonnement = abonnementenInApi.firstOrNull { abonnement ->
             currentNotificatiesApiAbonnementLink != null &&
-            currentNotificatiesApiAbonnementLink.url == abonnement.url
+                currentNotificatiesApiAbonnementLink.url == abonnement.url
         }
 
         val abonnement = if (currentNotificatiesApiAbonnement == null) {

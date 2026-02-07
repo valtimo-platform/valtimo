@@ -25,12 +25,12 @@ Process definitions have no actions currently. As a result, they can only be use
 <summary>Permission to start a process for one specific process definition</summary>
 
 <pre class="language-json" data-overflow="wrap"><code class="lang-json">{
-<strong>    "resourceType": "com.ritense.valtimo.camunda.domain.CamundaExecution",
+<strong>    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
 </strong>    "action": "create",
     "conditions": [
         {
             "type": "container",
-            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaProcessDefinition",
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
             "conditions": [
                 {
                     "type": "field",
