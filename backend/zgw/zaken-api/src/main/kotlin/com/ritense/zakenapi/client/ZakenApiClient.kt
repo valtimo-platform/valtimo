@@ -19,6 +19,8 @@ package com.ritense.zakenapi.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.documentenapi.authorization.ZgwResourcePermission
+import com.ritense.documentenapi.authorization.ZgwResourcePermissionActionProvider
 import com.ritense.outbox.OutboxService
 import com.ritense.resource.authorization.ResourcePermission
 import com.ritense.resource.authorization.ResourcePermissionActionProvider
@@ -186,14 +188,24 @@ class ZakenApiClient(
     ): List<ZaakInformatieObject> {
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission()
+                    ZgwResourcePermission::class.java,
+                    ZgwResourcePermissionActionProvider.VIEW_LIST,
+                    ZgwResourcePermission()
                 )
             )
         ) {
             return emptyList()
         }
+//        if (!authorizationService.hasPermission(
+//                EntityAuthorizationRequest(
+//                    ResourcePermission::class.java,
+//                    ResourcePermissionActionProvider.VIEW_LIST,
+//                    ResourcePermission()
+//                )
+//            )
+//        ) {
+//            return emptyList()
+//        }
 
         val result = buildRestClient(authentication)
             .get()

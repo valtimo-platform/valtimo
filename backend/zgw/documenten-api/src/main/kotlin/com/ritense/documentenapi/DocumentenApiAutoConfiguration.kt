@@ -20,9 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.documentenapi.authorization.ZgwResourceDocumentMapper
+import com.ritense.documentenapi.authorization.ZgwResourceSpecificationFactory
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.documentenapi.exporter.DocumentenApiUploadFieldExporter
@@ -41,6 +44,7 @@ import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.resource.authorization.ResourceSpecificationFactory
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -67,6 +71,20 @@ import javax.sql.DataSource
 @EnableJpaRepositories(basePackages = ["com.ritense.documentenapi.repository"])
 @EntityScan("com.ritense.documentenapi.domain")
 class DocumentenApiAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwResourceSpecificationFactory::class)
+    fun zgwResourceSpecificationFactory(
+    ): ZgwResourceSpecificationFactory {
+        return ZgwResourceSpecificationFactory()
+    }
+
+    @Bean
+    fun zgwResourceDocumentMapper(
+        documentRepository: JsonSchemaDocumentRepository
+    ): ZgwResourceDocumentMapper {
+        return ZgwResourceDocumentMapper(documentRepository)
+    }
 
     @Bean
     fun documentenApiClient(
