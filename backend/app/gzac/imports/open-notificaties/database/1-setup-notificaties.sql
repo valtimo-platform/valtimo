@@ -22,14 +22,35 @@ INSERT INTO authorizations_applicatie VALUES (2, '1f5cb913-caa3-433b-851d-9a371a
 INSERT INTO authorizations_applicatie VALUES (3, 'd346a22a-7f6a-48ef-99f2-4439c3f8f17d', '{openzaak}', 'Open Zaak', true);
 SELECT setval(pg_get_serial_sequence('authorizations_applicatie', 'id'), 3, true);
 
-INSERT INTO authorizations_authorizationsconfig VALUES (1, 'http://openzaak:8000/autorisaties/api/v1/', 'nrc');
-SELECT setval(pg_get_serial_sequence('authorizations_authorizationsconfig', 'id'), 1, true);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'authorizations_authorizationsconfig') THEN
+        INSERT INTO authorizations_authorizationsconfig (id, api_root, component)
+        VALUES (1, 'http://openzaak:8000/autorisaties/api/v1/', 'nrc')
+        ON CONFLICT (id) DO NOTHING;
+        PERFORM setval(pg_get_serial_sequence('authorizations_authorizationsconfig', 'id'), 1, true);
+    END IF;
+END $$;
 
-INSERT INTO notifications_notificationsconfig VALUES (1, 'https://open-notificaties/api/v1/');
-SELECT setval(pg_get_serial_sequence('notifications_notificationsconfig', 'id'), 1, true);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notifications_notificationsconfig') THEN
+        INSERT INTO notifications_notificationsconfig (id, api_root)
+        VALUES (1, 'https://open-notificaties/api/v1/')
+        ON CONFLICT (id) DO NOTHING;
+        PERFORM setval(pg_get_serial_sequence('notifications_notificationsconfig', 'id'), 1, true);
+    END IF;
+END $$;
 
-INSERT INTO vng_api_common_apicredential VALUES (1, 'http://openzaak:8000/autorisaties/api/v1/', 'opennotificaties', 'opennotificaties', 'openzaak', 'opennotificaties', 'opennotificaties');
-SELECT setval(pg_get_serial_sequence('vng_api_common_apicredential', 'id'), 1, true);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'vng_api_common_apicredential') THEN
+        INSERT INTO vng_api_common_apicredential (id, api_root, client_id, secret, label, user_id, user_representation)
+        VALUES (1, 'http://openzaak:8000/autorisaties/api/v1/', 'opennotificaties', 'opennotificaties', 'openzaak', 'opennotificaties', 'opennotificaties')
+        ON CONFLICT (id) DO NOTHING;
+        PERFORM setval(pg_get_serial_sequence('vng_api_common_apicredential', 'id'), 1, true);
+    END IF;
+END $$;
 
 INSERT INTO vng_api_common_jwtsecret VALUES (1, 'objectsapi', '9wu2''''Z`[x(eEk![:.$mBT6&:F!,%)EY74TS.AU+6');
 INSERT INTO vng_api_common_jwtsecret VALUES (2, 'valtimo', 'zZ!xRP&$qTn4A9ETa^ZMKepDm^8egjPz');

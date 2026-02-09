@@ -81,15 +81,19 @@ SELECT setval(pg_get_serial_sequence('catalogi_besluittype_zaaktypen', 'id'), 1,
 INSERT INTO catalogi_zaaktypeinformatieobjecttype(id, uuid, volgnummer, richting, informatieobjecttype_id, statustype_id, zaaktype_id, _etag) VALUES (1, '405da8a9-7296-439c-a2eb-a470b84f17ee', 1, 'inkomend', 1, NULL, 1, '_etag');
 SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 1, true);
 
-UPDATE notifications_notificationsconfig SET api_root = 'http://host.docker.internal:8002/api/v1/';
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notifications_notificationsconfig') THEN
+        UPDATE notifications_notificationsconfig SET api_root = 'http://host.docker.internal:8002/api/v1/';
+    END IF;
+END $$;
 
-DELETE FROM zgw_consumers_service where id = 1;
-INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file) VALUES (1, uuid_generate_v4(), 'Open formulieren', 'nrc', 'http://host.docker.internal:8002/api/v1/', 'openzaak', 'openzaak', 'zgw', '', '', 'http://host.docker.internal:8002/api/v1/schema/openapi.yaml', '', '', '', '');
+INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file, timeout, api_connection_check_path, slug) VALUES (1, uuid_generate_v4(), 'Open formulieren', 'nrc', 'http://host.docker.internal:8002/api/v1/', 'openzaak', 'openzaak', 'zgw', '', '', 'http://host.docker.internal:8002/api/v1/schema/openapi.yaml', '', '', '', '', 10, '', 'open-formulieren') ON CONFLICT (id) DO UPDATE SET api_root = EXCLUDED.api_root, client_id = EXCLUDED.client_id, secret = EXCLUDED.secret;
 SELECT setval(pg_get_serial_sequence('zgw_consumers_service', 'id'), 1, true);
 
 INSERT INTO zaken_zaakidentificatie(id, identificatie, bronorganisatie) VALUES (1, 'ZAAK-2024-0000000001', '000000000');
 SELECT setval(pg_get_serial_sequence('zaken_zaakidentificatie', 'id'), 1, true);
-INSERT INTO zaken_zaak(id, uuid, identificatie, bronorganisatie, omschrijving, toelichting, registratiedatum, verantwoordelijke_organisatie, startdatum, producten_of_diensten, communicatiekanaal, vertrouwelijkheidaanduiding, betalingsindicatie, verlenging_reden, opschorting_indicatie, opschorting_reden, selectielijstklasse, archiefstatus, _zaaktype_id, hoofdzaak_id, _etag, opdrachtgevende_organisatie, identificatie_ptr_id, processobject_datumkenmerk, processobject_identificatie, processobject_objecttype, processobject_registratie, processobjectaard) values (1, uuid_generate_v4(), 'ZAAK-2021-0000000001', '051845623', '', '', now(), '051845623', now(), '{}', '', 'openbaar', '', '', false, '', '', 'nog_te_archiveren', 1, 1, '_etag', '051845623', 1, '', '', '', '', '');
+INSERT INTO zaken_zaak(id, uuid, identificatie, bronorganisatie, omschrijving, toelichting, registratiedatum, verantwoordelijke_organisatie, startdatum, producten_of_diensten, communicatiekanaal, vertrouwelijkheidaanduiding, betalingsindicatie, verlenging_reden, opschorting_indicatie, opschorting_reden, selectielijstklasse, archiefstatus, _zaaktype_id, hoofdzaak_id, _etag, opdrachtgevende_organisatie, identificatie_ptr_id, processobject_datumkenmerk, processobject_identificatie, processobject_objecttype, processobject_registratie, processobjectaard, created_on, communicatiekanaal_naam) values (1, uuid_generate_v4(), 'ZAAK-2021-0000000001', '051845623', '', '', now(), '051845623', now(), '{}', '', 'openbaar', '', '', false, '', '', 'nog_te_archiveren', 1, 1, '_etag', '051845623', 1, '', '', '', '', '', now(), '');
 SELECT setval(pg_get_serial_sequence('zaken_zaak', 'id'), 1, true);
 INSERT INTO zaken_rol(id, uuid, betrokkene, betrokkene_type, omschrijving, omschrijving_generiek, roltoelichting, registratiedatum, indicatie_machtiging, _roltype_id, zaak_id, _etag, afwijkende_naam_betrokkene, contactpersoon_rol_emailadres, contactpersoon_rol_functie, contactpersoon_rol_naam, contactpersoon_rol_telefoonnummer) VALUES (1, uuid_generate_v4(), '', 'natuurlijk_persoon', 'Aanvrager', 'initiator', 'Test rol', now(), 'gemachtigde', 1, 1, '_etag', '', '', '', '', '');
 SELECT setval(pg_get_serial_sequence('zaken_rol', 'id'), 1, true);
