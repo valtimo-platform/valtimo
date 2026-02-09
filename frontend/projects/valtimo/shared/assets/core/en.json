@@ -994,6 +994,15 @@
       "fieldType": "Field type",
       "fieldTypePlaceholder": "Enter a field type",
       "fieldTypeTooltip": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+      "dropdownDataProvider": "Dropdown data source",
+      "dropdownDataProviderPlaceholder": "Select a data source",
+      "dropdownDataProviderTooltip": "The dropdown data source determines where the dropdown values come from.",
+      "dropdownValues": "Dropdown values",
+      "dropdownValueKey": "Value",
+      "dropdownValueKeyPlaceholder": "Enter value",
+      "dropdownValueValue": "Display",
+      "dropdownValueValuePlaceholder": "Enter the display text",
+      "addDropdownValue": "Add dropdown value",
       "add": "Add filter"
     },
     "displayConditions": {
