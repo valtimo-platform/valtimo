@@ -57,12 +57,7 @@
           {{ 'formManagement.back' | translate }}
         </button>
 
-        <button
-          [disabled]="form?.invalid"
-          type="submit"
-          cdsButton="primary"
-          (click)="$event.preventDefault()"
-        >
+        <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>
