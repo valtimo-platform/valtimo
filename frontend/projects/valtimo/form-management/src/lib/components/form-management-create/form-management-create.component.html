@@ -61,6 +61,7 @@
           [disabled]="form?.invalid"
           type="submit"
           cdsButton="primary"
+          (click)="$event.preventDefault()"
         >
           {{ 'formManagement.submit' | translate }}
         </button>
