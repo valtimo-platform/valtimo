@@ -14,11 +14,53 @@
  * limitations under the License.
  */
 
-import {Components} from '@formio/js';
-
-const TextfieldEditForm = Components.components.textfield.editForm;
-
-export const formIoCurrentUserEditForm = () => {
-  const editForm = TextfieldEditForm();
-  return editForm;
-};
+export const formIoCurrentUserEditForm = () => ({
+  components: [
+    {
+      key: 'type',
+      type: 'hidden',
+    },
+    {
+      key: 'label',
+      type: 'textfield',
+      input: true,
+      label: 'Label',
+      placeholder: 'Label',
+      defaultValue: 'Valtimo Current User',
+      validate: {
+        required: true,
+      },
+    },
+    {
+      key: 'key',
+      type: 'textfield',
+      input: true,
+      label: 'Property Name',
+      placeholder: 'Property Name',
+      tooltip: 'The name of this field in the API endpoint.',
+      validate: {
+        required: true,
+      },
+    },
+    {
+      key: 'tableView',
+      type: 'checkbox',
+      label: 'Table View',
+      tooltip: 'If checked, this value will show up in the table view of the submissions list.',
+    },
+    {
+      key: 'hideLabel',
+      type: 'checkbox',
+      label: 'Hide Label',
+      tooltip:
+        'Hide the label of this component. This setting will display the label in the form builder, but hide the label when the form is rendered.',
+    },
+    {
+      key: 'hidden',
+      type: 'checkbox',
+      label: 'Hidden',
+      tooltip:
+        'A hidden field is still a part of the form JSON, but is hidden when viewing the form is rendererd.',
+    },
+  ],
+});

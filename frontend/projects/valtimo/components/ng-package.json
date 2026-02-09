@@ -30,7 +30,7 @@
     "flatpickr",
     "lodash",
     "jwt-decode",
-    "@formio/js",
+    "formiojs",
     "deepmerge-ts",
     "@carbon/charts-angular",
     "@types/topojson",

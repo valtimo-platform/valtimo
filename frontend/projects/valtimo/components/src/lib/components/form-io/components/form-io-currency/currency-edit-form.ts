@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Components} from '@formio/js';
+import {Components} from 'formiojs';
 
 const TextFieldEditForm = Components.components.textfield.editForm;
 
