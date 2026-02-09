@@ -131,7 +131,15 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       id: 'like',
       content: this.translateService.instant('searchFieldsOverview.like'),
       selected: false,
-    }
+    },
+  ];
+
+  private readonly DROPDOWN_PROVIDER_ITEMS: ListItem[] = [
+    {
+      id: 'dropdownDatabaseDataProvider',
+      content: this.translateService.instant('searchFieldsOverview.dropdownDatabaseDataProvider'),
+      selected: false,
+    },
   ];
 
   constructor(
@@ -198,26 +206,34 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     const fieldTypeId = filter?.fieldType;
     const matchTypeId = filter?.matchType;
 
-    return this.fb.group({
+    const formGroup = this.fb.group({
       title: this.fb.control<string>(filter?.title ?? '', Validators.required),
       key: this.fb.control<string>(filter?.key ?? '', Validators.required),
-
       dataType: this.fb.control<ListItem | null>(
         this.DATA_TYPE_ITEMS.find(item => item.id === dataTypeId) ?? null,
         Validators.required
       ),
-
       fieldType: this.fb.control<ListItem | null>(
         this.FIELD_TYPE_ITEMS.find(item => item.id === fieldTypeId) ?? null,
         Validators.required
       ),
-
       matchType: this.fb.control<ListItem | null>(
         this.MATCH_TYPE_ITEMS.find(item => item.id === matchTypeId) ?? null
       ),
+      dropdownDataProvider: this.fb.control<ListItem | null>(
+        this.DROPDOWN_PROVIDER_ITEMS.find(item => item.id === filter?.dropdownDataProvider) ?? null
+      ),
+      dropdownValues: this.fb.array<FormGroup>([]),
     });
-  }
 
+    if (filter?.dropdownValues) {
+      Object.entries(filter.dropdownValues).forEach(([k, v]) =>
+        this.addDropdownValue(formGroup, {key: k, value: v})
+      );
+    }
+
+    return formGroup;
+  }
 
   private initForm(): void {
     const filters =
@@ -229,9 +245,7 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       return;
     }
 
-    filters.forEach(filter =>
-      this.filters.push(this.createFilterFormGroup(filter), {emitEvent: false})
-    );
+    filters.forEach(filter => this.filters.push(this.createFilterFormGroup(filter), {emitEvent: false}));
     this.widgetWizardService.$widgetFiltersValid.set(this.formGroup.valid);
     this.expandedFilterIndex = 0;
   }
@@ -239,12 +253,44 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   private openFormSubscription(): void {
     this._subscriptions.add(
       this.formGroup.valueChanges.pipe(debounceTime(100)).subscribe(({filters}) => {
+        (filters ?? []).forEach((_, index) => {
+          const fg = this.filters.at(index) as FormGroup;
+
+          const dataTypeId = fg.get('dataType')?.value?.id;
+          const fieldTypeId = fg.get('fieldType')?.value?.id;
+
+          const isDropdown =
+            dataTypeId === 'text' &&
+            (fieldTypeId === 'single-select-dropdown' || fieldTypeId === 'multi-select-dropdown');
+
+          if (isDropdown && !fg.get('dropdownDataProvider')?.value) {
+            fg.get('dropdownDataProvider')?.setValue(this.DROPDOWN_PROVIDER_ITEMS[0], {emitEvent: false});
+          }
+
+          if (isDropdown) {
+            const providerId = fg.get('dropdownDataProvider')?.value?.id;
+            if (providerId === 'dropdownDatabaseDataProvider') {
+              const arr = this.getDropdownValuesArray(fg);
+              if (arr.length === 0) {
+                this.addDropdownValue(fg);
+              }
+            }
+          }
+
+          if (!isDropdown && fg.get('dropdownDataProvider')?.value) {
+            fg.get('dropdownDataProvider')?.setValue(null, {emitEvent: false});
+            this.getDropdownValuesArray(fg).clear();
+          }
+        });
+
         const mappedFilters: WidgetFilter[] = (filters ?? []).map(filter => ({
           title: filter.title,
           key: filter.key,
           dataType: this.getListItemId(filter.dataType) ?? null,
           fieldType: this.getListItemId(filter.fieldType) ?? null,
           matchType: this.getListItemId(filter.matchType) ?? null,
+          dropdownDataProvider: this.getListItemId((filter as any).dropdownDataProvider) ?? null,
+          dropdownValues: this.mapDropdownValues(filter.dropdownValues) ?? null,
         }));
 
         this.widgetWizardService.$widgetContent.update(
@@ -254,44 +300,60 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
               filters: mappedFilters,
             }) as WidgetInteractiveTableContent
         );
+
         this.widgetWizardService.$widgetFiltersValid.set(this.formGroup.valid);
       })
     );
   }
 
   public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const value = filterRow.get('dataType')?.value as ListItem | null;
-    const selectedId = value?.id ?? null;
+    const selectedId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
+    this.DATA_TYPE_ITEMS.forEach(item => (item.selected = item.id === selectedId));
+    return this.DATA_TYPE_ITEMS;
+  }
 
-    return this.DATA_TYPE_ITEMS.map(item => ({
-      ...item,
-      selected: item.id === selectedId,
-    }));
+  private getDropdownValuesArray(fg: FormGroup): FormArray {
+    return fg.get('dropdownValues') as FormArray;
   }
 
   public getFieldTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const fieldType = filterRow.get('fieldType')?.value as ListItem | null;
-    const selectedId = fieldType?.id ?? null;
+    const selectedId = (filterRow.get('fieldType')?.value as ListItem | null)?.id ?? null;
+    const dataTypeId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
+    const isText = dataTypeId === 'text';
 
-    const dataType = filterRow.get('dataType')?.value as ListItem | null;
-    const isText = dataType?.id === 'text';
+    const items = this.FIELD_TYPE_ITEMS.filter(
+      item => isText || (item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown')
+    );
 
-    return this.FIELD_TYPE_ITEMS
-      .filter(item => isText || (item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown'))
-      .map(item => ({
-        ...item,
-        selected: item.id === selectedId,
-      }));
+    items.forEach(item => (item.selected = item.id === selectedId));
+    return items;
   }
 
   public getMatchTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const value = filterRow.get('matchType')?.value as ListItem | null;
-    const selectedId = value?.id ?? null;
+    const selectedId = (filterRow.get('matchType')?.value as ListItem | null)?.id ?? null;
+    this.MATCH_TYPE_ITEMS.forEach(item => (item.selected = item.id === selectedId));
+    return this.MATCH_TYPE_ITEMS;
+  }
 
-    return this.MATCH_TYPE_ITEMS.map(item => ({
-      ...item,
-      selected: item.id === selectedId,
-    }));
+  public getDropdownDataProviderItems(filterRow: FormGroup): ListItem[] {
+    const selectedId = (filterRow.get('dropdownDataProvider')?.value as ListItem | null)?.id ?? null;
+    this.DROPDOWN_PROVIDER_ITEMS.forEach(item => (item.selected = item.id === selectedId));
+    return this.DROPDOWN_PROVIDER_ITEMS;
+  }
+
+  public addDropdownValue(filterRow: FormGroup, prefill?: {key: string; value: string}): void {
+    const arr = this.getDropdownValuesArray(filterRow);
+    arr.push(
+      this.fb.group({
+        key: this.fb.control(prefill?.key ?? '', Validators.required),
+        value: this.fb.control(prefill?.value ?? '', Validators.required),
+      })
+    );
+  }
+
+  public removeDropdownValue(filterRow: FormGroup, index: number): void {
+    const arr = this.getDropdownValuesArray(filterRow);
+    arr.removeAt(index);
   }
 
   public onFilterAccordionSelection(expanded: boolean, index: number): void {
@@ -325,5 +387,17 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     filteredItems.splice(index2, 0, itemToInsert);
 
     return filteredItems;
+  }
+
+  private mapDropdownValues(
+    values: {key: string; value: string}[] | null | undefined
+  ): Record<string, string> | null {
+    if (!values || values.length === 0) return null;
+
+    return values.reduce((acc, curr) => {
+      if (!curr?.key) return acc;
+      acc[curr.key] = curr.value ?? '';
+      return acc;
+    }, {} as Record<string, string>);
   }
 }

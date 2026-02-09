@@ -77,7 +77,7 @@ interface WidgetFilter {
   matchType?: string;
   title: string;
   dropdownDataProvider?: string;
-  dropdownValues?: WidgetDropdownValue;
+  dropdownValues?: Record<string, string>;
 }
 
 interface WidgetCustomContent {

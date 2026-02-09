@@ -1022,6 +1022,15 @@
       "fieldType": "Veldtype",
       "fieldTypePlaceholder": "Voer een veldtype in",
       "fieldTypeTooltip": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+      "dropdownDataProvider": "Dropdown-databron",
+      "dropdownDataProviderPlaceholder": "Kies een databron",
+      "dropdownDataProviderTooltip": "De dropdown-databron bepaalt waar de waarden voor de dropdown vandaan komen.",
+      "dropdownValues": "Dropdown-waarden",
+      "dropdownValueKey": "Waarde",
+      "dropdownValueKeyPlaceholder": "Voer een waarde in",
+      "dropdownValueValue": "Weergave",
+      "dropdownValueValuePlaceholder": "Voer de weergegeven tekst in",
+      "addDropdownValue": "Dropdown-waarde toevoegen",
       "add": "Filter toevoegen"
     },
     "displayConditions": {

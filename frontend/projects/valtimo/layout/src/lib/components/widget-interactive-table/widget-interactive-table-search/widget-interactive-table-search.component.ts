@@ -39,7 +39,8 @@ import {
 } from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule, TimePickerModule} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
-import {WidgetFilter, WidgetInteractiveTableEventSearchRequest} from '../../../models';
+import {WidgetFilter, WidgetInteractiveTableEventSearchRequest, WidgetDropdownValue} from '../../../models';
+import {WidgetInteractiveTableService} from '../../../services';
 
 @Component({
   selector: 'valtimo-widget-interactive-table-search',
@@ -78,6 +79,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this._filters = value ?? [];
     this.buildFiltersFormControls();
     this.setInitialForm();
+    this.loadDropdownItems();
   }
 
   public get filters(): WidgetFilter[] {
@@ -96,6 +98,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   public readonly formGroup = this.fb.group({
     filters: this.fb.group({}),
   });
+
+  public readonly dropdownSelectItemsMap: Record<string, Array<{id: string; text: string}>> = {};
 
   private readonly _subscriptions = new Subscription();
 
@@ -117,7 +121,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly widgetInteractiveTableService: WidgetInteractiveTableService
   ) {
     this.iconService.register(TrashCan16);
   }
@@ -125,6 +130,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   public ngOnInit(): void {
     this.buildFiltersFormControls();
     this.setInitialForm();
+    this.loadDropdownItems();
 
     this._subscriptions.add(
       this.filtersFormGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
@@ -154,13 +160,19 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
         return;
       }
 
+      if (this.isDropdownField(filter)) {
+        const initialValue = filter.fieldType === 'multi-select-dropdown' ? [] : '';
+        this.ensureControl(filter.key, initialValue);
+        return;
+      }
+
       this.ensureControl(filter.key);
     });
   }
 
-  private ensureControl(key: string): void {
+  private ensureControl(key: string, initialValue: any = ''): void {
     if (!this.filtersFormGroup.get(key)) {
-      this.filtersFormGroup.addControl(key, this.fb.control<any>(''));
+      this.filtersFormGroup.addControl(key, this.fb.control<any>(initialValue));
     }
   }
 
@@ -171,6 +183,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
       if (filter.fieldType === 'range') {
         defaults[`${filter.key}_start`] = '';
         defaults[`${filter.key}_end`] = '';
+      } else if (this.isDropdownField(filter)) {
+        defaults[filter.key] = filter.fieldType === 'multi-select-dropdown' ? [] : '';
       } else {
         defaults[filter.key] = '';
       }
@@ -252,6 +266,12 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   }
 
   private normalizeValue(value: any, dataType: string): any {
+    if (Array.isArray(value)) {
+      return value
+        .map(entry => this.normalizeValue(entry, dataType))
+        .filter(entry => entry !== null && entry !== undefined);
+    }
+
     if (value && typeof value === 'object' && 'id' in value) value = (value as any).id;
 
     if (dataType === 'boolean') {
@@ -267,5 +287,43 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     if (typeof value === 'string') return value.trim().length > 0;
     if (Array.isArray(value)) return value.length > 0;
     return true;
+  }
+
+  public getDropdownSelectItems(filter: WidgetFilter): Array<{id: string; text: string}> {
+    return Object.entries(filter.dropdownValues ?? {}).map(([key, text]) => ({
+      id: key,
+      text,
+    }));
+  }
+
+  private isDropdownField(filter: WidgetFilter): boolean {
+    return ['single-select-dropdown', 'multi-select-dropdown'].includes(filter.fieldType);
+  }
+
+  private loadDropdownItems(): void {
+    this.filters
+      .filter(f => this.isDropdownField(f) && !!f.dropdownDataProvider && !!f.key)
+      .forEach(filter => {
+        const provider = filter.dropdownDataProvider as string;
+        const dropdownKey = filter.key;
+
+        this._subscriptions.add(
+          this.widgetInteractiveTableService
+            .getDropdownValues(provider, dropdownKey)
+            .subscribe((values: WidgetDropdownValue | null) => {
+              const dropdownEntries = Object.entries(values ?? {});
+
+              if (!dropdownEntries.length) {
+                delete this.dropdownSelectItemsMap[filter.key];
+                return;
+              }
+
+              this.dropdownSelectItemsMap[filter.key] = dropdownEntries.map(([id, text]) => ({
+                id,
+                text,
+              }));
+            })
+        );
+      });
   }
 }
