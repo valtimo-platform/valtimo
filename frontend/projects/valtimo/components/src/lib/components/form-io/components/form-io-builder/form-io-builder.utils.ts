@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 
 import {ValtimoWindow} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
-let formioParams: Observable<{caseDefinitionKey: ''; caseDefinitionVersionTag: ''}>;
+const formioParams$ = new BehaviorSubject<{
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+} | null>(null);
+let formioParamsSubscription: Subscription | null = null;
 
 const modifyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
@@ -30,10 +34,18 @@ const modifyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (editForm: any, params: any): void => {
+const addValueResolverSelectorToEditform = (editForm: any, params$: Observable<any>): void => {
   const valtimoWindow = window as ValtimoWindow;
   const valtimoTabKey = 'valtimo';
-  formioParams = params;
+
+  // Unsubscribe from previous subscription if it exists
+  if (formioParamsSubscription) {
+    formioParamsSubscription.unsubscribe();
+  }
+  // Subscribe to the params Observable and forward values to the BehaviorSubject
+  formioParamsSubscription = params$.subscribe(params => {
+    formioParams$.next(params);
+  });
 
   if (valtimoWindow?.flags?.formioValueResolverSelectorComponentRegistered) {
     const tabComponents = editForm?.components?.find(element => element.key === 'tabs')?.components;
@@ -62,4 +74,4 @@ const addValueResolverSelectorToEditform = (editForm: any, params: any): void =>
   return editForm;
 };
 
-export {modifyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};
+export {modifyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams$};
