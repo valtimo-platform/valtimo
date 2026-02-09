@@ -22,56 +22,100 @@
 
     <changeSet id="2" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
-            <not>
-                <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
-            </not>
+            <or>
+                <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                    <param name="className"
+                           value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername"/>
+                </customPrecondition>
+                <not>
+                    <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
+                </not>
+            </or>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="3" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername"/>
+            </customPrecondition>
             <not>
                 <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
             </not>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="4" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername"/>
+            </customPrecondition>
             <not>
                 <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
             </not>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="5" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId"/>
+            </customPrecondition>
             <not>
                 <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
             </not>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateJsonSchemaDocumentAssigneeToUserId"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="6" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateNoteCreatedByToUsername"/>
+            </customPrecondition>
             <not>
                 <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
             </not>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateNoteCreatedByToUsername"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateNoteCreatedByToUsername"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="7" author="Ritense">
         <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateUserSettingsToUsername"/>
+            </customPrecondition>
             <not>
                 <changeSetExecuted id="1" author="Ritense" changeLogFile="config/liquibase/changelog/20250506-migrate-to-keycloak-username.xml" />
             </not>
         </preConditions>
-        <customChange class="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateUserSettingsToUsername"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateUserSettingsToUsername"/>
+        </customChange>
     </changeSet>
 
 </databaseChangeLog>

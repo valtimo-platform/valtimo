@@ -46,10 +46,17 @@
 
     <changeSet id="4" author="Ritense">
         <preConditions onFail="MARK_RAN">
+            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
+                <param name="className"
+                       value="com.ritense.processdocument.liquibase.changelog.ChangeLog20250514MigrateProcessDefinitions"/>
+            </customPrecondition>
             <tableExists tableName="form_io_form_definition"/>
             <tableExists tableName="process_link"/>
         </preConditions>
-        <customChange class="com.ritense.processdocument.liquibase.changelog.ChangeLog20250514MigrateProcessDefinitions"/>
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.ritense.processdocument.liquibase.changelog.ChangeLog20250514MigrateProcessDefinitions"/>
+        </customChange>
     </changeSet>
 
     <changeSet id="5" author="Ritense">
