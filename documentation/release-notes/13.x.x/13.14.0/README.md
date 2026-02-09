@@ -34,7 +34,7 @@
 * **Call depth detection for process instances**
 
   Valtimo keeps track of how many process instances "deep" a process is. This is meant to help detect when a loop is included
-  in your case, and as such, provides a warning whenever a certain threshold is passed. The default for this is 100, but
+  in your case, and as such, provides a warning whenever a certain threshold is passed. The default for this is 50, but
   this can be configured with the `valtimo.process.call-depth-warning-threshold` property.
 
 ## Bugfixes
