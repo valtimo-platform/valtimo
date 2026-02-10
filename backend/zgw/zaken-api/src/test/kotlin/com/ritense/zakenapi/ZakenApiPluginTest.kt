@@ -936,8 +936,6 @@ internal class ZakenApiPluginTest {
 
         val request = requestCaptor.firstValue
         assertEquals(zaakUrl, request.zaak)
-        assertEquals(1, request.page)
-        assertEquals(100, request.pageSize)
 
         verify(zakenApiClient).deleteZaakResultaat(any(), any(), eq(resultaatUuid))
         verifyNoMoreInteractions(zakenApiClient)

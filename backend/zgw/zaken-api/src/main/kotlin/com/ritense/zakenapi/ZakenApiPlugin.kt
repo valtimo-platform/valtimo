@@ -883,33 +883,21 @@ class ZakenApiPlugin(
         ) {
             logger.debug { "Deleting all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
 
-            var page = 1
-            val pageSize = 100
-
             // It's only possible for one zaak-resultaat to be linked to a zaak. However, because the api specs allow for multiple results and there's no bulk delete endpoint, we need to page through the results and delete them one by one.
-            while (true) {
-                val resultatenPage = client.getAllZaakResultaten(
+            val resultatenPage = client.getAllZaakResultaten(
+                authenticationPluginConfiguration,
+                url,
+                GetZaakResultatenRequest(
+                    zaak = zaakUrl,
+                )
+            )
+
+            resultatenPage.results.forEach { resultaat ->
+                client.deleteZaakResultaat(
                     authenticationPluginConfiguration,
                     url,
-                    GetZaakResultatenRequest(
-                        zaak = zaakUrl,
-                        page = page,
-                        pageSize = pageSize
-                    )
+                    resultaat.uuid
                 )
-
-                if (resultatenPage.results.isEmpty()) break
-
-                resultatenPage.results.forEach { resultaat ->
-                    client.deleteZaakResultaat(
-                        authenticationPluginConfiguration,
-                        url,
-                        resultaat.uuid
-                    )
-                }
-
-                if (resultatenPage.next == null) break
-                page++
             }
 
             logger.info { "Deleted all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
