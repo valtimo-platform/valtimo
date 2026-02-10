@@ -24,6 +24,7 @@ import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import java.util.UUID
 
 class ZgwResourceSpecification(
     authRequest: AuthorizationRequest<ZgwResourcePermission>,
@@ -40,7 +41,7 @@ class ZgwResourceSpecification(
     }
 
     override fun identifierToEntity(identifier: String): ZgwResourcePermission {
-        return ZgwResourcePermission()
+        return ZgwResourcePermission(UUID.fromString(identifier))
     }
 
     companion object {

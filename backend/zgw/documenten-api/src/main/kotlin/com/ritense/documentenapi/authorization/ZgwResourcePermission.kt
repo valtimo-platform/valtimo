@@ -16,4 +16,8 @@
 
 package com.ritense.documentenapi.authorization
 
-class ZgwResourcePermission
+import java.util.UUID
+
+class ZgwResourcePermission(
+    val documentId: UUID
+)

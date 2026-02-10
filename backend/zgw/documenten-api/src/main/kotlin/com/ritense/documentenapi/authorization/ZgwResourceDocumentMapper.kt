@@ -22,7 +22,6 @@ import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.documentenapi.client.DocumentInformatieObject
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Root
@@ -30,23 +29,18 @@ import jakarta.persistence.criteria.Root
 
 class ZgwResourceDocumentMapper(
     private val documentRepository: JsonSchemaDocumentRepository
-) : AuthorizationEntityMapper<DocumentInformatieObject, JsonSchemaDocument> {
+) : AuthorizationEntityMapper<ZgwResourcePermission, JsonSchemaDocument> {
 
     override fun mapRelated(
-        entity: DocumentInformatieObject
+        entity: ZgwResourcePermission
     ): List<JsonSchemaDocument> {
-        TODO("Not yet implemented")
-//        val zaakUrl = entity.zaakUrl
-//            ?: throw IllegalArgumentException("zaakUrl is required")
-//
-//        val documentId = zaakInstanceLinkService.getByZaakInstanceUrl(zaakUrl).documentId
-//        val document = jsonSchemaDocumentService.get(documentId.toString())
-//        val definition = jsonSchemaDocumentDefinitionService.findBy(document.definitionId()).get()
-//        return runWithoutAuthorization { listOf(documentRepository.findById(JsonSchemaDocumentId.existingId(entity.documentId)).get()) }
+        return runWithoutAuthorization {
+            listOf(documentRepository.findById(JsonSchemaDocumentId.existingId(entity.documentId)).get())
+        }
     }
 
     override fun mapQuery(
-        root: Root<DocumentInformatieObject>,
+        root: Root<ZgwResourcePermission>,
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder,
     ): AuthorizationEntityMapperResult<JsonSchemaDocument> {
@@ -54,6 +48,6 @@ class ZgwResourceDocumentMapper(
     }
 
     override fun supports(fromClass: Class<*>, toClass: Class<*>): Boolean {
-        return fromClass == DocumentInformatieObject::class.java && toClass == JsonSchemaDocument::class.java
+        return fromClass == ZgwResourcePermission::class.java && toClass == JsonSchemaDocument::class.java
     }
 }

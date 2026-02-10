@@ -16,9 +16,13 @@
 
 package com.ritense.zakenapi.service
 
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.authorization.ZgwResourcePermission
+import com.ritense.documentenapi.authorization.ZgwResourcePermissionActionProvider
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.AUTEUR
@@ -60,6 +64,7 @@ class ZaakDocumentService(
     private val catalogiService: CatalogiService,
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService,
+    private val authorizationService: AuthorizationService,
 ) {
 
     fun getInformatieObjectenAsRelatedFiles(
