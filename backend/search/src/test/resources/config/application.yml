@@ -3,7 +3,6 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
   liquibase:
     enabled: false
-    change-log: classpath:/config/liquibase/initial-setup/initial-setup-master.xml
   jpa:
     show_sql: true
     open-in-view: false
