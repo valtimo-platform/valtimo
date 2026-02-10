@@ -55,7 +55,7 @@ export class IkoPage {
   // Server operations
   async openServerModal() {
     await this.addApiConfigButton.click();
-    await this.page.waitForSelector('cds-modal[open]');
+    await expect(this.apiTitleInput).toBeVisible();
   }
 
   async fillPropertyFields(fields: IkoPropertyField[]) {
@@ -83,7 +83,7 @@ export class IkoPage {
 
   async openViewModalFromNoResults() {
     await this.addViewButton.click();
-    await this.page.waitForSelector('cds-modal[open]');
+    await expect(this.viewTitleInput).toBeVisible();
   }
 
   async fillViewForm() {
