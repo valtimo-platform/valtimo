@@ -82,7 +82,7 @@ export class IkoPage {
   }
 
   async openViewModalFromNoResults() {
-    await this.addViewButton.first().click();
+    await this.page.locator('valtimo-no-results').getByTestId('ikoViewsAddButton').click();
     await expect(this.viewTitleInput).toBeVisible();
   }
 
