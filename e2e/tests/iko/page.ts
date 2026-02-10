@@ -61,6 +61,7 @@ export class IkoPage {
   async fillPropertyFields(fields: IkoPropertyField[]) {
     for (const field of fields) {
       const input = this.page.getByTestId(field.testId);
+      await expect(input).toBeVisible();
       await input.fill(field.value);
     }
   }
