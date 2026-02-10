@@ -45,6 +45,7 @@
     </changeSet>
 
     <changeSet id="4" author="Ritense">
+        <validCheckSum>9:c0e0e3633b57cbf12f890a553e002bd5</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
                 <param name="className"
