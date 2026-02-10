@@ -106,4 +106,11 @@ export const endpoints = {
   version: {
     get: '/api/v1/valtimo/version',
   },
+
+  iko: {
+    getRepositoryConfigs: '/api/management/v1/iko',
+    deleteRepositoryConfig: (key: string) => `/api/management/v1/iko/${key}`,
+    getViews: '/api/management/v1/iko-view',
+    deleteView: (key: string) => `/api/management/v1/iko-view/${key}`,
+  },
 };
