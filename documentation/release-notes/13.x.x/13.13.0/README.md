@@ -6,7 +6,7 @@
 
 ## Migration
 
-* [Front-end migration](front-end-migration.md)
+* [Front-end migration](./front-end-migration.md)
 
 ## New Features
 
