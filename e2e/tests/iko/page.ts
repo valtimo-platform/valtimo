@@ -82,7 +82,7 @@ export class IkoPage {
   }
 
   async openViewModalFromNoResults() {
-    await this.addViewButton.click();
+    await this.addViewButton.first().click();
     await expect(this.viewTitleInput).toBeVisible();
   }
 
