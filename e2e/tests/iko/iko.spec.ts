@@ -40,7 +40,7 @@ test.describe('IKO Management', () => {
       await ikoPage.clickServerRow(serverConfiguration.title);
 
       // Act — add view
-      await ikoPage.openViewModalFromNoResults();
+      await ikoPage.openViewModal();
       await ikoPage.fillViewForm();
       await ikoPage.saveViewConfiguration();
 

@@ -81,8 +81,8 @@ export class IkoPage {
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
-  async openViewModalFromNoResults() {
-    await this.page.locator('valtimo-no-results').getByTestId('ikoViewsAddButton').click();
+  async openViewModal() {
+    await this.addViewButton.first().click();
     await expect(this.viewTitleInput).toBeVisible();
   }
 
