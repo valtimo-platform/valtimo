@@ -1,41 +1,41 @@
-# Valtimo Frontend - Functielijst
+# Valtimo Frontend - Function List
 
-Platte lijst van alle functies, gegroepeerd per feature.
+Flat list of all functions, grouped by feature.
 
 ---
 
 ## User Features
 
 ### Feature 1: Dashboard
-1. Widget-based dashboard weergeven
-2. Widgets configureren per gebruiker/rol
+1. Display widget-based dashboard
+2. Configure widgets per user/role
 3. Real-time data updates (SSE)
 
 ### Feature 2: Cases (User)
-4. Cases overzicht bekijken per definitie
-5. Case details bekijken (tabs)
-6. Cases zoeken/filteren
-7. Case documenten bekijken
-8. Case voortgang/status bekijken
-9. Taken uitvoeren binnen case
+4. View cases overview per definition
+5. View case details (tabs)
+6. Search/filter cases
+7. View case documents
+8. View case progress/status
+9. Execute tasks within case
 
 ### Feature 3: Tasks
-10. Alle open taken bekijken
-11. Taken filteren/sorteren
-12. Taakdetails bekijken
-13. Taak claimen
-14. Taak uitvoeren (formulier invullen)
-15. Taak voltooien
+10. View all open tasks
+11. Filter/sort tasks
+12. View task details
+13. Claim task
+14. Execute task (fill form)
+15. Complete task
 
 ### Feature 4: Objects
-16. Objecten bekijken per type
-17. Object details bekijken
-18. Objecten zoeken/filteren
+16. View objects per type
+17. View object details
+18. Search/filter objects
 
-### Feature 5: Views / Beelden (IKO)
-19. IKO objecten zoeken
-20. Zoekresultaten bekijken
-21. IKO object details bekijken
+### Feature 5: Views / Images (IKO)
+19. Search IKO objects
+20. View search results
+21. View IKO object details
 
 ---
 
@@ -44,215 +44,215 @@ Platte lijst van alle functies, gegroepeerd per feature.
 ### Feature 6: Case Definition Management
 
 **General tab**
-22. Upload process koppelen aan case
-23. Case handler toggle instellen
-24. Auto-assign taken aan case handler toggle
-25. External start form toggle instellen
-26. External start form URL invoeren
+22. Link upload process to case
+23. Set case handler toggle
+24. Set auto-assign tasks to case handler toggle
+25. Set external start form toggle
+26. Enter external start form URL
 
 **Processes tab**
-27. Gekoppelde processen bekijken
-28. Nieuw proces aanmaken
-29. Proces openen in BPMN modeler
-30. BPMN elementen drag-drop toevoegen
-31. Proces eigenschappen instellen (Starts case, Startable by user)
-32. Proces opslaan
+27. View linked processes
+28. Create new process
+29. Open process in BPMN modeler
+30. Add BPMN elements via drag-drop
+31. Set process properties (Starts case, Startable by user)
+32. Save process
 
 **Process Links**
-33. Process link aanmaken (wizard)
-34. Link type Form configureren
-35. Link type FormFlow configureren
-36. Link type Plugin configureren
-37. Plugin actie configureren
+33. Create process link (wizard)
+34. Configure Form link type
+35. Configure FormFlow link type
+36. Configure Plugin link type
+37. Configure plugin action
 
 **Version Management**
-38. Versie selecteren
-39. Alle versies bekijken
-40. Versie beheren
+38. Select version
+39. View all versions
+40. Manage version
 
 **Decision Tables tab**
-41. Gekoppelde beslistabellen bekijken
-42. Beslistabel uploaden (.dmn)
-43. Beslistabel openen in DMN editor
-44. DMN Hit policy instellen
-45. DMN input/output kolommen beheren
-46. DMN regels toevoegen/bewerken/verwijderen
-47. Beslistabel opslaan
+41. View linked decision tables
+42. Upload decision table (.dmn)
+43. Open decision table in DMN editor
+44. Set DMN Hit policy
+45. Manage DMN input/output columns
+46. Add/edit/delete DMN rules
+47. Save decision table
 
 **Document tab**
-48. JSON Schema definitie bekijken
-49. JSON Schema downloaden
-50. JSON Schema bewerken
-51. JSON Schema opslaan
+48. View JSON Schema definition
+49. Download JSON Schema
+50. Edit JSON Schema
+51. Save JSON Schema
 
 **Forms tab**
-52. Formulieren lijst bekijken
-53. Formulieren zoeken/filteren
-54. Formulier aanmaken
-55. Form.io builder - componenten toevoegen (drag-drop)
-56. Form.io builder - component configureren
-57. Form.io JSON editor gebruiken
-58. Formulier preview bekijken
-59. Formulier opslaan
+52. View forms list
+53. Search/filter forms
+54. Create form
+55. Form.io builder - add components (drag-drop)
+56. Form.io builder - configure component
+57. Use Form.io JSON editor
+58. View form preview
+59. Save form
 
 **Form Flows tab**
-60. Form flows lijst bekijken
-61. Form flow aanmaken
-62. Form flow JSON bewerken
-63. Form flow opslaan
+60. View form flows list
+61. Create form flow
+62. Edit form flow JSON
+63. Save form flow
 
 **Tasks tab**
-64. Takenlijst kolommen bekijken
-65. Takenlijst kolom toevoegen
-66. Takenlijst kolommen herschikken
-67. Takenlijst zoekvelden bekijken
-68. Takenlijst zoekveld toevoegen
-69. Takenlijst JSON/tabel view toggle
+64. View task list columns
+65. Add task list column
+66. Rearrange task list columns
+67. View task list search fields
+68. Add task list search field
+69. Toggle task list JSON/table view
 
 **Case List tab**
-70. Dossierlijst kolommen bekijken
-71. Dossierlijst kolom toevoegen
-72. Dossierlijst kolommen herschikken
-73. Dossierlijst zoekvelden bekijken
-74. Dossierlijst zoekveld toevoegen
-75. Dossierlijst configuratie downloaden
+70. View case list columns
+71. Add case list column
+72. Rearrange case list columns
+73. View case list search fields
+74. Add case list search field
+75. Download case list configuration
 
-**Case Details - Tabbladen**
-76. Tabs bekijken
-77. Tab toevoegen (Standaard/FormIO/Maatwerk/Widgets)
-78. Tabs herschikken
+**Case Details - Tabs**
+76. View tabs
+77. Add tab (Standard/FormIO/Custom/Widgets)
+78. Rearrange tabs
 
-**Case Details - Statussen**
-79. Statussen bekijken
-80. Status toevoegen
-81. Status kleur instellen
-82. Status zichtbaarheid instellen
-83. Statussen herschikken
+**Case Details - Statuses**
+79. View statuses
+80. Add status
+81. Set status color
+82. Set status visibility
+83. Rearrange statuses
 
 **Case Details - Tags**
-84. Tags bekijken
-85. Tag toevoegen
-86. Tag kleur instellen
+84. View tags
+85. Add tag
+86. Set tag color
 
 **Case Details - Header Widgets**
-87. Header widgets bekijken
-88. Header widget toevoegen
+87. View header widgets
+88. Add header widget
 
 **Case Details - Widgets**
-89. Widgets lijst bekijken
-90. Widget toevoegen (wizard)
-91. Widget type selecteren (Velden/Eigen component/Form.io/Tabel/Collectie/Kaart)
-92. Widget breedte instellen
-93. Widget dichtheid instellen
-94. Widget stijl instellen
-95. Widget inhoud configureren
-96. Widget weergavecondities instellen
-97. Widget scheiding toevoegen
-98. Widgets herschikken
-99. Widget JSON editor gebruiken
+89. View widgets list
+90. Add widget (wizard)
+91. Select widget type (Fields/Custom component/Form.io/Table/Collection/Map)
+92. Set widget width
+93. Set widget density
+94. Set widget style
+95. Configure widget content
+96. Set widget display conditions
+97. Add widget separator
+98. Rearrange widgets
+99. Use widget JSON editor
 
-**ZGW - Algemeen**
-100. Zaakdetails-synchronisatie configureren
-101. Zaak type koppelen
-102. Zaak type bewerken
-103. Zaak type verwijderen
+**ZGW - General**
+100. Configure case details synchronization
+101. Link case type
+102. Edit case type
+103. Delete case type
 
-**ZGW - Document kolommen**
-104. Document kolommen bekijken
-105. Document kolom toevoegen
-106. Document kolom sortering instellen
-107. Document kolommen herschikken
+**ZGW - Document columns**
+104. View document columns
+105. Add document column
+106. Set document column sorting
+107. Rearrange document columns
 
-**ZGW - Document upload-velden**
-108. Upload velden bekijken
-109. Upload veld zichtbaarheid instellen
-110. Upload veld standaardwaarde instellen
+**ZGW - Document upload fields**
+108. View upload fields
+109. Set upload field visibility
+110. Set upload field default value
 
-**ZGW - Document trefwoorden**
-111. Trefwoorden bekijken
-112. Trefwoord toevoegen
-113. Trefwoorden zoeken
+**ZGW - Document keywords**
+111. View keywords
+112. Add keyword
+113. Search keywords
 
 ### Feature 7: Process Management
-114. Processen overzicht bekijken
-115. Nieuw proces aanmaken
-116. BPMN proces bewerken
-117. Proces deployen
-118. Proces versies beheren
+114. View process overview
+115. Create new process
+116. Edit BPMN process
+117. Deploy process
+118. Manage process versions
 
 ### Feature 8: Decision Table Management
-119. Beslistabellen overzicht bekijken
-120. Beslistabel aanmaken
-121. Beslistabel bewerken (DMN modeler)
-122. Beslistabel testen
+119. View decision tables overview
+120. Create decision table
+121. Edit decision table (DMN modeler)
+122. Test decision table
 
 ### Feature 9: Plugin Management
-123. Plugin configuraties beheren
-124. Plugin configuratie toevoegen
-125. Plugin configuratie bewerken
-126. Plugin configuratie verwijderen
+123. Manage plugin configurations
+124. Add plugin configuration
+125. Edit plugin configuration
+126. Delete plugin configuration
 
 ### Feature 10: Dashboard Management
-127. Dashboards beheren
-128. Dashboard widgets configureren
-129. Dashboard aan rollen toewijzen
+127. Manage dashboards
+128. Configure dashboard widgets
+129. Assign dashboard to roles
 
 ### Feature 11: Access Control Management
-130. Rollen bekijken
-131. Rol permissies configureren
-132. Permissies per resource type instellen
+130. View roles
+131. Configure role permissions
+132. Set permissions per resource type
 
 ### Feature 12: Object Management
-133. Object types beheren
-134. Object type configuratie bewerken
+133. Manage object types
+134. Edit object type configuration
 
 ### Feature 13: Building Block Management
-135. Building blocks beheren
-136. Building block processen configureren
-137. Building block versies beheren
+135. Manage building blocks
+136. Configure building block processes
+137. Manage building block versions
 
 ### Feature 14: Translation Management
-138. Vertalingen beheren
-139. Vertaling toevoegen
-140. Vertaling bewerken
+138. Manage translations
+139. Add translation
+140. Edit translation
 
 ### Feature 15: IKO Management
-141. IKO APIs configureren
-142. Zoekacties configureren
-143. IKO widgets configureren
+141. Configure IKO APIs
+142. Configure search actions
+143. Configure IKO widgets
 
 ### Feature 16: Choice Fields Management
-144. Keuzeveld definities beheren
-145. Keuzeveld opties toevoegen/bewerken/verwijderen
+144. Manage choice field definitions
+145. Add/edit/delete choice field options
 
 ### Feature 17: Failed Notifications
-146. Gefaalde notificaties bekijken
-147. Notificatie opnieuw proberen
-148. Notificatie verwijderen
+146. View failed notifications
+147. Retry notification
+148. Delete notification
 
 ### Feature 18: Logs
-149. Applicatie logs bekijken
-150. Logs filteren/zoeken
+149. View application logs
+150. Filter/search logs
 
 ### Feature 19: Case Migration (Beta)
-151. Cases migreren tussen versies
-152. Migratie status bekijken
+151. Migrate cases between versions
+152. View migration status
 
 ### Feature 20: Process Migration
-153. Process instances migreren
-154. Migratie status bekijken
+153. Migrate process instances
+154. View migration status
 
 ---
 
-## Totaal: 154 functies
+## Total: 154 functions
 
-| Categorie | Functies |
-|-----------|----------|
+| Category | Functions |
+|----------|-----------|
 | User Features (1-5) | 21 |
 | Case Definition Management (6) | 92 |
-| Overige Admin Features (7-20) | 41 |
-| **Totaal** | **154** |
+| Other Admin Features (7-20) | 41 |
+| **Total** | **154** |
 
 ---
 
-*Laatst bijgewerkt: 30 januari 2026*
+*Last updated: January 30, 2026*
