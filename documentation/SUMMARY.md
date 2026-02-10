@@ -164,6 +164,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.15.0](release-notes/13.x.x/13.15.0/README.md)
   * [13.14.0](release-notes/13.x.x/13.14.0/README.md)
   * [13.13.0](release-notes/13.x.x/13.13.0/README.md)
   * [13.12.0](release-notes/13.x.x/13.12.0/README.md)
@@ -184,8 +185,8 @@
   * [13.1.2](release-notes/13.x.x/13.1.2/README.md)
   * [13.1.1](release-notes/13.x.x/13.1.1/README.md)
   * [13.0.0](release-notes/13.x.x/13.0.0/README.md)
-    * [13.0.2](release-notes/13.x.x/13.0.2/README.md)
-    * [13.0.1](release-notes/13.x.x/13.0.1/README.md)
+  * [13.0.2](release-notes/13.x.x/13.0.2/README.md)
+  * [13.0.1](release-notes/13.x.x/13.0.1/README.md)
   * [Front-end migration](release-notes/13.x.x/13.0.0/front-end-migration.md)
   * [Back-end migration](release-notes/13.x.x/13.0.0/back-end-migration.md)
 
