@@ -31,15 +31,15 @@ export const viewConfiguration: IkoViewConfiguration = {
   key: 'klant',
   propertyFields: [
     {
-      testId: 'ikoProperty-connectorReference',
+      testId: 'ikoProperty-connectorTag',
       value: 'klant',
     },
     {
-      testId: 'ikoProperty-connectorInstanceReference',
+      testId: 'ikoProperty-connectorInstanceTag',
       value: 'lokaal',
     },
     {
-      testId: 'ikoProperty-endpointReference',
+      testId: 'ikoProperty-endpointOperation',
       value: 'lijst',
     },
   ],
