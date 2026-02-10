@@ -40,11 +40,6 @@ public class CoreTestConfiguration {
     public static class TestConfig {
 
         @Bean
-        public LiquibaseMasterChangeLogLocation coreTestLiquibaseMasterChangeLogLocation() {
-            return new LiquibaseMasterChangeLogLocation("config/liquibase/core-test-only-master.xml");
-        }
-
-        @Bean
         public FakeUserRepository fakeUserRepository() {
             return new FakeUserRepository();
         }
