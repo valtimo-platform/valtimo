@@ -44,24 +44,20 @@ import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RestClient
-import javax.sql.DataSource
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.documentenapi.repository"])
@@ -205,13 +201,6 @@ class DocumentenApiAutoConfiguration {
     @Bean
     fun documentenApiHttpSecurityConfigurer(): DocumentenApiHttpSecurityConfigurer {
         return DocumentenApiHttpSecurityConfigurer()
-    }
-
-    @ConditionalOnClass(DataSource::class)
-    @Order(HIGHEST_PRECEDENCE + 32)
-    @Bean
-    fun documentenApiLiquibaseChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/documenten-api-master.xml")
     }
 
     @Bean

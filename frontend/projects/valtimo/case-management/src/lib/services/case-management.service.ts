@@ -22,7 +22,7 @@ import {
   InterceptorSkipHeader,
 } from '@valtimo/shared';
 import {Page} from '@valtimo/document';
-import {map, Observable} from 'rxjs';
+import {map, Observable, tap} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {
@@ -147,7 +147,7 @@ export class CaseManagementService extends BaseApiService {
     return this.httpClient.post<HttpResponse<Blob>>(
       this.getApiUrl(`management/v1/case/import`),
       file
-    );
+    ).pipe(tap(res => console.log({res})));
   }
 
   public exportDocumentDefinition(

@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd" logicalFilePath="config/liquibase/changelog/20260106-add-tab-properties.xml">
+
+
+    <changeSet id="1" author="Ritense">
+        <validCheckSum>9:d7f526eea8c71bac58ad58e714db8c72</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <addColumn tableName="tab">
+            <column name="properties" type="${jsonType}" defaultValue="{}">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <validCheckSum>9:ba69a8204647b7b7749ea52f74e90858</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <addColumn tableName="tab">
+            <column name="properties" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <update tableName="tab">
+            <column name="properties" value="{}"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <validCheckSum>9:ca5a8555b4bd568fd12f77892f19a967</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <addNotNullConstraint tableName="tab" columnName="properties" columnDataType="${jsonType}"/>
+    </changeSet>
+
+</databaseChangeLog>
