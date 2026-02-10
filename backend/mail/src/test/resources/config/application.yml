@@ -36,3 +36,7 @@ mailing:
     blacklistFilter: true
     sendRedirectedMailsTo:
         - test2@test.com
+
+spring-actuator:
+    username: test
+    password: test

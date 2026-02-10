@@ -71,7 +71,6 @@ import com.ritense.importer.ImportService
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
 import com.ritense.tab.service.TabService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.widget.service.WidgetService
@@ -80,7 +79,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.web.client.RestClient
@@ -151,13 +149,6 @@ class IkoAutoConfiguration {
             ikoViewRepository,
             queryDialectHelper,
         )
-    }
-
-    @Order(HIGHEST_PRECEDENCE + 35)
-    @Bean
-    @ConditionalOnMissingBean(name = ["ikoLiquibaseMasterChangeLogLocation"])
-    fun ikoLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/iko-master.xml")
     }
 
     @Bean
