@@ -101,12 +101,7 @@
               </cds-dropdown>
             }
 
-            @if (
-              (filterRow.get('dataType')?.value?.id) === 'text' &&
-              ((filterRow.get('fieldType')?.value?.id) === 'single-select-dropdown' ||
-                      (filterRow.get('fieldType')?.value?.id) === 'multi-select-dropdown') &&
-              (filterRow.get('dropdownDataProvider')?.value?.id) === 'dropdownDatabaseDataProvider'
-              ) {
+            @if (shouldShowDropdownValues(filterRow)) {
               <div class="valtimo-widget-wizard-filters__list" formArrayName="dropdownValues">
                 <v-input-label
                   [title]="'searchFieldsOverview.dropdownListValues' | translate"

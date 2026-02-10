@@ -201,27 +201,28 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     this.reorderFilters(data.index, data.index + 1);
   }
 
-  private createFilterFormGroup(filter?: WidgetFilter): FormGroup {
-    const dataTypeId = filter?.dataType;
-    const fieldTypeId = filter?.fieldType;
-    const matchTypeId = filter?.matchType;
+  private selectItem(items: ListItem[], id: string | null | undefined): ListItem | null {
+    const found = items.find(i => i.id === id);
+    return found ? {...found, selected: true} : null;
+  }
 
+  private createFilterFormGroup(filter?: WidgetFilter): FormGroup {
     const formGroup = this.fb.group({
       title: this.fb.control<string>(filter?.title ?? '', Validators.required),
       key: this.fb.control<string>(filter?.key ?? '', Validators.required),
       dataType: this.fb.control<ListItem | null>(
-        this.DATA_TYPE_ITEMS.find(item => item.id === dataTypeId) ?? null,
+        this.selectItem(this.DATA_TYPE_ITEMS, filter?.dataType),
         Validators.required
       ),
       fieldType: this.fb.control<ListItem | null>(
-        this.FIELD_TYPE_ITEMS.find(item => item.id === fieldTypeId) ?? null,
+        this.selectItem(this.FIELD_TYPE_ITEMS, filter?.fieldType),
         Validators.required
       ),
       matchType: this.fb.control<ListItem | null>(
-        this.MATCH_TYPE_ITEMS.find(item => item.id === matchTypeId) ?? null
+        this.selectItem(this.MATCH_TYPE_ITEMS, filter?.matchType)
       ),
       dropdownDataProvider: this.fb.control<ListItem | null>(
-        this.DROPDOWN_PROVIDER_ITEMS.find(item => item.id === filter?.dropdownDataProvider) ?? null
+        this.selectItem(this.DROPDOWN_PROVIDER_ITEMS, filter?.dropdownDataProvider)
       ),
       dropdownValues: this.fb.array<FormGroup>([]),
     });
@@ -264,7 +265,10 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
             (fieldTypeId === 'single-select-dropdown' || fieldTypeId === 'multi-select-dropdown');
 
           if (isDropdown && !fg.get('dropdownDataProvider')?.value) {
-            fg.get('dropdownDataProvider')?.setValue(this.DROPDOWN_PROVIDER_ITEMS[0], {emitEvent: false});
+            fg.get('dropdownDataProvider')?.setValue(
+              {...this.DROPDOWN_PROVIDER_ITEMS[0], selected: true},
+              {emitEvent: false}
+            );
           }
 
           if (isDropdown) {
@@ -306,14 +310,13 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     );
   }
 
-  public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
-    const selectedId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
-    this.DATA_TYPE_ITEMS.forEach(item => (item.selected = item.id === selectedId));
-    return this.DATA_TYPE_ITEMS;
-  }
-
   private getDropdownValuesArray(fg: FormGroup): FormArray {
     return fg.get('dropdownValues') as FormArray;
+  }
+
+  public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
+    const selectedId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
+    return this.DATA_TYPE_ITEMS.map(item => ({...item, selected: item.id === selectedId}));
   }
 
   public getFieldTypeDropdownItems(filterRow: FormGroup): ListItem[] {
@@ -325,20 +328,32 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       item => isText || (item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown')
     );
 
-    items.forEach(item => (item.selected = item.id === selectedId));
-    return items;
+    return items.map(item => ({...item, selected: item.id === selectedId}));
   }
 
   public getMatchTypeDropdownItems(filterRow: FormGroup): ListItem[] {
     const selectedId = (filterRow.get('matchType')?.value as ListItem | null)?.id ?? null;
-    this.MATCH_TYPE_ITEMS.forEach(item => (item.selected = item.id === selectedId));
-    return this.MATCH_TYPE_ITEMS;
+    return this.MATCH_TYPE_ITEMS.map(item => ({...item, selected: item.id === selectedId}));
   }
 
   public getDropdownDataProviderItems(filterRow: FormGroup): ListItem[] {
-    const selectedId = (filterRow.get('dropdownDataProvider')?.value as ListItem | null)?.id ?? null;
-    this.DROPDOWN_PROVIDER_ITEMS.forEach(item => (item.selected = item.id === selectedId));
-    return this.DROPDOWN_PROVIDER_ITEMS;
+    const selectedId =
+      (filterRow.get('dropdownDataProvider')?.value as ListItem | null)?.id ?? null;
+    return this.DROPDOWN_PROVIDER_ITEMS.map(item => ({...item, selected: item.id === selectedId}));
+  }
+
+  public shouldShowDropdownValues(filterRow: FormGroup): boolean {
+    const dataTypeId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
+    const fieldTypeId = (filterRow.get('fieldType')?.value as ListItem | null)?.id ?? null;
+    const providerId =
+      (filterRow.get('dropdownDataProvider')?.value as ListItem | null)?.id ?? null;
+    const hasValues = (filterRow.get('dropdownValues')?.value?.length ?? 0) > 0;
+
+    const isDropdownField =
+      dataTypeId === 'text' &&
+      (fieldTypeId === 'single-select-dropdown' || fieldTypeId === 'multi-select-dropdown');
+
+    return isDropdownField && (providerId === 'dropdownDatabaseDataProvider' || hasValues);
   }
 
   public addDropdownValue(filterRow: FormGroup, prefill?: {key: string; value: string}): void {
