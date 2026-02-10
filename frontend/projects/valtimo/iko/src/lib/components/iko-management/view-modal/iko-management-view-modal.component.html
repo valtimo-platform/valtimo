@@ -29,6 +29,7 @@
         formControlName="title"
         cdsText
         cdsLayer
+        data-test-id="ikoViewTitleInput"
         placeholder="{{ 'interface.title' | translate }}"
         [attr.modal-primary-focus]="true"
       />
@@ -51,11 +52,11 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCancel()">
+    <button cdsButton="ghost" data-test-id="ikoViewCancelButton" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" data-test-id="ikoViewSaveButton" (click)="onSave()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

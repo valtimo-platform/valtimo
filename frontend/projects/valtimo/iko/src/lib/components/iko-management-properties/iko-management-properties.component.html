@@ -33,6 +33,7 @@
             [formControlName]="propertyField.key"
             cdsText
             cdsLayer
+            [attr.data-test-id]="'ikoProperty-' + propertyField.key"
             [attr.modal-primary-focus]="true"
           />
         </cds-label>
@@ -47,6 +48,7 @@
             [tooltip]="propertyField.tooltip"
             [appendInline]="false"
             [dropUp]="false"
+            [attr.data-test-id]="'ikoProperty-' + propertyField.key"
           ></v-select>
         }
       }

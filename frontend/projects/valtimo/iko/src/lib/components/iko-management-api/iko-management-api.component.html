@@ -31,7 +31,7 @@
 </valtimo-carbon-list>
 
 <ng-template #addViewButton>
-  <button cdsButton="primary" (click)="openModal()">
+  <button cdsButton="primary" data-test-id="ikoApiAddButton" (click)="openModal()">
     {{ 'ikoManagement.addApiConfig' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
