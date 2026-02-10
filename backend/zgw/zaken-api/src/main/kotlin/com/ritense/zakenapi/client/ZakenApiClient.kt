@@ -427,12 +427,17 @@ class ZakenApiClient(
                         request.page?.let { page -> queryParam("page", page) }
                         request.pageSize?.let { pageSize -> queryParam("pageSize", pageSize) }
                         request.resultaattype?.let { resultaattype -> queryParam("resultaattype", resultaattype) }
-                        request.zaak?.let { zaak -> queryParam("zaak", zaak) }
+                        queryParam("zaak", request.zaak)
                     }
                     .build()
             }
             .retrieve()
             .body<Page<ZaakResultaat>>()!!
+
+        // There can only be one ZaakResultaat for a given Zaak but the API returns a list, so we log an event for each ZaakResultaat that is returned even though in practice there should only be one.
+        result.results.forEach {
+            outboxService.send { ZaakResultaatViewed(objectMapper.valueToTree(it)) }
+        }
 
         return result
     }
