@@ -74,8 +74,7 @@ class DocumentenApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ZgwResourceSpecificationFactory::class)
-    fun zgwResourceSpecificationFactory(
-    ): ZgwResourceSpecificationFactory {
+    fun zgwResourceSpecificationFactory(): ZgwResourceSpecificationFactory {
         return ZgwResourceSpecificationFactory()
     }
 

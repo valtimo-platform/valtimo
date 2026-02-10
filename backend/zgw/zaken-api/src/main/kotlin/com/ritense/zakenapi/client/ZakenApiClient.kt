@@ -188,24 +188,14 @@ class ZakenApiClient(
     ): List<ZaakInformatieObject> {
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
-                    ZgwResourcePermission::class.java,
-                    ZgwResourcePermissionActionProvider.VIEW_LIST,
-                    ZgwResourcePermission()
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.VIEW_LIST,
+                    ResourcePermission()
                 )
             )
         ) {
             return emptyList()
         }
-//        if (!authorizationService.hasPermission(
-//                EntityAuthorizationRequest(
-//                    ResourcePermission::class.java,
-//                    ResourcePermissionActionProvider.VIEW_LIST,
-//                    ResourcePermission()
-//                )
-//            )
-//        ) {
-//            return emptyList()
-//        }
 
         val result = buildRestClient(authentication)
             .get()
