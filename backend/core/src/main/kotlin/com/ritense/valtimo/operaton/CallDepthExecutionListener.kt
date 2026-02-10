@@ -86,7 +86,7 @@ class CallDepthExecutionListener(
 
     companion object {
         private val logger = LoggerFactory.getLogger(CallDepthExecutionListener::class.java)
-        private const val CALL_DEPTH_VARIABLE = "VTM_callDepth"
+        const val CALL_DEPTH_VARIABLE = "VTM_callDepth"
         private const val DEFAULT_CALL_DEPTH = 0
     }
 }
