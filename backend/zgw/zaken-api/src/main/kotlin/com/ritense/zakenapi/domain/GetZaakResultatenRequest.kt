@@ -28,5 +28,5 @@ data class GetZaakResultatenRequest(
     val page: Int? = 1,
     val pageSize: Int? = 100,
     val resultaattype: URI? = null,
-    val zaak: URI,
+    val zaak: URI? = null,
 )

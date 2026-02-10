@@ -427,7 +427,7 @@ class ZakenApiClient(
                         request.page?.let { page -> queryParam("page", page) }
                         request.pageSize?.let { pageSize -> queryParam("pageSize", pageSize) }
                         request.resultaattype?.let { resultaattype -> queryParam("resultaattype", resultaattype) }
-                        request.zaak.let { zaak -> queryParam("zaak", zaak) }
+                        request.zaak?.let { zaak -> queryParam("zaak", zaak) }
                     }
                     .build()
             }
