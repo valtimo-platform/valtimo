@@ -22,16 +22,29 @@ import com.ritense.logging.repository.LoggingEventRepository
 import com.ritense.logging.service.LoggingEventDeletionService
 import com.ritense.logging.service.LoggingEventService
 import com.ritense.logging.testimpl.LogResourceBean
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.mail.MailSender
+import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
 @Tag("integration")
 abstract class BaseIntegrationTest {
+
+    @MockitoBean
+    lateinit var userManagementService: UserManagementService
+
+    @MockitoBean
+    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
+
+    @MockitoBean
+    lateinit var mailSender: MailSender
 
     @Autowired
     lateinit var logResourceBean: LogResourceBean

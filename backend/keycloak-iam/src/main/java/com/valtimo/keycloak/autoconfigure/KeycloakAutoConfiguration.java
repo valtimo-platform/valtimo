@@ -16,9 +16,6 @@
 
 package com.valtimo.keycloak.autoconfigure;
 
-import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
-
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.valtimo.keycloak.repository.KeycloakCurrentUserRepository;
 import com.valtimo.keycloak.security.config.KeycloakOAuth2HttpSecurityConfigurer;
@@ -29,7 +26,6 @@ import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
 import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.UserCache;
-import javax.sql.DataSource;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -97,14 +93,6 @@ public class KeycloakAutoConfiguration {
             @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName
     ) {
         return new KeycloakService(properties, keycloakClientName);
-    }
-
-    @Order(HIGHEST_PRECEDENCE + 31)
-    @Bean
-    @ConditionalOnClass(DataSource.class)
-    @ConditionalOnMissingBean(name = "keycloakLiquibaseMasterChangeLogLocation")
-    public LiquibaseMasterChangeLogLocation keycloakLiquibaseMasterChangeLogLocation() {
-        return new LiquibaseMasterChangeLogLocation("config/liquibase/keycloak-master.xml");
     }
 
     @Bean
