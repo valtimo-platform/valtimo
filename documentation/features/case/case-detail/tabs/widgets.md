@@ -46,14 +46,6 @@ The widget can be configured to display on any number of columns between 1 and 4
 {% endstep %}
 
 {% step %}
-**Choose widget style**
-
-A widget can either have a "Default" color scheme or it can be "High Contrast" to attract focus to that widget and it's content.
-
-<figure><img src="../../../../.gitbook/assets/image (23).png" alt=""><figcaption><p>Choosing widget style</p></figcaption></figure>
-{% endstep %}
-
-{% step %}
 **Choose widget appearance**
 
 For the Fields, Collection and Table widgets you can also choose an appearance color. This color controls the background, accent and text colors rendered by the widget. The available options are **Default**, **Blue**, **Periwinkle**, **Purple**, **Turqoise**, **Green**, **Brown**, **Red**, **Orange** and **Yellow**. The same value is stored in the widget configuration under the `color` property (using the enum names `WHITE`, `BLUE`, `PERIWINKLE`, etc.), so exported files and autodeploy definitions can set it directly as well.
