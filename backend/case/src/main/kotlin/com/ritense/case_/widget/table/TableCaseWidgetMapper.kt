@@ -18,6 +18,7 @@ package com.ritense.case_.widget.table
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.CaseWidgetMapper
+import com.ritense.widget.domain.resolveWidgetColor
 
 class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetDto> {
 
@@ -25,6 +26,7 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
         key = entity.id.key,
         title = entity.title,
         icon = entity.icon,
+        color = entity.color,
         width = entity.width,
         highContrast = entity.highContrast,
         isCompact = entity.isCompact,
@@ -37,6 +39,7 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
         id = CaseWidgetTabWidgetId(dto.key),
         title = dto.title,
         icon = dto.icon,
+        color = resolveWidgetColor(dto.color, dto.highContrast),
         width = dto.width,
         highContrast = dto.highContrast,
         isCompact = dto.isCompact,

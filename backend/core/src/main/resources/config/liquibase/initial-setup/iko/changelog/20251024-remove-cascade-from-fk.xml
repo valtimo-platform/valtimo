@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd" logicalFilePath="config/liquibase/changelog/20251024-remove-cascade-from-fk.xml">
+
+  <changeSet author="Ritense" id="1">
+
+    <!-- iko_repository_config -> iko_data_aggregate -->
+    <dropForeignKeyConstraint
+            baseTableName="iko_data_aggregate"
+            constraintName="fk_iko_data_aggregate_iko_repository_config_key"/>
+    <addForeignKeyConstraint
+            baseTableName="iko_data_aggregate"
+            baseColumnNames="iko_repository_config_key"
+            referencedTableName="iko_repository_config"
+            referencedColumnNames="key"
+            constraintName="fk_iko_data_aggregate_iko_repository_config_key"
+            onDelete="RESTRICT"/>
+
+    <!-- iko_data_aggregate -> iko_data_request -->
+    <dropForeignKeyConstraint
+            baseTableName="iko_data_request"
+            constraintName="fk_iko_data_request_iko_data_aggregate_key"/>
+    <addForeignKeyConstraint
+            baseTableName="iko_data_request"
+            baseColumnNames="iko_data_aggregate_key"
+            referencedTableName="iko_data_aggregate"
+            referencedColumnNames="key"
+            constraintName="fk_iko_data_request_iko_data_aggregate_key"
+            onDelete="RESTRICT"/>
+
+    <!-- iko_data_aggregate -> iko_list_column -->
+    <dropForeignKeyConstraint
+            baseTableName="iko_data_aggregate_list_column"
+            constraintName="fk_iko_data_aggregate_list_column_data_aggregate_key"/>
+    <addForeignKeyConstraint
+            baseTableName="iko_data_aggregate_list_column"
+            baseColumnNames="iko_data_aggregate_key"
+            referencedTableName="iko_data_aggregate"
+            referencedColumnNames="key"
+            constraintName="fk_iko_data_aggregate_list_column_data_aggregate_key"
+            onDelete="RESTRICT"/>
+
+    <!-- iko_data_request -> iko_search_field -->
+    <dropForeignKeyConstraint
+            baseTableName="iko_data_request_search_field"
+            constraintName="fk_iko_data_request_search_field_data_request_key"/>
+    <addForeignKeyConstraint
+            baseTableName="iko_data_request_search_field"
+            baseColumnNames="iko_data_request_key,iko_data_aggregate_key"
+            constraintName="fk_iko_data_request_search_field_data_request_key"
+            referencedTableName="iko_data_request"
+            referencedColumnNames="key,iko_data_aggregate_key"
+            onDelete="RESTRICT"/>
+  </changeSet>
+
+</databaseChangeLog>
