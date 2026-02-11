@@ -1,3 +1,2 @@
 com.ritense.processlink.configuration.ProcessLinkAutoConfiguration
-com.ritense.processlink.configuration.ProcessLinkLiquibaseAutoConfiguration
 com.ritense.processlink.uicomponent.autoconfigure.UIComponentProcessLinkAutoConfiguration

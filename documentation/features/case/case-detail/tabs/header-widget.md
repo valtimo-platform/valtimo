@@ -20,7 +20,7 @@ To create it, click the **`Add widget`** button.
 You will then go through three setup steps:
 
 1. **Choose widget type**
-2. **Choose widget style**
+2. **Choose widget appearance**
 3. **Choose widget content**
 
 > Note: Case header widgets do **not** include width or condition settings.  
