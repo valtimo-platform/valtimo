@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,38 +22,8 @@ import {CustomWidget} from '@valtimo/layout';
   selector: 'app-clock-widget',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="clock-widget">
-      <p class="clock-widget__subtitle">{{ subtitle }}</p>
-      <p class="clock-widget__time">{{ time() }}</p>
-    </div>
-  `,
-  styles: [
-    `
-      .clock-widget {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-      }
-
-      .clock-widget__subtitle {
-        font-size: 0.875rem;
-        color: var(--cds-text-secondary, #525252);
-        margin: 0 0 0.5rem 0;
-      }
-
-      .clock-widget__time {
-        font-size: 2rem;
-        font-weight: 600;
-        font-family: 'IBM Plex Mono', monospace;
-        color: var(--cds-text-primary, #161616);
-        margin: 0;
-        letter-spacing: 0.05em;
-      }
-    `,
-  ],
+  templateUrl: './clock-widget.component.html',
+  styleUrl: './clock-widget.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClockWidgetComponent implements OnInit, OnDestroy {
