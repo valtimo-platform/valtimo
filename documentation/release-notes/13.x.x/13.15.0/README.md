@@ -4,12 +4,6 @@
 **Release date 11-02-2026**
 {% endhint %}
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Widget color customization**
