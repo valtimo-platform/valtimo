@@ -19,6 +19,8 @@ package com.ritense.case_.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.event.DocumentExpired
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.Companion.expiredDocuments
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.outbox.OutboxService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DocumentRetentionPeriodExpiredWorker(
     private val transactionTemplate: TransactionTemplate,
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
+    private val documentRepository: JsonSchemaDocumentRepository,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
 ) {
@@ -45,8 +48,12 @@ class DocumentRetentionPeriodExpiredWorker(
             return
         }
         try {
+            val expiredDocuments = documentRepository.findAll(
+                expiredDocuments()
+            )
+
             runWithoutAuthorization {
-                jsonSchemaDocumentService.getExpiredDocuments().forEach { document ->
+                expiredDocuments.forEach { document ->
                     try {
                         transactionTemplate.execute {
                             logger.debug { "expired doc found: ${document.id()}, retention date: ${document.retentionDate()}" }

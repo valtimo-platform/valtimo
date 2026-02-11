@@ -211,18 +211,6 @@ public class JsonSchemaDocumentService implements DocumentService {
         return document;
     }
 
-    public List<JsonSchemaDocument> getExpiredDocuments() {
-        List<JsonSchemaDocument> expiredDocuments = documentRepository.findAll(
-            expiredDocuments());
-
-        outboxService.send(() ->
-            new DocumentsListed(
-                objectMapper.valueToTree(expiredDocuments)
-            )
-        );
-        return expiredDocuments;
-    }
-
     @Override
     public Page<JsonSchemaDocument> getAllByDocumentDefinitionName(
         Pageable pageable,

@@ -188,7 +188,7 @@ valtimo:
     case:
         processing:
             retention:
-                poll-interval: PT10S
+                poll-interval: PT30M
 
     hardening:
         allowStacktraceOnIps:

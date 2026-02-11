@@ -22,9 +22,28 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="/initial-setup/initial-setup-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-15-0/13-15-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-16-0/13-16-0-master.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1" author="Ritense">
+        <addColumn tableName="internal_case_status">
+            <column name="internal_case_retention_period_in_days" type="${intType}" defaultValueNumeric="-1">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 
+    <changeSet id="2" author="Ritense">
+        <addColumn tableName="json_schema_document">
+            <column name="retention_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <addColumn tableName="json_schema_document_snapshot">
+            <column name="document_retention_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
