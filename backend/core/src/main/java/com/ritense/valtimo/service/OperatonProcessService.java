@@ -780,9 +780,9 @@ public class OperatonProcessService {
             );
         });
 
-        bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
-            String binding = callActivity.getOperatonCalledElementBinding();
-            String existingVersionTag = callActivity.getOperatonCalledElementVersionTag();
+        bpmnModel.getModelElementsByType(BusinessRuleTask.class).forEach(businessRuleTask -> {
+            String binding = businessRuleTask.getOperatonDecisionRefBinding();
+            String existingVersionTag = businessRuleTask.getOperatonDecisionRefVersionTag();
 
             CaseDefinitionId existingCaseDefinitionId =
                 CaseDefinitionId.fromProcessVersionTag(existingVersionTag);
@@ -792,8 +792,8 @@ public class OperatonProcessService {
                 return;
             }
 
-            callActivity.setOperatonCalledElementBinding("versionTag");
-            callActivity.setOperatonCalledElementVersionTag(
+            businessRuleTask.setOperatonDecisionRefBinding("versionTag");
+            businessRuleTask.setOperatonDecisionRefVersionTag(
                 OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId
             );
         });
