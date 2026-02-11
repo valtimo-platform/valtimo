@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,10 @@ import {IWidgetManagementService} from '../../../interfaces';
 import {
   AVAILABLE_WIDGETS,
   BasicWidget,
+  WIDGET_COLOR_LABELS,
   Widget,
+  WidgetColor,
   WidgetDensity,
-  WidgetStyle,
   WidgetType,
   WidgetTypeTags,
   WidgetWidth,
@@ -129,6 +130,15 @@ export class WidgetManagementEditorComponent implements OnDestroy {
             },
           ]
         : []),
+      ...(this.widgetWizardService.$widgetWizardSteps().includes(WidgetWizardStep.APPEARANCE)
+        ? [
+            {
+              key: 'colorLabel',
+              label: 'widgetTabManagement.columns.color',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
       ...(!singleWidget
         ? [
             {
@@ -190,6 +200,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
         densityTranslation: this.translateService.instant(
           `widgetTabManagement.density.${item.isCompact ? 'compact' : 'default'}.title`
         ),
+        colorLabel: this.getWidgetColorLabel(item),
         tags: [
           {
             content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
@@ -213,6 +224,11 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   public readonly $isDividerModalOpen = signal<boolean>(false);
   public readonly $dividerModalMode = signal<ModalMode>('add');
   public readonly $dragAndDropDisabled = signal(false);
+  private readonly _colorSupportedWidgetTypes: WidgetType[] = [
+    WidgetType.FIELDS,
+    WidgetType.COLLECTION,
+    WidgetType.TABLE,
+  ];
 
   constructor(
     private readonly iconService: IconService,
@@ -237,9 +253,8 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
     this.widgetWizardService.$widgetIcon.set(widget.icon ?? null);
-    this.widgetWizardService.$widgetStyle.set(
-      widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
-    );
+    this.widgetWizardService.$widgetHighContrast.set(!!widget.highContrast);
+    this.widgetWizardService.$widgetColor.set(widget.color ?? WidgetColor.WHITE);
     this.widgetWizardService.$widgetWidth.set(
       widget.width || this.widgetWizardService.defaultWidth
     );
@@ -255,6 +270,19 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     this.widgetWizardService.$widgetKey.set(widget.key);
     this.widgetWizardService.$widgetActions.set(widget.actions);
     this.$isWizardOpen.set(true);
+  }
+
+  private getWidgetColorLabel(widget: BasicWidget): string {
+    const color =
+      this.widgetSupportsColor(widget.type) && widget.color ? widget.color : WidgetColor.WHITE;
+
+    return this.translateService.instant(
+      WIDGET_COLOR_LABELS[color] ?? 'widgetTabManagement.appearance.backgroundColor.colors.white'
+    );
+  }
+
+  private widgetSupportsColor(type: WidgetType): boolean {
+    return this._colorSupportedWidgetTypes.includes(type);
   }
 
   public duplicateWidget(tabWidget: Widget): void {
