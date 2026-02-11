@@ -54,6 +54,12 @@ A widget can either have a "Default" color scheme or it can be "High Contrast" t
 {% endstep %}
 
 {% step %}
+**Choose widget appearance**
+
+For the Fields, Collection and Table widgets you can also choose an appearance color. This color controls the background, accent and text colors rendered by the widget. The available options are **Default**, **Blue**, **Periwinkle**, **Purple**, **Turqoise**, **Green**, **Brown**, **Red**, **Orange** and **Yellow**. The same value is stored in the widget configuration under the `color` property (using the enum names `WHITE`, `BLUE`, `PERIWINKLE`, etc.), so exported files and autodeploy definitions can set it directly as well.
+{% endstep %}
+
+{% step %}
 **Choose widget density**
 
 A widget can either have a "Default" density or it can be "Compact" to display data in a more efficient manner. For now, Compact mode is only available for the Fields, Table and Collection widgets

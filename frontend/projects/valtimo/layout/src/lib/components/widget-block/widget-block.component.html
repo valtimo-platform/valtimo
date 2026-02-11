@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
   ~ limitations under the License.
   -->
 
-<div class="widget-block" [attr.data-carbon-theme]="theme$ | async">
+@let widgetColors = widgetColors$ | async;
+
+<div
+  class="widget-block"
+  [attr.data-carbon-theme]="theme$ | async"
+  [style.--widget-background-color]="widgetColors?.background"
+  [style.--widget-layer-color]="widgetColors?.layer"
+  [style.--widget-text-color]="widgetColors?.text"
+  [style.--widget-accent-color]="widgetColors?.accent"
+>
   <div #widgetBlockContent class="widget-block__content">
     <ng-template #widgetComponent></ng-template>
   </div>
