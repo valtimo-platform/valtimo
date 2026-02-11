@@ -12,9 +12,12 @@
 
 ## Enhancements
 
-* **Widget appearance tab**
+* **Widget color customization**
 
-The Style tab has been replaced by the Appearance tab. For Fields, Collection, and Table widgets, this tab now includes the available color options, including High contrast, allowing each widget to define its own visual style.
+Fields, Collection and Table widgets now support color customization through a new appearance tab in the widget
+configuration. Choose from a variety of colors including blue, purple, green, turquoise, orange, red, yellow, and
+brown to visually distinguish widgets on the case detail page. For more information, see
+[Widgets](../../../features/case/case-detail/tabs/widgets.md).
 
 ## Bugfixes
 
