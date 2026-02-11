@@ -6,9 +6,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Added delete zaak resultaten action to zaken API plugin**
 
-  New feature explanation.
+  The zaken API plugin now includes a new action called 'Delete zaak resultaten'. This action allows users to delete the results of a zaak.
 
 ## Enhancements
 
