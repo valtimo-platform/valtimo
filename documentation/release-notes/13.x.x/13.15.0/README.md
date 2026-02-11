@@ -15,6 +15,7 @@
 * **Widget appearance tab**
 
 The Style tab has been replaced by the Appearance tab. For Fields, Collection, and Table widgets, this tab now includes the available color options, including High contrast, allowing each widget to define its own visual style.
+
 ## Bugfixes
 
 * When working with the JSON editor for document or form definitions, the editor would occasionally fail to display.
