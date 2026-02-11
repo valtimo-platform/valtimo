@@ -41,7 +41,7 @@
       </cds-tab>
 
       <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
-        @if (activeTab === TABS.EDITOR) {
+        @if (activeTab === TABS.EDITOR && obs.jsonFormDefinition) {
           <ng-container
             *ngTemplateOutlet="
               jsonEditor;
@@ -68,7 +68,7 @@
           (change)="onOutputChange($event)"
         ></valtimo-form-io>
 
-        @if (activeTab === TABS.OUTPUT) {
+        @if (activeTab === TABS.OUTPUT && obs.jsonOutput) {
           <ng-container
             *ngTemplateOutlet="
               jsonEditor;
