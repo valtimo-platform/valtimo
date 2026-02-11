@@ -104,6 +104,7 @@ class CustomWidgetIntTest @Autowired constructor(
                         key = widgetKey,
                         title = "Custom test",
                         icon = "mdi-home",
+                        color = null,
                         width = 2,
                         highContrast = false,
                         isCompact = false,

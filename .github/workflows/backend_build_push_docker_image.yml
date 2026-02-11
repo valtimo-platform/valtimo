@@ -13,10 +13,10 @@ on:
     outputs:
       built_test_image:
         description: "Tag of the test Docker image that was built"
-        value: ${{ fromJson(jobs.generate_tags.outputs.test_tags)[0] }}
+        value: ${{ jobs.generate_tags.outputs.test_primary_tag }}
       built_prod_image:
         description: "Tag of the production Docker image that was built"
-        value: ${{ fromJson(jobs.generate_tags.outputs.production_tags)[0] }}
+        value: ${{ jobs.generate_tags.outputs.production_primary_tag }}
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -63,7 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_tags: ${{ steps.generate_tags_test.outputs.tags }}
-      production_tags: ${{steps.generate_tags_production.outputs.tags }}
+      production_tags: ${{ steps.generate_tags_production.outputs.tags }}
+      test_primary_tag: ${{ steps.primary_tag_test.outputs.tag }}
+      production_primary_tag: ${{ steps.primary_tag_production.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -82,6 +84,12 @@ jobs:
           flavor: |
             latest=false
 
+      - name: Extract primary image tag (test)
+        id: primary_tag_test
+        run: |
+          full_tag='${{ fromJson(steps.generate_tags_test.outputs.json).tags[0] }}'
+          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
+
       - name: Generate image tags (production)
         id: generate_tags_production
         uses: docker/metadata-action@v5
@@ -93,6 +101,12 @@ jobs:
             type=raw,value=contents-production-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
+
+      - name: Extract primary image tag (production)
+        id: primary_tag_production
+        run: |
+          full_tag='${{ fromJson(steps.generate_tags_production.outputs.json).tags[0] }}'
+          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
   build_image:
     strategy:

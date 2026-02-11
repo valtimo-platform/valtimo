@@ -24,7 +24,11 @@ import {
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {WidgetContentProperties, WidgetFilter, WidgetInteractiveTableContent} from '../../../../../models';
+import {
+  WidgetContentProperties,
+  WidgetFilter,
+  WidgetInteractiveTableContent,
+} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
 import {
   AccordionModule,
@@ -85,7 +89,6 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       selected: false,
     },
   ];
-
 
   constructor(
     private readonly fb: FormBuilder,
