@@ -2,8 +2,7 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
   liquibase:
-    enabled: true
-    change-log: classpath:/config/liquibase/logging-master.xml
+    enabled: false
   jpa:
     show_sql: false
     open-in-view: false
@@ -23,3 +22,6 @@ spring:
           provider_disables_autocommit: true
     hibernate:
       ddl-auto: none
+spring-actuator:
+    username: test
+    password: test

@@ -20,6 +20,7 @@ import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetColor
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 
@@ -30,18 +31,20 @@ class DividerCaseWidget(
     id: CaseWidgetTabWidgetId,
     title: String,
     icon: String? = null,
+    color: WidgetColor = WidgetColor.WHITE,
     order: Int,
     width: Int,
     highContrast: Boolean,
     isCompact: Boolean?,
     displayConditions: List<Condition<*>>,
 ) : CaseWidgetTabWidget(
-    id, title, icon,order, width, highContrast, isCompact, emptyList(), displayConditions
+    id, title, icon, color, order, width, highContrast, isCompact, emptyList(), displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = DividerCaseWidget(
         id = id,
         title = title,
         icon = icon,
+        color = color,
         order = order,
         width = width,
         highContrast = highContrast,

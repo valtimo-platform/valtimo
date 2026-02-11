@@ -73,7 +73,6 @@ import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valueresolver.ValueResolverService
@@ -86,7 +85,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.context.annotation.Lazy
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
@@ -103,13 +101,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
 class BuildingBlockAutoConfiguration {
-    @Order(HIGHEST_PRECEDENCE + 27)
-    @ConditionalOnMissingBean(name = ["buildingBlockLiquibaseMasterChangeLogLocation"])
-    @Bean
-    fun buildingBlockLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/building-block-master.xml")
-    }
-
     @Order(270)
     @Bean
     @ConditionalOnMissingBean(BuildingBlockHttpSecurityConfigurer::class)
