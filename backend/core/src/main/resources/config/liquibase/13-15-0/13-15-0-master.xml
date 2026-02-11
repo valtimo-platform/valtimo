@@ -52,4 +52,34 @@
                               columnDataType="varchar(50)"/>
     </changeSet>
 
+    <changeSet id="3" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <sqlCheck expectedResult="1">
+                    select count(*)
+                    from ACT_GE_SCHEMA_LOG
+                    where version_ = '7.24.0'
+                </sqlCheck>
+            </not>
+        </preConditions>
+        <comment>mysql_engine_7.23_to_7.24.sql</comment>
+        <sqlFile path="mysql/mysql_engine_7.23_to_7.24.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <sqlCheck expectedResult="1">
+                    select count(*)
+                    from ACT_GE_SCHEMA_LOG
+                    where version_ = '7.24.0'
+                </sqlCheck>
+            </not>
+        </preConditions>
+        <comment>postgres_engine_7.23_to_7.24.sql</comment>
+        <sqlFile path="postgresql/postgres_engine_7.23_to_7.24.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
 </databaseChangeLog>
