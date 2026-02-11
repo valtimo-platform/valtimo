@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,15 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.ritense.zakenapi.event
-
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.outbox.domain.BaseEvent
-
-class ZaakResultaatCreated (zaakResultaatUrl: String, zaakResultaat: ObjectNode) : BaseEvent(
-    type = "com.ritense.gzac.zrc.zaakresultaat.created",
-    resultType = "com.ritense.zakenapi.domain.CreateZaakResultaatResponse",
-    resultId = zaakResultaatUrl,
-    result = zaakResultaat
-)

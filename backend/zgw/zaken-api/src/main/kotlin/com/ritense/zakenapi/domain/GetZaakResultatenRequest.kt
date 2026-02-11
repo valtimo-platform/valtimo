@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.event
+package com.ritense.zakenapi.domain
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.outbox.domain.BaseEvent
+import com.fasterxml.jackson.annotation.JsonInclude
+import java.net.URI
 
-class ZaakResultaatCreated (zaakResultaatUrl: String, zaakResultaat: ObjectNode) : BaseEvent(
-    type = "com.ritense.gzac.zrc.zaakresultaat.created",
-    resultType = "com.ritense.zakenapi.domain.CreateZaakResultaatResponse",
-    resultId = zaakResultaatUrl,
-    result = zaakResultaat
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class GetZaakResultatenRequest(
+    val page: Int? = 1,
+    val pageSize: Int? = 100,
+    val resultaattype: URI? = null,
+    val zaak: URI,
 )
