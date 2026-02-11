@@ -38,11 +38,6 @@ class TestApplication {
     @TestConfiguration
     class TestConfig {
         @Bean
-        fun coreTestLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-            return LiquibaseMasterChangeLogLocation("config/liquibase/case-test-only-master.xml")
-        }
-
-        @Bean
         fun testResolverFactory(): TestResolverFactory {
             return spy(TestResolverFactory())
         }

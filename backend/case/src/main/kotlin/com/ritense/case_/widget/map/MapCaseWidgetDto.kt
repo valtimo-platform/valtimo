@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import com.ritense.widget.map.MapWidgetProperties
 import jakarta.validation.Valid
 
@@ -28,6 +29,7 @@ data class MapCaseWidgetDto(
     override val key: String,
     override val title: String,
     override val icon: String?,
+    override val color: WidgetColor? = null,
     override val width: Int,
     override val highContrast: Boolean,
     override val isCompact: Boolean?,
