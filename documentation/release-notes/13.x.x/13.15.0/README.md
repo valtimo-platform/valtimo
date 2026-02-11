@@ -25,3 +25,13 @@
 
   Fixed an issue where the Swagger UI page would not load. Additionally, users with `ROLE_ADMIN` can now access the
   Swagger page.
+
+* **Custom widget data loading**
+
+  Fixed an issue where custom widgets would incorrectly trigger data fetching operations. Custom widgets no longer
+  attempt to load data, as they are responsible for managing their own data requirements.
+
+* **DMN decision table version tags not updating**
+
+  Fixed an issue where DMN decision table version tags were not being updated when linking a process to a case
+  definition. Decision tables referenced in business rule tasks now correctly receive the case definition version tag.
