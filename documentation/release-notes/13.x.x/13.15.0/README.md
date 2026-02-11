@@ -12,9 +12,12 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Widget color customization**
 
-  New enhancement explanation.
+  Fields, Collection and Table widgets now support color customization through a new appearance tab in the widget
+  configuration. Choose from a variety of colors including blue, purple, green, turquoise, orange, red, yellow, and
+  brown to visually distinguish widgets on the case detail page. For more information, see
+  [Widgets](../../../features/case/case-detail/tabs/widgets.md).
 
 ## Bugfixes
 
