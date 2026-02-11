@@ -22,4 +22,34 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
+    <changeSet id="1" author="Ritense">
+        <addColumn tableName="case_widget_tab_widget">
+            <column name="color" type="varchar(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <update tableName="case_widget_tab_widget">
+            <column name="color"
+                    valueComputed="CASE WHEN high_contrast THEN 'HIGHCONTRAST' ELSE 'WHITE' END"/>
+        </update>
+        <addNotNullConstraint tableName="case_widget_tab_widget"
+                              columnName="color"
+                              columnDataType="varchar(50)"/>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <addColumn tableName="widget">
+            <column name="color" type="varchar(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <update tableName="widget">
+            <column name="color"
+                    valueComputed="CASE WHEN high_contrast THEN 'HIGHCONTRAST' ELSE 'WHITE' END"/>
+        </update>
+        <addNotNullConstraint tableName="widget"
+                              columnName="color"
+                              columnDataType="varchar(50)"/>
+    </changeSet>
+
 </databaseChangeLog>

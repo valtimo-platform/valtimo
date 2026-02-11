@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,36 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
-import {WidgetStyle} from '../../../../../models';
+import {WidgetColor, WidgetColorTile} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
+import {WIDGET_COLOR_ILLUSTRATION_MAP, WIDGET_COLOR_ITEMS} from '../../../../../constants';
 
 @Component({
-  templateUrl: './widget-wizard-style-step.component.html',
+  templateUrl: './widget-wizard-appearance-step.component.html',
+  styleUrls: ['./widget-wizard-appearance-step.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, TranslateModule, TilesModule],
 })
-export class WidgetWizardStyleStepComponent {
-  public readonly WidgetStyle = WidgetStyle;
-  public readonly $widgetStyle = this.widgetWizardService.$widgetStyle;
+export class WidgetWizardAppearanceStepComponent {
+  public readonly $widgetColor = this.widgetWizardService.$widgetColor;
+
+  private readonly colorTranslationKeyMap: Partial<Record<WidgetColor, string>> = {
+    [WidgetColor.HIGHCONTRAST]: 'highContrast',
+  };
+
+  public readonly colorTiles: WidgetColorTile[] = WIDGET_COLOR_ITEMS.map(color => ({
+    color,
+    labelKey: `widgetTabManagement.appearance.backgroundColor.colors.${
+      this.colorTranslationKeyMap[color] ?? color.toLowerCase()
+    }`,
+    illustration: WIDGET_COLOR_ILLUSTRATION_MAP[color],
+  }));
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 
-  public onSelectedEvent(event: {value: WidgetStyle}): void {
-    this.widgetWizardService.$widgetStyle.set(event.value);
+  public onColorSelected(event: {value: WidgetColor}): void {
+    if (!event?.value) return;
+    this.widgetWizardService.$widgetColor.set(event.value);
   }
 }

@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
+import com.ritense.widget.domain.resolveWidgetColor
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.validation.Valid
 import java.util.UUID
@@ -29,6 +31,7 @@ data class CollectionWidgetDto(
     override val key: String,
     override val title: String,
     override val icon: String?,
+    override val color: WidgetColor? = null,
     override val width: Int,
     override val highContrast: Boolean,
     override val isCompact: Boolean?,
@@ -41,6 +44,7 @@ data class CollectionWidgetDto(
         key = key,
         title = title,
         icon = icon,
+        color = resolveWidgetColor(color, highContrast),
         width = width,
         order = order,
         highContrast = highContrast,
