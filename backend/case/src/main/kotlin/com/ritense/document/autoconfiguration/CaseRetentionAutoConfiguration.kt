@@ -24,9 +24,11 @@ import com.ritense.outbox.OutboxService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.support.TransactionTemplate
 
 @AutoConfiguration
+@EnableScheduling
 class CaseRetentionAutoConfiguration {
 
     @Bean
