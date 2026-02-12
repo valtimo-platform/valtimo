@@ -18,8 +18,10 @@ package com.ritense.documentenapi.client
 
 import BestandsdelenResult
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.document.domain.Document
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
@@ -52,6 +54,7 @@ import org.springframework.web.util.UriBuilder
 import org.springframework.web.util.UriComponentsBuilder
 import java.io.InputStream
 import java.net.URI
+import java.util.UUID
 import kotlin.math.min
 
 @SkipComponentScan
@@ -66,13 +69,15 @@ class DocumentenApiClient(
     fun storeDocument(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
+        documentId: String,
         request: CreateDocumentRequest
     ): CreateDocumentResult {
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
+                ResourcePermission(UUID.fromString(documentId))
             )
         )
 
@@ -132,11 +137,12 @@ class DocumentenApiClient(
         baseUrl: URI,
         objectId: String,
     ): DocumentInformatieObject {
-        return getInformatieObject(authentication, toObjectUrl(baseUrl, objectId))
+        return getInformatieObject(authentication, null, toObjectUrl(baseUrl, objectId))
     }
 
     fun getInformatieObject(
         authentication: DocumentenApiAuthentication,
+        documentId: UUID?,
         objectUrl: URI
     ): DocumentInformatieObject {
         val result = restClient(authentication)
@@ -149,7 +155,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
+                ResourcePermission(documentId)
             )
         )
 
@@ -165,6 +171,7 @@ class DocumentenApiClient(
 
     fun getInformatieObjecten(
         authentication: DocumentenApiAuthentication,
+        documentId: UUID,
         baseUrl: URI,
         pageable: Pageable,
         documentSearchRequest: DocumentSearchRequest,
@@ -173,12 +180,11 @@ class DocumentenApiClient(
         // the only page sizes that are supported are those that can fit n times in the itemsPerPage
         require(ITEMS_PER_PAGE % pageable.pageSize == 0) { "Page size is not supported" }
         requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
-
         if (!authorizationService.hasPermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
+                ResourcePermission(documentId)
             )
         )) {
             return org.springframework.data.domain.Page.empty(pageable)
@@ -314,12 +320,13 @@ class DocumentenApiClient(
             .toBodilessEntity()
     }
 
-    fun deleteInformatieObject(authentication: DocumentenApiAuthentication, url: URI) {
+    fun deleteInformatieObject(authentication: DocumentenApiAuthentication, caseId: UUID?, url: URI) {
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
+                ResourcePermission(caseId)
             )
         )
 
@@ -335,14 +342,14 @@ class DocumentenApiClient(
     fun modifyInformatieObject(
         authentication: DocumentenApiAuthentication,
         documentUrl: URI,
-        patchDocumentRequest: PatchDocumentRequest
+        patchDocumentRequest: PatchDocumentRequest,
+        caseId: UUID? = null
     ): DocumentInformatieObject {
-
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.MODIFY,
-                ResourcePermission()
+                ResourcePermission(caseId)
             )
         )
 

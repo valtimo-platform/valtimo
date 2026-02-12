@@ -21,8 +21,6 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.DocumentenApiPlugin
-import com.ritense.documentenapi.authorization.ZgwResourcePermission
-import com.ritense.documentenapi.authorization.ZgwResourcePermissionActionProvider
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.AUTEUR
@@ -40,7 +38,10 @@ import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
+import com.ritense.resource.authorization.ResourcePermission
+import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.zakenapi.ExtractUuid.extractUuidFromUri
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
@@ -68,7 +69,7 @@ class ZaakDocumentService(
 ) {
 
     fun getInformatieObjectenAsRelatedFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID,
     ): List<RelatedFileDto> {
         val zaakUri = zaakUrlProvider.getZaakUrl(documentId)
 
@@ -79,7 +80,7 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
 
-        return zakenApiPlugin.getZaakInformatieObjecten(zaakUri)
+        return zakenApiPlugin.getZaakInformatieObjecten(documentId, zaakUri)
             .map { getRelatedFiles(it) }
     }
 
@@ -102,22 +103,37 @@ class ZaakDocumentService(
                 "Unsupported field 'trefwoorden' on Documenten API version '$version'"
             }
         }
+
+        if (!authorizationService.hasPermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.VIEW_LIST,
+                    ResourcePermission(documentId)
+                )
+            )
+        ) {
+            return Page.empty(pageable)
+        }
+
         return if (version.supportsFilterableColumns() && version.supportsSortableColumns()) {
             documentenApiService.getCaseInformatieObjecten(
                 documentId,
                 documentSearchRequest.copy(zaakUrl = zaakUri),
                 pageable
-            ).map { mapDocumentenApiDocument(it, version) }
+            ).map {
+                mapDocumentenApiDocument(it, version)
+            }
         } else {
             val zakenApiPlugin = getZakenApiPlugin(zaakUri)
-            val documenten = zakenApiPlugin.getZaakInformatieObjecten(zaakUri)
+            val documenten = zakenApiPlugin.getZaakInformatieObjecten(documentId, zaakUri)
                 .map { mapDocumentenApiDocument(it, version) }
-            return toPage(documenten, pageable)
+            toPage(documenten, pageable)
         }
     }
 
     fun deleteRelatedInformatieObjecten(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) zaakInstanceUrl: URI
+        caseId: UUID,
+        @LoggableResource(resourceType = JsonSchemaDocument::class) zaakInstanceUrl: URI,
     ) {
         val zakenApiPlugin = checkNotNull(
             pluginService.createInstance(
@@ -126,11 +142,18 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakInstanceUrl" }
 
-        zakenApiPlugin.getZaakInformatieObjecten(zaakInstanceUrl).forEach { zaakInformatieobject ->
-            if (zakenApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(zaakInformatieobject.informatieobject).size == 1) {
-                documentenApiService.deleteInformatieObject(zaakInformatieobject.informatieobject)
+        zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakInstanceUrl).forEach { zaakInformatieobject ->
+            if (zakenApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(
+                    caseId,
+                    zaakInformatieobject.informatieobject
+                ).size == 1
+            ) {
+                documentenApiService.deleteInformatieObject(
+                    zaakInformatieobject.informatieobject,
+                    caseId
+                )
             } else {
-                zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url)
+                zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url, caseId)
             }
         }
     }
@@ -153,13 +176,14 @@ class ZaakDocumentService(
     private fun getRelatedFiles(zaakInformatieObject: ZaakInformatieObject): RelatedFileDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
-        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject)
+        val caseId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
+        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseId)
         return mapRelatedFile(informatieObject, pluginConfiguration)
     }
 
     private fun mapRelatedFile(
         informatieObject: DocumentInformatieObject,
-        pluginConfiguration: PluginConfiguration
+        pluginConfiguration: PluginConfiguration,
     ): RelatedFileDto {
         return RelatedFileDto(
             fileId = UUID.fromString(informatieObject.url.path.substringAfterLast("/")),
@@ -226,7 +250,8 @@ class ZaakDocumentService(
     ): DocumentenApiDocumentDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
-        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject)
+        val caseId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
+        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseId)
         val trefwoorden = if (version.supportsTrefwoorden) {
             informatieObject.trefwoorden
         } else {
@@ -271,7 +296,7 @@ class ZaakDocumentService(
     }
 
     fun getZaakByDocumentId(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID,
     ): ZaakResponse? {
         val url = try {
             zaakUrlProvider.getZaakUrl(documentId)
@@ -287,7 +312,7 @@ class ZaakDocumentService(
     }
 
     fun getZaakByDocumentIdOrThrow(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID,
     ): ZaakResponse {
         val url = zaakUrlProvider.getZaakUrl(documentId)
         val plugin = pluginService.createInstance(
