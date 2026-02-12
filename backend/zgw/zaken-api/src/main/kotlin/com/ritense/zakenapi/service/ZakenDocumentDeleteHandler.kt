@@ -20,18 +20,20 @@ import com.ritense.documentenapi.service.DocumentDeleteHandler
 import com.ritense.plugin.service.PluginService
 import com.ritense.zakenapi.ZakenApiPlugin
 import java.net.URI
+import java.util.UUID
 
 class ZakenDocumentDeleteHandler(
     private val pluginService: PluginService
 ) : DocumentDeleteHandler {
 
     override fun preDocumentDelete(documentUrl: URI) {
+        val caseId: UUID? = null
         val pluginConfigurations = pluginService.findPluginConfigurations(ZakenApiPlugin::class.java)
         val exceptions = pluginConfigurations.map {
             val plugin = pluginService.createInstance(it.id) as ZakenApiPlugin
             try {
-                plugin.getZaakInformatieObjectenByInformatieobjectUrl(documentUrl).forEach { zaakInformatieObject ->
-                    plugin.deleteZaakInformatieobject(zaakInformatieObject.url)
+                plugin.getZaakInformatieObjectenByInformatieobjectUrl(null,documentUrl).forEach { zaakInformatieObject ->
+                    plugin.deleteZaakInformatieobject(zaakInformatieObject.url, caseId)
                 }
                 null
             } catch (e: Exception) {

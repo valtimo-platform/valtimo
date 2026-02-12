@@ -47,7 +47,9 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
+import com.ritense.zgw.LoggingConstants.ZAKEN_API
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -107,7 +109,7 @@ class DocumentenApiService(
             check(version.sortableColumns.contains(sortColumn.property))
         }
         logger.debug { "Get Case Informatie Objecten $documentSearchRequest" }
-        return plugin.getInformatieObjecten(documentSearchRequest, pageable)
+        return plugin.getInformatieObjecten( documentId, documentSearchRequest, pageable)
     }
 
     fun modifyInformatieObject(
@@ -136,22 +138,24 @@ class DocumentenApiService(
     }
 
     fun deleteInformatieObject(
-        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentUrl: URI
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentUrl: URI,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?
     ) {
         val documentApiPlugin: DocumentenApiPlugin = pluginService.createInstance(
             DocumentenApiPlugin::class.java,
             DocumentenApiPlugin.findConfigurationByUrl(documentUrl)
         ) ?: throw IllegalArgumentException("Trying to delete informatie object by url, but could not find ${DocumentenApiPlugin::class.simpleName} instance for informatieobjectUrl $documentUrl")
-        documentApiPlugin.deleteInformatieObject(documentUrl)
+        documentApiPlugin.deleteInformatieObject( caseId, documentUrl)
     }
 
     fun deleteInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK ) caseId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ) {
         val documentApiPlugin: DocumentenApiPlugin = pluginService.createInstance(pluginConfigurationId)
         val documentUrl = documentApiPlugin.createInformatieObjectUrl(documentId)
-        documentApiPlugin.deleteInformatieObject(documentUrl)
+        documentApiPlugin.deleteInformatieObject(caseId, documentUrl)
     }
 
     fun getColumns(

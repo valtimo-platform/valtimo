@@ -48,7 +48,7 @@ class ZakenApiDocumentDeletedEventListener(
             link?.let {
                 logger.info { "Deleting all zaak information for deleted document ${event.documentId}" }
                 //delete documents
-                zaakDocumentService.deleteRelatedInformatieObjecten(link.zaakInstanceUrl)
+                zaakDocumentService.deleteRelatedInformatieObjecten(event.documentId, link.zaakInstanceUrl)
 
                 //delete zaak
                 val plugin = pluginService.createInstance(

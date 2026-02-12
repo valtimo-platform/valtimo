@@ -25,6 +25,7 @@ import com.ritense.resource.domain.TemporaryResourceUploadedEvent
 import com.ritense.resource.service.TemporaryResourceStorageService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import java.util.UUID
 
 class ResourceUploadedToDocumentEventListener(
     private val resourceService: TemporaryResourceStorageService,
@@ -44,7 +45,7 @@ class ResourceUploadedToDocumentEventListener(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     CREATE,
-                    ResourcePermission()
+                    ResourcePermission(UUID.fromString(caseId))
                 )
             )
             logger.debug { "Uploading resource to document: ${event.resourceId}" }
