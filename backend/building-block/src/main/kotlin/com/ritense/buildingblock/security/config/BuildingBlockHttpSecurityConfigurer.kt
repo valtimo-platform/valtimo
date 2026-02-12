@@ -88,6 +88,9 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "$VALUE_RESOLVER_BASE_PATH/{key}/version/{versionTag}/keys"
                         )
                     ).hasAuthority(ADMIN)
+                    // Form option endpoint
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form-option"))
+                    .hasAuthority(ADMIN)
                     // Form management endpoints
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/form"))
                     .hasAuthority(ADMIN)
