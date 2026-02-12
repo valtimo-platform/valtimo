@@ -16,4 +16,8 @@
 
 package com.ritense.resource.authorization
 
-class ResourcePermission
+import java.util.UUID
+
+class ResourcePermission(
+    val documentId: UUID? = null
+)

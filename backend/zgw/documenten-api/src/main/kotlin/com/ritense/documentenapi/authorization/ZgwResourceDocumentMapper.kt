@@ -22,17 +22,17 @@ import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.resource.authorization.ResourcePermission
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Root
 
-
 class ZgwResourceDocumentMapper(
     private val documentRepository: JsonSchemaDocumentRepository
-) : AuthorizationEntityMapper<ZgwResourcePermission, JsonSchemaDocument> {
+) : AuthorizationEntityMapper<ResourcePermission, JsonSchemaDocument> {
 
     override fun mapRelated(
-        entity: ZgwResourcePermission
+        entity: ResourcePermission
     ): List<JsonSchemaDocument> {
         return runWithoutAuthorization {
             listOf(documentRepository.findById(JsonSchemaDocumentId.existingId(entity.documentId)).get())
@@ -40,14 +40,14 @@ class ZgwResourceDocumentMapper(
     }
 
     override fun mapQuery(
-        root: Root<ZgwResourcePermission>,
+        root: Root<ResourcePermission>,
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder,
     ): AuthorizationEntityMapperResult<JsonSchemaDocument> {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Mapping query for ResourcePermission to JsonSchemaDocument is not supported")
     }
 
     override fun supports(fromClass: Class<*>, toClass: Class<*>): Boolean {
-        return fromClass == ZgwResourcePermission::class.java && toClass == JsonSchemaDocument::class.java
+        return fromClass == ResourcePermission::class.java && toClass == JsonSchemaDocument::class.java
     }
 }
