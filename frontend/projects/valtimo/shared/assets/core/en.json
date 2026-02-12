@@ -765,6 +765,7 @@
       "keyDuplicated": "This key is already in use. Please change to a unique key.",
       "colorPlaceholder": "Choose a color",
       "showRetentionPeriod": "Set retention period",
+      "retentionPeriodExistingCasesWarning": "The retention period for existing cases cases with this status will not be updated automatically.",
       "columns": {
         "title": "Status name",
         "retentionPeriod": "Retention period in days",

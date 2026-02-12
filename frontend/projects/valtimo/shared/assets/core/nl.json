@@ -779,6 +779,7 @@
       "keyDuplicated": "Deze sleutel is al in gebruik. Kies een unieke sleutel.",
       "colorPlaceholder": "Kies een kleur",
       "showRetentionPeriod": "Bewaartermijn instellen",
+      "retentionPeriodExistingCasesWarning": "Reeds aangemaakte zaken met deze status worden niet automatisch bijgewerkt met een nieuwe bewaartermijn.",
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",

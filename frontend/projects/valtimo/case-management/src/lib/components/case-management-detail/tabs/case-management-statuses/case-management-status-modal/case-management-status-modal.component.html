@@ -34,6 +34,19 @@
     </h3>
   </cds-modal-header>
 
+  <cds-notification
+    class="deployment-warning-notification"
+    *ngIf="!obs.editingKey && !obs.isAdd"
+    [notificationObj]="{
+      type: 'warning',
+      message:
+        ('caseManagement.statuses.retentionPeriodExistingCasesWarning'
+        | translate: notificationContent),
+      showClose: false,
+      lowContrast: true,
+    }"
+  ></cds-notification>
+
   <section cdsModalContent [cdsLayer]="1">
     <ng-container *ngTemplateOutlet="statusForm; context: {obs: obs}"></ng-container>
   </section>
