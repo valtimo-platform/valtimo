@@ -16,7 +16,6 @@
 
 package com.ritense.resource.authorization
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
@@ -25,7 +24,6 @@ import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
-import java.net.URI
 
 class ResourceSpecification(
     authRequest: AuthorizationRequest<ResourcePermission>,
@@ -37,12 +35,14 @@ class ResourceSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
-        logger.info { "Creating predicate for ResourceSpecification" }
-        return criteriaBuilder.conjunction()
+        throw UnsupportedOperationException("Predicate creation for ResourcePermission is not supported")
+//        return criteriaBuilder.conjunction()
     }
 
     override fun identifierToEntity(identifier: String): ResourcePermission {
-        return ResourcePermission()
+        throw UnsupportedOperationException("Conversion from identifier to entity is not supported")
+//
+//        return ResourcePermission()
     }
 
     companion object {
