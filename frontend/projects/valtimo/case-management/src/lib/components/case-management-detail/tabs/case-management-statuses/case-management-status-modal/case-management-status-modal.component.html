@@ -34,19 +34,6 @@
     </h3>
   </cds-modal-header>
 
-  <cds-notification
-    class="deployment-warning-notification"
-    *ngIf="!obs.editingKey && !obs.isAdd"
-    [notificationObj]="{
-      type: 'warning',
-      message:
-        ('caseManagement.statuses.retentionPeriodExistingCasesWarning'
-        | translate: notificationContent),
-      showClose: false,
-      lowContrast: true,
-    }"
-  ></cds-notification>
-
   <section cdsModalContent [cdsLayer]="1">
     <ng-container *ngTemplateOutlet="statusForm; context: {obs: obs}"></ng-container>
   </section>
@@ -65,7 +52,7 @@
 </ng-template>
 
 <ng-template #statusForm let-obs="obs">
-  <form [formGroup]="statusFormGroup" class="list-column-form">
+  <form [formGroup]="statusFormGroup" class="status-form">
     <cds-label>
       {{ 'caseManagement.statuses.columns.title' | translate }}
 
@@ -124,25 +111,38 @@
     </div>
 
     <cds-toggle
-            [label]="'caseManagement.statuses.showRetentionPeriod' | translate"
-            [onText]="'interface.yes' | translate"
-            [offText]="'interface.no' | translate"
-            [disabled]="obs.disabled"
-            [checked]="showRetentionPeriod$ | async"
-            (checkedChange)="toggleRetentionPeriod($event)"
+      [label]="'caseManagement.statuses.showRetentionPeriod' | translate"
+      [onText]="'interface.yes' | translate"
+      [offText]="'interface.no' | translate"
+      [disabled]="obs.disabled"
+      [checked]="showRetentionPeriod$ | async"
+      (checkedChange)="toggleRetentionPeriod($event)"
     ></cds-toggle>
 
-    <cds-label *ngIf="showRetentionPeriod$ | async">
-      <span class="label-with-tooltip">
-      {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
+    <cds-label class="status-form-retention-period__label" *ngIf="showRetentionPeriod$ | async">
+      <div>
+        {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
+
         <v-tooltip-icon
-                [tooltip]="'caseManagement.statuses.columns.retentionPeriodTooltip' | translate"
+          [tooltip]="'caseManagement.statuses.columns.retentionPeriodTooltip' | translate"
         ></v-tooltip-icon>
-      </span>
+      </div>
+
       <input cdsText formControlName="retentionPeriodInDays" />
     </cds-label>
 
-
+    <cds-notification
+      class="deployment-warning-notification"
+      *ngIf="!obs.editingKey && !obs.isAdd"
+      [notificationObj]="{
+        type: 'warning',
+        message:
+          ('caseManagement.statuses.retentionPeriodExistingCasesWarning'
+          | translate: notificationContent),
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-notification>
   </form>
 </ng-template>
 
