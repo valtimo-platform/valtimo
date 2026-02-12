@@ -20,7 +20,6 @@ import com.ritense.document.service.DocumentService
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncCaseEventListener
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementResource
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService
@@ -32,27 +31,16 @@ import com.ritense.zaakdetails.service.ZaakdetailsObjectService
 import com.ritense.zakenapi.ZaakUrlProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import javax.sql.DataSource
 
 @EnableJpaRepositories(basePackageClasses = [DocumentObjectenApiSyncRepository::class, ZaakdetailsObjectRepository::class])
 @EntityScan(basePackages = ["com.ritense.zaakdetails.documentobjectenapisync", "com.ritense.zaakdetails.domain"])
 @AutoConfiguration
 class ZaakDetailsAutoConfiguration {
-
-    @Order(Ordered.HIGHEST_PRECEDENCE + 33)
-    @Bean
-    @ConditionalOnClass(DataSource::class)
-    @ConditionalOnMissingBean(name = ["zaakDetailsLiquibaseMasterChangeLogLocation"])
-    fun zaakDetailsLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/zaakdetails-master.xml")
-    }
 
     @Bean
     @ConditionalOnMissingBean(DocumentObjectenApiSyncManagementService::class)

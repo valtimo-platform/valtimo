@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/cor
 import {
   BasicWidget,
   WidgetAction,
+  WidgetColor,
   WidgetContentProperties,
   WidgetContext,
   WidgetDensity,
-  WidgetStyle,
   WidgetType,
   WidgetTypeSelection,
   WidgetWidth,
@@ -42,7 +42,9 @@ export class WidgetWizardService {
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
 
-  public readonly $widgetStyle: WritableSignal<WidgetStyle | null> = signal(null);
+  public readonly $widgetHighContrast: WritableSignal<boolean> = signal(false);
+
+  public readonly $widgetColor: WritableSignal<WidgetColor | null> = signal(null);
 
   public readonly $widgetDensity: WritableSignal<WidgetDensity | null> = signal(null);
 
@@ -75,7 +77,7 @@ export class WidgetWizardService {
     WidgetWizardStep.TYPE,
     WidgetWizardStep.WIDTH,
     WidgetWizardStep.DENSITY,
-    WidgetWizardStep.STYLE,
+    WidgetWizardStep.APPEARANCE,
     WidgetWizardStep.CONTENT,
     WidgetWizardStep.FILTERS,
     WidgetWizardStep.DISPLAY_CONDITIONS,
@@ -88,7 +90,7 @@ export class WidgetWizardService {
       [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
-      [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
+      [WidgetWizardStep.APPEARANCE]: !!this.$widgetColor(),
       [WidgetWizardStep.CONTENT]:
         !!this.$widgetContent() &&
         this.$widgetContentValid() &&
@@ -108,6 +110,13 @@ export class WidgetWizardService {
         return !selectedType
           ? false
           : [WidgetType.COLLECTION, WidgetType.FIELDS, WidgetType.TABLE].includes(selectedType);
+      },
+    },
+    [WidgetWizardStep.APPEARANCE]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => {
+        const selectedType = this.$selectedWidget()?.type;
+        return !!selectedType && [WidgetType.FIELDS, WidgetType.COLLECTION, WidgetType.TABLE].includes(selectedType);
       },
     },
     [WidgetWizardStep.FILTERS]: {
@@ -156,7 +165,8 @@ export class WidgetWizardService {
     icon: this.$widgetIcon() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
     width: this.$widgetWidth() || this._defaultWidth || 4,
-    highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
+    highContrast: this.$widgetHighContrast(),
+    color: this.$widgetColor() ?? WidgetColor.WHITE,
     isCompact: this.$widgetDensity() === WidgetDensity.COMPACT,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
@@ -173,7 +183,8 @@ export class WidgetWizardService {
       this.$currentStep.set(WidgetWizardStep.TYPE);
       this.$selectedWidget.set(null);
       this.$widgetWidth.set(this._defaultWidth || null);
-      this.$widgetStyle.set(null);
+      this.$widgetHighContrast.set(false);
+      this.$widgetColor.set(null);
       this.$widgetContent.set(null);
       this.$widgetTitle.set(null);
       this.$widgetIcon.set(null);
@@ -193,7 +204,7 @@ export class WidgetWizardService {
       WidgetWizardStep.TYPE,
       WidgetWizardStep.WIDTH,
       WidgetWizardStep.DENSITY,
-      WidgetWizardStep.STYLE,
+      WidgetWizardStep.APPEARANCE,
       WidgetWizardStep.CONTENT,
       WidgetWizardStep.FILTERS,
       WidgetWizardStep.DISPLAY_CONDITIONS,

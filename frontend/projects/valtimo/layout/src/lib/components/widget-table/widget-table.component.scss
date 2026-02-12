@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 .valtimo-widget-table {
   padding: 24px;
+  background-color: var(--widget-background-color, var(--cds-layer));
+  color: var(--widget-text-color, var(--cds-text-primary));
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -30,12 +32,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
+
+    valtimo-mdi-icon-viewer .mdi-icon-preview {
+      color: var(--widget-text-color, var(--cds-text-primary));
+    }
   }
 
   &__content {
     display: flex;
     align-items: center;
     flex-direction: column;
+    color: inherit;
 
     valtimo-carbon-list {
       width: 100%;
@@ -85,7 +92,7 @@
   .cds--table-header-label > span {
     font-weight: 400;
     font-size: 12px;
-    color: var(--cds-text-secondary);
+    color: var(--widget-text-color, var(--cds-text-secondary));
   }
 
   &--transparent {
@@ -101,9 +108,13 @@
   }
 
   .widget-title {
-    color: var(--cds-text-primary);
+    color: var(--widget-text-color, var(--cds-text-primary));
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;
+  }
+
+  .valtimo-no-results__content {
+    color: var(--widget-text-color, var(--cds-text-primary)) !important;
   }
 }
