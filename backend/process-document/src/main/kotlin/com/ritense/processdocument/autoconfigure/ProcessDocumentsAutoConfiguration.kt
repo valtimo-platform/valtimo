@@ -58,6 +58,7 @@ import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -170,10 +171,11 @@ class ProcessDocumentsAutoConfiguration {
         taskService: TaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver
     ): CaseAssigneeTaskCreatedListener {
         return CaseAssigneeTaskCreatedListener(
-            taskService, documentService, caseDefinitionService, userManagementService
+            taskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
         )
     }
 
@@ -182,10 +184,11 @@ class ProcessDocumentsAutoConfiguration {
         operatonTaskService: OperatonTaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
-            operatonTaskService, documentService, caseDefinitionService, userManagementService
+            operatonTaskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
         )
     }
 
@@ -296,6 +299,7 @@ class ProcessDocumentsAutoConfiguration {
         runtimeService: RuntimeService,
         repositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        caseDocumentResolver: CaseDocumentResolver,
     ): ProcessDefinitionCaseDefinitionService {
         return ProcessDefinitionCaseDefinitionService(
             authorizationService,
@@ -304,6 +308,7 @@ class ProcessDocumentsAutoConfiguration {
             runtimeService,
             repositoryService,
             caseDefinitionChecker,
+            caseDocumentResolver,
         )
     }
 
