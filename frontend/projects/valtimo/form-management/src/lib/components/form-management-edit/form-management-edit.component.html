@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -117,7 +117,6 @@
     class="valtimo-form-management-edit__header-container"
     [ngClass]="{
       '--compact': obs.compactMode,
-      'valtimo-form-management-edit__header-container-case': obs?.context === 'case',
     }"
   >
     @if (obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion) {
@@ -131,7 +130,9 @@
         </cds-overflow-menu-option>
 
         <cds-overflow-menu-option
-          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion"
+          [disabled]="
+            obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion
+          "
           (selected)="showUploadModal()"
         >
           {{ 'Upload' | translate }}
@@ -145,7 +146,9 @@
         </cds-overflow-menu-option>
 
         <cds-overflow-menu-option
-          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion"
+          [disabled]="
+            obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion
+          "
           type="danger"
           (selected)="delete()"
         >
