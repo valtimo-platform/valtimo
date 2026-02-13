@@ -52,6 +52,7 @@ class ValtimoImportTypes {
         const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
+        const val ZGW_ZAAKDETAIL_SYNC = "zgwzaakdetailsync"
 
         // IKO
         const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"

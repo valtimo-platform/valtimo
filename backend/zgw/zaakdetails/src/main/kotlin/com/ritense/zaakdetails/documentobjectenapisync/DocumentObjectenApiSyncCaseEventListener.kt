@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Transactional
 @Component
@@ -35,7 +36,12 @@ class DocumentObjectenApiSyncCaseEventListener(
         if (event.duplicate) {
             val syncConfig = service.getSyncConfiguration(event.basedOnCaseDefinitionId!!)
                 ?: return
-            service.saveSyncConfiguration(syncConfig.copy(caseDefinitionId = event.caseDefinitionId))
+            service.saveSyncConfiguration(
+                syncConfig.copy(
+                    id = UUID.randomUUID(),
+                    caseDefinitionId = event.caseDefinitionId
+                )
+            )
         }
     }
 
