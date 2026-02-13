@@ -233,3 +233,37 @@ tasks.withType(PublishToMavenRepository) {
 tasks.withType(PublishToMavenLocal) {
     enabled = false
 }
+
+tasks.register("cleanAll") {
+    group = "build"
+    description = "Runs all `clean` tasks across subprojects."
+
+    dependsOn subprojects.collect { subproject ->
+        subproject.tasks.matching { it.name == "clean" }
+    }
+}
+
+[
+    "test",
+    "integrationTesting",
+    "integrationTestingPostgresql",
+    "integrationTestingMysql",
+    "securityTesting"
+].each { taskName ->
+    tasks.register("${taskName}All", Test) {
+        def matchingSubprojects = subprojects.findAll { subproject ->
+            subproject.tasks.findByName(taskName)
+        }
+
+        def groupName = matchingSubprojects.collect {
+            it.tasks.findByName(taskName)?.group
+        }.find { it } ?: "other"
+
+        group = groupName
+        description = "Runs all `${taskName}` tasks across subprojects."
+
+        dependsOn subprojects.collect { subproject ->
+            subproject.tasks.matching { it.name == taskName }
+        }
+    }
+}
