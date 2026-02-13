@@ -1860,6 +1860,9 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Bronsleutel",
+    "Target key": "Doelsleutel",
     "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
