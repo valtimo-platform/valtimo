@@ -1830,6 +1830,9 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Source key",
+    "Target key": "Target key",
     "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
