@@ -19,7 +19,6 @@ package com.ritense.resource.authorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
@@ -36,17 +35,10 @@ class ResourceSpecification(
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
         throw UnsupportedOperationException("Predicate creation for ResourcePermission is not supported")
-//        return criteriaBuilder.conjunction()
     }
 
     override fun identifierToEntity(identifier: String): ResourcePermission {
         throw UnsupportedOperationException("Conversion from identifier to entity is not supported")
-//
-//        return ResourcePermission()
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }
 
