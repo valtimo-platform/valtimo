@@ -1,0 +1,6 @@
+[
+    {
+        "processDefinitionKey": "document-upload",
+        "linkType": "DOCUMENT_UPLOAD"
+    }
+]
