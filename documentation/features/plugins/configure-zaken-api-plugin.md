@@ -259,3 +259,7 @@ The **Patch Zaak-notitie** action updates specific properties of the Zaak-notiti
 * **Status.** (Optional) The new value for the status (concept, definitief)
 
 Note: at least one of the properties marked with optional has to be provided.
+
+### Delete Zaak-resultaat
+
+The **Delete Zaak-resultaat** action deletes a Zaak-resultaat in the zaken API. When creating a process link no additional properties have to be provided, since it always deletes the resultaat of the current Zaak.
