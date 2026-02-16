@@ -395,9 +395,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public deleteDocument(): void {
-    this._itemsLoading$.next(true);
-    this.documentenApiDocumentService.deleteDocument(this.document).subscribe(() => {
-      this.refetchDocuments();
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this._itemsLoading$.next(true);
+      this.documentenApiDocumentService.deleteDocument(this.document, documentId).subscribe(() => {
+        this.refetchDocuments();
+      });
     });
   }
 
@@ -447,11 +449,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         tap(([file, documentId]) => {
           if (!file) return;
           if (this.isEditMode$.getValue()) {
-            this.documentenApiDocumentService.updateDocument(file, metadata).subscribe(() => {
-              this.refetchDocuments();
-              this.uploading$.next(false);
-              this.fileToBeUploaded$.next(null);
-            });
+            this.documentenApiDocumentService
+              .updateDocument(file, metadata, documentId)
+              .subscribe(() => {
+                this.refetchDocuments();
+                this.uploading$.next(false);
+                this.fileToBeUploaded$.next(null);
+              });
           } else {
             this.uploadProviderService
               .uploadFileWithMetadata(file, documentId, metadata)
@@ -553,11 +557,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
-    this.downloadService.downloadFile(
-      `${this.valtimoEndpointUri}v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
-      relatedFile.bestandsnaam ?? '',
-      forceDownload
-    );
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this.downloadService.downloadFile(
+        `${this.valtimoEndpointUri}v1/zaken-api/${documentId}/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+        relatedFile.bestandsnaam ?? '',
+        forceDownload
+      );
+    });
   }
 
   private openQueryParamsSubscription(): void {
@@ -642,10 +648,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }> {
     return combineLatest(
       files.map(file =>
-        this.getPermission(permissionRequest, context || {
-          resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
-          identifier: file.fileId,
-        }).pipe(map(available => ({[file.fileId]: available})))
+        this.getPermission(
+          permissionRequest,
+          context || {
+            resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+            identifier: file.fileId,
+          }
+        ).pipe(map(available => ({[file.fileId]: available})))
       )
     ).pipe(
       map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
