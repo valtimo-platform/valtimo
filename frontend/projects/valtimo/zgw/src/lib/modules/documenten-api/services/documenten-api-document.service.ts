@@ -47,16 +47,21 @@ export class DocumentenApiDocumentService extends BaseApiService {
         );
   }
 
-  public updateDocument(file: any, metadata: any): Observable<void> {
+  public updateDocument(file: any, metadata: any, documentId: string): Observable<void> {
     return this.httpClient.put<void>(
-      this.getApiUrl(`/v1/documenten-api/${file.pluginConfigurationId}/files/${file.fileId}`),
+      this.getApiUrl(
+        `/v1/zaken-api/${documentId}/${file.pluginConfigurationId}/files/${file.fileId}`
+      ),
       metadata
     );
   }
 
-  public deleteDocument(file: DocumentenApiRelatedFile): Observable<DocumentenApiRelatedFile[]> {
+  public deleteDocument(
+    file: DocumentenApiRelatedFile,
+    caseId: string
+  ): Observable<DocumentenApiRelatedFile[]> {
     return this.httpClient.delete<DocumentenApiRelatedFile[]>(
-      this.getApiUrl(`/v1/documenten-api/${file.pluginConfigurationId}/files/${file.fileId}`)
+      this.getApiUrl(`/v1/zaken-api/${caseId}/${file.pluginConfigurationId}/files/${file.fileId}`)
     );
   }
 
