@@ -34,11 +34,11 @@ class ResourceSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
-        throw UnsupportedOperationException("Predicate creation for ResourcePermission is not supported")
+        throw NotImplementedError()
     }
 
     override fun identifierToEntity(identifier: String): ResourcePermission {
-        throw UnsupportedOperationException("Conversion from identifier to entity is not supported")
+        throw NotImplementedError()
     }
 }
 
