@@ -350,16 +350,27 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public registerPermissionSubscriptions(): void {
     this._subscriptions.add(
-      this.relatedFiles$
+      combineLatest([this.relatedFiles$, this.documentId$])
         .pipe(
-          switchMap(files =>
-            combineLatest({
+          switchMap(([files, documentId]) => {
+            const documentContext = {
+              resource: RESOURCE_PERMISSION_RESOURCE.jsonSchemaDocument,
+              identifier: documentId,
+            };
+
+            return combineLatest({
               files: of(files),
-              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION),
-              canModify: this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION),
-              canDelete: this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION),
-            })
-          )
+              canView:
+                this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION) &&
+                this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
+              canModify:
+                this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION) &&
+                this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION, documentContext),
+              canDelete:
+                this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION) &&
+                this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION, documentContext),
+            });
+          })
         )
         .subscribe(permissions =>
           permissions.files.map(
@@ -624,13 +635,14 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   private getPermissions(
     files: DocumentenApiRelatedFile[],
-    permissionRequest: PermissionRequest
+    permissionRequest: PermissionRequest,
+    context?: any
   ): Observable<{
     [key: string]: boolean;
   }> {
     return combineLatest(
       files.map(file =>
-        this.getPermission(permissionRequest, {
+        this.getPermission(permissionRequest, context || {
           resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
           identifier: file.fileId,
         }).pipe(map(available => ({[file.fileId]: available})))
