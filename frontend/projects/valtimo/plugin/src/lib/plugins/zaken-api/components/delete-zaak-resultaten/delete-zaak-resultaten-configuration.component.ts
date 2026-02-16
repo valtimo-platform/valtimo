@@ -26,7 +26,7 @@ import {PluginTranslatePipe} from '../../../../pipes';
   standalone: false,
   selector: 'valtimo-delete-zaak-resultaten-configuration',
   templateUrl: './delete-zaak-resultaten-configuration.component.html',
-  styleUrls: ['./delete-zaak-resultaten-configuration.component.scss'],
+  styleUrls: [],
   providers: [PluginTranslatePipe],
 })
 export class DeleteZaakResultatenConfigurationComponent
@@ -41,12 +41,12 @@ export class DeleteZaakResultatenConfigurationComponent
 
   private saveSubscription!: Subscription;
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.emitValid();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
