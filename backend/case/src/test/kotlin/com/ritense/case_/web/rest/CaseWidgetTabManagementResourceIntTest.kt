@@ -96,8 +96,8 @@ class CaseWidgetTabManagementResourceIntTest @Autowired constructor(
             caseDefinitionId.versionTag.version,
             tabKey,
             widgets = listOf(
-                TestCaseWidgetTabWidgetDto("widget-1", "Widget 1", "mdi-home", 1, false, false),
-                TestCaseWidgetTabWidgetDto("widget-2", "Widget 2","mdi-home", 2, true, false)
+                TestCaseWidgetTabWidgetDto("widget-1", "Widget 1", "mdi-home", null,  1, false, false),
+                TestCaseWidgetTabWidgetDto("widget-2", "Widget 2","mdi-home", null,  2, true, false)
             )
         )
 
@@ -112,6 +112,8 @@ class CaseWidgetTabManagementResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.key").value(tabKey))
             .andExpect(jsonPath("$.widgets.length()").value(2))
             .andExpect(jsonPath("$.widgets[0].key").value(caseWidgetTabDto.widgets[0].key))
+            .andExpect(jsonPath("$.widgets[0].color").value("WHITE"))
             .andExpect(jsonPath("$.widgets[1].key").value(caseWidgetTabDto.widgets[1].key))
+            .andExpect(jsonPath("$.widgets[1].color").value("HIGHCONTRAST"))
     }
 }

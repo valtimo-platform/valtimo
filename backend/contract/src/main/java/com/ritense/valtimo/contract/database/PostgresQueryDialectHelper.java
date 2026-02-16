@@ -34,10 +34,11 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
     @Override
     public <T> Expression<T> getJsonValueExpression(CriteriaBuilder cb, Path column, String jsonPath, Class<T> type) {
+        Expression<Object> jsonbColumn = toJsonb(cb, column);
         var jsonValue = cb.function(
             "jsonb_path_query_first",
             Object.class,
-            column,
+            jsonbColumn,
             cb.function("jsonpath", String.class, cb.literal(jsonPath))
         );
         if (String.class.isAssignableFrom(type)) {
@@ -57,11 +58,12 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
     @Override
     public Predicate getJsonValueExistsExpression(CriteriaBuilder cb, Path column, String value) {
+        Expression<Object> jsonbColumn = toJsonb(cb, column);
         return cb.isTrue(
             cb.function(
                 "jsonb_path_exists",
                 Boolean.class,
-                column,
+                jsonbColumn,
                 cb.function(
                     "jsonpath",
                     String.class,
@@ -85,6 +87,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
     @Override
     public Predicate getJsonArrayContainsExpression(CriteriaBuilder cb, Path column, String path, String value) {
+        Expression<Object> jsonbColumn = toJsonb(cb, column);
         return cb.isTrue(
             cb.function(
                 "jsonb_contains_filter",
@@ -92,7 +95,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
                 cb.function(
                     "jsonb_path_query_first",
                     Object.class,
-                    column,
+                    jsonbColumn,
                     cb.function("jsonpath", String.class, cb.literal(path))
                 ),
                 cb.literal(value)
@@ -108,7 +111,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     private Expression<String> getValueForPathText(CriteriaBuilder cb, Path column, String path) {
         List<Expression<String>> pathParts = splitPath(path).stream().map(cb::literal).toList();
         Expression[] expressions = new Expression[pathParts.size() + 1];
-        expressions[0] = column;
+        expressions[0] = toJsonb(cb, column);
         System.arraycopy(pathParts.toArray(), 0, expressions, 1, pathParts.size());
 
         return cb.function(
@@ -126,5 +129,9 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
             pathToSplit = path;
         }
         return Arrays.asList(pathToSplit.split("\\."));
+    }
+
+    private Expression<Object> toJsonb(CriteriaBuilder cb, Path column) {
+        return cb.function("to_jsonb", Object.class, column);
     }
 }

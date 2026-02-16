@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 
-export async function expectErrorMessage(
+export async function expectNotificationMessage(
   page: Page,
   expectedText: string,
   options?: { exact?: boolean }

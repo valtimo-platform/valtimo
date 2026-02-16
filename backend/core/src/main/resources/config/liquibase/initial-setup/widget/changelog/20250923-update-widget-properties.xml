@@ -1,0 +1,11 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20250923-update-widget-properties.xml">
+
+
+    <changeSet id="1" author="Ritense">
+        <validCheckSum>9:502ede134c49cb6e87e2405f022a612d</validCheckSum>
+        <dropNotNullConstraint tableName="widget" columnName="properties" columnDataType="${jsonType}"/>
+    </changeSet>
+
+</databaseChangeLog>
