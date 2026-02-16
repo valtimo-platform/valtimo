@@ -1,5 +1,5 @@
 {
-    "changesetId": "resource-v3",
+    "changesetId": "resource-v5",
     "permissions": [
         {
             "resourceType": "com.ritense.resource.authorization.ResourcePermission",
@@ -40,7 +40,7 @@
                             "field": "documentDefinitionId.caseDefinitionId.key",
                             "operator": "in",
                             "value": [
-                                "energy-subsidy-request"
+                                "bezwaar"
                             ]
                         }
                     ]
@@ -61,7 +61,7 @@
                             "field": "documentDefinitionId.caseDefinitionId.key",
                             "operator": "in",
                             "value": [
-                                "energy-subsidy-request"
+                                "bezwaar"
                             ]
                         }
                     ]
@@ -82,7 +82,7 @@
                             "field": "documentDefinitionId.caseDefinitionId.key",
                             "operator": "in",
                             "value": [
-                                "energy-subsidy-request"
+                                "bezwaar"
                             ]
                         }
                     ]
@@ -103,7 +103,7 @@
                             "field": "documentDefinitionId.caseDefinitionId.key",
                             "operator": "in",
                             "value": [
-                                "energy-subsidy-request"
+                                "bezwaar"
                             ]
                         }
                     ]
@@ -124,7 +124,7 @@
                             "field": "documentDefinitionId.caseDefinitionId.key",
                             "operator": "in",
                             "value": [
-                                "energy-subsidy-request"
+                                "bezwaar"
                             ]
                         }
                     ]
