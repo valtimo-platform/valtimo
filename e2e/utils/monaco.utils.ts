@@ -1,4 +1,5 @@
-import { Page } from '@playwright/test';
+import {Page} from '@playwright/test';
+
 
 /**
  * Paste a string directly into a Monaco Editor instance.
@@ -8,7 +9,7 @@ export async function pasteToMonacoEditor(page: Page, content: string) {
   const editor = page.locator('.monaco-editor').first();
   await editor.click();
 
-  await page.evaluate(async (text) => {
+  await page.evaluate(async text => {
     await navigator.clipboard.writeText(text);
   }, content);
 
@@ -25,6 +26,7 @@ export async function clearMonacoEditor(page: Page) {
   await editor.click();
 
   const isMac = process.platform === 'darwin';
-  await page.keyboard.press(isMac ? 'Meta+KeyA' : 'Control+KeyA');
+  // await page.keyboard.press(isMac ? 'Meta+KeyA' : 'Control+KeyA');
+  await page.keyboard.press('Control+KeyA');
   await page.keyboard.press('Delete');
 }
