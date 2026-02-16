@@ -7,10 +7,58 @@
             "roleKey": "ROLE_USER",
             "conditions": [
                 {
+                    "type": "expression",
+                    "field": "content.content",
+                    "path": "$.height",
+                    "operator": "<",
+                    "value": 20000,
+                    "clazz": "java.lang.Integer"
+                },
+                {
                     "type": "field",
                     "field": "documentDefinitionId.caseDefinitionId.key",
                     "operator": "in",
-                    "value": ["energy-subsidy-request", "bezwaar"]
+                    "value": ["leningen", "bezwaar"]
+                },
+                {
+                    "type": "field",
+                    "field": "documentDefinitionId.caseDefinitionId.versionTag",
+                    "operator": "==",
+                    "value": "${ACTIVE}"
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "actions": ["view_list", "export"],
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "assigneeId",
+                    "operator": "==",
+                    "value": "${currentUserId}"
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "action": "view",
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "expression",
+                    "field": "content.content",
+                    "path": "$.height",
+                    "operator": "<",
+                    "value": 20000,
+                    "clazz": "java.lang.Integer"
+                },
+                {
+                    "type": "field",
+                    "field": "documentDefinitionId.name",
+                    "operator": "in",
+                    "value": ["leningen", "bezwaar"]
                 }
             ]
         },
@@ -21,9 +69,9 @@
             "conditions": [
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.key",
-                    "operator": "in",
-                    "value": ["energy-subsidy-request", "bezwaar"]
+                    "field": "assigneeId",
+                    "operator": "==",
+                    "value": "${currentUserId}"
                 }
             ]
         },
@@ -31,7 +79,14 @@
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
             "action": "claim",
             "roleKey": "ROLE_USER",
-            "conditions": []
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "assigneeId",
+                    "operator": "==",
+                    "value": null
+                }
+            ]
         },
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
@@ -51,7 +106,7 @@
                             "type": "field",
                             "field": "id.name",
                             "operator": "in",
-                            "value": ["bezwaar"]
+                            "value": ["leningen", "bezwaar"]
                         }
                     ]
                 }
