@@ -28,6 +28,15 @@
   <div carbonToolbarContent>
     <div class="valtimo-building-block-management-list__actions">
       <button
+        cdsButton="ghost"
+        [iconOnly]="true"
+        (click)="onUploadClick()"
+        [disabled]="(isFinal$ | async) || $loading()"
+      >
+        <svg cdsIcon="upload" size="16"></svg>
+      </button>
+
+      <button
         cdsButton="primary"
         (click)="onCreateClick()"
         [disabled]="(isFinal$ | async) || $loading()"
@@ -42,8 +51,10 @@
 
 <valtimo-form-management-create
   *ngIf="showCreateModal$ | async"
+  [upload]="upload$ | async"
   (goBackEvent)="onGoBackFromCreateEvent()"
   (afterCreateEvent)="onFormDefinitionCreateEvent($event)"
+  (afterUploadEvent)="onFormDefinitionUploadEvent($event)"
 ></valtimo-form-management-create>
 
 <valtimo-confirmation-modal

@@ -483,7 +483,7 @@
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version"},
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft"},
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
@@ -807,6 +807,7 @@
       "highContrast": "High contrast",
       "type": "Type",
       "width": "Width",
+      "color": "Color",
       "density": "Density"
     },
     "list": {
@@ -839,7 +840,7 @@
       "edit": "Edit widget",
       "steps": {
         "content": "Choose widget content",
-        "style": "Choose widget style",
+        "appearance": "Choose widget appearance",
         "type": "Choose widget type",
         "width": "Choose widget width",
         "density": "Choose widget density",
@@ -874,10 +875,24 @@
       "large": {"title": "Large", "subtitle": "Contains up to 3 columns of content"},
       "xtraLarge": {"title": "Xtra large", "subtitle": "Contains up to 4 columns of content"}
     },
-    "style": {
-      "description": "Select the desired style for the widget",
-      "default": {"title": "Default", "description": "For regular content"},
-      "highContrast": {"title": "High contrast", "description": "For higher priority content"}
+    "appearance": {
+      "description": "Select the appearance for the widget.",
+      "backgroundColor": {
+        "label": "Widget background color",
+        "colors": {
+          "highContrast": "High contrast",
+          "yellow": "Yellow",
+          "orange": "Orange",
+          "red": "Red",
+          "brown": "Brown",
+          "green": "Green",
+          "turqoise": "Turquoise",
+          "purple": "Purple",
+          "periwinkle": "Periwinkle",
+          "blue": "Blue",
+          "white": "Default"
+        }
+      }
     },
     "density": {
       "description": "Select the desired density for the widget",
@@ -1815,6 +1830,9 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Source key",
+    "Target key": "Target key",
     "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
@@ -2179,7 +2197,8 @@
     "listColumns": {
       "name": "Name",
       "key": "Key",
-      "versionTag": "Version"
+      "versionTag": "Version",
+      "draft": "Draft"
     },
     "detail": {
       "title": "Building block details"

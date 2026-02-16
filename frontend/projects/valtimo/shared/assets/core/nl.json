@@ -490,7 +490,7 @@
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie"},
+    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept"},
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -826,6 +826,7 @@
       "highContrast": "Hoog contrast",
       "type": "Type",
       "width": "Breedte",
+      "color": "Kleur",
       "density": "Dichtheid"
     },
     "list": {
@@ -858,7 +859,7 @@
       "edit": "Widget bewerken",
       "steps": {
         "content": "Kies widget-inhoud",
-        "style": "Kies widget-stijl",
+        "appearance": "Kies widget-uiterlijk",
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
         "density": "Kies widgetdichtheid",
@@ -893,12 +894,23 @@
       "large": {"title": "Groot", "subtitle": "Bevat maximaal 3 kolommen met inhoud"},
       "xtraLarge": {"title": "Xtra Groot", "subtitle": "Bevat maximaal 4 kolommen met inhoud"}
     },
-    "style": {
-      "description": "Selecteer de gewenste stijl voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
-      "highContrast": {
-        "title": "Hoog contrast",
-        "description": "Voor inhoud met een hogere prioriteit"
+    "appearance": {
+      "description": "Selecteer het uiterlijk voor de widget.",
+      "backgroundColor": {
+        "label": "Widget achtergrondkleur",
+        "colors": {
+          "highContrast": "Hoog contrast",
+          "yellow": "Geel",
+          "orange": "Oranje",
+          "red": "Rood",
+          "brown": "Bruin",
+          "green": "Groen",
+          "turqoise": "Turkoois",
+          "purple": "Paars",
+          "periwinkle": "Lila",
+          "blue": "Blauw",
+          "white": "Standaard"
+        }
       }
     },
     "density": {
@@ -1848,6 +1860,9 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Bronsleutel",
+    "Target key": "Doelsleutel",
     "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
@@ -2215,7 +2230,8 @@
     "listColumns": {
       "name": "Naam",
       "key": "Sleutel",
-      "versionTag": "Versie"
+      "versionTag": "Versie",
+      "draft": "Concept"
     },
     "detail": {
       "title": "Bouwblokdetails"

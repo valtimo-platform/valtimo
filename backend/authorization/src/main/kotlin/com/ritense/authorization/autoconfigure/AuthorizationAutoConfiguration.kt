@@ -39,17 +39,14 @@ import com.ritense.authorization.web.security.ValtimoAuthorizationHttpSecurityCo
 import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import javax.sql.DataSource
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.authorization"])
@@ -88,15 +85,6 @@ class AuthorizationAutoConfiguration(
         AuthorizationServiceHolder(authorizationService)
         return authorizationService
     }
-
-    @Order(HIGHEST_PRECEDENCE + 1)
-    @Bean
-    @ConditionalOnClass(DataSource::class)
-    @ConditionalOnMissingBean(name = ["authorizationLiquibaseMasterChangeLogLocation"])
-    fun authorizationLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/authorization-master.xml")
-    }
-
 
     @Bean
     fun permissionConditionTypeModule(): Module {

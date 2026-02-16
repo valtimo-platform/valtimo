@@ -105,6 +105,7 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
       label: 'interface.edit',
       callback: this.onEditClick.bind(this),
       type: 'normal',
+      disabledCallback: this.editDisabled.bind(this),
     },
     {
       label: 'interface.delete',
@@ -118,6 +119,7 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
 
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly upload$ = new BehaviorSubject<boolean>(false);
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
 
@@ -145,6 +147,7 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
   private readonly _subscriptions = new Subscription();
 
   private _formToDelete!: BuildingBlockFormDefinitionItem;
+  private _isFinal = false;
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -194,6 +197,10 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
         )
         .subscribe()
     );
+
+    this._subscriptions.add(
+      this.isFinal$.subscribe(isFinal => (this._isFinal = isFinal))
+    );
   }
 
   public ngOnDestroy(): void {
@@ -201,23 +208,36 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
   }
 
   public onRowClick(formDefinition: BuildingBlockFormDefinitionItem): void {
-    this.router.navigate([
-      '/building-block-management',
-      'building-block',
-      this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-      'version',
-      this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
-      BUILDING_BLOCK_MANAGEMENT_TABS.FORMS,
-      formDefinition.id,
-    ]);
+    this.navigateToFormDefinition(formDefinition.id);
+  }
+
+  private navigateToFormDefinition(formDefinitionId: string, upload = false): void {
+    this.router.navigate(
+      [
+        '/building-block-management',
+        'building-block',
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        'version',
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
+        BUILDING_BLOCK_MANAGEMENT_TABS.FORMS,
+        formDefinitionId,
+      ],
+      {queryParams: {...(upload && {upload: true})}}
+    );
   }
 
   public onCreateClick(): void {
     this.showCreateModal$.next(true);
   }
 
+  public onUploadClick(): void {
+    this.upload$.next(true);
+    this.showCreateModal$.next(true);
+  }
+
   public onGoBackFromCreateEvent(): void {
     this.showCreateModal$.next(false);
+    this.upload$.next(false);
   }
 
   public onFormDefinitionCreateEvent(formDefinitionId: string): void {
@@ -226,7 +246,17 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
       type: 'success',
       title: this.translateService.instant('formManagement.notifications.created'),
     });
-    this.onRowClick({id: formDefinitionId} as BuildingBlockFormDefinitionItem);
+    this.navigateToFormDefinition(formDefinitionId);
+  }
+
+  public onFormDefinitionUploadEvent(formDefinitionId: string): void {
+    this.showCreateModal$.next(false);
+    this.upload$.next(false);
+    this.notificationService.showToast({
+      type: 'success',
+      title: this.translateService.instant('formManagement.notifications.created'),
+    });
+    this.navigateToFormDefinition(formDefinitionId, true);
   }
 
   public onEditClick(form: BuildingBlockFormDefinitionItem): void {
@@ -278,7 +308,11 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
     this._partialPagination$.next({...this._partialPagination, ...update});
   }
 
+  private editDisabled(): boolean {
+    return this._isFinal;
+  }
+
   private deleteDisabled(form: BuildingBlockFormDefinitionItem): boolean {
-    return form.readOnly;
+    return form.readOnly || this._isFinal;
   }
 }

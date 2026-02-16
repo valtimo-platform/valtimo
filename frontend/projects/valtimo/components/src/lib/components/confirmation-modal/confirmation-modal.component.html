@@ -54,7 +54,7 @@
   <cds-modal-footer>
     <ng-container>
       <button
-        data-testid="confirmation-modal-close"
+        data-test-id="confirmationModalClose"
         [attr.modal-primary-focus]="true"
         [cdsButton]="cancelButtonType"
         (click)="closeModal()"
@@ -70,7 +70,7 @@
       <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
       <button
         *ngIf="showOptionalButton"
-        data-testid="confirmation-modal-optional"
+        data-test-id="confirmationModalOptional"
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"
         (click)="onOptional()"
@@ -84,7 +84,7 @@
         }}
       </button>
       <button
-        data-testid="confirmation-modal-confirm"
+        data-test-id="confirmationModalConfirm"
         [attr.modal-primary-focus]="true"
         [cdsButton]="confirmButtonType"
         (click)="onConfirm()"
