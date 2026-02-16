@@ -45,10 +45,7 @@ test.describe('Case details configuration', () => {
         await caseDetailsConfigPage.switchToStatusesTab();
 
         // Act
-        await caseDetailsConfigPage.addStatus(
-          statusTestData.title,
-          statusTestData.colorOption
-        );
+        await caseDetailsConfigPage.addStatus(statusTestData.title);
 
         // Assert
         await caseDetailsConfigPage.assertStatusExists(statusTestData.title);
@@ -82,10 +79,7 @@ test.describe('Case details configuration', () => {
         await caseDetailsConfigPage.switchToTagsTab();
 
         // Act
-        await caseDetailsConfigPage.addTag(
-          tagTestData.title,
-          tagTestData.colorOption
-        );
+        await caseDetailsConfigPage.addTag(tagTestData.title);
 
         // Assert
         await caseDetailsConfigPage.assertTagExists(tagTestData.title);

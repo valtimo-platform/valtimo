@@ -80,12 +80,6 @@ export class CaseDetailsConfigPage {
     return this.page.getByTestId('caseTagSaveButton');
   }
 
-  // ─── Shared UI Elements ───────────────────────────────────────────
-
-  get confirmationModalConfirm() {
-    return this.page.getByTestId('confirmationModalConfirm');
-  }
-
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseDetailsConfig(caseIdentifier: string) {
@@ -107,14 +101,9 @@ export class CaseDetailsConfigPage {
 
   // ─── Status CRUD ──────────────────────────────────────────────────
 
-  async addStatus(title: string, colorOption: string) {
+  async addStatus(title: string) {
     await this.statusAddButton.click();
     await this.statusTitleInput.fill(title);
-
-    // Carbon cds-dropdown: click the dropdown to open, then select the option
-    await this.statusColorDropdown.click();
-    await this.statusColorDropdown.getByRole('option').getByText(colorOption, {exact: true}).click();
-
     await this.statusAddConfirmButton.click();
   }
 
@@ -130,7 +119,7 @@ export class CaseDetailsConfigPage {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
     await row.getByRole('menu').locator('button').click();
     await this.page.getByRole('menuitem', {name: 'Delete'}).click();
-    await this.confirmationModalConfirm.click();
+    await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
   async assertStatusExists(title: string) {
@@ -143,14 +132,9 @@ export class CaseDetailsConfigPage {
 
   // ─── Tag CRUD ─────────────────────────────────────────────────────
 
-  async addTag(title: string, colorOption: string) {
+  async addTag(title: string) {
     await this.tagAddButton.click();
     await this.tagTitleInput.fill(title);
-
-    // Carbon cds-dropdown: click the dropdown to open, then select the option
-    await this.tagColorDropdown.click();
-    await this.tagColorDropdown.getByRole('option').getByText(colorOption, {exact: true}).click();
-
     await this.tagAddConfirmButton.click();
   }
 
@@ -166,7 +150,7 @@ export class CaseDetailsConfigPage {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
     await row.getByRole('menu').locator('button').click();
     await this.page.getByRole('menuitem', {name: 'Delete'}).click();
-    await this.confirmationModalConfirm.click();
+    await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
   async assertTagExists(title: string) {
