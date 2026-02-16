@@ -100,7 +100,7 @@ services:
     # ZGW
 
     openzaak:
-        image: openzaak/open-zaak:1.25.0
+        image: openzaak/open-zaak:1.20.0
         container_name: gzac-docker-compose-openzaak
         platform: linux/amd64
         profiles:
@@ -122,7 +122,6 @@ services:
             - DJANGO_SUPERUSER_PASSWORD=admin
             - SENDFILE_BACKEND=django_sendfile.backends.simple
             - NOTIFICATIONS_DISABLED=true
-            - ZAAKNOTITIES_ENABLED=true
             - DISABLE_2FA=True
         ports:
             - "8001:8000"
@@ -327,7 +326,7 @@ services:
             - "15673:15672"
 
     open-notificaties-celery:
-        image: openzaak/open-notificaties:1.14.0
+        image: openzaak/open-notificaties:1.8.2
         container_name: gzac-docker-compose-open-notificaties
         platform: linux/amd64
         profiles:
@@ -341,7 +340,6 @@ services:
             - DB_PORT=5432
             - DB_HOST=open-notificaties-database
             - DB_NAME=notifications
-            - LOG_NOTIFICATIONS_IN_DB=True
             - DB_USER=notifications
             - DB_PASSWORD=notifications
             - DEBUG=true
@@ -360,7 +358,7 @@ services:
             - open-notificaties-redis
 
     open-notificaties:
-        image: openzaak/open-notificaties:1.14.0
+        image: openzaak/open-notificaties:1.8.1
         container_name: gzac-docker-compose-open-notificaties-celery
         platform: linux/amd64
         profiles:
