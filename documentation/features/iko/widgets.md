@@ -72,13 +72,29 @@ Configure the widget title, icon, data path, and fields.
 
 <figure><img src="../../.gitbook/assets/iko/widget-wizard-step5.png" alt="Widget wizard step 5"><figcaption><p>Configure the widget content.</p></figcaption></figure>
 
+**Widget properties:**
+
 | Field | Description |
 |-------|-------------|
 | Widget title | Title displayed above the widget. |
 | Icon | Optional icon (select from list). |
-| Path to table data | Data path for table/collection widgets (e.g. `iko:/running_cases`). |
-| Rows per page | Number of rows to display per page. |
-| Columns | Field columns to display in the widget. |
+
+**Link action (optional):**
+
+| Field | Description |
+|-------|-------------|
+| Target URL (with placeholders) | URL for link action. |
+| Button label | Label for the link button. |
+
+**Field configuration:**
+
+| Field | Description |
+|-------|-------------|
+| Title | Label for a field row. |
+| Display type | How the field value is displayed (e.g. Text, Date). |
+| Value | Data path to the field value. |
+| Ellipsis character limit | Maximum characters before truncation (optional). |
+| Hide when empty | Hide the field when value is empty. |
 
 #### Step 6: Set display conditions
 
@@ -89,7 +105,7 @@ Configure conditions that determine when the widget is shown. If multiple condit
 | Field | Description |
 |-------|-------------|
 | Path | Data path for the condition. |
-| Operator | Comparison operator (e.g. `==`, `!=`, `>`, `<`). |
+| Operator | Comparison operator (e.g. Equal to, Not equal to, Greater than). |
 | Value | Value to compare against. |
 
 ### JSON editor
@@ -196,7 +212,7 @@ Display conditions determine when a widget is shown based on data values. If mul
 | Field | Description |
 |-------|-------------|
 | Path | Data path for the condition. |
-| Operator | Comparison operator (`==`, `!=`, `>`, `<`, `>=`, `<=`). |
+| Operator | Comparison operator (e.g. Equal to, Not equal to, Greater than). |
 | Value | Value to compare against. |
 
 **Example:** Only show a widget when the person has Dutch nationality:

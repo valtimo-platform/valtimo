@@ -79,4 +79,4 @@ Configuring a link from a case to an IKO view is done through the case detail ta
 
 ## Related
 
-* [Case detail tabs](../cases/case-detail/tabs/README.md)
+* [Case detail tabs](../case/case-detail/tabs/README.md)
