@@ -11,7 +11,7 @@ do
             for file in /docker-entrypoint-initdb.d/database/*.sql
             do
                 echo "Running $file"
-                psql -U openzaak openzaak -f $file
+                psql -U openzaak openzaak -v objecten_api_token="${VALTIMO_OBJECTEN_API_TOKEN}" -f $file
             done
             break
         else
