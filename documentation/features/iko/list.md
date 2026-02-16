@@ -20,25 +20,26 @@ The List configuration determines which columns are shown in the search results 
 | Field | Description |
 |-------|-------------|
 | Title | Column header text. |
-| Key | Technical key. |
-| Path | Data path (e.g. `/name/fullName`). |
+| Key | Unique identifier for the column. Use `id` to mark this column as the ID field. |
+| Path | Location of the data in the search results using JsonPointer notation (e.g. `/name/fullName`). |
 | Display Type | Display type (Text, Date, etc.). |
 | Parameters | Additional display parameters. |
-| Sortable | Enable sorting on this column. |
-| Default Sort | Use as default sort column. |
+
+{% hint style="warning" %}
+Please note that sorting is not supported yet in the results list. The Sortable and default sort properties will be ignored.
+{% endhint %}
 
 <figure><img src="../../.gitbook/assets/iko/search-results-table.png" alt="Search results table"><figcaption><p>Search results displayed to case workers.</p></figcaption></figure>
 
 ## Display types
 
-| Type | Description |
-|------|-------------|
-| `text` | Standard text display. |
-| `number` | Numeric display. |
-| `date` | Date display (configurable format). |
-| `datetime` | Date and time display. |
-| `boolean` | Yes/No display. |
-| `currency` | Currency display. |
+| Type      | Description                         |
+|-----------|-------------------------------------|
+| `text`    | Standard text display.              |
+| `date`    | Date display (configurable format). |
+| `boolean` | Yes/No display.                     |
+| `enum`    | Value from a fixed list.            |
+| `hidden`  | Hidden field.                       |
 
 ## Related
 

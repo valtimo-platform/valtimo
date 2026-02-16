@@ -43,7 +43,7 @@ The order of tabs can be adjusted via drag & drop.
 | Key | Technical key (unique identifier).                   |
 | Title | Display name of the tab.                             |
 | Type | Tab type (only `widgets` is supported).              |
-| Aggregated Data Profile Name | Name of the data profile for aggregation (optional). |
+| Aggregated Data Profile Name | Name of the data profile for aggregation. If not specified, data from the connector endpoint is used instead. |
 
 ## Tab contents
 

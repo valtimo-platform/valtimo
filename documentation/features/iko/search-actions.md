@@ -4,7 +4,12 @@ Configure search actions to define how users can search for customers or objects
 
 ## Overview
 
-Search Actions define the available search methods for a View. Each Search Action provides a specific way to find records, such as searching by BSN, by name and date of birth, or by address.
+Search Actions define the available search methods for a View. Each Search Action appears as a separate tab in the search interface and connects to a specific endpoint on the IKO Server. This allows users to search using different criteria, such as BSN, name and date of birth, or address.
+
+Each Search Action:
+- Corresponds to a single IKO Server connector endpoint.
+- Appears as a tab with its own search fields.
+- Can send additional query parameters to the connector endpoint.
 
 ### Examples of search actions
 
@@ -27,13 +32,13 @@ Search Actions define the available search methods for a View. Each Search Actio
 
 ### Configuring search fields
 
-For each Search Action, one or more search fields are configured:
+For each Search Action, one or more search fields are configured. When a user enters a value and searches, the field's path is sent as a query parameter to the connector endpoint.
 
 | Field | Description |
 |-------|-------------|
 | Key | Technical key (e.g. `surname`). |
 | Title | Display name (e.g. "Surname"). |
-| Path | Data path in the query (e.g. `familyName`). |
+| Path | Query parameter name sent to the endpoint (e.g. `familyName` becomes `?familyName=Smit`). |
 | Data type | Type of data (see table below). |
 | Field type | Input type (see table below). |
 | Required | Whether the field is mandatory. |

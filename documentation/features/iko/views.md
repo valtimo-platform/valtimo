@@ -10,7 +10,7 @@ A View represents a type of integrated view, for example "Customer (BRP)", "Obje
 
 ### Adding an IKO Server
 
-1. Navigate to **Admin → IKO**.
+1. Navigate to **Admin** → **IKO**.
 2. Click **Add IKO Server**.
 3. Configure the server properties.
 
