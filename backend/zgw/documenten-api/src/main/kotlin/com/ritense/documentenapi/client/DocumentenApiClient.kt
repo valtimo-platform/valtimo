@@ -18,10 +18,8 @@ package com.ritense.documentenapi.client
 
 import BestandsdelenResult
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.document.domain.Document
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
 import com.ritense.documentenapi.domain.FileUploadPart
@@ -142,7 +140,7 @@ class DocumentenApiClient(
 
     fun getInformatieObject(
         authentication: DocumentenApiAuthentication,
-        documentId: UUID?,
+        caseId: UUID?,
         objectUrl: URI
     ): DocumentInformatieObject {
         val result = restClient(authentication)
@@ -155,7 +153,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(documentId)
+                ResourcePermission(caseId)
             )
         )
 
