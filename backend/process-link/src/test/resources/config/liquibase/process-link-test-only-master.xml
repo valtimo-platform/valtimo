@@ -26,6 +26,5 @@
     <property name="jsonType" value="JSONB" dbms="postgresql"/>
 
     <include file="changelog/20230417-add-custom-process-link.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250812-subtitles-to-process-link.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

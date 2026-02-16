@@ -222,7 +222,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     this._changeActive = true;
     this.modifiedFormDefinition = event.form;
     this._formDefinition$.next({...this._formDefinition, formDefinition: event.form});
-    this.jsonFormDefinition$.next({...definition, value: JSON.stringify(event.form)});
+    this.jsonFormDefinition$.next({...definition, value: JSON.stringify(event.form), language: 'json'});
     this._changeActive = false;
   }
 

@@ -136,7 +136,7 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-   this.widgetWizardService.$widgetContentValid.set(false);
+    this.widgetWizardService.$widgetContentValid.set(false);
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(500)).subscribe(value => {
         this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
