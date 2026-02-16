@@ -65,7 +65,7 @@
             [items]="dropdownSelectItemsMap[filter.key] ?? getDropdownSelectItems(filter)"
             [formControl]="filtersFormGroup.get(filter.key)"
             [placeholder]="'searchFields.textPlaceholder' | translate"
-            [appendInline]="false"
+            [appendInline]="true"
           ></v-select>
         }
         @else if (filter.dataType === 'text' && filter.fieldType === 'multi-select-dropdown') {
@@ -74,7 +74,7 @@
             [formControl]="filtersFormGroup.get(filter.key)"
             [multiple]="true"
             [placeholder]="'searchFields.textPlaceholder' | translate"
-            [appendInline]="false"
+            [appendInline]="true"
           ></v-select>
         }
         @else if (filter.dataType === 'number' && filter.fieldType === 'single') {

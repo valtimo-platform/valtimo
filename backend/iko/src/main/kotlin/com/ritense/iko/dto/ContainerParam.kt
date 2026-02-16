@@ -43,7 +43,7 @@ data class ContainerParam(
                 }
             } else if (config.fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
                 val listValue = value as? Collection<*> ?: listOf(value)
-                listOf(config.key to listValue.toString())
+                listOf(config.key to listValue.joinToString(","))
             } else if (config.matchType == SearchFieldMatchType.EXACT) {
                 listOf(config.key to value.toString())
             } else {
