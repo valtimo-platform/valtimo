@@ -1,5 +1,5 @@
 {
-    "changesetId": "resource-v5",
+    "changesetId": "resource-v3",
     "permissions": [
         {
             "resourceType": "com.ritense.resource.authorization.ResourcePermission",
