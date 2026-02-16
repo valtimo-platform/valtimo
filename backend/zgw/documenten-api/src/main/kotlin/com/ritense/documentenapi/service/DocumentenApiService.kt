@@ -76,20 +76,22 @@ class DocumentenApiService(
 
     fun downloadInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): InputStream {
         logger.info { "Download informatie object $documentId" }
         val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(pluginConfigurationId)
-        return documentApiPlugin.downloadInformatieObject(documentId)
+        return documentApiPlugin.downloadInformatieObject(caseId, documentId)
     }
 
     fun getInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): DocumentInformatieObject {
         logger.debug { "Get informatie object $documentId" }
         val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(pluginConfigurationId)
-        return documentApiPlugin.getInformatieObject(documentId)
+        return documentApiPlugin.getInformatieObject(documentId, caseId)
     }
 
     fun getCaseInformatieObjecten(
@@ -114,6 +116,7 @@ class DocumentenApiService(
 
     fun modifyInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String,
         modifyDocumentRequest: ModifyDocumentRequest
     ): RelatedFile? {
@@ -131,6 +134,7 @@ class DocumentenApiService(
         val documentUrl = documentApiPlugin.createInformatieObjectUrl(documentId)
         logger.info { "Modify Informatie Object $documentUrl $modifyDocumentRequest " }
         val informatieObject = documentApiPlugin.modifyInformatieObject(
+            caseId,
             documentUrl,
             PatchDocumentRequest(modifyDocumentRequest)
         )

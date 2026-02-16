@@ -20,17 +20,27 @@ import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
+import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.logging.LoggableResource
+import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakDocumentService
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.net.URLConnection
 import java.util.UUID
 
 @RestController
@@ -40,11 +50,68 @@ class ZaakDocumentResource(
     private val zaakDocumentService: ZaakDocumentService
 ) {
 
+    @DeleteMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")
+    fun deleteDocument(
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "caseId") caseId: String,
+        @PathVariable(name = "documentId") documentId: String,
+    ): ResponseEntity<Unit> {
+        zaakDocumentService.deleteInformatieObject(
+            pluginConfigurationId,
+            UUID.fromString(caseId),
+            documentId)
+        return ResponseEntity
+            .noContent()
+            .build()
+    }
+
+    @PutMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")
+    fun modifyDocument(
+        @PathVariable(name = "caseId") caseId: String,
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "documentId") documentId: String,
+        @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
+    ): ResponseEntity<RelatedFile> {
+        return ResponseEntity
+            .ok()
+            .body(zaakDocumentService.modifyInformatieObject(
+                pluginConfigurationId,
+                caseId.let { UUID.fromString(it) },
+                documentId,
+                modifyDocumentRequest)
+            )
+    }
+
     @GetMapping("/v1/zaken-api/document/{documentId}/files")
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): List<RelatedFile> {
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
+    }
+
+    @GetMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}/download")
+    fun downloadDocument(
+        @PathVariable(name = "caseId") caseId: UUID,
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "documentId") documentId: String,
+    ): ResponseEntity<InputStreamResource> {
+
+        val documentInputStream = zaakDocumentService.downloadInformatieObject(pluginConfigurationId, caseId, documentId)
+        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId,caseId, documentId)
+
+        val responseHeaders = HttpHeaders()
+        responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
+
+        val documentMediaType = try {
+            MediaType.valueOf(URLConnection.guessContentTypeFromName(documentMetadata.bestandsnaam))
+        } catch (exception: RuntimeException) {
+            MediaType.APPLICATION_OCTET_STREAM
+        }
+        return ResponseEntity
+            .ok()
+            .headers(responseHeaders)
+            .contentType(documentMediaType)
+            .body(InputStreamResource(documentInputStream))
     }
 
     @GetMapping("/v2/zaken-api/document/{documentId}/files")

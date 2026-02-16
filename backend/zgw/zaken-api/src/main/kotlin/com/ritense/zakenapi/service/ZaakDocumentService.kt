@@ -19,6 +19,7 @@ package com.ritense.zakenapi.service
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
@@ -34,6 +35,7 @@ import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
+import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
@@ -332,4 +334,27 @@ class ZaakDocumentService(
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
     }
 
+    fun deleteInformatieObject(pluginConfigurationId: String, caseId: UUID, documentId: String) =
+        documentenApiService.deleteInformatieObject(pluginConfigurationId, caseId, documentId)
+
+
+    fun modifyInformatieObject(
+        pluginConfigurationId: String,
+        caseId: UUID?,
+        documentId: String,
+        modifyDocumentRequest: ModifyDocumentRequest,
+    ): RelatedFile? {
+        return documentenApiService.modifyInformatieObject(
+            pluginConfigurationId,
+            caseId,
+            documentId,
+            modifyDocumentRequest
+        )
+    }
+
+    fun downloadInformatieObject(pluginConfigurationId: String, caseId: UUID, documentId: String) =
+        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseId, documentId)
+
+    fun getInformatieObject(pluginConfigurationId: String, caseId: UUID, documentId: String) =
+        documentenApiService.getInformatieObject(pluginConfigurationId, caseId, documentId)
 }

@@ -133,9 +133,10 @@ class DocumentenApiClient(
     fun getInformatieObject(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
+        caseId: UUID?,
         objectId: String,
     ): DocumentInformatieObject {
-        return getInformatieObject(authentication, null, toObjectUrl(baseUrl, objectId))
+        return getInformatieObject(authentication, caseId, toObjectUrl(baseUrl, objectId))
     }
 
     fun getInformatieObject(
@@ -246,20 +247,23 @@ class DocumentenApiClient(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
         objectId: String,
+        caseId: UUID?
     ) = downloadInformatieObjectContent(
         authentication,
+        caseId,
         toObjectUrl(baseUrl, objectId)
     )
 
     fun downloadInformatieObjectContent(
         authentication: DocumentenApiAuthentication,
+        caseId: UUID?,
         objectUrl: URI
     ): InputStream {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW,
-                ResourcePermission()
+                ResourcePermission(caseId)
             )
         )
 
