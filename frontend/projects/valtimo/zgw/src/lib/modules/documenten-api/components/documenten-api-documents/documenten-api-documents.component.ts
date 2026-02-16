@@ -67,7 +67,7 @@ import {
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
+import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 
