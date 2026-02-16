@@ -55,8 +55,8 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, documentId)
-        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, documentId)
+        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, null, documentId)
+        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, null,documentId)
 
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
@@ -79,9 +79,17 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
         @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
+        val caseId: UUID? = null
         return ResponseEntity
             .ok()
-            .body(documentenApiService.modifyInformatieObject(pluginConfigurationId, documentId, modifyDocumentRequest))
+            .body(
+                documentenApiService.modifyInformatieObject(
+                    pluginConfigurationId,
+                    caseId,
+                    documentId,
+                    modifyDocumentRequest
+                )
+            )
     }
 
     @DeleteMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")

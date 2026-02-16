@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -33,6 +34,7 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files"))
                     .authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
+                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}"))
                     .hasAuthority(ADMIN)
