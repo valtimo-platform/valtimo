@@ -47,12 +47,12 @@ class ProcessDocumentDeletedEventListener(
 
     @EventListener(DocumentDeletedEvent::class)
     fun handle(event: DocumentDeletedEvent) {
-        withLoggingContext(JsonSchemaDocument::class, event.documentId) {
-            logger.info { "Deleting all process instances for deleted document ${event.documentId}" }
+        withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
+            logger.info { "Deleting all process instances for deleted document ${event.caseDocumentId}" }
 
             runWithoutAuthorization {
                 runtimeService.createProcessInstanceQuery()
-                    .processInstanceBusinessKey(event.documentId.toString())
+                    .processInstanceBusinessKey(event.caseDocumentId.toString())
                     .rootProcessInstances()
                     .list()
                     .forEach {

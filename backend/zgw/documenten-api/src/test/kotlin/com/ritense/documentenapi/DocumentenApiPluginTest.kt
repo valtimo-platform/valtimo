@@ -96,6 +96,51 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should throw error when businessKey is null`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val objectMapper = MapperSingleton.get()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+        val virusScanEnabledForDocumentenApiPlugin = false
+
+        whenever(executionMock.getVariable("localDocumentVariableName"))
+            .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn(null)
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            objectMapper,
+            mutableListOf(),
+            documentenApiVersionService,
+            pluginService,
+            runtimeService,
+            virusScanService,
+            virusScanEnabledForDocumentenApiPlugin
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.storeTemporaryDocument(
+                executionMock,
+                "test.ext",
+                Vertrouwelijkheid.ZAAKVERTROUWELIJK.key,
+                "title",
+                "description",
+                "localDocumentVariableName",
+                "storedDocumentVariableName",
+                "type",
+                "taal",
+                IN_BEWERKING
+            )
+        }
+        assertEquals("Failed to store document. Business key is null.", exception.message)
+    }
+
+    @Test
     fun `should call client to store file`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
@@ -563,31 +608,19 @@ internal class DocumentenApiPluginTest {
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
         plugin.authenticationPluginConfiguration = authenticationMock
-        val caseId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
-        plugin.getInformatieObject(informatieObjectUrl, caseId)
+        plugin.getInformatieObject(informatieObjectUrl, caseDocumentId)
 
         val informatieObjectUrlCaptor = argumentCaptor<URI>()
         val authorizationCaptor = argumentCaptor<DocumentenApiAuthentication>()
-        val caseIdCaptor = argumentCaptor<UUID>()
-
-        // 1
-//        authentication: DocumentenApiAuthentication,
-//        baseUrl: URI,
-//        caseId: UUID?,
-//        objectId: String,
-
-        // 2
-//        authentication: DocumentenApiAuthentication,
-//        caseId: UUID?,
-//        objectUrl: URI
+        val caseDocumentIdCaptor = argumentCaptor<UUID>()
 
         verify(client).getInformatieObject(
             authorizationCaptor.capture(),
-            caseIdCaptor.capture(),
+            caseDocumentIdCaptor.capture(),
             informatieObjectUrlCaptor.capture(),
         )
-//        verify(client).getInformatieObject(authorizationCaptor.capture(), informatieObjectUrlCaptor.capture(), caseIdCaptor.capture())
 
         assertEquals(informatieObjectUrl, informatieObjectUrlCaptor.firstValue)
         assertEquals(authenticationMock, authorizationCaptor.firstValue)
@@ -601,7 +634,7 @@ internal class DocumentenApiPluginTest {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         val virusScanEnabledForDocumentenApiPlugin = false
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
-        val caseId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         val plugin = DocumentenApiPlugin(
             client,
             storageService,
@@ -620,7 +653,7 @@ internal class DocumentenApiPluginTest {
         plugin.apiVersion = "1.0.0"
         whenever(documentenApiVersionService.getVersionByTag(plugin.apiVersion)).thenReturn(MINIMUM_VERSION)
         whenever(client.lockInformatieObject(authenticationMock, informatieObjectUrl)).thenReturn(DocumentLock("lock"))
-        whenever( client.getInformatieObject(authenticationMock, caseId, informatieObjectUrl)).thenReturn(
+        whenever( client.getInformatieObject(authenticationMock, caseDocumentId, informatieObjectUrl)).thenReturn(
             DocumentInformatieObject(
                 url = informatieObjectUrl,
                 bronorganisatie = Rsin("000000000"),
@@ -635,7 +668,7 @@ internal class DocumentenApiPluginTest {
 
         val exception = assertThrows<Exception> {
             plugin.modifyInformatieObject(
-                caseId,
+                caseDocumentId,
                 informatieObjectUrl,
                 PatchDocumentRequest(LocalDate.now(), "Nieuwe titel", "auteur", DEFINITIEF, "taal")
             )

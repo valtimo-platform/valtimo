@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.document.domain.Document
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
 import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
@@ -219,16 +218,17 @@ class DocumentenApiPlugin(
             ?: throw IllegalStateException("Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
         check(documentUrlString.startsWith(url.toASCIIString())) { "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'." }
         val documentUrl = URI(documentUrlString)
-        val caseId = UUID.fromString(execution.businessKey)
+        val caseDocumentId = UUID.fromString(execution.businessKey)
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
 
         val metaData = client.getInformatieObject(
             authenticationPluginConfiguration,
-            caseId,
+            caseDocumentId,
             documentUrl
         )
         val content = client.downloadInformatieObjectContent(
             authenticationPluginConfiguration,
-            caseId,
+            caseDocumentId,
             documentUrl
         )
 
@@ -248,16 +248,16 @@ class DocumentenApiPlugin(
         return tempResourceId
     }
 
-    fun downloadInformatieObject(caseId: UUID?, objectId: String): InputStream {
-        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId, caseId)
+    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {
+        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId, caseDocumentId)
     }
 
-    fun getInformatieObject(objectId: String, caseId: UUID?): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, url, caseId,objectId)
+    fun getInformatieObject(objectId: String, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, url, caseDocumentId,objectId)
     }
 
-    fun getInformatieObject(objectUrl: URI, caseId: UUID?): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, caseId, objectUrl)
+    fun getInformatieObject(objectUrl: URI, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun getInformatieObjecten(
@@ -274,10 +274,10 @@ class DocumentenApiPlugin(
         )
     }
 
-    fun deleteInformatieObject(caseId: UUID?, objectUrl: URI) {
+    fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
         documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
-        client.deleteInformatieObject(authenticationPluginConfiguration, caseId, objectUrl)
+        client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun createInformatieObjectUrl(objectId: String) = UriComponentsBuilder
@@ -287,7 +287,7 @@ class DocumentenApiPlugin(
         .toUri()
 
     fun modifyInformatieObject(
-        caseId: UUID?,
+        caseDocumentId: UUID?,
         documentUrl: URI,
         patchDocumentRequest: PatchDocumentRequest
     ): DocumentInformatieObject {
@@ -298,7 +298,7 @@ class DocumentenApiPlugin(
             runWithoutAuthorization {
                 require(
                     documentenApiVersionService.getVersionByTag(apiVersion).supportsUpdatingDefinitiveDocument
-                        || getInformatieObject(objectUrl = documentUrl, caseId).status != DocumentStatusType.DEFINITIEF
+                        || getInformatieObject(objectUrl = documentUrl, caseDocumentId).status != DocumentStatusType.DEFINITIEF
                 ) {
                     "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated in Documenten API with '$apiVersion'"
                 }
@@ -309,7 +309,7 @@ class DocumentenApiPlugin(
                     authenticationPluginConfiguration,
                     documentUrl,
                     patchDocumentRequest,
-                    caseId
+                    caseDocumentId
                 )
             return modifiedDocument
         } finally {
@@ -368,6 +368,9 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
+        val caseDocumentId = execution.businessKey
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
                 augmentedMetadata,
@@ -400,10 +403,11 @@ class DocumentenApiPlugin(
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }
+
         val documentCreateResult = client.storeDocument(
             authenticationPluginConfiguration,
             url,
-            execution.businessKey,//getDocumentById(execution.businessKey),
+            caseDocumentId,
             request
         )
 
@@ -430,10 +434,6 @@ class DocumentenApiPlugin(
 
         return documentCreateResult
     }
-
-//    private fun getDocumentById(businessKey: String): Document {
-//        return runWithoutAuthorization { documentService.get(businessKey) }
-//    }
 
     /**
      * Using the bestandsdelen api a document can be uploaded in chunks. This upload method entails several api calls

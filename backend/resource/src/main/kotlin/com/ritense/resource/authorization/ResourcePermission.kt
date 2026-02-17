@@ -19,5 +19,5 @@ package com.ritense.resource.authorization
 import java.util.UUID
 
 class ResourcePermission(
-    val caseId: UUID? = null
+    val caseDocumentId: UUID? = null
 )

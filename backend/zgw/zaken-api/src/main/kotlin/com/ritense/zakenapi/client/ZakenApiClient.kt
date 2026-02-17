@@ -22,7 +22,6 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.outbox.OutboxService
 import com.ritense.resource.authorization.ResourcePermission
 import com.ritense.resource.authorization.ResourcePermissionActionProvider
-import com.ritense.zakenapi.ExtractUuid.extractUuidFromUri
 import com.ritense.zakenapi.ZakenApiAuthentication
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
@@ -104,7 +103,7 @@ class ZakenApiClient(
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
-        caseId: UUID,
+        caseDocumentId: UUID,
         baseUrl: URI,
         request: LinkDocumentRequest,
     ): LinkDocumentResult {
@@ -112,7 +111,7 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission(caseId)
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -182,7 +181,7 @@ class ZakenApiClient(
 
     fun getZaakInformatieObjecten(
         authentication: ZakenApiAuthentication,
-        caseId: UUID?,
+        caseDocumentId: UUID?,
         baseUrl: URI,
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
@@ -191,7 +190,7 @@ class ZakenApiClient(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission(caseId)
+                    ResourcePermission(caseDocumentId)
                 )
             )
         ) {
@@ -649,7 +648,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakInformatieobjectUrl: URI,
-        caseId: UUID?
+        caseDocumentId: UUID?
     ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
@@ -658,7 +657,7 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission(caseId)
+                ResourcePermission(caseDocumentId)
             )
         )
 
