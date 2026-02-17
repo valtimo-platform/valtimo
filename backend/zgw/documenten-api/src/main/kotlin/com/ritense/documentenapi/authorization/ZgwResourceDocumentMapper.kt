@@ -35,7 +35,7 @@ class ZgwResourceDocumentMapper(
         entity: ResourcePermission
     ): List<JsonSchemaDocument> {
         return runWithoutAuthorization {
-            entity.documentId?.let {
+            entity.caseId?.let {
                 listOf(documentRepository.findById(JsonSchemaDocumentId.existingId(it)).get())
             } ?: emptyList()
         }
