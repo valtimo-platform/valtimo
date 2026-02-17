@@ -35,10 +35,8 @@ import com.ritense.zakenapi.event.*
 import com.ritense.zgw.Rsin
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import okhttp3.mockwebserver.QueueDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -47,7 +45,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.http.HttpMethod
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
