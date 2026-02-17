@@ -20,6 +20,8 @@
   gap: 16px;
   padding: 16px;
   max-width: 420px;
+  max-height: 300px;
+  overflow-y: scroll;
 
   &__fields {
     display: grid;
@@ -76,4 +78,17 @@
 ::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
   max-width: max-content !important;
   width: max-content !important;
+  max-height: max-content !important;
+  height: max-content !important;
+}
+
+::ng-deep .multiple-search-fields--stacked {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+}
+
+.to-text--stacked {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
 }
