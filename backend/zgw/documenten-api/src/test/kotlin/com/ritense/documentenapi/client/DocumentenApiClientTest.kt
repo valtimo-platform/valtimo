@@ -109,7 +109,7 @@ DocumentenApiClientTest {
     fun `should send request and parse response`() {
         val restClientBuilder = RestClient.builder()
         val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
-
+        val documentId = "documentId"
         val responseBody = """
             {
               "url": "http://example.com",
@@ -164,6 +164,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            "123e4567-e89b-12d3-a456-426655440000",
             request
         )
 
@@ -290,6 +291,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            UUID.randomUUID().toString(),
             request
         )
 
@@ -325,11 +327,12 @@ DocumentenApiClientTest {
         )
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
+        val documentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
         assertThrows<HttpClientErrorException> {
             client.storeDocument(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
+                documentId.toString(),
                 request
             )
         }
@@ -385,6 +388,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -460,6 +464,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -486,6 +491,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getInformatieObject(
                 TestAuthentication(),
+                UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -512,7 +518,8 @@ DocumentenApiClientTest {
         client.downloadInformatieObjectContent(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
-            documentInformatieObjectId
+            documentInformatieObjectId,
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
         )
 
         mockDocumentenApi.takeRequest()
@@ -541,7 +548,8 @@ DocumentenApiClientTest {
             client.downloadInformatieObjectContent(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
-                documentInformatieObjectId
+                documentInformatieObjectId,
+                UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             )
         }
 
@@ -560,6 +568,7 @@ DocumentenApiClientTest {
 
         client.deleteInformatieObject(
             TestAuthentication(),
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             mockDocumentenApi.url("/documenten/api/v1/enkelvoudiginformatieobjecten/123").toUri(),
         )
 
@@ -590,6 +599,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.deleteInformatieObject(
                 TestAuthentication(),
+                UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -719,7 +729,8 @@ DocumentenApiClientTest {
                     ontvangstdatum = LocalDate.of(2020, 5, 3),
                     verzenddatum = LocalDate.of(2020, 5, 3),
                     indicatieGebruiksrecht = true
-                )
+                ),
+                UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             )
         }
 
@@ -997,6 +1008,7 @@ DocumentenApiClientTest {
 
         val page = client.getInformatieObjecten(
             TestAuthentication(),
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000"),
             mockDocumentenApi.url("/").toUri(),
             pageable,
             documentSearchRequest

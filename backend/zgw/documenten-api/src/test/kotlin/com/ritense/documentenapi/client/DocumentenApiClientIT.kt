@@ -92,6 +92,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
         documentenApiClient.storeDocument(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentenApiPlugin.url,
+            "123e4567-e89b-12d3-a456-426655440000",
             CreateDocumentRequest(
                 bronorganisatie = documentenApiPlugin.bronorganisatie,
                 creatiedatum = LocalDate.now(),
@@ -113,6 +114,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiClient.storeDocument(
                 documentenApiPlugin.authenticationPluginConfiguration,
                 documentenApiPlugin.url,
+                "123e4567-e89b-12d3-a456-426655440000",
                 CreateDocumentRequest(
                     bronorganisatie = documentenApiPlugin.bronorganisatie,
                     creatiedatum = LocalDate.now(),
@@ -129,6 +131,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should allow document list`() {
+        val documentId = UUID.randomUUID()
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
@@ -142,6 +145,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         val results = documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
+            documentId,
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
@@ -155,8 +159,10 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should respond with empty zaak-document list when missing permission`() {
+        val documentId = UUID.randomUUID()
         val results = documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
+            documentId,
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
@@ -170,6 +176,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should allow document download`() {
+        val documentId = UUID.randomUUID()
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
@@ -181,11 +188,11 @@ internal class DocumentenApiClientIT @Autowired constructor(
         )
         permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
         permissionRepository.saveAllAndFlush(permissions)
-
         val stream = documentenApiClient.downloadInformatieObjectContent(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentenApiPlugin.url,
-            "objectId"
+            "objectId",
+            documentId
         )
 
         assertNotNull(stream)
@@ -194,13 +201,15 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should not allow document download when missing permission`() {
+        val documentId = UUID.randomUUID()
         permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
 
         assertThrows<AccessDeniedException> {
             documentenApiClient.downloadInformatieObjectContent(
                 documentenApiPlugin.authenticationPluginConfiguration,
                 documentenApiPlugin.url,
-                "objectId"
+                "objectId",
+                documentId
             )
         }
     }
@@ -208,6 +217,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should allow document delete`() {
+        val caseId = UUID.randomUUID()
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
@@ -222,6 +232,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         documentenApiClient.deleteInformatieObject(
             documentenApiPlugin.authenticationPluginConfiguration,
+            caseId,
             URI(documentenApiPlugin.url.toString() + "enkelvoudiginformatieobjecten/objectId"),
         )
     }
@@ -229,11 +240,13 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should not allow document delete when missing permission`() {
+        val caseId = UUID.randomUUID()
         permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
 
         assertThrows<AccessDeniedException> {
             documentenApiClient.deleteInformatieObject(
                 documentenApiPlugin.authenticationPluginConfiguration,
+                caseId,
                 URI(documentenApiPlugin.url.toString() + "enkelvoudiginformatieobjecten/objectId"),
             )
         }

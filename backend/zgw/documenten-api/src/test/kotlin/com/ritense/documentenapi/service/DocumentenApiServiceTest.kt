@@ -110,7 +110,7 @@ class DocumentenApiServiceTest {
         val plugin = mock<DocumentenApiPlugin>()
         val relatedFile = createDocumentInformatieObject()
         val page = PageImpl(listOf(relatedFile), pageable, 1)
-        whenever(plugin.getInformatieObjecten(documentSearchRequest, pageable)).thenReturn(page)
+        whenever(plugin.getInformatieObjecten(documentId, documentSearchRequest, pageable)).thenReturn(page)
         val version = DocumentenApiVersion("1.5.0-test-1.0.0", listOf("titel"), listOf("titel"))
         whenever(documentenApiVersionService.getPluginVersion("some-document-name"))
             .thenReturn(Triple(pluginConfiguration, plugin, version))
@@ -130,22 +130,24 @@ class DocumentenApiServiceTest {
 
     @Test
     fun `should call plugin to delete informatie object`() {
+        val documentId = UUID.randomUUID()
         val documentUrl = URI("http://some.url")
         val pluginInstance = mock<DocumentenApiPlugin>()
         whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(pluginInstance)
 
-        service.deleteInformatieObject(documentUrl)
+        service.deleteInformatieObject(documentUrl, documentId)
 
-        verify(pluginInstance).deleteInformatieObject(documentUrl)
+        verify(pluginInstance).deleteInformatieObject(documentId, documentUrl)
     }
 
     @Test
     fun `should throw exception when trying to delete informatie object but plugin does not exist`() {
+        val documentId = UUID.randomUUID()
         val documentUrl = URI("http://some.url")
         whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(null)
 
         val ex = assertThrows<IllegalArgumentException> {
-            service.deleteInformatieObject(documentUrl)
+            service.deleteInformatieObject(documentUrl, documentId)
         }
 
         assertEquals("Trying to delete informatie object by url, but could not find DocumentenApiPlugin instance for informatieobjectUrl http://some.url", ex.message)
