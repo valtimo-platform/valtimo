@@ -64,4 +64,6 @@
 ::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
   width: min(50vw, 420px) !important;
   max-width: min(50vw, 420px) !important;
+  height: min(50vw, 300px) !important;
+  max-height: min(50vw, 300px) !important;
 }

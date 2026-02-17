@@ -175,7 +175,7 @@
           ></valtimo-date-time-picker>
         }
         @else if (filter.dataType === 'datetime' && filter.fieldType === 'range') {
-          <v-form className="multiple-search-fields" (valueChange)="onRangeChange(filter.key, $event)">
+          <v-form className="multiple-search-fields multiple-search-fields--stacked" (valueChange)="onRangeChange(filter.key, $event)">
             <valtimo-date-time-picker
               name="start"
               [enableTime]="true"
