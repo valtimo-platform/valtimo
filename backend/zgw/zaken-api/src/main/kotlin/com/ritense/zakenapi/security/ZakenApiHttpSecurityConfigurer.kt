@@ -34,7 +34,7 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files"))
                     .authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")).authenticated()
+                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}"))
                     .hasAuthority(ADMIN)

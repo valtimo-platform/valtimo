@@ -50,24 +50,24 @@ class ZaakDocumentResource(
     private val zaakDocumentService: ZaakDocumentService
 ) {
 
-    @DeleteMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")
+    @DeleteMapping("/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
-        @PathVariable(name = "caseId") caseId: String,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<Unit> {
         zaakDocumentService.deleteInformatieObject(
             pluginConfigurationId,
-            UUID.fromString(caseId),
+            caseDocumentId,
             documentId)
         return ResponseEntity
             .noContent()
             .build()
     }
 
-    @PutMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}")
+    @PutMapping("/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")
     fun modifyDocument(
-        @PathVariable(name = "caseId") caseId: String,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
         @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
@@ -76,31 +76,33 @@ class ZaakDocumentResource(
             .ok()
             .body(zaakDocumentService.modifyInformatieObject(
                 pluginConfigurationId,
-                caseId.let { UUID.fromString(it) },
+                caseDocumentId,
                 documentId,
                 modifyDocumentRequest)
             )
     }
 
-    @GetMapping("/v1/zaken-api/document/{documentId}/files")
+    @GetMapping("/v1/zaken-api/document/{caseDocumentId}/files")
     fun getFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID
     ): List<RelatedFile> {
-        return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
+        return zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
     }
 
-    @GetMapping("/v1/zaken-api/{caseId}/{pluginConfigurationId}/files/{documentId}/download")
+    @GetMapping("/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
-        @PathVariable(name = "caseId") caseId: UUID,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = zaakDocumentService.downloadInformatieObject(pluginConfigurationId, caseId, documentId)
-        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId,caseId, documentId)
+        val documentInputStream = zaakDocumentService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId,caseDocumentId, documentId)
 
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
+        val contentDisposition = org.springframework.http.ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
+        responseHeaders.contentDisposition = contentDisposition
 
         val documentMediaType = try {
             MediaType.valueOf(URLConnection.guessContentTypeFromName(documentMetadata.bestandsnaam))
@@ -114,19 +116,19 @@ class ZaakDocumentResource(
             .body(InputStreamResource(documentInputStream))
     }
 
-    @GetMapping("/v2/zaken-api/document/{documentId}/files")
+    @GetMapping("/v2/zaken-api/document/{caseDocumentId}/files")
     fun getFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID,
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable,
     ): Page<DocumentenApiDocumentDto> {
-        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(documentId, documentSearchRequest, pageable)
+        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(caseDocumentId, documentSearchRequest, pageable)
     }
 
-    @GetMapping("/v1/zaken-api/document/{documentId}/zaak")
+    @GetMapping("/v1/zaken-api/document/{caseDocumentId}/zaak")
     fun getZaakMetadata(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID
     ): ZaakResponse? {
-        return zaakDocumentService.getZaakByDocumentId(documentId)
+        return zaakDocumentService.getZaakByCaseDocumentId(caseDocumentId)
     }
 }

@@ -217,7 +217,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should allow document delete`() {
-        val caseId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         val permissions = listOf(
             Permission(
                 UUID.randomUUID(),
@@ -232,7 +232,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         documentenApiClient.deleteInformatieObject(
             documentenApiPlugin.authenticationPluginConfiguration,
-            caseId,
+            caseDocumentId,
             URI(documentenApiPlugin.url.toString() + "enkelvoudiginformatieobjecten/objectId"),
         )
     }
@@ -240,13 +240,13 @@ internal class DocumentenApiClientIT @Autowired constructor(
     @Test
     @WithMockUser(authorities = ["ROLE_TEST"])
     fun `should not allow document delete when missing permission`() {
-        val caseId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
 
         assertThrows<AccessDeniedException> {
             documentenApiClient.deleteInformatieObject(
                 documentenApiPlugin.authenticationPluginConfiguration,
-                caseId,
+                caseDocumentId,
                 URI(documentenApiPlugin.url.toString() + "enkelvoudiginformatieobjecten/objectId"),
             )
         }

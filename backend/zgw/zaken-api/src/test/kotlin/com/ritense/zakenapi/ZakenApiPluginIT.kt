@@ -40,7 +40,6 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectZakelijkRechtRequest
-import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zgw.Rsin
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -175,7 +174,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL
         )
@@ -192,7 +191,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val plannedEndDate = LocalDate.now().plusDays(10)
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
             description = description,
@@ -215,7 +214,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
         )

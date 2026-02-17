@@ -282,7 +282,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         assertEquals(1, events.stream(DocumentDeletedEvent.class).count());
         var applicationEvent = events.stream(DocumentDeletedEvent.class).findFirst().orElseThrow();
-        assertEquals(document.id().getId(), applicationEvent.getDocumentId());
+        assertEquals(document.id().getId(), applicationEvent.getCaseDocumentId());
 
         ArgumentCaptor<Supplier<BaseEvent>> outboxEventCaptor = ArgumentCaptor.forClass(Supplier.class);
         verify(outboxService, times(2)).send(outboxEventCaptor.capture());

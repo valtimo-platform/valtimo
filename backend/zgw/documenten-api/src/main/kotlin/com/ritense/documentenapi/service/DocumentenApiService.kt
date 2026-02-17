@@ -47,7 +47,6 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valueresolver.ValueResolverService
-import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.LoggingConstants.ZAKEN_API
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -76,22 +75,22 @@ class DocumentenApiService(
 
     fun downloadInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
-        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseDocumentId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): InputStream {
         logger.info { "Download informatie object $documentId" }
         val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(pluginConfigurationId)
-        return documentApiPlugin.downloadInformatieObject(caseId, documentId)
+        return documentApiPlugin.downloadInformatieObject(caseDocumentId, documentId)
     }
 
     fun getInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
-        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseDocumentId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): DocumentInformatieObject {
         logger.debug { "Get informatie object $documentId" }
         val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(pluginConfigurationId)
-        return documentApiPlugin.getInformatieObject(documentId, caseId)
+        return documentApiPlugin.getInformatieObject(documentId, caseDocumentId)
     }
 
     fun getCaseInformatieObjecten(
@@ -116,7 +115,7 @@ class DocumentenApiService(
 
     fun modifyInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
-        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseId: UUID?,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseDocumentId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String,
         modifyDocumentRequest: ModifyDocumentRequest
     ): RelatedFile? {
@@ -134,7 +133,7 @@ class DocumentenApiService(
         val documentUrl = documentApiPlugin.createInformatieObjectUrl(documentId)
         logger.info { "Modify Informatie Object $documentUrl $modifyDocumentRequest " }
         val informatieObject = documentApiPlugin.modifyInformatieObject(
-            caseId,
+            caseDocumentId,
             documentUrl,
             PatchDocumentRequest(modifyDocumentRequest)
         )
@@ -154,12 +153,12 @@ class DocumentenApiService(
 
     fun deleteInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
-        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK ) caseId: UUID?,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK ) caseDocumentId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ) {
         val documentApiPlugin: DocumentenApiPlugin = pluginService.createInstance(pluginConfigurationId)
         val documentUrl = documentApiPlugin.createInformatieObjectUrl(documentId)
-        documentApiPlugin.deleteInformatieObject(caseId, documentUrl)
+        documentApiPlugin.deleteInformatieObject(caseDocumentId, documentUrl)
     }
 
     fun getColumns(

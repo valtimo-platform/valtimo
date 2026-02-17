@@ -27,7 +27,6 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import org.operaton.bpm.engine.rest.sub.runtime.ExecutionResource
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -79,13 +78,13 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
         @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
-        val caseId: UUID? = null
+        val caseDocumentId: UUID? = null
         return ResponseEntity
             .ok()
             .body(
                 documentenApiService.modifyInformatieObject(
                     pluginConfigurationId,
-                    caseId,
+                    caseDocumentId,
                     documentId,
                     modifyDocumentRequest
                 )
@@ -97,8 +96,8 @@ class DocumentenApiResource(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<Unit> {
-        val caseId: UUID? = null
-        documentenApiService.deleteInformatieObject(pluginConfigurationId, caseId, documentId)
+        val caseDocumentId: UUID? = null
+        documentenApiService.deleteInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         return ResponseEntity
             .noContent()
             .build()
