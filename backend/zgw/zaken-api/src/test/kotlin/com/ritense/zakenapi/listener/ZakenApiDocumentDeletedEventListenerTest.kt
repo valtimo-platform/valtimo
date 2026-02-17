@@ -45,7 +45,7 @@ class ZakenApiDocumentDeletedEventListenerTest {
     @Test
     fun `should delete zaak when one is linked`() {
         val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
-
+        val caseId = UUID.fromString("12345678-1234-1234-1234-123456789012")
         val zaakInstanceUrl = URI("http://zaaak.url")
         val zaakInstanceLink = mock<ZaakInstanceLink>()
 
@@ -57,7 +57,7 @@ class ZakenApiDocumentDeletedEventListenerTest {
 
         listener.handle(DocumentDeletedEvent(documentId))
 
-        verify(zaakDocumentService).deleteRelatedInformatieObjecten(zaakInstanceUrl)
+        verify(zaakDocumentService).deleteRelatedInformatieObjecten(documentId, zaakInstanceUrl)
         verify(pluginInstance).deleteZaak(zaakInstanceUrl)
     }
 

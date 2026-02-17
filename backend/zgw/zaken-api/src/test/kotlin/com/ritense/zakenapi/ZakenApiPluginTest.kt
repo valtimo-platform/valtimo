@@ -114,7 +114,7 @@ internal class ZakenApiPluginTest {
         )
 
         val captor = argumentCaptor<LinkDocumentRequest>()
-        verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
+        verify(zakenApiClient).linkDocument(any(), any(),any(), captor.capture())
 
         val request = captor.firstValue
         assertEquals(documentUrl(), request.informatieobject)
@@ -138,7 +138,7 @@ internal class ZakenApiPluginTest {
         whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR)).thenReturn(documentUrl())
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR)).thenReturn("myResourceId")
         whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(zaakUri())
-        whenever(zakenApiClient.linkDocument(any(), any(), any())).thenReturn(mock())
+        whenever(zakenApiClient.linkDocument(any(), any(), any(), any())).thenReturn(mock())
         whenever(storageService.getResourceMetadata("myResourceId")).thenReturn(
             mapOf(
                 "title" to "titel",
@@ -156,7 +156,7 @@ internal class ZakenApiPluginTest {
         plugin.linkUploadedDocumentToZaak(executionMock)
 
         val captor = argumentCaptor<LinkDocumentRequest>()
-        verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
+        verify(zakenApiClient).linkDocument(any(), any(), any(), captor.capture())
 
         val request = captor.firstValue
         assertEquals(documentUrl(), request.informatieobject)

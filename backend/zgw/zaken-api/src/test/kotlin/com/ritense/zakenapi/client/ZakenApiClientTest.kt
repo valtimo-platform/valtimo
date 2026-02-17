@@ -116,6 +116,7 @@ internal class ZakenApiClientTest {
 
         val result = client.linkDocument(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             request = LinkDocumentRequest(
                 informatieobject = HTTPS_EXAMPLE_COM,
@@ -203,6 +204,7 @@ internal class ZakenApiClientTest {
 
         client.linkDocument(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             request = LinkDocumentRequest(
                 informatieobject = HTTPS_EXAMPLE_COM,
@@ -239,6 +241,7 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.linkDocument(
                 authentication = TestAuthentication(),
+                UUID.randomUUID(),
                 baseUrl = zakenApiBaseUri(),
                 request = LinkDocumentRequest(
                     informatieobject = HTTPS_EXAMPLE_COM,
@@ -405,6 +408,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             zaakUrl = exampleUri()
         )
@@ -459,6 +463,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             authentication = TestAuthentication(),
+            UUID.randomUUID(),
             baseUrl = zakenApiBaseUri(),
             zaakUrl = exampleUri()
         )
@@ -486,6 +491,7 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getZaakInformatieObjecten(
                 authentication = TestAuthentication(),
+                UUID.randomUUID(),
                 baseUrl = zakenApiBaseUri(),
                 zaakUrl = exampleUri()
             )

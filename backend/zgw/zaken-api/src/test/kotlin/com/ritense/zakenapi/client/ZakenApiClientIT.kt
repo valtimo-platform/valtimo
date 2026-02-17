@@ -87,6 +87,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         zakenApiClient.linkDocument(
             zakenApiPlugin.authenticationPluginConfiguration,
+            UUID.randomUUID(),
             zakenApiPlugin.url,
             LinkDocumentRequest(
                 informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -105,6 +106,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         assertThrows<AccessDeniedException> {
             zakenApiClient.linkDocument(
                 zakenApiPlugin.authenticationPluginConfiguration,
+                UUID.randomUUID(),
                 zakenApiPlugin.url,
                 LinkDocumentRequest(
                     informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -136,6 +138,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            UUID.randomUUID(),
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
@@ -148,6 +151,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should respond with empty zaak-document list when missing permission`() {
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            UUID.randomUUID(),
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
