@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.service;
+package com.ritense.valtimo.service
 
-import jakarta.persistence.criteria.AbstractQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.AbstractQuery
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Path
 
-public interface TaskBusinessKeyResolver {
+interface TaskBusinessKeyResolver {
 
     /**
      * Creates an expression that resolves the business key for tasks where the
      * process instance business key doesn't directly refer to the case document.
      * Returns a subquery that yields the resolved key, or null if not applicable.
      */
-    Expression<String> resolveBusinessKeyExpression(
-        CriteriaBuilder cb,
-        AbstractQuery<?> query,
-        Path<String> businessKeyPath
-    );
+    fun resolveBusinessKeyExpression(
+        cb: CriteriaBuilder,
+        query: AbstractQuery<*>,
+        businessKeyPath: Path<String>
+    ): Expression<String>?
 }
