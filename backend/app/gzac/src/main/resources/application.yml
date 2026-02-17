@@ -185,6 +185,11 @@ valtimo:
             retention-period: 5m
             poll-interval: PT1S
 
+    case:
+        processing:
+            retention:
+                poll-interval: PT30M
+
     hardening:
         allowStacktraceOnIps:
             - 127.0.0.1

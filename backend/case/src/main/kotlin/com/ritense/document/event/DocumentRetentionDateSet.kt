@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/shared';
+package com.ritense.document.event
 
-interface InternalCaseStatus {
-  key: string;
-  title: string;
-  retentionPeriodInDays: number;
-  visibleInCaseListByDefault: boolean;
-  color: TagColor;
-  documentDefinitionName?: string;
-  order?: number;
-  tagType?: TagType;
-}
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.outbox.domain.BaseEvent
 
-export {InternalCaseStatus};
+class DocumentRetentionDateSet(documentId: String, documentContent: ObjectNode) : BaseEvent(
+    type = "com.ritense.valtimo.document.retentiondate.set",
+    resultType = "com.ritense.document.domain.impl.JsonSchemaDocument",
+    resultId = documentId,
+    result = documentContent
+)
