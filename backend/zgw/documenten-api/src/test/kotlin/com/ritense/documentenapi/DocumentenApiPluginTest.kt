@@ -120,9 +120,10 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -167,7 +168,7 @@ internal class DocumentenApiPluginTest {
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
         val eventCaptor = argumentCaptor<DocumentCreated>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture())
         verify(executionMock).setVariable("storedDocumentVariableName", "returnedUrl")
 
@@ -227,7 +228,7 @@ internal class DocumentenApiPluginTest {
             .thenReturn(byFileResult)
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -298,11 +299,12 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
         whenever(virusScanService.scan(content.toByteArray()))
             .thenReturn(VirusScanResult(VirusScanStatus.OK,mapOf()))
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -347,7 +349,7 @@ internal class DocumentenApiPluginTest {
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
         val eventCaptor = argumentCaptor<DocumentCreated>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture())
         verify(virusScanService, times(1)).scan(content.toByteArray())
     }
@@ -395,8 +397,8 @@ internal class DocumentenApiPluginTest {
                     "informatieobjecttype" to "type"
                 )
             )
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
-
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
+        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
         whenever(pluginConfiguration.id).thenReturn(pluginConfigurationId)
         whenever(pluginConfigurationId.id).thenReturn(UUID.randomUUID())
 
@@ -428,7 +430,7 @@ internal class DocumentenApiPluginTest {
         plugin.storeUploadedDocument(executionMock)
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(executionMock).setVariable(DOCUMENT_URL_PROCESS_VAR, "returnedUrl")
 
         val request = apiRequestCaptor.firstValue
@@ -472,6 +474,7 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR))
             .thenReturn("localDocumentLocation")
+        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
         whenever(storageService.getResourceMetadata("localDocumentLocation"))
@@ -484,7 +487,7 @@ internal class DocumentenApiPluginTest {
                     "informatieobjecttype" to "type"
                 )
             )
-        whenever(client.storeDocument(any(), any(), any())).thenReturn(result)
+        whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
 
         val plugin = DocumentenApiPlugin(
             client,
@@ -517,7 +520,7 @@ internal class DocumentenApiPluginTest {
         plugin.storeUploadedDocument(executionMock)
 
         val apiRequestCaptor = argumentCaptor<CreateDocumentRequest>()
-        verify(client).storeDocument(any(), any(), apiRequestCaptor.capture())
+        verify(client).storeDocument(any(), any(), any(), apiRequestCaptor.capture())
         verify(executionMock).setVariable(DOCUMENT_URL_PROCESS_VAR, "returnedUrl")
 
         val request = apiRequestCaptor.firstValue
@@ -560,13 +563,31 @@ internal class DocumentenApiPluginTest {
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
         plugin.authenticationPluginConfiguration = authenticationMock
-
+        val caseId = UUID.randomUUID()
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
-        plugin.getInformatieObject(informatieObjectUrl)
+        plugin.getInformatieObject(informatieObjectUrl, caseId)
 
         val informatieObjectUrlCaptor = argumentCaptor<URI>()
         val authorizationCaptor = argumentCaptor<DocumentenApiAuthentication>()
-        verify(client).getInformatieObject(authorizationCaptor.capture(), informatieObjectUrlCaptor.capture())
+        val caseIdCaptor = argumentCaptor<UUID>()
+
+        // 1
+//        authentication: DocumentenApiAuthentication,
+//        baseUrl: URI,
+//        caseId: UUID?,
+//        objectId: String,
+
+        // 2
+//        authentication: DocumentenApiAuthentication,
+//        caseId: UUID?,
+//        objectUrl: URI
+
+        verify(client).getInformatieObject(
+            authorizationCaptor.capture(),
+            caseIdCaptor.capture(),
+            informatieObjectUrlCaptor.capture(),
+        )
+//        verify(client).getInformatieObject(authorizationCaptor.capture(), informatieObjectUrlCaptor.capture(), caseIdCaptor.capture())
 
         assertEquals(informatieObjectUrl, informatieObjectUrlCaptor.firstValue)
         assertEquals(authenticationMock, authorizationCaptor.firstValue)
@@ -580,6 +601,7 @@ internal class DocumentenApiPluginTest {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         val virusScanEnabledForDocumentenApiPlugin = false
         val informatieObjectUrl = URI("http://some-url/informatie-object/123")
+        val caseId = UUID.randomUUID()
         val plugin = DocumentenApiPlugin(
             client,
             storageService,
@@ -598,7 +620,7 @@ internal class DocumentenApiPluginTest {
         plugin.apiVersion = "1.0.0"
         whenever(documentenApiVersionService.getVersionByTag(plugin.apiVersion)).thenReturn(MINIMUM_VERSION)
         whenever(client.lockInformatieObject(authenticationMock, informatieObjectUrl)).thenReturn(DocumentLock("lock"))
-        whenever( client.getInformatieObject(authenticationMock, informatieObjectUrl)).thenReturn(
+        whenever( client.getInformatieObject(authenticationMock, caseId, informatieObjectUrl)).thenReturn(
             DocumentInformatieObject(
                 url = informatieObjectUrl,
                 bronorganisatie = Rsin("000000000"),
@@ -613,6 +635,7 @@ internal class DocumentenApiPluginTest {
 
         val exception = assertThrows<Exception> {
             plugin.modifyInformatieObject(
+                caseId,
                 informatieObjectUrl,
                 PatchDocumentRequest(LocalDate.now(), "Nieuwe titel", "auteur", DEFINITIEF, "taal")
             )
