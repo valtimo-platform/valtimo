@@ -16,6 +16,8 @@
 
 package com.ritense.zakenapi.service
 
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
@@ -24,14 +26,18 @@ import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.service.DocumentenApiVersionService.Companion.MINIMUM_VERSION
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
+import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
+import com.ritense.resource.authorization.ResourcePermission
+import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zgw.Rsin
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,6 +67,7 @@ class ZaakDocumentServiceTest {
     lateinit var catalogiService: CatalogiService
     lateinit var documentenApiService: DocumentenApiService
     lateinit var documentenApiVersionService: DocumentenApiVersionService
+    lateinit var authorizationService: AuthorizationService
 
     @BeforeEach
     fun init() {
@@ -69,20 +76,22 @@ class ZaakDocumentServiceTest {
         catalogiService = mock()
         documentenApiService = mock()
         documentenApiVersionService = mock()
+        authorizationService = mock()
         service = ZaakDocumentService(
             zaakUrlProvider,
             pluginService,
             catalogiService,
             documentenApiService,
-            documentenApiVersionService
+            documentenApiVersionService,
+            authorizationService
         )
     }
 
     @Test
     fun `should get informatieobjecten for document`() {
-        val documentId = UUID.randomUUID()
-        val zaakUrl = URI("https://example.com/1")
-        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
 
         val zakenApiPlugin = mock<ZakenApiPlugin>()
         whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
@@ -90,7 +99,7 @@ class ZaakDocumentServiceTest {
 
 
         val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
-        whenever(zakenApiPlugin.getZaakInformatieObjecten(zaakUrl)).thenReturn(
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
             zaakInformatieObjects
         )
 
@@ -102,13 +111,12 @@ class ZaakDocumentServiceTest {
             .doReturn(PluginConfigurationId(UUID.randomUUID()))
         whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
             .doReturn(documentenApiPlugin)
-        whenever(documentenApiPlugin.getInformatieObject(any<URI>())).doAnswer { answer ->
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
             val uri = answer.getArgument(0) as URI
-
             createDocumentInformatieObject(uri)
         }
 
-        val relatedFiles = service.getInformatieObjectenAsRelatedFiles(documentId)
+        val relatedFiles = service.getInformatieObjectenAsRelatedFiles(caseId)
 
         assertEquals(5, relatedFiles.size)
         relatedFiles.forEachIndexed { index, relatedFile ->
@@ -143,13 +151,17 @@ class ZaakDocumentServiceTest {
     @Test
     fun `should get InformatieObjecten Page for zaak`() {
         val documentId = UUID.randomUUID()
-        val zaakUrl = URI("https://example.com/1")
+        val zaakUrl = URI("https://example.com/$documentId")
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
 
         val documentSearchRequestCaptor = argumentCaptor<DocumentSearchRequest>()
         val pageable = mock<Pageable>()
         val documentSearchRequest = DocumentSearchRequest()
         val resultPage = PageImpl(listOf<DocumentInformatieObject>())
+
+        whenever(
+            authorizationService.hasPermission<Any>(any())
+        ).thenReturn(true)
 
         whenever(
             documentenApiService.getCaseInformatieObjecten(
@@ -190,7 +202,8 @@ class ZaakDocumentServiceTest {
 
     @Test
     fun `should delete all informatie objecten for zaak`() {
-        val documentUrl = URI("http://localhost/zaak/1")
+        val caseid = UUID.randomUUID()
+        val documentUrl = URI("http://localhost/zaak/$caseid")
         val zaakApiPlugin = mock<ZakenApiPlugin>()
 
         whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
@@ -198,20 +211,20 @@ class ZaakDocumentServiceTest {
         val doc1 = mock<ZaakInformatieObject>()
         val doc2 = mock<ZaakInformatieObject>()
 
-        whenever(zaakApiPlugin.getZaakInformatieObjecten(documentUrl)).thenReturn(listOf(doc1, doc2))
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(caseid, documentUrl)).thenReturn(listOf(doc1, doc2))
 
         whenever(doc1.informatieobject).thenReturn(URI("http://localhost/doc/1"))
         whenever(doc2.informatieobject).thenReturn(URI("http://localhost/doc/2"))
 
-        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(URI("http://localhost/doc/1")))
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseid, URI("http://localhost/doc/1")))
             .thenReturn(listOf(doc1))
-        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(URI("http://localhost/doc/2")))
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseid, URI("http://localhost/doc/2")))
             .thenReturn(listOf(doc2))
 
-        service.deleteRelatedInformatieObjecten(documentUrl)
+        service.deleteRelatedInformatieObjecten(caseid, documentUrl)
 
         val zaakDocumentCaptor = argumentCaptor<URI>()
-        verify(documentenApiService, times(2)).deleteInformatieObject(zaakDocumentCaptor.capture())
+        verify(documentenApiService, times(2)).deleteInformatieObject(zaakDocumentCaptor.capture(), any())
 
         assertEquals(URI("http://localhost/doc/1"), zaakDocumentCaptor.firstValue)
         assertEquals(URI("http://localhost/doc/2"), zaakDocumentCaptor.secondValue)
@@ -219,7 +232,8 @@ class ZaakDocumentServiceTest {
 
     @Test
     fun `should only delete the link between informatie object and zaak when the informatie object is linked to multiple zaken`() {
-        val documentUrl = URI("http://localhost/zaak/1")
+        val caseId = UUID.randomUUID()
+        val documentUrl = URI("http://localhost/zaak/$caseId")
         val zaakApiPlugin = mock<ZakenApiPlugin>()
 
         whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
@@ -227,20 +241,20 @@ class ZaakDocumentServiceTest {
         val doc1 = mock<ZaakInformatieObject>()
         val otherZaakDoc = mock<ZaakInformatieObject>()
 
-        whenever(zaakApiPlugin.getZaakInformatieObjecten(documentUrl)).thenReturn(listOf(doc1))
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(caseId, documentUrl)).thenReturn(listOf(doc1))
 
         val doc1Url = URI("http://localhost/doc/1")
         val relationUrl = URI("http://localhost/zaak-informatieobject/1")
         whenever(doc1.informatieobject).thenReturn(doc1Url)
         whenever(doc1.url).thenReturn(relationUrl)
 
-        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(doc1Url))
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseId, doc1Url))
             .thenReturn(listOf(doc1, otherZaakDoc))
 
-        service.deleteRelatedInformatieObjecten(documentUrl)
+        service.deleteRelatedInformatieObjecten(caseId, documentUrl)
 
-        verify(documentenApiService, times(0)).deleteInformatieObject(any())
-        verify(zaakApiPlugin).deleteZaakInformatieobject(relationUrl)
+        verify(documentenApiService, times(0)).deleteInformatieObject(any(), any())
+        verify(zaakApiPlugin).deleteZaakInformatieobject(relationUrl, caseId)
     }
 
     private fun createZaakInformatieObjecten(zaakUrl: URI, count: Int = 5): List<ZaakInformatieObject> {
@@ -272,4 +286,7 @@ class ZaakDocumentServiceTest {
         versie = 1,
         informatieobjecttype = "http://localhost/informatieobjecttype",
     )
+    companion object {
+        val logger = KotlinLogging.logger {}
+    }
 }
