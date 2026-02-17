@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.event
+export const CASE_IDENTIFIER = 'bezwaar';
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.outbox.domain.BaseEvent
+export const CASE_VERSION = '1.0.1';
 
-class ZaakResultaatCreated (zaakResultaatUrl: String, zaakResultaat: ObjectNode) : BaseEvent(
-    type = "com.ritense.gzac.zrc.zaakresultaat.created",
-    resultType = "com.ritense.zakenapi.domain.CreateZaakResultaatResponse",
-    resultId = zaakResultaatUrl,
-    result = zaakResultaat
-)
+export const statusTestData = {
+  title: 'E2e Test Status',
+  updatedTitle: 'E2e Updated Status',
+};
+
+export const tagTestData = {
+  title: 'E2e Test Tag',
+  updatedTitle: 'E2e Updated Tag',
+};
