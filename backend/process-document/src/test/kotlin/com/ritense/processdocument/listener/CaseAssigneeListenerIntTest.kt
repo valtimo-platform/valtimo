@@ -28,6 +28,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
+import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.ManageableUser
@@ -43,6 +44,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
@@ -73,6 +75,9 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+
+    @Autowired
+    lateinit var caseTaskListSearchService: CaseTaskListSearchService
 
     lateinit var testDocument: Document
 
@@ -356,5 +361,65 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
             taskService.findTask(byName("building block user task"))
         }
         assertNull(task.assignee)
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN])
+    fun `should include building block task in case-filtered task list with correct documentInstanceId`() {
+        whenever(userManagementService.findById(any())).thenReturn(testUser)
+        whenever(userManagementService.findByUsername(any())).thenReturn(testUser)
+        whenever(userManagementService.currentUser).thenReturn(testUser)
+
+        val bbDocument = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    "house",
+                    "house",
+                    "1.0.0",
+                    com.fasterxml.jackson.databind.ObjectMapper().readTree("""{"street": "bbStreet", "houseNumber": 3}""")
+                )
+            ).resultingDocument().orElseThrow()
+        }
+
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "bb-parent-process",
+            testDocument.id().toString(),
+            mapOf("bbDocumentId" to bbDocument.id().id.toString())
+        )
+        runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                testDocument.id().id,
+                "bb parent process"
+            )
+        }
+
+        val bbDefinition = buildingBlockDefinitionRepository.save(
+            BuildingBlockDefinition(
+                id = BuildingBlockDefinitionId("test-bb-filtered", "1.0.0"),
+                name = "Test Building Block Filtered"
+            )
+        )
+        buildingBlockInstanceRepository.save(
+            BuildingBlockInstance(
+                documentId = bbDocument.id().id,
+                caseDocumentId = testDocument.id().id,
+                activityId = "bb-call-activity",
+                definition = bbDefinition
+            )
+        )
+
+        val result = runWithoutAuthorization {
+            caseTaskListSearchService.search(
+                "house",
+                com.ritense.processdocument.tasksearch.AdvancedSearchRequest()
+                    .assigneeFilter(OperatonTaskService.TaskFilter.ALL),
+                PageRequest.of(0, 100)
+            )
+        }
+
+        val bbTask = result.content.find { it.name == "building block user task" }
+        assert(bbTask != null) { "Building block task should appear in case-filtered task list" }
+        assertEquals(testDocument.id().id, bbTask!!.documentInstanceId)
     }
 }

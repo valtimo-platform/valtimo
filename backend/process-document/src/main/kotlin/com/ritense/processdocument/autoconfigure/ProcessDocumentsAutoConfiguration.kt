@@ -36,6 +36,7 @@ import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMa
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.service.CaseTaskContributor
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
@@ -241,7 +242,8 @@ class ProcessDocumentsAutoConfiguration {
         userManagementService: UserManagementService,
         authorizationService: AuthorizationService,
         searchFieldV2Service: SearchFieldV2Service,
-        queryDialectHelper: QueryDialectHelper
+        queryDialectHelper: QueryDialectHelper,
+        caseTaskContributors: List<CaseTaskContributor>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -250,7 +252,8 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             authorizationService,
             searchFieldV2Service,
-            queryDialectHelper
+            queryDialectHelper,
+            caseTaskContributors
         )
     }
 
@@ -258,11 +261,11 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
-        operatonTaskService: OperatonTaskService
+        operatonTaskService: OperatonTaskService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
-            operatonTaskService
+            operatonTaskService,
         )
     }
 
