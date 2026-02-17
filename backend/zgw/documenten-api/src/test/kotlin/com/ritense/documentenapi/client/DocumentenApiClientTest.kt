@@ -109,7 +109,6 @@ DocumentenApiClientTest {
     fun `should send request and parse response`() {
         val restClientBuilder = RestClient.builder()
         val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
-        val documentId = "documentId"
         val responseBody = """
             {
               "url": "http://example.com",
