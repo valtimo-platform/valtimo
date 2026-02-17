@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/shared';
+package com.ritense.document.event
 
-interface InternalCaseStatus {
-  key: string;
-  title: string;
-  retentionPeriodInDays: number;
-  visibleInCaseListByDefault: boolean;
-  color: TagColor;
-  documentDefinitionName?: string;
-  order?: number;
-  tagType?: TagType;
-}
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.outbox.domain.BaseEvent
 
-export {InternalCaseStatus};
+class DocumentExpired(documentId: String, node: ObjectNode) : BaseEvent(
+    type = "com.ritense.valtimo.document.expired",
+    resultType = "com.ritense.document.domain.impl.JsonSchemaDocument",
+    resultId = documentId,
+    result = node
+)

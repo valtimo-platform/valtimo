@@ -88,6 +88,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
+    retentionPeriodInDays: this.fb.control(-1, [
+      Validators.required,
+      Validators.pattern(/^(?:-1|0|[1-9]\d*)$/),
+    ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
@@ -146,6 +150,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     return this.statusFormGroup?.get('title');
   }
 
+  public get retentionPeriodInDays(): AbstractControl<number, number> {
+    return this.statusFormGroup?.get('retentionPeriodInDays');
+  }
+
   public get color(): AbstractControl<string, string> {
     return this.statusFormGroup?.get('color');
   }
@@ -159,6 +167,17 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   public readonly editingKey$ = new BehaviorSubject<boolean>(false);
+
+  public readonly showRetentionPeriod$ = new BehaviorSubject<boolean>(false);
+
+  public toggleRetentionPeriod(checked: boolean): void {
+    this.showRetentionPeriod$.next(checked);
+    if (!checked) {
+      this.retentionPeriodInDays.setValue(-1);
+      this.retentionPeriodInDays.markAsDirty();
+      this.statusFormGroup.markAsDirty();
+    }
+  }
 
   private readonly _originalStatusKey$ = new BehaviorSubject<string>('');
 
@@ -251,10 +270,13 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private prefillForm(prefillStatus: InternalCaseStatus): void {
+    const retentionPeriodInDays = prefillStatus.retentionPeriodInDays ?? -1;
+    this.showRetentionPeriod$.next(retentionPeriodInDays !== -1);
     this._originalStatusKey$.next(prefillStatus.key);
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
       title: prefillStatus.title,
+      retentionPeriodInDays: retentionPeriodInDays,
       visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
       color: prefillStatus.color,
     });
@@ -264,11 +286,13 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private resetForm(): void {
+    this.showRetentionPeriod$.next(false);
     this.statusFormGroup.patchValue({
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
-      color: TagColor.Blue,
+      retentionPeriodInDays: -1,
+      color: TagColor.Magenta,
     });
     this._selectedColor$.next(TagColor.Blue);
     this.statusFormGroup.markAsPristine();
@@ -369,6 +393,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     return {
       key: this.key.value,
       title: this.title.value,
+      retentionPeriodInDays: this.retentionPeriodInDays.value,
       visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
       color: this.color.value as TagColor,
     };
