@@ -116,6 +116,7 @@
     * [Custom case headers](features/case/for-developers/custom-case-headers.md)
     * [Register Angular component](features/case/for-developers/register-angular-component.md)
 * [🧱 Building blocks](features/building-blocks/README.md)
+  * [Forms](features/building-blocks/forms.md)
 * [📊 Dashboard](features/dashboard/README.md)
   * [Widget data sources](features/dashboard/dashboard.md)
   * [Widget display types](features/dashboard/widget-display-types.md)
