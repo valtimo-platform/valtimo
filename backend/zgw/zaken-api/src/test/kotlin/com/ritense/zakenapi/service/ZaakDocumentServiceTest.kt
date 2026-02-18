@@ -210,8 +210,6 @@ class ZaakDocumentServiceTest {
         assertEquals(expectedPage.size, page.size)
         // Check if the zaakUrl is set in the DocumentSearchRequest
         assertEquals(zaakUrl, documentSearchRequestCaptor.firstValue.zaakUrl)
-        // Check if the zaakUrl is set in the DocumentSearchRequest
-        assertEquals(zaakUrl, documentSearchRequestCaptor.firstValue.zaakUrl)
     }
 
     @Test
