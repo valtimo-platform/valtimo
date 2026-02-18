@@ -20,6 +20,7 @@
     showModal: showModal$ | async,
     processStepName: processStepName$ | async,
     steps: steps$ | async,
+    selectedPluginConfiguration: selectedPluginConfiguration$ | async,
     currentStepIndex: currentStepIndex$ | async,
     currentStepId: currentStepId$ | async,
     showSaveButton: showSaveButton$ | async,
@@ -42,6 +43,12 @@
             | translate: {processStepName: obs.processStepName || '-'}
         }}
       </h3>
+      <h4 cdsModalHeaderLabel>
+        {{
+          'processLinkConfiguration.pluginConfiguration'
+                  | translate: {pluginConfigTitle: obs.selectedPluginConfiguration?.title || '-'}
+        }}
+      </h4>
       <div class="process-link-progress">
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>

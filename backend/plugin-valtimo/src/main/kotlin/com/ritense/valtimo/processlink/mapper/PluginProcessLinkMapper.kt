@@ -23,6 +23,7 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
+import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
@@ -40,7 +41,8 @@ import java.util.UUID
 @Component
 @SkipComponentScan
 class PluginProcessLinkMapper(
-    objectMapper: ObjectMapper
+    objectMapper: ObjectMapper,
+    private val pluginService: PluginService,
 ) : ProcessLinkMapper {
 
     init {
@@ -58,12 +60,16 @@ class PluginProcessLinkMapper(
     override fun toProcessLinkResponseDto(processLink: ProcessLink): PluginProcessLinkResultDto {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLink as PluginProcessLink
+            val pluginConfigurationTitle = processLink.pluginConfigurationId?.let { configId ->
+                pluginService.getPluginConfiguration(configId).title
+            }
             PluginProcessLinkResultDto(
                 id = processLink.id,
                 processDefinitionId = processLink.processDefinitionId,
                 activityId = processLink.activityId,
                 activityType = processLink.activityType,
                 pluginConfigurationId = processLink.pluginConfigurationId?.id,
+                pluginConfigurationTitle = pluginConfigurationTitle,
                 referenceType = processLink.pluginConfigurationReference.type,
                 pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
