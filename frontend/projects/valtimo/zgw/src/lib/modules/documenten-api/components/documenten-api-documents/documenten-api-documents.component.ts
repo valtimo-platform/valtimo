@@ -394,8 +394,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public deleteDocument(): void {
     this.documentId$.pipe(take(1)).subscribe(documentId => {
       this._itemsLoading$.next(true);
-      this.documentenApiDocumentService.deleteDocument(this.document, documentId).subscribe(() => {
-        this.refetchDocuments();
+      this.documentenApiDocumentService.deleteDocument(this.document, documentId).subscribe({
+        next: () => {
+          this.refetchDocuments();
+        },
+        error: () => {
+          this._itemsLoading$.next(false);
+        },
       });
     });
   }
