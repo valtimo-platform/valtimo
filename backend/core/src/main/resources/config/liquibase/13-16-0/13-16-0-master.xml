@@ -44,4 +44,37 @@
         </addColumn>
     </changeSet>
 
+    <!-- Add blueprint_type column and populate for existing CASE forms -->
+    <changeSet id="4" author="Ritense">
+        <addColumn tableName="form_io_form_definition">
+            <column name="blueprint_type" type="VARCHAR(40)"/>
+        </addColumn>
+        <sql>
+            UPDATE form_io_form_definition
+            SET blueprint_type = 'CASE'
+            WHERE case_definition_key IS NOT NULL
+        </sql>
+    </changeSet>
+
+    <!-- Rename case_definition columns to blueprint columns -->
+    <changeSet id="5" author="Ritense">
+        <renameColumn tableName="form_io_form_definition"
+                      oldColumnName="case_definition_key"
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
+        <renameColumn tableName="form_io_form_definition"
+                      oldColumnName="case_definition_version_tag"
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(200)"/>
+    </changeSet>
+
+    <!-- Create index on blueprint columns -->
+    <changeSet id="6" author="Ritense">
+        <createIndex tableName="form_io_form_definition" indexName="idx_form_def_blueprint">
+            <column name="blueprint_type"/>
+            <column name="blueprint_key"/>
+            <column name="blueprint_version_tag"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
