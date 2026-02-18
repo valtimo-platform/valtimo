@@ -1520,7 +1520,6 @@ class ZakenApiPlugin(
         activityTypes = [SERVICE_TASK_START]
     )
     fun patchZaakNotitie(
-        execution: DelegateExecution,
         @PluginActionProperty zaakNotitieUrl: URI,
         @PluginActionProperty onderwerp: String? = null,
         @PluginActionProperty tekst: String? = null,
