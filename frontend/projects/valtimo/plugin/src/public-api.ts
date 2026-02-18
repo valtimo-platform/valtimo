@@ -59,6 +59,7 @@ export * from './lib/plugins/zaken-api/components/zaken-api-configuration/zaken-
 export * from './lib/plugins/zaken-api/components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaak-status/set-zaak-status-configuration.component';
 export * from './lib/plugins/zaken-api/components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
+export * from './lib/plugins/zaken-api/components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
 export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';

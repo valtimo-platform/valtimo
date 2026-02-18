@@ -36,6 +36,7 @@ import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-r
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {DeleteZaakResultatenConfigurationComponent} from './components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -47,6 +48,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
+    'delete-zaakresultaten': DeleteZaakResultatenConfigurationComponent,
     'delete-zaak-rol': DeleteZaakRolComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
@@ -162,6 +164,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       statustoelichtingTooltip:
         'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
       'create-zaakresultaat': 'Zaakresultaat aanmaken',
+      'delete-zaakresultaten': 'Zaakresultaten verwijderen',
+      'deleteZaakResultatenMessage': 'Zaakresultaten verwijderen heeft geen configuratie nodig.',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
       resultaattoelichting: 'Zaakresultaat toelichting',
@@ -344,6 +348,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       statustoelichtingTooltip:
         'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
       'create-zaakresultaat': 'Create Zaakresultaat',
+      'delete-zaakresultaten': 'Delete Zaakresultaten',
+      'deleteZaakResultatenMessage': 'Delete Zaakresultaten does not require any configuration.',
       resultaattypeUrl: 'Zaakresultaat type URL',
       resultaattypeUrlTooltip: 'URL reference to the resultaat type.',
       resultaattoelichting: 'Zaakresultaat explanation',

@@ -2,9 +2,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Added delete zaak resultaten action to zaken API plugin**
 
-  New feature explanation.
+  The zaken API plugin now includes a new action called 'Delete zaak resultaten'. This action allows users to delete the results of a zaak.
 
 ## Enhancements
 
@@ -12,7 +12,3 @@
 
   This behaviour, previously limited to `/{base-path}/health`, now also applies to `/{base-path}/health/readiness` and `/{base-path}/health/liveness`. (In Valtimo, `base-path` is usually set to `/management`).
   These endpoints can be used by cloud services to determine whether the application has started successfully and is ready to receive traffic.
-
-## Bugfixes
-
-* New bugfix.

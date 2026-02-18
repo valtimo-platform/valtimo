@@ -56,6 +56,7 @@ import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbeslu
 import {TranslateModule} from '@ngx-translate/core';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {DeleteZaakResultatenConfigurationComponent} from './components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
 
 @NgModule({
   declarations: [
@@ -79,6 +80,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     RelateerZakenComponent,
     GetZaakbesluitenConfigurationComponent,
     PatchZaakConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
   imports: [
     CommonModule,
@@ -120,6 +122,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     GetZaakbesluitenConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
 })
 export class ZakenApiPluginModule {}
