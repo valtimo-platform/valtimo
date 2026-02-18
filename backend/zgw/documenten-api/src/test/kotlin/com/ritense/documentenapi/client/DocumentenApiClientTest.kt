@@ -163,7 +163,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
-            "123e4567-e89b-12d3-a456-426655440000",
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -290,7 +290,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
-            CASE_DOCUMENT_ID.toString(),
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -331,7 +331,7 @@ DocumentenApiClientTest {
             client.storeDocument(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
-                CASE_DOCUMENT_ID.toString(),
+                CASE_DOCUMENT_ID,
                 request
             )
         }
