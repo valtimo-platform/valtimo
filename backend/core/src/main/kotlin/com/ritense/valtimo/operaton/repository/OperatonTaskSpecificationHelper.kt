@@ -17,13 +17,13 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.KEY
 import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.BUSINESS_KEY
+import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ID as PROCESS_INSTANCE_ID
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
-import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ID as PROCESS_INSTANCE_ID
 
 class OperatonTaskSpecificationHelper {
 
@@ -72,6 +72,15 @@ class OperatonTaskSpecificationHelper {
         @JvmStatic
         fun byProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
             cb.equal(root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY), businessKey)
+        }
+
+        @JvmStatic
+        fun byProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
+            if (businessKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY).`in`(businessKeys)
+            }
         }
 
         @JvmStatic

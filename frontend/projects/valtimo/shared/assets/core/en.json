@@ -486,7 +486,7 @@
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version"},
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft"},
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
@@ -1838,6 +1838,9 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Source key",
+    "Target key": "Target key",
     "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
@@ -2202,7 +2205,8 @@
     "listColumns": {
       "name": "Name",
       "key": "Key",
-      "versionTag": "Version"
+      "versionTag": "Version",
+      "draft": "Draft"
     },
     "detail": {
       "title": "Building block details"
@@ -2245,7 +2249,11 @@
     "tabs": {
       "general": "General",
       "document": "Document",
-      "processes": "Processes"
+      "processes": "Processes",
+      "forms": "Forms"
+    },
+    "formDefinition": {
+      "name": "Name"
     },
     "metadata": {
       "title": "General information"

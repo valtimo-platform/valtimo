@@ -59,7 +59,8 @@ class AnotherTestProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as AnotherTestProcessLinkDeployDto
         return AnotherTestProcessLinkUpdateRequestDto(
@@ -68,7 +69,7 @@ class AnotherTestProcessLinkMapper(
         )
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         deployDto as AnotherTestProcessLinkDeployDto
         return AnotherTestProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,

@@ -21,17 +21,33 @@ import {map, Observable} from 'rxjs';
 import {FormManagementParams} from '../models';
 
 export function noDuplicateFormValidator(
-  context: ManagementContext | '',
+  context: ManagementContext | '' | null,
   params: FormManagementParams,
   formManagementService: FormManagementService
 ): AsyncValidatorFn {
-  return (control: AbstractControl): Observable<ValidationErrors> =>
-    (context === 'case'
-      ? formManagementService.existsFormDefinitionCase(
-          params.caseDefinitionKey,
-          params.caseDefinitionVersionTag,
+  return (control: AbstractControl): Observable<ValidationErrors> => {
+    let exists$: Observable<boolean>;
+
+    switch (context) {
+      case 'case':
+        exists$ = formManagementService.existsFormDefinitionCase(
+          params.caseDefinitionKey!,
+          params.caseDefinitionVersionTag!,
           control.value.toString()
-        )
-      : formManagementService.existsFormDefinition(control.value.toString())
-    ).pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
+        );
+        break;
+      case 'buildingBlock':
+        exists$ = formManagementService.existsFormDefinitionBuildingBlock(
+          params.buildingBlockDefinitionKey!,
+          params.buildingBlockDefinitionVersionTag!,
+          control.value.toString()
+        );
+        break;
+      default:
+        exists$ = formManagementService.existsFormDefinition(control.value.toString());
+        break;
+    }
+
+    return exists$.pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
+  };
 }

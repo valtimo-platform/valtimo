@@ -88,6 +88,29 @@
                 }
             },
             {
+                "key": "beoordeling",
+                "type": "fields",
+                "title": "Beoordeling",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "approvalDecision",
+                                "title": "Besluit",
+                                "value": "doc:approvalDecision"
+                            },
+                            {
+                                "key": "reviewerRemarks",
+                                "title": "Opmerkingen Beoordelaar",
+                                "value": "doc:reviewerRemarks"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
                 "key": "zgw-samenvatting",
                 "type": "fields",
                 "title": "ZGW Samenvatting",
