@@ -150,4 +150,17 @@ export class FormManagementCreateComponent implements OnInit {
       )
       .subscribe();
   }
+
+  public onSubmit(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.form.markAllAsTouched();
+
+    if (this.form.invalid) {
+      return;
+    }
+
+    this.createFormDefinition();
+  }
 }
