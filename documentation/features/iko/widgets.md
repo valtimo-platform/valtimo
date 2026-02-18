@@ -31,7 +31,7 @@ The widget configuration goes through 6 steps:
 
 #### Step 1: Choose widget type
 
-Select from: Fields, Collection, Table, Interactive table, Map, or Divider.
+Select from: Fields, Collection, Table, Interactive table, Map.
 
 <figure><img src="../../.gitbook/assets/iko/widget-wizard-step1.png" alt="Widget wizard step 1"><figcaption><p>Select the widget type.</p></figcaption></figure>
 
