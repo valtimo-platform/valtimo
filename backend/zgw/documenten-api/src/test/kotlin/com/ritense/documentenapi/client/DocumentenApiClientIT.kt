@@ -92,7 +92,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
         documentenApiClient.storeDocument(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentenApiPlugin.url,
-            "123e4567-e89b-12d3-a456-426655440000",
+            CASE_DOCUMENT_ID,
             CreateDocumentRequest(
                 bronorganisatie = documentenApiPlugin.bronorganisatie,
                 creatiedatum = LocalDate.now(),
@@ -114,7 +114,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiClient.storeDocument(
                 documentenApiPlugin.authenticationPluginConfiguration,
                 documentenApiPlugin.url,
-                "123e4567-e89b-12d3-a456-426655440000",
+                CASE_DOCUMENT_ID,
                 CreateDocumentRequest(
                     bronorganisatie = documentenApiPlugin.bronorganisatie,
                     creatiedatum = LocalDate.now(),
@@ -420,5 +420,10 @@ internal class DocumentenApiClientIT @Autowired constructor(
            }
         """.trimIndent()
         return mockResponse(body)
+    }
+
+    companion object {
+        val CASE_DOCUMENT_ID: UUID =
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
     }
 }

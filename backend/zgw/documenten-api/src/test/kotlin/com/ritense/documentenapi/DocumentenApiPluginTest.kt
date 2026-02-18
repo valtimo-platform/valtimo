@@ -165,7 +165,7 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
-        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
@@ -344,7 +344,7 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable("localDocumentVariableName"))
             .thenReturn("localDocumentLocation")
-        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(virusScanService.scan(content.toByteArray()))
             .thenReturn(VirusScanResult(VirusScanStatus.OK,mapOf()))
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
@@ -443,7 +443,7 @@ internal class DocumentenApiPluginTest {
                 )
             )
         whenever(client.storeDocument(any(), any(), any(), any())).thenReturn(result)
-        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(pluginConfiguration.id).thenReturn(pluginConfigurationId)
         whenever(pluginConfigurationId.id).thenReturn(UUID.randomUUID())
 
@@ -519,7 +519,7 @@ internal class DocumentenApiPluginTest {
 
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR))
             .thenReturn("localDocumentLocation")
-        whenever(executionMock.businessKey).thenReturn("someBusinessKey")
+        whenever(executionMock.businessKey).thenReturn("123e4567-e89b-12d3-a456-426655440000")
         whenever(storageService.getResourceContentAsInputStream("localDocumentLocation"))
             .thenReturn(inputStream)
         whenever(storageService.getResourceMetadata("localDocumentLocation"))
