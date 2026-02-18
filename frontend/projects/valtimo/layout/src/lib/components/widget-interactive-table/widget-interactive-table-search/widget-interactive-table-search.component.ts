@@ -38,7 +38,7 @@ import {
   SelectModule,
 } from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule, TimePickerModule} from 'carbon-components-angular';
-import {debounceTime, map, Observable, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subject, Subscription} from 'rxjs';
 import {WidgetFilter, WidgetInteractiveTableEventSearchRequest, WidgetDropdownValue} from '../../../models';
 import {WidgetInteractiveTableService} from '../../../services';
 
@@ -100,6 +100,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   });
 
   public readonly dropdownSelectItemsMap: Record<string, Array<{id: string; text: string}>> = {};
+  public readonly clear$ = new Subject<null>();
 
   private readonly _subscriptions = new Subscription();
 
@@ -145,6 +146,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
 
   public onClearFilter(): void {
     this.filtersFormGroup.reset(this.getDefaultFilterValues());
+    this.clear$.next(null);
   }
 
   public onRangeChange(filterKey: string, value: any): void {
