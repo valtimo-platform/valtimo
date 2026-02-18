@@ -48,14 +48,16 @@ class DocumentenApiResource(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService
 ) {
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.downloadDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @GetMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, null, documentId)
-        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, null,documentId)
+        val caseDocumentId: UUID? = null
+        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId,documentId)
+        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
@@ -72,6 +74,7 @@ class DocumentenApiResource(
             .body(InputStreamResource(documentInputStream))
     }
 
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.modifyDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @PutMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun modifyDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -91,6 +94,7 @@ class DocumentenApiResource(
             )
     }
 
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.deleteDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @DeleteMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
