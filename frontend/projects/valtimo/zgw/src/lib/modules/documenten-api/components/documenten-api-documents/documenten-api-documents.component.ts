@@ -361,13 +361,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
             return combineLatest({
               files: of(files),
               canView:
-                this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION) &&
                 this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
               canModify:
-                this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION) &&
                 this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION, documentContext),
               canDelete:
-                this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION) &&
                 this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION, documentContext),
             });
           })
