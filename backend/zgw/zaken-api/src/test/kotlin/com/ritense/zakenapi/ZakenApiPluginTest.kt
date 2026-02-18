@@ -39,6 +39,7 @@ import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.NotitieType
@@ -48,6 +49,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
@@ -74,6 +76,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.transaction.PlatformTransactionManager
@@ -892,6 +895,52 @@ internal class ZakenApiPluginTest {
         assertEquals(resultaatTypeUrl, request.resultaattype)
         assertEquals("Result description", request.toelichting)
     }
+
+    @Test
+    fun `should delete zaak resultaat`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+
+        val resultaat = mock<ZaakResultaat>()
+        val resultaatUuid = UUID.randomUUID()
+        whenever(resultaat.uuid).thenReturn(resultaatUuid)
+
+        val page = Page(
+            count = 1,
+            next = null,
+            previous = null,
+            results = listOf(resultaat)
+        )
+
+        whenever(zakenApiClient.getAllZaakResultaten(any(), any(), any()))
+            .thenReturn(page)
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        plugin.deleteZaakResultaten(executionMock)
+
+        val requestCaptor = argumentCaptor<GetZaakResultatenRequest>()
+        verify(zakenApiClient).getAllZaakResultaten(any(), any(), requestCaptor.capture())
+
+        val request = requestCaptor.firstValue
+        assertEquals(zaakUrl, request.zaak)
+
+        verify(zakenApiClient).deleteZaakResultaat(any(), any(), eq(resultaatUuid))
+        verifyNoMoreInteractions(zakenApiClient)
+    }
+
 
     @Test
     fun `should update zaakopschorting and verlenging`() {

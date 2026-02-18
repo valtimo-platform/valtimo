@@ -18,20 +18,22 @@ package com.ritense.processdocument.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.context.event.EventListener
 
 class ProcessDocumentDeletedEventListener(
     private val runtimeService: RuntimeService,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService
+    private val historyService: HistoryService,
+    private val processDocumentAssociationService: ProcessDocumentAssociationService,
 ) {
-
     @EventListener(ProcessDefinitionDeleted::class)
     fun handle(event: ProcessDefinitionDeleted) {
         runWithoutAuthorization {
@@ -47,17 +49,49 @@ class ProcessDocumentDeletedEventListener(
 
     @EventListener(DocumentDeletedEvent::class)
     fun handle(event: DocumentDeletedEvent) {
-        withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
-            logger.info { "Deleting all process instances for deleted document ${event.caseDocumentId}" }
-
+        withLoggingContext(JsonSchemaDocument::class, event.documentId) {
+            logger.info { "Deleting all process instances for deleted document ${event.documentId}" }
             runWithoutAuthorization {
                 runtimeService.createProcessInstanceQuery()
-                    .processInstanceBusinessKey(event.caseDocumentId.toString())
+                    .processInstanceBusinessKey(event.documentId.toString())
                     .rootProcessInstances()
                     .list()
                     .forEach {
-                        deleteProcessInstance(it.processInstanceId)
+                        deleteProcessInstance(
+                            it.processInstanceId
+                        )
                     }
+
+                val pros = processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
+                    JsonSchemaDocumentId.newId(event.documentId)
+                )
+                logger.info { "Process document ${event.documentId} has been deleted pros: ${pros.size}" }
+                pros.forEach {
+                    deleteHistoryProcessInstance(
+                        it.processDocumentInstanceId().processInstanceId().toString()
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deleteHistoryProcessInstance(processInstanceId: String) {
+        historyService.deleteHistoricProcessInstanceIfExists(
+            processInstanceId
+        )
+        deleteProcessDocumentInstance(processInstanceId)
+    }
+
+    private fun deleteProcessDocumentInstance(processInstanceId: String) {
+        processDocumentAssociationService.findProcessDocumentInstance(
+            OperatonProcessInstanceId(processInstanceId),
+        )?.let { processDocumentInstance ->
+            if (processDocumentInstance.isEmpty) {
+                logger.debug { "Process $processInstanceId has no relation to any Document. No ProcessDocumentInstance to delete." }
+            } else {
+                processDocumentInstance
+                    .map(ProcessDocumentInstance::processDocumentInstanceId)
+                    .ifPresent(processDocumentAssociationService::deleteProcessDocumentInstance)
             }
         }
     }
@@ -71,17 +105,10 @@ class ProcessDocumentDeletedEventListener(
             true,
             false
         )
-        processDocumentAssociationService.findProcessDocumentInstance(
-            OperatonProcessInstanceId(processInstanceId),
-        )?.let { processDocumentInstance ->
-            if (processDocumentInstance.isEmpty) {
-                logger.debug { "Process $processInstanceId has no relation to any Document. No ProcessDocumentInstance to delete." }
-            } else {
-                processDocumentInstance
-                    .map(ProcessDocumentInstance::processDocumentInstanceId)
-                    .ifPresent(processDocumentAssociationService::deleteProcessDocumentInstance)
-            }
-        }
+        historyService.deleteHistoricProcessInstanceIfExists(
+            processInstanceId
+        )
+        deleteProcessDocumentInstance(processInstanceId)
     }
 
     companion object {
