@@ -276,7 +276,7 @@ class DocumentenApiPlugin(
 
     fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
+        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
         client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
