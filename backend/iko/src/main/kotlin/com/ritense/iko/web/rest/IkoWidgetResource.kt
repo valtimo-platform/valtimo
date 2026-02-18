@@ -57,14 +57,14 @@ class IkoWidgetResource(
         @PathVariable ikoViewKey: String,
         @PathVariable tabKey: String,
         @PathVariable widgetKey: String,
-        @RequestParam properties: LinkedMultiValueMap<String, Any>,
+        @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
         @PageableDefault pageable: Pageable,
         request: HttpServletRequest,
     ): ResponseEntity<Any?> {
         val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
         val collapsedValuesPropertiesMap =
             properties
-                .map { if (it.value is List<*> && it.value.size == 1) it.key to it.value.first() else it.key to it.value }
+                .map { if (it.value.size == 1) it.key to it.value.first() else it.key to it.value }
                 .toMap()
         val allProperties = collapsedValuesPropertiesMap + mapOf(
             IKO_VIEW_KEY to ikoViewKey,
