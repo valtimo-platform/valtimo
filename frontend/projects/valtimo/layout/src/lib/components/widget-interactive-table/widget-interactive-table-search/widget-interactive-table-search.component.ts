@@ -154,6 +154,13 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this.filtersFormGroup.get(`${filterKey}_end`)?.setValue(value?.end ?? '');
   }
 
+  public getDropdownSelectItems(filter: WidgetFilter): Array<{id: string; text: string}> {
+    return Object.entries(filter.dropdownValues ?? {}).map(([key, text]) => ({
+      id: key,
+      text,
+    }));
+  }
+
   private buildFiltersFormControls(): void {
     this.filters.forEach((filter: WidgetFilter) => {
       if (filter.fieldType === 'range') {
@@ -231,11 +238,11 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     searchRequest: WidgetInteractiveTableEventSearchRequest
   ): {filters?: Record<string, any>} {
     const result: Record<string, any> = {};
-    const incoming = searchRequest.filters ?? {};
+    const search = searchRequest.filters ?? {};
 
     for (const filter of this.filters) {
       if (filter.fieldType === 'range') {
-        const raw = incoming[filter.key];
+        const raw = search[filter.key];
         if (typeof raw === 'string') {
           try {
             const parsed = JSON.parse(raw);
@@ -249,8 +256,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
         continue;
       }
 
-      if (incoming[filter.key] !== undefined) {
-        result[filter.key] = incoming[filter.key];
+      if (search[filter.key] !== undefined) {
+        result[filter.key] = search[filter.key];
       }
     }
 
@@ -258,12 +265,12 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   }
 
   private setInitialForm(): void {
-    const mapped = this.mapSearchRequestToFormValue(this._initSearchRequest);
+    const mappedFormValue = this.mapSearchRequestToFormValue(this._initSearchRequest);
 
     this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
 
-    if (mapped.filters) {
-      this.filtersFormGroup.patchValue(mapped.filters, {emitEvent: false});
+    if (mappedFormValue.filters) {
+      this.filtersFormGroup.patchValue(mappedFormValue.filters, {emitEvent: false});
     }
   }
 
@@ -289,13 +296,6 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     if (typeof value === 'string') return value.trim().length > 0;
     if (Array.isArray(value)) return value.length > 0;
     return true;
-  }
-
-  public getDropdownSelectItems(filter: WidgetFilter): Array<{id: string; text: string}> {
-    return Object.entries(filter.dropdownValues ?? {}).map(([key, text]) => ({
-      id: key,
-      text,
-    }));
   }
 
   private isDropdownField(filter: WidgetFilter): boolean {
