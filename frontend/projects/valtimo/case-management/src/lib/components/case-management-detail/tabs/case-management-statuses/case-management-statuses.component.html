@@ -80,3 +80,13 @@
     {{ 'interface.tagType.' + data?.item?.tagType | translate }}
   </cds-tag>
 </ng-template>
+
+<ng-template #retentionPeriodColumnTemplate let-data="data">
+  @if (data?.item?.retentionPeriodInDays === 0) {
+    {{ 'caseManagement.statuses.columns.deletedImmediately' | translate }}
+  } @else if (data?.item?.retentionPeriodInDays === -1 ) {
+    {{ '-' }}
+  } @else {
+    {{ data?.item?.retentionPeriodInDays }}
+  }
+</ng-template>

@@ -6,7 +6,7 @@
 
 ## New Features
 
-- **Setting case properties from within a form**
+* **Setting case properties from within a form**
 
 You can now update a limited set of `case:` properties directly from a Form.io form by using the **Form.io Custom
 Property** `targetKey`. The supported `targetKey` values:
