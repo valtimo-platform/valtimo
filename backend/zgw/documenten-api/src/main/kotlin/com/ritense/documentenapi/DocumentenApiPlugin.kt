@@ -368,7 +368,7 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
-        val caseDocumentId = execution.businessKey
+        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
             ?: throw IllegalStateException("Failed to store document. Business key is null.")
 
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
