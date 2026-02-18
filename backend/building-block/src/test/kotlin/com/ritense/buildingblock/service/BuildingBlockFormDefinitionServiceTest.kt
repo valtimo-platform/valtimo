@@ -55,6 +55,29 @@ class BuildingBlockFormDefinitionServiceTest(
     }
 
     @Test
+    fun `should get form options`() {
+        val blueprintId = FormDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId)
+        val form1 = FormIoFormDefinition(UUID.randomUUID(), "form-a", formDefinitionJson, blueprintId, false)
+        val form2 = FormIoFormDefinition(UUID.randomUUID(), "form-b", formDefinitionJson, blueprintId, false)
+
+        whenever(
+            formDefinitionRepository.findAllByBlueprintIdOrderByNameAsc(
+                eq(BlueprintType.BUILDING_BLOCK),
+                eq(buildingBlockDefinitionId.key),
+                eq(buildingBlockDefinitionId.versionTag)
+            )
+        ).thenReturn(listOf(form1, form2))
+
+        val result = service.getFormOptions(buildingBlockDefinitionId)
+
+        assertThat(result).hasSize(2)
+        assertThat(result[0].name).isEqualTo("form-a")
+        assertThat(result[0].id).isEqualTo(form1.id)
+        assertThat(result[1].name).isEqualTo("form-b")
+        assertThat(result[1].id).isEqualTo(form2.id)
+    }
+
+    @Test
     fun `should query form definitions without search term`() {
         val blueprintId = FormDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId)
         val form = FormIoFormDefinition(UUID.randomUUID(), "test-form", formDefinitionJson, blueprintId, false)

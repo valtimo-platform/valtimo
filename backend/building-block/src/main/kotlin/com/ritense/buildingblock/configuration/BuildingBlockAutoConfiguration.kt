@@ -18,6 +18,7 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
@@ -30,6 +31,7 @@ import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefini
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
+import com.ritense.buildingblock.service.BuildingBlockCaseTaskContributor
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
@@ -61,6 +63,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
@@ -77,9 +80,13 @@ import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
@@ -213,6 +220,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository
     ): BuildingBlockCaseDocumentResolver {
         return BuildingBlockCaseDocumentResolver(buildingBlockInstanceRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseTaskContributor::class)
+    fun buildingBlockCaseTaskContributor(
+        queryDialectHelper: QueryDialectHelper
+    ): BuildingBlockCaseTaskContributor {
+        return BuildingBlockCaseTaskContributor(queryDialectHelper)
     }
 
     @Bean
@@ -362,6 +377,24 @@ class BuildingBlockAutoConfiguration {
             buildingBlockInstanceService,
             processLinkService
         )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseAssigneeListener::class)
+    fun buildingBlockCaseAssigneeListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+    ) = BuildingBlockCaseAssigneeListener(
+        operatonTaskService,
+        documentService,
+        caseDefinitionService,
+        userManagementService,
+        caseDocumentResolver,
+        buildingBlockInstanceRepository
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)

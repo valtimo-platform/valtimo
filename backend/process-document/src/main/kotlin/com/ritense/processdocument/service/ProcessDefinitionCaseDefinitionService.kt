@@ -32,6 +32,7 @@ import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -46,6 +47,7 @@ class ProcessDefinitionCaseDefinitionService(
     private val runtimeService: RuntimeService,
     private val repositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
     fun findById(id: ProcessDefinitionCaseDefinitionId): ProcessDefinitionCaseDefinition? {
         return processDefinitionCaseDefinitionRepository.findById(id).orElse(null)
@@ -68,11 +70,13 @@ class ProcessDefinitionCaseDefinitionService(
         try {
             return findByProcessDefinitionId(ProcessDefinitionId(processInstance.processDefinitionId))
         } catch (e: Exception) {
-            val document = documentService.getDocumentBy(JsonSchemaDocumentId.existingId(processInstance.businessKey))
+            val documentId = UUID.fromString(processInstance.businessKey)
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+            val caseDocument = documentService.getDocumentBy(JsonSchemaDocumentId.existingId(caseDocumentId))
             val processDefinitionCaseDefinition = ProcessDefinitionCaseDefinition(
                 id = ProcessDefinitionCaseDefinitionId(
                     ProcessDefinitionId(processInstance.processDefinitionId),
-                    document.definitionId().caseDefinitionId()
+                    caseDocument.definitionId().caseDefinitionId()
                 )
             )
 

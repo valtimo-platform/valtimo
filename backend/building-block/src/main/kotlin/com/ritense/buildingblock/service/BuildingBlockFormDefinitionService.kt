@@ -19,6 +19,7 @@ package com.ritense.buildingblock.service
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
@@ -36,6 +37,16 @@ class BuildingBlockFormDefinitionService(
     private val formDefinitionRepository: FormDefinitionRepository,
     private val definitionChecker: BuildingBlockDefinitionChecker,
 ) {
+
+    fun getFormOptions(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): List<FormOption> {
+        return formDefinitionRepository.findAllByBlueprintIdOrderByNameAsc(
+            BlueprintType.BUILDING_BLOCK,
+            buildingBlockDefinitionId.key,
+            buildingBlockDefinitionId.versionTag
+        ).map { FormOption(it.id, it.name) }
+    }
 
     fun queryFormDefinitions(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,

@@ -21,6 +21,7 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
+import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -64,6 +65,25 @@ class BuildingBlockFormManagementResourceIT @Autowired constructor(
         testFormId = UUID.randomUUID()
         val blueprintId = FormDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId)
         testForm = FormIoFormDefinition(testFormId, "test-form", formDefinitionJson, blueprintId, false)
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return form options`() {
+        val formOptions = listOf(
+            FormOption(testFormId, "test-form"),
+        )
+
+        doReturn(formOptions)
+            .whenever(buildingBlockFormDefinitionService)
+            .getFormOptions(eq(buildingBlockDefinitionId))
+
+        mockMvc.get("$base/{key}/version/{versionTag}/form-option", key, versionTag)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$[0].id") { value(testFormId.toString()) }
+                jsonPath("$[0].name") { value("test-form") }
+            }
     }
 
     @Test
