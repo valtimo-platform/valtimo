@@ -63,6 +63,24 @@ export interface UpdateBuildingBlockDefinitionDto {
     description: string | null;
 }
 
+export interface BuildingBlockFormDefinitionDto {
+    id: string;
+    name: string;
+    formDefinition: any;
+    readOnly: boolean;
+}
+
+export interface CreateBuildingBlockFormDefinitionDto {
+    name: string;
+    formDefinition: string;
+    isReadOnly?: boolean;
+}
+
+export interface UpdateBuildingBlockFormDefinitionDto {
+    name: string;
+    formDefinition: string;
+}
+
 export interface CaseDefinitionCheckResponse {
     canUpdateGlobalConfiguration: boolean;
 }

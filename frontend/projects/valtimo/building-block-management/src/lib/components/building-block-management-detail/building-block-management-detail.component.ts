@@ -31,6 +31,7 @@ import {BuildingBlockManagementTabKey} from '../../models';
 import {of, take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
+import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
 
 @Component({
   standalone: true,
@@ -47,6 +48,7 @@ import {BuildingBlockManagementDetailActionsComponent} from '../building-block-m
     BuildingBlockManagementGeneralComponent,
     BuildingBlockManagementDocumentComponent,
     BuildingBlockManagementProcessesComponent,
+    BuildingBlockManagementFormsComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
     DialogModule,

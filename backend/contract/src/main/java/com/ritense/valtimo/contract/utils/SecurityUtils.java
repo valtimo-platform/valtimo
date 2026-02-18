@@ -17,15 +17,19 @@
 package com.ritense.valtimo.contract.utils;
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
+import io.jsonwebtoken.JwtException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import com.nimbusds.jwt.SignedJWT;
 
 public final class SecurityUtils {
 
@@ -78,6 +82,13 @@ public final class SecurityUtils {
         Authentication authentication = securityContext.getAuthentication();
         if (authentication instanceof JwtAuthenticationToken jwtAuthenticationToken) {
             return jwtAuthenticationToken.getToken().getTokenValue();
+        } else if (authentication instanceof UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) {
+            Object credentials = usernamePasswordAuthenticationToken.getCredentials();
+            if (credentials instanceof String credentialsString && isParsableJwt(credentialsString)) {
+                return credentialsString;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
@@ -144,4 +155,15 @@ public final class SecurityUtils {
         return securityContext.getAuthentication();
     }
 
+    public static boolean isParsableJwt(String token) {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        try {
+            SignedJWT.parse(token);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
 }
