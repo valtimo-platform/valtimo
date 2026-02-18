@@ -16,6 +16,7 @@
 
 package com.ritense.objectenapi.service
 
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.ObjectenApiPlugin
@@ -330,7 +331,7 @@ internal class ZaakObjectServiceTest {
                     ]
                 }
             """.trimIndent(),
-            caseDefinitionId,
+            FormDefinitionBlueprintId.forCase(caseDefinitionId),
             false
         )
         whenever(formDefinitionService.getFormDefinitionByNameIgnoringCase("some-type.editform"))

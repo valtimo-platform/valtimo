@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private _model: EditorModel;
 
   private _layoutSubscription!: Subscription;
+  private _containerResizeObserver: ResizeObserver | null = null;
 
   constructor(
     private readonly editorService: EditorService,
@@ -85,6 +86,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._layoutSubscription?.unsubscribe();
+    this._containerResizeObserver?.disconnect();
+    this._containerResizeObserver = null;
     if (this._editor) {
       const model = this._editor.getModel();
       this._editor.dispose();
@@ -188,11 +191,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorEvents();
     this.updateModel();
+    this.initContainerResizeObserver();
+  }
 
-    // Ensure layout is recalculated after container dimensions are set by fitPage directive
-    requestAnimationFrame(() => {
+  private initContainerResizeObserver(): void {
+    const container = this.editorContainer?.nativeElement;
+    if (!container) {
+      return;
+    }
+
+    this._containerResizeObserver = new ResizeObserver(() => {
       this._editor?.layout();
     });
+
+    this._containerResizeObserver.observe(container);
   }
 
   private initJsonSchemaValidation() {

@@ -32,6 +32,7 @@ import com.ritense.document.domain.patch.JsonPatchService;
 import com.ritense.form.autoconfigure.FormAutoConfiguration;
 import com.ritense.form.domain.event.FormRegisteredEvent;
 import com.ritense.form.domain.exception.FormDefinitionParsingException;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder;
@@ -110,9 +111,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
 
     @Embedded
     @Nullable
-    private CaseDefinitionId caseDefinitionId;
-
-    // TODO: Add support for building blocks here
+    private FormDefinitionBlueprintId blueprintId;
 
     @Column(name = "read_only", columnDefinition = "BIT")
     private Boolean readOnly = false;
@@ -130,7 +129,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         final UUID id,
         final String name,
         final String formDefinition,
-        @Nullable final CaseDefinitionId caseDefinitionId,
+        @Nullable final FormDefinitionBlueprintId blueprintId,
         final Boolean isReadOnly
     ) {
         assertArgumentNotNull(id, "id is required");
@@ -139,7 +138,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         assertArgumentNotNull(formDefinition, "formDefinition is required");
         this.id = id;
         this.name = name;
-        this.caseDefinitionId = caseDefinitionId;
+        this.blueprintId = blueprintId;
         setFormDefinition(formDefinition);
         setReadOnly(isReadOnly);
         this.isNew = true;
@@ -147,6 +146,26 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     }
 
     protected FormIoFormDefinition() {
+    }
+
+    /**
+     * @deprecated Use the constructor with FormDefinitionBlueprintId instead
+     */
+    @Deprecated(since = "13.14", forRemoval = true)
+    public static FormIoFormDefinition forCase(
+        final UUID id,
+        final String name,
+        final String formDefinition,
+        @Nullable final CaseDefinitionId caseDefinitionId,
+        final Boolean isReadOnly
+    ) {
+        return new FormIoFormDefinition(
+            id,
+            name,
+            formDefinition,
+            caseDefinitionId != null ? FormDefinitionBlueprintId.forCase(caseDefinitionId) : null,
+            isReadOnly
+        );
     }
 
     public void setReadOnly(Boolean value) {
@@ -304,8 +323,16 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return readOnly;
     }
 
+    public Optional<FormDefinitionBlueprintId> getBlueprintId() {
+        return Optional.ofNullable(blueprintId);
+    }
+
     public Optional<CaseDefinitionId> getCaseDefinitionId() {
-        return Optional.ofNullable(caseDefinitionId);
+        return Optional.ofNullable(blueprintId != null ? blueprintId.asCaseDefinitionId() : null);
+    }
+
+    public Optional<BuildingBlockDefinitionId> getBuildingBlockDefinitionId() {
+        return Optional.ofNullable(blueprintId != null ? blueprintId.asBuildingBlockDefinitionId() : null);
     }
 
     public JsonNode asJson() {

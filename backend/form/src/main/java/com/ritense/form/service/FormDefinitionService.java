@@ -20,6 +20,7 @@ import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
 import com.ritense.form.web.rest.dto.FormOption;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +53,8 @@ public interface FormDefinitionService {
     Optional<? extends FormDefinition> getFormDefinitionByName(String name);
 
     Optional<? extends FormDefinition> getFormDefinitionByName(String name, CaseDefinitionId caseDefinitionId);
+
+    Optional<? extends FormDefinition> getFormDefinitionByName(String name, BlueprintId blueprintId);
 
     Optional<? extends FormDefinition> getFormDefinitionByNameIgnoringCase(String name);
 

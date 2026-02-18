@@ -40,7 +40,7 @@ export class CaseManagementListComponent {
   public readonly canUpdateGlobalConfiguration$ =
     this.environmentService.canUpdateGlobalConfiguration();
 
-  public readonly caseListItems$: Observable<CaseListItem[]> = combineLatest([
+  public readonly caseListItems$ = combineLatest([
     this.route.queryParams,
     this.canUpdateGlobalConfiguration$,
     this._refresh$,

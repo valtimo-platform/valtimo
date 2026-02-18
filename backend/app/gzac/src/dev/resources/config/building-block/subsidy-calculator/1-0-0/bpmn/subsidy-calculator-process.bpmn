@@ -33,10 +33,14 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="CalculateFinalAmountTask" name="Bereken Eindtotaal" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/finalSubsidyAmount', valueResolverDelegateService.resolveValue(execution, 'doc:/baseSubsidyAmount') + 100)}">
       <bpmn:incoming>Flow_Summary_To_Calculate</bpmn:incoming>
-      <bpmn:outgoing>Flow_Calculate_To_Complete</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Calculate_To_Review</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:userTask id="ReviewCalculationTask" name="Beoordeel Berekening" camunda:candidateGroups="ROLE_USER">
+      <bpmn:incoming>Flow_Calculate_To_Review</bpmn:incoming>
+      <bpmn:outgoing>Flow_Review_To_Complete</bpmn:outgoing>
+    </bpmn:userTask>
     <bpmn:serviceTask id="MarkCalculationCompleteTask" name="Markeer Voltooid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'VOLTOOID')}">
-      <bpmn:incoming>Flow_Calculate_To_Complete</bpmn:incoming>
+      <bpmn:incoming>Flow_Review_To_Complete</bpmn:incoming>
       <bpmn:outgoing>Flow_Complete_To_StoreZgwSummary</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Omschrijving (BB1): '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')).concat(' | Toelichting (BB2): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting')).concat(' | Einddatum (BB3): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:einddatumGepland')))}">
@@ -44,7 +48,8 @@
       <bpmn:outgoing>Flow_StoreZgwSummary_To_End</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Summary_To_Calculate" sourceRef="GenerateSummaryTask" targetRef="CalculateFinalAmountTask" />
-    <bpmn:sequenceFlow id="Flow_Calculate_To_Complete" sourceRef="CalculateFinalAmountTask" targetRef="MarkCalculationCompleteTask" />
+    <bpmn:sequenceFlow id="Flow_Calculate_To_Review" sourceRef="CalculateFinalAmountTask" targetRef="ReviewCalculationTask" />
+    <bpmn:sequenceFlow id="Flow_Review_To_Complete" sourceRef="ReviewCalculationTask" targetRef="MarkCalculationCompleteTask" />
     <bpmn:endEvent id="EndEvent" name="Berekening Afgerond">
       <bpmn:incoming>Flow_StoreZgwSummary_To_End</bpmn:incoming>
     </bpmn:endEvent>
@@ -59,7 +64,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubsidyCalculator">
       <bpmndi:BPMNShape id="Participant_SubsidyCalculator_di" bpmnElement="SubsidyCalculatorParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="1550" height="250" />
+        <dc:Bounds x="160" y="60" width="1680" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -92,18 +97,22 @@
         <dc:Bounds x="940" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="MarkCalculationCompleteTask_di" bpmnElement="MarkCalculationCompleteTask">
+      <bpmndi:BPMNShape id="ReviewCalculationTask_di" bpmnElement="ReviewCalculationTask">
         <dc:Bounds x="1070" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+      <bpmndi:BPMNShape id="MarkCalculationCompleteTask_di" bpmnElement="MarkCalculationCompleteTask">
         <dc:Bounds x="1200" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+        <dc:Bounds x="1330" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="1362" y="159" width="36" height="36" />
+        <dc:Bounds x="1492" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1342" y="202" width="77" height="27" />
+          <dc:Bounds x="1472" y="202" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_Init_di" bpmnElement="Flow_Start_To_Init">
@@ -130,17 +139,21 @@
         <di:waypoint x="910" y="177" />
         <di:waypoint x="940" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Calculate_To_Complete_di" bpmnElement="Flow_Calculate_To_Complete">
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_Review_di" bpmnElement="Flow_Calculate_To_Review">
         <di:waypoint x="1040" y="177" />
         <di:waypoint x="1070" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Complete_To_StoreZgwSummary_di" bpmnElement="Flow_Complete_To_StoreZgwSummary">
+      <bpmndi:BPMNEdge id="Flow_Review_To_Complete_di" bpmnElement="Flow_Review_To_Complete">
         <di:waypoint x="1170" y="177" />
         <di:waypoint x="1200" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+      <bpmndi:BPMNEdge id="Flow_Complete_To_StoreZgwSummary_di" bpmnElement="Flow_Complete_To_StoreZgwSummary">
         <di:waypoint x="1300" y="177" />
-        <di:waypoint x="1362" y="177" />
+        <di:waypoint x="1330" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+        <di:waypoint x="1430" y="177" />
+        <di:waypoint x="1492" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

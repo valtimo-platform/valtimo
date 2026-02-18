@@ -79,7 +79,10 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
     testImplementation project(':backend:test-utils-common')
-    testImplementation(project(':backend:building-block'))
+    // Required for integration tests: process-document has a JPA query that references BuildingBlockInstance entity
+    testImplementation(project(':backend:building-block')) {
+        exclude group: 'com.ritense.valtimo', module: 'form'
+    }
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
@@ -91,6 +94,17 @@ dependencies {
             attributes("Implementation-Version": projectVersion)
         }
     }
+}
+
+// Handle duplicate liquibase files from circular test dependency (building-block -> form)
+tasks.named("integrationTestingPostgresql") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
+}
+tasks.named("integrationTestingMysql") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
+}
+tasks.named("securityTesting") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
 }
 
 apply from: "gradle/publishing.gradle"
