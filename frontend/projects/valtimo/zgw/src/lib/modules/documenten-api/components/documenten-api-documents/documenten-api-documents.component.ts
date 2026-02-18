@@ -360,12 +360,17 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
             return combineLatest({
               files: of(files),
-              canView:
-                this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
-              canModify:
-                this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION, documentContext),
-              canDelete:
-                this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION, documentContext),
+              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION, documentContext),
+              canModify: this.getPermissions(
+                files,
+                CAN_MODIFY_RESOURCE_PERMISSION,
+                documentContext
+              ),
+              canDelete: this.getPermissions(
+                files,
+                CAN_DELETE_RESOURCE_PERMISSION,
+                documentContext
+              ),
             });
           })
         )
@@ -451,13 +456,16 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         tap(([file, documentId]) => {
           if (!file) return;
           if (this.isEditMode$.getValue()) {
-            this.documentenApiDocumentService
-              .updateDocument(file, metadata, documentId)
-              .subscribe(() => {
+            this.documentenApiDocumentService.updateDocument(file, metadata, documentId).subscribe({
+              next: () => {
                 this.refetchDocuments();
                 this.uploading$.next(false);
                 this.fileToBeUploaded$.next(null);
-              });
+              },
+              error: () => {
+                this.uploading$.next(false);
+              },
+            });
           } else {
             this.uploadProviderService
               .uploadFileWithMetadata(file, documentId, metadata)
