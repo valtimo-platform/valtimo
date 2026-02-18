@@ -202,8 +202,8 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   }
 
   private selectItem(items: ListItem[], id: string | null | undefined): ListItem | null {
-    const found = items.find(i => i.id === id);
-    return found ? {...found, selected: true} : null;
+    const selectedItem = items.find(item => item.id === id);
+    return selectedItem ? {...selectedItem, selected: true} : null;
   }
 
   private createFilterFormGroup(filter?: WidgetFilter): FormGroup {
@@ -255,35 +255,35 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.formGroup.valueChanges.pipe(debounceTime(100)).subscribe(({filters}) => {
         (filters ?? []).forEach((_, index) => {
-          const fg = this.filters.at(index) as FormGroup;
+          const form = this.filters.at(index) as FormGroup;
 
-          const dataTypeId = fg.get('dataType')?.value?.id;
-          const fieldTypeId = fg.get('fieldType')?.value?.id;
+          const dataTypeId = form.get('dataType')?.value?.id;
+          const fieldTypeId = form.get('fieldType')?.value?.id;
 
           const isDropdown =
             dataTypeId === 'text' &&
             (fieldTypeId === 'single-select-dropdown' || fieldTypeId === 'multi-select-dropdown');
 
-          if (isDropdown && !fg.get('dropdownDataProvider')?.value) {
-            fg.get('dropdownDataProvider')?.setValue(
+          if (isDropdown && !form.get('dropdownDataProvider')?.value) {
+            form.get('dropdownDataProvider')?.setValue(
               {...this.DROPDOWN_PROVIDER_ITEMS[0], selected: true},
               {emitEvent: false}
             );
           }
 
           if (isDropdown) {
-            const providerId = fg.get('dropdownDataProvider')?.value?.id;
+            const providerId = form.get('dropdownDataProvider')?.value?.id;
             if (providerId === 'dropdownDatabaseDataProvider') {
-              const arr = this.getDropdownValuesArray(fg);
+              const arr = this.getDropdownValuesArray(form);
               if (arr.length === 0) {
-                this.addDropdownValue(fg);
+                this.addDropdownValue(form);
               }
             }
           }
 
-          if (!isDropdown && fg.get('dropdownDataProvider')?.value) {
-            fg.get('dropdownDataProvider')?.setValue(null, {emitEvent: false});
-            this.getDropdownValuesArray(fg).clear();
+          if (!isDropdown && form.get('dropdownDataProvider')?.value) {
+            form.get('dropdownDataProvider')?.setValue(null, {emitEvent: false});
+            this.getDropdownValuesArray(form).clear();
           }
         });
 
@@ -310,8 +310,8 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getDropdownValuesArray(fg: FormGroup): FormArray {
-    return fg.get('dropdownValues') as FormArray;
+  private getDropdownValuesArray(formGroup: FormGroup): FormArray {
+    return formGroup.get('dropdownValues') as FormArray;
   }
 
   public getDataTypeDropdownItems(filterRow: FormGroup): ListItem[] {
