@@ -102,6 +102,12 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             )
         );
 
+        return findProcessDocumentInstancesWithoutPermissionCheck(documentId);
+    }
+
+    @Override
+    public List<OperatonProcessJsonSchemaDocumentInstance> findProcessDocumentInstancesWithoutPermissionCheck(Document.Id documentId) {
+
         var processes = processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(documentId);
         for (var process : processes) {
             OperatonProcessJsonSchemaDocumentInstanceId id = process.getId();
