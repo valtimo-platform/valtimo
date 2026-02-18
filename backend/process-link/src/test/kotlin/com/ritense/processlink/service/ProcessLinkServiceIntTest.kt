@@ -1,6 +1,7 @@
 package com.ritense.processlink.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.form.mapper.FormProcessLinkMapper
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.AnotherTestProcessLink
@@ -42,6 +43,7 @@ class ProcessLinkServiceIntTest @Autowired constructor(
         val processLinkTypes = processLinkService.getSupportedProcessLinkTypes(ActivityTypeWithEventName.USER_TASK_CREATE.value)
         assertThat(processLinkTypes).containsExactly(
             ProcessLinkType(TestProcessLink.PROCESS_LINK_TYPE_TEST, true),
+            ProcessLinkType(FormProcessLinkMapper.PROCESS_LINK_TYPE_FORM, false),
             ProcessLinkType(UIComponentProcessLink.TYPE_UI_COMPONENT, true),
             ProcessLinkType(AnotherTestProcessLink.PROCESS_LINK_TYPE, true),
         )

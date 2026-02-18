@@ -21,6 +21,7 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockFormDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockFormDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockFormDefinitionDto
 import com.ritense.form.domain.FormDefinition
+import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -44,6 +45,17 @@ import java.util.UUID
 class BuildingBlockFormManagementResource(
     private val buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
 ) {
+
+    @GetMapping("/{key}/version/{versionTag}/form-option")
+    fun getFormOptions(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+    ): ResponseEntity<List<FormOption>> {
+        val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
+        return ResponseEntity.ok(
+            buildingBlockFormDefinitionService.getFormOptions(buildingBlockId)
+        )
+    }
 
     @GetMapping("/{key}/version/{versionTag}/form")
     fun getFormDefinitions(

@@ -18,11 +18,12 @@ package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.TaskService
 import org.operaton.bpm.engine.delegate.DelegateTask
@@ -37,7 +38,8 @@ open class CaseAssigneeTaskCreatedListener(
     private val taskService: TaskService,
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
-    private val userManagementService: UserManagementService
+    private val userManagementService: UserManagementService,
+    private val caseDocumentResolver: CaseDocumentResolver
 ) {
 
     @EventListener(
@@ -46,15 +48,17 @@ open class CaseAssigneeTaskCreatedListener(
             && #delegateTask.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
     )
     fun notify(delegateTask: DelegateTask) {
-        val documentId = JsonSchemaDocumentId.existingId(UUID.fromString(delegateTask.execution.businessKey))
-        val document: Document? = runWithoutAuthorization {
-            documentService.findBy(documentId).getOrNull()
-        }
+        val documentId = UUID.fromString(delegateTask.execution.businessKey)
 
-        document?.run {
+        try {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+            val caseDocument = runWithoutAuthorization {
+                documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).getOrNull()
+            } ?: return
+
             val caseDefinition = runWithoutAuthorization {
                 caseDefinitionService.getCaseDefinition(
-                    document.definitionId().caseDefinitionId()
+                    caseDocument.definitionId().caseDefinitionId()
                 )
             }
 
@@ -62,9 +66,9 @@ open class CaseAssigneeTaskCreatedListener(
                 if (
                     caseDefinition.canHaveAssignee
                     && caseDefinition.autoAssignTasks
-                    && !this.assigneeId().isNullOrEmpty()
+                    && !caseDocument.assigneeId().isNullOrEmpty()
                 ) {
-                    val assignee = userManagementService.findByUsername(this.assigneeId())
+                    val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
 
                     taskService
                         .setAssignee(
@@ -76,6 +80,8 @@ open class CaseAssigneeTaskCreatedListener(
                         }
                 }
             }
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document $documentId: ${e.message}" }
         }
     }
 
