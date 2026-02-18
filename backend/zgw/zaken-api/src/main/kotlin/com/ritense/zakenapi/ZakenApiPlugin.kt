@@ -361,7 +361,7 @@ class ZakenApiPlugin(
                 )
             )
 
-            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$caseDocumentId''" }
+            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$caseDocumentId'" }
         }
     }
 
