@@ -17,6 +17,7 @@
 package com.ritense.objectenapi.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
@@ -151,7 +152,7 @@ internal class ZaakObjectResourceTest {
             formId,
             "form-name",
             "{\"content\":\"test\"}",
-            CaseDefinitionId("test", "1.0.0"),
+            FormDefinitionBlueprintId.forCase(CaseDefinitionId("test", "1.0.0")),
             false
         )
 

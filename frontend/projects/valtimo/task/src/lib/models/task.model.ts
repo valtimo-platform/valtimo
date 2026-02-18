@@ -42,6 +42,7 @@ interface Task {
   tenantId: string;
   formLocation: string;
   businessKey: string;
+  caseDocumentId: string;
   processDefinitionKey: string;
   valtimoAssignee: User;
   locked?: boolean;
@@ -61,6 +62,7 @@ interface AssigneeRequest {
 interface SpecifiedTask {
   id: string;
   businessKey: string;
+  caseDocumentId: string;
   processInstanceId: string;
   name: string;
   created: Date;
@@ -70,6 +72,7 @@ interface SpecifiedTask {
 interface MappedSpecifiedTask {
   id: string;
   businessKey: string;
+  caseDocumentId: string;
   processInstanceId: string;
   name: string;
   created?: string;

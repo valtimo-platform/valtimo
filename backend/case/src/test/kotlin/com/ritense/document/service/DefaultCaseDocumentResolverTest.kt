@@ -16,7 +16,7 @@
 
 package com.ritense.document.service
 
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -45,7 +45,7 @@ class DefaultCaseDocumentResolverTest {
     @Test
     fun `returns document id for case documents`() {
         val documentId = UUID.randomUUID()
-        val document = createDocument(documentId, JsonSchemaDocumentDefinitionBlueprintType.CASE)
+        val document = createDocument(documentId, BlueprintType.CASE)
         whenever(documentService.findBy(JsonSchemaDocumentId.existingId(documentId))).thenReturn(Optional.of(document))
 
         val result = resolver.resolveCaseDocumentId(documentId)
@@ -57,7 +57,7 @@ class DefaultCaseDocumentResolverTest {
     fun `delegates to module resolver for non-case documents`() {
         val documentId = UUID.randomUUID()
         val caseDocumentId = UUID.randomUUID()
-        val document = createDocument(documentId, JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK)
+        val document = createDocument(documentId, BlueprintType.BUILDING_BLOCK)
         whenever(documentService.findBy(JsonSchemaDocumentId.existingId(documentId))).thenReturn(Optional.of(document))
         whenever(moduleResolver.supports("BUILDING_BLOCK")).thenReturn(true)
         whenever(moduleResolver.resolveCaseDocumentId(documentId)).thenReturn(caseDocumentId)
@@ -82,7 +82,7 @@ class DefaultCaseDocumentResolverTest {
     @Test
     fun `throws when no resolver available`() {
         val documentId = UUID.randomUUID()
-        val document = createDocument(documentId, JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK)
+        val document = createDocument(documentId, BlueprintType.BUILDING_BLOCK)
         whenever(documentService.findBy(JsonSchemaDocumentId.existingId(documentId))).thenReturn(Optional.of(document))
         whenever(moduleResolver.supports(any())).thenReturn(false)
 
@@ -96,7 +96,7 @@ class DefaultCaseDocumentResolverTest {
     @Test
     fun `propagates resolver exceptions`() {
         val documentId = UUID.randomUUID()
-        val document = createDocument(documentId, JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK)
+        val document = createDocument(documentId, BlueprintType.BUILDING_BLOCK)
         whenever(documentService.findBy(JsonSchemaDocumentId.existingId(documentId))).thenReturn(Optional.of(document))
         whenever(moduleResolver.supports("BUILDING_BLOCK")).thenReturn(true)
         whenever(moduleResolver.resolveCaseDocumentId(documentId)).thenThrow(
@@ -112,14 +112,14 @@ class DefaultCaseDocumentResolverTest {
 
     private fun createDocument(
         documentId: UUID,
-        blueprintType: JsonSchemaDocumentDefinitionBlueprintType
+        blueprintType: BlueprintType
     ): JsonSchemaDocument {
         val document = mock<JsonSchemaDocument>()
 
         val definitionId = when (blueprintType) {
-            JsonSchemaDocumentDefinitionBlueprintType.CASE ->
+            BlueprintType.CASE ->
                 JsonSchemaDocumentDefinitionId.forCase("name", CaseDefinitionId.of("key", "1.0.0"))
-            JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK ->
+            BlueprintType.BUILDING_BLOCK ->
                 JsonSchemaDocumentDefinitionId.forBuildingBlock(
                     "name",
                     BuildingBlockDefinitionId.of("key", "1.0.0")

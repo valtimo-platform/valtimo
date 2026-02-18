@@ -30,7 +30,10 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.net.URI
 import java.util.UUID
@@ -74,6 +77,8 @@ class PluginsDeployedEventListenerTest {
             .thenAnswer { _ -> Exception() }
         whenever(notificatiesApiPlugin.url)
             .thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId)
+            .thenReturn(NotificatiesApiConfigurationId.existingId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")))
         whenever(pluginInstance.getNotificatiesApiPlugin())
             .thenReturn(notificatiesApiPlugin)
         whenever(pluginService.createInstance(any<PluginConfiguration>()))
@@ -183,6 +188,182 @@ class PluginsDeployedEventListenerTest {
         verify(notificatiesApiAbonnementLinkRepository).delete(any())
         verify(notificatiesApiAbonnementLinkRepository).save(any())
         verify(client).createAbonnement(any(), any(), any<Abonnement>())
+    }
+
+    @Test
+    fun `should skip update when abonnement is unchanged`() {
+        val listenerInstance: NotificatiesApiListener = mock()
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+
+        val configurationId = NotificatiesApiConfigurationId.existingId(
+            UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        )
+        val abonnementUrl = "http://localhost:9999/nothing/123"
+        val callbackUrl = "http://localhost:9999/callback"
+        val kanalen = listOf(
+            Abonnement.Kanaal(naam = "zaken", filters = mapOf("bron" to "082096752011")),
+            Abonnement.Kanaal(naam = "documenten")
+        )
+
+        val existingAbonnementLink = NotificatiesApiAbonnementLink(
+            configurationId, abonnementUrl, "test"
+        )
+        val existingAbonnement = Abonnement(abonnementUrl, callbackUrl, null, kanalen)
+
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(existingAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createKanaal(any(), any(), any())).thenReturn(mock())
+        whenever(notificatiesApiPlugin.url).thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId).thenReturn(configurationId)
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration).thenReturn(mock())
+        whenever(notificatiesApiPlugin.callbackUrl).thenReturn(URI(callbackUrl))
+        whenever(notificatiesApiPlugin.authHeader).thenReturn("12345")
+        whenever(listenerInstance.getNotificatiesApiPlugin()).thenReturn(notificatiesApiPlugin)
+        whenever(listenerInstance.getKanaalFilters()).thenReturn(kanalen)
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(listenerInstance)
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf(mock()))
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(listOf(existingAbonnementLink))
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client, never()).updateAbonnement(any(), any(), any(), any<Abonnement>())
+        verify(notificatiesApiAbonnementLinkRepository).save(any())
+    }
+
+    @Test
+    fun `should update abonnement when kanalen have changed`() {
+        val listenerInstance: NotificatiesApiListener = mock()
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+
+        val configurationId = NotificatiesApiConfigurationId.existingId(
+            UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        )
+        val abonnementUrl = "http://localhost:9999/nothing/123"
+        val callbackUrl = "http://localhost:9999/callback"
+        val remoteKanalen = listOf(Abonnement.Kanaal(naam = "zaken"))
+        val desiredKanalen = listOf(
+            Abonnement.Kanaal(naam = "zaken"),
+            Abonnement.Kanaal(naam = "documenten")
+        )
+
+        val existingAbonnementLink = NotificatiesApiAbonnementLink(
+            configurationId, abonnementUrl, "test"
+        )
+        val existingAbonnement = Abonnement(abonnementUrl, callbackUrl, null, remoteKanalen)
+        val updatedAbonnement = Abonnement(abonnementUrl, callbackUrl, "12345", desiredKanalen)
+
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(existingAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createKanaal(any(), any(), any())).thenReturn(mock())
+        whenever(client.updateAbonnement(any(), any(), any(), any<Abonnement>())).thenReturn(updatedAbonnement)
+        whenever(notificatiesApiPlugin.url).thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId).thenReturn(configurationId)
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration).thenReturn(mock())
+        whenever(notificatiesApiPlugin.callbackUrl).thenReturn(URI(callbackUrl))
+        whenever(notificatiesApiPlugin.authHeader).thenReturn("12345")
+        whenever(listenerInstance.getNotificatiesApiPlugin()).thenReturn(notificatiesApiPlugin)
+        whenever(listenerInstance.getKanaalFilters()).thenReturn(desiredKanalen)
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(listenerInstance)
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf(mock()))
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(listOf(existingAbonnementLink))
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client).updateAbonnement(any(), any(), eq("123"), any<Abonnement>())
+        verify(notificatiesApiAbonnementLinkRepository).save(any())
+    }
+
+    @Test
+    fun `should update abonnement when callbackUrl has changed`() {
+        val listenerInstance: NotificatiesApiListener = mock()
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+
+        val configurationId = NotificatiesApiConfigurationId.existingId(
+            UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        )
+        val abonnementUrl = "http://localhost:9999/nothing/123"
+        val remoteCallbackUrl = "http://localhost:9999/old-callback"
+        val desiredCallbackUrl = "http://localhost:9999/new-callback"
+        val kanalen = listOf(Abonnement.Kanaal(naam = "zaken"))
+
+        val existingAbonnementLink = NotificatiesApiAbonnementLink(
+            configurationId, abonnementUrl, "test"
+        )
+        val existingAbonnement = Abonnement(abonnementUrl, remoteCallbackUrl, null, kanalen)
+        val updatedAbonnement = Abonnement(abonnementUrl, desiredCallbackUrl, "12345", kanalen)
+
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(existingAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createKanaal(any(), any(), any())).thenReturn(mock())
+        whenever(client.updateAbonnement(any(), any(), any(), any<Abonnement>())).thenReturn(updatedAbonnement)
+        whenever(notificatiesApiPlugin.url).thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId).thenReturn(configurationId)
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration).thenReturn(mock())
+        whenever(notificatiesApiPlugin.callbackUrl).thenReturn(URI(desiredCallbackUrl))
+        whenever(notificatiesApiPlugin.authHeader).thenReturn("12345")
+        whenever(listenerInstance.getNotificatiesApiPlugin()).thenReturn(notificatiesApiPlugin)
+        whenever(listenerInstance.getKanaalFilters()).thenReturn(kanalen)
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(listenerInstance)
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf(mock()))
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(listOf(existingAbonnementLink))
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client).updateAbonnement(any(), any(), eq("123"), any<Abonnement>())
+        verify(notificatiesApiAbonnementLinkRepository).save(any())
+    }
+
+    @Test
+    fun `should skip update when kanalen are same but in different order`() {
+        val listenerInstance: NotificatiesApiListener = mock()
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+
+        val configurationId = NotificatiesApiConfigurationId.existingId(
+            UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        )
+        val abonnementUrl = "http://localhost:9999/nothing/123"
+        val callbackUrl = "http://localhost:9999/callback"
+        val remoteKanalen = listOf(
+            Abonnement.Kanaal(naam = "documenten"),
+            Abonnement.Kanaal(naam = "zaken")
+        )
+        val desiredKanalen = listOf(
+            Abonnement.Kanaal(naam = "zaken"),
+            Abonnement.Kanaal(naam = "documenten")
+        )
+
+        val existingAbonnementLink = NotificatiesApiAbonnementLink(
+            configurationId, abonnementUrl, "test"
+        )
+        val existingAbonnement = Abonnement(abonnementUrl, callbackUrl, null, remoteKanalen)
+
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(existingAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createKanaal(any(), any(), any())).thenReturn(mock())
+        whenever(notificatiesApiPlugin.url).thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId).thenReturn(configurationId)
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration).thenReturn(mock())
+        whenever(notificatiesApiPlugin.callbackUrl).thenReturn(URI(callbackUrl))
+        whenever(notificatiesApiPlugin.authHeader).thenReturn("12345")
+        whenever(listenerInstance.getNotificatiesApiPlugin()).thenReturn(notificatiesApiPlugin)
+        whenever(listenerInstance.getKanaalFilters()).thenReturn(desiredKanalen)
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(listenerInstance)
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf(mock()))
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(listOf(existingAbonnementLink))
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client, never()).updateAbonnement(any(), any(), any(), any<Abonnement>())
+        verify(notificatiesApiAbonnementLinkRepository).save(any())
+    }
+
+    @Test
+    fun `should not register abonnementen when PluginsDeployedEvent fires before application is fully ready`() {
+        pluginsDeployedEventListener.handlePluginConfigurationChangedEvent()
+
+        verifyNoInteractions(client)
+        verifyNoInteractions(pluginService)
+        verifyNoInteractions(notificatiesApiAbonnementLinkRepository)
     }
 
 }

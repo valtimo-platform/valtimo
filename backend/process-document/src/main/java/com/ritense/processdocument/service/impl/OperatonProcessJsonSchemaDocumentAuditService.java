@@ -28,6 +28,8 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.event.JsonSchemaDocumentCreatedEvent;
 import com.ritense.document.domain.impl.event.JsonSchemaDocumentModifiedEvent;
 import com.ritense.document.event.DocumentAssigneeChangedEvent;
+import com.ritense.document.event.DocumentRetentionPeriodSetEvent;
+import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent;
 import com.ritense.document.event.DocumentUnassignedEvent;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.event.BesluitAddedEvent;
@@ -71,6 +73,8 @@ public class OperatonProcessJsonSchemaDocumentAuditService implements ProcessDoc
         final List<Class<? extends AuditEvent>> eventTypes = List.of(
             JsonSchemaDocumentCreatedEvent.class,
             JsonSchemaDocumentModifiedEvent.class,
+            DocumentRetentionPeriodSetEvent.class,
+            DocumentRetentionPeriodUnsetEvent.class,
             TaskAssignedEvent.class,
             TaskCompletedEvent.class,
             ProcessStartedEvent.class,
