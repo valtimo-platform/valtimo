@@ -18,6 +18,16 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  ::ng-deep &-retention-period__label .cds--text-input__field-wrapper {
+    flex-direction: column;
+    gap: 8px;
+
+    div {
+      display: flex;
+      align-items: center;
+    }
+  }
 }
 
 .edit-key-input {
