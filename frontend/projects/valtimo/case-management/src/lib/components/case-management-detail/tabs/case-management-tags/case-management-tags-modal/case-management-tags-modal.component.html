@@ -37,7 +37,7 @@
     <form [formGroup]="caseTagFormGroup" class="case-tag-form">
       <cds-label>
         {{ 'caseManagement.caseTags.columns.title' | translate }}
-        <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />
+        <input cdsText formControlName="title" data-test-id="caseTagTitleInput" [attr.modal-primary-focus]="true" />
       </cds-label>
 
       <cds-label>
@@ -46,6 +46,7 @@
           <input
             cdsText
             formControlName="key"
+            data-test-id="caseTagKeyInput"
             [readOnly]="!obs.editingKey"
             [placeholder]="
               obs.isAdd && !obs.editingKey
@@ -55,6 +56,7 @@
           />
           <cds-icon-button
             *ngIf="!obs.editingKey && obs.isAdd"
+            data-test-id="caseTagEditKeyButton"
             [disabled]="obs.disabled"
             (click)="editKeyButtonClick()"
             kind="secondary"
@@ -69,6 +71,7 @@
           {{ 'caseManagement.caseTags.columns.color' | translate }}
           <cds-dropdown
             id="status-color-dropdown"
+            data-test-id="caseTagColorDropdown"
             [appendInline]="false"
             [placeholder]="'caseManagement.caseTags.colorPlaceholder' | translate"
             (selected)="colorDropdownChange($event)"
@@ -84,13 +87,14 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="close()" [disabled]="obs.disabled">
+    <button cdsButton="secondary" data-test-id="caseTagCancelButton" (click)="close()" [disabled]="obs.disabled">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       *ngIf="obs.isAdd"
       cdsButton="primary"
+      data-test-id="caseTagAddConfirmButton"
       [disabled]="invalid || pristine || obs.disabled"
       (click)="addCaseTag()"
     >
@@ -100,6 +104,7 @@
     <button
       *ngIf="obs.isEdit"
       cdsButton="primary"
+      data-test-id="caseTagSaveButton"
       [disabled]="invalid || pristine || obs.disabled"
       (click)="editCaseTag()"
     >

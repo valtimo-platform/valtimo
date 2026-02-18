@@ -20,37 +20,28 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <!-- Add blueprint_type column and populate for existing CASE forms -->
     <changeSet id="1" author="Ritense">
-        <addColumn tableName="form_io_form_definition">
-            <column name="blueprint_type" type="VARCHAR(40)"/>
+        <addColumn tableName="internal_case_status">
+            <column name="internal_case_retention_period_in_days" type="${intType}" defaultValueNumeric="-1">
+                <constraints nullable="false"/>
+            </column>
         </addColumn>
-        <sql>
-            UPDATE form_io_form_definition
-            SET blueprint_type = 'CASE'
-            WHERE case_definition_key IS NOT NULL
-        </sql>
     </changeSet>
 
-    <!-- Rename case_definition columns to blueprint columns -->
     <changeSet id="2" author="Ritense">
-        <renameColumn tableName="form_io_form_definition"
-                      oldColumnName="case_definition_key"
-                      newColumnName="blueprint_key"
-                      columnDataType="VARCHAR(256)"/>
-        <renameColumn tableName="form_io_form_definition"
-                      oldColumnName="case_definition_version_tag"
-                      newColumnName="blueprint_version_tag"
-                      columnDataType="VARCHAR(200)"/>
+        <addColumn tableName="json_schema_document">
+            <column name="retention_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
     </changeSet>
 
-    <!-- Create index on blueprint columns -->
     <changeSet id="3" author="Ritense">
-        <createIndex tableName="form_io_form_definition" indexName="idx_form_def_blueprint">
-            <column name="blueprint_type"/>
-            <column name="blueprint_key"/>
-            <column name="blueprint_version_tag"/>
-        </createIndex>
+        <addColumn tableName="json_schema_document_snapshot">
+            <column name="document_retention_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

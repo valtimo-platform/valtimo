@@ -65,6 +65,7 @@
   <button
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
+    data-test-id="caseStatusAddButton"
     [disabled]="loading$ | async"
     (click)="openAddModal()"
   >
@@ -78,4 +79,14 @@
   <cds-tag class="cds-tag--no-margin" [type]="data?.item?.tagType">
     {{ 'interface.tagType.' + data?.item?.tagType | translate }}
   </cds-tag>
+</ng-template>
+
+<ng-template #retentionPeriodColumnTemplate let-data="data">
+  @if (data?.item?.retentionPeriodInDays === 0) {
+    {{ 'caseManagement.statuses.columns.deletedImmediately' | translate }}
+  } @else if (data?.item?.retentionPeriodInDays === -1 ) {
+    {{ '-' }}
+  } @else {
+    {{ data?.item?.retentionPeriodInDays }}
+  }
 </ng-template>

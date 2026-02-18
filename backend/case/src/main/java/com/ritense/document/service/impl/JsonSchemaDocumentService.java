@@ -18,6 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byDocumentDefinitionIdName;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.expiredDocuments;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGN;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
@@ -54,6 +55,10 @@ import com.ritense.document.event.DocumentAssigned;
 import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentCreated;
 import com.ritense.document.event.DocumentDeleted;
+import com.ritense.document.event.DocumentRetentionDateSet;
+import com.ritense.document.event.DocumentRetentionDateUnset;
+import com.ritense.document.event.DocumentRetentionPeriodSetEvent;
+import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent;
 import com.ritense.document.event.DocumentStatusChanged;
 import com.ritense.document.event.DocumentTagsChanged;
 import com.ritense.document.event.DocumentUnassigned;
@@ -799,6 +804,8 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
+        boolean retentionDateSet = document.retentionDate().isPresent();
+
         var internalCaseStatus = internalStatusKey != null ? internalCaseStatusService.get(
             document.definitionId().name(),
             internalStatusKey
@@ -806,6 +813,41 @@ public class JsonSchemaDocumentService implements DocumentService {
         document.setInternalStatus(internalCaseStatus);
 
         documentRepository.save(document);
+
+        if (retentionDateSet && document.retentionDate().isEmpty()) {
+            applicationEventPublisher.publishEvent(
+                new DocumentRetentionPeriodUnsetEvent(
+                    UUID.randomUUID(),
+                    RequestHelper.getOrigin(),
+                    LocalDateTime.now(),
+                    AuditHelper.getActor(),
+                    documentId.getId()
+                )
+            );
+            outboxService.send(() ->
+                new DocumentRetentionDateUnset(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        }
+        if (document.retentionDate().isPresent()) {
+            applicationEventPublisher.publishEvent(
+                new DocumentRetentionPeriodSetEvent(
+                    RequestHelper.getOrigin(),
+                    LocalDateTime.now(),
+                    AuditHelper.getActor(),
+                    documentId.getId(),
+                    document.retentionDate().get()
+                )
+            );
+            outboxService.send(() ->
+                new DocumentRetentionDateSet(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        }
 
         outboxService.send(() ->
             new DocumentStatusChanged(

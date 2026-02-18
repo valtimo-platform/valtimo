@@ -33,6 +33,7 @@ import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
 import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
+import com.ritense.valtimo.operaton.CallDepthExecutionListener;
 import com.ritense.valtimo.operaton.ProcessApplicationStartedEventListener;
 import com.ritense.valtimo.operaton.ProcessDefinitionPropertyListener;
 import com.ritense.valtimo.operaton.TaskCompletedListener;
@@ -126,6 +127,12 @@ public class ValtimoAutoConfiguration {
     @ConditionalOnMissingBean(TaskCompletedListener.class)
     public TaskCompletedListener taskCompletedListener(final ApplicationEventPublisher applicationEventPublisher) {
         return new TaskCompletedListener(applicationEventPublisher);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CallDepthExecutionListener.class)
+    public CallDepthExecutionListener callDepthExecutionListener(final ValtimoProperties valtimoProperties) {
+        return new CallDepthExecutionListener(valtimoProperties);
     }
 
     @Bean
