@@ -12,10 +12,4 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Enhancements
 
-* **New enhancement title**
-
-  New enhancement explanation.
-
 ## Bugfixes
-
-* New bugfix.
