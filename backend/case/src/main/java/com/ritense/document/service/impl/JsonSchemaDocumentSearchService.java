@@ -28,7 +28,7 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
@@ -138,7 +138,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         final SearchRequest searchRequest,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         final Pageable pageable
     ) {
         return withLoggingContext(
@@ -160,7 +160,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
@@ -169,7 +169,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     public Page<JsonSchemaDocument> searchForExport(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     ) {
@@ -179,7 +179,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable
     ) {
@@ -189,7 +189,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     @Override
     public Long count(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest
     ) {
 
@@ -208,7 +208,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -235,7 +235,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private Page<JsonSchemaDocument> search(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest,
         Pageable pageable,
         Action<JsonSchemaDocument> action
@@ -293,7 +293,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         SearchRequest searchRequest,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
         Root<JsonSchemaDocument> documentRoot
@@ -325,7 +325,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private void buildQueryWhere(
         String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest searchRequest,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,

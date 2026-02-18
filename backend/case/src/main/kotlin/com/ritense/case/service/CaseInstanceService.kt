@@ -29,7 +29,7 @@ import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -64,7 +64,7 @@ class CaseInstanceService(
         val newPageable = mutatePageable(caseListColumns, pageable)
 
         val searchResults = documentSearchService.search(caseDefinitionKey,
-            JsonSchemaDocumentDefinitionBlueprintType.CASE,searchRequest, newPageable)
+            BlueprintType.CASE, searchRequest, newPageable)
         val lazySupplierMap = searchResults
             .map { it.definitionId().caseDefinitionId() }
             .toSet()

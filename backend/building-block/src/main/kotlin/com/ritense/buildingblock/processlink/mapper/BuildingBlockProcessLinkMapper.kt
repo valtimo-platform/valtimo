@@ -83,7 +83,7 @@ class BuildingBlockProcessLinkMapper(
         }
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         deployDto as BuildingBlockProcessLinkDeployDto
         return BuildingBlockProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -99,7 +99,8 @@ class BuildingBlockProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as BuildingBlockProcessLinkDeployDto
         return BuildingBlockProcessLinkUpdateRequestDto(

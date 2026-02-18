@@ -17,7 +17,7 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver
@@ -29,7 +29,7 @@ class BuildingBlockCaseDocumentResolver(
 ) : BlueprintCaseDocumentResolver {
 
     override fun supports(blueprintType: String): Boolean {
-        return JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK.name == blueprintType
+        return BlueprintType.BUILDING_BLOCK.name == blueprintType
     }
 
     override fun resolveCaseDocumentId(documentId: UUID): UUID {
