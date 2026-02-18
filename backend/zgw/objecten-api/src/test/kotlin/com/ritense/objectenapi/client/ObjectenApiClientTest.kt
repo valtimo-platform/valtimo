@@ -84,6 +84,7 @@ internal class ObjectenApiClientTest {
         objectMapper = MapperSingleton.get()
         outboxService = mock()
         restClientBuilder = RestClient.builder()
+            .defaultHeader("Content-Type", "application/json")
         authorizationService = mock()
     }
 
@@ -847,7 +848,9 @@ internal class ObjectenApiClientTest {
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
         assertEquals("PATCH", recordedRequest.method)
         assertEquals(objectUrl, recordedRequest.requestUrl.toString())
-        JSONAssert.assertEquals(expectedRequest, recordedRequest.body.readUtf8(), false)
+
+        val requestJson = recordedRequest.body.readUtf8()
+        JSONAssert.assertEquals(expectedRequest, requestJson, false)
 
         assertEquals(URI("http://example.com"), result.url)
         assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
