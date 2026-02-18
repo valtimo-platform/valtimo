@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLConnection
+import org.springframework.http.ContentDisposition
 import java.util.UUID
 
 @RestController
@@ -100,8 +101,7 @@ class ZaakDocumentResource(
         val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId,caseDocumentId, documentId)
 
         val responseHeaders = HttpHeaders()
-        responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
-        val contentDisposition = org.springframework.http.ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
+        val contentDisposition = ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
         responseHeaders.contentDisposition = contentDisposition
 
         val documentMediaType = try {
