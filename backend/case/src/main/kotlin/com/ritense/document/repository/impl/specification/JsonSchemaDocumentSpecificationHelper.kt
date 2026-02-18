@@ -49,6 +49,23 @@ class JsonSchemaDocumentSpecificationHelper {
         }
 
         @JvmStatic
+        fun expiredDocuments(): Specification<JsonSchemaDocument> {
+            return Specification { root: Root<JsonSchemaDocument>,
+                                   _: CriteriaQuery<*>?,
+                                   criteriaBuilder: CriteriaBuilder ->
+
+                val retentionDateNotNullPredicate = criteriaBuilder.isNotNull(root.get<java.time.LocalDateTime>("retentionDate"),)
+
+                val retentionDateBeforeNowPredicate = criteriaBuilder.lessThan(
+                    root.get<java.time.LocalDateTime>("retentionDate"),
+                    java.time.LocalDateTime.now()
+                )
+
+                criteriaBuilder.and(retentionDateNotNullPredicate, retentionDateBeforeNowPredicate)
+            }
+        }
+
+        @JvmStatic
         fun byDocumentDefinitionIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
             val ownerId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
             return Specification { root: Root<JsonSchemaDocument>,
