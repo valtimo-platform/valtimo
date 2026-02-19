@@ -1,0 +1,96 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20250926-rename-to-case-definition-key.xml">
+
+    <changeSet id="1" author="Ritense">
+        <validCheckSum>9:1674218d038e85ab14a6617879d4902b</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE plugin_configuration
+            SET properties = (
+                SELECT jsonb_set(
+                               properties::jsonb,
+                               '{verzoekProperties}',
+                               jsonb_agg(
+                                       CASE
+                                           WHEN jsonb_exists(elem, 'caseDefinitionName') THEN
+                                               jsonb_set(
+                                                       elem - 'caseDefinitionName',
+                                                       '{caseDefinitionKey}',
+                                                       elem->'caseDefinitionName',
+                                                       true
+                                               )
+                                           ELSE
+                                               elem
+                                           END
+                               )
+                       )::json
+                FROM jsonb_array_elements((plugin_configuration.properties::jsonb)->'verzoekProperties') elem
+            )
+            WHERE (properties::jsonb)->'verzoekProperties' IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <validCheckSum>9:e086b386761efcf5b997b87606fb9ca8</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <sqlCheck expectedResult="1">
+                SELECT version() >= 8.0
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE plugin_configuration d
+                INNER JOIN (
+                SELECT c.plugin_configuration_id,
+                JSON_SET(
+                c.properties,
+                '$.verzoekProperties',
+                JSON_ARRAYAGG(
+                CASE
+                WHEN JSON_CONTAINS_PATH(vp.verzoek_property, 'one', '$.caseDefinitionName')
+                THEN JSON_REMOVE(
+                JSON_SET(
+                vp.verzoek_property,
+                '$.caseDefinitionKey',
+                JSON_UNQUOTE(JSON_EXTRACT(vp.verzoek_property, '$.caseDefinitionName'))
+                ),
+                '$.caseDefinitionName'
+                )
+                ELSE vp.verzoek_property
+                END
+                )
+                ) AS new_props
+                FROM plugin_configuration c,
+                JSON_TABLE(c.properties, '$.verzoekProperties[*]'
+                COLUMNS (
+                verzoek_property JSON PATH '$'
+                )
+                ) vp
+                GROUP BY c.plugin_configuration_id
+                ) b
+            ON d.plugin_configuration_id = b.plugin_configuration_id
+                SET d.properties = b.new_props;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

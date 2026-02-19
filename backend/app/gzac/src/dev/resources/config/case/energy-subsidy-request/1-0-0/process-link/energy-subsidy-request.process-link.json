@@ -59,6 +59,16 @@
                 "source": "zgwActionSummary",
                 "target": "doc:zgwActionSummary",
                 "syncTiming": "END"
+            },
+            {
+                "source": "reviewerRemarks",
+                "target": "doc:reviewerRemarks",
+                "syncTiming": "END"
+            },
+            {
+                "source": "approvalDecision",
+                "target": "doc:approvalDecision",
+                "syncTiming": "END"
             }
         ]
     }
