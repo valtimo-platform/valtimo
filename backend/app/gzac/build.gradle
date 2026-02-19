@@ -22,6 +22,8 @@ dependencies {
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
 
+    implementation("com.ritense.valtimoplugins:freemarker:8.2.0")
+
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
