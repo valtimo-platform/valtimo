@@ -40,10 +40,10 @@
       <h3 cdsModalHeaderHeading>
         {{
           'processLinkConfiguration.modalTitle'
-            | translate: {processStepName: obs.processStepName || '-'}
+                  | translate: {processStepName: obs.processStepName || '-'}
         }}
       </h3>
-      <h4 cdsModalHeaderLabel>
+      <h4 cdsModalHeaderLabel *ngIf="obs.typeOfSelectedProgressLink === 'plugin'">
         {{
           'processLinkConfiguration.pluginConfiguration'
                   | translate: {pluginConfigTitle: obs.selectedPluginConfiguration?.title || '-'}
