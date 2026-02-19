@@ -30,7 +30,6 @@ data class PluginProcessLinkResultDto(
     override val activityType: ActivityTypeWithEventName,
     override val processLinkType: String = PROCESS_LINK_TYPE_PLUGIN,
     val pluginConfigurationId: UUID? = null,
-    val pluginConfigurationTitle: String? = null,
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
     val pluginActionDefinitionKey: String,
