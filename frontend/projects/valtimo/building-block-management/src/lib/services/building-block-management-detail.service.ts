@@ -115,6 +115,11 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
     return this._reloadProcessDefinitions$.asObservable();
   }
 
+  private readonly _reloadFormDefinitions$ = new BehaviorSubject<null>(null);
+  public get reloadFormDefinitions$(): Observable<null> {
+    return this._reloadFormDefinitions$.asObservable();
+  }
+
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly pageTitleService: PageTitleService,
@@ -197,5 +202,9 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   public reloadProcessDefinitions(): void {
     this._reloadProcessDefinitions$.next(null);
+  }
+
+  public reloadFormDefinitions(): void {
+    this._reloadFormDefinitions$.next(null);
   }
 }

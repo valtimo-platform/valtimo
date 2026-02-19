@@ -18,8 +18,8 @@ package com.ritense.document.repository.impl.specification
 
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -53,7 +53,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
                 subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), blueprintPath.get<String>(BLUEPRINT_KEY)))
 
                 cb.and(
-                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
                     cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), subquery)
                 )
             }
@@ -72,7 +72,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
                                    cb: CriteriaBuilder ->
                 val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 cb.and(
-                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), blueprintId.blueprintType),
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), blueprintId.blueprintType),
                     cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
                     cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
                 )
@@ -88,7 +88,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
                                    cb: CriteriaBuilder ->
                 val blueprintPath = root.get<Any>(ID).get<Any>(BLUEPRINT_ID)
                 cb.and(
-                    cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
                     cb.equal(blueprintPath.get<String>(BLUEPRINT_KEY), blueprintId.blueprintKey()),
                     cb.equal(blueprintPath.get<String>(BLUEPRINT_VERSION_TAG), blueprintId.blueprintVersionTag())
                 )
@@ -110,7 +110,7 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
                 )
             )
             cb.and(
-                cb.equal(blueprintPath.get<JsonSchemaDocumentDefinitionBlueprintType>(BLUEPRINT_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                cb.equal(blueprintPath.get<BlueprintType>(BLUEPRINT_TYPE), BlueprintType.CASE),
                 cb.equal(subquery, 1L)
             )
         }

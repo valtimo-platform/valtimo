@@ -79,9 +79,10 @@ and outputs when you link them to a case.
 
 <figure><img src="./images/link-additional-process.png" alt=""><figcaption><p>Link to a different process in the building block</p></figcaption></figure>
 
-{% hint style="warning" %}
-User tasks are not yet supported in building blocks. This means form, form flow, and custom UI component process links
-cannot be used. Only plugin and building block process links are available.
+{% hint style="info" %}
+Building blocks support user tasks with form process links. Tasks from building blocks automatically appear in the case
+task list and support auto-assignment. To use forms in user tasks, first create them in the [Forms](forms.md) tab of the
+building block. Form flow and custom UI component process links are not yet supported.
 {% endhint %}
 
 ### 5. Finalize the version
