@@ -323,12 +323,20 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     const selectedId = (filterRow.get('fieldType')?.value as ListItem | null)?.id ?? null;
     const dataTypeId = (filterRow.get('dataType')?.value as ListItem | null)?.id ?? null;
     const isText = dataTypeId === 'text';
+    const isBoolean = dataTypeId === 'boolean';
 
-    const items = this.FIELD_TYPE_ITEMS.filter(
-      item => isText || (item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown')
-    );
+    const items = this.FIELD_TYPE_ITEMS.filter(item => {
+      if (isText) return true;
+      if (isBoolean) return item.id === 'single';
 
-    return items.map(item => ({...item, selected: item.id === selectedId}));
+      return item.id !== 'single-select-dropdown' &&
+        item.id !== 'multi-select-dropdown';
+    });
+
+    return items.map(item => ({
+      ...item,
+      selected: item.id === selectedId
+    }));
   }
 
   public getMatchTypeDropdownItems(filterRow: FormGroup): ListItem[] {

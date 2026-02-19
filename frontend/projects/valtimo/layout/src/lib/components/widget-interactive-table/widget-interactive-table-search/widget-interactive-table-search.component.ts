@@ -131,7 +131,6 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   public ngOnInit(): void {
     this.buildFiltersFormControls();
     this.setInitialForm();
-    this.loadDropdownItems();
 
     this._subscriptions.add(
       this.filtersFormGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
@@ -152,13 +151,6 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
   public onRangeChange(filterKey: string, value: any): void {
     this.filtersFormGroup.get(`${filterKey}_start`)?.setValue(value?.start ?? '');
     this.filtersFormGroup.get(`${filterKey}_end`)?.setValue(value?.end ?? '');
-  }
-
-  public getDropdownSelectItems(filter: WidgetFilter): Array<{id: string; text: string}> {
-    return Object.entries(filter.dropdownValues ?? {}).map(([key, text]) => ({
-      id: key,
-      text,
-    }));
   }
 
   private buildFiltersFormControls(): void {
@@ -306,26 +298,12 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     this.filters
       .filter(f => this.isDropdownField(f) && !!f.dropdownDataProvider && !!f.key)
       .forEach(filter => {
-        const provider = filter.dropdownDataProvider as string;
-        const dropdownKey = filter.key;
+        const dropdownEntries = Object.entries(filter.dropdownValues ?? {});
 
-        this._subscriptions.add(
-          this.widgetInteractiveTableService
-            .getDropdownValues(provider, dropdownKey)
-            .subscribe((values: WidgetDropdownValue | null) => {
-              const dropdownEntries = Object.entries(values ?? {});
-
-              if (!dropdownEntries.length) {
-                delete this.dropdownSelectItemsMap[filter.key];
-                return;
-              }
-
-              this.dropdownSelectItemsMap[filter.key] = dropdownEntries.map(([id, text]) => ({
-                id,
-                text,
-              }));
-            })
-        );
+        this.dropdownSelectItemsMap[filter.key] = dropdownEntries.map(([id, text]) => ({
+          id,
+          text,
+        }));
       });
   }
 }
