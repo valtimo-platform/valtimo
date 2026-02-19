@@ -4,6 +4,10 @@
 **Release date 25-02-2026**
 {% endhint %}
 
+## New Features
+
+## Enhancements
+
 ## Bugfixes
 
 * **Fix Formio Data Source URL**
