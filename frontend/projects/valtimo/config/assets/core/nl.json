@@ -1878,6 +1878,7 @@
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
     "modalTitle": "Processtap: {{processStepName}}",
+    "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
