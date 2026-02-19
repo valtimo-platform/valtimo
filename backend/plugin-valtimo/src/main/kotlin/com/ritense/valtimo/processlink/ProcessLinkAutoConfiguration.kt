@@ -74,10 +74,9 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(PluginProcessLinkMapper::class)
     fun pluginProcessLinkMapper(
-        objectMapper: ObjectMapper,
-        pluginService: PluginService?
+        objectMapper: ObjectMapper
     ): PluginProcessLinkMapper {
-        return PluginProcessLinkMapper(objectMapper, pluginService!!)
+        return PluginProcessLinkMapper(objectMapper)
     }
 
     @Bean
