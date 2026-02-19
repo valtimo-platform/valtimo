@@ -17,18 +17,15 @@
 package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
 import com.ritense.exporter.ExportFile
+import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
-import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.operaton.bpm.engine.RepositoryService
-import java.io.ByteArrayOutputStream
 
 class BuildingBlockProcessLinkExporter(
     private val processLinkService: ProcessLinkService,
@@ -59,10 +56,7 @@ class BuildingBlockProcessLinkExporter(
 
         val buildingBlocks = buildingBlockProcessLinkToBuildingBlockMapper.toBuildingBlockExportRequests(exportDtos)
 
-        val bytes = ByteArrayOutputStream().use {
-            objectMapper.writeValue(it, exportDtos)
-            it.toByteArray()
-        }
+        val bytes = objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportDtos)
 
         val formattedVersion = request.buildingBlockDefinitionId.versionTag.let {
             "${it.major}-${it.minor}-${it.patch}"

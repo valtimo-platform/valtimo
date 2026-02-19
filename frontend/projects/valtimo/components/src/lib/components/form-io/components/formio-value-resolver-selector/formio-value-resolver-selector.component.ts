@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,34 @@ import {ValuePathSelectorComponent} from '../../../value-path-selector/value-pat
 import {ValuePathSelectorPrefix} from '../../../../models';
 import {BehaviorSubject, map} from 'rxjs';
 import {formioParams} from '../form-io-builder/form-io-builder.utils';
+import {InputModule, LayerModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-formio-value-resolver-selector',
   templateUrl: './formio-value-resolver-selector.component.html',
   standalone: true,
-  imports: [CommonModule, ValuePathSelectorComponent],
+  imports: [CommonModule, ValuePathSelectorComponent, LayerModule, InputModule],
 })
 export class FormioValueResolverSelectorComponent implements FormioCustomComponent<string> {
   @Input() public readonly disabled: boolean;
+  @Input() public label = '';
+  @Input() public resolverType: 'source' | 'target' = 'source';
   @Output() public readonly valueChange = new EventEmitter<string>();
 
   public readonly defaultValue$ = new BehaviorSubject<string>('');
+  public readonly context$ = formioParams.pipe(map(params => params?.context));
   public readonly caseDefinitionKey$ = formioParams.pipe(map(params => params?.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = formioParams.pipe(
     map(params => params?.caseDefinitionVersionTag)
+  );
+  public readonly buildingBlockDefinitionKey$ = formioParams.pipe(
+    map(params => params?.buildingBlockDefinitionKey)
+  );
+  public readonly buildingBlockDefinitionVersionTag$ = formioParams.pipe(
+    map(params => params?.buildingBlockDefinitionVersionTag)
+  );
+  public readonly isIndependentContext$ = this.context$.pipe(
+    map(context => context !== 'case' && context !== 'buildingBlock')
   );
   private _value!: string;
   @Input() public set value(value: string) {
