@@ -96,7 +96,8 @@ class CaseTaskListSearchService(
     private val userManagementService: UserManagementService,
     private val authorizationService: AuthorizationService,
     private val searchFieldV2Service: SearchFieldV2Service,
-    private val queryDialectHelper: QueryDialectHelper
+    private val queryDialectHelper: QueryDialectHelper,
+    private val caseTaskContributors: List<CaseTaskContributor> = emptyList()
 ) {
     private val CONTENT = "content"
     private val INTERNAL_STATUS = "internalStatus"
@@ -220,15 +221,29 @@ class CaseTaskListSearchService(
         // TODO: look into options to improve performance as with complex rules this takes quite some time to finish
         val searchRequestPredicate: Array<Predicate> = constructSearchCriteriaFilter(advancedSearchRequest, cb, query, taskRoot, documentRoot)
 
+        val caseDefPredicate = cb.equal(
+            documentRoot.get<JsonSchemaDocumentDefinitionId>("documentDefinitionId").get<String>("name"),
+            caseDefinitionName
+        )
+
+        val directMatch = cb.equal(
+            taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey"),
+            queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id"))
+        )
+
+        val contributorPredicates = caseTaskContributors.mapNotNull { contributor ->
+            contributor.createTaskInclusionPredicate(cb, query, taskRoot, documentRoot, caseDefinitionName)
+        }
+
+        val taskMatchPredicate = if (contributorPredicates.isEmpty()) {
+            directMatch
+        } else {
+            cb.or(directMatch, *contributorPredicates.toTypedArray())
+        }
+
         val where = cb.and(
-            cb.equal(
-                documentRoot.get<JsonSchemaDocumentDefinitionId>("documentDefinitionId").get<String>("name"),
-                caseDefinitionName
-            ),
-            cb.equal(
-                taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey"),
-                queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id"))
-            ),
+            caseDefPredicate,
+            taskMatchPredicate,
             assignmentFilterPredicate,
             authorizationPredicate,
             *searchRequestPredicate

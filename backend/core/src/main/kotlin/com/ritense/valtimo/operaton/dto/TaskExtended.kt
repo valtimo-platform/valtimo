@@ -17,8 +17,8 @@
 
 package com.ritense.valtimo.operaton.dto
 
-import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
+import com.ritense.valtimo.operaton.domain.OperatonTask
 import java.time.LocalDateTime
 
 data class TaskExtended(
@@ -44,6 +44,7 @@ data class TaskExtended(
     val suspended: Boolean,
     val tenantId: String?,
     val businessKey: String?,
+    val caseDocumentId: String?,
     val processDefinitionKey: String?,
     val valtimoAssignee: ValtimoUser?,
     val context: Any?
@@ -56,6 +57,7 @@ data class TaskExtended(
             task: OperatonTask,
             executionId: String?,
             businessKey: String?,
+            caseDocumentId: String?,
             processDefinitionId: String?,
             processDefinitionKey: String?,
             valtimoAssignee: ValtimoUser?,
@@ -83,6 +85,7 @@ data class TaskExtended(
             task.isSuspended(),
             task.tenantId,
             businessKey,
+            caseDocumentId,
             processDefinitionKey,
             valtimoAssignee,
             context

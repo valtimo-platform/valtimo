@@ -33,6 +33,7 @@ import {
   TaskListOtherFilters,
   TaskListParams,
   TaskPageParams,
+  TaskUpdateSseEvent,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {
@@ -75,7 +76,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
 import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
-import {TaskUpdateSseEvent} from '../../models';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -346,13 +346,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
       const currentTask = cachedTasks && cachedTasks[index];
 
       if (currentTask && !currentTask.caseLocked) {
+        const caseDocId = currentTask.caseDocumentId || currentTask.businessKey;
         this.documentService
-          .getDocument(currentTask.businessKey)
+          .getDocument(caseDocId)
           .pipe(take(1))
           .subscribe(document => {
-            this.router.navigate([
-              `/cases/${document.definitionId?.name}/document/${currentTask.businessKey}`,
-            ]);
+            this.router.navigate([`/cases/${document.definitionId?.name}/document/${caseDocId}`]);
           });
       }
     });
@@ -475,7 +474,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
             taskResults.map(task =>
               this.permissionService.requestPermission(CAN_VIEW_CASE_PERMISSION, {
                 resource: TASK_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
-                identifier: task.businessKey,
+                identifier: (task as Task).caseDocumentId || task.businessKey,
               })
             )
           )
@@ -498,6 +497,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
             ({
               id: specifiedTask.id,
               businessKey: specifiedTask.businessKey,
+              caseDocumentId: specifiedTask.caseDocumentId,
               processInstanceId: specifiedTask.processInstanceId,
               name: specifiedTask.name,
               ...(moment(specifiedTask.created).isValid() && {

@@ -39,13 +39,13 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.outbox.OutboxService;
 import com.ritense.outbox.domain.BaseEvent;
-import com.ritense.valtimo.operaton.domain.OperatonTask;
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
+import com.ritense.valtimo.operaton.domain.OperatonTask;
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -55,6 +55,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.ProcessEngineException;
@@ -63,10 +67,6 @@ import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.springframework.context.ApplicationEventPublisher;
 
 class OperatonTaskServiceTest {
@@ -140,7 +140,8 @@ class OperatonTaskServiceTest {
                 entityManager,
                 authorizationService,
                 outboxService,
-                objectMapper
+                objectMapper,
+                List.of()
             )
         );
         when(authorizationService.getAuthorizationSpecification(any(), any()))
@@ -336,7 +337,9 @@ class OperatonTaskServiceTest {
             userManagementService,
             entityManager,
             authorizationService,
-            outboxService, objectMapper
+            outboxService,
+            objectMapper,
+            List.of()
         ));
 
         when(operatonTaskRepository.findById(any())).thenReturn(Optional.of(
