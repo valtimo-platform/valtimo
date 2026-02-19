@@ -75,7 +75,6 @@ export class WidgetLayoutService implements OnDestroy {
     ]).pipe(
       map(
         ([widgetDataLoaded, widgets, widgetsWithExternalData, widgetsWithExternalDataReady]) =>
-          (widgetDataLoaded?.length >= 1 || widgets.length === 0) &&
           widgetsWithExternalData.length === widgetsWithExternalDataReady.length
       ),
       filter(loaded => !!loaded)
