@@ -342,6 +342,7 @@
     "@valtimo/task": "file:dist/valtimo/task",
     "@valtimo/task-management": "file:dist/valtimo/task-management",
     "@valtimo/zgw": "file:dist/valtimo/zgw",
+    "@valtimo-plugins/freemarker": "8.2.0",
     "chokidar": "4.0.3",
     "chokidar-cli": "3.0.0",
     "cross-env": "7.0.3",
