@@ -47,5 +47,8 @@
 
 ## Bugfixes
 
+* Fixed an issue where the Notificaties API abonnementen (subscriptions) were not re-registered when plugin
+  configurations were updated.
+
 * Fixed an intermittent issue where the JSON editor would fail to display when editing document or form
   definitions.
