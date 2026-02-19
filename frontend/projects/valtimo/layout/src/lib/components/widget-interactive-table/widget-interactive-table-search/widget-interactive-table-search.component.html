@@ -62,15 +62,16 @@
         }
         @else if (filter.dataType === 'text' && filter.fieldType === 'single-select-dropdown') {
           <v-select
-            [items]="dropdownSelectItemsMap[filter.key] ?? getDropdownSelectItems(filter)"
+            [items]="dropdownSelectItemsMap[filter.key]"
             [formControl]="filtersFormGroup.get(filter.key)"
             [placeholder]="'searchFields.textPlaceholder' | translate"
             [appendInline]="true"
+            [defaultSelectionId]="'Sofia'"
           ></v-select>
         }
         @else if (filter.dataType === 'text' && filter.fieldType === 'multi-select-dropdown') {
           <v-select
-            [items]="dropdownSelectItemsMap[filter.key] ?? getDropdownSelectItems(filter)"
+            [items]="dropdownSelectItemsMap[filter.key]"
             [formControl]="filtersFormGroup.get(filter.key)"
             [multiple]="true"
             [placeholder]="'searchFields.textPlaceholder' | translate"
@@ -148,12 +149,13 @@
           ></valtimo-date-time-picker>
         }
         @else if (filter.dataType === 'date' && filter.fieldType === 'range') {
-          <v-form className="multiple-search-fields" (valueChange)="onRangeChange(filter.key, $event)">
+          <div class="multiple-search-fields">
             <valtimo-date-time-picker
-              name="start"
+              [defaultDate]="filtersFormGroup.get(filter.key + '_start')?.value ?? ''"
               [clear$]="clear$"
               [enableTime]="false"
               [showFieldLabel]="false"
+              (valueChange)="filtersFormGroup.get(filter.key + '_start')?.setValue($event)"
             ></valtimo-date-time-picker>
 
             <div class="to-text">
@@ -161,12 +163,13 @@
             </div>
 
             <valtimo-date-time-picker
-              name="end"
+              [defaultDate]="filtersFormGroup.get(filter.key + '_end')?.value ?? ''"
               [clear$]="clear$"
               [enableTime]="false"
               [showFieldLabel]="false"
+              (valueChange)="filtersFormGroup.get(filter.key + '_end')?.setValue($event)"
             ></valtimo-date-time-picker>
-          </v-form>
+          </div>
         }
         @else if (filter.dataType === 'datetime' && filter.fieldType === 'single') {
           <valtimo-date-time-picker
