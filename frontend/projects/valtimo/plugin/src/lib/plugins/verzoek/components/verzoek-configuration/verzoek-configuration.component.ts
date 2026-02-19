@@ -101,12 +101,13 @@ export class VerzoekConfigurationComponent
   readonly processSelectItems$: Observable<Array<SelectItem>> = this.processService
     .getProcessDefinitions()
     .pipe(
-      filter(processDefinitions => !!processDefinitions?.key),
       map(processDefinitions =>
-        processDefinitions.map(processDefinition => ({
-          id: processDefinition.key,
-          text: processDefinition.name ?? `<${processDefinition.key}>`,
-        }))
+        processDefinitions
+          .filter(processDefinitions => !!processDefinitions?.key)
+          .map(processDefinition => ({
+            id: processDefinition.key,
+            text: processDefinition.name ?? `<${processDefinition.key}>`,
+          }))
       )
     );
 
