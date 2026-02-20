@@ -89,6 +89,7 @@ class DocumentTableValueResolver(
                 "assigneeId" -> document.assigneeId()
                 "createdBy" -> document.createdBy()
                 "createdOn" -> document.createdOn()
+                "retentionDate" -> document.retentionDate().orElse(null)
                 "documentDefinitionId" -> document.definitionId()
                 "documentDefinitionId.name" -> document.definitionId().name()
                 "definitionId.key" -> document.definitionId().caseDefinitionId().key
@@ -126,6 +127,7 @@ class DocumentTableValueResolver(
             "assigneeId",
             "createdBy",
             "createdOn",
+            "retentionDate",
             "definitionId.name",
             "definitionId.version",
             "documentDefinitionId",

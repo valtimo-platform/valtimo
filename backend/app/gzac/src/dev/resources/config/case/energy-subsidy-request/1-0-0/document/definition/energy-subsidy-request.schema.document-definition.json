@@ -39,6 +39,14 @@
         "zgwActionSummary": {
             "type": "string",
             "description": "Samenvatting van alle ZGW plugin acties uitgevoerd in building blocks"
+        },
+        "reviewerRemarks": {
+            "type": "string",
+            "description": "Opmerkingen van de beoordelaar bij de subsidieberekening"
+        },
+        "approvalDecision": {
+            "type": "string",
+            "description": "Besluit van de beoordelaar (GOEDGEKEURD of AFGEKEURD)"
         }
     },
     "required": ["applicantName", "householdSize"]

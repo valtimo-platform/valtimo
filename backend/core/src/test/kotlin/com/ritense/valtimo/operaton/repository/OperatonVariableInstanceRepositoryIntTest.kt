@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.operaton.CallDepthExecutionListener.Companion.CALL_DEPTH_VARIABLE
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,17 +37,18 @@ class OperatonVariableInstanceRepositoryIntTest @Autowired constructor(
             mapOf("test" to true)
         )
 
-        val result = operatonVariableInstanceRepository.findOne { root, _, criteriaBuilder ->
+        val result = operatonVariableInstanceRepository.findAll { root, _, criteriaBuilder ->
             criteriaBuilder.equal(
                 root.get<String>("processInstance").get<Any>("id"),
                 instance.id
             )
         }
-        Assertions.assertThat(result.isPresent).isTrue()
-
-        val variableInstance = result.get()
-        Assertions.assertThat(variableInstance.processInstance!!.id).isEqualTo(instance.id)
-        Assertions.assertThat(variableInstance.name).isEqualTo("test")
-        Assertions.assertThat(variableInstance.longValue).isEqualTo(1L)
+        Assertions.assertThat(result.size).isEqualTo(2)
+        Assertions.assertThat(result[0].processInstance!!.id).isEqualTo(instance.id)
+        Assertions.assertThat(result[1].processInstance!!.id).isEqualTo(instance.id)
+        Assertions.assertThat(result[0].name).isEqualTo("test")
+        Assertions.assertThat(result[1].name).isEqualTo(CALL_DEPTH_VARIABLE)
+        Assertions.assertThat(result[0].longValue).isEqualTo(1L)
+        Assertions.assertThat(result[1].longValue).isEqualTo(0L)
     }
 }

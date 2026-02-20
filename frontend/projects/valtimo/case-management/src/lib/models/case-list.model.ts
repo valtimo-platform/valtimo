@@ -20,4 +20,5 @@ export class CaseListItem {
   caseDefinitionKey: string;
   caseDefinitionVersionTag: string;
   name: string;
+  final: boolean;
 }

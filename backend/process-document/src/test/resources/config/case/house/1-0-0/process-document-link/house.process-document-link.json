@@ -1,5 +1,10 @@
 [
     {
+        "processDefinitionKey" : "bb-parent-process",
+        "canInitializeDocument" : false,
+        "startableByUser" : false
+    },
+    {
         "processDefinitionKey" : "call-activity-subprocess-example",
         "canInitializeDocument" : false,
         "startableByUser" : false

@@ -65,6 +65,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._mutationObserver?.disconnect();
+    this.removeDocumentOverflowHidden();
   }
 
   private handleMutations(mutations: MutationRecord[]): void {

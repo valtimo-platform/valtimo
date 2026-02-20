@@ -46,6 +46,7 @@ import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.NamedUser
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -61,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 import java.util.function.Supplier
 
@@ -166,11 +168,57 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         verify(outboxService, atLeastOnce()).send(eventCapture.capture())
         val event = eventCapture.allValues.map { it.get() }
             .single { it is DocumentStatusChanged }
+        logger.info { "internalStatus: resultId: ${event.resultId}" }
+
         assertThat(event.resultId).isEqualTo(document.id!!.toString())
         assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+
         assertThat(event.result?.get("internalStatus")?.asText()).isEqualTo(newStatusKey)
     }
 
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should set retention date when setting document status with retention Period larger than 0`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        assertThat(document.internalStatus()).isNull()
+
+        val newStatusKey = "closed"
+        documentService.setInternalStatus(document.id, newStatusKey)
+
+        //Assert change
+        val modifiedDocument = documentService.findBy(document.id).get()
+        assertThat(modifiedDocument.internalStatus()).isEqualTo(newStatusKey)
+        assertThat(modifiedDocument.retentionDate()).isPresent
+        assertThat(modifiedDocument.retentionDate().get()).isAfter(LocalDateTime.now())
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should not set retention date when setting document status with retention Period -1`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        assertThat(document.internalStatus()).isNull()
+
+        val newStatusKey = "started"
+        documentService.setInternalStatus(document.id, newStatusKey)
+
+        //Assert change
+        val modifiedDocument = documentService.findBy(document.id).get()
+        assertThat(modifiedDocument.internalStatus()).isEqualTo(newStatusKey)
+        assertThat(modifiedDocument.retentionDate()).isEmpty()
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should not have retention date set when no internal status is set`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        assertThat(document.internalStatus()).isNull()
+
+        //Assert change
+        val modifiedDocument = documentService.findBy(document.id).get()
+        assertThat(modifiedDocument.internalStatus()).isNull()
+        assertThat(modifiedDocument.retentionDate()).isEmpty
+    }
     @Test
     @WithMockUser(username = USERNAME, authorities = [ADMIN])
     fun `should set document status to null and send outbox event`() {
@@ -525,6 +573,7 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
 
     companion object {
         private const val USER_ID = "a28994a3-31f9-4327-92a4-210c479d3055"
+        private val logger = KotlinLogging.logger {  }
         private const val USERNAME = "john@ritense.com"
     }
 }

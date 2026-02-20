@@ -66,6 +66,21 @@ const getBuildingBlockManagementRouteParams = (
 };
 
 function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | null> {
+  // Traverse the route hierarchy to find the context data
+  // The context is set on a parent route, so we need to look up the tree
+  let currentRoute: ActivatedRoute | null = route;
+  while (currentRoute) {
+    const context = currentRoute.snapshot?.data?.['context'] as ManagementContext | undefined;
+    if (context) {
+      return currentRoute.data.pipe(
+        map(data => (data && (data['context'] as ManagementContext)) || null),
+        distinctUntilChanged()
+      );
+    }
+    currentRoute = currentRoute.parent;
+  }
+
+  // Fallback to original behavior if no context found in hierarchy
   return route.data.pipe(
     map(data => (data && (data['context'] as ManagementContext)) || null),
     distinctUntilChanged()
