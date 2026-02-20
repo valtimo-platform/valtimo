@@ -34,8 +34,12 @@ data class ContainerParam(
             } else if (config.matchType == SearchFieldMatchType.LIKE) {
                 listOf(config.key + "~" to value.toString())
             } else if (config.fieldType == FieldType.RANGE) {
-                val parsedValue = if (value is String && value.contains("rangeFrom")) {
-                    MapperSingleton.get().readValue(value, Map::class.java)
+                val parsedValue = if (value is String) {
+                    try {
+                        MapperSingleton.get().readValue(value, Map::class.java)
+                    } catch (e: Exception) {
+                        value
+                    }
                 } else {
                     value
                 }
