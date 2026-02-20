@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-import {ManagementContext, ValtimoWindow} from '@valtimo/shared';
+import {ValtimoWindow} from '@valtimo/shared';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {FormioContextParams} from '../../../../models';
 
-interface FormioContextParams {
-  context: ManagementContext | null;
-  caseDefinitionKey: string | null;
-  caseDefinitionVersionTag: string | null;
-  buildingBlockDefinitionKey: string | null;
-  buildingBlockDefinitionVersionTag: string | null;
-}
-
-const formioParams$ = new BehaviorSubject<{
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-} | null>(null);
+const formioParams$ = new BehaviorSubject<FormioContextParams | null>(null);
 let formioParamsSubscription: Subscription | null = null;
 
 const modifyEditFormApiKeyInput = (editForm: any): void => {
@@ -42,14 +32,11 @@ const modifyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (
-  editForm: any,
-  params$: Observable<any>
-): void => {
+const addValueResolverSelectorToEditform = (editForm: any, params$: Observable<any>): void => {
   const valtimoWindow = window as ValtimoWindow;
   const valueResolverTabKey = 'valueResolver';
 
-  // Unsubscribe from previous subscription if it exists
+  // Unsubscribe from the previous subscription if it exists
   if (formioParamsSubscription) {
     formioParamsSubscription.unsubscribe();
   }
