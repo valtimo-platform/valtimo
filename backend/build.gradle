@@ -15,9 +15,9 @@
  */
 
 
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     id "idea"
@@ -30,6 +30,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.jpa" version "${kotlinVersion}"
     id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
     id "org.jetbrains.dokka" version "${dokkaPluginVersion}"
+    id "org.jetbrains.dokka-javadoc" version "${dokkaPluginVersion}"
     id "com.github.ben-manes.versions" version "${versionsPluginVersion}"
     id "org.sonarqube" version "${sonarqubePluginVersion}"
     id "checkstyle"
@@ -44,6 +45,10 @@ plugins {
 
 jacoco {
     toolVersion = "0.8.12"
+}
+
+checkstyle {
+    toolVersion = "12.3.1"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
@@ -104,6 +109,9 @@ allprojects {
                 dependency "io.netty:netty-codec:${nettyCodecVersionOverride}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+                dependency "commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}"
+                dependency "commons-fileupload:commons-fileupload:${commonsFileuploadVersion}"
+                dependency "org.assertj:assertj-core:${assertjCoreVersion}"
             }
         }
 
@@ -141,6 +149,7 @@ subprojects { subproject ->
         apply from: "$rootProject.projectDir/gradle/test.gradle"
         apply plugin: "com.avast.gradle.docker-compose"
         apply plugin: "org.jetbrains.dokka"
+        apply plugin: "org.jetbrains.dokka-javadoc"
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
 
@@ -162,7 +171,7 @@ subprojects { subproject ->
         ext.kotlinSubProjectPath = subproject.projectDir.getAbsolutePath() + "/src/main/kotlin"
         if (new File(ext.kotlinSubProjectPath).exists() && !new File(ext.javaSubProjectPath).exists()) {
             tasks.getByName('javadocJar') {
-                from dokkaJavadoc
+                from tasks.named('dokkaGeneratePublicationJavadoc').flatMap { it.outputDirectory }
             }
         }
 
@@ -182,6 +191,7 @@ subprojects { subproject ->
         }
 
         checkstyle {
+            toolVersion = "12.3.1"
             //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
             config project.resources.text.fromFile(rootProject.file("ritense_valtimo_only_checks.xml"))
             ignoreFailures = false

@@ -29,7 +29,6 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl
 import org.keycloak.OAuth2Constants.CLIENT_CREDENTIALS
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
-import org.keycloak.utils.EmailValidationUtil
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
@@ -54,7 +53,7 @@ class ChangeLog20240116MigrateTaskAssigneeEmailToUserId : CustomTaskChange, Envi
             val taskId = result.getString("id_")
             val taskAssigneeEmail = result.getString("assignee_")
             if (taskAssigneeEmail != null) {
-                if (!EmailValidationUtil.isValidEmail(taskAssigneeEmail)) {
+                if (!isValidEmail(taskAssigneeEmail)) {
                     logger.error { "Failed to migrate task assignee. Invalid email: '$taskAssigneeEmail' for task '$taskId'" }
                 } else {
                     try {
@@ -139,8 +138,14 @@ class ChangeLog20240116MigrateTaskAssigneeEmailToUserId : CustomTaskChange, Envi
         private const val KEYCLOAK_RESOURCE_PROPERTY = "keycloak.resource"
         private const val KEYCLOAK_SECRET_PROPERTY = "keycloak.credentials.secret"
 
+        private val EMAIL_PATTERN = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+
         private val logger = KotlinLogging.logger {}
 
         private lateinit var environment: Environment
+
+        private fun isValidEmail(email: String): Boolean {
+            return EMAIL_PATTERN.matches(email)
+        }
     }
 }

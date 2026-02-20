@@ -67,7 +67,6 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
 
     implementation "org.keycloak:keycloak-admin-client:${keycloakClientVersion}"
-    implementation "org.keycloak:keycloak-server-spi-private:${keycloakClientVersion}"
 
     testImplementation project(":core")
     testImplementation project(":test-utils-common")

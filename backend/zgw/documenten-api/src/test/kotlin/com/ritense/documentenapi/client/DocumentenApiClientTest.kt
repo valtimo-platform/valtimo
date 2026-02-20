@@ -600,6 +600,7 @@ DocumentenApiClientTest {
     @Test
     fun `should send patch document object request and send event`() {
         val restClientBuilder = RestClient.builder()
+            .defaultHeader("Content-Type", "application/json")
         val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
