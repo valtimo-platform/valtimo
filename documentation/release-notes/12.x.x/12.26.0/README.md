@@ -10,6 +10,12 @@
 
 </details>
 
+## Enhancements
+
+* **Dependency updates**
+
+  A number of dependencies have been updated to fix vulnerabilities.
+
 ## Bugfixes
 
 *
