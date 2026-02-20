@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ritense.authorization.permission.condition.AuthorizationFieldAlias;
 import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.domain.AbstractId;
@@ -86,7 +86,7 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
         return (JsonSchemaDocumentDefinitionId) documentDefinitionId;
     }
 
-    public JsonSchemaDocumentDefinitionBlueprintType ownerType() {
+    public BlueprintType ownerType() {
         return blueprintId.blueprintType();
     }
 

@@ -17,7 +17,6 @@ import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {
-  BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
   filter,
@@ -62,27 +61,19 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
 
   private readonly _fetchData$ = new Subject<null>();
 
-  private readonly _highContrast$ = new BehaviorSubject<boolean>(false);
-
   public readonly headerWidget$ = this._documentId$.pipe(
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId)),
     tap(widget => {
       if (!!widget) {
         this._fetchData$.next(null);
-        this._highContrast$.next(widget.highContrast);
       }
     })
   );
 
-  public readonly theme$ = combineLatest([
-    this.cdsThemeService.currentTheme$,
-    this._highContrast$,
-  ]).pipe(
-    map(([theme, highContrast]) => {
+  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
+    map(theme => {
       const isLight = theme === CurrentCarbonTheme.WHITE || theme === CurrentCarbonTheme.G10;
-      const normalTheme = isLight ? CARBON_THEME.G10 : CARBON_THEME.G90;
-      const invertedTheme = normalTheme === CARBON_THEME.G10 ? CARBON_THEME.G90 : CARBON_THEME.G10;
-      return highContrast ? invertedTheme : normalTheme;
+      return isLight ? CARBON_THEME.G10 : CARBON_THEME.G90;
     })
   );
 

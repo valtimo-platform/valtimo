@@ -67,6 +67,7 @@
   <button
     *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
+    data-test-id="caseTagAddButton"
     [disabled]="loading$ | async"
     (click)="openAddModal()"
   >

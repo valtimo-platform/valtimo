@@ -16,17 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  filter,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, filter, Observable} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
@@ -34,14 +24,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {ButtonModule} from 'carbon-components-angular';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {WidgetsService} from '../../widgets.service';
-import {
-  CustomWidget,
-  WidgetAction,
-  WidgetCustomComponent,
-  WidgetLayoutService,
-} from '@valtimo/layout';
-import {HttpErrorResponse} from '@angular/common/http';
-import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
+import {CustomWidget, WidgetAction, WidgetCustomComponent} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-case-widget-custom',
@@ -51,11 +34,8 @@ import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseWidgetCustomComponent extends WidgetProcess {
-  private readonly _documentId$ = new BehaviorSubject<string>('');
-
   @Input({required: true}) public set documentId(value: string) {
     this.baseDocumentId = value;
-    this._documentId$.next(value);
   }
   @Input() public set widgetConfiguration(value: CustomWidget) {
     if (!value) return;
@@ -65,39 +45,15 @@ export class CaseWidgetCustomComponent extends WidgetProcess {
   @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigSubject$ = new BehaviorSubject<CustomWidget | null>(null);
-  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   public get widgetConfig$(): Observable<CustomWidget> {
     return this._widgetConfigSubject$.pipe(filter(config => config !== null));
   }
 
-  public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
-    this.widgetConfig$,
-    this._tabKey$,
-    this._documentId$,
-    this._refresh$,
-  ]).pipe(
-    switchMap(([widget, tabKey, documentId]) =>
-      this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget.key, undefined)
-    ),
-    tap(() => {
-      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
-    }),
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
-
-      return of(null);
-    })
-  );
-
   constructor(
     private readonly widgetsService: WidgetsService,
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
-    private readonly caseTabService: CaseTabService,
-    private readonly caseWidgetApiService: CaseWidgetsApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    protected readonly permissionService: PermissionService
   ) {
     super(documentService, permissionService);
   }

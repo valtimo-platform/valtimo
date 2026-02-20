@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ export const environment: ValtimoConfig = {
         ],
       },
       {
-        roles: [ROLE_DEVELOPER],
+        roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
         iconClass: 'icon mdi mdi-xml',
         sequence: 6,

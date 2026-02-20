@@ -20,7 +20,7 @@ import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -49,6 +49,23 @@ class JsonSchemaDocumentSpecificationHelper {
         }
 
         @JvmStatic
+        fun expiredDocuments(): Specification<JsonSchemaDocument> {
+            return Specification { root: Root<JsonSchemaDocument>,
+                                   _: CriteriaQuery<*>?,
+                                   criteriaBuilder: CriteriaBuilder ->
+
+                val retentionDateNotNullPredicate = criteriaBuilder.isNotNull(root.get<java.time.LocalDateTime>("retentionDate"),)
+
+                val retentionDateBeforeNowPredicate = criteriaBuilder.lessThan(
+                    root.get<java.time.LocalDateTime>("retentionDate"),
+                    java.time.LocalDateTime.now()
+                )
+
+                criteriaBuilder.and(retentionDateNotNullPredicate, retentionDateBeforeNowPredicate)
+            }
+        }
+
+        @JvmStatic
         fun byDocumentDefinitionIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocument> {
             val ownerId = JsonSchemaDocumentDefinitionBlueprintId.forCase(caseDefinitionId)
             return Specification { root: Root<JsonSchemaDocument>,
@@ -56,7 +73,7 @@ class JsonSchemaDocumentSpecificationHelper {
                                    cb: CriteriaBuilder ->
                 val ownerPath = root.get<Any>(DOCUMENT_DEFINITION_ID).get<Any>(OWNER_ID)
                 cb.and(
-                    cb.equal(ownerPath.get<JsonSchemaDocumentDefinitionBlueprintType>(OWNER_TYPE), JsonSchemaDocumentDefinitionBlueprintType.CASE),
+                    cb.equal(ownerPath.get<BlueprintType>(OWNER_TYPE), BlueprintType.CASE),
                     cb.equal(ownerPath.get<String>(OWNER_KEY), ownerId.blueprintKey()),
                     cb.equal(ownerPath.get<String>(OWNER_VERSION_TAG), ownerId.blueprintVersionTag())
                 )
