@@ -18,13 +18,8 @@ import {CommonModule} from '@angular/common';
 import {AfterViewInit, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  DatePickerModule,
-  InputModule,
-  LayerModule,
-  TimePickerModule,
-} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {DatePickerModule, InputModule, LayerModule, TimePickerModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {InputLabelModule} from '../input-label/input-label.module';
 
 @Component({
@@ -72,9 +67,10 @@ export class DateTimePickerComponent implements AfterViewInit {
   @Input() labelText = '';
 
   @Input() set defaultDate(value: string | null) {
-    if (value) {
-      this.dateValue$.next(value);
-    }
+    const dateTimeValue = value ?? '';
+    const {date, time} = this.splitDateTime(dateTimeValue);
+    this.dateValue$.next(date);
+    this.timeValue$.next(time);
   }
 
   @Input() defaultDateIsToday = false;
@@ -83,7 +79,7 @@ export class DateTimePickerComponent implements AfterViewInit {
   @Output() valueChange = new EventEmitter<string>();
 
   public readonly dateValue$ = new BehaviorSubject<string>('');
-  private timeValueInternal = '';
+  public readonly timeValue$ = new BehaviorSubject<string>('');
 
   private readonly subscriptions = new Subscription();
 
@@ -96,14 +92,21 @@ export class DateTimePickerComponent implements AfterViewInit {
       this.subscriptions.add(
         this.clear$.subscribe(() => {
           this.dateValue$.next('');
-          this.timeValueInternal = '';
+          this.timeValue$.next('');
           this.valueChange.emit('');
         })
       );
     }
 
     this.subscriptions.add(
-      this.dateValue$.subscribe(date => this.emitValue(date, this.timeValueInternal))
+      combineLatest([this.dateValue$, this.timeValue$]).subscribe(([date, time]) => {
+        if (!date) {
+          this.valueChange.emit('');
+          return;
+        }
+        const fullValue = this.enableTime && time ? `${date} ${time}` : date;
+        this.valueChange.emit(fullValue);
+      })
     );
   }
 
@@ -112,23 +115,28 @@ export class DateTimePickerComponent implements AfterViewInit {
     this.dateValue$.next(this.normalizeDate(formatted));
   }
 
-  public onTimeSelected(value: string): void {
-    this.timeValueInternal = value;
-    this.emitValue(this.dateValue$.getValue(), value);
+  public onTimeSelected(value: any): void {
+    this.timeValue$.next(this.normalizeTime(value));
   }
 
-  public get timeValue(): string {
-    return this.timeValueInternal;
-  }
-
-  private emitValue(date: string, time: string): void {
-    if (!date) {
-      this.valueChange.emit('');
-      return;
+  private normalizeTime(value: any): string {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object') {
+      if (typeof value.value === 'string') return value.value;
+      if (typeof value.target?.value === 'string') return value.target.value;
     }
+    return '';
+  }
 
-    const fullValue = this.enableTime && time ? `${date} ${time}` : date;
-    this.valueChange.emit(fullValue);
+  private splitDateTime(value: string): {date: string; time: string} {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return {date: '', time: ''};
+
+    const parts = trimmed.split(' ');
+    if (parts.length >= 2) {
+      return {date: parts[0] ?? '', time: parts.slice(1).join(' ') ?? ''};
+    }
+    return {date: trimmed, time: ''};
   }
 
   private normalizeDate(date: unknown): string {
