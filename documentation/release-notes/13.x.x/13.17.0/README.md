@@ -9,3 +9,7 @@
 ## Enhancements
 
 ## Bugfixes
+
+* **Fix Formio Data Source URL**
+
+  The Formio Data Source URL now no longer contains an additional `/api`. 
