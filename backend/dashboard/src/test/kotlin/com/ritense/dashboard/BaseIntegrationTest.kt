@@ -17,6 +17,7 @@
 package com.ritense.dashboard
 
 import com.ritense.dashboard.deployment.DashboardDeployer
+import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
@@ -29,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
-@ExtendWith(SpringExtension::class)
+@ExtendWith(SpringExtension::class, LiquibaseRunnerExtension::class)
 @Import(TestAutoConfiguration::class)
 @Tag("integration")
 abstract class BaseIntegrationTest {

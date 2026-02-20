@@ -325,3 +325,10 @@ Access to the case definitions can be configured through access control. More in
 {% endcode %}
 
 </details>
+
+### Retention date
+The _retention period_ is an internal status property that, when set, calculates the expiration date for the case. When that date is reached, the case and all associated processes (including process history) will be deleted. If present, the case is also removed from connected ZGW platforms (for example, case details, objects, and uploaded documents).
+See [Internal status](case-detail/statuses.md) for the configuration of the retention date.
+{% hint style="info" %}
+_**Note:** when the case internal status is set where the retention period is set to -1, the retention date of the case will not be calculated or cleared when set.
+{% endhint %}

@@ -17,7 +17,7 @@
 package com.ritense.document.service;
 
 import com.ritense.document.domain.Document;
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.service.impl.SearchRequest;
@@ -29,14 +29,14 @@ public interface DocumentSearchService {
     @SuppressWarnings({"squid:S1452", "java:S1452"})
     Page<? extends Document> search(
         SearchRequest searchRequest,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         Pageable pageable
     );
 
     @SuppressWarnings({"squid:S1452", "java:S1452"})
     Page<? extends Document> search(
         String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         SearchWithConfigRequest searchWithConfigRequest,
         Pageable pageable
     );
@@ -44,14 +44,14 @@ public interface DocumentSearchService {
     @SuppressWarnings({"squid:S1452", "java:S1452"})
     Page<? extends Document> search(
         String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest searchRequest,
         Pageable pageable
     );
 
     Long count(
         String documentDefinitionName,
-        JsonSchemaDocumentDefinitionBlueprintType blueprintType,
+        BlueprintType blueprintType,
         AdvancedSearchRequest advancedSearchRequest
     );
 

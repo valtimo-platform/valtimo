@@ -20,10 +20,7 @@ import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} fr
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective, WidgetModule} from '@valtimo/components';
-import {
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-} from '@valtimo/shared';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -35,7 +32,7 @@ import {switchMap, tap} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 import {CreateFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {getContextObservable, getFormManagementRouteParamsAndContext} from '../../utils';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 
 @Component({
@@ -85,17 +82,13 @@ export class FormManagementCreateComponent implements OnInit {
   }
 
   private initForm(): void {
-    getCaseManagementRouteParamsAndContext(this.route)
+    getFormManagementRouteParamsAndContext(this.route)
       .pipe(
         take(1),
-        tap(([context, caseManagementParams]) => {
+        tap(([context, params]) => {
           this.form = this.formBuilder.group({
             name: new FormControl('', Validators.required, [
-              noDuplicateFormValidator(
-                context,
-                caseManagementParams as any,
-                this.formManagementService
-              ),
+              noDuplicateFormValidator(context, params, this.formManagementService),
             ]),
           });
         })
@@ -126,18 +119,27 @@ export class FormManagementCreateComponent implements OnInit {
       formDefinition: JSON.stringify(emptyForm),
     };
 
-    getCaseManagementRouteParamsAndContext(this.route)
+    getFormManagementRouteParamsAndContext(this.route)
       .pipe(
         take(1),
-        switchMap(([context, caseManagementParams]) =>
-          context === 'case'
-            ? this.formManagementService.createFormDefinitionsCase(
-                caseManagementParams.caseDefinitionKey,
-                caseManagementParams.caseDefinitionVersionTag,
+        switchMap(([context, params]) => {
+          switch (context) {
+            case 'case':
+              return this.formManagementService.createFormDefinitionsCase(
+                params.caseDefinitionKey!,
+                params.caseDefinitionVersionTag!,
                 request
-              )
-            : this.formManagementService.createFormDefinition(request)
-        ),
+              );
+            case 'buildingBlock':
+              return this.formManagementService.createFormDefinitionsBuildingBlock(
+                params.buildingBlockDefinitionKey!,
+                params.buildingBlockDefinitionVersionTag!,
+                request
+              );
+            default:
+              return this.formManagementService.createFormDefinition(request);
+          }
+        }),
         tap(formDefinition => {
           if (this.upload) {
             this.afterUploadEvent.emit(formDefinition.id);
@@ -147,5 +149,18 @@ export class FormManagementCreateComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  public onSubmit(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.form.markAllAsTouched();
+
+    if (this.form.invalid) {
+      return;
+    }
+
+    this.createFormDefinition();
   }
 }

@@ -165,6 +165,7 @@ class CollectionWidgetIntTest @Autowired constructor(
                         key = widgetKey,
                         title = "My widget",
                         icon = "mdi-home",
+                        color = null,
                         width = 1,
                         highContrast = false,
                         isCompact = false,

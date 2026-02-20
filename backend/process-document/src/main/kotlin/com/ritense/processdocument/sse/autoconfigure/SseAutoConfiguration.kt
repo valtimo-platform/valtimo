@@ -16,8 +16,10 @@
 
 package com.ritense.processdocument.sse.autoconfigure
 
+import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.sse.domain.listener.TaskUpdateListener
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -31,9 +33,13 @@ class SseAutoConfiguration {
     fun taskUpdateListener(
         sseSubscriptionService: SseSubscriptionService,
         processDocumentService: ProcessDocumentService,
+        caseDocumentResolver: CaseDocumentResolver,
+        documentService: DocumentService,
     ) = TaskUpdateListener(
         sseSubscriptionService,
         processDocumentService,
+        caseDocumentResolver,
+        documentService,
     )
 
 }

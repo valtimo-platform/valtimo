@@ -64,6 +64,7 @@ import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informat
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
+import {DeleteZaakResultatenConfigurationComponent} from './components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
 
 @NgModule({
   declarations: [
@@ -92,6 +93,7 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
   imports: [
     CommonModule,
@@ -143,6 +145,7 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
 })
 export class ZakenApiPluginModule {}

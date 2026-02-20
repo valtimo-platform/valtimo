@@ -63,7 +63,6 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.ObjectProvider
@@ -276,13 +275,6 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseHttpSecurityConfigurer::class)
     fun caseHttpSecurityConfigurer(): CaseHttpSecurityConfigurer {
         return CaseHttpSecurityConfigurer()
-    }
-
-    @Order(HIGHEST_PRECEDENCE + 20)
-    @ConditionalOnMissingBean(name = ["caseLiquibaseMasterChangeLogLocation"])
-    @Bean
-    fun caseLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/case-master.xml")
     }
 
     @Bean

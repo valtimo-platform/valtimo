@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
-import {WidgetDensity, WidgetStyle} from '../../../../../models';
+import {WidgetDensity} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
