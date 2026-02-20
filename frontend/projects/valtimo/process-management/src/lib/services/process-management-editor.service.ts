@@ -230,7 +230,14 @@ export class ProcessManagementEditorService implements OnDestroy {
     this._subscriptions.add(
       this._managementRouteParams$
         .pipe(
-          filter((params): params is [ManagementContext, CaseManagementParams] => params !== null)
+          filter(
+            (
+              params
+            ): params is [
+              ManagementContext,
+              CaseManagementParams | BuildingBlockManagementParams,
+            ] => params !== null
+          )
         )
         .subscribe(([context, params]) => {
           switch (context) {
@@ -240,17 +247,24 @@ export class ProcessManagementEditorService implements OnDestroy {
                 .subscribe(options => this._formDefinitionOptions$.next(options));
               break;
             case 'case':
+              const caseParams = params as CaseManagementParams;
               this.formService
                 .getAllFormDefinitionsForCaseDefinition(
-                  params.caseDefinitionKey,
-                  params.caseDefinitionVersionTag
+                  caseParams.caseDefinitionKey,
+                  caseParams.caseDefinitionVersionTag
                 )
                 .subscribe(options => this._formDefinitionOptions$.next(options));
               break;
-            case 'buildingBlock':
-              // to do
-              this._formDefinitionOptions$.next([]);
+            case 'buildingBlock': {
+              const buildingBlockParams = params as BuildingBlockManagementParams;
+              this.formService
+                .getAllFormDefinitionsForBuildingBlock(
+                  buildingBlockParams.buildingBlockDefinitionKey,
+                  buildingBlockParams.buildingBlockDefinitionVersionTag
+                )
+                .subscribe(options => this._formDefinitionOptions$.next(options));
               break;
+            }
           }
         })
     );

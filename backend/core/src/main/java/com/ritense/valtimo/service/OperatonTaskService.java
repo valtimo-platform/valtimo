@@ -53,13 +53,6 @@ import com.ritense.authorization.role.Role;
 import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.operaton.domain.OperatonIdentityLink;
-import com.ritense.valtimo.operaton.domain.OperatonTask;
-import com.ritense.valtimo.operaton.dto.OperatonIdentityLinkDto;
-import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
-import com.ritense.valtimo.operaton.dto.TaskExtended;
-import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -74,6 +67,13 @@ import com.ritense.valtimo.event.TaskCompleted;
 import com.ritense.valtimo.event.TaskDueDateSet;
 import com.ritense.valtimo.event.TaskUnassigned;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
+import com.ritense.valtimo.operaton.domain.OperatonIdentityLink;
+import com.ritense.valtimo.operaton.domain.OperatonTask;
+import com.ritense.valtimo.operaton.dto.OperatonIdentityLinkDto;
+import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
+import com.ritense.valtimo.operaton.dto.TaskExtended;
+import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.repository.operaton.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.util.FormUtils;
@@ -81,6 +81,7 @@ import com.ritense.valtimo.web.rest.dto.TaskCompletionDTO;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
@@ -91,11 +92,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.hibernate.Hibernate;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.ProcessEngineException;
@@ -104,7 +107,6 @@ import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.form.TaskFormData;
 import org.operaton.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.operaton.bpm.engine.task.Comment;
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -136,6 +138,7 @@ public class OperatonTaskService {
     private final AuthorizationService authorizationService;
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
+    private final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers;
 
     public OperatonTaskService(
         TaskService taskService,
@@ -149,7 +152,9 @@ public class OperatonTaskService {
         UserManagementService userManagementService,
         EntityManager entityManager,
         AuthorizationService authorizationService,
-        OutboxService outboxService, ObjectMapper objectMapper
+        OutboxService outboxService,
+        ObjectMapper objectMapper,
+        List<TaskBusinessKeyResolver> taskBusinessKeyResolvers
     ) {
         this.taskService = taskService;
         this.formService = formService;
@@ -164,6 +169,7 @@ public class OperatonTaskService {
         this.authorizationService = authorizationService;
         this.outboxService = outboxService;
         this.objectMapper = objectMapper;
+        this.taskBusinessKeyResolvers = taskBusinessKeyResolvers;
     }
 
     @Transactional(readOnly = true)
@@ -412,14 +418,33 @@ public class OperatonTaskService {
         var query = cb.createTupleQuery();
         var taskRoot = query.from(OperatonTask.class);
         var executionIdPath = taskRoot.get(EXECUTION).get(ID);
-        var businessKeyPath = taskRoot.get(PROCESS_INSTANCE).get(BUSINESS_KEY);
+        Path<String> businessKeyPath = taskRoot.get(PROCESS_INSTANCE).get(BUSINESS_KEY);
         var processDefinitionIdPath = taskRoot.get(PROCESS_DEFINITION).get(ID);
         var processDefinitionKeyPath = taskRoot.get(PROCESS_DEFINITION).get(KEY);
+
+        // Resolve the case document ID: for regular tasks this equals the business key,
+        // for building block tasks a resolver subquery looks up the parent case document ID.
+        Expression<String> caseDocumentIdExpression = businessKeyPath;
+
+        var resolverExpressions = taskBusinessKeyResolvers.stream()
+            .map(r -> r.resolveBusinessKeyExpression(cb, query, businessKeyPath))
+            .filter(Objects::nonNull)
+            .toList();
+
+        if (!resolverExpressions.isEmpty()) {
+            CriteriaBuilder.Coalesce<String> coalesce = cb.coalesce();
+            for (var expr : resolverExpressions) {
+                coalesce.value(expr);
+            }
+            coalesce.value(businessKeyPath);
+            caseDocumentIdExpression = coalesce;
+        }
 
         query.multiselect(
             taskRoot,
             executionIdPath,
             businessKeyPath,
+            caseDocumentIdExpression,
             processDefinitionIdPath,
             processDefinitionKeyPath
         );
@@ -440,8 +465,9 @@ public class OperatonTaskService {
                 var task = tuple.get(0, OperatonTask.class);
                 var executionId = tuple.get(1, String.class);
                 var businessKey = tuple.get(2, String.class);
-                var processDefinitionId = tuple.get(3, String.class);
-                var processDefinitionKey = tuple.get(4, String.class);
+                var caseDocumentId = tuple.get(3, String.class);
+                var processDefinitionId = tuple.get(4, String.class);
+                var processDefinitionKey = tuple.get(5, String.class);
 
                 ValtimoUser valtimoUser = null;
                 if (task.getAssignee() != null) {
@@ -466,6 +492,7 @@ public class OperatonTaskService {
                     task,
                     executionId,
                     businessKey,
+                    caseDocumentId,
                     processDefinitionId,
                     processDefinitionKey,
                     valtimoUser,

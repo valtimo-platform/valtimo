@@ -16,7 +16,7 @@
 
 package com.ritense.document.service
 
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.valtimo.contract.annotation.AllOpen
@@ -39,7 +39,7 @@ class DefaultCaseDocumentResolver(
 
         val blueprintType = document.definitionId().blueprintId().blueprintType
 
-        if (blueprintType == JsonSchemaDocumentDefinitionBlueprintType.CASE) {
+        if (blueprintType == BlueprintType.CASE) {
             return document.id().id
         }
 

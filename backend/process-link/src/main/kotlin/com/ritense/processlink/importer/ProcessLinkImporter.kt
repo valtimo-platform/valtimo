@@ -76,12 +76,12 @@ open class ProcessLinkImporter(
                 val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
 
                 val mapper = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
-                val createDto = mapper.toProcessLinkCreateRequestDto(deployDto)
+                val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, request.caseDefinitionId)
 
                 try {
                     processLinkService.createProcessLink(createDto, request.caseDefinitionId)
                 } catch (e: ProcessLinkExistsException) {
-                    val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId)
+                    val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId, request.caseDefinitionId)
                     processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
                 }
             }

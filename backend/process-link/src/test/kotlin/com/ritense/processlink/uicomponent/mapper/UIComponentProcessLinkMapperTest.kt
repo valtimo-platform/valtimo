@@ -38,7 +38,7 @@ class UIComponentProcessLinkMapperTest {
     @Test
     fun `should map to ProcessLinkCreateRequestDto`() {
         val deployDto = createDeployDto()
-        val dto = mapper.toProcessLinkCreateRequestDto(deployDto) as? UIComponentProcessLinkCreateRequestDto
+        val dto = mapper.toProcessLinkCreateRequestDto(deployDto, null) as? UIComponentProcessLinkCreateRequestDto
 
         assertThat(dto).isNotNull
         assertThat(dto!!.processLinkType).isEqualTo(TYPE_UI_COMPONENT)
@@ -111,7 +111,7 @@ class UIComponentProcessLinkMapperTest {
         val existingId = UUID.randomUUID()
         val deployDto = createDeployDto()
 
-        val dto = mapper.toProcessLinkUpdateRequestDto(deployDto, existingId) as? UIComponentProcessLinkUpdateRequestDto
+        val dto = mapper.toProcessLinkUpdateRequestDto(deployDto, existingId, null) as? UIComponentProcessLinkUpdateRequestDto
         assertThat(dto).isNotNull
         assertThat(dto!!.processLinkType).isEqualTo(TYPE_UI_COMPONENT)
         assertThat(dto.id).isEqualTo(existingId)

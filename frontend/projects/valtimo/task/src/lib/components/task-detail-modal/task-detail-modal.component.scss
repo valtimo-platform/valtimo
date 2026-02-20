@@ -18,6 +18,10 @@
   .formio-component-submit {
     text-align: right;
   }
+
+  .cds--modal:not(.is-visible) {
+    pointer-events: none;
+  }
 }
 
 cds-modal-header {
