@@ -50,7 +50,7 @@
   }
 
   .widget-title {
-    color: var(--cds-text-primary);
+    color: var(--widget-text-color, var(--cds-text-primary));
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;

@@ -22,19 +22,15 @@ import com.ritense.valtimo.changelog.domain.ChangesetDeployer
 import com.ritense.valtimo.changelog.repository.ChangesetRepository
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.changelog.service.ChangelogService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import jakarta.persistence.EntityManager
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import javax.sql.DataSource
 
 @EnableJpaRepositories(basePackageClasses = [ChangesetRepository::class])
 @EntityScan("com.ritense.valtimo.changelog.domain")
@@ -69,14 +65,6 @@ class ChangelogAutoConfiguration {
             environment,
             entityManager,
         )
-    }
-
-    @ConditionalOnClass(DataSource::class)
-    @Order(HIGHEST_PRECEDENCE + 30)
-    @Bean
-    @ConditionalOnMissingBean(name = ["changelogLiquibaseMasterChangeLogLocation"])
-    fun changelogLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/changelog-master.xml")
     }
 
 }

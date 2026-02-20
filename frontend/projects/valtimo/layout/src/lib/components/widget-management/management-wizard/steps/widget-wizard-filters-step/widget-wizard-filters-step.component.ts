@@ -404,6 +404,13 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     }
   }
 
+  private selectItem(items: ListItem[], selectedId: string): ListItem[] {
+    return items.map(item => ({
+      ...item,
+      selected: item.id === selectedId,
+    }));
+  }
+
   private swapItems<T>(items: T[], index1: number, index2: number): T[] {
     const itemToInsert = items[index1];
     const filteredItems = items.filter((_, index) => index !== index1);

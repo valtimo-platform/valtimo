@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import {ValtimoWindow} from '@valtimo/shared';
+import {ManagementContext, ValtimoWindow} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 
-let formioParams: Observable<{caseDefinitionKey: ''; caseDefinitionVersionTag: ''}>;
+interface FormioContextParams {
+  context: ManagementContext | null;
+  caseDefinitionKey: string | null;
+  caseDefinitionVersionTag: string | null;
+  buildingBlockDefinitionKey: string | null;
+  buildingBlockDefinitionVersionTag: string | null;
+}
+
+let formioParams: Observable<FormioContextParams>;
 
 const modiyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
@@ -30,26 +38,42 @@ const modiyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (editForm: any, params: any): void => {
+const addValueResolverSelectorToEditform = (
+  editForm: any,
+  params: Observable<FormioContextParams>
+): void => {
   const valtimoWindow = window as ValtimoWindow;
-  const valtimoTabKey = 'valtimo';
+  const valueResolverTabKey = 'valueResolver';
   formioParams = params;
 
   if (valtimoWindow?.flags?.formioValueResolverSelectorComponentRegistered) {
     const tabComponents = editForm?.components?.find(element => element.key === 'tabs')?.components;
-    const hasValtimoTab = tabComponents?.find(component => component.key === valtimoTabKey);
+    const hasValueResolverTab = tabComponents?.find(
+      component => component.key === valueResolverTabKey
+    );
 
-    if (tabComponents && !hasValtimoTab) {
+    if (tabComponents && !hasValueResolverTab) {
       tabComponents.push({
-        label: 'Valtimo',
-        key: valtimoTabKey,
+        label: 'Value Resolver',
+        key: valueResolverTabKey,
         weight: 70,
         components: [
           {
             weight: 0,
             type: 'valtimo-value-resolver-selector',
             key: 'properties.sourceKey',
-            label: 'Value resolver',
+            label: 'Source key',
+            resolverType: 'source',
+            validate: {
+              required: false,
+            },
+          },
+          {
+            weight: 1,
+            type: 'valtimo-value-resolver-selector',
+            key: 'properties.targetKey',
+            label: 'Target key',
+            resolverType: 'target',
             validate: {
               required: false,
             },
@@ -62,4 +86,9 @@ const addValueResolverSelectorToEditform = (editForm: any, params: any): void =>
   return editForm;
 };
 
-export {modiyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};
+export {
+  modiyEditFormApiKeyInput,
+  addValueResolverSelectorToEditform,
+  formioParams,
+  FormioContextParams,
+};

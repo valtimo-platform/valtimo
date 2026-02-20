@@ -32,7 +32,6 @@ import com.ritense.form.service.impl.FormIoFormLoaderService;
 import com.ritense.form.web.rest.FormFileResource;
 import com.ritense.form.web.rest.FormManagementResource;
 import com.ritense.form.web.rest.impl.FormIoFormFileResource;
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
@@ -123,10 +122,9 @@ public class FormAutoConfiguration {
     @ConditionalOnMissingBean(FormProcessLinkMapper.class)
     public FormProcessLinkMapper formProcessLinkMapper(
         final ObjectMapper objectMapper,
-        final FormDefinitionService formDefinitionService,
-        final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService
+        final FormDefinitionService formDefinitionService
     ) {
-        return new FormProcessLinkMapper(objectMapper, formDefinitionService, processDefinitionCaseDefinitionService);
+        return new FormProcessLinkMapper(objectMapper, formDefinitionService);
     }
 
     @Bean

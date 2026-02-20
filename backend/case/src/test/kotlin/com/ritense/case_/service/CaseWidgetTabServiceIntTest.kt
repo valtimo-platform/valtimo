@@ -79,7 +79,8 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
             TestCaseWidgetTabWidgetDto(
                 "widget-1",
                 "Widget 1",
-                icon = "mdi-home",
+                "mdi-home",
+                null,
                 1,
                 false,
                     false,
@@ -93,7 +94,8 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
             TestCaseWidgetTabWidgetDto(
                 "widget-2",
                 "Widget 2",
-                icon = "mdi-home",
+                "mdi-home",
+                null,
                 1,
                 false,
                     false,
@@ -230,6 +232,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
                             key = "widget-2",
                             title = "Widget 2",
                             icon = "mdi-home",
+                            color = null,
                             width = 2,
                             highContrast = true,
                             isCompact = false,
@@ -239,6 +242,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
                             key = "widget-1",
                             title = "Widget 1",
                             icon = "mdi-home",
+                            color = null,
                             width = 1,
                             highContrast = false,
                             isCompact = true,
@@ -298,9 +302,9 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
 
             val widgetsToUse = if (widgets == null) {
                 listOf(
-                    TestCaseWidgetTabWidgetDto("widget-1", "Widget 1", "mdi-home", 1, false, false),
-                    TestCaseWidgetTabWidgetDto("widget-2", "Widget 2","mdi-home", 2, true, true),
-                    TestCaseWidgetTabWidgetDto("deny", "Deny","mdi-home",  3, false, false)
+                    TestCaseWidgetTabWidgetDto("widget-1", "Widget 1", "mdi-home", null,  1, false, false),
+                    TestCaseWidgetTabWidgetDto("widget-2", "Widget 2","mdi-home", null,  2, true, true),
+                    TestCaseWidgetTabWidgetDto("deny", "Deny","mdi-home", null,   3, false, false)
                 )
             } else {
                 widgets
