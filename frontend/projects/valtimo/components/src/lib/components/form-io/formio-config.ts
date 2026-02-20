@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import {UrlUtils, ValtimoConfig} from '@valtimo/shared';
-
-const getFormioAppConfig = (config: ValtimoConfig) => {
-  const baseUrl = UrlUtils.formatUrlTrailingSlash(
-    `${window.location.origin}${config.valtimoApi.endpointUri}`,
-    false
-  );
-
+const getFormioAppConfig = () => {
   return {
-    appUrl: baseUrl,
-    apiUrl: baseUrl,
+    appUrl: window.location.origin,
+    apiUrl: window.location.origin,
     icons: 'fontawesome',
     formOnly: false,
   };

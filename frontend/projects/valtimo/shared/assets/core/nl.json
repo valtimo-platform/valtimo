@@ -493,7 +493,7 @@
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie"},
+    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept"},
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -1868,6 +1868,9 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige",
+    "Value Resolver": "Value Resolver",
+    "Source key": "Bronsleutel",
+    "Target key": "Doelsleutel",
     "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
@@ -2236,7 +2239,8 @@
     "listColumns": {
       "name": "Naam",
       "key": "Sleutel",
-      "versionTag": "Versie"
+      "versionTag": "Versie",
+      "draft": "Concept"
     },
     "detail": {
       "title": "Bouwblokdetails"
@@ -2279,7 +2283,11 @@
     "tabs": {
       "general": "Algemeen",
       "document": "Document",
-      "processes": "Processen"
+      "processes": "Processen",
+      "forms": "Formulieren"
+    },
+    "formDefinition": {
+      "name": "Naam"
     },
     "metadata": {
       "title": "Algemene informatie"

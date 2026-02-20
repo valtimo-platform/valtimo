@@ -102,10 +102,12 @@ export class VerzoekConfigurationComponent
     .getProcessDefinitions()
     .pipe(
       map(processDefinitions =>
-        processDefinitions.map(processDefinition => ({
-          id: processDefinition.key,
-          text: processDefinition.name ?? '',
-        }))
+        processDefinitions
+          .filter(processDefinitions => !!processDefinitions?.key)
+          .map(processDefinition => ({
+            id: processDefinition.key,
+            text: processDefinition.name ?? `<${processDefinition.key}>`,
+          }))
       )
     );
 

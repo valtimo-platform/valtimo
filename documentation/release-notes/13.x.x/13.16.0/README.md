@@ -22,12 +22,32 @@
     +  **Note:** when the case status is set where the retention period is set to -1, no new retention date will be calculated, and any existing retention date will be cleared.
 
 
+* **Building block form management**
+
+  Building blocks now support their own form definitions. Forms can be created, edited, uploaded, and deleted
+  directly from the **Forms** tab in the building block management view. These forms are scoped to a specific
+  building block version and are automatically included when exporting or importing a building block.
+
+  See [Building blocks - Forms](../../../features/building-blocks/forms.md) for more information.
+
+* **User task support in building blocks**
+
+  Building blocks now support user tasks with form process links. Tasks from building blocks automatically
+  appear in the case task list and support auto-assignment when a case assignee is set.
+
+  See [Building blocks](../../../features/building-blocks/README.md) for more information.
+
 ## Enhancements
 
-* **New enhancement title**
+* **Value resolver selector for building blocks**
 
-  New enhancement explanation.
+  The value resolver selector in the form builder now correctly supports building block, case, and independent
+  process contexts. This ensures that the right data sources are available when configuring form components
+  in different process link types.
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed an intermittent issue where the JSON editor would fail to display when editing document or form
+  definitions.
+
+* Fixed an issue that prevented users with specific Keycloak configurations from connecting to IKO.

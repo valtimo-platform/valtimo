@@ -16,6 +16,8 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
@@ -57,6 +59,7 @@ import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
+import com.ritense.valtimo.service.TaskBusinessKeyResolver;
 import com.ritense.valtimo.service.UserSettingsService;
 import com.ritense.valtimo.web.rest.AccountResource;
 import com.ritense.valtimo.web.rest.PingResource;
@@ -68,6 +71,7 @@ import com.ritense.valtimo.web.rest.UserResource;
 import com.ritense.valtimo.web.rest.VersionResource;
 import jakarta.persistence.EntityManager;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -87,8 +91,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-
-import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
 @AutoConfiguration
 @EnableConfigurationProperties(ValtimoProperties.class)
@@ -204,7 +206,8 @@ public class ValtimoAutoConfiguration {
         final EntityManager entityManager,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
-        final ObjectMapper objectMapper
+        final ObjectMapper objectMapper,
+        final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers
     ) {
         return new OperatonTaskService(
             taskService,
@@ -219,7 +222,8 @@ public class ValtimoAutoConfiguration {
             entityManager,
             authorizationService,
             outboxService,
-            objectMapper
+            objectMapper,
+            taskBusinessKeyResolvers
         );
     }
 
