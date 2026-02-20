@@ -61,28 +61,27 @@
         [title]="'caseManagement.importDefinition.upload.title' | translate"
         buttonType="primary"
         formControlName="file"
+        data-test-id="caseFileUploader"
         class="valtimo-definition-uploader__file-uploader"
       >
       </cds-file-uploader>
 
-      <ng-container *ngIf="!obs.nextButtonDisabled">
-        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+      <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
 
-        <div class="valtimo-uploader__checkbox">
-          <cds-checkbox
-            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
-            (checkedChange)="onCheckedChange($event)"
-          >
-            {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
-          </cds-checkbox>
+      <div class="valtimo-uploader__checkbox">
+        <cds-checkbox
+          [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+          (checkedChange)="onCheckedChange($event)"
+        >
+          {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
+        </cds-checkbox>
 
-          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
-            <svg cdsIcon="warning--filled" size="16"></svg>
+        <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
+          <svg cdsIcon="warning--filled" size="16"></svg>
 
-            {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
-          </div>
+          {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
         </div>
-      </ng-container>
+      </div>
     </form>
 
     <cds-progress-bar
@@ -111,6 +110,7 @@
       <button
         *ngIf="obs.backButtonEnabled"
         cdsButton="secondary"
+        data-test-id="uploadWizardCancelButton"
         (click)="onBackClick(obs.activeStep)"
       >
         {{ 'interface.back' | translate }}
@@ -119,6 +119,7 @@
       <button
         *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.DASHBOARD"
         cdsButton="primary"
+        data-test-id="uploadWizardNextButton"
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
       >
@@ -133,6 +134,7 @@
       <button
         *ngIf="obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.DASHBOARD"
         class="valtimo-definition-uploader__cancel"
+        data-test-id="uploadWizardFinishButton"
         cdsButton="primary"
         (click)="onCloseModal(true)"
       >

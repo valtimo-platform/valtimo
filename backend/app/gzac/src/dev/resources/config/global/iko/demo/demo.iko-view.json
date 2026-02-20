@@ -6,7 +6,6 @@
         "connectorTag": "demo",
         "connectorInstanceTag": "demo1",
         "endpointOperation": "getMockData",
-        "aggregatedDataProfileName": "demo",
         "endpointQueryParameters": {
             "id": "123"
         }

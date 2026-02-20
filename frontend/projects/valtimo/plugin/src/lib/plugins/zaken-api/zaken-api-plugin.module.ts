@@ -28,7 +28,8 @@ import {
 } from '@valtimo/components';
 import {
   ButtonModule,
-  DatePickerInputModule, DatePickerModule,
+  DatePickerInputModule,
+  DatePickerModule,
   DialogModule,
   IconModule,
   LoadingModule,
@@ -49,7 +50,6 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
@@ -58,11 +58,13 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
+import {DeleteZaakResultatenConfigurationComponent} from './components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
 
 @NgModule({
   declarations: [
@@ -72,14 +74,13 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     GetZaakInformatieobjectenComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
+    DeleteZaakRolComponent,
     CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateOrganisatorischeEenheidZaakRolComponent,
     CreateVestigingZaakRolComponent,
-    DeleteZaakRolComponent,
     CreateZaakConfigurationComponent,
-    PatchZaakConfigurationComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,
@@ -92,6 +93,7 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
   imports: [
     CommonModule,
@@ -115,9 +117,7 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     ReactiveFormsModule,
     TimePickerModule,
     InputModule,
-    ReactiveFormsModule,
     ReadOnlyDirective,
-    InputLabelModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
@@ -127,13 +127,13 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
+    DeleteZaakRolComponent,
     PatchZaakConfigurationComponent,
     CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateOrganisatorischeEenheidZaakRolComponent,
     CreateVestigingZaakRolComponent,
-    DeleteZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,
@@ -145,6 +145,7 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
 })
 export class ZakenApiPluginModule {}

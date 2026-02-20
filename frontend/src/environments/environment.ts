@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,53 +119,47 @@ export const environment: ValtimoConfig = {
         sequence: 5,
         children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
-          {link: ['/case-management'], title: 'Cases', sequence: 2},
-          {link: ['/plugins'], title: 'Plugins', sequence: 3},
-          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
-          {link: ['/access-control'], title: 'Access Control', sequence: 5},
-          {link: ['/translation-management'], title: 'Translations', sequence: 6},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
-
+          {
+            link: ['/building-block-management'],
+            title: 'buildingBlockManagement.title',
+            sequence: 2,
+          },
+          {link: ['/case-management'], title: 'Cases', sequence: 3},
+          {link: ['/plugins'], title: 'Plugins', sequence: 4},
+          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 5},
+          {link: ['/access-control'], title: 'Access Control', sequence: 6},
+          {link: ['/translation-management'], title: 'Translations', sequence: 7},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 8},
           {
             title: 'Object management',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 8,
+            sequence: 9,
           },
-          {link: ['/object-management'], title: 'Objects', sequence: 9},
-          {link: ['/form-management'], title: 'Forms', sequence: 10},
-          {
-            link: ['/notifications-api/notifications/failed'],
-            title: 'Notifications',
-            sequence: 11,
-          },
-
+          {link: ['/object-management'], title: 'Objects', sequence: 10},
+          {link: ['/form-management'], title: 'Forms', sequence: 11},
+          {link: ['/notifications-api/notifications/failed'], title: 'Notifications', sequence: 12},
           {
             title: 'System processes',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 12,
+            sequence: 13,
           },
-          {link: ['/processes'], title: 'Processes', sequence: 13},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 14},
-
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
-          {link: ['/logging'], title: 'Logs', sequence: 16},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
-
+          {link: ['/processes'], title: 'Processes', sequence: 14},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 15},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 16},
+          {link: ['/logging'], title: 'Logs', sequence: 17},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 18},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 19},
+          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 20},
           {
             title: 'Valtimo test tools',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 100,
+            sequence: 21,
           },
-          {
-            link: ['/notification-test'],
-            title: 'Send notification',
-            sequence: 101,
-          },
+          {link: ['/notification-test'], title: 'Send notification', sequence: 22},
         ],
       },
       {
-        roles: [ROLE_DEVELOPER],
+        roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
         iconClass: 'icon mdi mdi-xml',
         sequence: 6,
@@ -276,12 +270,3 @@ export const environment: ValtimoConfig = {
   },
   translationResources: ['./assets/i18n/'],
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.

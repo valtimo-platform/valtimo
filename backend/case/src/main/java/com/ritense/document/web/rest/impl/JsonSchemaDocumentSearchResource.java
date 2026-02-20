@@ -20,6 +20,7 @@ import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_J
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.ritense.document.domain.Document;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.search.SearchRequestValidator;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.service.DocumentSearchService;
@@ -55,7 +56,7 @@ public class JsonSchemaDocumentSearchResource implements DocumentSearchResource 
         @PageableDefault(sort = {"createdOn"}, direction = DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            documentSearchService.search(searchRequest, pageable)
+            documentSearchService.search(searchRequest, BlueprintType.CASE, pageable)
         );
     }
 
@@ -68,7 +69,12 @@ public class JsonSchemaDocumentSearchResource implements DocumentSearchResource 
     ) {
         SearchRequestValidator.validate(searchRequest);
         return ResponseEntity.ok(
-            documentSearchService.search(documentDefinitionName, searchRequest, pageable)
+            documentSearchService.search(
+                documentDefinitionName,
+                BlueprintType.CASE,
+                searchRequest,
+                pageable
+            )
         );
     }
 

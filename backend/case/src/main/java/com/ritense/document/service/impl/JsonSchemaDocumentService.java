@@ -18,6 +18,7 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byDocumentDefinitionIdName;
+import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.expiredDocuments;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGN;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
@@ -54,6 +55,10 @@ import com.ritense.document.event.DocumentAssigned;
 import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentCreated;
 import com.ritense.document.event.DocumentDeleted;
+import com.ritense.document.event.DocumentRetentionDateSet;
+import com.ritense.document.event.DocumentRetentionDateUnset;
+import com.ritense.document.event.DocumentRetentionPeriodSetEvent;
+import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent;
 import com.ritense.document.event.DocumentStatusChanged;
 import com.ritense.document.event.DocumentTagsChanged;
 import com.ritense.document.event.DocumentUnassigned;
@@ -71,15 +76,17 @@ import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -88,8 +95,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -180,10 +185,16 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     @Override
     public JsonSchemaDocument get(
-        @LoggableResource(resourceType = JsonSchemaDocument.class) String documentId
+        String documentId
+    ) {
+        return get(UUID.fromString(documentId));
+    }
+
+    public JsonSchemaDocument get(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId
     ) {
         var documentOptional = runWithoutAuthorization(
-            () -> findBy(JsonSchemaDocumentId.existingId(UUID.fromString(documentId))));
+            () -> findBy(JsonSchemaDocumentId.existingId(documentId)));
 
         JsonSchemaDocument document = documentOptional.orElseThrow(
             () -> new DocumentNotFoundException("Document not found with id " + documentId)
@@ -259,9 +270,10 @@ public class JsonSchemaDocumentService implements DocumentService {
     ) {
         return withLoggingContext(
             "documentDefinitionName", newDocumentRequest.documentDefinitionName(), () -> {
+                final BlueprintId blueprintId = newDocumentRequest.blueprintId();
                 final JsonSchemaDocumentDefinition definition = runWithoutAuthorization(
                     () -> documentDefinitionService
-                        .findByCaseDefinitionId(newDocumentRequest.caseDefinitionId())
+                        .findByBlueprintId(blueprintId)
                         .orElseThrow(
                             () -> new UnknownDocumentDefinitionException(newDocumentRequest.documentDefinitionName())
                         )
@@ -792,6 +804,8 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
+        boolean retentionDateSet = document.retentionDate().isPresent();
+
         var internalCaseStatus = internalStatusKey != null ? internalCaseStatusService.get(
             document.definitionId().name(),
             internalStatusKey
@@ -799,6 +813,41 @@ public class JsonSchemaDocumentService implements DocumentService {
         document.setInternalStatus(internalCaseStatus);
 
         documentRepository.save(document);
+
+        if (retentionDateSet && document.retentionDate().isEmpty()) {
+            applicationEventPublisher.publishEvent(
+                new DocumentRetentionPeriodUnsetEvent(
+                    UUID.randomUUID(),
+                    RequestHelper.getOrigin(),
+                    LocalDateTime.now(),
+                    AuditHelper.getActor(),
+                    documentId.getId()
+                )
+            );
+            outboxService.send(() ->
+                new DocumentRetentionDateUnset(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        }
+        if (document.retentionDate().isPresent()) {
+            applicationEventPublisher.publishEvent(
+                new DocumentRetentionPeriodSetEvent(
+                    RequestHelper.getOrigin(),
+                    LocalDateTime.now(),
+                    AuditHelper.getActor(),
+                    documentId.getId(),
+                    document.retentionDate().get()
+                )
+            );
+            outboxService.send(() ->
+                new DocumentRetentionDateSet(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        }
 
         outboxService.send(() ->
             new DocumentStatusChanged(

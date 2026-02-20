@@ -34,17 +34,17 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":audit")
-    implementation project(":case")
-    implementation project(":changelog")
-    implementation project(":contract")
-    implementation project(":core")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":resource")
-    implementation project(":value-resolver")
-    implementation project(":search")
-    implementation project(":web")
+    implementation project(":backend:audit")
+    implementation project(":backend:case")
+    implementation project(":backend:changelog")
+    implementation project(":backend:contract")
+    implementation project(":backend:core")
+    implementation project(":backend:exporter")
+    implementation project(":backend:importer")
+    implementation project(":backend:resource")
+    implementation project(":backend:value-resolver")
+    implementation project(":backend:search")
+    implementation project(":backend:web")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -81,7 +81,10 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':test-utils-common')
+    testImplementation project(':backend:test-utils-common')
+    testImplementation(project(':backend:building-block')) {
+        exclude(group: "com.ritense.valtimo", module: "process-document")
+    }
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"

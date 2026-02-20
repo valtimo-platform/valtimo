@@ -32,14 +32,14 @@ import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType;
 import com.ritense.document.exception.InvalidSearchFieldException;
 import com.ritense.document.repository.SearchFieldRepository;
 import com.ritense.document.web.rest.impl.SearchFieldMapper;
+import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import com.ritense.logging.LoggableResource;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.zalando.problem.Status;
@@ -119,6 +119,7 @@ public class SearchFieldService {
         searchFieldDtos.forEach(searchFieldDto ->
             documentDefinitionService.validateJsonPath(documentDefinitionName, searchFieldDto.getPath())
         );
+
         var searchFields = IntStream.range(0, searchFieldDtos.size())
             .mapToObj(index -> toOrderedSearchField(documentDefinitionName, searchFieldDtos.get(index), index))
             .toList();
@@ -138,7 +139,7 @@ public class SearchFieldService {
         searchFields.forEach(searchField -> {
             assert searchField.getId() != null;
             Optional<? extends DocumentDefinition> optionalDocumentDefinition =
-                documentDefinitionService.findByCaseDefinitionId(caseDefinitionId);
+                documentDefinitionService.findByBlueprintId(caseDefinitionId);
             documentDefinitionService.validateJsonPath(
                 optionalDocumentDefinition.get().id().name(),
                 searchField.getPath()
@@ -163,15 +164,22 @@ public class SearchFieldService {
             searchFieldRepository::delete);
     }
 
-    private SearchField toOrderedSearchField(String documentDefinitionName, SearchFieldDto searchFieldDto, int order) {
-        Optional<SearchField> fieldToUpdate = searchFieldRepository
-            .findByIdCaseDefinitionKeyAndKey(documentDefinitionName, searchFieldDto.getKey());
-        if (fieldToUpdate.isEmpty()) {
-            throw new IllegalArgumentException(
-                "No search field found for document '" + documentDefinitionName + "' and key '" + searchFieldDto.getKey() + "'."
-            );
-        }
-        var searchField = fieldToUpdate.get();
+    private SearchField toOrderedSearchField(
+        String documentDefinitionName,
+        SearchFieldDto searchFieldDto,
+        int order
+    ) {
+        SearchField searchField = searchFieldRepository
+            .findByIdCaseDefinitionKeyAndKey(documentDefinitionName, searchFieldDto.getKey())
+            .orElseGet(() -> {
+                SearchField newField = new SearchField();
+                newField.setId(
+                    SearchFieldId.newId(documentDefinitionName)
+                );
+                newField.setKey(searchFieldDto.getKey());
+                return newField;
+            });
+
         searchField.setPath(searchFieldDto.getPath());
         searchField.setDataType(searchFieldDto.getDataType());
         searchField.setFieldType(searchFieldDto.getFieldType());
@@ -179,9 +187,9 @@ public class SearchFieldService {
         searchField.setDropdownDataProvider(searchFieldDto.getDropdownDataProvider());
         searchField.setOrder(order);
         searchField.setTitle(searchFieldDto.getTitle());
+
         return searchField;
     }
-
 
     private void validateSearchField(SearchFieldDto searchFieldDto) {
         if (!searchFieldDto.getDataType().equals(SearchFieldDataType.TEXT)

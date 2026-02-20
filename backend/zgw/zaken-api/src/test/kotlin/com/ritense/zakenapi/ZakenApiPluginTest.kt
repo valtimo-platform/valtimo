@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
@@ -38,6 +39,7 @@ import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.NotitieType
@@ -47,6 +49,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
@@ -73,6 +76,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.transaction.PlatformTransactionManager
@@ -103,7 +107,14 @@ internal class ZakenApiPluginTest {
             authenticationMock = authenticationMock
         )
 
-        plugin.linkDocumentToZaak(executionMock, documentUrl(), "titel", "beschrijving")
+        plugin.linkDocumentToZaak(
+            execution = executionMock,
+            documentUrl = documentUrl(),
+            titel = "titel",
+            beschrijving = "beschrijving",
+            vernietigingsdatum = "2025-12-31T23:59:59Z",
+            statusUrl = "https://example.com/statustypen/1"
+        )
 
         val captor = argumentCaptor<LinkDocumentRequest>()
         verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
@@ -113,6 +124,8 @@ internal class ZakenApiPluginTest {
         assertEquals(zaakUrl(), request.zaak)
         assertEquals("titel", request.titel)
         assertEquals("beschrijving", request.beschrijving)
+        assertEquals("2025-12-31T23:59:59Z", request.vernietigingsdatum)
+        assertEquals("https://example.com/statustypen/1", request.status)
     }
 
     @Test
@@ -153,6 +166,8 @@ internal class ZakenApiPluginTest {
         assertEquals(zaakUrl(), request.zaak)
         assertEquals("titel", request.titel)
         assertEquals("beschrijving", request.beschrijving)
+        assertEquals(null, request.vernietigingsdatum)
+        assertEquals(null, request.status)
     }
 
     @Test
@@ -402,7 +417,7 @@ internal class ZakenApiPluginTest {
         assertThat(betrokkeneIdentificatie.identificatie).isEqualTo("identificatie")
         assertThat(betrokkeneIdentificatie.achternaam).isEqualTo("achternaam")
         assertThat(betrokkeneIdentificatie.voorletters).isEqualTo("voorletters")
-        assertThat(betrokkeneIdentificatie.voorvoegselAchternaam).isEmpty()
+        assertThat(betrokkeneIdentificatie.voorvoegselAchternaam).isNull()
     }
 
     @Test
@@ -567,10 +582,14 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
         val zaaktypeUrl = zaaktypeUri()
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
+            .thenReturn(documentId)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -595,7 +614,8 @@ internal class ZakenApiPluginTest {
         val plugin = zakenApiPlugin(
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -627,6 +647,7 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
+        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -640,6 +661,9 @@ internal class ZakenApiPluginTest {
         val caseGeometryType = GeometryType.POINT.key
         val caseGeometryCoordinates = "[4.932921, 52.370085]"
         val mainCase = zaakUrl("123")
+
+        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
+            .thenReturn(documentId)
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
@@ -664,7 +688,8 @@ internal class ZakenApiPluginTest {
         val plugin = zakenApiPlugin(
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -712,12 +737,14 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri(zaakId)
         val zaakInstanceLink: ZaakInstanceLink = mock()
         val zaakResponse: ZaakResponse = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
 
         val description = "Omschrijving"
         val explantation = "Toelichting"
         val communicationChannel = communicationChannel()
         val communicationChannelName = "Communicatiekanaal Naam"
         val nowDate = LocalDate.parse("2025-07-23")
+        val startDate = nowDate.minusDays(10).toString()
         val plannedEndDate = nowDate.plusMonths(10).toString()
         val finalDeliveryDate = nowDate.plusYears(1).toString()
         val publicationDate = nowDate.minusWeeks(2).toString()
@@ -731,6 +758,9 @@ internal class ZakenApiPluginTest {
 
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
+
+        whenever(zaakUrlProvider.getZaakUrl(eq(documentId)))
+            .thenReturn(zaakUrl)
 
         whenever(zaakInstanceLink.zaakInstanceUrl)
             .thenReturn(zaakUrl)
@@ -755,13 +785,15 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient,
             zaakInstanceLinkRepository = zaakInstanceLinkRepository,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginServiceMock(),
+            zaakUrlProvider = zaakUrlProvider
         )
 
         plugin.patchZaak(
             execution = executionMock,
             description = description,
             explanation = explantation,
+            startDate = startDate,
             plannedEndDate = plannedEndDate,
             finalDeliveryDate = finalDeliveryDate,
             publicationDate = publicationDate,
@@ -787,6 +819,7 @@ internal class ZakenApiPluginTest {
         val request = captor.firstValue
         assertThat(request.omschrijving).isEqualTo(description)
         assertThat(request.toelichting).isEqualTo(explantation)
+        assertThat(request.startdatum).isEqualTo(startDate)
         assertThat(request.einddatumGepland).isEqualTo(plannedEndDate)
         assertThat(request.uiterlijkeEinddatumAfdoening).isEqualTo(finalDeliveryDate)
         assertThat(request.publicatiedatum).isEqualTo(publicationDate)
@@ -862,6 +895,52 @@ internal class ZakenApiPluginTest {
         assertEquals(resultaatTypeUrl, request.resultaattype)
         assertEquals("Result description", request.toelichting)
     }
+
+    @Test
+    fun `should delete zaak resultaat`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+
+        val resultaat = mock<ZaakResultaat>()
+        val resultaatUuid = UUID.randomUUID()
+        whenever(resultaat.uuid).thenReturn(resultaatUuid)
+
+        val page = Page(
+            count = 1,
+            next = null,
+            previous = null,
+            results = listOf(resultaat)
+        )
+
+        whenever(zakenApiClient.getAllZaakResultaten(any(), any(), any()))
+            .thenReturn(page)
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        plugin.deleteZaakResultaten(executionMock)
+
+        val requestCaptor = argumentCaptor<GetZaakResultatenRequest>()
+        verify(zakenApiClient).getAllZaakResultaten(any(), any(), requestCaptor.capture())
+
+        val request = requestCaptor.firstValue
+        assertEquals(zaakUrl, request.zaak)
+
+        verify(zakenApiClient).deleteZaakResultaat(any(), any(), eq(resultaatUuid))
+        verifyNoMoreInteractions(zakenApiClient)
+    }
+
 
     @Test
     fun `should update zaakopschorting and verlenging`() {
@@ -1654,7 +1733,8 @@ internal class ZakenApiPluginTest {
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
         objectMapper: ObjectMapper = mock(),
-        zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock(),
+        caseDocumentResolver: CaseDocumentResolver = mock()
     ): ZakenApiPlugin {
         return ZakenApiPlugin(
             client = zakenApiClient,
@@ -1667,7 +1747,8 @@ internal class ZakenApiPluginTest {
             platformTransactionManager = platformTransactionManager,
             valueResolverService = valueResolverService,
             objectMapper = objectMapper,
-            zaakNotitieLinkRepository = zaakNotitieLinkRepository
+            zaakNotitieLinkRepository = zaakNotitieLinkRepository,
+            caseDocumentResolver = caseDocumentResolver
         ).apply {
             this.url = url
             this.authenticationPluginConfiguration = authenticationMock

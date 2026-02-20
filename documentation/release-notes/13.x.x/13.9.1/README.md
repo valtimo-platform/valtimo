@@ -11,9 +11,6 @@
 When enabled, files uploaded to the Documenten API or in temporary file storage will be scanned for viruses.
 More details can be found [here](../../../features/case/zgw/zgw-documents/README.md#enabling-virus-scanning)
 
-## Enhancements
-
 ## Bugfixes
 
 * Importing an existing case definition from an uploaded zip file will now overwrite the existing data.
-* Resolved issue where running processes were deleted when editing the BPMN.

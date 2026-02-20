@@ -16,20 +16,24 @@
 
 package com.ritense.tab.web.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.tab.domain.Tab
 import java.util.UUID
 
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class TabDto(
     val key: String,
     val title: String?,
     val type: String,
+    val properties: Map<String, Any?>?,
 ) {
     fun toEntity(id: UUID, order: Int) = Tab(
         id = id,
         key = this.key,
         title = this.title,
         type = this.type,
-        order = order
+        order = order,
+        properties = this.properties ?: emptyMap(),
     )
 
     companion object {
@@ -37,6 +41,7 @@ data class TabDto(
             key = entity.key,
             title = entity.title,
             type = entity.type,
+            properties = entity.properties.let { it.ifEmpty { null } },
         )
     }
 }

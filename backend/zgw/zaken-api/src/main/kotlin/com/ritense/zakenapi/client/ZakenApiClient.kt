@@ -35,6 +35,7 @@ import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakObject
@@ -81,6 +82,7 @@ import com.ritense.zakenapi.event.ZaakNotitiePatched
 import com.ritense.zakenapi.event.ZaakNotitieUpdated
 import com.ritense.zakenapi.event.ZaakNotitieViewed
 import com.ritense.zakenapi.event.ZaakNotitiesListed
+import com.ritense.zakenapi.event.ZaakResultaatDeleted
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
@@ -440,6 +442,35 @@ class ZakenApiClient(
         return result
     }
 
+    fun getAllZaakResultaten(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        request: GetZaakResultatenRequest
+    ): Page<ZaakResultaat> {
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("resultaten")
+                    .apply {
+                        request.page?.let { page -> queryParam("page", page) }
+                        request.pageSize?.let { pageSize -> queryParam("pageSize", pageSize) }
+                        request.resultaattype?.let { resultaattype -> queryParam("resultaattype", resultaattype) }
+                        queryParam("zaak", request.zaak)
+                    }
+                    .build()
+            }
+            .retrieve()
+            .body<Page<ZaakResultaat>>()!!
+
+        // There can only be one ZaakResultaat for a given Zaak but the API returns a list, so we log an event for each ZaakResultaat that is returned even though in practice there should only be one.
+        result.results.forEach {
+            outboxService.send { ZaakResultaatViewed(objectMapper.valueToTree(it)) }
+        }
+
+        return result
+    }
+
     fun createZaakResultaat(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
@@ -462,6 +493,26 @@ class ZakenApiClient(
         applicationEventPublisher.publishEvent(event)
         outboxService.send { event }
         return result
+    }
+
+    fun deleteZaakResultaat(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        resultaatUuid: UUID,
+    ) {
+        buildRestClient(authentication)
+            .delete()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .pathSegment("resultaten", "{resultaatUuid}")
+                    .build(resultaatUuid)
+            }
+            .retrieve()
+            .toBodilessEntity()
+
+        val event = ZaakResultaatDeleted(resultaatUuid.toString())
+        applicationEventPublisher.publishEvent(event)
+        outboxService.send { event }
     }
 
     fun setZaakOpschorting(

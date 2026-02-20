@@ -1,0 +1,7 @@
+{
+    "key": "household-verification",
+    "name": "Huishouden Verificatie",
+    "description": "Verifieert de huishoudsamenstelling van de aanvrager via BRP-gegevens en voert een inkomenstoets uit. Berekent het basisbedrag voor de energietoeslag op basis van het aantal huishoudleden.",
+    "versionTag": "1.0.0",
+    "final": false
+}

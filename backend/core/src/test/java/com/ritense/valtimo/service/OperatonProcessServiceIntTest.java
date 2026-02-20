@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.service;
 
-import static com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -41,6 +41,7 @@ import org.operaton.bpm.engine.repository.DecisionDefinition;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.operaton.bpm.model.bpmn.instance.CallActivity;
 import org.operaton.bpm.model.bpmn.instance.Definitions;
 import org.operaton.bpm.model.bpmn.instance.Process;
@@ -407,7 +408,7 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
 
         CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("some-case", "1.0.0");
         String caseTag =
-            OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
         String customNonCaseTag = "SOME_OTHER_TAG";
 
         process.setOperatonVersionTag(caseTag);
@@ -460,6 +461,132 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
         CallActivity customCallActivity = model.newInstance(CallActivity.class);
         customCallActivity.setId("customCallActivity");
         process.addChildElement(customCallActivity);
+
+        return model;
+    }
+
+    @Test
+    void shouldUpdateBusinessRuleTaskVersionTagsWhenCaseDefinitionIsProvided() {
+        BpmnModelInstance model = createBpmnModelWithBusinessRuleTasks();
+
+        Process process = model.getModelElementsByType(Process.class)
+            .stream()
+            .findFirst()
+            .orElseThrow();
+
+        BusinessRuleTask caseLinkedBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "caseLinkedBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        BusinessRuleTask customBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "customBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CaseDefinitionId originalCaseDefinitionId = CaseDefinitionId.of("original-case", "1.0.0");
+        CaseDefinitionId newCaseDefinitionId = CaseDefinitionId.of("new-case", "2.0.0");
+
+        String originalTag =
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + originalCaseDefinitionId;
+        String customNonCaseTag = "SOME_OTHER_TAG";
+
+        process.setOperatonVersionTag(originalTag);
+
+        caseLinkedBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        caseLinkedBusinessRuleTask.setOperatonDecisionRefVersionTag(originalTag);
+
+        customBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        customBusinessRuleTask.setOperatonDecisionRefVersionTag(customNonCaseTag);
+
+        assertThat(CaseDefinitionId.fromProcessVersionTag(originalTag)).isNotNull();
+        assertThat(CaseDefinitionId.fromProcessVersionTag(customNonCaseTag)).isNull();
+
+        operatonProcessService.updateCaseDefinitionProcessesVersionTags(model, newCaseDefinitionId);
+
+        String expectedNewTag =
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + newCaseDefinitionId;
+
+        assertThat(process.getOperatonVersionTag()).isEqualTo(expectedNewTag);
+
+        assertThat(caseLinkedBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
+        assertThat(caseLinkedBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(expectedNewTag);
+
+        assertThat(customBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
+        assertThat(customBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(customNonCaseTag);
+    }
+
+    @Test
+    void shouldClearBusinessRuleTaskVersionTagsWhenNoCaseDefinitionIsProvided() {
+        BpmnModelInstance model = createBpmnModelWithBusinessRuleTasks();
+
+        Process process = model.getModelElementsByType(Process.class)
+            .stream()
+            .findFirst()
+            .orElseThrow();
+
+        BusinessRuleTask caseLinkedBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "caseLinkedBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        BusinessRuleTask customBusinessRuleTask = model.getModelElementsByType(BusinessRuleTask.class)
+            .stream()
+            .filter(brt -> "customBusinessRuleTask".equals(brt.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("some-case", "1.0.0");
+        String caseTag =
+            OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId;
+        String customNonCaseTag = "SOME_OTHER_TAG";
+
+        process.setOperatonVersionTag(caseTag);
+
+        caseLinkedBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        caseLinkedBusinessRuleTask.setOperatonDecisionRefVersionTag(caseTag);
+
+        customBusinessRuleTask.setOperatonDecisionRefBinding("versionTag");
+        customBusinessRuleTask.setOperatonDecisionRefVersionTag(customNonCaseTag);
+
+        assertThat(CaseDefinitionId.fromProcessVersionTag(caseTag)).isNotNull();
+        assertThat(CaseDefinitionId.fromProcessVersionTag(customNonCaseTag)).isNull();
+
+        operatonProcessService.updateCaseDefinitionProcessesVersionTags(model, null);
+
+        assertThat(process.getOperatonVersionTag()).isNull();
+
+        assertThat(caseLinkedBusinessRuleTask.getOperatonDecisionRefBinding()).isNull();
+        assertThat(caseLinkedBusinessRuleTask.getOperatonDecisionRefVersionTag()).isNull();
+
+        assertThat(customBusinessRuleTask.getOperatonDecisionRefBinding()).isEqualTo("versionTag");
+        assertThat(customBusinessRuleTask.getOperatonDecisionRefVersionTag()).isEqualTo(customNonCaseTag);
+    }
+
+    private BpmnModelInstance createBpmnModelWithBusinessRuleTasks() {
+        BpmnModelInstance model = Bpmn.createEmptyModel();
+
+        Definitions definitions = model.newInstance(Definitions.class);
+        definitions.setTargetNamespace("http://operaton.org/schema/bpmn");
+        model.setDefinitions(definitions);
+
+        Process process = model.newInstance(Process.class);
+        process.setId("testProcess");
+        process.setExecutable(true);
+        definitions.addChildElement(process);
+
+        BusinessRuleTask caseLinkedBusinessRuleTask = model.newInstance(BusinessRuleTask.class);
+        caseLinkedBusinessRuleTask.setId("caseLinkedBusinessRuleTask");
+        caseLinkedBusinessRuleTask.setOperatonDecisionRef("some-dmn");
+        process.addChildElement(caseLinkedBusinessRuleTask);
+
+        BusinessRuleTask customBusinessRuleTask = model.newInstance(BusinessRuleTask.class);
+        customBusinessRuleTask.setId("customBusinessRuleTask");
+        customBusinessRuleTask.setOperatonDecisionRef("another-dmn");
+        process.addChildElement(customBusinessRuleTask);
 
         return model;
     }

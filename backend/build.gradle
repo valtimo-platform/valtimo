@@ -47,7 +47,7 @@ jacoco {
 }
 
 checkstyle {
-    toolVersion = "12.1.1"
+    toolVersion = "12.3.1"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
@@ -151,6 +151,11 @@ allprojects {
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
                 dependency "org.apache.commons:commons-lang3:${commonsLangVersion}"
+
+                // TODO: Remove this later. This is a temporary override because the current 3.27.6 version
+                //  pulled in through operaton has vulnerabilities and no operaton fix is available as
+                //  of 03-02-2026
+                dependency "org.assertj:assertj-core:3.27.7"
             }
         }
 
@@ -162,11 +167,6 @@ allprojects {
 
     group = projectGroup
     version = projectVersion
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
 }
 
 apply from: "gradle/deployment.gradle"
@@ -190,7 +190,7 @@ subprojects { subproject ->
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
 
-        apply from: "$rootProject.projectDir/gradle/test.gradle"
+        apply from: "${rootProject.projectDir}/backend/gradle/test.gradle"
 
         tasks.register("allDeps", DependencyReportTask) {}
         tasks.register("allDepInsight", DependencyInsightReportTask) {
@@ -230,8 +230,9 @@ subprojects { subproject ->
         }
 
         checkstyle {
+            toolVersion = "12.3.1"
             //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
-            config project.resources.text.fromFile(rootProject.file("ritense_valtimo_only_checks.xml"))
+            config project.resources.text.fromFile(rootProject.file("backend/ritense_valtimo_only_checks.xml"))
             ignoreFailures = false
             showViolations = true
         }
@@ -253,7 +254,7 @@ subprojects { subproject ->
         }
     }
     if(project.name != "app" && project.name != "gradle" && project.name != "dependencies") {
-        apply from: "$rootProject.projectDir/gradle/publishing-module.gradle"
+        apply from: "${rootProject.projectDir}/backend/gradle/publishing-module.gradle"
     }
 }
 
@@ -278,6 +279,7 @@ tasks.register("cleanAll") {
 
 [
     "test",
+    "integrationTesting",
     "integrationTestingPostgresql",
     "integrationTestingMysql",
     "securityTesting"

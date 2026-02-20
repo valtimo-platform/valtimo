@@ -26,6 +26,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.util.UUID
 
@@ -58,7 +59,8 @@ class TestProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as TestProcessLinkDeployDto
         return TestProcessLinkUpdateRequestDto(
@@ -67,7 +69,7 @@ class TestProcessLinkMapper(
         )
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         deployDto as TestProcessLinkDeployDto
         return TestProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -86,7 +88,7 @@ class TestProcessLinkMapper(
         )
     }
 
-    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
+    override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         createRequestDto as TestProcessLinkCreateRequestDto
         return TestProcessLink(
             id = UUID.randomUUID(),
@@ -100,7 +102,7 @@ class TestProcessLinkMapper(
     override fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        blueprintId: BlueprintId?
     ): ProcessLink {
         updateRequestDto as TestProcessLinkUpdateRequestDto
 

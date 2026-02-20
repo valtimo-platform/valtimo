@@ -17,17 +17,19 @@
 package com.ritense.case.service
 
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.QuickSearch
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.QuickSearchRepository
-import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
+import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -61,7 +63,8 @@ class CaseInstanceService(
         )
         val newPageable = mutatePageable(caseListColumns, pageable)
 
-        val searchResults = documentSearchService.search(caseDefinitionKey, searchRequest, newPageable)
+        val searchResults = documentSearchService.search(caseDefinitionKey,
+            BlueprintType.CASE, searchRequest, newPageable)
         val lazySupplierMap = searchResults
             .map { it.definitionId().caseDefinitionId() }
             .toSet()
@@ -185,7 +188,9 @@ class CaseInstanceService(
         caseSupplier: () -> CaseDefinition
     ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
-        val resolvedValuesMap = valueResolverService.resolveValues(document.id().id.toString(), paths)
+        val resolvedValuesMap = runWithoutAuthorization {
+            valueResolverService.resolveValues(document.id().id.toString(), paths)
+        }
 
         val items = caseListColumns.map { caseListColumn ->
             CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])

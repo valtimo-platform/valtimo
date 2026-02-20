@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.b
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byFinal
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
+import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.service.validations.CreateCaseListColumnValidator
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
@@ -53,9 +55,11 @@ import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.semver4j.Semver
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -74,8 +78,9 @@ class CaseDefinitionService(
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val caseDefinitionChecker: CaseDefinitionChecker
-) {
+    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+    ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
             caseDefinitionListColumnRepository,
@@ -196,7 +201,7 @@ class CaseDefinitionService(
                 active = active,
                 final = final,
             )
-        return caseDefinitionRepository.findAll(spec)
+        return caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name")))
     }
 
     fun getCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
@@ -239,10 +244,17 @@ class CaseDefinitionService(
 
     fun finalizeCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
         denyManagementOperation()
+
+        val check = isCaseDefinitionFinalizable(caseDefinitionId)
+        require(check.finalizable) {
+            "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' cannot be made definitive. Reason: '${check.code}'."
+        }
+
         val caseDefinition = getCaseDefinition(caseDefinitionId)
         require(!caseDefinition.final) {
             "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' is already final."
         }
+
         return caseDefinitionRepository.save(caseDefinition.copy(final = true))
     }
 
@@ -428,6 +440,15 @@ class CaseDefinitionService(
             .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
             .map { caseDefinition -> caseDefinition.copy(active = true) }
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
+    }
+
+    fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
+        return caseDefinitionFinalizationCheckersProvider
+            .orderedStream()
+            .map { it.check(caseDefinitionId) }
+            .filter { !it.finalizable }
+            .findFirst()
+            .orElse(CaseDefinitionFinalizationCheckResult(finalizable = true))
     }
 
     private fun getCaseDefinitionsQuery(

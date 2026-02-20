@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,45 +27,47 @@ import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_LINK
 import com.ritense.logging.withLoggingContext
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byCaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class ProcessLinkImporter(
+open class ProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
     private val repositoryService: OperatonRepositoryService,
+    private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val objectMapper: ObjectMapper
 ) : Importer {
+
     override fun type() = PROCESS_LINK
 
     override fun dependsOn(): Set<String> {
-        return setOf(PROCESS_DEFINITION) +
-            processLinkService.getImporterDependsOnTypes()
+        return setOf(PROCESS_DEFINITION) + processLinkService.getImporterDependsOnTypes()
     }
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val processDefinitionKey = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
+        val processDefinitionKey = getFilenameRegexToImport().matchEntire(request.fileName)!!.groupValues[1]
+
         withLoggingContext("processDefinitionKey", processDefinitionKey) {
             val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
-                repositoryService.findProcessDefinition(
-                    byKey(processDefinitionKey)
-                        .and(byCaseDefinitionId(request.caseDefinitionId))
-                )?.id
-                    ?: throw IllegalStateException("Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey'.")
+                resolveProcessDefinitionId(request, processDefinitionKey)
             }
 
             val jsonTree = objectMapper.readTree(request.content.toString(Charsets.UTF_8))
-            require(jsonTree is ArrayNode) { "Error while processing file ${request.fileName}. Expected root item to be an array!" }
+            require(jsonTree is ArrayNode) {
+                "Error while processing file ${request.fileName}. Expected root item to be an array!"
+            }
 
             jsonTree.forEachIndexed { index, node ->
-                require(node is ObjectNode) { "Error while processing file ${request.fileName}. Expected item at index $index to be an object!" }
+                require(node is ObjectNode) {
+                    "Error while processing file ${request.fileName}. Expected item at index $index to be an object!"
+                }
 
                 if (!node.has("processDefinitionId")) {
                     node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
@@ -73,26 +75,50 @@ class ProcessLinkImporter(
 
                 val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
 
-                val processLinkCreateDto = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
-                    .toProcessLinkCreateRequestDto(deployDto)
+                val mapper = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
+                val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, request.caseDefinitionId)
 
                 try {
-                    processLinkService.createProcessLink(processLinkCreateDto, request.caseDefinitionId)
+                    processLinkService.createProcessLink(createDto, request.caseDefinitionId)
                 } catch (e: ProcessLinkExistsException) {
-                    try {
-                        val processLinkUpdateDto = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
-                            .toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId)
-                        processLinkService.updateProcessLink(processLinkUpdateDto, request.caseDefinitionId)
-                    } catch (e: IllegalStateException) {
-                        throw IllegalStateException(
-                            "Failed to deploy process link. For file: ${request.fileName} and activity-id: ${deployDto.activityId}",
-                            e
-                        )
-                    }
+                    val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId, request.caseDefinitionId)
+                    processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
                 }
             }
         }
     }
+
+    private fun resolveProcessDefinitionId(request: ImportRequest, processDefinitionKey: String): String {
+        val caseDefinitionId = request.caseDefinitionId
+
+        if (caseDefinitionId == null) {
+            return repositoryService.findLatestProcessDefinition(processDefinitionKey)?.id
+                ?: throw IllegalStateException(
+                    "Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey'."
+                )
+        }
+
+        val caseLinks = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(caseDefinitionId)
+
+        if (caseLinks.isEmpty()) {
+            throw IllegalStateException(
+                "Error while deploying '${request.fileName}'. No process definitions linked to case definition '$caseDefinitionId'."
+            )
+        }
+
+        val candidates: List<OperatonProcessDefinition> = caseLinks
+            .mapNotNull { repositoryService.findProcessDefinitionById(it.id.processDefinitionId.id) }
+            .filter { it.key == processDefinitionKey }
+
+        val latestCandidate = candidates.maxByOrNull { it.version }
+            ?: throw IllegalStateException(
+                "Error while deploying '${request.fileName}'. Could not find Process definition with key '$processDefinitionKey' linked to case definition '$caseDefinitionId'."
+            )
+
+        return latestCandidate.id
+    }
+
+    protected fun getFilenameRegexToImport(): Regex = FILENAME_REGEX
 
     private companion object {
         val FILENAME_REGEX = """/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()

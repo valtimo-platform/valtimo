@@ -31,7 +31,6 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.OperatonProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
@@ -250,7 +249,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             );
 
             final String processName = runWithoutAuthorization(
-                () -> operatonProcessService.getDefinitionByKeyAndCaseDefinition(request.newDocumentRequest().caseDefinitionId(), request.processDefinitionKey()).getName());
+                () -> operatonProcessService.getLatestDefinitionByKeyAndBlueprint(request.newDocumentRequest().blueprintId(), request.processDefinitionKey()).getName());
             processDocumentAssociationService.createProcessDocumentInstance(
                 request.processInstanceId(),
                 UUID.fromString(document.id().toString()),
@@ -355,11 +354,21 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         }
     }
 
+    /**
+     * Gets the document ID for the given process instance.
+     * The document is determined by:
+     * 1. Looking up the ProcessDocumentInstance association (if it exists)
+     * 2. Falling back to the process's business key (which is set to the document ID)
+     *
+     * This works for both case processes (business key = case document ID) and
+     * building block processes (business key = building block document ID).
+     */
     public JsonSchemaDocumentId getDocumentId(
         ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
     ) {
         denyAuthorization();
+
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)
             .orElse(null);
@@ -368,7 +377,8 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             return JsonSchemaDocumentId.existingId(jsonSchemaDocumentId);
         } else {
             // In case a process has no token wait state ProcessDocumentInstance is not yet created,
-            // therefore out business-key is our last chance which is populated with the documentId also.
+            // therefore the business-key is our fallback which is populated with the documentId.
+            // This works for both case processes and building block processes.
             var businessKey = getBusinessKey(processInstanceId, variableScope);
             if (businessKey != null && businessKey.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
                 return JsonSchemaDocumentId.existingId(businessKey);

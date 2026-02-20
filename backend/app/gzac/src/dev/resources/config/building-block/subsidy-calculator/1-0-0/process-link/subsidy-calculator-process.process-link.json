@@ -1,0 +1,66 @@
+[
+    {
+        "activityId": "ReviewCalculationTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "review-subsidy-calculation"
+    },
+    {
+        "activityId": "PatchZaakCalculationStartTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "description": "BB1: Subsidie berekening gestart"
+        }
+    },
+    {
+        "activityId": "CallHouseholdVerificationActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "household-verification",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            },
+            {
+                "source": "doc:householdSize",
+                "target": "householdSize"
+            },
+            {
+                "source": "doc:zaakOmschrijvingFromZgw",
+                "target": "parentZaakOmschrijving"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "verifiedApplicant",
+                "target": "doc:verifiedApplicant",
+                "syncTiming": "END"
+            },
+            {
+                "source": "baseSubsidyAmount",
+                "target": "doc:baseSubsidyAmount",
+                "syncTiming": "END"
+            },
+            {
+                "source": "incomeEligibilityResult",
+                "target": "doc:eligibilityResult",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakToelichtingBB2",
+                "target": "doc:zaakToelichtingBB2",
+                "syncTiming": "END"
+            },
+            {
+                "source": "zaakEinddatumGeplandBB3",
+                "target": "doc:zaakEinddatumGeplandBB3",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if (activeTabKey$ | async; as activeTabKey) {
+  <cds-tabs type="line">
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.general' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-general></valtimo-building-block-management-general>
+        }
+      </cds-tab>
+    }
+
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.document' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-document></valtimo-building-block-management-document>
+        }
+      </cds-tab>
+    }
+
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.processes' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-processes></valtimo-building-block-management-processes>
+        }
+      </cds-tab>
+    }
+
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORMS}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.forms' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.FORMS)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-forms></valtimo-building-block-management-forms>
+        }
+      </cds-tab>
+    }
+
+    @for (customTab of customTabs; track customTab.tabRoute) {
+      @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
+        <cds-tab
+          [active]="obs.active"
+          [heading]="customTab.translationKey | translate"
+          (selected)="switchTab(customTab.tabRoute)"
+        >
+          @if (obs.active) {
+            <ng-container *ngComponentOutlet="customTab.component"></ng-container>
+          }
+        </cds-tab>
+      }
+    }
+  </cds-tabs>
+}
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <div class="building-block-management-detail__header">
+      <valtimo-building-block-management-detail-actions></valtimo-building-block-management-detail-actions>
+    </div>
+  </ng-template>
+</ng-container>

@@ -27,8 +27,10 @@ import {
   OnInit,
   Output,
   Signal,
+  signal,
   TemplateRef,
   ViewEncapsulation,
+  WritableSignal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -44,10 +46,13 @@ import {
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  SelectItem,
+  SelectModule,
   ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
+import {Direction} from '@valtimo/shared';
 import {
   AccordionModule,
   ButtonModule,
@@ -59,9 +64,12 @@ import {
   InputModule,
   LayerModule,
   ListItem,
+  ToggleModule,
+  TagModule,
 } from 'carbon-components-angular';
-import {debounceTime, Observable, Subscription} from 'rxjs';
-import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
+import {debounceTime, map, Observable, startWith, Subscription, take, tap} from 'rxjs';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
+import {IWidgetManagementService} from '../../../../../interfaces';
 import {
   FieldsWidgetValue,
   WidgetCurrencyDisplayType,
@@ -69,13 +77,12 @@ import {
   WidgetDateTimeDisplayType,
   WidgetDisplayTypeKey,
   WidgetEnumDisplayType,
+  WidgetLinkDisplayType,
   WidgetNumberDisplayType,
   WidgetTextDisplayType,
   WidgetType,
-  WidgetLinkDisplayType,
 } from '../../../../../models';
-import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
-import {IWidgetManagementService} from '../../../../../interfaces';
+import {WidgetFieldsService, WidgetWizardService} from '../../../../../services';
 
 @Component({
   selector: 'valtimo-widget-management-fields-column',
@@ -97,6 +104,9 @@ import {IWidgetManagementService} from '../../../../../interfaces';
     ValuePathSelectorComponent,
     CheckboxModule,
     LayerModule,
+    SelectModule,
+    TagModule,
+    ToggleModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -106,6 +116,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
   @Input() public selectedCollection?: ValuePathItem;
   @Input() public showHideWhenEmptyCheckbox = false;
+  @Input() public showSortableCheckbox = false;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsWidgetValue[];
@@ -140,10 +151,26 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   public readonly $isFieldWidget: Signal<boolean> = computed(
     () => this.$widgetType() === WidgetType.FIELDS
   );
-
+  public readonly $isInteractiveTableWidget: Signal<boolean> = computed(
+    () => this.$widgetType() === WidgetType.INTERACTIVE_TABLE
+  );
+  public readonly defaultSortIndexForTemplate$ = this.formRows?.valueChanges.pipe(
+    map(() => this.formRows?.getRawValue().findIndex(column => !!column.defaultSort))
+  );
+  private readonly _$defaultSortIndex = signal<number>(-1);
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;
+  public readonly DEFAULT_SORT_OPTIONS: SelectItem[] = [
+    {
+      id: 'ASC',
+      translationKey: 'interface.sorting.ascending',
+    },
+    {
+      id: 'DESC',
+      translationKey: 'interface.sorting.descending',
+    },
+  ];
 
-  private _subscriptions = new Subscription();
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
@@ -185,6 +212,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           Validators.pattern('[1-9][0-9]*')
         ),
         hideWhenEmpty: this.fb.control<boolean>(false),
+        sortable: this.fb.control<boolean>(false),
+        defaultSort: this.fb.control<Direction | null>({value: null, disabled: true}),
       })
     );
   }
@@ -198,7 +227,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
 
   public onTypeSelected(formRow: FormGroup, event: {item: ListItem}): void {
     this.widgetFieldsService.onDisplayTypeSelected(
-      ['title', 'content', 'type', 'hideWhenEmpty'],
+      ['title', 'content', 'type', 'hideWhenEmpty', 'sortable', 'defaultSort'],
       formRow,
       event
     );
@@ -211,6 +240,17 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
         value: this.fb.control('', Validators.required),
       })
     );
+  }
+
+  public onSortableCheckChange(columnIndex: number, checkValue: boolean): void {
+    if (checkValue) return;
+
+    this.formRows?.at(columnIndex).patchValue({defaultSort: null});
+  }
+
+  public onSelectedDefaultSortChange(columnIndex: number): void {
+    this.formRows?.at(this._$defaultSortIndex()).patchValue({defaultSort: null});
+    this._$defaultSortIndex.set(columnIndex);
   }
 
   private typeSelectValidator(control: AbstractControl): null | {[key: string]: string} {
@@ -241,6 +281,11 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           (row.displayProperties as WidgetTextDisplayType)?.ellipsisCharacterLimit ?? null,
           Validators.pattern('[1-9][0-9]*')
         ),
+      }),
+      sortable: this.fb.control<boolean>(row.sortable ?? false),
+      defaultSort: this.fb.control<Direction | null>({
+        value: row.defaultSort,
+        disabled: !row.sortable,
       }),
       hideWhenEmpty: this.fb.control(
         (row.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false
@@ -298,15 +343,12 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       return;
     }
 
-    const rowsControl = this.formGroup.get('rows') as FormArray;
-    if (!rowsControl) return;
+    if (!this.formRows) return;
 
     this.columnData.forEach((row: FieldsWidgetValue) => {
-      rowsControl.push(this.getRowForm(row), {emitEvent: false});
+      this.formRows?.push(this.getRowForm(row), {emitEvent: false});
     });
-
     this.columnUpdateEvent.emit({data: this.columnData, valid: true});
-    this.cdr.detectChanges();
   }
 
   private openFormSubscription(): void {
@@ -316,6 +358,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
           title: row.title,
           value: row.content,
+          ...(row.sortable !== undefined && {sortable: row.sortable}),
+          ...(row.defaultSort && row.sortable && {defaultSort: row.defaultSort}),
           ...(!!row?.type.id && {
             displayProperties: {
               type: row.type.id,

@@ -23,7 +23,12 @@
 
     <cds-tabs class="iko-search-tabs" type="line">
       @for (param of ikoSearchActions; track param.key ?? param.fields?.[0]?.key) {
-        <cds-tab class="query-group" [heading]="param.title" [cdsLayer]="1">
+        <cds-tab
+          (keyup.enter)="!searchDisabled(param.searchFields) && searchGroup(param.key, param.searchFields)"
+          class="query-group"
+          [heading]="param.title"
+          [cdsLayer]="1"
+        >
           <div class="query-group__row">
             @for (field of param.searchFields; track field.key) {
               <div
@@ -64,6 +69,31 @@
                       [placeholder]="'searchFields.textPlaceholder' | translate"
                     ></v-input>
                   </v-form>
+                }
+                @else if (field.dataType === 'text' && (field.fieldType === 'single-select-dropdown' || field.fieldType === 'single_select_dropdown')) {
+                  <v-select
+                    *ngIf="dropdownSelectItemsMap[field.key]"
+                    [items]="dropdownSelectItemsMap[field.key]"
+                    [margin]="false"
+                    [required]="field.required"
+                    [name]="field.key"
+                    [clearSelectionSubject$]="clear$"
+                    (selectedChange)="singleValueChange(field.key, $event, field.dataType)"
+                    [appendInline]="false"
+                  ></v-select>
+                }
+                @else if (field.dataType === 'text' && (field.fieldType === 'multi-select-dropdown' || field.fieldType === 'multi_select_dropdown')) {
+                  <v-select
+                    *ngIf="dropdownSelectItemsMap[field.key]"
+                    [items]="dropdownSelectItemsMap[field.key]"
+                    [margin]="false"
+                    [multiple]="true"
+                    [required]="field.required"
+                    [name]="field.key"
+                    [clearSelectionSubject$]="clear$"
+                    (selectedChange)="multipleValueChange(field.key, $event, field.dataType)"
+                    [appendInline]="false"
+                  ></v-select>
                 }
                 @else if (field.dataType === 'number' && field.fieldType === 'single') {
                   <v-input

@@ -13,6 +13,8 @@ management:
             show-details: when_authorized
             roles:
                 - ROLE_ACTUATOR
+            probes:
+                enabled: true
 
 spring:
     profiles:
@@ -183,6 +185,11 @@ valtimo:
             retention-period: 5m
             poll-interval: PT1S
 
+    case:
+        processing:
+            retention:
+                poll-interval: PT30M
+
     hardening:
         allowStacktraceOnIps:
             - 127.0.0.1
@@ -284,3 +291,7 @@ operaton:
             id: ${OPERATON_BPM_ADMINUSER_ID:Admin}
             password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
             first-name: Admin account
+    incident:
+        alert-log:
+            enabled: true
+            message-template: "OPERATON_INCIDENT_FAILED_JOB: processInstanceId={processInstanceId} incidentId={incidentId}"

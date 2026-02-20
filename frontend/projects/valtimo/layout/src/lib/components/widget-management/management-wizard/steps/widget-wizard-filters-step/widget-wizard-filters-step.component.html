@@ -1,0 +1,134 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+-->
+<form [formGroup]="formGroup" class="valtimo-widget-wizard-filters">
+  <cds-accordion formArrayName="filters" align="start" size="sm">
+    @for (filterRow of filters.controls; track $index) {
+      <cds-accordion-item
+        [title]="filterTitle"
+        [expanded]="expandedFilterIndex === $index"
+        [context]="{
+          title: filterRow.get('title')?.value,
+          count: $count,
+          index: $index,
+        }"
+        (selected)="onFilterAccordionSelection($event.expanded, $index)"
+        class="valtimo-widget-wizard-filters__item"
+      >
+        <form
+          [formGroup]="filterRow"
+          class="valtimo-widget-wizard-filters__container"
+          (click)="$event.stopImmediatePropagation()"
+        >
+          <div class="valtimo-widget-wizard-filters__row">
+            <cds-text-label>
+              <v-input-label
+                [title]="'widgetTabManagement.filters.title' | translate"
+                [tooltip]="'widgetTabManagement.filters.titleTooltip' | translate"
+              ></v-input-label>
+
+              <input
+                cdsText
+                formControlName="title"
+                [placeholder]="'widgetTabManagement.filters.titlePlaceholder' | translate"
+                type="text"
+              />
+            </cds-text-label>
+
+            <cds-text-label>
+              <v-input-label
+                [title]="'widgetTabManagement.filters.key' | translate"
+                [tooltip]="'widgetTabManagement.filters.keyTooltip' | translate"
+              ></v-input-label>
+
+              <input
+                cdsText
+                formControlName="key"
+                [placeholder]="'widgetTabManagement.filters.keyPlaceholder' | translate"
+                type="text"
+              />
+            </cds-text-label>
+
+            <cds-dropdown
+              cdsLayer
+              [label]="'widgetTabManagement.filters.dataType' | translate"
+              [placeholder]="'widgetTabManagement.filters.dataTypePlaceholder' | translate"
+              formControlName="dataType"
+            >
+              <cds-dropdown-list [items]="getDataTypeDropdownItems(filterRow)"></cds-dropdown-list>
+            </cds-dropdown>
+
+            <cds-dropdown
+              cdsLayer
+              [label]="'widgetTabManagement.filters.fieldType' | translate"
+              [placeholder]="'widgetTabManagement.filters.fieldTypePlaceholder' | translate"
+              formControlName="fieldType"
+            >
+              <cds-dropdown-list [items]="getFieldTypeDropdownItems(filterRow)"></cds-dropdown-list>
+            </cds-dropdown>
+          </div>
+        </form>
+      </cds-accordion-item>
+    }
+  </cds-accordion>
+
+  <button cdsButton="primary" size="sm" type="button" (click)="addFilter()">
+    {{ 'widgetTabManagement.filters.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</form>
+
+<ng-template #filterTitle let-title="title" let-count="count" let-index="index">
+  <div class="valtimo-widget-wizard-filters__title">
+    <span>
+      {{ title || ('widgetTabManagement.filters.titlePlaceholder' | translate) }}
+    </span>
+
+    <section class="valtimo-widget-wizard-filters__actions">
+      <button
+        cdsButton="tertiary"
+        [disabled]="index === 0"
+        [iconOnly]="true"
+        size="sm"
+        type="button"
+        (click)="onMoveUpClick($event, {index: index, length: count})"
+      >
+        <svg cdsIcon="arrow--up" size="16"></svg>
+      </button>
+
+      <button
+        cdsButton="tertiary"
+        [disabled]="index === count - 1"
+        [iconOnly]="true"
+        size="sm"
+        type="button"
+        (click)="onMoveDownClick($event, {index: index, length: count})"
+      >
+        <svg cdsIcon="arrow--down" size="16"></svg>
+      </button>
+
+      <button
+        cdsButton="danger"
+        [iconOnly]="true"
+        type="button"
+        class="valtimo-widget-wizard-filters__delete-button"
+        (click)="removeFilter($event, index)"
+      >
+        <svg cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </section>
+  </div>
+</ng-template>

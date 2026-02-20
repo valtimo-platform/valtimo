@@ -21,7 +21,9 @@ import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
+import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -37,7 +39,7 @@ class CaseTabDocumentDefinitionMapper(
     override fun mapRelated(entity: CaseTab): List<JsonSchemaDocumentDefinition> {
         return runWithoutAuthorization {
             listOf(
-                documentDefinitionService.findByCaseDefinitionId(entity.id.caseDefinitionId)
+                documentDefinitionService.findByBlueprintId(entity.id.caseDefinitionId)
                     .map { it as JsonSchemaDocumentDefinition }
                     .getOrNull()
                     ?: throw EntityNotFoundException("JsonSchemaDocumentDefinition with name ${entity.id.caseDefinitionId.key} and version tag ${entity.id.caseDefinitionId.versionTag} not found")
@@ -56,10 +58,28 @@ class CaseTabDocumentDefinitionMapper(
         subquery.select(criteriaBuilder.literal(1))
             .where(
                 criteriaBuilder.equal(
-                    root.get<CaseTabId>("id").get<String>("caseDefinitionId"),
                     subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionBlueprintId>("blueprintId")
+                        .get<BlueprintType>("blueprintType"),
+                    BlueprintType.CASE
+                ),
+                criteriaBuilder.equal(
+                    root.get<CaseTabId>("id")
                         .get<CaseDefinitionId>("caseDefinitionId")
+                        .get<String>("key"),
+                    subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionBlueprintId>("blueprintId")
+                        .get<String>("blueprintKey")
+                ),
+                criteriaBuilder.equal(
+                    root.get<CaseTabId>("id")
+                        .get<CaseDefinitionId>("caseDefinitionId")
+                        .get<String>("versionTag"),
+                    subRoot.get<JsonSchemaDocumentDefinitionId>("id")
+                        .get<JsonSchemaDocumentDefinitionBlueprintId>("blueprintId")
+                        .get<String>("blueprintVersionTag")
                 )
+
             )
 
         return AuthorizationEntityMapperResult(

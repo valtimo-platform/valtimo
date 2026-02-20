@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ open class TestImporter(
     private val type: String = "test",
     private val dependsOn: Set<String> = setOf(),
     private val supportsFunction: (String) -> Boolean = { true },
-    private val importFunction: (ImportRequest) -> Unit = { }
+    private val importFunction: (ImportRequest) -> Unit = { },
+    private val isCaseDefinition: Boolean = true
 ) : Importer {
     override fun type() = type
 
@@ -30,5 +31,5 @@ open class TestImporter(
 
     override fun import(request: ImportRequest) = importFunction(request)
 
-    override fun partOfCaseDefinition(): Boolean = false
+    override fun partOfCaseDefinition(): Boolean = isCaseDefinition
 }

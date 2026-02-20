@@ -13,6 +13,6 @@ class ExampleService {
 
 This method can then be called in expressions:
 
-![Configuration of bean expression in camunda modeller](../../../.gitbook/assets/camunda-config.png)
+![Configuration of bean expression in operaton modeller](../../../.gitbook/assets/operaton-config.png)
 
 Beans can be used in any BPMN activity that allow expressions as its implementation such as service or send tasks. Execution listeners on any activity type have access to these beans as well.

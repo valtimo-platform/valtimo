@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.operaton.repository
 
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
 import org.springframework.data.jpa.domain.Specification
 
@@ -88,7 +89,7 @@ class OperatonDecisionDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        "CD:"
+                        OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )

@@ -18,6 +18,8 @@
     inputTheme: inputTheme$ | async,
     params: params$ | async,
     widgetType: $widgetType() === 'interactive-table' ? 'table' : $widgetType(),
+    defaultSortIndex: defaultSortIndexForTemplate$ | async,
+    isInteractiveTable: $widgetType() === 'interactive-table',
   } as data"
   class="valtimo-widget-management-field-column"
   [formGroup]="formGroup"
@@ -26,7 +28,12 @@
     @for (formRow of formRows.controls; track $index) {
       <cds-accordion-item
         [title]="fieldTitle"
-        [context]="{count: $count, index: $index, title: formRow.get('title')?.value}"
+        [context]="{
+          count: $count,
+          index: $index,
+          title: formRow.get('title')?.value,
+          defaultSortIndex: data.defaultSortIndex,
+        }"
         [expanded]="$index === 0"
         class="valtimo-widget-management-field-column__item"
       >
@@ -83,8 +90,8 @@
               @if ($widgetContext() === 'case') {
                 <valtimo-value-path-selector
                   formControlName="content"
-                  [caseDefinitionKey]="data.params?.caseDefinitionKey ?? 'bezwaar'"
-                  [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag ?? '1.0.1'"
+                  [caseDefinitionKey]="data.params?.caseDefinitionKey"
+                  [caseDefinitionVersionTag]="data.params?.caseDefinitionVersionTag"
                   [parentItem]="selectedCollection"
                 ></valtimo-value-path-selector>
               } @else {
@@ -359,6 +366,34 @@
             <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty">
               {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
             </cds-checkbox>
+
+            <div
+              *ngIf="showSortableCheckbox"
+              class="valtimo-widget-management-field-column__sorting"
+            >
+              <cds-checkbox
+                formControlName="sortable"
+                (checkedChange)="onSortableCheckChange($index, $event)"
+              >
+                {{ 'listColumn.sortable' | translate }}
+              </cds-checkbox>
+
+              <v-select
+                formControlName="defaultSort"
+                [disabled]="!formRow.get('sortable')?.value"
+                [items]="DEFAULT_SORT_OPTIONS"
+                [dropUp]="false"
+                [placeholder]="'interface.sorting.noDefault' | translate"
+                [defaultSelectionId]="formRow.get('defaultSort')?.value"
+                [warn]="
+                  data.defaultSortIndex !== -1 &&
+                  data.defaultSortIndex !== $index &&
+                  !!formRow.get('sortable')?.value
+                "
+                [warnText]="'widgetTabManagement.content.fields.defaultSortWarning' | translate"
+                (selectedChange)="onSelectedDefaultSortChange($index)"
+              ></v-select>
+            </div>
           </div>
         </form>
       </cds-accordion-item>
@@ -372,9 +407,21 @@
   </button>
 </form>
 
-<ng-template #fieldTitle let-count="count" let-index="index" let-title="title">
+<ng-template
+  #fieldTitle
+  let-defaultSortIndex="defaultSortIndex"
+  let-count="count"
+  let-index="index"
+  let-title="title"
+>
   <div class="valtimo-widget-management-field-column__title">
-    {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
+    <section>
+      {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
+
+      <cds-tag *ngIf="$isInteractiveTableWidget() && defaultSortIndex === index" type="blue">
+        {{ 'ikoManagement.defaultSortTitle' | translate }}
+      </cds-tag>
+    </section>
 
     <button
       cdsButton="danger"

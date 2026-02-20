@@ -88,15 +88,19 @@ import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../..
   imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('form') form: FormioComponent;
+  @ViewChild('form') form!: FormioComponent;
   @ViewChild('formViewModelComponent', {static: false, read: ViewContainerRef})
-  public formViewModelDynamicContainer: ViewContainerRef;
-  @ViewChild('formFlow') public formFlow: FormFlowComponent;
+  public formViewModelDynamicContainer!: ViewContainerRef;
+  @ViewChild('formFlow') public formFlow!: FormFlowComponent;
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
-  public formCustomComponentDynamicContainer: ViewContainerRef;
+  public formCustomComponentDynamicContainer!: ViewContainerRef;
   @Input() public set task(value: Task | null) {
     if (!value) return;
 
+    if (this.taskInstanceId$.getValue() === value.id) {
+      this.task$.next(value);
+      return;
+    }
     this.loadTaskDetails(value);
   }
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
@@ -125,8 +129,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly formName$ = new BehaviorSubject<string | null>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  public readonly page$ = new BehaviorSubject<any>(null);
-  public readonly submission$ = this.taskIntermediateSaveService.submission$;
+  public readonly submission$: Observable<any>;
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string | null>(null);
   public intermediateSaveEnabled = false;
@@ -185,6 +188,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     options.disableAlerts = true;
     this.formioOptions$.next(options);
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
+    this.submission$ = this.taskIntermediateSaveService.submission$;
   }
   public ngOnInit(): void {
     this.openPermissionSubscription();
@@ -272,10 +276,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
-    this.page$.next({
-      title: task.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
-    });
     this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
@@ -341,14 +341,14 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
             .pipe(take(1))
             .subscribe(([variables, task]) => {
               let url = this.urlResolverService.resolveUrlVariables(
-                processLinkResult.properties.url,
+                processLinkResult.properties.url!,
                 variables.variables
               );
-              window.open(url, '_blank').focus();
+              window.open(url, '_blank')!.focus();
               this.processLinkService
-                .submitURLProcessLink(processLinkResult.processLinkId, task.businessKey, task.id)
+                .submitURLProcessLink(processLinkResult.processLinkId, task!.businessKey, task!.id)
                 .subscribe(() => {
-                  this.completeTask(task);
+                  this.completeTask(task!);
                 });
             });
           break;
@@ -357,7 +357,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           this._processLinkId$.next(processLinkResult.processLinkId);
           this.formDefinition$.next(null);
           this.formName$.next('');
-          this.setFormCustomComponent(processLinkResult.properties.componentKey);
+          this.setFormCustomComponent(processLinkResult.properties.componentKey!);
           break;
       }
 
@@ -452,7 +452,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           }
           let renderedComponent: ComponentRef<FormCustomComponent>;
           this._subscriptions.add(
-            this._formCustomComponentConfig$.subscribe(formCustomComponentConfig => {
+            this._formCustomComponentConfig$.subscribe((formCustomComponentConfig: any) => {
               const customComponent = formCustomComponentConfig[formCustomComponentKey];
               renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
                 customComponent

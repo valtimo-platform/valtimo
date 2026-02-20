@@ -37,7 +37,8 @@
                         }
                     ]
                 ]
-            }
+            },
+            "color": "HIGHCONTRAST"
         },
         {
             "type": "collection",
@@ -69,7 +70,8 @@
                         "width": "full"
                     }
                 ]
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "fields",
@@ -106,7 +108,8 @@
                         }
                     ]
                 ]
-            }
+            },
+            "color": "HIGHCONTRAST"
         },
         {
             "type": "collection",
@@ -144,7 +147,8 @@
                         "width": "full"
                     }
                 ]
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "interactive-table",
@@ -162,18 +166,20 @@
             ],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoViewKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
+                "collection": "iko:?ikoViewKey=zaak&id=ZAAK-2025-0000000001",
                 "defaultPageSize": 4,
                 "columns": [
                     {
                         "key": "identificatie",
                         "title": "Identificatie",
-                        "value": "/identificatie"
+                        "value": "/identificatie",
+                        "sortable": false
                     },
                     {
                         "key": "verantwoordelijkeOrganisatie",
                         "title": "VerantwoordelijkeOrganisatie",
-                        "value": "/verantwoordelijkeOrganisatie"
+                        "value": "/verantwoordelijkeOrganisatie",
+                        "sortable": false
                     },
                     {
                         "key": "uiterlijkeEinddatum",
@@ -183,7 +189,31 @@
                             "type": "date",
                             "format": "DD-MM-YYYY",
                             "hideWhenEmpty": false
-                        }
+                        },
+                        "sortable": false
+                    }
+                ],
+                "filters": [
+                    {
+                        "key": "identificatie",
+                        "title": "Identificatie",
+                        "dataType": "text",
+                        "fieldType": "single",
+                        "matchType": "exact"
+                    },
+                    {
+                        "key": "verantwoordelijkeOrganisatie",
+                        "title": "VerantwoordelijkeOrganisatie",
+                        "dataType": "text",
+                        "fieldType": "multi-select-dropdown",
+                        "matchType": "exact"
+                    },
+                    {
+                        "key": "uiterlijkeEinddatum",
+                        "title": "Uiterlijke einddatum",
+                        "dataType": "date",
+                        "fieldType": "range",
+                        "matchType": "exact"
                     }
                 ],
                 "firstColumnAsTitle": false,
@@ -192,7 +222,8 @@
                     "navigateTo": "${$.kenmerken[?(@.kenmerk =~ /^originUrl[0-9]*$/)].bron}"
                 },
                 "canStartCase": true
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "table",
@@ -205,7 +236,7 @@
             "actions": [],
             "displayConditions": [],
             "properties": {
-                "collection": "iko:?ikoViewKey=boom&boombeeld=Aanvaard boombeeld&id=",
+                "collection": "iko:?ikoViewKey=boom&id=1234",
                 "defaultPageSize": 4,
                 "columns": [
                     {
@@ -225,7 +256,8 @@
                     }
                 ],
                 "firstColumnAsTitle": false
-            }
+            },
+            "color": "WHITE"
         }
     ]
 }
