@@ -65,6 +65,18 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "informatieobjecttypeOmschrijving",
+                            "operator": "==",
+                            "value": "test"
+                        }
+                    ]
                 }
             ]
         },
@@ -84,6 +96,18 @@
                             "value": [
                                 "bezwaar"
                             ]
+                        }
+                    ]
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "informatieobjecttypeOmschrijving",
+                            "operator": "==",
+                            "value": "test"
                         }
                     ]
                 }
@@ -107,6 +131,18 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "informatieobjecttypeOmschrijving",
+                            "operator": "==",
+                            "value": "test"
+                        }
+                    ]
                 }
             ]
         },
@@ -126,6 +162,18 @@
                             "value": [
                                 "bezwaar"
                             ]
+                        }
+                    ]
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "informatieobjecttypeOmschrijving",
+                            "operator": "==",
+                            "value": "test"
                         }
                     ]
                 }

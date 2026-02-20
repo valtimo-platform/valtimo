@@ -54,8 +54,13 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, null, documentId)
         val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, null,documentId)
+        val documentInputStream = documentenApiService.downloadInformatieObject(
+            pluginConfigurationId,
+            null,
+            documentId,
+            documentMetadata.informatieobjecttype
+        )
 
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")

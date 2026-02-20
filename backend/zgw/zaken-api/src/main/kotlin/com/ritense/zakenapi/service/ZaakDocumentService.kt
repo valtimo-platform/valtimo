@@ -352,8 +352,8 @@ class ZaakDocumentService(
         )
     }
 
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String, informatieobjecttype: String?) =
+        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId, informatieobjecttype)
 
     fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
         documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)

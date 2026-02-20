@@ -59,7 +59,8 @@ class ZaakDocumentResource(
         zaakDocumentService.deleteInformatieObject(
             pluginConfigurationId,
             caseDocumentId,
-            documentId)
+            documentId
+        )
         return ResponseEntity
             .noContent()
             .build()
@@ -74,11 +75,13 @@ class ZaakDocumentResource(
     ): ResponseEntity<RelatedFile> {
         return ResponseEntity
             .ok()
-            .body(zaakDocumentService.modifyInformatieObject(
-                pluginConfigurationId,
-                caseDocumentId,
-                documentId,
-                modifyDocumentRequest)
+            .body(
+                zaakDocumentService.modifyInformatieObject(
+                    pluginConfigurationId,
+                    caseDocumentId,
+                    documentId,
+                    modifyDocumentRequest
+                )
             )
     }
 
@@ -96,9 +99,13 @@ class ZaakDocumentResource(
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentInputStream = zaakDocumentService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
-        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId,caseDocumentId, documentId)
-
+        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        val documentInputStream = zaakDocumentService.downloadInformatieObject(
+            pluginConfigurationId,
+            caseDocumentId,
+            documentId,
+            documentMetadata.informatieobjecttype
+        )
         val responseHeaders = HttpHeaders()
         responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
         val contentDisposition = org.springframework.http.ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
@@ -122,7 +129,11 @@ class ZaakDocumentResource(
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable,
     ): Page<DocumentenApiDocumentDto> {
-        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(caseDocumentId, documentSearchRequest, pageable)
+        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(
+            caseDocumentId,
+            documentSearchRequest,
+            pageable
+        )
     }
 
     @GetMapping("/v1/zaken-api/document/{caseDocumentId}/zaak")

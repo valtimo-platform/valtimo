@@ -76,11 +76,12 @@ class DocumentenApiService(
     fun downloadInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
         @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK) caseDocumentId: UUID?,
-        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String,
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.INFORMATIEOBJECTTYPE) informatieobjecttype: String?
     ): InputStream {
         logger.info { "Download informatie object $documentId" }
         val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(pluginConfigurationId)
-        return documentApiPlugin.downloadInformatieObject(caseDocumentId, documentId)
+        return documentApiPlugin.downloadInformatieObject(caseDocumentId, documentId, informatieobjecttype)
     }
 
     fun getInformatieObject(

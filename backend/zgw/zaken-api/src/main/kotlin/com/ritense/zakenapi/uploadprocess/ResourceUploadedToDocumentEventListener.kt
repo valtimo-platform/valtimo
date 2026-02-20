@@ -45,7 +45,10 @@ class ResourceUploadedToDocumentEventListener(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     CREATE,
-                    ResourcePermission(UUID.fromString(caseDocumentId))
+                    ResourcePermission(
+                        UUID.fromString(caseDocumentId),
+                        metadata.get("informatieobjecttype").toString()
+                    ),
                 )
             )
             logger.debug { "Uploading resource to document: ${event.resourceId}" }

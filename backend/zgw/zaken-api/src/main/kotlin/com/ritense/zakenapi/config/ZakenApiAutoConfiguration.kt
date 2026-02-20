@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.config
 
+import org.springframework.context.annotation.Lazy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
@@ -37,6 +38,8 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
+import com.ritense.zakenapi.authorization.ZaakDocumentMapper
+import com.ritense.zakenapi.authorization.ZaakDocumentSpecificationFactory
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
 import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
@@ -146,7 +149,7 @@ class ZakenApiAutoConfiguration {
         catalogiService: CatalogiService,
         documentenApiService: DocumentenApiService,
         documentenApiVersionService: DocumentenApiVersionService,
-        authorizationService: AuthorizationService,
+        @Lazy authorizationService: AuthorizationService,
     ) = ZaakDocumentService(
         zaakUrlProvider,
         pluginService,
@@ -375,4 +378,18 @@ class ZakenApiAutoConfiguration {
         pluginService,
         zaakNotitieService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakDocumentMapper::class)
+    fun zaakDocumentMapper(
+        @Lazy zaakDocumentService: ZaakDocumentService
+    ) = ZaakDocumentMapper(
+        zaakDocumentService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakDocumentSpecificationFactory::class)
+    fun zaakDocumentSpecificationFactory(): ZaakDocumentSpecificationFactory {
+        return ZaakDocumentSpecificationFactory()
+    }
 }

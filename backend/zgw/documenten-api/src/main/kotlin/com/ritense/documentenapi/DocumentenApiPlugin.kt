@@ -229,7 +229,8 @@ class DocumentenApiPlugin(
         val content = client.downloadInformatieObjectContent(
             authenticationPluginConfiguration,
             caseDocumentId,
-            documentUrl
+            documentUrl,
+            metaData.informatieobjecttype
         )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
@@ -248,12 +249,18 @@ class DocumentenApiPlugin(
         return tempResourceId
     }
 
-    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {
-        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId, caseDocumentId)
+    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String, informatieobjecttype: String?): InputStream {
+        return client.downloadInformatieObjectContent(
+            authenticationPluginConfiguration,
+            url,
+            objectId,
+            caseDocumentId,
+            informatieobjecttype
+        )
     }
 
     fun getInformatieObject(objectId: String, caseDocumentId: UUID?): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, url, caseDocumentId,objectId)
+        return client.getInformatieObject(authenticationPluginConfiguration, url, caseDocumentId, objectId)
     }
 
     fun getInformatieObject(objectUrl: URI, caseDocumentId: UUID?): DocumentInformatieObject {
@@ -298,7 +305,10 @@ class DocumentenApiPlugin(
             runWithoutAuthorization {
                 require(
                     documentenApiVersionService.getVersionByTag(apiVersion).supportsUpdatingDefinitiveDocument
-                        || getInformatieObject(objectUrl = documentUrl, caseDocumentId).status != DocumentStatusType.DEFINITIEF
+                        || getInformatieObject(
+                        objectUrl = documentUrl,
+                        caseDocumentId
+                    ).status != DocumentStatusType.DEFINITIEF
                 ) {
                     "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated in Documenten API with '$apiVersion'"
                 }
@@ -348,25 +358,26 @@ class DocumentenApiPlugin(
     ): CreateDocumentResult {
         // Optional virus scan of the incoming content stream. Since InputStream is one-shot, buffer to bytes
         // when scanning and rebuild an InputStream for the actual upload.
-        val (contentInputStream, augmentedMetadata) = virusScanService.takeIf { virusScanEnabledForDocumentenApiPlugin }?.let { svc ->
-            val existingScanFlag = metadata[MetadataType.VIRUS_SCANNED_RESULT.key]?.toString()
-            if (existingScanFlag == VirusScanStatus.OK.toString()) {
-                // Already scanned and marked OK in metadata; skip scanning
-                inhoudAsInputStream to metadata
-            } else {
-                val bytes = inhoudAsInputStream.readBytes()
-                val scanResult = svc.scan(bytes)
-                if (scanResult.status == VirusScanStatus.VIRUS_FOUND) {
-                    throw VirusDetectedException(
-                        "virus detected, found viruses: " +
-                            scanResult.foundViruses.entries.joinToString("; ") { (k, v) -> "$k=${v.joinToString(",")}" }
-                    )
+        val (contentInputStream, augmentedMetadata) = virusScanService.takeIf { virusScanEnabledForDocumentenApiPlugin }
+            ?.let { svc ->
+                val existingScanFlag = metadata[MetadataType.VIRUS_SCANNED_RESULT.key]?.toString()
+                if (existingScanFlag == VirusScanStatus.OK.toString()) {
+                    // Already scanned and marked OK in metadata; skip scanning
+                    inhoudAsInputStream to metadata
+                } else {
+                    val bytes = inhoudAsInputStream.readBytes()
+                    val scanResult = svc.scan(bytes)
+                    if (scanResult.status == VirusScanStatus.VIRUS_FOUND) {
+                        throw VirusDetectedException(
+                            "virus detected, found viruses: " +
+                                scanResult.foundViruses.entries.joinToString("; ") { (k, v) -> "$k=${v.joinToString(",")}" }
+                        )
+                    }
+                    ByteArrayInputStream(bytes) to (metadata + mapOf(
+                        MetadataType.VIRUS_SCANNED_RESULT.key to scanResult.status.toString()
+                    ))
                 }
-                ByteArrayInputStream(bytes) to (metadata + mapOf(
-                    MetadataType.VIRUS_SCANNED_RESULT.key to scanResult.status.toString()
-                ))
-            }
-        } ?: (inhoudAsInputStream to metadata)
+            } ?: (inhoudAsInputStream to metadata)
 
         val caseDocumentId = execution.businessKey
             ?: throw IllegalStateException("Failed to store document. Business key is null.")
