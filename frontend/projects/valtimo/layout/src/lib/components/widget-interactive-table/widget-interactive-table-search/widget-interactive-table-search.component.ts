@@ -200,7 +200,6 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
         return;
       }
 
-      // ✅ OJO: boolean también usa v-select con items {id,text}
       if (this.isDropdownField(filter) || filter.dataType === 'boolean') {
         const initialValue = filter.fieldType === 'multi-select-dropdown' ? [] : '';
         this.ensureControl(filter.key, initialValue);
@@ -236,7 +235,6 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
         return;
       }
 
-      // ✅ boolean como single dropdown: '' por defecto (sin selección)
       if (this.isDropdownField(filter) || filter.dataType === 'boolean') {
         defaults[filter.key] = filter.fieldType === 'multi-select-dropdown' ? [] : '';
         return;
@@ -328,20 +326,16 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy,
   }
 
   private normalizeValue(value: any, dataType: string): any {
-    // arrays (multi select)
     if (Array.isArray(value)) {
       return value
         .map(entry => this.normalizeValue(entry, dataType))
         .filter(entry => entry !== null && entry !== undefined);
     }
 
-    // v-select devuelve {id,text} o el id directamente
     if (value && typeof value === 'object' && 'id' in value) {
       value = (value as any).id;
     }
 
-    // ✅ boolean: mantenemos la selección en el UI (string),
-    // pero lo que enviamos al request es boolean real
     if (dataType === 'boolean') {
       if (value === this.BOOLEAN_POSITIVE) return true;
       if (value === this.BOOLEAN_NEGATIVE) return false;
