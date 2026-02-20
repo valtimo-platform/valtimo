@@ -53,8 +53,8 @@
 
     <cds-modal-footer [cdsLayer]="1">
       <cds-modal-footer>
-        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()">
-          {{ 'formManagement.back' | translate }}
+        <button cdsButton="secondary" (click)="$event.preventDefault(); onBackButtonClick()">
+          {{ 'interface.cancel' | translate }}
         </button>
 
         <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
