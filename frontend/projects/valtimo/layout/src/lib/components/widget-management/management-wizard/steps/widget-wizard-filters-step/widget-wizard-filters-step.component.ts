@@ -24,7 +24,11 @@ import {
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {WidgetContentProperties, WidgetFilter, WidgetInteractiveTableContent} from '../../../../../models';
+import {
+  WidgetContentProperties,
+  WidgetFilter,
+  WidgetInteractiveTableContent,
+} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
 import {
   AccordionModule,
@@ -246,7 +250,9 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       return;
     }
 
-    filters.forEach(filter => this.filters.push(this.createFilterFormGroup(filter), {emitEvent: false}));
+    filters.forEach(filter =>
+      this.filters.push(this.createFilterFormGroup(filter), {emitEvent: false})
+    );
     this.widgetWizardService.$widgetFiltersValid.set(this.formGroup.valid);
     this.expandedFilterIndex = 0;
   }
@@ -265,10 +271,9 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
             (fieldTypeId === 'single-select-dropdown' || fieldTypeId === 'multi-select-dropdown');
 
           if (isDropdown && !form.get('dropdownDataProvider')?.value) {
-            form.get('dropdownDataProvider')?.setValue(
-              {...this.DROPDOWN_PROVIDER_ITEMS[0], selected: true},
-              {emitEvent: false}
-            );
+            form
+              .get('dropdownDataProvider')
+              ?.setValue({...this.DROPDOWN_PROVIDER_ITEMS[0], selected: true}, {emitEvent: false});
           }
 
           if (isDropdown) {
@@ -329,13 +334,12 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
       if (isText) return true;
       if (isBoolean) return item.id === 'single';
 
-      return item.id !== 'single-select-dropdown' &&
-        item.id !== 'multi-select-dropdown';
+      return item.id !== 'single-select-dropdown' && item.id !== 'multi-select-dropdown';
     });
 
     return items.map(item => ({
       ...item,
-      selected: item.id === selectedId
+      selected: item.id === selectedId,
     }));
   }
 
@@ -404,13 +408,6 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
     }
   }
 
-  private selectItem(items: ListItem[], selectedId: string): ListItem[] {
-    return items.map(item => ({
-      ...item,
-      selected: item.id === selectedId,
-    }));
-  }
-
   private swapItems<T>(items: T[], index1: number, index2: number): T[] {
     const itemToInsert = items[index1];
     const filteredItems = items.filter((_, index) => index !== index1);
@@ -424,10 +421,13 @@ export class WidgetWizardFiltersStepComponent implements OnInit, OnDestroy {
   ): Record<string, string> | null {
     if (!values || values.length === 0) return null;
 
-    return values.reduce((acc, curr) => {
-      if (!curr?.key) return acc;
-      acc[curr.key] = curr.value ?? '';
-      return acc;
-    }, {} as Record<string, string>);
+    return values.reduce(
+      (acc, curr) => {
+        if (!curr?.key) return acc;
+        acc[curr.key] = curr.value ?? '';
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   }
 }

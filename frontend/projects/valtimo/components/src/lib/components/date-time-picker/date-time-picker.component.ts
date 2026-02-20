@@ -15,10 +15,23 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {AfterViewInit, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {DatePickerModule, InputModule, LayerModule, TimePickerModule} from 'carbon-components-angular';
+import {
+  DatePickerModule,
+  InputModule,
+  LayerModule,
+  TimePickerModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {InputLabelModule} from '../input-label/input-label.module';
 
@@ -38,7 +51,7 @@ import {InputLabelModule} from '../input-label/input-label.module';
     LayerModule,
   ],
 })
-export class DateTimePickerComponent implements AfterViewInit {
+export class DateTimePickerComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class.valtimo-date-time-picker')
   readonly hostClass = true;
 
@@ -108,6 +121,10 @@ export class DateTimePickerComponent implements AfterViewInit {
         this.valueChange.emit(fullValue);
       })
     );
+  }
+
+  public ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   public onDateSelected(value: string | Date[]): void {
