@@ -34,7 +34,8 @@
     [placeholder]="datePlaceholder || 'dd-mm-yyyy'"
     [dateFormat]="dateFormat"
     [disabled]="disabled"
-    (valueChange)="onDateSelected($event)"
+    [ngModel]="dateValue$ | async"
+    (ngModelChange)="onDateSelected($event)"
   ></cds-date-picker>
 
   <cds-timepicker
@@ -42,9 +43,8 @@
     [cdsLayer]="1"
     [attr.data-carbon-theme]="carbonTheme"
     [placeholder]="timePlaceholder || 'hh:mm'"
-    [value]="timeValue"
     [disabled]="disabled"
-    (valueChange)="onTimeSelected($event)"
-  >
-  </cds-timepicker>
+    [ngModel]="timeValue$ | async"
+    (ngModelChange)="onTimeSelected($event)"
+  ></cds-timepicker>
 </div>

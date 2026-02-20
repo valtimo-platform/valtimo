@@ -19,9 +19,11 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
@@ -39,8 +41,7 @@ import {
 } from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule, TimePickerModule} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subject, Subscription} from 'rxjs';
-import {WidgetFilter, WidgetInteractiveTableEventSearchRequest, WidgetDropdownValue} from '../../../models';
-import {WidgetInteractiveTableService} from '../../../services';
+import {WidgetFilter, WidgetInteractiveTableEventSearchRequest} from '../../../models';
 
 @Component({
   selector: 'valtimo-widget-interactive-table-search',
@@ -65,29 +66,26 @@ import {WidgetInteractiveTableService} from '../../../services';
     DateTimePickerComponent,
   ],
 })
-export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy {
+export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy, OnChanges {
   private _initSearchRequest: WidgetInteractiveTableEventSearchRequest = {};
-  @Input() public set initSearchRequest(
-    value: WidgetInteractiveTableEventSearchRequest | null | undefined
-  ) {
+  private _filters: WidgetFilter[] = [];
+
+  @Input() public set initSearchRequest(value: WidgetInteractiveTableEventSearchRequest | null | undefined) {
     this._initSearchRequest = value ?? {};
-    this.setInitialForm();
   }
 
-  private _filters: WidgetFilter[] = [];
   @Input() public set filters(value: WidgetFilter[] | null | undefined) {
     this._filters = value ?? [];
-    this.buildFiltersFormControls();
-    this.setInitialForm();
+    this.rebuildFormControlsPreservingValues();
     this.loadDropdownItems();
+    this.setInitialForm(this._initSearchRequest ?? {});
   }
 
   public get filters(): WidgetFilter[] {
     return this._filters;
   }
 
-  @Output() public readonly searchSubmitEvent =
-    new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
+  @Output() public readonly searchSubmitEvent = new EventEmitter<WidgetInteractiveTableEventSearchRequest>();
 
   public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
     map((theme: CurrentCarbonTheme) =>
@@ -99,76 +97,127 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     filters: this.fb.group({}),
   });
 
-  public readonly dropdownSelectItemsMap: Record<string, Array<{id: string; text: string}>> = {};
-  public readonly clear$ = new Subject<null>();
+  public readonly dropdownSelectItemsMap: Record<string, {id: string; text: string}[]> = {};
+  public readonly clear$ = new Subject<void>();
 
   private readonly _subscriptions = new Subscription();
-
-  public get filtersFormGroup(): FormGroup {
-    return this.formGroup.get('filters') as FormGroup;
-  }
 
   private readonly BOOLEAN_POSITIVE = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE = 'booleanNegative';
 
-  public readonly booleanItems$: Observable<Array<any>> = this.translateService.stream('key').pipe(
-    map(() => [
-      {id: this.BOOLEAN_POSITIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_POSITIVE}`)},
-      {id: this.BOOLEAN_NEGATIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_NEGATIVE}`)},
-    ])
-  );
+  public readonly booleanItems$: Observable<{id: string; text: string}[]> = this.translateService
+    .stream([`searchFields.${this.BOOLEAN_POSITIVE}`, `searchFields.${this.BOOLEAN_NEGATIVE}`])
+    .pipe(
+      map(() => [
+        {id: this.BOOLEAN_POSITIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_POSITIVE}`)},
+        {id: this.BOOLEAN_NEGATIVE, text: this.translateService.instant(`searchFields.${this.BOOLEAN_NEGATIVE}`)},
+      ])
+    );
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly translateService: TranslateService,
-    private readonly widgetInteractiveTableService: WidgetInteractiveTableService
+    private readonly translateService: TranslateService
   ) {
     this.iconService.register(TrashCan16);
   }
 
   public ngOnInit(): void {
-    this.buildFiltersFormControls();
-    this.setInitialForm();
+    this.rebuildFormControlsPreservingValues();
+    this.setInitialForm(this._initSearchRequest ?? {});
 
     this._subscriptions.add(
       this.filtersFormGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
-        this.searchSubmitEvent.emit(this.mapFormValueToWidgetInteractiveTableSearch());
+        const req = this.mapFormValueToWidgetInteractiveTableSearch();
+        this.searchSubmitEvent.emit(req);
       })
     );
+
+    const initialReq = this.mapFormValueToWidgetInteractiveTableSearch();
+    this.searchSubmitEvent.emit(initialReq);
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initSearchRequest'] && !changes['initSearchRequest'].firstChange) {
+      this.setInitialForm(this._initSearchRequest ?? {});
+    }
+  }
+
+  public get filtersFormGroup(): FormGroup {
+    return this.formGroup.get('filters') as FormGroup;
+  }
+
   public onClearFilter(): void {
     this.filtersFormGroup.reset(this.getDefaultFilterValues());
-    this.clear$.next(null);
+    this.clear$.next();
+    this.searchSubmitEvent.emit({});
   }
 
-  public onRangeChange(filterKey: string, value: any): void {
-    this.filtersFormGroup.get(`${filterKey}_start`)?.setValue(value?.start ?? '');
-    this.filtersFormGroup.get(`${filterKey}_end`)?.setValue(value?.end ?? '');
+  public singleValueChange(controlKey: string, value: any): void {
+    const control = this.filtersFormGroup.get(controlKey);
+    if (!control) return;
+    control.setValue(value);
   }
 
-  private buildFiltersFormControls(): void {
+  public rangeValueChange(filterKey: string, value: {start?: any; end?: any}): void {
+    this.filtersFormGroup.patchValue(
+      {
+        [`${filterKey}_start`]: value?.start ?? '',
+        [`${filterKey}_end`]: value?.end ?? '',
+      },
+      {emitEvent: true}
+    );
+  }
+
+  private rebuildFormControlsPreservingValues(): void {
+    const snapshot = (this.filtersFormGroup.getRawValue() ?? {}) as Record<string, any>;
+    const expectedKeys = new Set<string>();
+
     this.filters.forEach((filter: WidgetFilter) => {
       if (filter.fieldType === 'range') {
-        this.ensureControl(`${filter.key}_start`);
-        this.ensureControl(`${filter.key}_end`);
+        expectedKeys.add(`${filter.key}_start`);
+        expectedKeys.add(`${filter.key}_end`);
+        return;
+      }
+      expectedKeys.add(filter.key);
+    });
+
+    Object.keys(this.filtersFormGroup.controls).forEach(controlKey => {
+      if (!expectedKeys.has(controlKey)) {
+        this.filtersFormGroup.removeControl(controlKey);
+      }
+    });
+
+    this.filters.forEach((filter: WidgetFilter) => {
+      if (filter.fieldType === 'range') {
+        this.ensureControl(`${filter.key}_start`, '');
+        this.ensureControl(`${filter.key}_end`, '');
         return;
       }
 
-      if (this.isDropdownField(filter)) {
+      // ✅ OJO: boolean también usa v-select con items {id,text}
+      if (this.isDropdownField(filter) || filter.dataType === 'boolean') {
         const initialValue = filter.fieldType === 'multi-select-dropdown' ? [] : '';
         this.ensureControl(filter.key, initialValue);
         return;
       }
 
-      this.ensureControl(filter.key);
+      this.ensureControl(filter.key, '');
     });
+
+    const toRestore: Record<string, any> = {};
+    expectedKeys.forEach(k => {
+      if (snapshot[k] !== undefined) toRestore[k] = snapshot[k];
+    });
+
+    if (Object.keys(toRestore).length) {
+      this.filtersFormGroup.patchValue(toRestore, {emitEvent: false});
+    }
   }
 
   private ensureControl(key: string, initialValue: any = ''): void {
@@ -184,14 +233,27 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
       if (filter.fieldType === 'range') {
         defaults[`${filter.key}_start`] = '';
         defaults[`${filter.key}_end`] = '';
-      } else if (this.isDropdownField(filter)) {
-        defaults[filter.key] = filter.fieldType === 'multi-select-dropdown' ? [] : '';
-      } else {
-        defaults[filter.key] = '';
+        return;
       }
+
+      // ✅ boolean como single dropdown: '' por defecto (sin selección)
+      if (this.isDropdownField(filter) || filter.dataType === 'boolean') {
+        defaults[filter.key] = filter.fieldType === 'multi-select-dropdown' ? [] : '';
+        return;
+      }
+
+      defaults[filter.key] = '';
     });
 
     return defaults;
+  }
+
+  private setInitialForm(searchRequest: WidgetInteractiveTableEventSearchRequest): void {
+    const mapped = this.mapSearchRequestToFormValue(searchRequest);
+    this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
+    if (mapped.filters) {
+      this.filtersFormGroup.patchValue(mapped.filters, {emitEvent: false});
+    }
   }
 
   private mapFormValueToWidgetInteractiveTableSearch(): WidgetInteractiveTableEventSearchRequest {
@@ -230,7 +292,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
     searchRequest: WidgetInteractiveTableEventSearchRequest
   ): {filters?: Record<string, any>} {
     const result: Record<string, any> = {};
-    const search = searchRequest.filters ?? {};
+    const search = (searchRequest.filters ?? {}) as Record<string, unknown>;
 
     for (const filter of this.filters) {
       if (filter.fieldType === 'range') {
@@ -238,8 +300,8 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
         if (typeof raw === 'string') {
           try {
             const parsed = JSON.parse(raw);
-            result[`${filter.key}_start`] = parsed?.rangeFrom ?? '';
-            result[`${filter.key}_end`] = parsed?.rangeTo ?? '';
+            result[`${filter.key}_start`] = (parsed as any)?.rangeFrom ?? '';
+            result[`${filter.key}_end`] = (parsed as any)?.rangeTo ?? '';
           } catch {
             result[`${filter.key}_start`] = '';
             result[`${filter.key}_end`] = '';
@@ -248,36 +310,43 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
         continue;
       }
 
-      if (search[filter.key] !== undefined) {
-        result[filter.key] = search[filter.key];
+      const raw = search[filter.key];
+      if (raw === undefined) continue;
+
+      if (filter.dataType === 'boolean') {
+        if (raw === true || raw === 'true') result[filter.key] = this.BOOLEAN_POSITIVE;
+        else if (raw === false || raw === 'false') result[filter.key] = this.BOOLEAN_NEGATIVE;
+        else if (raw === this.BOOLEAN_POSITIVE || raw === this.BOOLEAN_NEGATIVE) result[filter.key] = raw;
+        else result[filter.key] = '';
+        continue;
       }
+
+      result[filter.key] = raw;
     }
 
     return Object.keys(result).length ? {filters: result} : {};
   }
 
-  private setInitialForm(): void {
-    const mappedFormValue = this.mapSearchRequestToFormValue(this._initSearchRequest);
-
-    this.filtersFormGroup.reset(this.getDefaultFilterValues(), {emitEvent: false});
-
-    if (mappedFormValue.filters) {
-      this.filtersFormGroup.patchValue(mappedFormValue.filters, {emitEvent: false});
-    }
-  }
-
   private normalizeValue(value: any, dataType: string): any {
+    // arrays (multi select)
     if (Array.isArray(value)) {
       return value
         .map(entry => this.normalizeValue(entry, dataType))
         .filter(entry => entry !== null && entry !== undefined);
     }
 
-    if (value && typeof value === 'object' && 'id' in value) value = (value as any).id;
+    // v-select devuelve {id,text} o el id directamente
+    if (value && typeof value === 'object' && 'id' in value) {
+      value = (value as any).id;
+    }
 
+    // ✅ boolean: mantenemos la selección en el UI (string),
+    // pero lo que enviamos al request es boolean real
     if (dataType === 'boolean') {
       if (value === this.BOOLEAN_POSITIVE) return true;
       if (value === this.BOOLEAN_NEGATIVE) return false;
+      if (value === true || value === false) return value;
+      return null;
     }
 
     return value;
@@ -299,11 +368,7 @@ export class WidgetInteractiveTableSearchComponent implements OnInit, OnDestroy 
       .filter(f => this.isDropdownField(f) && !!f.dropdownDataProvider && !!f.key)
       .forEach(filter => {
         const dropdownEntries = Object.entries(filter.dropdownValues ?? {});
-
-        this.dropdownSelectItemsMap[filter.key] = dropdownEntries.map(([id, text]) => ({
-          id,
-          text,
-        }));
+        this.dropdownSelectItemsMap[filter.key] = dropdownEntries.map(([id, text]) => ({id, text}));
       });
   }
 }
