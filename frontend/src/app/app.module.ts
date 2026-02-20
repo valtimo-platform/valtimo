@@ -13,15 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- import {
-   DocumentGeneratorPluginModule,
-   documentGeneratorPluginSpecification,
-   MailTemplatePluginModule,
-   mailTemplatePluginSpecification,
-   TextTemplatePluginModule,
-   textTemplatePluginSpecification,
- } from '@valtimo-plugins/freemarker';
-import {BrowserModule} from '@angular/platform-browser';
+
+ import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
@@ -147,9 +140,6 @@ export function tabsFactory() {
   declarations: [AppComponent, ...(environment.production ? [] : devDeclarations)],
   bootstrap: [AppComponent],
   imports: [
-    DocumentGeneratorPluginModule,
-    MailTemplatePluginModule,
-    TextTemplatePluginModule,
     CommonModule,
     BrowserModule,
     AppRoutingModule,
@@ -226,9 +216,6 @@ export function tabsFactory() {
     {
       provide: PLUGINS_TOKEN,
       useValue: [
-        mailTemplatePluginSpecification,
-        textTemplatePluginSpecification,
-        documentGeneratorPluginSpecification,
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
