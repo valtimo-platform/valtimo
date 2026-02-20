@@ -15,7 +15,7 @@
  */
 
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../constants';
-import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
+import {BuildingBlockFormDefinitionDto, BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
 
 type BuildingBlockManagementTabKey =
   | (typeof BUILDING_BLOCK_MANAGEMENT_TABS)[keyof typeof BUILDING_BLOCK_MANAGEMENT_TABS]
@@ -25,4 +25,12 @@ interface BuildingBlockProcessDefinitionItem extends BuildingBlockProcessDefinit
   mainText: string;
 }
 
-export {BuildingBlockManagementTabKey, BuildingBlockProcessDefinitionItem};
+interface BuildingBlockFormDefinitionItem extends BuildingBlockFormDefinitionDto {
+  readOnlyText: string;
+}
+
+export {
+  BuildingBlockManagementTabKey,
+  BuildingBlockProcessDefinitionItem,
+  BuildingBlockFormDefinitionItem,
+};

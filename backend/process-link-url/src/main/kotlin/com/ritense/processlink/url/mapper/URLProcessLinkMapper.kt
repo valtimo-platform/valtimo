@@ -21,15 +21,15 @@ import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.url.domain.URLProcessLink
+import com.ritense.processlink.url.web.rest.dto.URLProcessLinkCreateRequestDto
 import com.ritense.processlink.url.web.rest.dto.URLProcessLinkDeployDto
+import com.ritense.processlink.url.web.rest.dto.URLProcessLinkExportResponseDto
+import com.ritense.processlink.url.web.rest.dto.URLProcessLinkResponseDto
+import com.ritense.processlink.url.web.rest.dto.URLProcessLinkUpdateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.processlink.url.web.rest.dto.URLProcessLinkCreateRequestDto
-import com.ritense.processlink.url.web.rest.dto.URLProcessLinkExportResponseDto
-import com.ritense.processlink.url.web.rest.dto.URLProcessLinkResponseDto
-import com.ritense.processlink.url.web.rest.dto.URLProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
 import java.util.UUID
 
@@ -60,7 +60,7 @@ class URLProcessLinkMapper(
         )
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         deployDto as URLProcessLinkDeployDto
         return URLProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -108,7 +108,8 @@ class URLProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as URLProcessLinkDeployDto
         return URLProcessLinkUpdateRequestDto(

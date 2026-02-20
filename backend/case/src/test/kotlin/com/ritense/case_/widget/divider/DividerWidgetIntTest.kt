@@ -98,7 +98,14 @@ class DividerWidgetIntTest @Autowired constructor(
                 key = tabKey,
                 widgets = listOf(
                     DividerCaseWidgetDto(
-                        widgetKey, "Divider test", "mdi-home",2, false, false, emptyList()
+                        key = widgetKey,
+                        title = "Divider test",
+                        icon = "mdi-home",
+                        color = null,
+                        width = 2,
+                        highContrast = false,
+                        isCompact = false,
+                        displayConditions = emptyList()
                     )
                 )
             )

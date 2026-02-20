@@ -16,9 +16,11 @@
 
 package com.ritense.processdocument.sse.domain.listener
 
+import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.operaton.bpm.spring.boot.starter.event.TaskEvent
 import org.springframework.transaction.event.TransactionalEventListener
@@ -26,6 +28,8 @@ import org.springframework.transaction.event.TransactionalEventListener
 class TaskUpdateListener(
     private val sseSubscriptionService: SseSubscriptionService,
     private val processDocumentService: ProcessDocumentService,
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val documentService: DocumentService,
 ) {
 
     @TransactionalEventListener(
@@ -37,11 +41,17 @@ class TaskUpdateListener(
     )
     fun handle(taskEvent: TaskEvent) {
         val document = processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(document.id().id)
+        val caseDocument = if (caseDocumentId == document.id().id) {
+            document
+        } else {
+            documentService[caseDocumentId.toString()]
+        }
         sseSubscriptionService.notifySubscribers(
             TaskUpdateSseEvent(
                 taskId = taskEvent.id,
-                documentId = document.id().toString(),
-                caseDefinitionKey = document.definitionId().name(),
+                documentId = caseDocument.id().toString(),
+                caseDefinitionKey = caseDocument.definitionId().name(),
             )
         )
     }

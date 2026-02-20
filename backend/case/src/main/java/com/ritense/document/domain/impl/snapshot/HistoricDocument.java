@@ -76,6 +76,9 @@ public class HistoricDocument implements Document {
     @Column(name = "document_modified_on", columnDefinition = "DATETIME")
     private LocalDateTime modifiedOn = null;
 
+    @Column(name = "document_retention_date", columnDefinition = "DATETIME")
+    private LocalDateTime retentionDate = null;
+
     @Column(name = "document_created_by", columnDefinition = "VARCHAR(255)")
     private String createdBy;
 
@@ -108,6 +111,7 @@ public class HistoricDocument implements Document {
         this.version = document.version();
         this.createdOn = document.createdOn();
         this.modifiedOn = document.modifiedOn().orElse(null);
+        this.retentionDate = document.retentionDate().orElse(null);
         this.createdBy = document.createdBy();
         this.sequence = document.sequence();
         this.assigneeId = document.assigneeId();
@@ -132,6 +136,11 @@ public class HistoricDocument implements Document {
     @Override
     public Optional<LocalDateTime> modifiedOn() {
         return Optional.ofNullable(modifiedOn);
+    }
+
+    @Override
+    public Optional<LocalDateTime> retentionDate() {
+        return Optional.ofNullable(retentionDate);
     }
 
     @Override

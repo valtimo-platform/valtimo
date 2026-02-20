@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,13 +14,27 @@
   ~ limitations under the License.
   -->
 
-<valtimo-value-path-selector
-  [caseDefinitionKey]="caseDefinitionKey$ | async"
-  [caseDefinitionVersionTag]="caseDefinitionVersionTag$ | async"
-  [appendInline]="true"
-  [defaultValue]="defaultValue$ | async"
-  [showCaseDefinitionSelector]="true"
-  notation="slashes"
-  [prefixes]="[ValuePathSelectorPrefix.DOC]"
-  (valueChangeEvent)="onValueChange($event)"
-></valtimo-value-path-selector>
+@if (isIndependentContext$ | async) {
+  <input
+    cdsText
+    type="text"
+    [value]="defaultValue$ | async"
+    [cdsLayer]="1"
+    (input)="onValueChange($any($event.target).value)"
+  />
+} @else {
+  <valtimo-value-path-selector
+    [caseDefinitionKey]="caseDefinitionKey$ | async"
+    [caseDefinitionVersionTag]="caseDefinitionVersionTag$ | async"
+    [buildingBlockDefinitionKey]="buildingBlockDefinitionKey$ | async"
+    [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag$ | async"
+    [appendInline]="true"
+    [defaultValue]="defaultValue$ | async"
+    [label]="label"
+    [showCaseDefinitionSelector]="true"
+    notation="slashes"
+    [prefixes]="[ValuePathSelectorPrefix.DOC]"
+    [cdsLayer]="1"
+    (valueChangeEvent)="onValueChange($event)"
+  ></valtimo-value-path-selector>
+}

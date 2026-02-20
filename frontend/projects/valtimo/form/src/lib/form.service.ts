@@ -66,4 +66,13 @@ export class FormService {
       `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form-option`
     );
   }
+
+  getAllFormDefinitionsForBuildingBlock(
+    buildingBlockDefinitionKey: string,
+    versionTag: string
+  ): Observable<Array<FormDefinitionOption>> {
+    return this.http.get<Array<FormDefinitionOption>>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/building-block/${buildingBlockDefinitionKey}/version/${versionTag}/form-option`
+    );
+  }
 }

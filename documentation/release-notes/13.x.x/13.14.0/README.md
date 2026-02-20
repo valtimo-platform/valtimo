@@ -25,6 +25,12 @@
 
   Building blocks can now be invoked from independent processes that are not associated with a case. Independent processes can pass data to building blocks via input mappings using process variables (`pv:` prefix) and receive results via output mappings back to process variables. The UI for configuring building block mappings automatically adapts to show the appropriate input fields when configuring independent processes.
 
+* **Call depth detection for process instances**
+
+  Valtimo keeps track of how many process instances "deep" a process is. This is meant to help detect when a loop is included
+  in your case, and as such, provides a warning whenever a certain threshold is passed. The default for this is 50, but
+  this can be configured with the `valtimo.process.call-depth-warning-threshold` property.
+
 ## Bugfixes
 
 * The `Create Zaak` action for the Zaken Api Plugin now correctly links the created zaak to the case when configured for a building block.
