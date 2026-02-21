@@ -100,7 +100,7 @@ services:
     # ZGW
 
     openzaak:
-        image: openzaak/open-zaak:1.20.0
+        image: openzaak/open-zaak:1.25.0
         container_name: gzac-docker-compose-openzaak
         platform: linux/amd64
         profiles:
@@ -131,31 +131,6 @@ services:
         depends_on:
             - openzaak-database
             - openzaak-redis
-        volumes:
-            - ./imports/open-zaak/dump_demodata.sh:/app/dump_demodata.sh
-            - ./imports/open-zaak/fixtures:/app/demodata
-
-        healthcheck:
-            test: [ "CMD", "python", "-c", "import requests; exit(requests.head('http://localhost:8000/admin/').status_code not in [200, 302])" ]
-            interval: 30s
-            timeout: 5s
-            retries: 3
-            # This should allow for enough time for migrations to run before the max retries have passed.
-            start_period: 30s
-
-#    openzaak-import:
-#        image: openzaak/open-zaak:1.25.0
-#        container_name: gzac-docker-compose-openzaak-import
-#        platform: linux/amd64
-#        environment: *openzaak-env
-#        command: sh /app/load_demodata.sh
-#        volumes:
-#            - ./imports/open-zaak/fixtures:/app/demodata
-#            - ./imports/open-zaak/load_demodata.sh:/app/load_demodata.sh
-#        depends_on:
-#            openzaak:
-#                condition: service_healthy
-
 
     openzaak-database:
         image: postgis/postgis:17-3.4
@@ -174,7 +149,7 @@ services:
             - ./imports/open-zaak:/docker-entrypoint-initdb.d
 
     openzaak-celery:
-        image: openzaak/open-zaak:1.20.0
+        image: openzaak/open-zaak:1.25.0
         container_name: gzac-docker-compose-openzaak-celery
         platform: linux/amd64
         environment: *openzaak-env
@@ -185,9 +160,6 @@ services:
             timeout: 5s
             retries: 3
             start_period: 10s
-        profiles:
-            - zgw
-            - openzaak
 
     openzaak-redis:
         image: redis:7.4.3
@@ -370,7 +342,7 @@ services:
             - "15673:15672"
 
     open-notificaties-celery:
-        image: openzaak/open-notificaties:1.8.2
+        image: openzaak/open-notificaties:1.13.0
         container_name: gzac-docker-compose-open-notificaties
         platform: linux/amd64
         profiles:
@@ -382,6 +354,7 @@ services:
             - CACHE_DEFAULT=open-notificaties-redis:6379/0
             - CACHE_AXES=open-notificaties-redis:6379/1
             - DB_PORT=5432
+            - LOG_NOTIFICATIONS_IN_DB=true
             - DB_HOST=open-notificaties-database
             - DB_NAME=notifications
             - DB_USER=notifications
@@ -402,7 +375,7 @@ services:
             - open-notificaties-redis
 
     open-notificaties:
-        image: openzaak/open-notificaties:1.8.1
+        image: openzaak/open-notificaties:1.13.0
         container_name: gzac-docker-compose-open-notificaties-celery
         platform: linux/amd64
         profiles:
