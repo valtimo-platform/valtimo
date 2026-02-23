@@ -1,6 +1,6 @@
 # Zaakdetail sync
 
-Zaakdetail sync allows case data to be automatically synchronized with the Objecten API. When enabled, changes to a
+Zaakdetail sync allows case data to be automatically sent to the Objecten API. When enabled, changes to a
 case are reflected in the configured object management configuration.
 
 ## Configuring zaakdetail sync
