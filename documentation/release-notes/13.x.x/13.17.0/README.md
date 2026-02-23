@@ -12,10 +12,10 @@
   can be managed through JSON files in the resource folder and is included in the case definition export.
   See [Zaakdetail sync](../../../features/case/zgw/zaakdetail-sync.md) for more information.
 
-* **Auto-deployment for case definition process links**
+* **Auto-deployment for independent processes linked to a case**
 
-  Case definition process links can now be imported and exported via auto-deployment. This allows managing which
-  processes are linked to a case definition through JSON configuration files. See
+  Independent processes linked to a case definition can now be imported and exported via auto-deployment. This allows managing
+  which independent processes belong to a case definition through JSON configuration files. See
   [Processes](../../../features/case/processes.md) for more information.
 
 ## Enhancements

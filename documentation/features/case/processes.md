@@ -68,9 +68,9 @@ In order to link processes to a case the following steps are necessary:
 ```
 {% endcode %}
 
-### Case definition process links
+### Independent processes linked to a case
 
-Case definition process links can be configured to define the link type
+Independent processes linked to a case can be configured to define the link type
 between a process and a case definition (e.g. `DOCUMENT_UPLOAD`). Create a JSON file under the following path:
 
 `*/resources/config/case/{case-definition-key}/{version-tag}/case-definition-process-link/`
