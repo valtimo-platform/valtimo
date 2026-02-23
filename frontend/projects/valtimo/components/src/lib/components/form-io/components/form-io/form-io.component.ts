@@ -161,11 +161,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
-    if (!Formio.projectUrlSet) {
-      Formio.setBaseUrl(location.origin);
-      Formio.setProjectUrl(location.origin);
-      Formio.authUrl = location.origin;
-    }
+    Formio.setBaseUrl(location.origin);
+    Formio.setProjectUrl(location.origin);
+    Formio.authUrl = location.origin;
 
     this.openRouteSubscription();
     this.errors$.next([]);
