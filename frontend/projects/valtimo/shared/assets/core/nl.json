@@ -2088,6 +2088,7 @@
     "stacktrace": "Stacktrace"
   },
   "setTaskDueDate": {
+    "label": "Selecteer datum",
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",

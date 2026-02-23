@@ -2055,6 +2055,7 @@
     "stacktrace": "Stacktrace"
   },
   "setTaskDueDate": {
+    "label": "Select date",
     "buttonText": "Set due date",
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",
