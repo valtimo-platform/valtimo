@@ -46,6 +46,7 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_DOCUMENT_DEFINITION = "buildingblockdocumentdefinition"
         const val BUILDING_BLOCK_ARTWORK = "buildingblockartwork"
         const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
+        const val BUILDING_BLOCK_FORM_DEFINITION = "buildingblockformdefinition"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"

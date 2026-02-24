@@ -23,7 +23,6 @@ import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.operaton.bpm.engine.HistoryService
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @SkipComponentScan
 class OperatonHistoryService(
-    private val historyService: HistoryService,
     private val operatonHistoricProcessInstanceRepository: OperatonHistoricProcessInstanceRepository,
     private val authorizationService: AuthorizationService
 ) {

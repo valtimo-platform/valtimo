@@ -20,6 +20,7 @@ import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.ProcessDocumentInstance;
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId;
 import com.ritense.processdocument.domain.ProcessInstanceId;
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance;
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
@@ -34,6 +35,8 @@ public interface ProcessDocumentAssociationService {
     List<? extends ProcessDocumentInstance> findProcessDocumentInstances(Document.Id documentId);
 
     List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtosWithoutBuildingBlocks(Document.Id documentId);
+    List<? extends ProcessDocumentInstance> findProcessDocumentInstancesWithoutPermissionCheck(Document.Id documentId);
+
     List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId);
 
     void deleteProcessDocumentInstance(ProcessDocumentInstanceId processDocumentInstanceId);

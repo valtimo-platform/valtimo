@@ -106,7 +106,9 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   ]).pipe(
     map(([listItems, selected]) =>
       listItems.map(listItem => {
-        const translation = this.translateService.instant(listItem.content);
+        const translation = listItem.content
+          ? this.translateService.instant(listItem.content)
+          : '-';
         const isSelected: boolean = Array.isArray(selected)
           ? selected.includes(listItem.id)
           : selected === listItem.id;
