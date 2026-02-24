@@ -1855,6 +1855,7 @@
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
     "modalTitle": "Process step: {{processStepName}}",
+    "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
