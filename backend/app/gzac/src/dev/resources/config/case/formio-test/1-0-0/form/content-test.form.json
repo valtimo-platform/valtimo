@@ -1,0 +1,17 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "html": "<h3>Content Component</h3><p>This is a test of the content component.</p>",
+            "type": "content",
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}
