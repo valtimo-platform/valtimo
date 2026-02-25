@@ -157,6 +157,14 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initDropzone(): void {
+    if (!this.dropzoneRef || !this.dropzoneRef.nativeElement) {
+      return;
+    }
+
+    if (this.dropzone) {
+      this.dropzone.destroy();
+    }
+
     this.dropzone = new Dropzone(this.dropzoneRef.nativeElement, {
       url: '/',
       maxFilesize: this._maxFileSize,

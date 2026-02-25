@@ -22,7 +22,7 @@ import {FormioComponent} from '@formio/angular';
   providedIn: 'root',
 })
 export class FormIoStateService {
-  private _documentDefinitionName$ = new BehaviorSubject<string>(undefined);
+  private _caseDefinitionKey$ = new BehaviorSubject<string>(undefined);
   private _documentId$ = new BehaviorSubject<string>(undefined);
   private readonly _$processInstanceId = signal<string>('');
   public get processInstanceId(): string {
@@ -31,12 +31,12 @@ export class FormIoStateService {
 
   private _currentForm$ = new BehaviorSubject<FormioComponent>(undefined);
 
-  public get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$.asObservable();
+  public get caseDefinitionKey$(): Observable<string> {
+    return this._caseDefinitionKey$.asObservable();
   }
 
-  public setDocumentDefinitionName(documentDefinitionName: string) {
-    this._documentDefinitionName$.next(documentDefinitionName);
+  public setCaseDefinitionKey(caseDefinitionKey: string) {
+    this._caseDefinitionKey$.next(caseDefinitionKey);
   }
 
   public get documentId$(): Observable<string> {

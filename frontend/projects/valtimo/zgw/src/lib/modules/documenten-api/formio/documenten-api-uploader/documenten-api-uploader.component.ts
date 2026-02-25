@@ -109,12 +109,10 @@ export class DocumentenApiUploaderComponent
 
   @Input() set documentType(defaultValue: string) {
     this.defaultValues['informatieobjecttype'] = defaultValue;
-    this.stateService.documentDefinitionName$
+    this.stateService.caseDefinitionKey$
       .pipe(
-        filter(documentDefinitionName => !!documentDefinitionName),
-        switchMap(documentDefinitionName =>
-          this.documentService.getCaseSettings(documentDefinitionName)
-        ),
+        filter(caseDefinitionKey => !!caseDefinitionKey),
+        switchMap(caseDefinitionKey => this.documentService.getCaseSettings(caseDefinitionKey)),
         switchMap(caseDefinition =>
           this.documentService.getDocumentTypesForCase(
             String(caseDefinition.caseDefinitionKey),
