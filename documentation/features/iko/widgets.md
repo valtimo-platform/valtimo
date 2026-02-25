@@ -98,7 +98,12 @@ Configure the widget title, icon, data path, and fields.
 
 #### Interactive table filters (interactive table only)
 
-Interactive tables now display a configurable filters modal above the widget. During the extra wizard step you can define one or more filters that are shown as fields in the search bar. Each filter consists of a title, key (used to map the search value to the data source), a data type, field type, match type (Exact or Contains) and, optionally, a dropdown data provider.
+When configuring an interactive table, an additional wizard step is available to define filters. These filters allow
+users to quickly search and narrow down the data displayed in the table. By adding filters, you can provide a more
+tailored search experience, enabling users to find relevant cases based on specific criteria like dates, statuses, or
+custom identifiers.
+
+During this configuration step, you can define one or more filters.
 
 **Supported data types:**
 
@@ -114,12 +119,16 @@ Interactive tables now display a configurable filters modal above the widget. Du
 
 | Field type | Description |
 |------------|-------------|
-| Single | Renders a single input that sends the raw value. |
-| Range | Renders start/end inputs. The widget converts the values to a JSON object with `rangeFrom` and `rangeTo`. |
+| Single | Renders a single input field to filter by the entered value. |
+| Range | Renders start and end input fields to filter between two values. |
 | Single-select dropdown | Dropdown populated manually or via the dropdown database provider. Sends the option id. |
 | Multi-select dropdown | Tag-style selector populated manually or via the dropdown database provider. Sends an array of option ids. |
 
-Boolean filters automatically render a translated Yes/No selector, while dropdown filters can either use hard-coded values or reference the dropdown database provider so that options stay in sync with external lists. Users can combine several filters, clear them with a single click, and every change immediately refreshes the table content so that cases can be located without leaving the widget.
+Boolean filters automatically render a translated Yes/No selector, while dropdown filters can use hard-coded values or
+reference a data provider to stay in sync with external lists.
+
+When using the interactive table, users can combine several filters and clear them with a single click. Every change
+immediately refreshes the table content, allowing cases to be located quickly without leaving the widget.
 
 #### Step 6: Set display conditions
 
