@@ -14,14 +14,40 @@
  * limitations under the License.
  */
 
-import {Components} from '@formio/js';
-
-const TextfieldEditForm = Components.components.textfield.editForm;
-
-export const documentenApiUploaderEditForm = () => {
-  const editForm = TextfieldEditForm();
-
-  const customComponents = [
+export const documentenApiUploaderEditForm = () => ({
+  components: [
+    {key: 'type', type: 'hidden'},
+    {
+      type: 'textfield',
+      input: true,
+      key: 'label',
+      label: 'Label',
+      placeholder: 'Label',
+      validate: {
+        required: true,
+      },
+    },
+    {
+      type: 'checkbox',
+      input: true,
+      inputType: 'checkbox',
+      key: 'validate.required',
+      label: 'Required',
+      validate: {
+        required: false,
+      },
+    },
+    {
+      type: 'textfield',
+      input: true,
+      key: 'key',
+      label: 'Property Name',
+      placeholder: 'Property Name',
+      tooltip: 'The name of this field in the API endpoint.',
+      validate: {
+        required: true,
+      },
+    },
     {
       type: 'textfield',
       input: true,
@@ -29,7 +55,6 @@ export const documentenApiUploaderEditForm = () => {
       label: 'Title',
       placeholder: 'Title',
       tooltip: 'Leave empty to use the default title',
-      weight: 10,
       validate: {
         required: false,
       },
@@ -40,7 +65,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideTitle',
       label: 'Hide title',
-      weight: 11,
       validate: {
         required: false,
       },
@@ -52,7 +76,6 @@ export const documentenApiUploaderEditForm = () => {
       label: 'Subtitle',
       placeholder: 'Title',
       tooltip: 'Leave empty to hide subtitle',
-      weight: 12,
       validate: {
         required: false,
       },
@@ -64,7 +87,6 @@ export const documentenApiUploaderEditForm = () => {
       label: 'Maximum file size',
       placeholder: 'Maximum file size',
       defaultValue: 5,
-      weight: 13,
       validate: {
         required: true,
       },
@@ -75,7 +97,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideMaxFileSize',
       label: 'Hide maximum file size',
-      weight: 14,
       validate: {
         required: false,
       },
@@ -86,7 +107,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.camera',
       label: 'Allow camera uploads',
-      weight: 15,
       validate: {
         required: false,
       },
@@ -98,7 +118,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'disabled',
       label: 'Disabled',
       tooltip: 'Disable the upload field',
-      weight: 16,
       validate: {
         required: false,
       },
@@ -109,8 +128,7 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.acceptedFiles',
       label: 'Accepted file types (leave blank for no restrictions)',
       placeholder: '.png, .docx, .pdf',
-      defaultValue: '',
-      weight: 17,
+      defaultValue: ''
     },
     {
       type: 'checkbox',
@@ -118,7 +136,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideAcceptedFiles',
       label: 'Hide accepted file types',
-      weight: 18,
       validate: {
         required: false,
       },
@@ -131,7 +148,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 19,
     },
     {
       type: 'textfield',
@@ -140,7 +156,6 @@ export const documentenApiUploaderEditForm = () => {
       label: 'Document URL',
       tooltip:
         "Specify the process variable name where the Documenten API document URL will be stored. Defaults to 'documentUrl' if left empty.",
-      weight: 20,
       validate: {
         required: false,
       },
@@ -153,7 +168,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 21,
     },
     {
       label: 'HTML',
@@ -163,7 +177,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 22,
     },
     {
       type: 'textfield',
@@ -171,7 +184,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.filename',
       label: 'Default filename',
       tooltip: 'Leave empty to let the user input their own filename',
-      weight: 23,
       validate: {
         required: false,
       },
@@ -182,7 +194,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableFilename',
       label: 'Disable filename input',
-      weight: 24,
       validate: {
         required: false,
       },
@@ -193,7 +204,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideFilename',
       label: 'Hide filename input',
-      weight: 25,
       validate: {
         required: false,
       },
@@ -206,7 +216,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 26,
     },
     {
       type: 'textfield',
@@ -214,7 +223,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.documentTitle',
       label: 'Default document title',
       tooltip: 'Leave empty to let the user input their own title',
-      weight: 27,
       validate: {
         required: false,
       },
@@ -225,7 +233,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableDocumentTitle',
       label: 'Disable document title input',
-      weight: 28,
       validate: {
         required: false,
       },
@@ -236,7 +243,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideDocumentTitle',
       label: 'Hide document title input',
-      weight: 29,
       validate: {
         required: false,
       },
@@ -249,7 +255,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 30,
     },
     {
       type: 'textfield',
@@ -257,7 +262,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.author',
       label: 'Default author',
       tooltip: 'Leave empty to let the user input their own author',
-      weight: 31,
       validate: {
         required: false,
       },
@@ -268,7 +272,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableAuthor',
       label: 'Disable author input',
-      weight: 32,
       validate: {
         required: false,
       },
@@ -279,7 +282,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideAuthor',
       label: 'Hide author input',
-      weight: 33,
       validate: {
         required: false,
       },
@@ -292,7 +294,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 34,
     },
     {
       type: 'textfield',
@@ -300,7 +301,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.description',
       label: 'Default description',
       tooltip: 'Leave empty to let the user input their own description',
-      weight: 35,
       validate: {
         required: false,
       },
@@ -311,7 +311,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableDescription',
       label: 'Disable description input',
-      weight: 36,
       validate: {
         required: false,
       },
@@ -322,7 +321,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideDescription',
       label: 'Hide description input',
-      weight: 37,
       validate: {
         required: false,
       },
@@ -335,7 +333,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 38,
     },
     {
       type: 'select',
@@ -351,7 +348,6 @@ export const documentenApiUploaderEditForm = () => {
       },
       dataSrc: 'values',
       input: true,
-      weight: 39,
       validate: {
         required: false,
       },
@@ -362,7 +358,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableLanguage',
       label: 'Disable language input',
-      weight: 40,
       validate: {
         required: false,
       },
@@ -373,7 +368,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideLanguage',
       label: 'Hide language input',
-      weight: 41,
       validate: {
         required: false,
       },
@@ -386,7 +380,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 42,
     },
     {
       type: 'select',
@@ -407,7 +400,6 @@ export const documentenApiUploaderEditForm = () => {
       },
       dataSrc: 'values',
       input: true,
-      weight: 43,
       validate: {
         required: false,
       },
@@ -418,7 +410,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableConfidentialityLevel',
       label: 'Disable confidentiality level input',
-      weight: 44,
       validate: {
         required: false,
       },
@@ -429,7 +420,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideConfidentialityLevel',
       label: 'Hide confidentiality level input',
-      weight: 45,
       validate: {
         required: false,
       },
@@ -442,7 +432,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 46,
     },
     {
       type: 'checkbox',
@@ -450,7 +439,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableCreationDate',
       label: 'Disable creation date input',
-      weight: 47,
       validate: {
         required: false,
       },
@@ -461,7 +449,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideCreationDate',
       label: 'Hide creation date input',
-      weight: 48,
       validate: {
         required: false,
       },
@@ -474,7 +461,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 49,
     },
     {
       type: 'textfield',
@@ -483,7 +469,6 @@ export const documentenApiUploaderEditForm = () => {
       label: 'Default informatieobjecttype url',
       tooltip:
         "Sometimes referred to as the 'document-type'. Must match the informatieobjecttype url exactly. Leave empty to let the user input their own informatieobjecttype",
-      weight: 50,
       validate: {
         required: false,
       },
@@ -494,7 +479,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableDocumentType',
       label: 'Disable informatieobjecttype input',
-      weight: 51,
       validate: {
         required: false,
       },
@@ -505,7 +489,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideDocumentType',
       label: 'Hide informatieobjecttype input',
-      weight: 52,
       validate: {
         required: false,
       },
@@ -518,7 +501,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 53,
     },
     {
       type: 'select',
@@ -535,7 +517,6 @@ export const documentenApiUploaderEditForm = () => {
       },
       dataSrc: 'values',
       input: true,
-      weight: 54,
       validate: {
         required: false,
       },
@@ -546,7 +527,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.disableStatus',
       label: 'Disable status input',
-      weight: 55,
       validate: {
         required: false,
       },
@@ -557,7 +537,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideStatus',
       label: 'Hide status input',
-      weight: 56,
       validate: {
         required: false,
       },
@@ -570,7 +549,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 57,
     },
     {
       type: 'checkbox',
@@ -578,7 +556,6 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideAdditionalDate',
       label: 'Hide additional date input',
-      weight: 58,
       validate: {
         required: false,
       },
@@ -591,7 +568,6 @@ export const documentenApiUploaderEditForm = () => {
       type: 'htmlelement',
       input: false,
       tableView: false,
-      weight: 59,
     },
     {
       type: 'textfield',
@@ -599,7 +575,6 @@ export const documentenApiUploaderEditForm = () => {
       key: 'customOptions.tags',
       label: 'Default tags',
       tooltip: 'A comma separated list of tags. Leave empty to let the user input their own tags',
-      weight: 60,
       validate: {
         required: false,
       },
@@ -610,20 +585,9 @@ export const documentenApiUploaderEditForm = () => {
       inputType: 'checkbox',
       key: 'customOptions.hideTags',
       label: 'Hide tags input',
-      weight: 61,
       validate: {
         required: false,
       },
     },
-  ];
-
-  const tabsComponent = editForm.components.find(component => component.key === 'tabs');
-  if (tabsComponent) {
-    const displayTab = tabsComponent.components.find(tab => tab.key === 'display');
-    if (displayTab) {
-      displayTab.components.unshift(...customComponents);
-    }
-  }
-
-  return editForm;
-};
+  ],
+});

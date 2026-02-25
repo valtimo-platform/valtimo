@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
-  FormioContextParams,
   modifyEditFormApiKeyInput,
 } from './form-io-builder.utils';
-import {FormioOptions, ValtimoFormioOptions} from '../../../../models';
+import {FormioContextParams, FormioOptions, ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
 import {
@@ -135,6 +134,7 @@ export class FormioBuilderComponent implements OnInit {
     );
 
     const originalEditForm = Components.baseEditForm;
+
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
       modifyEditFormApiKeyInput(editForm);

@@ -15,7 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {Components, Formio} from '@formio/js';
+import {Components, Formio} from 'formiojs';
 import {UploadProviderService} from '@valtimo/resource';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';

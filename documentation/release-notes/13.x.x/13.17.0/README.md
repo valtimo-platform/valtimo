@@ -7,6 +7,8 @@
 ## New Features
 
 ## Enhancements
+* **Plugin configuration title in process-link modal**
+   Add the selected plugin configuration title in the process-link modal to clarify which plugin configuration is used in the process-link.
 
 ## Bugfixes
 
@@ -19,4 +21,9 @@
 
 * **Fix Formio Data Source URL**
 
-  The Formio Data Source URL now no longer contains an additional `/api`. 
+  The Formio Data Source URL now no longer contains an additional `/api`.
+
+- Fixed an issue where the Form.io custom component **Document Picker** did not show any files.
+- Fixed an issue where the Form.io custom component **Valtimo File Upload** failed to upload files.
+- Fixed file uploads so they now consistently use the correct **upload process** when uploading files.
+

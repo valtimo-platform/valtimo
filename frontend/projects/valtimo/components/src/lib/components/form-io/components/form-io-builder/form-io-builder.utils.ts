@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-import {ManagementContext, ValtimoWindow} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {ValtimoWindow} from '@valtimo/shared';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {FormioContextParams} from '../../../../models';
 
-interface FormioContextParams {
-  context: ManagementContext | null;
-  caseDefinitionKey: string | null;
-  caseDefinitionVersionTag: string | null;
-  buildingBlockDefinitionKey: string | null;
-  buildingBlockDefinitionVersionTag: string | null;
-}
-
-let formioParams: Observable<FormioContextParams>;
+const formioParams$ = new BehaviorSubject<FormioContextParams | null>(null);
+let formioParamsSubscription: Subscription | null = null;
 
 const modifyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
@@ -38,13 +32,18 @@ const modifyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (
-  editForm: any,
-  params: Observable<FormioContextParams>
-): void => {
+const addValueResolverSelectorToEditform = (editForm: any, params$: Observable<any>): void => {
   const valtimoWindow = window as ValtimoWindow;
   const valueResolverTabKey = 'valueResolver';
-  formioParams = params;
+
+  // Unsubscribe from the previous subscription if it exists
+  if (formioParamsSubscription) {
+    formioParamsSubscription.unsubscribe();
+  }
+  // Subscribe to the params Observable and forward values to the BehaviorSubject
+  formioParamsSubscription = params$.subscribe(params => {
+    formioParams$.next(params);
+  });
 
   if (valtimoWindow?.flags?.formioValueResolverSelectorComponentRegistered) {
     const tabComponents = editForm?.components?.find(element => element.key === 'tabs')?.components;
@@ -89,6 +88,6 @@ const addValueResolverSelectorToEditform = (
 export {
   modifyEditFormApiKeyInput,
   addValueResolverSelectorToEditform,
-  formioParams,
+  formioParams$,
   FormioContextParams,
 };

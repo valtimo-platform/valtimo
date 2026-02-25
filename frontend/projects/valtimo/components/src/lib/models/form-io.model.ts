@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,9 @@ import {
   ErrorsOptions,
   FormioBeforeSubmit,
   FormioHookOptions,
-  AngularFormioOptions,
+  FormioOptions,
 } from '@formio/angular';
-
-interface FormioOptions extends AngularFormioOptions {
-  language?: string;
-  i18n?: object;
-  fileService?: object;
-  hooks?: FormioHookOptions;
-  readonly?: boolean;
-  decimalSeparator?: string;
-  thousandsSeparator?: string;
-  [key: string]: any;
-}
+import {ManagementContext} from '@valtimo/shared';
 
 interface FormioSubmission {
   data: {
@@ -166,16 +156,24 @@ interface ConditionalOptions {
   json?: Object;
 }
 
+interface FormioContextParams {
+  context: ManagementContext | null;
+  caseDefinitionKey: string | null;
+  caseDefinitionVersionTag: string | null;
+  buildingBlockDefinitionKey: string | null;
+  buildingBlockDefinitionVersionTag: string | null;
+}
+
 export {
   FormioSubmission,
   ResourceOption,
   AlertsOptionsImpl,
   FormioOptionsImpl,
   ValtimoFormioOptions,
-  FormioOptions,
   ValidateOptions,
   BuilderInfo,
   ComponentSchema,
   ExtendedComponentSchema,
   ConditionalOptions,
+  FormioContextParams,
 };

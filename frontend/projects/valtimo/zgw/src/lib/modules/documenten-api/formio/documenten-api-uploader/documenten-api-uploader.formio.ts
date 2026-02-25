@@ -23,7 +23,7 @@ export const customDocumentApiUploaderType = 'documenten-api-file';
 
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   type: customDocumentApiUploaderType,
-  selector: 'valtimo-documenten-api-formio-uploader',
+  selector: 'documenten-api-form-io-uploader',
   title: 'Documenten API File Upload',
   group: 'advanced',
   icon: 'upload',

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {Components} from '@formio/js';
-import {getRandomComponentId} from '@formio/js/utils';
+import {Components, Utils as FormioUtils} from 'formiojs';
 import {FormioCustomComponentInfo, FormioCustomElement, FormioEvent} from './elements.common';
 import {clone, isArray, isNil} from 'lodash';
 import {BuilderInfo, ExtendedComponentSchema} from '../../models';
@@ -27,7 +26,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
   return class CustomComponent extends BaseInputComponent {
     public static readonly editForm =
       customComponentOptions.editForm || TextfieldComponent.editForm;
-    public readonly id = getRandomComponentId();
+    public readonly id = FormioUtils.getRandomComponentId();
     public readonly type = customComponentOptions.type;
 
     _customAngularElement!: FormioCustomElement;
