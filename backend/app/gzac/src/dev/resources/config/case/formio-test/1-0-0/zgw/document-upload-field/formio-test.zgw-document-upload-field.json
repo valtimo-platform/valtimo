@@ -1,0 +1,26 @@
+[
+    {
+        "key": "taal",
+        "defaultValue": "eng",
+        "visible": true,
+        "readonly": false
+    },
+    {
+        "key": "vertrouwelijkheidaanduiding",
+        "defaultValue": "zaakvertrouwelijk",
+        "visible": true,
+        "readonly": false
+    },
+    {
+        "key": "informatieobjecttype",
+        "defaultValue": "${VALTIMO_CATALOGI_API_URL}informatieobjecttypen/${VALTIMO_INFORMATIEOBJECTTYPE}",
+        "visible": true,
+        "readonly": false
+    },
+    {
+        "key": "status",
+        "defaultValue": "in_bewerking",
+        "visible": true,
+        "readonly": false
+    }
+]
