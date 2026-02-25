@@ -27,7 +27,7 @@ The detail screen is divided into 4 columns. Each widget occupies a configurable
 
 ### Widget configuration wizard
 
-The widget configuration goes through 6 steps:
+The widget configuration goes through 6 steps. When configuring an interactive table an additional filters step appears between the Content and Display Conditions steps.
 
 #### Step 1: Choose widget type
 
@@ -95,6 +95,31 @@ Configure the widget title, icon, data path, and fields.
 | Value | Data path to the field value. |
 | Ellipsis character limit | Maximum characters before truncation (optional). |
 | Hide when empty | Hide the field when value is empty. |
+
+#### Interactive table filters (interactive table only)
+
+Interactive tables now display a configurable filters modal above the widget. During the extra wizard step you can define one or more filters that are shown as fields in the search bar. Each filter consists of a title, key (used to map the search value to the data source), a data type, field type, match type (Exact or Contains) and, optionally, a dropdown data provider.
+
+**Supported data types:**
+
+| Data type | Description | Typical field types |
+|-----------|-------------|---------------------|
+| Text | Free text values, optionally matched exactly or with a contains/like query. | Single input, single-select dropdown, multi-select dropdown. |
+| Number | Whole numbers or decimals. | Single input or range. |
+| Date | Calendar dates (no time). | Single input or range. |
+| Datetime | Combined date and time values. | Single input or range. |
+| Boolean | Yes/No flag rendered as translated radio buttons. | Single input. |
+
+**Field types:**
+
+| Field type | Description |
+|------------|-------------|
+| Single | Renders a single input that sends the raw value. |
+| Range | Renders start/end inputs. The widget converts the values to a JSON object with `rangeFrom` and `rangeTo`. |
+| Single-select dropdown | Dropdown populated manually or via the dropdown database provider. Sends the option id. |
+| Multi-select dropdown | Tag-style selector populated manually or via the dropdown database provider. Sends an array of option ids. |
+
+Boolean filters automatically render a translated Yes/No selector, while dropdown filters can either use hard-coded values or reference the dropdown database provider so that options stay in sync with external lists. Users can combine several filters, clear them with a single click, and every change immediately refreshes the table content so that cases can be located without leaving the widget.
 
 #### Step 6: Set display conditions
 
