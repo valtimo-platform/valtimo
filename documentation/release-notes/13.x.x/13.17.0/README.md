@@ -6,6 +6,9 @@
 
 ## New Features
 
+* **Interactive table search filters**  
+  Interactive table widgets now support filters that adapt to each field type. This ensures users can enter values in the correct format, making it easier and more intuitive to refine results.
+
 ## Enhancements
 
 ## Bugfixes
