@@ -16,4 +16,5 @@
 
 export * from './layout.service';
 export * from './widget-fields.service';
+export * from './widget-interactive-table.service';
 export * from './widget-wizard.service';

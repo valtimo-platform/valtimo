@@ -18,6 +18,7 @@ package com.ritense.iko.dto
 
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
+import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.widget.interactivetable.InteractiveTableWidgetProperties.FilterConfig
 import org.springframework.data.domain.Pageable
 
@@ -33,17 +34,30 @@ data class ContainerParam(
             } else if (config.matchType == SearchFieldMatchType.LIKE) {
                 listOf(config.key + "~" to value.toString())
             } else if (config.fieldType == FieldType.RANGE) {
-                if (value is Map<*, *>) {
+                val parsedValue = if (value is String) {
+                    try {
+                        MapperSingleton.get().readValue(value, Map::class.java)
+                    } catch (e: Exception) {
+                        value
+                    }
+                } else {
+                    value
+                }
+                if (parsedValue is Map<*, *>) {
                     val filter = mutableListOf<Pair<String, String>>()
-                    value["rangeFrom"]?.let { filter.add(config.key + ">=" to it.toString()) }
-                    value["rangeTo"]?.let { filter.add(config.key + "<" to it.toString()) }
+                    parsedValue["rangeFrom"]?.let { filter.add(config.key + ">=" to it.toString()) }
+                    parsedValue["rangeTo"]?.let { filter.add(config.key + "<" to it.toString()) }
                     filter
                 } else {
                     error("Unsupported combination of filter config and value: $config, $value")
                 }
             } else if (config.fieldType == FieldType.MULTI_SELECT_DROPDOWN) {
-                val listValue = value as? Collection<*> ?: listOf(value)
-                listOf(config.key to listValue.toString())
+                val listValue = (value as? Collection<*>)?.filterNotNull() ?: listOf(value)
+                if (listValue.isEmpty()) {
+                    emptyList()
+                } else {
+                    listOf(config.key to listValue.joinToString(","))
+                }
             } else if (config.matchType == SearchFieldMatchType.EXACT) {
                 listOf(config.key to value.toString())
             } else {

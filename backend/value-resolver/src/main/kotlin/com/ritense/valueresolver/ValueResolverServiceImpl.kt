@@ -301,7 +301,7 @@ class ValueResolverServiceImpl(
         getQueryParameters(requestedValue).values.filterNotNull().filter { isRequestedValue(it) }
 
     private fun isRequestedValue(value: Any?): Boolean =
-        value is String && value.contains(DELIMITER) && resolverFactoryMap.keys.contains(getPrefix(value))
+        value is String && hasPrefix(value) && resolverFactoryMap.keys.contains(getPrefix(value))
 
     private fun getQueryParameters(requestedValue: String): Map<String, String?> {
         return if (isRequestedValue(requestedValue)) {
