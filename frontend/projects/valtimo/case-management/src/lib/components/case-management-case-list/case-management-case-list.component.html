@@ -23,6 +23,7 @@
     <cds-tab
       [active]="currentTab === TabEnum.LIST"
       [heading]="'caseManagement.tabs.caseListTab.columns' | translate"
+      [id]="'caseManagementListColumns'"
       (selected)="switchTab(TabEnum.LIST)"
     >
       <valtimo-case-management-list-columns
@@ -33,6 +34,7 @@
     <cds-tab
       [active]="currentTab === TabEnum.SEARCH"
       [heading]="'caseManagement.tabs.caseListTab.searchFields' | translate"
+      [id]="'caseManagementListSearchFields'"
       (selected)="switchTab(TabEnum.SEARCH)"
     >
       <valtimo-case-management-search-fields
