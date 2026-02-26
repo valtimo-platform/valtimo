@@ -86,7 +86,7 @@ UPDATE notifications_notificationsconfig SET api_root = 'http://host.docker.inte
 
 -- Objecten API service for zaakobject validation
 DELETE FROM zgw_consumers_service where slug = 'objecten-api';
-INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file, timeout, api_connection_check_path, slug) VALUES (10, uuid_generate_v4(), 'Objecten API', 'orc', 'http://host.docker.internal:8010/api/v2/', '', '', 'api_key', 'Authorization', 'Token ' || :'objecten_api_token', 'http://host.docker.internal:8010/api/v2/schema/openapi.yaml', '', '', '', '', 10, '', 'objecten-api');
+INSERT INTO zgw_consumers_service(id, uuid, label, api_type, api_root, client_id, secret, auth_type, header_key, header_value, oas, nlx, user_id, user_representation, oas_file, timeout, api_connection_check_path, slug) VALUES (10, uuid_generate_v4(), 'Objecten API', 'orc', 'http://host.docker.internal:8010/api/v2/', '', '', 'api_key', 'Authorization', 'Token 182c13e2209161852c53cef53a879f7a2f923430', 'http://host.docker.internal:8010/api/v2/schema/openapi.yaml', '', '', '', '', 10, '', 'objecten-api');
 
 SELECT setval(pg_get_serial_sequence('zgw_consumers_service', 'id'), 10, true);
 

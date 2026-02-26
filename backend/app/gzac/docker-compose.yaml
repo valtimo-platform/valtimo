@@ -136,8 +136,6 @@ services:
         profiles:
             - zgw
             - openzaak
-        env_file:
-            - .env.properties
         environment:
             - POSTGRES_USER=openzaak
             - POSTGRES_PASSWORD=openzaak
