@@ -1,0 +1,27 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Documenten API Uploader",
+            "key": "documentenApiFiles",
+            "type": "documenten-api-file",
+            "customOptions": {
+                "language": "nld",
+                "confidentialityLevel": "zaakvertrouwelijk",
+                "documentType": "http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad",
+                "status": "in_bewerking"
+            },
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

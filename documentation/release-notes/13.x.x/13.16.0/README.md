@@ -49,3 +49,5 @@
 
 * Fixed an intermittent issue where the JSON editor would fail to display when editing document or form
   definitions.
+
+* Fixed an issue that prevented users with specific Keycloak configurations from connecting to IKO.
