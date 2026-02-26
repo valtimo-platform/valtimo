@@ -115,12 +115,20 @@ export class CaseDetailsManagementCaseListPage {
     return this.page.getByTestId('listColumnJSONEditor');
   }
 
+  get downloadButton() {
+    return this.page.getByTestId('listColumnDownloadButton');
+  }
+
+  private getMultiInputRow(index: number) {
+    return this.page.getByTestId('listColumnMultiInput').locator('.v-multi-input__row').nth(index);
+  }
+
   getMultiInputKeyInput(index: number) {
-    return this.page.getByTestId('listColumnMultiInput').getByTestId(`keyValueKeyInput-${index}`);
+    return this.getMultiInputRow(index).getByTestId('keyValueKeyInput');
   }
 
   getMultiInputValueInput(index: number) {
-    return this.page.getByTestId('listColumnMultiInput').getByTestId(`keyValueValueInput-${index}`);
+    return this.getMultiInputRow(index).getByTestId('keyValueValueInput');
   }
 
   getMultiInputDeleteButton(index: number) {
@@ -129,10 +137,10 @@ export class CaseDetailsManagementCaseListPage {
       .getByTestId(`multiInputDeleteButton-${index}`);
   }
 
-  getMultiInputAddButton(index: number) {
+  getMultiInputAddButton() {
     return this.page
       .getByTestId('listColumnMultiInput')
-      .getByTestId(`multiInputAddButton-${index}`);
+      .locator('.v-multi-input__add-button button');
   }
 
   // Navigation
@@ -170,6 +178,10 @@ export class CaseDetailsManagementCaseListPage {
     displayType: string;
     sortable?: boolean;
     defaultSort?: string;
+    dateFormat?: string;
+    enumValues?: Array<{key: string; value: string}>;
+    tagAmount?: number;
+    exportable?: boolean;
   }) {
     await this.addListColumnButton.click();
 
@@ -178,19 +190,43 @@ export class CaseDetailsManagementCaseListPage {
     }
     await this.keyInput.fill(column.key);
 
-    if (!(await this.valuePathSelectorInput.isVisible())) {
-      await this.valuePathSelectorToggle.click();
-    }
+    await this.valuePathSelectorToggle.click();
+
     await this.valuePathSelectorInput.fill(column.path);
 
     await this.selectDropdownItem(this.displayTypeDropdown, column.displayType);
 
+    if (column.dateFormat) {
+      await this.dateFormat.fill(column.dateFormat);
+    }
+
+    if (column.enumValues) {
+      for (let i = 0; i < column.enumValues.length; i++) {
+        await this.getMultiInputKeyInput(i).fill(column.enumValues[i].key);
+        await this.getMultiInputValueInput(i).fill(column.enumValues[i].value);
+        if (i < column.enumValues.length - 1) {
+          await this.getMultiInputAddButton().click();
+        }
+      }
+    }
+
+    if (column.tagAmount) {
+      const incrementButton = this.tagAmount.locator('button').last();
+      for (let i = 0; i < column.tagAmount; i++) {
+        await incrementButton.click();
+      }
+    }
+
     if (column.sortable) {
-      await this.sortableChekcbox.locator('label').click();
+      await this.sortableCheckbox.locator('label').click();
     }
 
     if (column.defaultSort) {
       await this.selectDropdownItem(this.defaultSortDropdown, column.defaultSort);
+    }
+
+    if (column.exportable) {
+      await this.exportableToggle.click();
     }
 
     await this.listColumnSaveButton.click();
@@ -201,6 +237,16 @@ export class CaseDetailsManagementCaseListPage {
     await this.titleInput.clear();
     await this.titleInput.fill(newTitle);
     await this.listColumnSaveButton.click();
+  }
+
+  async editColumnDefaultSort(columnKey: string, defaultSort: string) {
+    await this.page.locator(`tr:has(td[title="${columnKey}"])`).click();
+    await this.selectDropdownItem(this.defaultSortDropdown, defaultSort);
+    await this.listColumnSaveButton.click();
+  }
+
+  async assertDefaultSortDropdownDisabled() {
+    await expect(this.defaultSortDropdown.locator('button')).toBeDisabled();
   }
 
   async deleteColumn(columnKey: string) {
@@ -224,5 +270,39 @@ export class CaseDetailsManagementCaseListPage {
 
   async assertSaveButtonEnabled() {
     await expect(this.listColumnSaveButton).toBeEnabled();
+  }
+
+  async cancelDelete(columnKey: string) {
+    const list = new CarbonList(this.page);
+    const row = list.row(columnKey);
+    await row.clickAction('Delete');
+    await this.confirmationModalCloseButton.click();
+  }
+
+  async assertDownloadButtonEnabled() {
+    await expect(this.downloadButton).toBeEnabled();
+  }
+
+  async assertDownloadButtonDisabled() {
+    await expect(this.downloadButton).toBeDisabled();
+  }
+
+  private get columnsList() {
+    return new CarbonList(this.page, this.caseListColumnsList.locator('..'));
+  }
+
+  async dragColumnToPosition(sourceKey: string, targetKey: string) {
+    const list = this.columnsList;
+    const sourceRow = list.row(sourceKey);
+    const targetRow = list.row(targetKey);
+    await list.dragRow(sourceRow, targetRow);
+  }
+
+  async assertRowOrder(expectedKeys: string[]) {
+    const list = this.columnsList;
+    for (let i = 0; i < expectedKeys.length; i++) {
+      const row = list.rows.nth(i);
+      await expect(row).toContainText(expectedKeys[i]);
+    }
   }
 }

@@ -24,6 +24,11 @@ import {
   LIST_COLUMNS_2,
   UI_COLUMN_1,
   UI_COLUMN_2,
+  UI_COLUMN_DATE,
+  UI_COLUMN_DEFAULT_SORT,
+  UI_COLUMN_ENUM,
+  UI_COLUMN_EXPORTABLE,
+  UI_COLUMN_TAGS,
 } from './json-list-column-config';
 import {CaseDetailsManagementCaseListPage} from './page';
 
@@ -208,6 +213,125 @@ test.describe('Case management', () => {
 
           // Assert
           await testPage.assertColumnNotExists(UI_COLUMN_2.key);
+        });
+      });
+
+      test.describe('Column Display Types', () => {
+        test('Create and delete a date column with date format', async () => {
+          // Act
+          await testPage.createColumn(UI_COLUMN_DATE);
+
+          // Assert
+          await testPage.assertColumnExists(UI_COLUMN_DATE.key);
+
+          // Cleanup
+          await testPage.deleteColumn(UI_COLUMN_DATE.key);
+          await testPage.assertColumnNotExists(UI_COLUMN_DATE.key);
+        });
+
+        test('Create and delete an enum column with enumeration values', async () => {
+          // Act
+          await testPage.createColumn(UI_COLUMN_ENUM);
+
+          // Assert
+          await testPage.assertColumnExists(UI_COLUMN_ENUM.key);
+
+          // Cleanup
+          await testPage.deleteColumn(UI_COLUMN_ENUM.key);
+          await testPage.assertColumnNotExists(UI_COLUMN_ENUM.key);
+        });
+
+        test('Create and delete a tags column with tag amount', async () => {
+          // Act
+          await testPage.createColumn(UI_COLUMN_TAGS);
+
+          // Assert
+          await testPage.assertColumnExists(UI_COLUMN_TAGS.key);
+
+          // Cleanup
+          await testPage.deleteColumn(UI_COLUMN_TAGS.key);
+          await testPage.assertColumnNotExists(UI_COLUMN_TAGS.key);
+        });
+
+        test('Create and delete an exportable column', async () => {
+          // Act
+          await testPage.createColumn(UI_COLUMN_EXPORTABLE);
+
+          // Assert
+          await testPage.assertColumnExists(UI_COLUMN_EXPORTABLE.key);
+
+          // Also verify cancel delete keeps the column
+          await testPage.cancelDelete(UI_COLUMN_EXPORTABLE.key);
+          await testPage.assertColumnExists(UI_COLUMN_EXPORTABLE.key);
+
+          // Cleanup
+          await testPage.deleteColumn(UI_COLUMN_EXPORTABLE.key);
+          await testPage.assertColumnNotExists(UI_COLUMN_EXPORTABLE.key);
+        });
+
+        test('Create column with default sort and verify only one allowed', async () => {
+          // Act
+          await testPage.createColumn(UI_COLUMN_DEFAULT_SORT);
+
+          // Assert
+          await testPage.assertColumnExists(UI_COLUMN_DEFAULT_SORT.key);
+
+          // Verify a second column cannot set default sort
+          await testPage.addListColumnButton.click();
+          await testPage.assertDefaultSortDropdownDisabled();
+          await testPage.listColumnCancelButton.click();
+
+          // Cleanup
+          await testPage.deleteColumn(UI_COLUMN_DEFAULT_SORT.key);
+          await testPage.assertColumnNotExists(UI_COLUMN_DEFAULT_SORT.key);
+        });
+
+        test('Save button enabled when form is valid', async () => {
+          // Act
+          await testPage.addListColumnButton.click();
+          await testPage.keyInput.fill('uiTestValid');
+          await testPage.valuePathSelectorToggle.click();
+          await testPage.valuePathSelectorInput.fill('case:createdBy');
+          await testPage.selectDropdownItem(testPage.displayTypeDropdown, 'Text');
+
+          // Assert
+          await testPage.assertSaveButtonEnabled();
+
+          // Cleanup
+          await testPage.listColumnCancelButton.click();
+        });
+      });
+
+      test.describe('Download', () => {
+        test('Download button is enabled when columns exist', async () => {
+          // Assert - LIST_COLUMNS_2 still exists from JSON editor tests
+          await testPage.assertDownloadButtonEnabled();
+        });
+      });
+
+      test.describe('Drag and Drop Reorder', () => {
+        test('Reorder columns via drag and drop and persist after navigation', async () => {
+          // Arrange
+          const firstKey = LIST_COLUMNS_2[0].key;
+          const secondKey = LIST_COLUMNS_2[1].key;
+          await testPage.assertRowOrder([firstKey, secondKey]);
+
+          // Act
+          await testPage.dragColumnToPosition(firstKey, secondKey);
+
+          // Assert - order is swapped immediately
+          await testPage.assertRowOrder([secondKey, firstKey]);
+
+          // Navigate away and back to verify persistence
+          await testPage.goToCaseDetailsManagementCaseList('bezwaar');
+          await testPage.listColumnsTab.click();
+
+          // Assert - order is still swapped after fresh load from API
+          await testPage.assertRowOrder([secondKey, firstKey]);
+
+          // Revert
+          await testPage.dragColumnToPosition(secondKey, firstKey);
+          await testPage.assertRowOrder([firstKey, secondKey]);
         });
       });
     });
