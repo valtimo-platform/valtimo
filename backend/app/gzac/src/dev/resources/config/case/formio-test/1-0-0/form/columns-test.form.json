@@ -1,0 +1,39 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "type": "columns",
+            "key": "columns",
+            "columns": [
+                {
+                    "components": [
+                        {
+                            "label": "Column 1 Text",
+                            "key": "col1Text",
+                            "type": "textfield",
+                            "input": true
+                        }
+                    ]
+                },
+                {
+                    "components": [
+                        {
+                            "label": "Column 2 Text",
+                            "key": "col2Text",
+                            "type": "textfield",
+                            "input": true
+                        }
+                    ]
+                }
+            ],
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}
