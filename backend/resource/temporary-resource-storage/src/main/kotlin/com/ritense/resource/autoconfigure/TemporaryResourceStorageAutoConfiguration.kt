@@ -25,7 +25,6 @@ import com.ritense.resource.service.VirusScanService
 import com.ritense.resource.web.rest.TemporaryResourceStorageResource
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.ProcessBean
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -34,7 +33,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -96,13 +94,6 @@ class TemporaryResourceStorageAutoConfiguration {
     @ConditionalOnMissingBean(TemporaryResourceStorageHttpSecurityConfigurer::class)
     fun temporaryResourceStorageHttpSecurityConfigurer(): TemporaryResourceStorageHttpSecurityConfigurer {
         return TemporaryResourceStorageHttpSecurityConfigurer()
-    }
-
-    @Order(Ordered.HIGHEST_PRECEDENCE + 20)
-    @ConditionalOnMissingBean(name = ["temporaryResourceStorageLiquibaseMasterChangeLogLocation"])
-    @Bean
-    fun temporaryResourceStorageLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/temporary-resource-master.xml")
     }
 
     @Bean

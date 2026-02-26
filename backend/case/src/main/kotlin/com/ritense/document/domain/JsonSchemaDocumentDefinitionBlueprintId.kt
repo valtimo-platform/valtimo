@@ -15,8 +15,12 @@
  */
 package com.ritense.document.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.authorization.permission.condition.AuthorizationFieldAlias
+import com.ritense.valtimo.contract.blueprint.BlueprintOwner
+import com.ritense.valtimo.contract.blueprint.BlueprintOwnerHelper
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -29,22 +33,21 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import org.semver4j.Semver
 import java.io.Serializable
-import java.util.Objects
 
 @Embeddable
 class JsonSchemaDocumentDefinitionBlueprintId(
     @Enumerated(EnumType.STRING)
     @Column(name = "blueprint_type", length = 40, nullable = false)
-    var blueprintType: JsonSchemaDocumentDefinitionBlueprintType,
+    override var blueprintType: BlueprintType,
     @Column(name = "blueprint_key", length = 256, nullable = false)
     @field:AuthorizationFieldAlias("key")
-    var blueprintKey: String,
+    override var blueprintKey: String,
     @Convert(converter = SemverConverter::class)
     @Column(name = "blueprint_version_tag", nullable = false)
     @JsonSerialize(using = SemverSerializer::class)
     @field:AuthorizationFieldAlias("versionTag")
-    var blueprintVersionTag: Semver,
-) : Serializable {
+    override var blueprintVersionTag: Semver,
+) : BlueprintOwner, Serializable {
     init {
         AssertionConcern.assertArgumentLength(blueprintKey,
             1,
@@ -53,7 +56,7 @@ class JsonSchemaDocumentDefinitionBlueprintId(
         )
     }
 
-    fun blueprintType(): JsonSchemaDocumentDefinitionBlueprintType {
+    fun blueprintType(): BlueprintType {
         return blueprintType
     }
 
@@ -65,53 +68,45 @@ class JsonSchemaDocumentDefinitionBlueprintId(
         return blueprintVersionTag
     }
 
-    fun asCaseDefinitionId(): CaseDefinitionId? {
-        if (blueprintType != JsonSchemaDocumentDefinitionBlueprintType.CASE) {
-            return null
-        }
-        return CaseDefinitionId.of(blueprintKey, blueprintVersionTag.toString())
+    @JsonIgnore
+    override fun asCaseDefinitionId(): CaseDefinitionId? {
+        return super.asCaseDefinitionId()
     }
 
-    fun asBuildingBlockDefinitionId(): BuildingBlockDefinitionId? {
-        if (blueprintType != JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK) {
-            return null
-        }
-        return BuildingBlockDefinitionId.of(blueprintKey, blueprintVersionTag.toString())
+    @JsonIgnore
+    override fun asBuildingBlockDefinitionId(): BuildingBlockDefinitionId? {
+        return super.asBuildingBlockDefinitionId()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
-            return true
-        }
-        if (o !is JsonSchemaDocumentDefinitionBlueprintId) {
-            return false
-        }
-        val that = o
-        return blueprintType == that.blueprintType && blueprintKey == that.blueprintKey
-            && blueprintVersionTag == that.blueprintVersionTag
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is JsonSchemaDocumentDefinitionBlueprintId) return false
+        return BlueprintOwnerHelper.areEqual(this, other)
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(blueprintType, blueprintKey, blueprintVersionTag)
+        return BlueprintOwnerHelper.computeHashCode(this)
+    }
+
+    override fun toString(): String {
+        return "$blueprintType:$blueprintKey:$blueprintVersionTag"
     }
 
     companion object {
+        @JvmStatic
         fun forCase(caseDefinitionId: CaseDefinitionId?): JsonSchemaDocumentDefinitionBlueprintId {
             AssertionConcern.assertArgumentNotNull(caseDefinitionId, "caseDefinitionId is required")
-            return JsonSchemaDocumentDefinitionBlueprintId(
-                JsonSchemaDocumentDefinitionBlueprintType.CASE,
-                caseDefinitionId!!.key,
-                caseDefinitionId.versionTag
-            )
+            return BlueprintOwnerHelper.createForCase(caseDefinitionId!!) { type, key, version ->
+                JsonSchemaDocumentDefinitionBlueprintId(type, key, version)
+            }
         }
 
+        @JvmStatic
         fun forBuildingBlock(buildingBlockDefinitionId: BuildingBlockDefinitionId?): JsonSchemaDocumentDefinitionBlueprintId {
             AssertionConcern.assertArgumentNotNull(buildingBlockDefinitionId, "buildingBlockDefinitionId is required")
-            return JsonSchemaDocumentDefinitionBlueprintId(
-                JsonSchemaDocumentDefinitionBlueprintType.BUILDING_BLOCK,
-                buildingBlockDefinitionId!!.key,
-                buildingBlockDefinitionId.versionTag
-            )
+            return BlueprintOwnerHelper.createForBuildingBlock(buildingBlockDefinitionId!!) { type, key, version ->
+                JsonSchemaDocumentDefinitionBlueprintId(type, key, version)
+            }
         }
     }
 }

@@ -51,9 +51,7 @@ export class BuildingBlockManagementListComponent {
   public readonly $loading = signal<boolean>(true);
 
   public readonly buildingBlockDefinitions$ = this.buildingBlockManagementService.reload$.pipe(
-    switchMap(() =>
-      this.buildingBlockManagementApiService.getBuildingBlockDefinitions()
-    ),
+    switchMap(() => this.buildingBlockManagementApiService.getBuildingBlockDefinitions()),
     tap(res => {
       this.buildingBlockManagementService.setUsedKeys(res.map(item => item.key));
       this.$loading.set(false);

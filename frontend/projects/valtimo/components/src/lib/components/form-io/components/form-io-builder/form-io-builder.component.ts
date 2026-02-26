@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,25 @@
 
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
 import {Components} from 'formiojs';
-import {distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
-  modiyEditFormApiKeyInput,
+  modifyEditFormApiKeyInput,
 } from './form-io-builder.utils';
-import {ValtimoFormioOptions} from '../../../../models';
+import {FormioContextParams, ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
-import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
+import {
+  ConfigService,
+  getBuildingBlockManagementRouteParams,
+  getCaseManagementRouteParams,
+  getContextObservable,
+  ValtimoConfig,
+} from '@valtimo/shared';
 import {FormIoTagsService} from '../../services/form-io.tags.service';
 import {ActivatedRoute} from '@angular/router';
 
@@ -109,12 +115,31 @@ export class FormioBuilderComponent implements OnInit {
   }
 
   private modifyEditForm = (): void => {
-    const params = getCaseManagementRouteParams(this.route);
+    const context$ = getContextObservable(this.route);
+    const caseParams$ = getCaseManagementRouteParams(this.route);
+    const bbParams$ = getBuildingBlockManagementRouteParams(this.route);
+
+    // Create combined params observable with context awareness
+    const params$: Observable<FormioContextParams> = context$.pipe(
+      switchMap(context =>
+        combineLatest([caseParams$, bbParams$]).pipe(
+          map(([caseParams, bbParams]) => ({
+            context,
+            caseDefinitionKey: caseParams?.caseDefinitionKey ?? null,
+            caseDefinitionVersionTag: caseParams?.caseDefinitionVersionTag ?? null,
+            buildingBlockDefinitionKey: bbParams?.buildingBlockDefinitionKey ?? null,
+            buildingBlockDefinitionVersionTag: bbParams?.buildingBlockDefinitionVersionTag ?? null,
+          }))
+        )
+      )
+    );
+
     const originalEditForm = Components.baseEditForm;
+
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
-      modiyEditFormApiKeyInput(editForm);
-      addValueResolverSelectorToEditform(editForm, params);
+      modifyEditFormApiKeyInput(editForm);
+      addValueResolverSelectorToEditform(editForm, params$);
 
       return editForm;
     };

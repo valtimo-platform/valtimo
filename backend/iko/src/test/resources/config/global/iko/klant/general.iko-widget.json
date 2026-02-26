@@ -37,7 +37,8 @@
                         }
                     ]
                 ]
-            }
+            },
+            "color": "HIGHCONTRAST"
         },
         {
             "type": "collection",
@@ -69,7 +70,8 @@
                         "width": "full"
                     }
                 ]
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "fields",
@@ -106,7 +108,8 @@
                         }
                     ]
                 ]
-            }
+            },
+            "color": "HIGHCONTRAST"
         },
         {
             "type": "collection",
@@ -144,7 +147,8 @@
                         "width": "full"
                     }
                 ]
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "interactive-table",
@@ -218,7 +222,8 @@
                     "navigateTo": "${$.kenmerken[?(@.kenmerk =~ /^originUrl[0-9]*$/)].bron}"
                 },
                 "canStartCase": true
-            }
+            },
+            "color": "WHITE"
         },
         {
             "type": "table",
@@ -251,7 +256,8 @@
                     }
                 ],
                 "firstColumnAsTitle": false
-            }
+            },
+            "color": "WHITE"
         }
     ]
 }

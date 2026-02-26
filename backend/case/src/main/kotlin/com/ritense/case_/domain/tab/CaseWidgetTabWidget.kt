@@ -22,15 +22,18 @@ import com.google.common.base.Objects
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.Table
+import jakarta.persistence.Enumerated
 import org.hibernate.annotations.Type
 
 @AllOpen
@@ -52,6 +55,10 @@ abstract class CaseWidgetTabWidget(
 
     @Column(name = "icon", nullable = true)
     val icon: String?,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "color", nullable = false)
+    val color: WidgetColor = WidgetColor.WHITE,
 
     @Column(name = "sort_order", nullable = false)
     val order: Int,
@@ -92,6 +99,7 @@ abstract class CaseWidgetTabWidget(
         if (id != other.id) return false
         if (title != other.title) return false
         if (icon != other.icon) return false
+        if (color != other.color) return false
         if (isCompact != other.isCompact) return false
         if (order != other.order) return false
         if (width != other.width) return false
@@ -106,6 +114,7 @@ abstract class CaseWidgetTabWidget(
         return Objects.hashCode(
             title,
             icon,
+            color,
             order,
             width,
             highContrast,
@@ -116,6 +125,6 @@ abstract class CaseWidgetTabWidget(
     }
 
     override fun toString(): String {
-        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
+        return "CaseWidgetTabWidget(id='$id', title='$title', icon='$icon', color=$color, order=$order, width=$width, highContrast=$highContrast, isCompact=$isCompact)"
     }
 }

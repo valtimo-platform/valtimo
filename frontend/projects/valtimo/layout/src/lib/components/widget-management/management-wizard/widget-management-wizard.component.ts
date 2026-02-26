@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
 import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {
+  WIDGET_COLOR_LABELS,
   WIDGET_DENSITY_LABELS,
-  WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
@@ -97,17 +97,17 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   public readonly secondaryLabels$: Observable<Record<string, string>> = combineLatest([
     toObservable(this.widgetWizardService.$selectedWidget),
     toObservable(this.widgetWizardService.$widgetWidth),
-    toObservable(this.widgetWizardService.$widgetStyle),
     toObservable(this.widgetWizardService.$widgetDensity),
+    toObservable(this.widgetWizardService.$widgetColor),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedStyle, selectedDensity]) => {
+    map(([selectedWidget, selectedWidth, selectedDensity, selectedColor]) => {
       const type = selectedWidget?.type ?? '';
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
         [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
-        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle ?? ''] ?? '',
         [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
+        [WidgetWizardStep.APPEARANCE]: selectedColor ? WIDGET_COLOR_LABELS[selectedColor] : '',
       };
     })
   );
