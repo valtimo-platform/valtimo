@@ -1,0 +1,19 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "className": "test-class",
+            "content": "HTML Element content",
+            "tag": "div",
+            "type": "htmlelement",
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

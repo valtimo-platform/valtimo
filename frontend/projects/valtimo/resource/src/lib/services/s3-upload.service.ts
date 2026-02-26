@@ -16,14 +16,24 @@
 
 import {Observable} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
-import {ResourceDto, ResourceFile, S3Resource, UploadService} from '../models';
+import {ResourceDto, ResourceFile, ResourceReference, S3Resource, UploadService} from '../models';
 import {Injectable} from '@angular/core';
 import {v4 as uuidv4} from 'uuid';
 import {S3Service} from './s3.service';
+import {HttpClient} from '@angular/common/http';
+import {ConfigService} from '@valtimo/shared';
 
 @Injectable()
 export class S3UploadService implements UploadService {
-  constructor(private readonly s3Service: S3Service) {}
+  private readonly valtimoEndpointUri!: string;
+
+  constructor(
+    private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {
+    this.valtimoEndpointUri = this.configService.config.valtimoApi.endpointUri;
+  }
 
   uploadFile(file: File, _, documentId?: string): Observable<ResourceFile> {
     let resourceUrl: URL;
@@ -46,6 +56,18 @@ export class S3UploadService implements UploadService {
 
   getResource(resourceId: string): Observable<ResourceDto> {
     return this.s3Service.get(resourceId);
+  }
+
+  getResources(documentId: string): Observable<Array<ResourceReference>> {
+    return this.http.get<any>(`${this.valtimoEndpointUri}v1/document/${documentId}`).pipe(
+      map(document => document.relatedFiles ?? []),
+      map(resources =>
+        resources.map(relatedFile => ({
+          filename: relatedFile.fileName,
+          id: relatedFile.fileId,
+        }))
+      )
+    );
   }
 
   private getResourceFile(result: ResourceDto): ResourceFile {
