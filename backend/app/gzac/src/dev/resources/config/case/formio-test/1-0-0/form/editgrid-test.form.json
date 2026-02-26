@@ -1,0 +1,29 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Edit Grid",
+            "key": "editgrid",
+            "type": "editgrid",
+            "components": [
+                {
+                    "label": "Field",
+                    "key": "field",
+                    "type": "textfield",
+                    "input": true
+                }
+            ],
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

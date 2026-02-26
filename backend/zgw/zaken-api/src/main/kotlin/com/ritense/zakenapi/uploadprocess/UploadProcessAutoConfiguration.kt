@@ -60,13 +60,11 @@ class UploadProcessAutoConfiguration {
         documentService: DocumentService,
         processDocumentService: ProcessDocumentService,
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
     ): UploadProcessService {
         return UploadProcessService(
             documentService,
             processDocumentService,
             caseDefinitionProcessLinkService,
-            activeCaseDefinitionService,
         )
     }
 

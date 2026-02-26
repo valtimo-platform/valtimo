@@ -76,6 +76,8 @@ interface WidgetFilter {
   key: string;
   matchType?: string;
   title: string;
+  dropdownDataProvider?: string;
+  dropdownValues?: Record<string, string>;
 }
 
 interface WidgetCustomContent {
@@ -98,6 +100,11 @@ enum MoveRowDirection {
   DOWN = 'DOWN',
 }
 
+enum FilterDropdownDataProvider {
+  DATABASE = 'dropdownDatabaseDataProvider',
+  JSON = 'dropdownJsonFileDataProvider',
+}
+
 interface MoveRowEvent {
   direction: MoveRowDirection;
   index: number;
@@ -106,6 +113,8 @@ interface MoveRowEvent {
 interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
+
+type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
   | WidgetFieldsContent
@@ -127,9 +136,11 @@ export {
   WidgetMapContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
+  WidgetDropdownValue,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,
   CollectionWidgetResolvedField,
   CollectionWidgetTitle,
   CollectionWidgetCardData,
+  FilterDropdownDataProvider
 };
