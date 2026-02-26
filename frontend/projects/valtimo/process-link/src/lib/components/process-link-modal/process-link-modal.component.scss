@@ -19,9 +19,8 @@
   min-height: 70%;
 }
 
-::ng-deep .process-link-modal-container .cds--modal-footer {
-  display: flex;
-  flex-direction: row;
+::ng-deep .process-link-modal-container .cds--modal-footer .footer-spacer {
+  flex: 0 1 50%;
 }
 
 .cds-loading-container {
@@ -37,31 +36,6 @@
   background: var(--cds-layer);
   z-index: 99;
   box-sizing: border-box;
-}
-
-.cancel-button {
-  width: 20%;
-  display: flex;
-
-  button {
-    width: 100%;
-  }
-}
-
-.footer-spacer {
-  width: 20%;
-}
-
-.action-buttons {
-  width: 60%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-
-  button {
-    flex: 1;
-    max-width: 33.33%;
-  }
 }
 
 .process-link-progress {
