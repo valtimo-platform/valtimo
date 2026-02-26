@@ -134,39 +134,43 @@
 
 <ng-template #footer let-obs="obs">
   <cds-modal-footer *ngIf="!obs.saving">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
-      {{ 'processLinkConfiguration.cancel' | translate }}
-    </button>
+    <div class="cancel-button">
+      <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+        {{ 'processLinkConfiguration.cancel' | translate }}
+      </button>
+    </div>
     <div class="footer-spacer"></div>
-    <button
-      cdsButton="danger--primary"
-      *ngIf="obs.isEditing"
-      (click)="unlinkButtonClick()"
-    >
-      {{ 'processLinkConfiguration.unlink' | translate }}
-    </button>
-    <button
-      *ngIf="obs.showBackButton && !obs.saving"
-      cdsButton="secondary"
-      (click)="backButtonClick()"
-    >
-      {{ 'processLinkConfiguration.back' | translate }}
-    </button>
-    <button
-      cdsButton="primary"
-      *ngIf="obs.showNextButton && !obs.saving"
-      [disabled]="!obs.enableNextButton"
-      (click)="nextButtonClick()"
-    >
-      {{ 'processLinkConfiguration.next' | translate }}
-    </button>
-    <button
-      cdsButton="primary"
-      *ngIf="obs.showSaveButton && !obs.saving"
-      [disabled]="!obs.enableSaveButton"
-      (click)="saveButtonClick()"
-    >
-      {{ 'processLinkConfiguration.complete' | translate }}
-    </button>
+    <div class="action-buttons">
+      <button
+        cdsButton="danger--primary"
+        *ngIf="obs.isEditing"
+        (click)="unlinkButtonClick()"
+      >
+        {{ 'processLinkConfiguration.unlink' | translate }}
+      </button>
+      <button
+        *ngIf="obs.showBackButton && !obs.saving"
+        cdsButton="secondary"
+        (click)="backButtonClick()"
+      >
+        {{ 'processLinkConfiguration.back' | translate }}
+      </button>
+      <button
+        cdsButton="primary"
+        *ngIf="obs.showNextButton && !obs.saving"
+        [disabled]="!obs.enableNextButton"
+        (click)="nextButtonClick()"
+      >
+        {{ 'processLinkConfiguration.next' | translate }}
+      </button>
+      <button
+        cdsButton="primary"
+        *ngIf="obs.showSaveButton && !obs.saving"
+        [disabled]="!obs.enableSaveButton"
+        (click)="saveButtonClick()"
+      >
+        {{ 'processLinkConfiguration.complete' | translate }}
+      </button>
+    </div>
   </cds-modal-footer>
 </ng-template>
