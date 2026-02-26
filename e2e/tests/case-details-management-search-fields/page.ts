@@ -61,6 +61,10 @@ export class CaseDetailsManagementSearchFieldsPage {
     return this.page.locator('[data-testid="case-management-search-matchTypes"]');
   }
 
+  get dropdownDataProviderDropdown() {
+    return this.page.locator('[data-testid="case-management-search-dropdownDataProvider"]');
+  }
+
   // Value path selector (uses data-test-id on inner elements)
   get valuePathSelectorToggle() {
     return this.page
@@ -71,6 +75,20 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   get valuePathSelectorInput() {
     return this.page.locator('valtimo-value-path-selector').getByTestId('valuePathSelectorInput');
+  }
+
+  // Download button
+  get downloadButton() {
+    return this.page.getByTestId('case-management-search-download');
+  }
+
+  // Delete confirmation modal
+  get deleteConfirmationModalConfirmButton() {
+    return this.page.getByRole('button', {name: 'Delete', exact: true});
+  }
+
+  get deleteConfirmationModalCloseButton() {
+    return this.page.locator('cds-modal').getByRole('button', {name: 'Close'});
   }
 
   // Modal buttons (data-test-id → getByTestId)
@@ -147,7 +165,14 @@ export class CaseDetailsManagementSearchFieldsPage {
     const list = new CarbonList(this.page);
     const row = list.row(fieldKey);
     await row.clickAction('Delete');
-    await this.page.getByRole('button', {name: 'Delete', exact: true}).click();
+    await this.deleteConfirmationModalConfirmButton.click();
+  }
+
+  async cancelDeleteSearchField(fieldKey: string) {
+    const list = new CarbonList(this.page);
+    const row = list.row(fieldKey);
+    await row.clickAction('Delete');
+    await this.deleteConfirmationModalCloseButton.click();
   }
 
   // Assertions
@@ -163,9 +188,57 @@ export class CaseDetailsManagementSearchFieldsPage {
     await expect(this.saveButton).toBeDisabled();
   }
 
+  async assertSaveButtonEnabled() {
+    await expect(this.saveButton).toBeEnabled();
+  }
+
+  async assertDownloadButtonEnabled() {
+    await expect(this.downloadButton).toBeEnabled();
+  }
+
+  async assertDownloadButtonDisabled() {
+    await expect(this.downloadButton).toBeDisabled();
+  }
+
+  async assertMatchTypeVisible() {
+    await expect(this.matchTypeDropdown).toBeVisible();
+  }
+
+  async assertMatchTypeNotVisible() {
+    await expect(this.matchTypeDropdown).not.toBeVisible();
+  }
+
+  async assertDropdownDataProviderVisible() {
+    await expect(this.dropdownDataProviderDropdown).toBeVisible();
+  }
+
+  async assertDropdownDataProviderNotVisible() {
+    await expect(this.dropdownDataProviderDropdown).not.toBeVisible();
+  }
+
   async checkSearchFieldsExisting(keys: string[]) {
     for (const key of keys) {
       await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
+    }
+  }
+
+  // Drag and drop
+  private get searchFieldsList_() {
+    return new CarbonList(this.page, this.searchFieldsList.locator('..'));
+  }
+
+  async dragSearchFieldToPosition(sourceKey: string, targetKey: string) {
+    const list = this.searchFieldsList_;
+    const sourceRow = list.row(sourceKey);
+    const targetRow = list.row(targetKey);
+    await list.dragRow(sourceRow, targetRow);
+  }
+
+  async assertRowOrder(expectedKeys: string[]) {
+    const list = this.searchFieldsList_;
+    for (let i = 0; i < expectedKeys.length; i++) {
+      const row = list.rows.nth(i);
+      await expect(row).toContainText(expectedKeys[i]);
     }
   }
 }

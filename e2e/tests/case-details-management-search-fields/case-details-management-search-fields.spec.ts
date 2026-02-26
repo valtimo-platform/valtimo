@@ -8,6 +8,12 @@ import {
   SEARCH_FIELDS_2,
   UI_SEARCH_FIELD_1,
   UI_SEARCH_FIELD_2,
+  UI_SEARCH_FIELD_3,
+  UI_SEARCH_FIELD_BOOLEAN,
+  UI_SEARCH_FIELD_DATETIME,
+  UI_SEARCH_FIELD_NUMBER,
+  UI_SEARCH_FIELD_NUMBER_RANGE,
+  UI_SEARCH_FIELD_TEXT_EXACT,
 } from './search-field-config';
 import {CaseDetailsManagementSearchFieldsPage} from './page';
 
@@ -192,6 +198,245 @@ test.describe('Case management - Search Fields', () => {
 
           // Assert
           await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_2.key);
+        });
+
+        test('Cancel delete keeps the search field', async () => {
+          // Arrange
+          await testPage.createSearchField(UI_SEARCH_FIELD_3);
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_3.key);
+
+          // Act
+          await testPage.cancelDeleteSearchField(UI_SEARCH_FIELD_3.key);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_3.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_3.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_3.key);
+        });
+
+        test('Save button enabled when form is valid', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.keyInput.fill('uiTestValid');
+          await testPage.valuePathSelectorToggle.click();
+          await testPage.valuePathSelectorInput.fill('case:createdBy');
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');
+          await testPage.selectDropdownItem(testPage.fieldTypeDropdown, 'Single');
+          await testPage.selectDropdownItem(testPage.matchTypeDropdown, 'Contains');
+
+          // Assert
+          await testPage.assertSaveButtonEnabled();
+
+          // Cleanup
+          await testPage.cancelButton.click();
+        });
+      });
+
+      test.describe('Data Types and Field Types', () => {
+        test('Create and delete a number search field', async () => {
+          // Act
+          await testPage.createSearchField(UI_SEARCH_FIELD_NUMBER);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_NUMBER.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_NUMBER.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_NUMBER.key);
+        });
+
+        test('Create and delete a number range search field', async () => {
+          // Act
+          await testPage.createSearchField(UI_SEARCH_FIELD_NUMBER_RANGE);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_NUMBER_RANGE.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_NUMBER_RANGE.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_NUMBER_RANGE.key);
+        });
+
+        test('Create and delete a datetime search field', async () => {
+          // Act
+          await testPage.createSearchField(UI_SEARCH_FIELD_DATETIME);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_DATETIME.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_DATETIME.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_DATETIME.key);
+        });
+
+        test('Create and delete a boolean search field', async () => {
+          // Act
+          await testPage.createSearchField(UI_SEARCH_FIELD_BOOLEAN);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_BOOLEAN.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_BOOLEAN.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_BOOLEAN.key);
+        });
+
+        test('Create and delete a text search field with exact match type', async () => {
+          // Act
+          await testPage.createSearchField(UI_SEARCH_FIELD_TEXT_EXACT);
+
+          // Assert
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_TEXT_EXACT.key);
+
+          // Cleanup
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_TEXT_EXACT.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_TEXT_EXACT.key);
+        });
+
+        test('Boolean data type restricts field type to single only', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Yes / no');
+
+          // Assert - only Single should be available, not Range or dropdowns
+          await testPage.fieldTypeDropdown.click();
+          const listbox = page.getByRole('listbox');
+          await expect(listbox.getByText('Single', {exact: true})).toBeVisible();
+          await expect(listbox.getByText('Range', {exact: true})).not.toBeVisible();
+          await expect(
+            listbox.getByText('Single select dropdown', {exact: true})
+          ).not.toBeVisible();
+
+          // Cleanup
+          await page.keyboard.press('Escape');
+          await testPage.cancelButton.click();
+        });
+
+        test('Non-text data type restricts field types to single and range', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Number');
+
+          // Assert - Single and Range should be available, but not dropdowns
+          await testPage.fieldTypeDropdown.click();
+          const listbox = page.getByRole('listbox');
+          await expect(listbox.getByText('Single', {exact: true})).toBeVisible();
+          await expect(listbox.getByText('Range', {exact: true})).toBeVisible();
+          await expect(
+            listbox.getByText('Single select dropdown', {exact: true})
+          ).not.toBeVisible();
+
+          // Cleanup
+          await page.keyboard.press('Escape');
+          await testPage.cancelButton.click();
+        });
+
+        test('Text data type allows all field types including dropdowns', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');
+
+          // Assert - all field types should be available
+          await testPage.fieldTypeDropdown.click();
+          const listbox = page.getByRole('listbox');
+          await expect(listbox.getByText('Single', {exact: true})).toBeVisible();
+          await expect(listbox.getByText('Range', {exact: true})).toBeVisible();
+          await expect(listbox.getByText('Single select dropdown', {exact: true})).toBeVisible();
+          await expect(listbox.getByText('Multi select dropdown', {exact: true})).toBeVisible();
+
+          // Cleanup
+          await page.keyboard.press('Escape');
+          await testPage.cancelButton.click();
+        });
+
+        test('Match type is visible for text with non-dropdown field type', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');
+          await testPage.selectDropdownItem(testPage.fieldTypeDropdown, 'Single');
+
+          // Assert
+          await testPage.assertMatchTypeVisible();
+
+          // Cleanup
+          await testPage.cancelButton.click();
+        });
+
+        test('Match type is hidden for dropdown field type', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');
+          await testPage.selectDropdownItem(testPage.fieldTypeDropdown, 'Single select dropdown');
+
+          // Assert
+          await testPage.assertMatchTypeNotVisible();
+          await testPage.assertDropdownDataProviderVisible();
+
+          // Cleanup
+          await testPage.cancelButton.click();
+        });
+
+        test('Match type is hidden for non-text data types', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Number');
+          await testPage.selectDropdownItem(testPage.fieldTypeDropdown, 'Single');
+
+          // Assert
+          await testPage.assertMatchTypeNotVisible();
+
+          // Cleanup
+          await testPage.cancelButton.click();
+        });
+
+        test('Dropdown data provider is visible for multi-select dropdown', async () => {
+          // Act
+          await testPage.addSearchFieldButton.click();
+          await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');
+          await testPage.selectDropdownItem(testPage.fieldTypeDropdown, 'Multi select dropdown');
+
+          // Assert
+          await testPage.assertMatchTypeNotVisible();
+          await testPage.assertDropdownDataProviderVisible();
+
+          // Cleanup
+          await testPage.cancelButton.click();
+        });
+      });
+
+      test.describe('Download', () => {
+        test('Download button is enabled when search fields exist', async () => {
+          // Assert - SEARCH_FIELDS_2 still exists from JSON editor tests
+          await testPage.assertDownloadButtonEnabled();
+        });
+      });
+
+      test.describe('Drag and Drop Reorder', () => {
+        test('Reorder search fields via drag and drop and persist after navigation', async () => {
+          // Arrange
+          const firstKey = SEARCH_FIELDS_2[0].key;
+          const secondKey = SEARCH_FIELDS_2[1].key;
+          await testPage.assertRowOrder([firstKey, secondKey]);
+
+          // Act
+          await testPage.dragSearchFieldToPosition(firstKey, secondKey);
+
+          // Assert - order is swapped immediately
+          await testPage.assertRowOrder([secondKey, firstKey]);
+
+          // Navigate away and back to verify persistence
+          await testPage.goToCaseDetailsManagement('bezwaar');
+          await testPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+          await testPage.searchFieldsTab.click();
+
+          // Assert - order is still swapped after fresh load from API
+          await testPage.assertRowOrder([secondKey, firstKey]);
+
+          // Revert
+          await testPage.dragSearchFieldToPosition(secondKey, firstKey);
+          await testPage.assertRowOrder([firstKey, secondKey]);
         });
       });
     });
