@@ -1,12 +1,15 @@
-import {APIRequestContext, Page, expect} from '@playwright/test';
-import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 export interface UploadCaseOptions {
   archiveName?: string;
 }
 
 export class CaseDetailsManagementCaseListPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get versionSelectDropdown() {
@@ -151,5 +154,75 @@ export class CaseDetailsManagementCaseListPage {
     for (let key of columnKeys) {
       await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
     }
+  }
+
+  // UI Column Management helpers
+
+  async selectDropdownItem(dropdownLocator: Locator, itemText: string) {
+    await dropdownLocator.click();
+    await this.page.getByRole('listbox').getByText(itemText, {exact: true}).click();
+  }
+
+  async createColumn(column: {
+    title?: string;
+    key: string;
+    path: string;
+    displayType: string;
+    sortable?: boolean;
+    defaultSort?: string;
+  }) {
+    await this.addListColumnButton.click();
+
+    if (column.title) {
+      await this.titleInput.fill(column.title);
+    }
+    await this.keyInput.fill(column.key);
+
+    if (!(await this.valuePathSelectorInput.isVisible())) {
+      await this.valuePathSelectorToggle.click();
+    }
+    await this.valuePathSelectorInput.fill(column.path);
+
+    await this.selectDropdownItem(this.displayTypeDropdown, column.displayType);
+
+    if (column.sortable) {
+      await this.sortableChekcbox.locator('label').click();
+    }
+
+    if (column.defaultSort) {
+      await this.selectDropdownItem(this.defaultSortDropdown, column.defaultSort);
+    }
+
+    await this.listColumnSaveButton.click();
+  }
+
+  async editColumnTitle(columnKey: string, newTitle: string) {
+    await this.page.locator(`tr:has(td[title="${columnKey}"])`).click();
+    await this.titleInput.clear();
+    await this.titleInput.fill(newTitle);
+    await this.listColumnSaveButton.click();
+  }
+
+  async deleteColumn(columnKey: string) {
+    const list = new CarbonList(this.page);
+    const row = list.row(columnKey);
+    await row.clickAction('Delete');
+    await this.confirmationModalConfirmButton.click();
+  }
+
+  async assertColumnExists(columnKey: string) {
+    await expect(this.page.locator(`td[title="${columnKey}"]`).first()).toBeVisible();
+  }
+
+  async assertColumnNotExists(columnKey: string) {
+    await expect(this.page.locator(`td[title="${columnKey}"]`)).toHaveCount(0);
+  }
+
+  async assertSaveButtonDisabled() {
+    await expect(this.listColumnSaveButton).toBeDisabled();
+  }
+
+  async assertSaveButtonEnabled() {
+    await expect(this.listColumnSaveButton).toBeEnabled();
   }
 }

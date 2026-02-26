@@ -59,6 +59,21 @@ export const REVERT_LIST_COLUMNS = [
   {test2: 'This is a random second test'},
 ];
 
+export const UI_COLUMN_1 = {
+  title: 'Created By',
+  key: 'uiTestColumn1',
+  path: 'case:createdBy',
+  displayType: 'Text',
+};
+
+export const UI_COLUMN_2 = {
+  title: 'Created On',
+  key: 'uiTestColumn2',
+  path: 'case:createdOn',
+  displayType: 'Date',
+  sortable: true,
+};
+
 //Should probably come from the environment
 export enum CASE_VERSIONS {
   STABLE = '1.0.0',

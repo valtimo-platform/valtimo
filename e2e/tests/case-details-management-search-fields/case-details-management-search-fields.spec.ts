@@ -4,16 +4,16 @@ import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
 import {
   CASE_VERSIONS,
-  LIST_COLUMNS,
-  LIST_COLUMNS_2,
-  UI_COLUMN_1,
-  UI_COLUMN_2,
-} from './json-list-column-config';
-import {CaseDetailsManagementCaseListPage} from './page';
+  SEARCH_FIELDS,
+  SEARCH_FIELDS_2,
+  UI_SEARCH_FIELD_1,
+  UI_SEARCH_FIELD_2,
+} from './search-field-config';
+import {CaseDetailsManagementSearchFieldsPage} from './page';
 
 test.use({storageState: undefined});
 
-test.describe('Case management', () => {
+test.describe('Case management - Search Fields', () => {
   let context;
   let page;
   let testPage;
@@ -26,22 +26,22 @@ test.describe('Case management', () => {
     page = await context.newPage();
     request = context.request;
 
-    testPage = new CaseDetailsManagementCaseListPage(page, request);
+    testPage = new CaseDetailsManagementSearchFieldsPage(page, request);
 
     await page.goto('/');
-    await testPage.goToCaseDetailsManagementCaseList('bezwaar');
+    await testPage.goToCaseDetailsManagement('bezwaar');
     await testPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
   });
 
-  test.describe('Success test', () => {
-    test.describe('List columns', () => {
+  test.describe('Success tests', () => {
+    test.describe('Search fields', () => {
       test.beforeAll(async () => {
-        await testPage.listColumnsTab.click();
+        await testPage.searchFieldsTab.click();
       });
 
-      test('Check list column page is loaded', async () => {
+      test('Check search fields page is loaded', async () => {
         // Assert
-        await expect(testPage.caseListColumnsList).toBeTruthy();
+        await expect(testPage.searchFieldsList).toBeVisible();
       });
 
       test.describe('JSON Editor', () => {
@@ -51,54 +51,54 @@ test.describe('Case management', () => {
         });
 
         test.beforeEach(async () => {
-          //Arrange
+          // Arrange
           await testPage.switchViewButton.click();
         });
 
         test('Change view', async () => {
-          //Assert
-          await expect(testPage.listColumnJSONEditor).toBeVisible();
+          // Assert
+          await expect(testPage.searchFieldJSONEditor).toBeVisible();
 
           await testPage.switchViewButton.click();
         });
 
-        test('Edit columns', async () => {
-          //Act
-          await jsonEditor.saveChanges(LIST_COLUMNS);
+        test('Edit search fields', async () => {
+          // Act
+          await jsonEditor.saveChanges(SEARCH_FIELDS);
           await testPage.switchViewButton.click();
 
-          //Assert
-          await testPage.checkColumnsExisting(LIST_COLUMNS.map(col => col.key));
+          // Assert
+          await testPage.checkSearchFieldsExisting(SEARCH_FIELDS.map(f => f.key));
         });
 
         test('Save modal close button', async () => {
-          //Assert
-          await jsonEditor.assertCloseSaveKeepEditing(LIST_COLUMNS);
+          // Assert
+          await jsonEditor.assertCloseSaveKeepEditing(SEARCH_FIELDS);
 
           await testPage.switchViewButton.click();
         });
 
-        test('Discard edit columns', async () => {
+        test('Discard edit search fields', async () => {
           await jsonEditor.discardChanges();
           await testPage.switchViewButton.click();
 
-          //Assert
-          await testPage.checkColumnsExisting(LIST_COLUMNS.map(col => col.key));
+          // Assert
+          await testPage.checkSearchFieldsExisting(SEARCH_FIELDS.map(f => f.key));
         });
 
         test('Keep editing changes', async () => {
-          //Assert
-          await jsonEditor.assertKeepEditingChanges(LIST_COLUMNS);
+          // Assert
+          await jsonEditor.assertKeepEditingChanges(SEARCH_FIELDS);
           await testPage.switchViewButton.click();
         });
 
         test('Save changes on cancel', async () => {
-          //Act
-          await jsonEditor.saveChangesWithCancel(LIST_COLUMNS_2);
+          // Act
+          await jsonEditor.saveChangesWithCancel(SEARCH_FIELDS_2);
           await testPage.switchViewButton.click();
 
-          //Assert
-          await testPage.checkColumnsExisting(LIST_COLUMNS_2.map(col => col.key));
+          // Assert
+          await testPage.checkSearchFieldsExisting(SEARCH_FIELDS_2.map(f => f.key));
           await testPage.switchViewButton.click();
         });
 
@@ -121,77 +121,77 @@ test.describe('Case management', () => {
         });
       });
 
-      test.describe('UI Column Management', () => {
-        test('Create a column via UI', async () => {
+      test.describe('UI Search Field Management', () => {
+        test('Create a search field via UI', async () => {
           // Act
-          await testPage.createColumn(UI_COLUMN_1);
+          await testPage.createSearchField(UI_SEARCH_FIELD_1);
 
           // Assert
-          await testPage.assertColumnExists(UI_COLUMN_1.key);
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_1.key);
         });
 
-        test('Create a second column via UI', async () => {
+        test('Create a second search field via UI', async () => {
           // Act
-          await testPage.createColumn(UI_COLUMN_2);
+          await testPage.createSearchField(UI_SEARCH_FIELD_2);
 
           // Assert
-          await testPage.assertColumnExists(UI_COLUMN_2.key);
+          await testPage.assertSearchFieldExists(UI_SEARCH_FIELD_2.key);
         });
 
-        test('Edit a column title via UI', async () => {
+        test('Edit a search field title via UI', async () => {
           // Act
-          await testPage.editColumnTitle(UI_COLUMN_1.key, 'Updated Title');
+          await testPage.editSearchFieldTitle(UI_SEARCH_FIELD_1.key, 'Updated Title');
 
           // Assert
           await expect(page.locator('td[title="Updated Title"]').first()).toBeVisible();
         });
 
-        test('Cancel creating a column', async () => {
+        test('Cancel creating a search field', async () => {
           // Act
-          await testPage.addListColumnButton.click();
-          await testPage.listColumnCancelButton.click();
+          await testPage.addSearchFieldButton.click();
+          await testPage.cancelButton.click();
 
           // Assert
-          await expect(testPage.addListColumnButton).toBeVisible();
+          await expect(testPage.addSearchFieldButton).toBeVisible();
         });
 
         test('Save button disabled when form is invalid', async () => {
           // Act
-          await testPage.addListColumnButton.click();
+          await testPage.addSearchFieldButton.click();
 
           // Assert
           await testPage.assertSaveButtonDisabled();
 
           // Cleanup
-          await testPage.listColumnCancelButton.click();
+          await testPage.cancelButton.click();
         });
 
         test('Duplicate key shows validation error', async () => {
           // Arrange
-          await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill(UI_COLUMN_1.key);
+          await testPage.addSearchFieldButton.click();
+          await testPage.keyInput.fill(UI_SEARCH_FIELD_1.key);
 
           // Assert
           await testPage.assertSaveButtonDisabled();
 
           // Cleanup
-          await testPage.listColumnCancelButton.click();
+          await testPage.cancelButton.click();
         });
 
-        test('Delete a column via UI', async () => {
+        test('Delete a search field via UI', async () => {
           // Act
-          await testPage.deleteColumn(UI_COLUMN_1.key);
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_1.key);
 
           // Assert
-          await testPage.assertColumnNotExists(UI_COLUMN_1.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_1.key);
         });
 
-        test('Delete second column via UI', async () => {
+        test('Delete second search field via UI', async () => {
           // Act
-          await testPage.deleteColumn(UI_COLUMN_2.key);
+          await testPage.deleteSearchField(UI_SEARCH_FIELD_2.key);
 
           // Assert
-          await testPage.assertColumnNotExists(UI_COLUMN_2.key);
+          await testPage.assertSearchFieldNotExists(UI_SEARCH_FIELD_2.key);
         });
       });
     });
