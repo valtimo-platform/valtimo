@@ -82,6 +82,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly businessKey$ = new BehaviorSubject<string>('');
+  public readonly caseDocumentId$ = new BehaviorSubject<string>('');
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
   public readonly openFromCaseManagement$ = new BehaviorSubject<boolean>(false);
@@ -121,13 +122,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public openRelatedCase(): void {
-    const businessKey = this.businessKey$.getValue();
+    const caseDocId = this.caseDocumentId$.getValue() || this.businessKey$.getValue();
 
     this.documentService
-      .getDocument(businessKey)
+      .getDocument(caseDocId)
       .pipe(take(1))
       .subscribe(document => {
-        window.open(`/cases/${document.definitionId?.name}/document/${businessKey}`, '_blank');
+        window.open(`/cases/${document.definitionId?.name}/document/${caseDocId}`, '_blank');
       });
   }
 
@@ -137,6 +138,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
         if (task) {
           this.logger.debug('Checking if user allowed to assign a user to Task with id:', task.id);
           this.businessKey$.next(task.businessKey);
+          this.caseDocumentId$.next(task.caseDocumentId || task.businessKey);
 
           this.permissionService
             .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {

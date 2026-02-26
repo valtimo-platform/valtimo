@@ -96,11 +96,13 @@ class ValtimoOperatonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(OperatonHistoryService::class)
     fun operatonHistoryService(
-        historyService: HistoryService,
         operatonHistoricProcessInstanceRepository: OperatonHistoricProcessInstanceRepository,
         authorizationService: AuthorizationService
     ): OperatonHistoryService {
-        return OperatonHistoryService(historyService, operatonHistoricProcessInstanceRepository, authorizationService)
+        return OperatonHistoryService(
+            operatonHistoricProcessInstanceRepository,
+            authorizationService
+        )
     }
 
     @Bean

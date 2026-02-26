@@ -36,6 +36,7 @@ import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMa
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.service.CaseTaskContributor
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
@@ -58,6 +59,7 @@ import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -66,6 +68,7 @@ import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
+import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.TaskService
@@ -170,10 +173,11 @@ class ProcessDocumentsAutoConfiguration {
         taskService: TaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver
     ): CaseAssigneeTaskCreatedListener {
         return CaseAssigneeTaskCreatedListener(
-            taskService, documentService, caseDefinitionService, userManagementService
+            taskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
         )
     }
 
@@ -182,10 +186,11 @@ class ProcessDocumentsAutoConfiguration {
         operatonTaskService: OperatonTaskService,
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
-            operatonTaskService, documentService, caseDefinitionService, userManagementService
+            operatonTaskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
         )
     }
 
@@ -238,7 +243,8 @@ class ProcessDocumentsAutoConfiguration {
         userManagementService: UserManagementService,
         authorizationService: AuthorizationService,
         searchFieldV2Service: SearchFieldV2Service,
-        queryDialectHelper: QueryDialectHelper
+        queryDialectHelper: QueryDialectHelper,
+        caseTaskContributors: List<CaseTaskContributor>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -247,7 +253,8 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             authorizationService,
             searchFieldV2Service,
-            queryDialectHelper
+            queryDialectHelper,
+            caseTaskContributors
         )
     }
 
@@ -255,11 +262,11 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
-        operatonTaskService: OperatonTaskService
+        operatonTaskService: OperatonTaskService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
-            operatonTaskService
+            operatonTaskService,
         )
     }
 
@@ -296,6 +303,7 @@ class ProcessDocumentsAutoConfiguration {
         runtimeService: RuntimeService,
         repositoryService: OperatonRepositoryService,
         caseDefinitionChecker: CaseDefinitionChecker,
+        caseDocumentResolver: CaseDocumentResolver,
     ): ProcessDefinitionCaseDefinitionService {
         return ProcessDefinitionCaseDefinitionService(
             authorizationService,
@@ -304,6 +312,7 @@ class ProcessDocumentsAutoConfiguration {
             runtimeService,
             repositoryService,
             caseDefinitionChecker,
+            caseDocumentResolver,
         )
     }
 
@@ -312,10 +321,12 @@ class ProcessDocumentsAutoConfiguration {
     @Order(100)
     fun processDocumentDeletedEventListener(
         runtimeService: RuntimeService,
+        historyService: HistoryService,
         processDocumentAssociationService: ProcessDocumentAssociationService
     ): ProcessDocumentDeletedEventListener {
         return ProcessDocumentDeletedEventListener(
             runtimeService,
+            historyService,
             processDocumentAssociationService
         )
     }

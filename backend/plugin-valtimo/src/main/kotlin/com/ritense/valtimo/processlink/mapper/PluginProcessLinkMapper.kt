@@ -72,7 +72,7 @@ class PluginProcessLinkMapper(
         }
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): PluginProcessLinkCreateDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): PluginProcessLinkCreateDto {
         deployDto as PluginProcessLinkDeployDto
         return PluginProcessLinkCreateDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -88,7 +88,8 @@ class PluginProcessLinkMapper(
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        @LoggableResource(resourceType = ProcessLink::class) existingProcessLinkId: UUID
+        @LoggableResource(resourceType = ProcessLink::class) existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as PluginProcessLinkDeployDto
         return PluginProcessLinkUpdateDto(

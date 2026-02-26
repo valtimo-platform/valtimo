@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "formio-test",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

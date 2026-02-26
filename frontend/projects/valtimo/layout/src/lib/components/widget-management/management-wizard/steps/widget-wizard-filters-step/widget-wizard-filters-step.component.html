@@ -22,7 +22,7 @@
         [context]="{
           title: filterRow.get('title')?.value,
           count: $count,
-          index: $index
+          index: $index,
         }"
         (selected)="onFilterAccordionSelection($event.expanded, $index)"
         class="valtimo-widget-wizard-filters__item"
@@ -78,6 +78,67 @@
             >
               <cds-dropdown-list [items]="getFieldTypeDropdownItems(filterRow)"></cds-dropdown-list>
             </cds-dropdown>
+
+            @if ((filterRow.get('dataType')?.value?.id) === 'text') {
+              <cds-dropdown cdsLayer [label]="'searchFieldsOverview.matchType' | translate" formControlName="matchType">
+                <cds-dropdown-list [items]="getMatchTypeDropdownItems(filterRow)"></cds-dropdown-list>
+              </cds-dropdown>
+            }
+
+            @if (
+              (filterRow.get('dataType')?.value?.id) === 'text' &&
+              ((filterRow.get('fieldType')?.value?.id) === 'single-select-dropdown' ||
+                (filterRow.get('fieldType')?.value?.id) === 'multi-select-dropdown')
+              ) {
+              <cds-dropdown
+                cdsLayer
+                [label]="'searchFieldsOverview.dropdownDataProvider' | translate"
+                formControlName="dropdownDataProvider"
+              >
+                <cds-dropdown-list
+                  [items]="getDropdownDataProviderItems(filterRow)"
+                ></cds-dropdown-list>
+              </cds-dropdown>
+            }
+
+            @if (shouldShowDropdownValues(filterRow)) {
+              <div class="valtimo-widget-wizard-filters__list" formArrayName="dropdownValues">
+                <v-input-label
+                  [title]="'searchFieldsOverview.dropdownListValues' | translate"
+                  [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+                  [noMargin]="true"
+                ></v-input-label>
+
+                @for (dropdownValue of (filterRow.get('dropdownValues')?.['controls'] ?? []); track $index) {
+                  <div [formGroup]="dropdownValue" class="valtimo-widget-wizard-filters__dropdown-values">
+                    <cds-text-label>
+                      {{ 'interface.value' | translate }}
+                      <input cdsText type="text" formControlName="key" cdsLayer />
+                    </cds-text-label>
+
+                    <cds-text-label>
+                      {{ 'interface.display' | translate }}
+                      <input cdsText type="text" formControlName="value" cdsLayer />
+                    </cds-text-label>
+
+                    <button
+                      cdsButton="danger"
+                      [iconOnly]="true"
+                      type="button"
+                      [disabled]="(filterRow.get('dropdownValues')?.value?.length ?? 0) === 1"
+                      (click)="removeDropdownValue(filterRow, $index)"
+                    >
+                      <svg cdsIcon="trash-can" size="16"></svg>
+                    </button>
+                  </div>
+                }
+
+                <button cdsButton="primary" type="button" (click)="addDropdownValue(filterRow)">
+                  {{ 'interface.addRow' | translate }}
+                  <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+                </button>
+              </div>
+            }
           </div>
         </form>
       </cds-accordion-item>

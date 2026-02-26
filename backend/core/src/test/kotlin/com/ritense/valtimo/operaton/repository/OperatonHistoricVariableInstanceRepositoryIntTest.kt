@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.operaton.CallDepthExecutionListener.Companion.CALL_DEPTH_VARIABLE
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,9 +38,15 @@ class OperatonHistoricVariableInstanceRepositoryIntTest @Autowired constructor(
         )
 
         val result = operatonHistoricVariableInstanceRepository.findOne { root, _, criteriaBuilder ->
-            criteriaBuilder.equal(
-                root.get<String>("processInstanceId"),
-                instance.id
+            criteriaBuilder.and(
+                criteriaBuilder.equal(
+                    root.get<String>("processInstanceId"),
+                    instance.id
+                ),
+                criteriaBuilder.notEqual(
+                    root.get<String>("name"),
+                    CALL_DEPTH_VARIABLE
+                ),
             )
         }
         Assertions.assertThat(result.isPresent).isTrue()

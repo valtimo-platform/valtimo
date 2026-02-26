@@ -28,8 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.contract.json.MapperSingleton;
+import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.request.AssigneeRequest;
@@ -39,9 +39,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
-import org.operaton.bpm.engine.FormService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.operaton.bpm.engine.FormService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -158,6 +158,7 @@ class TaskResourceTest {
                 "caseDefinitionId",
                 true,
                 "tenantId",
+                "businessKey",
                 "businessKey",
                 "processDefinitionKey",
                 null,

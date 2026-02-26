@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  */
 
 import {ValtimoWindow} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {FormioContextParams} from '../../../../models';
 
-let formioParams: Observable<{caseDefinitionKey: ''; caseDefinitionVersionTag: ''}>;
+const formioParams$ = new BehaviorSubject<FormioContextParams | null>(null);
+let formioParamsSubscription: Subscription | null = null;
 
-const modiyEditFormApiKeyInput = (editForm: any): void => {
+const modifyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
     ?.find(element => element?.key === 'tabs')
     ?.components?.find(element => element?.key === 'api')
@@ -30,26 +32,47 @@ const modiyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (editForm: any, params: any): void => {
+const addValueResolverSelectorToEditform = (editForm: any, params$: Observable<any>): void => {
   const valtimoWindow = window as ValtimoWindow;
-  const valtimoTabKey = 'valtimo';
-  formioParams = params;
+  const valueResolverTabKey = 'valueResolver';
+
+  // Unsubscribe from the previous subscription if it exists
+  if (formioParamsSubscription) {
+    formioParamsSubscription.unsubscribe();
+  }
+  // Subscribe to the params Observable and forward values to the BehaviorSubject
+  formioParamsSubscription = params$.subscribe(params => {
+    formioParams$.next(params);
+  });
 
   if (valtimoWindow?.flags?.formioValueResolverSelectorComponentRegistered) {
     const tabComponents = editForm?.components?.find(element => element.key === 'tabs')?.components;
-    const hasValtimoTab = tabComponents?.find(component => component.key === valtimoTabKey);
+    const hasValueResolverTab = tabComponents?.find(
+      component => component.key === valueResolverTabKey
+    );
 
-    if (tabComponents && !hasValtimoTab) {
+    if (tabComponents && !hasValueResolverTab) {
       tabComponents.push({
-        label: 'Valtimo',
-        key: valtimoTabKey,
+        label: 'Value Resolver',
+        key: valueResolverTabKey,
         weight: 70,
         components: [
           {
             weight: 0,
             type: 'valtimo-value-resolver-selector',
             key: 'properties.sourceKey',
-            label: 'Value resolver',
+            label: 'Source key',
+            resolverType: 'source',
+            validate: {
+              required: false,
+            },
+          },
+          {
+            weight: 1,
+            type: 'valtimo-value-resolver-selector',
+            key: 'properties.targetKey',
+            label: 'Target key',
+            resolverType: 'target',
             validate: {
               required: false,
             },
@@ -62,4 +85,9 @@ const addValueResolverSelectorToEditform = (editForm: any, params: any): void =>
   return editForm;
 };
 
-export {modiyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};
+export {
+  modifyEditFormApiKeyInput,
+  addValueResolverSelectorToEditform,
+  formioParams$,
+  FormioContextParams,
+};

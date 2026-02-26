@@ -1,0 +1,87 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Beoordeel Subsidie Berekening",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "Controleer de berekende subsidie en geef uw beoordeling.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Samenvatting berekening",
+            "tableView": true,
+            "key": "calculationSummary",
+            "type": "textfield",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Definitief subsidiebedrag (EUR)",
+            "tableView": true,
+            "key": "finalSubsidyAmount",
+            "type": "number",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Geschiktheidsresultaat",
+            "tableView": true,
+            "key": "eligibilityResult",
+            "type": "textfield",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Opmerkingen beoordelaar",
+            "placeholder": "Voeg eventuele opmerkingen toe...",
+            "tableView": true,
+            "key": "reviewerRemarks",
+            "type": "textarea",
+            "input": true,
+            "rows": 3
+        },
+        {
+            "label": "Besluit",
+            "tableView": true,
+            "key": "approvalDecision",
+            "type": "select",
+            "input": true,
+            "validate": {
+                "required": true
+            },
+            "data": {
+                "values": [
+                    {
+                        "label": "Goedgekeurd",
+                        "value": "GOEDGEKEURD"
+                    },
+                    {
+                        "label": "Afgekeurd",
+                        "value": "AFGEKEURD"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "button",
+            "label": "Beoordeling Opslaan",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

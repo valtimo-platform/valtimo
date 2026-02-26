@@ -20,22 +20,41 @@ import {CommonModule} from '@angular/common';
 import {ValuePathSelectorComponent} from '../../../value-path-selector/value-path-selector.component';
 import {ValuePathSelectorPrefix} from '../../../../models';
 import {BehaviorSubject, map} from 'rxjs';
-import {formioParams} from '../form-io-builder/form-io-builder.utils';
+import {formioParams$} from '../form-io-builder/form-io-builder.utils';
+import {InputModule, LayerModule} from 'carbon-components-angular';
+import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-formio-value-resolver-selector',
   templateUrl: './formio-value-resolver-selector.component.html',
   standalone: true,
-  imports: [CommonModule, ValuePathSelectorComponent],
+  imports: [CommonModule, ValuePathSelectorComponent, LayerModule, InputModule],
 })
 export class FormioValueResolverSelectorComponent implements FormioCustomComponent<string> {
   @Input() public readonly disabled: boolean;
+  @Input() public label = '';
+  @Input() public resolverType: 'source' | 'target' = 'source';
   @Output() public readonly valueChange = new EventEmitter<string>();
 
   public readonly defaultValue$ = new BehaviorSubject<string>('');
-  public readonly caseDefinitionKey$ = formioParams.pipe(map(params => params?.caseDefinitionKey));
-  public readonly caseDefinitionVersionTag$ = formioParams.pipe(
+  public readonly context$ = formioParams$.pipe(map(params => params?.context));
+  public readonly caseDefinitionKey$ = formioParams$.pipe(
+    filter(params => !!params),
+    map(params => params?.caseDefinitionKey));
+  public readonly caseDefinitionVersionTag$ = formioParams$.pipe(
+    filter(params => !!params),
     map(params => params?.caseDefinitionVersionTag)
+  );
+  public readonly buildingBlockDefinitionKey$ = formioParams$.pipe(
+    filter(params => !!params),
+    map(params => params?.buildingBlockDefinitionKey)
+  );
+  public readonly buildingBlockDefinitionVersionTag$ = formioParams$.pipe(
+    filter(params => !!params),
+    map(params => params?.buildingBlockDefinitionVersionTag)
+  );
+  public readonly isIndependentContext$ = this.context$.pipe(
+    map(context => context !== 'case' && context !== 'buildingBlock')
   );
   private _value!: string;
   @Input() public set value(value: string) {
