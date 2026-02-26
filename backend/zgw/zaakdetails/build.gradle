@@ -38,6 +38,8 @@ dependencies {
     implementation project(":backend:zgw:objecttypen-api")
     implementation project(":backend:zgw:zaken-api")
     implementation project(":backend:logging")
+    implementation project(":backend:importer")
+    implementation project(":backend:exporter")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
