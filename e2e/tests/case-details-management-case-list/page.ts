@@ -69,10 +69,10 @@ export class CaseDetailsManagementCaseListPage {
   }
 
   get dateFormat() {
-    return this.page.getByTestId('dateFormat');
+    return this.page.getByTestId('listColumnDateFormat');
   }
 
-  get sortableChekcbox() {
+  get sortableCheckbox() {
     return this.page.getByTestId('listColumnSortableCheckbox');
   }
 
