@@ -26,7 +26,6 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseManagementDraftWarningComponent} from '@valtimo/case-management';
 import {
   CdsThemeService,
   FormModule,
@@ -38,11 +37,7 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {
-  CaseManagementParams,
-  DraftVersionService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   ButtonModule,
   CheckboxModule,
@@ -52,7 +47,7 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, map, Observable, switchMap, take, tap} from 'rxjs';
 
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
@@ -80,7 +75,6 @@ import {filter} from 'rxjs/operators';
     TranslateModule,
     ValtimoCdsModalDirective,
     RenderInBodyComponent,
-    CaseManagementDraftWarningComponent,
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {
@@ -93,16 +87,6 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
         params?.caseDefinitionKey ?? '',
         params?.caseDefinitionVersionTag ?? ''
       )
-    )
-  );
-  public readonly isDraftVersion$ = this._params$.pipe(
-    switchMap((params: CaseManagementParams | undefined) =>
-      !params
-        ? of(false)
-        : this.draftVersionService.isDraftVersion(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag
-          )
     )
   );
   public readonly documentObjectenApiSync$ = new BehaviorSubject<DocumentObjectenApiSync | null>(
@@ -139,8 +123,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
     private readonly documentObjectenApiSyncService: DocumentObjectenApiSyncService,
     private readonly documentService: DocumentService,
     private readonly cdsThemeService: CdsThemeService,
-    private readonly iconService: IconService,
-    private readonly draftVersionService: DraftVersionService
+    private readonly iconService: IconService
   ) {
     this.iconService.registerAll([TrashCan16, Edit16]);
   }
@@ -171,6 +154,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   public remove(): void {
     this._documentDefinition$
       .pipe(
+        take(1),
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.deleteDocumentObjectenApiSync(
             documentDefinition.id.blueprintId.blueprintKey,
@@ -188,6 +172,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
     const formValues = this.formGroup.getRawValue();
     this._documentDefinition$
       .pipe(
+        take(1),
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.updateDocumentObjectenApiSync(
             documentDefinition.id.blueprintId.blueprintKey,
