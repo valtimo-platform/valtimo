@@ -172,8 +172,8 @@ export class CarbonList {
    * Get a CarbonListRow scoped to the row containing a cell with the given text.
    */
   row(cellText: string): CarbonListRow {
-    const locator = this.root.locator('tbody tr', {
-      has: this.root.locator('td', {hasText: cellText}),
+    const locator = this.root.locator('tbody tr').filter({
+      has: this.page.locator('td', {hasText: cellText}),
     });
     return new CarbonListRow(this.page, locator);
   }
