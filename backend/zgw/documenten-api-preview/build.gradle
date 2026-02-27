@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 dockerCompose {
-    projectName = "klantinteracties-api"
+    projectName = "documenten-api-preview"
 
     integrationTestingPostgresql {
         isRequiredBy(project.tasks.integrationTestingPostgresql)
@@ -30,29 +30,33 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":backend:contract")
-    implementation project(":backend:core")
-    implementation project(":backend:plugin")
-    implementation project(":backend:zgw")
-    implementation project(":backend:zgw:zaken-api")
-    implementation project(":backend:logging")
+    implementation project(":core")
+    implementation project(":logging")
+    implementation project(":plugin")
+    implementation project(":zgw")
+    implementation project(":zgw:documenten-api")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    testImplementation project(':backend:test-utils-common')
+    testImplementation project(':case')
+    testImplementation project(':resource')
+    testImplementation project(':test-utils-common')
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
-    //Kotlin
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
+    //Kotlin
+    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     jar {
         enabled = true
         manifest {
-            attributes("Implementation-Title": "ZGW Klantinteracties API plugin spring boot starter")
+            attributes("Implementation-Title": "ZGW Documenten API Preview plugin spring boot starter")
             attributes("Implementation-Version": projectVersion)
         }
     }
