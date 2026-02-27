@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3324:3306"
+        environment:
+            - MYSQL_DATABASE=documenten-api-preview-test

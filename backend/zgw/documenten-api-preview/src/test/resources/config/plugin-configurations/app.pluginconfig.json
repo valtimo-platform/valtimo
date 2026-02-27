@@ -1,0 +1,8 @@
+{
+  "id": "fdb489a2-e352-4431-a36a-8d708c90aff7",
+  "title": "Documenten API Preview",
+  "pluginDefinitionKey": "documentenapipreview",
+  "properties": {
+    "url": "http://localhost:3000/"
+  }
+},
