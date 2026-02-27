@@ -61,7 +61,7 @@
         [title]="'caseManagement.importDefinition.upload.title' | translate"
         buttonType="primary"
         formControlName="file"
-        data-test-id="caseFileUploader"
+        [attr.data-test-id]="testIds.fileUploader"
         class="valtimo-definition-uploader__file-uploader"
       >
       </cds-file-uploader>
@@ -110,7 +110,7 @@
       <button
         *ngIf="obs.backButtonEnabled"
         cdsButton="secondary"
-        data-test-id="uploadWizardCancelButton"
+        [attr.data-test-id]="testIds.cancelButton"
         (click)="onBackClick(obs.activeStep)"
       >
         {{ 'interface.back' | translate }}
@@ -119,7 +119,7 @@
       <button
         *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.DASHBOARD"
         cdsButton="primary"
-        data-test-id="uploadWizardNextButton"
+        [attr.data-test-id]="testIds.nextButton"
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
       >
@@ -134,7 +134,7 @@
       <button
         *ngIf="obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.DASHBOARD"
         class="valtimo-definition-uploader__cancel"
-        data-test-id="uploadWizardFinishButton"
+        [attr.data-test-id]="testIds.finishButton"
         cdsButton="primary"
         (click)="onCloseModal(true)"
       >

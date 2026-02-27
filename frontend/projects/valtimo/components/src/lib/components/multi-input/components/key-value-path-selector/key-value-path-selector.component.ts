@@ -25,6 +25,7 @@ import {CommonModule} from '@angular/common';
 import {InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ValuePathSelectorComponent} from '../../../value-path-selector';
+import {KEY_VALUE_PATH_SELECTOR_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-key-value-path-selector',
@@ -59,6 +60,8 @@ export class KeyValuePathSelectorComponent {
     inputValue: string;
     type: MultiInputChangeEventType;
   }> = new EventEmitter();
+
+  protected readonly testIds = KEY_VALUE_PATH_SELECTOR_TEST_IDS;
 
   public onInputChange(type: MultiInputChangeEventType, inputValue: string): void {
     this.valueChange.emit({value: this.value, inputValue, type});

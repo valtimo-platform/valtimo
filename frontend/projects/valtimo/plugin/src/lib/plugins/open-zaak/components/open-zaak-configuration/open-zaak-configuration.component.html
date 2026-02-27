@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="openZaakConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="clientId"
-    data-test-id="openZaakClientId"
+    [attr.data-test-id]="testIds.clientId"
     [title]="'clientId' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +49,7 @@
   </v-input>
   <v-input
     name="clientSecret"
-    data-test-id="openZaakClientSecret"
+    [attr.data-test-id]="testIds.clientSecret"
     type="password"
     [title]="'clientSecret' | pluginTranslate: pluginId | async"
     [margin]="true"
