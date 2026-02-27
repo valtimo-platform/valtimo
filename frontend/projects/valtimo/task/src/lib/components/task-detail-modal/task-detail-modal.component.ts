@@ -36,6 +36,7 @@ import {BehaviorSubject, EMPTY, of, Subscription} from 'rxjs';
 import {catchError, filter, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
+import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
@@ -191,9 +192,15 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
             const fetchedTask = response.task as Partial<Task>;
             if (!currentTask || !fetchedTask) return;
 
-            // Merge fetched task data onto the existing task to preserve fields
-            // not returned by the GET /v1/task/{id} endpoint (e.g. businessKey, caseDocumentId)
-            const mergedTask: Task = {...currentTask, ...fetchedTask};
+            // Merge fetched task data onto the existing task, only overwriting with
+            // defined values to preserve fields not returned by the GET /v1/task/{id}
+            // endpoint (e.g. valtimoAssignee, businessKey, caseDocumentId)
+            const mergedTask: Task = {...currentTask};
+            for (const [key, value] of Object.entries(fetchedTask)) {
+              if (value !== undefined) {
+                (mergedTask as any)[key] = value;
+              }
+            }
 
             if (currentTask.assignee !== mergedTask.assignee) {
               this.showAssigneeNotification(mergedTask);
@@ -207,21 +214,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private showAssigneeNotification(task: Task): void {
     if (task.assignee) {
-      const assigneeName =
-        task.valtimoAssignee?.fullName ||
-        task.assignee ||
-        this.translateService.instant('taskDetail.unknownAssignee');
       this.globalNotificationService.showToast({
         title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
-        content: `${this.translateService.instant(
-          'taskDetail.assignedNotificationContent'
-        )} ${assigneeName}`,
         type: 'info',
       });
     } else {
       this.globalNotificationService.showToast({
         title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
-        content: this.translateService.instant('taskDetail.unassignedNotificationContent'),
         type: 'info',
       });
     }
@@ -235,11 +234,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     if (task) {
       this.task$.next({...task});
     }
-    this.page$.next({
-      title: task?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
-    });
-
+    this.setPageFromTask(task);
     this.openModal();
   }
 
@@ -247,22 +242,21 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.processLinkPreloaded$.next(true);
     if (taskWithProcessLink) {
       this.taskAndProcessLink$.next(taskWithProcessLink);
-      const task = {...taskWithProcessLink.task} as unknown as Task;
-      const activityResult = taskWithProcessLink.processLinkActivityResult;
-      if (activityResult?.assignee) {
-        task.assignee = activityResult.assignee;
-      }
-      if (activityResult?.due) {
-        task.due = activityResult.due;
-      }
+      const task = enrichTaskFromProcessLink(
+        {...taskWithProcessLink.task} as unknown as Task,
+        taskWithProcessLink.processLinkActivityResult
+      );
       this.task$.next(task);
     }
-    this.page$.next({
-      title: taskWithProcessLink?.task?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink?.task?.created}`,
-    });
-
+    this.setPageFromTask(taskWithProcessLink?.task);
     this.openModal();
+  }
+
+  private setPageFromTask(task: {name?: string; created?: string} | null | undefined): void {
+    this.page$.next({
+      title: task?.name,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
+    });
   }
 
   public gotoProcessLinkScreen(): void {

@@ -33,6 +33,7 @@ import {CalendarAdd16} from '@carbon/icons';
 import {TaskService} from '../../services';
 import {Task} from '../../models';
 import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-set-task-due-date',
@@ -104,7 +105,8 @@ export class SetTaskDueDateComponent {
     private readonly iconService: IconService,
     private readonly taskService: TaskService,
     private readonly cdsThemeService: CdsThemeService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {
     this.iconService.registerAll([CalendarAdd16]);
   }
@@ -118,14 +120,16 @@ export class SetTaskDueDateComponent {
   public onSubmitButtonClick(): void {
     this.disabled$.next(true);
 
-    this.taskService.setTaskDueDate(this._task.id, {dueDate: this._selectedDateString}).subscribe({
+    const dateString = this._selectedDateString;
+    this.taskService.setTaskDueDate(this._task.id, {dueDate: dateString}).subscribe({
       next: () => {
         this.disabled$.next(false);
         this.hasDueDate$.next(true);
-        this._task$.next({...this._task, due: this._selectedDateString});
+        this._task$.next({...this._task, due: dateString});
         this.selectedDateString$.next('');
         this.closeToggletip();
         this.dueDateChanged.emit();
+        this.showDueDateSetNotification(dateString);
       },
       error: () => {
         this.disabled$.next(false);
@@ -142,6 +146,7 @@ export class SetTaskDueDateComponent {
         this.hasDueDate$.next(false);
         this._task$.next({...this._task, due: null});
         this.dueDateChanged.emit();
+        this.showDueDateRemovedNotification();
       },
       error: () => {
         this.disabled$.next(false);
@@ -161,5 +166,27 @@ export class SetTaskDueDateComponent {
 
   public onMouseLeaveDueDate(): void {
     this.mouseIsOverDueDate$.next(false);
+  }
+
+  private showDueDateSetNotification(dateString: string): void {
+    const formattedDate = new Date(dateString).toLocaleDateString(this.translateService.currentLang);
+    this.globalNotificationService.showToast({
+      title: this.translateService.instant('taskDetail.dueDateSetNotificationTitle'),
+      subtitle: this.translateService.instant('taskDetail.dueDateSetNotificationContent', {
+        date: formattedDate,
+        task: this._task?.name,
+      }),
+      type: 'info',
+    });
+  }
+
+  private showDueDateRemovedNotification(): void {
+    this.globalNotificationService.showToast({
+      title: this.translateService.instant('taskDetail.dueDateRemovedNotificationTitle'),
+      subtitle: this.translateService.instant('taskDetail.dueDateRemovedNotificationContent', {
+        task: this._task?.name,
+      }),
+      type: 'info',
+    });
   }
 }
