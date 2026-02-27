@@ -20,7 +20,10 @@ import com.ritense.document.service.DocumentService
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncCaseEventListener
+import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncExporter
+import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncImporter
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementResource
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncRepository
@@ -110,6 +113,30 @@ class ZaakDetailsAutoConfiguration {
     ): DocumentObjectenApiSyncCaseEventListener {
         return DocumentObjectenApiSyncCaseEventListener(
             documentObjectenApiSyncManagementService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentObjectenApiSyncImporter::class)
+    fun documentObjectenApiSyncImporter(
+        objectMapper: ObjectMapper,
+        documentObjectenApiSyncRepository: DocumentObjectenApiSyncRepository
+    ): DocumentObjectenApiSyncImporter {
+        return DocumentObjectenApiSyncImporter(
+            objectMapper,
+            documentObjectenApiSyncRepository
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentObjectenApiSyncExporter::class)
+    fun documentObjectenApiSyncExporter(
+        objectMapper: ObjectMapper,
+        documentObjectenApiSyncRepository: DocumentObjectenApiSyncRepository
+    ): DocumentObjectenApiSyncExporter {
+        return DocumentObjectenApiSyncExporter(
+            objectMapper,
+            documentObjectenApiSyncRepository
         )
     }
 }

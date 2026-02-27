@@ -62,6 +62,10 @@ data class InteractiveTableWidgetProperties(
         @field:NotBlank val fieldType: FieldType,
 
         @Enumerated(EnumType.STRING)
-        val matchType: SearchFieldMatchType? = SearchFieldMatchType.EXACT
+        val matchType: SearchFieldMatchType? = SearchFieldMatchType.EXACT,
+
+        val dropdownDataProvider: String? = null,
+
+        val dropdownValues: Map<String, String>? = null
     )
 }
