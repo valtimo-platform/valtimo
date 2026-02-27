@@ -50,7 +50,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this.stateService.selectPluginDefinition(event.value);
   }
 
-  public  deselectPluginDefinition(): void {
+  public deselectPluginDefinition(): void {
     this.stateService.clearSelectedPluginDefinition();
   }
 
