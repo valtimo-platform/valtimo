@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {TranslateService} from '@ngx-translate/core';
@@ -51,6 +51,8 @@ import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
   ],
 })
 export class SetTaskDueDateComponent {
+  @Output() public readonly dueDateChanged = new EventEmitter<void>();
+
   public readonly canModifyTaskSet$ = new BehaviorSubject<boolean>(false);
   public readonly canModifyTask$ = new BehaviorSubject<boolean>(false);
 
@@ -123,6 +125,7 @@ export class SetTaskDueDateComponent {
         this._task$.next({...this._task, due: this._selectedDateString});
         this.selectedDateString$.next('');
         this.closeToggletip();
+        this.dueDateChanged.emit();
       },
       error: () => {
         this.disabled$.next(false);
@@ -138,6 +141,7 @@ export class SetTaskDueDateComponent {
         this.disabled$.next(false);
         this.hasDueDate$.next(false);
         this._task$.next({...this._task, due: null});
+        this.dueDateChanged.emit();
       },
       error: () => {
         this.disabled$.next(false);

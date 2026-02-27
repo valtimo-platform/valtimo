@@ -63,6 +63,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
+  @Output() dueDateChanged = new EventEmitter();
 
   @Input() set modalSize(value: FormSize) {
     if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
@@ -77,7 +78,6 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly processLinkPreloaded$ = new BehaviorSubject<boolean>(false);
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
-  public readonly task = new BehaviorSubject<Task | null>(null);
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
@@ -188,36 +188,43 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
             this.closeModal();
           } else {
             const currentTask = this.task$.getValue();
-            const newTask = response.task;
+            const fetchedTask = response.task as Partial<Task>;
+            if (!currentTask || !fetchedTask) return;
 
-            if (currentTask && newTask && currentTask.assignee !== newTask.assignee) {
-              if (newTask.assignee) {
-                const assigneeName =
-                  newTask.valtimoAssignee?.fullName ||
-                  newTask.assignee ||
-                  this.translateService.instant('taskDetail.unknownAssignee');
-                this.globalNotificationService.showToast({
-                  title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
-                  content: `${this.translateService.instant(
-                    'taskDetail.assignedNotificationContent'
-                  )} ${assigneeName}`,
-                  type: 'info',
-                });
-              } else {
-                this.globalNotificationService.showToast({
-                  title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
-                  content: this.translateService.instant(
-                    'taskDetail.unassignedNotificationContent'
-                  ),
-                  type: 'info',
-                });
-              }
+            // Merge fetched task data onto the existing task to preserve fields
+            // not returned by the GET /v1/task/{id} endpoint (e.g. businessKey, caseDocumentId)
+            const mergedTask: Task = {...currentTask, ...fetchedTask};
+
+            if (currentTask.assignee !== mergedTask.assignee) {
+              this.showAssigneeNotification(mergedTask);
             }
 
-            this.task$.next(newTask);
+            this.task$.next(mergedTask);
           }
         })
     );
+  }
+
+  private showAssigneeNotification(task: Task): void {
+    if (task.assignee) {
+      const assigneeName =
+        task.valtimoAssignee?.fullName ||
+        task.assignee ||
+        this.translateService.instant('taskDetail.unknownAssignee');
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('taskDetail.assignedNotificationTitle'),
+        content: `${this.translateService.instant(
+          'taskDetail.assignedNotificationContent'
+        )} ${assigneeName}`,
+        type: 'info',
+      });
+    } else {
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('taskDetail.unassignedNotificationTitle'),
+        content: this.translateService.instant('taskDetail.unassignedNotificationContent'),
+        type: 'info',
+      });
+    }
   }
 
   public clearCurrentProgress(): void {
@@ -240,7 +247,15 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.processLinkPreloaded$.next(true);
     if (taskWithProcessLink) {
       this.taskAndProcessLink$.next(taskWithProcessLink);
-      this.task$.next({...taskWithProcessLink.task} as unknown as Task);
+      const task = {...taskWithProcessLink.task} as unknown as Task;
+      const activityResult = taskWithProcessLink.processLinkActivityResult;
+      if (activityResult?.assignee) {
+        task.assignee = activityResult.assignee;
+      }
+      if (activityResult?.due) {
+        task.due = activityResult.due;
+      }
+      this.task$.next(task);
     }
     this.page$.next({
       title: taskWithProcessLink?.task?.name,
@@ -259,6 +274,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.currentIntermediateSave$.next(value);
   }
 
+  public onTaskUpdated(task: Task): void {
+    this.task$.next(task);
+  }
+
   public onFormSubmit(): void {
     this.formSubmit.emit();
   }
@@ -270,8 +289,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public closeModal(): void {
     this.modalOpen$.next(false);
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
-    // Delay clearing submission until after modal close animation completes
+    // Delay clearing task data and submission until after modal close animation completes
     runAfterCarbonModalClosed(() => {
+      this.processLinkPreloaded$.next(false);
+      this.task$.next(null);
+      this.taskAndProcessLink$.next(null);
       this.taskIntermediateSaveService.setSubmission({});
     });
   }

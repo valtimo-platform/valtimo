@@ -118,11 +118,23 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    this.loadTaskDetails(value.task as any, value.processLinkActivityResult);
+    const task = value.task as any as Task;
+    const processLink = value.processLinkActivityResult;
+
+    // Enrich task with processLink data before loading
+    if (processLink?.assignee && !task.assignee) {
+      task.assignee = processLink.assignee;
+    }
+    if (processLink?.due && !task.due) {
+      task.due = processLink.due;
+    }
+
+    this.loadTaskDetails(task, processLink);
   }
   @Input() public set modalClosed(closed: boolean) {
     // save form flow data on modal closed
     if (this.formFlow) this.formFlow.saveData();
+    this.taskInstanceId$.next(null);
 
     if (closed) {
       this.closeModalEvent.emit();
@@ -131,6 +143,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
+  @Output() public readonly taskUpdated = new EventEmitter<Task>();
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
@@ -355,12 +368,36 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   private getTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLink(taskId).subscribe({
       next: res => {
+        this.updateTaskFromProcessLink(res);
         this.setTaskProcessLink(res);
       },
       error: _ => {
         this.loading$.next(false);
       },
     });
+  }
+
+  private updateTaskFromProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
+    if (!processLinkResult) return;
+    const currentTask = this.task$.getValue();
+    if (!currentTask) return;
+
+    let updated = false;
+    const taskCopy = {...currentTask};
+
+    if (processLinkResult.assignee && !currentTask.assignee) {
+      taskCopy.assignee = processLinkResult.assignee;
+      updated = true;
+    }
+    if (processLinkResult.due && !currentTask.due) {
+      taskCopy.due = processLinkResult.due;
+      updated = true;
+    }
+
+    if (updated) {
+      this.task$.next(taskCopy);
+      this.taskUpdated.emit(taskCopy);
+    }
   }
 
   private setTaskProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
