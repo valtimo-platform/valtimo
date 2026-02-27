@@ -27,6 +27,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakDocumentService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -41,13 +42,14 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLConnection
+import org.springframework.http.ContentDisposition
 import java.util.UUID
 
 @RestController
 @SkipComponentScan
 @RequestMapping(value = ["/api"], produces = [APPLICATION_JSON_UTF8_VALUE])
 class ZaakDocumentResource(
-    private val zaakDocumentService: ZaakDocumentService
+    private val zaakDocumentService: ZaakDocumentService,
 ) {
 
     @DeleteMapping("/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")
@@ -87,7 +89,7 @@ class ZaakDocumentResource(
 
     @GetMapping("/v1/zaken-api/document/{caseDocumentId}/files")
     fun getFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
     ): List<RelatedFile> {
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
     }
@@ -99,7 +101,8 @@ class ZaakDocumentResource(
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        val documentMetadata =
+            zaakDocumentService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         val documentInputStream = zaakDocumentService.downloadInformatieObject(
             pluginConfigurationId,
             caseDocumentId,
@@ -107,13 +110,13 @@ class ZaakDocumentResource(
             documentMetadata.informatieobjecttype
         )
         val responseHeaders = HttpHeaders()
-        responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
-        val contentDisposition = org.springframework.http.ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
+        val contentDisposition = ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()
         responseHeaders.contentDisposition = contentDisposition
 
         val documentMediaType = try {
             MediaType.valueOf(URLConnection.guessContentTypeFromName(documentMetadata.bestandsnaam))
         } catch (exception: RuntimeException) {
+            logger.debug{"Could not determine media type for '${documentMetadata.bestandsnaam}', falling back to APPLICATION_OCTET_STREAM $exception" }
             MediaType.APPLICATION_OCTET_STREAM
         }
         return ResponseEntity
@@ -138,8 +141,12 @@ class ZaakDocumentResource(
 
     @GetMapping("/v1/zaken-api/document/{caseDocumentId}/zaak")
     fun getZaakMetadata(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
     ): ZaakResponse? {
         return zaakDocumentService.getZaakByCaseDocumentId(caseDocumentId)
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
     }
 }

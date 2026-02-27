@@ -67,7 +67,7 @@ class DocumentenApiClient(
     fun storeDocument(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
-        caseDocumentId: String,
+        caseDocumentId: UUID,
         request: CreateDocumentRequest
     ): CreateDocumentResult {
 
@@ -75,8 +75,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission(
-                    UUID.fromString(caseDocumentId),
+                ResourcePermission(caseDocumentId,
                     request.informatieobjecttype
                 )
             )

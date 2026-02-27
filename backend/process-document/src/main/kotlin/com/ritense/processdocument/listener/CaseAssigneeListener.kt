@@ -21,11 +21,13 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.event.DocumentAssigneeChangedEvent
 import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.service.DocumentService
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -37,46 +39,57 @@ class CaseAssigneeListener(
     private val operatonTaskService: OperatonTaskService,
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
-    private val userManagementService: UserManagementService
+    private val userManagementService: UserManagementService,
+    private val caseDocumentResolver: CaseDocumentResolver
 ) {
 
     @RunWithoutAuthorization
     @EventListener(DocumentAssigneeChangedEvent::class)
     fun updateAssigneeOnTasks(event: DocumentAssigneeChangedEvent) {
-        val document = documentService[event.documentId.toString()]
-        val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
-            document.definitionId().caseDefinitionId()
-        )
-
-        if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-            val assignee = userManagementService.findByUsername(document.assigneeId())
-            val tasks = operatonTaskService.findTasks(
-                byProcessInstanceBusinessKey(document.id().toString())
-                    .and(byCandidateGroups(assignee.roles))
+        try {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
+            val caseDocument = documentService[caseDocumentId.toString()]
+            val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
+                caseDocument.definitionId().caseDefinitionId()
             )
-            logger.debug { "Updating assignee on ${tasks.size} task(s)" }
-            tasks.forEach { task ->
-                operatonTaskService.assign(task.id, assignee.id)
+
+            if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
+                val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
+                val tasks = operatonTaskService.findTasks(
+                    byProcessInstanceBusinessKey(caseDocument.id().toString())
+                        .and(byCandidateGroups(assignee.roles))
+                )
+                logger.debug { "Updating assignee on ${tasks.size} task(s)" }
+                tasks.forEach { task ->
+                    operatonTaskService.assign(task.id, assignee.id)
+                }
             }
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document ${event.documentId}: ${e.message}" }
         }
     }
 
     @RunWithoutAuthorization
     @EventListener(DocumentUnassignedEvent::class)
     fun removeAssigneeFromTasks(event: DocumentUnassignedEvent) {
-        val document = documentService[event.documentId.toString()]
-        val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
-            document.definitionId().caseDefinitionId()
-        )
-        if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-            val tasks = operatonTaskService.findTasks(
-                byProcessInstanceBusinessKey(document.id().toString())
-                    .and(byAssigned())
+        try {
+            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(event.documentId)
+            val caseDocument = documentService[caseDocumentId.toString()]
+            val caseDefinition: CaseDefinition = caseDefinitionService.getCaseDefinition(
+                caseDocument.definitionId().caseDefinitionId()
             )
-            logger.debug { "Removing assignee from ${tasks.size} task(s)" }
-            tasks.forEach { task ->
-                operatonTaskService.unassign(task.id)
+            if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
+                val tasks = operatonTaskService.findTasks(
+                    byProcessInstanceBusinessKey(caseDocument.id().toString())
+                        .and(byAssigned())
+                )
+                logger.debug { "Removing assignee from ${tasks.size} task(s)" }
+                tasks.forEach { task ->
+                    operatonTaskService.unassign(task.id)
+                }
             }
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document ${event.documentId}: ${e.message}" }
         }
     }
 

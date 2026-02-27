@@ -99,33 +99,45 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
       formDefinition: JSON.stringify(this.formToDuplicate.formDefinition),
     };
 
-    (this.context === 'case'
-      ? this.formManagementService.createFormDefinitionsCase(
-          this.params.caseDefinitionKey,
-          this.params.caseDefinitionVersionTag,
+    let create$;
+    switch (this.context) {
+      case 'case':
+        create$ = this.formManagementService.createFormDefinitionsCase(
+          this.params.caseDefinitionKey!,
+          this.params.caseDefinitionVersionTag!,
           request
-        )
-      : this.formManagementService.createFormDefinition(request)
-    )
-      .pipe(take(1))
-      .subscribe({
-        next: formDefinition => {
-          this.navigateWithNewId(formDefinition.id).then(() => {
-            this.closeModal();
-            this.notificationService.showToast({
-              type: 'success',
-              title: this.translateService.instant('formManagement.notifications.duplicated'),
-            });
+        );
+        break;
+      case 'buildingBlock':
+        create$ = this.formManagementService.createFormDefinitionsBuildingBlock(
+          this.params.buildingBlockDefinitionKey!,
+          this.params.buildingBlockDefinitionVersionTag!,
+          request
+        );
+        break;
+      default:
+        create$ = this.formManagementService.createFormDefinition(request);
+        break;
+    }
+
+    create$.pipe(take(1)).subscribe({
+      next: formDefinition => {
+        this.navigateWithNewId(formDefinition.id).then(() => {
+          this.closeModal();
+          this.notificationService.showToast({
+            type: 'success',
+            title: this.translateService.instant('formManagement.notifications.duplicated'),
           });
-        },
-        error: err => {
-          if (err.toString().includes('Duplicate name')) {
-            control.setErrors({duplicate: true});
-          } else {
-            control.setErrors({incorrect: true});
-          }
-        },
-      });
+        });
+      },
+      error: err => {
+        if (err.toString().includes('Duplicate name')) {
+          control.setErrors({duplicate: true});
+        } else {
+          control.setErrors({incorrect: true});
+        }
+      },
+    });
   }
 
   private async navigateWithNewId(newId: string): Promise<boolean> {

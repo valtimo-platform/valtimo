@@ -23,4 +23,5 @@ import java.util.UUID
 interface BuildingBlockInstanceRepository :
     JpaRepository<BuildingBlockInstance, UUID> {
     fun findByDocumentId(documentId: UUID): BuildingBlockInstance?
+    fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance>
 }

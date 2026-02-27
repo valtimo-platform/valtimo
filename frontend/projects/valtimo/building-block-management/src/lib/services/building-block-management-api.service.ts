@@ -20,6 +20,7 @@ import {
   BaseApiService,
   BuildingBlockDefinitionArtworkDto,
   BuildingBlockDefinitionDto,
+  BuildingBlockFormDefinitionDto,
   BuildingBlockProcessDefinitionDto,
   BuildingBlockVersionDto,
   ConfigService,
@@ -237,6 +238,27 @@ export class BuildingBlockManagementApiService extends BaseApiService {
         responseType: 'blob',
         observe: 'response',
       }
+    );
+  }
+
+  public getBuildingBlockFormDefinitions(
+    key: string,
+    versionTag: string,
+    params?: {searchTerm?: string; page?: number; size?: number}
+  ): Observable<Page<BuildingBlockFormDefinitionDto>> {
+    return this.httpClient.get<Page<BuildingBlockFormDefinitionDto>>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/form`),
+      {params: params as any}
+    );
+  }
+
+  public deleteBuildingBlockFormDefinition(
+    key: string,
+    versionTag: string,
+    formDefinitionId: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`)
     );
   }
 }

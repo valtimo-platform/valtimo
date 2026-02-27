@@ -52,6 +52,18 @@
       </cds-tab>
     }
 
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORMS}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.forms' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.FORMS)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-forms></valtimo-building-block-management-forms>
+        }
+      </cds-tab>
+    }
+
     @for (customTab of customTabs; track customTab.tabRoute) {
       @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab

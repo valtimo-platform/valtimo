@@ -18,6 +18,7 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
@@ -30,6 +31,7 @@ import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefini
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
+import com.ritense.buildingblock.service.BuildingBlockCaseTaskContributor
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkExporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
@@ -41,6 +43,9 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefin
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockFieldService
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
@@ -54,15 +59,18 @@ import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitio
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
+import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.exporter.ExportService
+import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -72,9 +80,13 @@ import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.database.QueryDialectHelper
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
@@ -208,6 +220,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository
     ): BuildingBlockCaseDocumentResolver {
         return BuildingBlockCaseDocumentResolver(buildingBlockInstanceRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseTaskContributor::class)
+    fun buildingBlockCaseTaskContributor(
+        queryDialectHelper: QueryDialectHelper
+    ): BuildingBlockCaseTaskContributor {
+        return BuildingBlockCaseTaskContributor(queryDialectHelper)
     }
 
     @Bean
@@ -359,6 +379,24 @@ class BuildingBlockAutoConfiguration {
         )
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockCaseAssigneeListener::class)
+    fun buildingBlockCaseAssigneeListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        userManagementService: UserManagementService,
+        caseDocumentResolver: CaseDocumentResolver,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository
+    ) = BuildingBlockCaseAssigneeListener(
+        operatonTaskService,
+        documentService,
+        caseDefinitionService,
+        userManagementService,
+        caseDocumentResolver,
+        buildingBlockInstanceRepository
+    )
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)
     fun buildingBlockCallActivityListener(
         processLinkService: ProcessLinkService,
@@ -442,7 +480,8 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         documentDefinitionService: DocumentDefinitionService,
-    ) = BuildingBlockDefinitionExporter(objectMapper, buildingBlockDefinitionRepository, documentDefinitionService)
+        formDefinitionRepository: FormDefinitionRepository,
+    ) = BuildingBlockDefinitionExporter(objectMapper, buildingBlockDefinitionRepository, documentDefinitionService, formDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkExporter::class)
@@ -506,4 +545,38 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDefinitionRepository,
             processDefinitionBuildingBlockDefinitionRepository
         )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionService::class)
+    fun buildingBlockFormDefinitionService(
+        formDefinitionRepository: FormDefinitionRepository,
+        definitionChecker: BuildingBlockDefinitionChecker
+    ): BuildingBlockFormDefinitionService {
+        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormManagementResource::class)
+    fun buildingBlockFormManagementResource(
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormManagementResource {
+        return BuildingBlockFormManagementResource(buildingBlockFormDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionExporter::class)
+    fun buildingBlockFormDefinitionExporter(
+        objectMapper: ObjectMapper,
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormDefinitionExporter {
+        return BuildingBlockFormDefinitionExporter(objectMapper, buildingBlockFormDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormDefinitionImporter::class)
+    fun buildingBlockFormDefinitionImporter(
+        buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+    ): BuildingBlockFormDefinitionImporter {
+        return BuildingBlockFormDefinitionImporter(buildingBlockFormDefinitionService)
+    }
 }

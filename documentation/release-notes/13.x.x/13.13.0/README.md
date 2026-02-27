@@ -16,7 +16,7 @@
   The same building block can be reused across multiple case definitions to keep shared steps consistent, while cases
   stay stable because they only exchange defined inputs and outputs with the building block. Building blocks can also
   be moved between environments by importing and exporting their definitions.
-
+  
   Learn more in [Building blocks](../../../features/building-blocks/README.md).
 
 * **IKO**
@@ -27,7 +27,6 @@
   effectively and transparently.
 
   Learn more at Learn more at [IKO documentation](https://docs.integraal-klant-objectbeeld.nl/).
-
 
 ## Enhancements
 

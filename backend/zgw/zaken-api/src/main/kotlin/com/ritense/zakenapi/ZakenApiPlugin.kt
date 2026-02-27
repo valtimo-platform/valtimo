@@ -48,6 +48,7 @@ import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
 import com.ritense.zakenapi.domain.GeometryType
+import com.ritense.zakenapi.domain.GetZaakResultatenRequest
 import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.Opschorting
@@ -360,7 +361,7 @@ class ZakenApiPlugin(
                 )
             )
 
-            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$caseDocumentId''" }
+            logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$caseDocumentId'" }
         }
     }
 
@@ -864,6 +865,45 @@ class ZakenApiPlugin(
             )
 
             logger.info { "Zaak resultaat with URL '${zaakResultaat.url}' created successfully for document with id '$documentId' and zaak with URL '$zaakUrl'" }
+        }
+    }
+
+    @PluginAction(
+        key = "delete-zaakresultaten",
+        title = "Delete zaak resultaten",
+        description = "Deletes resultaten for a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun deleteZaakResultaten(
+        execution: DelegateExecution
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        withLoggingContext(
+            "zaak.url" to zaakUrl.toString(),
+            "document.id" to documentId.toString(),
+        ) {
+            logger.debug { "Deleting all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
+
+            // It's only possible for one zaak-resultaat to be linked to a zaak. However, because the api specs allow for multiple results and there's no bulk delete endpoint, we need to page through the results and delete them one by one.
+            val resultatenPage = client.getAllZaakResultaten(
+                authenticationPluginConfiguration,
+                url,
+                GetZaakResultatenRequest(
+                    zaak = zaakUrl,
+                )
+            )
+
+            resultatenPage.results.forEach { resultaat ->
+                client.deleteZaakResultaat(
+                    authenticationPluginConfiguration,
+                    url,
+                    resultaat.uuid
+                )
+            }
+
+            logger.info { "Deleted all zaak resultaten for document '$documentId' and zaak '$zaakUrl'" }
         }
     }
 
@@ -1499,6 +1539,7 @@ class ZakenApiPlugin(
     }
 
     fun patchZaakNotitie(
+
         zaakNotitieUrl: URI,
         onderwerp: String? = null,
         tekst: String? = null,

@@ -283,7 +283,7 @@ class DocumentenApiPlugin(
 
     fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
+        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
         client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
@@ -379,7 +379,7 @@ class DocumentenApiPlugin(
                 }
             } ?: (inhoudAsInputStream to metadata)
 
-        val caseDocumentId = execution.businessKey
+        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
             ?: throw IllegalStateException("Failed to store document. Business key is null.")
 
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(

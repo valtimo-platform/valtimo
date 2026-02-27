@@ -22,8 +22,8 @@ import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintId
-import com.ritense.document.domain.JsonSchemaDocumentDefinitionBlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -60,8 +60,8 @@ class CaseTabDocumentDefinitionMapper(
                 criteriaBuilder.equal(
                     subRoot.get<JsonSchemaDocumentDefinitionId>("id")
                         .get<JsonSchemaDocumentDefinitionBlueprintId>("blueprintId")
-                        .get<JsonSchemaDocumentDefinitionBlueprintType>("blueprintType"),
-                    JsonSchemaDocumentDefinitionBlueprintType.CASE
+                        .get<BlueprintType>("blueprintType"),
+                    BlueprintType.CASE
                 ),
                 criteriaBuilder.equal(
                     root.get<CaseTabId>("id")

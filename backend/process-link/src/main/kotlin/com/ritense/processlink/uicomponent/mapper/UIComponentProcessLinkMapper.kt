@@ -47,7 +47,7 @@ class UIComponentProcessLinkMapper : ProcessLinkMapper {
         )
     }
 
-    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
+    override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto {
         deployDto as UIComponentProcessLinkDeployDto
         return UIComponentProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,
@@ -95,7 +95,8 @@ class UIComponentProcessLinkMapper : ProcessLinkMapper {
 
     override fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
+        existingProcessLinkId: UUID,
+        blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as UIComponentProcessLinkDeployDto
         return UIComponentProcessLinkUpdateRequestDto(
