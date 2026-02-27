@@ -35,6 +35,9 @@ class GlobalPermissionImporter(
     private val permissionRepository: PermissionRepository,
     private val roleRepository: RoleRepository,
 ) : Importer {
+    private val existingPermissionsThreadLocal = ThreadLocal<List<Permission>?>()
+    private val importedPermissionsThreadLocal = ThreadLocal.withInitial { mutableSetOf<Permission>() }
+
     override fun type() = GLOBAL_PERMISSION
 
     override fun dependsOn(): Set<String> = setOf(GLOBAL_ROLE)
@@ -44,31 +47,31 @@ class GlobalPermissionImporter(
     override fun import(request: ImportRequest) {
         val permissionDtos = objectMapper.readValue<List<PermissionDto>>(request.content)
 
-        if (existingPermissions == null) {
-            existingPermissions = permissionRepository.findAll()
+        if (existingPermissionsThreadLocal.get() == null) {
+            existingPermissionsThreadLocal.set(permissionRepository.findAll())
         }
         val incomingPermissions = permissionDtos.map { permissionDto ->
             AuthorizationSupportedHelper.checkSupported(permissionDto.resourceType)
             permissionDto.toPermission(roleRepository)
         }
 
-        importedPermissions.addAll(incomingPermissions)
-
-        val permissionsToSave = incomingPermissions.filter { incoming ->
-            existingPermissions!!.none { existing -> existing == incoming }
-        }
+        val permissionsToSave = incomingPermissions
+            .filter { incoming -> existingPermissionsThreadLocal.get()!!.none { existing -> existing == incoming } }
+            .filter { incoming -> importedPermissionsThreadLocal.get()!!.none { existing -> existing == incoming } }
 
         permissionRepository.saveAll(permissionsToSave)
+        importedPermissionsThreadLocal.get().addAll(incomingPermissions)
     }
 
     override fun afterImport(request: ImportRequest) {
+        val existingPermissions = existingPermissionsThreadLocal.get()
         if (existingPermissions != null) {
-            val permissionsToDelete = existingPermissions!!.filter { existing ->
-                importedPermissions.none { imported -> imported == existing }
+            val permissionsToDelete = existingPermissions.filter { existing ->
+                importedPermissionsThreadLocal.get().none { imported -> imported == existing }
             }
             permissionRepository.deleteAll(permissionsToDelete)
-            existingPermissions = null
-            importedPermissions.clear()
+            existingPermissionsThreadLocal.remove()
+            importedPermissionsThreadLocal.remove()
         }
     }
 
@@ -76,8 +79,5 @@ class GlobalPermissionImporter(
 
     companion object {
         val FILENAME_REGEX = """/global/permission/(?:.*/)?(.+)\.permission\.json""".toRegex()
-
-        private var existingPermissions: List<Permission>? = null
-        private val importedPermissions = mutableSetOf<Permission>()
     }
 }

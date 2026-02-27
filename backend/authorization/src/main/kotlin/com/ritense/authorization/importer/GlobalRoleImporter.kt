@@ -30,6 +30,9 @@ class GlobalRoleImporter(
     private val objectMapper: ObjectMapper,
     private val roleRepository: RoleRepository,
 ) : Importer {
+    private val existingRolesThreadLocal = ThreadLocal<List<Role>?>()
+    private val importedRoleKeysThreadLocal = ThreadLocal.withInitial { mutableSetOf<String>() }
+
     override fun type() = GLOBAL_ROLE
 
     override fun dependsOn(): Set<String> = emptySet()
@@ -39,25 +42,26 @@ class GlobalRoleImporter(
     override fun import(request: ImportRequest) {
         val roleKeys = objectMapper.readValue<List<String>>(request.content).toSet()
 
-        if (existingRoles == null) {
-            existingRoles = roleRepository.findAll()
+        if (existingRolesThreadLocal.get() == null) {
+            existingRolesThreadLocal.set(roleRepository.findAll())
         }
 
-        importedRoleKeys.addAll(roleKeys)
-
         val newRoles = roleKeys
-            .filter { key -> existingRoles!!.none { it.key == key } }
+            .filter { key -> existingRolesThreadLocal.get()!!.none { it.key == key } }
+            .filter { key -> importedRoleKeysThreadLocal.get()!!.none { it == key } }
             .map { key -> Role(key = key) }
 
         roleRepository.saveAll(newRoles)
+        importedRoleKeysThreadLocal.get().addAll(roleKeys)
     }
 
     override fun afterImport(request: ImportRequest) {
+        val existingRoles = existingRolesThreadLocal.get()
         if (existingRoles != null) {
-            val rolesToDelete = existingRoles!!.filter { it.key !in importedRoleKeys }
+            val rolesToDelete = existingRoles.filter { it.key !in importedRoleKeysThreadLocal.get() }
             roleRepository.deleteAll(rolesToDelete)
-            existingRoles = null
-            importedRoleKeys.clear()
+            existingRolesThreadLocal.remove()
+            importedRoleKeysThreadLocal.remove()
         }
     }
 
@@ -65,8 +69,5 @@ class GlobalRoleImporter(
 
     companion object {
         val FILENAME_REGEX = """/global/role/(?:.*/)?(.+)\.role\.json""".toRegex()
-
-        private var existingRoles: List<Role>? = null
-        private val importedRoleKeys = mutableSetOf<String>()
     }
 }
