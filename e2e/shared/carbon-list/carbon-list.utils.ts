@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {expect, Locator, Page} from '@playwright/test';
 
 // ─── CarbonListRow ──────────────────────────────────────────────────
@@ -18,7 +34,7 @@ export class CarbonListRow {
    * Locate a cell within this row by its text content. Returns a plain Locator.
    */
   cell(text: string): Locator {
-    return this.locator.locator(`td:has-text("${text}")`);
+    return this.locator.locator('td', {hasText: text});
   }
 
   /**
@@ -147,9 +163,7 @@ export class CarbonList {
   }
 
   get rows() {
-    return this.table.locator('tbody tr').filter({
-      hasNot: this.page.locator('[data-test-id="carbonListNoResults"]'),
-    });
+    return this.table.locator('tbody tr:not([data-test-id="carbonListNoResults"])');
   }
 
   // ─── Row Access ───────────────────────────────────────────────────
@@ -158,7 +172,9 @@ export class CarbonList {
    * Get a CarbonListRow scoped to the row containing a cell with the given text.
    */
   row(cellText: string): CarbonListRow {
-    const locator = this.root.locator(`tr:has(td:has-text("${cellText}"))`);
+    const locator = this.root.locator('tbody tr', {
+      has: this.root.locator('td', {hasText: cellText}),
+    });
     return new CarbonListRow(this.page, locator);
   }
 
@@ -221,7 +237,7 @@ export class CarbonList {
    * @param columnName - The visible text of the column header.
    */
   async sortByColumn(columnName: string) {
-    await this.table.locator(`th button:has-text("${columnName}")`).click();
+    await this.table.locator('th button', {hasText: columnName}).click();
   }
 
   /**

@@ -72,8 +72,10 @@ test.describe('Case management', () => {
         });
 
         test.beforeEach(async () => {
-          //Arrange
-          await testPage.switchViewButton.click();
+          //Arrange – ensure JSON view is active (idempotent)
+          if (!(await testPage.listColumnJSONEditor.isVisible())) {
+            await testPage.switchViewButton.click();
+          }
         });
 
         test('Change view', async () => {
@@ -120,13 +122,9 @@ test.describe('Case management', () => {
 
           //Assert
           await testPage.checkColumnsExisting(LIST_COLUMNS_2.map(col => col.key));
-          await testPage.switchViewButton.click();
         });
 
         test('Save button disabled for invalid JSON', async () => {
-          // Arrange
-          await testPage.switchViewButton.click();
-
           // Act
           await jsonEditor.jsonEditorEditButton.click();
           await clearMonacoEditor(page);
