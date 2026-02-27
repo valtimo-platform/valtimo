@@ -1,0 +1,58 @@
+[
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "view_list",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "create",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "modify",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "delete",
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "view_list",
+        "roleKey": "ROLE_USER"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "create",
+        "roleKey": "ROLE_USER"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "modify",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "createdByUserId",
+                "operator": "==",
+                "value": "${currentUserId}"
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "action": "delete",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "createdByUserId",
+                "operator": "==",
+                "value": "${currentUserId}"
+            }
+        ]
+    }
+]
