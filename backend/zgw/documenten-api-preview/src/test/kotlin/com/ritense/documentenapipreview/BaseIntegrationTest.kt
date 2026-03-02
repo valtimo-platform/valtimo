@@ -1,11 +1,16 @@
 package com.ritense.documentenapipreview
 
+import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
+import com.ritense.resource.service.ResourceService
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.mail.MailSender
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
@@ -18,6 +23,18 @@ class BaseIntegrationTest {
 
     @MockitoSpyBean
     lateinit var pluginConfigurationRepository: PluginConfigurationRepository
+
+    @MockitoBean
+    lateinit var mailSender: MailSender
+
+    @MockitoBean
+    lateinit var userManagementService: UserManagementService
+
+    @MockitoBean
+    lateinit var resourceService: ResourceService
+
+    @MockitoBean
+    lateinit var zaaktypeUrlProvider: ZaaktypeUrlProvider
 
     fun mockResponse(body: String): MockResponse {
         return MockResponse()

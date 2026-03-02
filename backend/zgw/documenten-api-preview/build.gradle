@@ -43,6 +43,7 @@ dependencies {
     testImplementation project(':case')
     testImplementation project(':resource')
     testImplementation project(':test-utils-common')
+    testImplementation project(':zgw:catalogi-api')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
