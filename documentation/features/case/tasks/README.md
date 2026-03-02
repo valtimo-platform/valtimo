@@ -9,6 +9,11 @@ This is further divided into two more tabs:
 * Columns
 * Search fields
 
+## Unread task indicator
+
+The task list now shows a bullet next to tasks that were not opened yet.  
+As soon as the task detail modal is opened, the dot disappears, and it also clears automatically when the task is completed.  
+
 ## Access control
 
 Access to the tasks can be configured through access control. More information about access control can be found [here](../../access-control/).
