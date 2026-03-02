@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {TranslateService} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {distinctUntilChanged, filter, map, startWith} from 'rxjs/operators';
@@ -77,7 +76,12 @@ export class SetTaskDueDateComponent {
   }
 
   @Input() public set task(value: ProcessInstanceTask | Task) {
-    if (!value) return;
+    if (!value) {
+      this.hasDueDate$.next(false);
+      this._task$.next(null);
+      this.selectedDateString$.next('');
+      return;
+    }
     this.hasDueDate$.next(!!value.due);
     this._task$.next(value);
   }
@@ -86,6 +90,8 @@ export class SetTaskDueDateComponent {
     filter(task => !!task),
     map(task => new Date(task.due))
   );
+
+  public readonly showDatePicker$ = new BehaviorSubject<boolean>(true);
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
@@ -109,6 +115,12 @@ export class SetTaskDueDateComponent {
     private readonly globalNotificationService: GlobalNotificationService
   ) {
     this.iconService.registerAll([CalendarAdd16]);
+  }
+
+  public clear(): void {
+    this.selectedDateString$.next('');
+    this.showDatePicker$.next(false);
+    setTimeout(() => this.showDatePicker$.next(true));
   }
 
   public onDateValueChange(value: Date[]): void {
@@ -169,7 +181,9 @@ export class SetTaskDueDateComponent {
   }
 
   private showDueDateSetNotification(dateString: string): void {
-    const formattedDate = new Date(dateString).toLocaleDateString(this.translateService.currentLang);
+    const formattedDate = new Date(dateString).toLocaleDateString(
+      this.translateService.currentLang
+    );
     this.globalNotificationService.showToast({
       title: this.translateService.instant('taskDetail.dueDateSetNotificationTitle'),
       subtitle: this.translateService.instant('taskDetail.dueDateSetNotificationContent', {
