@@ -27,7 +27,7 @@
     <h3 cdsModalHeaderHeading>{{ 'widgetTabManagement.tab.editWidgetTab' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <ng-container *ngTemplateOutlet="editWidgetTabFormTemplate;context:{obs: obs}"></ng-container>
   </section>
 
@@ -53,7 +53,7 @@
 </ng-template>
 
 <ng-template #editWidgetTabButtons let-obs="obs">
-  <button cdsButton="ghost" [disabled]="obs.disabled" (click)="closeModal()">
+  <button cdsButton="secondary" [disabled]="obs.disabled" (click)="closeModal()">
     {{ 'widgetTabManagement.tab.cancel' | translate }}
   </button>
 

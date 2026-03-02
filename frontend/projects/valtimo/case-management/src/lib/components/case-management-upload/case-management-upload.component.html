@@ -40,7 +40,12 @@
     </h3>
   </cds-modal-header>
 
-  <section [ngSwitch]="obs.activeStep" cdsModalContent class="valtimo-definition-uploader__content">
+  <section
+    [ngSwitch]="obs.activeStep"
+    [cdsLayer]="1"
+    cdsModalContent
+    class="valtimo-definition-uploader__content"
+  >
     <ng-template ngSwitchDefault>
       <valtimo-case-management-upload-step
         [message]="
