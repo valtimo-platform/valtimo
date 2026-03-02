@@ -1520,9 +1520,10 @@
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
-    "header": "Assign a user to this case",
+    "header": "Assign user",
     "remove": "Unassign",
-    "fetchingUsers": "Fetching users..."
+    "fetchingUsers": "Fetching users...",
+    "submitButtonText": "Assign user to case"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",

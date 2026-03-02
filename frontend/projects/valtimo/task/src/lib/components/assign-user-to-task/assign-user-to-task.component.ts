@@ -25,11 +25,7 @@ import {
   Renderer2,
   SimpleChanges,
 } from '@angular/core';
-import {
-  CdsThemeService,
-  RemoveClassnamesDirective,
-  SearchableDropdownSelectModule,
-} from '@valtimo/components';
+import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
 import {NamedUser} from '@valtimo/shared';
@@ -56,7 +52,6 @@ import {filter, map} from 'rxjs/operators';
   imports: [
     CommonModule,
     TranslateModule,
-    SearchableDropdownSelectModule,
     ButtonModule,
     ToggletipModule,
     IconModule,
@@ -106,17 +101,16 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public readonly mouseIsOverAssignee$ = new BehaviorSubject<boolean>(false);
   public readonly open$ = new Subject<boolean>();
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
-
-  public readonly toggletipTheme$ = this.cdsThemeService.currentTheme$;
+  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly taskService: TaskService,
+    private readonly cdsThemeService: CdsThemeService,
     private readonly iconService: IconService,
     private readonly elementRef: ElementRef,
-    private readonly renderer2: Renderer2,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly renderer2: Renderer2
   ) {
     this.iconService.registerAll([UserFollow16]);
   }
