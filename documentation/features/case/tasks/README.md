@@ -11,8 +11,8 @@ This is further divided into two more tabs:
 
 ## Unread task indicator
 
-The task list now shows a bullet next to tasks that were not opened yet.  
-As soon as the task detail modal is opened, the dot disappears, and it also clears automatically when the task is completed.  
+The task list shows a bullet next to tasks that have not been opened yet. 
+As soon as the task detail modal is opened, the dot disappears. It is also cleared automatically when the task is completed.
 
 ## Access control
 
