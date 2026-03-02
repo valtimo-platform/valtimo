@@ -113,8 +113,6 @@ export class SetTaskDueDateComponent {
   }
 
   public onSubmitButtonClick(): void {
-    if (!this._task?.id || !this._selectedDateString) return;
-
     this.disabled$.next(true);
 
     this.taskService.setTaskDueDate(this._task.id, {dueDate: this._selectedDateString}).subscribe({
@@ -132,8 +130,6 @@ export class SetTaskDueDateComponent {
   }
 
   public onRemoveButtonClick(): void {
-    if (!this._task?.id) return;
-
     this.disabled$.next(true);
 
     this.taskService.removeTaskDueDate(this._task.id).subscribe({
