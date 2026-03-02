@@ -33,7 +33,12 @@
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent class="valtimo-definition-create__content">
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    [cdsLayer]="1"
+    class="valtimo-definition-create__content"
+  >
     <cds-label>
       {{ 'caseManagement.createDefinition.name' | translate }}
 
@@ -133,7 +138,7 @@
   </form>
 
   <cds-modal-footer>
-    <button [attr.data-test-id]="testIds.closeButton" cdsButton="ghost" (click)="onCloseModal()">
+    <button [attr.data-test-id]="testIds.closeButton" cdsButton="secondary" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 

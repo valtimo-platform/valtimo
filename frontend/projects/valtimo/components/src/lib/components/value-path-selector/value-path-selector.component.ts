@@ -380,6 +380,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   public writeValue(value: string) {
     this.selectedPath.setValue(value);
+
+    if (!value) {
+      this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+    }
   }
 
   public registerOnChange(fn: (value: string) => void): void {
