@@ -89,7 +89,6 @@ export class SetTaskDueDateComponent {
   public readonly open$ = new Subject<boolean>();
 
   public readonly mouseIsOverDueDate$ = new BehaviorSubject<boolean>(false);
-
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
   public readonly language$ = this.translateService.onLangChange.pipe(
@@ -99,9 +98,9 @@ export class SetTaskDueDateComponent {
   );
 
   constructor(
+    private readonly cdsThemeService: CdsThemeService,
     private readonly iconService: IconService,
     private readonly taskService: TaskService,
-    private readonly cdsThemeService: CdsThemeService,
     private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([CalendarAdd16]);
@@ -114,6 +113,8 @@ export class SetTaskDueDateComponent {
   }
 
   public onSubmitButtonClick(): void {
+    if (!this._task?.id || !this._selectedDateString) return;
+
     this.disabled$.next(true);
 
     this.taskService.setTaskDueDate(this._task.id, {dueDate: this._selectedDateString}).subscribe({
@@ -131,6 +132,8 @@ export class SetTaskDueDateComponent {
   }
 
   public onRemoveButtonClick(): void {
+    if (!this._task?.id) return;
+
     this.disabled$.next(true);
 
     this.taskService.removeTaskDueDate(this._task.id).subscribe({
