@@ -18,5 +18,5 @@
  * Public API Surface of building-block-management
  */
 
-export * from './lib/building-block-management.module'
+export * from './lib/building-block-management.module';
 export * from './lib/services';
