@@ -55,7 +55,6 @@ export class CaseWidgetManagementApiService
     );
   }
   public updateWidget(widget: BasicWidget): Observable<BasicWidget> {
-    console.log('update', widget);
     return this.updateWidgets(
       this._widgetConfigurationCache.map((cachedWidget: BasicWidget) =>
         cachedWidget.key === widget.key ? widget : cachedWidget
