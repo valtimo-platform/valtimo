@@ -18,4 +18,5 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **JWT scopes are no longer treated as user roles.**
+  JWT `scope`/`scp` claims are no longer automatically converted into user roles.
