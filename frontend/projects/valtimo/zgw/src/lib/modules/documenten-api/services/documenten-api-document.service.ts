@@ -39,11 +39,11 @@ export class DocumentenApiDocumentService extends BaseApiService {
 
     return !!paramsMap
       ? this.httpClient.get<Page<DocumentenApiRelatedFile>>(
-          this.getApiUrl(`/v2/zaken-api/case-document/${documentId}/files`),
+          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`),
           {params}
         )
       : this.httpClient.get<Page<DocumentenApiRelatedFile>>(
-          this.getApiUrl(`/v2/zaken-api/case-document/${documentId}/files`)
+          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`)
         );
   }
 
