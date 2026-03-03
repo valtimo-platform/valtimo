@@ -33,11 +33,11 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/case-document/{documentId}/files")).authenticated()
+                    .requestMatchers(antMatcher(PUT, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
+                    .requestMatchers(antMatcher(DELETE, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/{caseDocumentId}/{pluginConfigurationId}/files/{documentId}/download")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}")).hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
