@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16, TrashCan16} from '@carbon/icons';
@@ -148,14 +148,6 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
         this.findPluginConfiguration(
           this.zaakTypeLink$.getValue()?.zakenApiPluginConfigurationId ?? ''
         );
-      });
-  }
-
-  public loadInformatieObjectTypeUrls(): void {
-    this.openZaakService
-      .getInformatieObjectTypes()
-      .subscribe((informatieObjectTypes: InformatieObjectType[]) => {
-        this.informatieObjectTypes = informatieObjectTypes;
       });
   }
 

@@ -1,0 +1,64 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Table",
+            "key": "table",
+            "type": "table",
+            "rows": [
+                [
+                    {
+                        "components": [
+                            {
+                                "label": "Row 1 Col 1",
+                                "key": "r1c1",
+                                "type": "textfield",
+                                "input": true
+                            }
+                        ]
+                    },
+                    {
+                        "components": [
+                            {
+                                "label": "Row 1 Col 2",
+                                "key": "r1c2",
+                                "type": "textfield",
+                                "input": true
+                            }
+                        ]
+                    }
+                ],
+                [
+                    {
+                        "components": [
+                            {
+                                "label": "Row 2 Col 1",
+                                "key": "r2c1",
+                                "type": "textfield",
+                                "input": true
+                            }
+                        ]
+                    },
+                    {
+                        "components": [
+                            {
+                                "label": "Row 2 Col 2",
+                                "key": "r2c2",
+                                "type": "textfield",
+                                "input": true
+                            }
+                        ]
+                    }
+                ]
+            ],
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

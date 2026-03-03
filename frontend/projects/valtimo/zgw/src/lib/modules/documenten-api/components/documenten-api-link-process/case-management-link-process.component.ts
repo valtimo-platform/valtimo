@@ -69,7 +69,7 @@ export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
       (definitions || [])
         .filter(definition => !!definition?.key)
         .map(process => ({
-          content: process?.name || '-',
+          content: process?.name || `<${process.key}>`,
           id: process.key,
           selected: selectedProcessKey === process.key,
         }))

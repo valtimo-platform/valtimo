@@ -1,0 +1,8 @@
+{
+    "key": "formio-test",
+    "name": "Form.io Test",
+    "versionTag": "1.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": true
+}

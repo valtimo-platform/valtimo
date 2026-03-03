@@ -82,18 +82,18 @@ data class UploadField(
                     applicationEventPublisher.publishEvent(
                         DocumentRelatedFileSubmittedEvent(document.id()?.id, resourceId, document.definitionId().name())
                     )
-                }
-
-                val tempResourceId = getTempResourceId(resourceNode)
-                if (tempResourceId != null) {
-                    logger.debug { "tempfile $tempResourceId" }
-                    applicationEventPublisher.publishEvent(
-                        TemporaryResourceSubmittedEvent(
-                            tempResourceId,
-                            document.id()!!.id,
-                            document.definitionId().name()
+                } else {
+                    val tempResourceId = getTempResourceId(resourceNode)
+                    if (tempResourceId != null) {
+                        logger.debug { "tempfile $tempResourceId" }
+                        applicationEventPublisher.publishEvent(
+                            TemporaryResourceSubmittedEvent(
+                                tempResourceId,
+                                document.id()!!.id,
+                                document.definitionId().name()
+                            )
                         )
-                    )
+                    }
                 }
             }
             processed = true
@@ -105,12 +105,17 @@ data class UploadField(
         return if (resourceId == null) {
             null
         } else {
-            UUID.fromString(resourceId)
+            try {
+                UUID.fromString(resourceId)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
         }
     }
 
     private fun getTempResourceId(resourceNode: JsonNode): String? {
         return getFieldAsTextOrNull(resourceNode, "/id")
+            ?: getFieldAsTextOrNull(resourceNode, "/data/resourceId")
     }
 
     private fun getFieldAsTextOrNull(rootNode: JsonNode, path: String): String? {

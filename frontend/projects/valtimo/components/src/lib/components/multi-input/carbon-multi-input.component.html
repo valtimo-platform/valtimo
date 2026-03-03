@@ -131,6 +131,7 @@
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            [attr.data-test-id]="'multiInputValuePathSelectorValue-' + i"
           ></valtimo-value-path-selector-value>
         }
         @case ('valuePathSelectorDropdownValue') {
@@ -152,6 +153,7 @@
             [dropdownColumnFlex]="dropdownColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+            [attr.data-test-id]="'multiInputValuePathSelectorDropdownValue-' + i"
           ></valtimo-value-path-selector-dropdown-value>
         }
       }
@@ -164,6 +166,7 @@
         size="md"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
+        [attr.data-test-id]="'multiInputDeleteButton-' + i"
       >
         <svg cdsIcon="trash-can" size="16"></svg>
       </button>
@@ -176,6 +179,7 @@
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
+        [attr.data-test-id]="'multiInputAddButton-' + i"
       >
         {{ vars.addRowText }}
 

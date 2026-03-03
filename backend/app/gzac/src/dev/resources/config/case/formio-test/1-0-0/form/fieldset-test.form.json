@@ -1,0 +1,26 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Field Set",
+            "key": "fieldset",
+            "type": "fieldset",
+            "components": [
+                {
+                    "label": "Field 1",
+                    "key": "field1",
+                    "type": "textfield",
+                    "input": true
+                }
+            ],
+            "input": false
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

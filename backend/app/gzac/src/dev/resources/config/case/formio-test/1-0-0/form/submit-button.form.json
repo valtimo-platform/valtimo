@@ -1,0 +1,12 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

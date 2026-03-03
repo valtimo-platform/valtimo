@@ -17,9 +17,10 @@
 import {Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
+import {TranslateService} from '@ngx-translate/core';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {BehaviorSubject, Subject} from 'rxjs';
-import {filter, map} from 'rxjs/operators';
+import {distinctUntilChanged, filter, map, startWith} from 'rxjs/operators';
 import {
   ButtonModule,
   DatePickerModule,
@@ -91,10 +92,17 @@ export class SetTaskDueDateComponent {
 
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
+  public readonly language$ = this.translateService.onLangChange.pipe(
+    map(event => event.lang),
+    startWith(this.translateService.currentLang),
+    distinctUntilChanged()
+  );
+
   constructor(
     private readonly iconService: IconService,
     private readonly taskService: TaskService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([CalendarAdd16]);
   }

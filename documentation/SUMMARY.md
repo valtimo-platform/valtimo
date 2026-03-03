@@ -107,6 +107,7 @@
       * [Access control](features/case/zgw/zgw-documents/access-control.md)
       * [Uploading to Documenten API with metadata](features/case/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
     * [Creating extra case tabs for Zaakobjects](features/case/zgw/configure-tab-object-type.md)
+    * [Zaakdetail sync](features/case/zgw/zaakdetail-sync.md)
   * [For developers](features/case/for-developers/README.md)
     * [Search fields API](features/case/for-developers/configuring-search-fields.md)
     * [Case list tab order](features/case/for-developers/customizing-case-list-tabs.md)
@@ -171,6 +172,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.18.0](release-notes/13.x.x/13.18.0/README.md)
   * [13.17.0](release-notes/13.x.x/13.17.0/README.md)
   * [13.16.0](release-notes/13.x.x/13.16.0/README.md)
   * [13.15.0](release-notes/13.x.x/13.15.0/README.md)

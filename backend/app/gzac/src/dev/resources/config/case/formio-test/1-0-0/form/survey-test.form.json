@@ -1,0 +1,33 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Survey",
+            "key": "survey",
+            "type": "survey",
+            "questions": [
+                {
+                    "label": "Question 1",
+                    "value": "q1"
+                }
+            ],
+            "values": [
+                {
+                    "label": "Value 1",
+                    "value": "v1"
+                }
+            ],
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true
+        }
+    ]
+}

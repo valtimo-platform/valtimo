@@ -161,11 +161,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
-    if (!Formio.projectUrlSet) {
-      Formio.setBaseUrl(location.origin);
-      Formio.setProjectUrl(location.origin);
-      Formio.authUrl = location.origin;
-    }
+    Formio.setBaseUrl(location.origin);
+    Formio.setProjectUrl(location.origin);
+    Formio.authUrl = location.origin;
 
     this.openRouteSubscription();
     this.errors$.next([]);
@@ -295,11 +293,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   private openRouteSubscription(): void {
     this._subscriptions.add(
       this.route.params.subscribe(params => {
-        const documentDefinitionName = params.documentDefinitionName;
+        const caseDefinitionKey = params.caseDefinitionKey;
         const documentId = params.documentId;
 
-        if (documentDefinitionName) {
-          this.stateService.setDocumentDefinitionName(documentDefinitionName);
+        if (caseDefinitionKey) {
+          this.stateService.setCaseDefinitionKey(caseDefinitionKey);
         }
 
         if (documentId) {

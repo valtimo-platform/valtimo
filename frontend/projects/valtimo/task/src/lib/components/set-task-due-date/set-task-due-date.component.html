@@ -22,6 +22,7 @@
       disabled: disabled$ | async,
       mouseIsOverDueDate: mouseIsOverDueDate$ | async,
       canModifyTask: canModifyTask$ | async,
+      language: language$ | async,
     } as obs
   "
 >
@@ -83,7 +84,8 @@
         <cds-date-picker
           *ngIf="!obs.hasDueDate"
           [cdsLayer]="1"
-          [label]="'Select date'"
+          [label]="'setTaskDueDate.label' | translate"
+          [language]="obs.language"
           [placeholder]="'dd-mm-jjjj'"
           dateFormat="d/m/Y"
           [disabled]="obs.disabled"
