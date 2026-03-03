@@ -49,8 +49,31 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping(value = ["/api"], produces = [APPLICATION_JSON_UTF8_VALUE])
 class ZaakDocumentResource(
-    private val zaakDocumentService: ZaakDocumentService,
+    private val zaakDocumentService: ZaakDocumentService
 ) {
+
+    @GetMapping("/v1/zaken-api/document/{documentId}/files")
+    fun getFiles(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
+    ): List<RelatedFile> {
+        return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
+    }
+
+    @GetMapping("/v2/zaken-api/document/{documentId}/files")
+    fun getFiles(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID,
+        documentSearchRequest: DocumentSearchRequest,
+        pageable: Pageable,
+    ): Page<DocumentenApiDocumentDto> {
+        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(documentId, documentSearchRequest, pageable)
+    }
+
+    @GetMapping("/v1/zaken-api/document/{documentId}/zaak")
+    fun getZaakMetadata(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
+    ): ZaakResponse? {
+        return zaakDocumentService.getZaakByCaseDocumentId(documentId)
+    }
 
     @DeleteMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")
     fun deleteDocument(
@@ -87,13 +110,6 @@ class ZaakDocumentResource(
             )
     }
 
-    @GetMapping("/v1/zaken-api/case-document/{caseDocumentId}/files")
-    fun getFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
-    ): List<RelatedFile> {
-        return zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
-    }
-
     @GetMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")
     fun downloadDocument(
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
@@ -121,26 +137,6 @@ class ZaakDocumentResource(
             .headers(responseHeaders)
             .contentType(documentMediaType)
             .body(InputStreamResource(documentInputStream))
-    }
-
-    @GetMapping("/v2/zaken-api/case-document/{caseDocumentId}/files")
-    fun getFiles(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
-        documentSearchRequest: DocumentSearchRequest,
-        pageable: Pageable,
-    ): Page<DocumentenApiDocumentDto> {
-        return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(
-            caseDocumentId,
-            documentSearchRequest,
-            pageable
-        )
-    }
-
-    @GetMapping("/v1/zaken-api/case-document/{caseDocumentId}/zaak")
-    fun getZaakMetadata(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
-    ): ZaakResponse? {
-        return zaakDocumentService.getZaakByCaseDocumentId(caseDocumentId)
     }
 
     companion object {

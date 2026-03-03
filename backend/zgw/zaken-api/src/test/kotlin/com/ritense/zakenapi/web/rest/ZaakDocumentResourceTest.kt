@@ -67,7 +67,7 @@ class ZaakDocumentResourceTest : BaseIntegrationTest() {
         ).whenever(zaakDocumentService).getInformatieObjectenAsRelatedFiles(documentId)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/zaken-api/case-document/{documentId}/files", documentId)
+            MockMvcRequestBuilders.get("/api/v1/zaken-api/document/{documentId}/files", documentId)
                 .characterEncoding(StandardCharsets.UTF_8.name())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -110,7 +110,7 @@ class ZaakDocumentResourceTest : BaseIntegrationTest() {
         doReturn(zaak).whenever(zaakDocumentService).getZaakByCaseDocumentId(documentId)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/zaken-api/case-document/" +
+            MockMvcRequestBuilders.get("/api/v1/zaken-api/document/" +
                 "{documentId}/zaak", documentId)
                 .characterEncoding(StandardCharsets.UTF_8.name())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
