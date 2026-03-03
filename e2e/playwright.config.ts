@@ -22,7 +22,7 @@ export default defineConfig({
     ? moment.duration(process.env.qa_timeout).asMilliseconds()
     : 90_000,
   globalTimeout: 60 * 60 * 1000,
-
+  webServer: undefined,
   use: {
     launchOptions: {
       headless: false,
