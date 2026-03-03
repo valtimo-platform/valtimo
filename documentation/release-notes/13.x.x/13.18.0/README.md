@@ -18,11 +18,10 @@
 
 ## Bugfixes
 
-* **Fixed permissions for case bulk assignment**
-
-  Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.
-  The bulk assignment modal now displays a warning when the user does not have permission to assign some or all of the
-  selected cases, and only cases with the correct permissions are processed.
-
-* **JWT scopes are no longer treated as user roles.**
-  JWT `scope`/`scp` claims are no longer automatically converted into user roles.
+* JWT `scope`/`scp` claims are no longer automatically converted into user roles.
+* Task assignee and due date now display correctly in the task modal regardless of task list column configuration
+* Task data such as assignee and business key is no longer lost when the task modal receives a real-time (SSE) update
+* Changing a due date inside the task modal now refreshes the parent task list
+* Setting or removing a due date now shows a notification toast
+* Stale task data no longer persists after closing the task modal
+* Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.

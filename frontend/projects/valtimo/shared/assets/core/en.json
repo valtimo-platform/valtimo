@@ -1505,10 +1505,11 @@
     "taskCreated": "Created",
     "taskCompleted": "has successfully been completed",
     "assignedNotificationTitle": "Task assigned",
-    "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned",
-    "unknownAssignee": "unknown"
+    "dueDateSetNotificationTitle": "Due date set",
+    "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Due date removed",
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
