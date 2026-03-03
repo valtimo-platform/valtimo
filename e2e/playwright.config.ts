@@ -13,7 +13,7 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   // forbidOnly: true,
-  retries: process.env.CI ? 3 : 0,
+  retries: process.env.CI ? 0 : 0,
   workers: process.env.CI ? 1 : 1,
   reporter: process.env.CI
     ? [
