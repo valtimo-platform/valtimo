@@ -669,6 +669,8 @@ export interface ProcessDefinitionResponseDto {
 export interface ProcessLinkActivityResult<T> {
     processLinkId: string;
     type: string;
+    assignee: string | null;
+    due: string | null;
     properties: T;
 }
 
