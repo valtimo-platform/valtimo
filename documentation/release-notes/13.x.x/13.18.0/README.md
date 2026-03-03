@@ -6,9 +6,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Added PBAC conditions for Resources based on Case definition**
 
-  New feature explanation.
+PBAC conditions for Resources (Case related documents on the Document API) allow role-based filtering by case definition
 
 ## Enhancements
 
