@@ -85,6 +85,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        (taskUpdated)="onTaskUpdated($event)"
       ></valtimo-task-detail-content>
     } @else {
       <valtimo-task-detail-content
@@ -92,6 +93,7 @@
         [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
+        (taskUpdated)="onTaskUpdated($event)"
       ></valtimo-task-detail-content>
     }
   </div>
@@ -127,6 +129,7 @@
     <valtimo-set-task-due-date
       [task]="obs.task"
       [canModifyTask]="obs.canModifyTask"
+      (dueDateChanged)="dueDateChanged.emit()"
     ></valtimo-set-task-due-date>
   </div>
 </ng-template>
