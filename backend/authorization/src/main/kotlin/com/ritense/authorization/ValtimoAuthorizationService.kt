@@ -28,20 +28,24 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.util.function.Supplier
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
-import java.lang.reflect.ParameterizedType
-import java.util.function.Supplier
 
 @Service
 @SkipComponentScan
 class ValtimoAuthorizationService(
     private val authorizationSpecificationFactories: List<AuthorizationSpecificationFactory<*>>,
-    private val mappers: List<AuthorizationEntityMapper<*, *>>,
+    mappers: List<AuthorizationEntityMapper<*, *>>,
     private val actionProviders: List<ResourceActionProvider<*>>,
     private val permissionRepository: PermissionRepository,
     private val userManagementService: UserManagementService
 ) : AuthorizationService {
+
+    private val mappers: List<AuthorizationEntityMapper<*, *>> = buildAllMappers(mappers)
+
     override fun <T : Any> requirePermission(
         request: AuthorizationRequest<T>
     ) {
@@ -93,6 +97,26 @@ class ValtimoAuthorizationService(
             it.supports(from, to)
         } as AuthorizationEntityMapper<FROM, TO>?)
             ?: throw AccessDeniedException("No entity mapper found for given arguments.")
+    }
+
+    override fun <FROM, STEP, TO> buildChainedMapper(
+        from: Class<FROM>,
+        step: Class<STEP>,
+        to: Class<TO>
+    ): ChainedAuthorizationEntityMapper<FROM, STEP, TO>? {
+        val byPair = LinkedHashMap<Pair<Class<*>, Class<*>>, AuthorizationEntityMapper<*, *>>()
+
+        for (m in mappers) {
+            val (from, to) = getMapperPair(m)
+            byPair[from to to] = m
+        }
+
+        val mapper1 = byPair[from to step] ?: return null
+        val mapper2 = byPair[step to to] ?: return null
+        return chainedAuthorizationEntityMapper(
+            mapper1,
+            mapper2
+        ) as ChainedAuthorizationEntityMapper<FROM, STEP, TO>
     }
 
     override fun <T : Any> getAvailableActionsForResource(clazz: Class<T>): List<Action<T>> {
@@ -172,7 +196,68 @@ class ValtimoAuthorizationService(
         override fun invoke() = value
     }
 
+    private fun buildAllMappers(mappers: List<AuthorizationEntityMapper<*, *>>): List<AuthorizationEntityMapper<*, *>> {
+        val byPair = LinkedHashMap<Pair<Class<*>, Class<*>>, AuthorizationEntityMapper<*, *>>()
+
+        for (m in mappers) {
+            val (from, to) = getMapperPair(m)
+            byPair[from to to] = m
+        }
+
+        var changed: Boolean
+        do {
+            changed = false
+            val edges = byPair.keys.toList()
+
+            for ((a, b) in edges) {
+                for ((b2, c) in edges) {
+                    if (b == b2 && a != c) {
+                        val chainedKey = a to c
+                        if (chainedKey !in byPair) {
+                            byPair[chainedKey] = chainedAuthorizationEntityMapper(byPair[a to b]!!, byPair[b2 to c]!!)
+                            changed = true
+                        }
+                    }
+                }
+            }
+        } while (changed)
+
+        return byPair.values.toList()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun chainedAuthorizationEntityMapper(
+        first: AuthorizationEntityMapper<*, *>,
+        second: AuthorizationEntityMapper<*, *>
+    ): ChainedAuthorizationEntityMapper<*, *, *> = ChainedAuthorizationEntityMapper(
+        first as AuthorizationEntityMapper<Any, Any>,
+        second as AuthorizationEntityMapper<Any, Any>
+    )
+
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        fun getMapperPair(mapper: AuthorizationEntityMapper<*, *>): Pair<Class<*>, Class<*>> {
+            if (mapper is ChainedAuthorizationEntityMapper<*, *, *>) {
+                val from = getMapperPair(mapper.first).first
+                val to = getMapperPair(mapper.second).second
+                return from to to
+            }
+
+            val iface = mapper.javaClass.genericInterfaces.asSequence()
+                .filterIsInstance<ParameterizedType>()
+                .firstOrNull { (it.rawType as? Class<*>) == AuthorizationEntityMapper::class.java }
+                ?: error("Mapper ${mapper.javaClass.name} does not directly implement AuthorizationEntityMapper<From, To>")
+
+            val from = iface.actualTypeArguments[0].asClass()
+            val to = (iface.actualTypeArguments.getOrNull(2) ?: iface.actualTypeArguments[1]).asClass()
+            return from to to
+        }
+
+        private fun Type.asClass(): Class<*> = when (this) {
+            is Class<*> -> this
+            is ParameterizedType -> (this.rawType as Class<*>)
+            else -> Class.forName(this.typeName)
+        }
     }
 }

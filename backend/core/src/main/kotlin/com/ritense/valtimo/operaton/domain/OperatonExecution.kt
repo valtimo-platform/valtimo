@@ -136,4 +136,8 @@ class OperatonExecution(
         result = 31 * result + revision
         return result
     }
+
+    companion object {
+        const val DUMMY_OPERATON_EXECUTION_ID = "00000000-0000-0000-0000-000000000000"
+    }
 }

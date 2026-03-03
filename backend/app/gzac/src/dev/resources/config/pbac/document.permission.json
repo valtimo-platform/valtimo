@@ -1,83 +1,13 @@
 {
-    "changesetId": "documents-v3",
+    "changesetId": "documents-v4",
     "permissions": [
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "view_list",
-            "roleKey": "ROLE_USER",
-            "conditions": [
-                {
-                    "type": "expression",
-                    "field": "content.content",
-                    "path": "$.height",
-                    "operator": "<",
-                    "value": 20000,
-                    "clazz": "java.lang.Integer"
-                },
-                {
-                    "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.key",
-                    "operator": "in",
-                    "value": ["leningen", "bezwaar"]
-                },
-                {
-                    "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.versionTag",
-                    "operator": "==",
-                    "value": "${ACTIVE}"
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "actions": ["view_list", "export"],
-            "roleKey": "ROLE_USER",
-            "conditions": [
-                {
-                    "type": "field",
-                    "field": "assigneeId",
-                    "operator": "==",
-                    "value": "${currentUserId}"
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "view",
-            "roleKey": "ROLE_USER",
-            "conditions": [
-                {
-                    "type": "expression",
-                    "field": "content.content",
-                    "path": "$.height",
-                    "operator": "<",
-                    "value": 20000,
-                    "clazz": "java.lang.Integer"
-                },
-                {
-                    "type": "field",
-                    "field": "documentDefinitionId.name",
-                    "operator": "in",
-                    "value": ["leningen", "bezwaar"]
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "view",
-            "roleKey": "ROLE_USER",
-            "conditions": [
-                {
-                    "type": "field",
-                    "field": "assigneeId",
-                    "operator": "==",
-                    "value": "${currentUserId}"
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "claim",
+            "actions": [
+                "assignable",
+                "claim",
+                "assign"
+            ],
             "roleKey": "ROLE_USER",
             "conditions": [
                 {
@@ -85,28 +15,16 @@
                     "field": "assigneeId",
                     "operator": "==",
                     "value": null
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "assignable",
-            "roleKey": "ROLE_USER"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "create",
-            "roleKey": "ROLE_USER",
-            "conditions": [
+                },
                 {
                     "type": "container",
-                    "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+                    "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "id.name",
-                            "operator": "in",
-                            "value": ["leningen", "bezwaar"]
+                            "field": "id.key",
+                            "operator": "==",
+                            "value": "bezwaar"
                         }
                     ]
                 }
@@ -114,47 +32,48 @@
         },
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "modify",
-            "roleKey": "ROLE_USER"
+            "actions": [
+                "view",
+                "view_list",
+                "create",
+                "modify",
+                "export"
+            ],
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "assigneeId",
+                    "operator": "==",
+                    "value": "${currentUsername}"
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "id.key",
+                            "operator": "==",
+                            "value": "bezwaar"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "view",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "view_list",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "create",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "modify",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "delete",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "claim",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "assign",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-            "action": "assignable",
+            "actions": [
+                "view",
+                "view_list",
+                "create",
+                "modify",
+                "delete",
+                "claim",
+                "assign",
+                "assignable",
+                "export"
+            ],
             "roleKey": "ROLE_ADMIN"
         }
     ]

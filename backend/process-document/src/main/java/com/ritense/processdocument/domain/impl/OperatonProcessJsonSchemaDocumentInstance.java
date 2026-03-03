@@ -42,7 +42,7 @@ public class OperatonProcessJsonSchemaDocumentInstance
     private String processName;
 
     @Transient
-    public boolean isActive;
+    private boolean isActive;
 
     public OperatonProcessJsonSchemaDocumentInstance(
         final OperatonProcessJsonSchemaDocumentInstanceId processDocumentInstanceId,

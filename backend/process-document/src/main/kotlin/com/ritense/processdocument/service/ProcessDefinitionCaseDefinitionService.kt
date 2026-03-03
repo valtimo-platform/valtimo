@@ -54,7 +54,7 @@ class ProcessDefinitionCaseDefinitionService(
     }
 
     fun findByProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition {
-        return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)
+        return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)!!
     }
 
     fun findProcessDefinitionCaseDefinitions(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition> {

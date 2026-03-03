@@ -1,59 +1,52 @@
 {
-    "changesetId": "notes-v1",
+    "changesetId": "notes-v2",
     "permissions": [
         {
             "resourceType": "com.ritense.note.domain.Note",
-            "action": "view_list",
+            "actions": ["view_list", "create", "modify", "delete"],
             "roleKey": "ROLE_ADMIN"
         },
         {
             "resourceType": "com.ritense.note.domain.Note",
-            "action": "create",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.note.domain.Note",
-            "action": "modify",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.note.domain.Note",
-            "action": "delete",
-            "roleKey": "ROLE_ADMIN"
-        },
-        {
-            "resourceType": "com.ritense.note.domain.Note",
-            "action": "view_list",
-            "roleKey": "ROLE_USER"
-        },
-        {
-            "resourceType": "com.ritense.note.domain.Note",
-            "action": "create",
-            "roleKey": "ROLE_USER"
-        },
-        {
-            "resourceType": "com.ritense.note.domain.Note",
-            "action": "modify",
+            "actions": ["view_list", "create"],
             "roleKey": "ROLE_USER",
             "conditions": [
                 {
-                    "type": "field",
-                    "field": "createdByUserId",
-                    "operator": "==",
-                    "value": "${currentUserId}"
+                    "type": "container",
+                    "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "id.key",
+                            "operator": "==",
+                            "value": "bezwaar"
+                        }
+                    ]
                 }
             ]
         },
         {
             "resourceType": "com.ritense.note.domain.Note",
-            "action": "delete",
+            "actions": ["modify", "delete"],
             "roleKey": "ROLE_USER",
             "conditions": [
                 {
                     "type": "field",
                     "field": "createdByUserId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
+                },
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "id.key",
+                            "operator": "==",
+                            "value": "bezwaar"
+                        }
+                    ]
                 }
             ]
         }

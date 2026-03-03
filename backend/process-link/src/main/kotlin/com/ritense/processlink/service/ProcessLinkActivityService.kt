@@ -32,6 +32,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResultWithTask
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
+import com.ritense.valtimo.operaton.domain.OperatonExecution.Companion.DUMMY_OPERATON_EXECUTION_ID
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
@@ -149,7 +150,7 @@ class ProcessLinkActivityService(
             businessKey: String? = null
         ): OperatonExecution {
             val execution = OperatonExecution(
-                UUID.randomUUID().toString(),
+                DUMMY_OPERATON_EXECUTION_ID,
                 1,
                 null,
                 null,

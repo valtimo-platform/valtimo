@@ -36,6 +36,8 @@ import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
 import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMapper
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
+import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
+import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
@@ -51,6 +53,7 @@ import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
 import com.ritense.processdocument.service.ValueResolverDelegateService
+import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
 import com.ritense.processdocument.tasksearch.TaskSearchFieldImporter
 import com.ritense.processdocument.web.CaseDefinitionProcessManagementResource
@@ -78,6 +81,7 @@ import org.operaton.bpm.engine.TaskService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
 
 @AutoConfiguration
@@ -400,6 +404,32 @@ class ProcessDocumentsAutoConfiguration {
         processService: OperatonProcessService,
     ): DecisionCaseEventListener {
         return DecisionCaseEventListener(decisionService, processService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonExecutionCaseDefinitionMapper::class)
+    fun operatonExecutionCaseDefinitionMapper(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+        @Lazy authorizationService: AuthorizationService,
+    ): OperatonExecutionCaseDefinitionMapper {
+        return OperatonExecutionCaseDefinitionMapper(
+            processDefinitionCaseDefinitionRepository,
+            caseDefinitionService,
+            authorizationService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonExecutionJsonSchemaDocumentMapper::class)
+    fun operatonExecutionJsonSchemaDocumentMapper(
+        @Lazy processDocumentService: OperatonProcessJsonSchemaDocumentService,
+        queryDialectHelper: QueryDialectHelper,
+    ): OperatonExecutionJsonSchemaDocumentMapper {
+        return OperatonExecutionJsonSchemaDocumentMapper(
+            processDocumentService,
+            queryDialectHelper,
+        )
     }
 
     @Bean

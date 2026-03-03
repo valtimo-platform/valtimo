@@ -27,6 +27,7 @@ import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginC
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
@@ -69,6 +70,7 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionReposito
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.importer.ImportService
@@ -362,6 +364,20 @@ class BuildingBlockAutoConfiguration {
         processLinkService,
         processDefinitionBuildingBlockDefinitionRepository
     )
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentCaseDefinitionMapper::class)
+    fun jsonSchemaDocumentCaseDefinitionMapper(
+        @Lazy caseDocumentResolver: CaseDocumentResolver,
+        @Lazy documentService: JsonSchemaDocumentService,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+    ): JsonSchemaDocumentCaseDefinitionMapper {
+        return JsonSchemaDocumentCaseDefinitionMapper(
+            caseDocumentResolver,
+            documentService,
+            caseDefinitionService,
+        )
+    }
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockSupportedProcessLinksHandler::class)
