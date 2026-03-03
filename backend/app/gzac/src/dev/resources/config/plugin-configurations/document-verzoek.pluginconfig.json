@@ -1,0 +1,18 @@
+[
+    {
+        "id": "4c927c7c-02ea-4f77-93e1-09eac3eea96e",
+        "title": "document verzoek Autoconfig",
+        "pluginDefinitionKey": "document-verzoek",
+        "properties": {
+            "notificatiesApiPluginConfiguration": "bb1c601b-b257-497e-bab0-c21d339335d7",
+            "zakenApiPlugin": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+            "documentenApiPlugin": "5474fe57-532a-4050-8d89-32e62ca3e895",
+            "eventMessage": "DOC_RECEIVED",
+            "documentVerzoekProperties": [
+                {
+                    "caseDefinitionKey": "bezwaar"
+                }
+            ]
+        }
+    }
+]
