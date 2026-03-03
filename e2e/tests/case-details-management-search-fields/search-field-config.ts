@@ -137,5 +137,5 @@ export const UI_SEARCH_FIELD_MULTI_SELECT_DROPDOWN = {
 
 export enum CASE_VERSIONS {
   STABLE = '1.0.0',
-  DRAFT = '1.0.1',
+  DRAFT = '1.0.4',
 }
