@@ -25,8 +25,8 @@ export default defineConfig({
   webServer: undefined,
   use: {
     launchOptions: {
-      headless: false,
-      // headless: process.env.CI ? true : process.env.headlessMode === "true",
+      // headless: false,
+      headless: process.env.CI ? true : process.env.headlessMode === 'true',
       args: ['--start-maximized'],
     },
     baseURL: process.env.qa_url ?? 'http://localhost:4200',
