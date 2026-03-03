@@ -26,7 +26,10 @@
         "confirm": "Assign",
         "selectLabel": "Assign to user",
         "selectPlaceholder": "Choose an option",
-        "title": "Assign selected cases to"
+        "title": "Assign selected cases to",
+        "warningTitle": "Warning",
+        "cannotAssignAnyWarning": "You do not have permission to assign any of the selected cases.",
+        "cannotAssignSomeWarning": "You do not have permission to assign some of the selected cases. These will be skipped."
       }
     },
     "changePageModal": {

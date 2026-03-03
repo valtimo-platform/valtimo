@@ -18,4 +18,8 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Fixed permissions for case bulk assignment**
+
+  Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.
+  The bulk assignment modal now displays a warning when the user does not have permission to assign some or all of the
+  selected cases, and only cases with the correct permissions are processed.

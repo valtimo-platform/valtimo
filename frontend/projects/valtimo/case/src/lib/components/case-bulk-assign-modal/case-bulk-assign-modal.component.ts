@@ -57,6 +57,12 @@ export class CaseBulkAssignModalComponent {
     )
   );
 
+  public readonly canAssignAllDocuments$: Observable<boolean> =
+    this.bulkAssignService.canAssignAllDocuments$.asObservable();
+
+  public readonly canAssignAnyDocuments$: Observable<boolean> =
+    this.bulkAssignService.canAssignAnyDocuments$.asObservable();
+
   public formGroup: FormGroup = this.fb.group({
     assignee: this.fb.control({id: '', content: '', selected: false}, Validators.required),
   });

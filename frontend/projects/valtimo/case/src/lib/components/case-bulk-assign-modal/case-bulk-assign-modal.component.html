@@ -20,17 +20,47 @@
   </cds-modal-header>
 
   <section cdsModalContent>
-    <form *ngIf="candidateUsers$ | async as candidateUsers" [formGroup]="formGroup">
-      <cds-combo-box
-        formControlName="assignee"
-        [dropUp]="false"
-        [items]="candidateUsers"
-        [label]="'case.bulkAssign.modal.selectLabel' | translate"
-        [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
-      >
-        <cds-dropdown-list></cds-dropdown-list>
-      </cds-combo-box>
-    </form>
+    <ng-container
+      *ngIf="{
+        candidateUsers: candidateUsers$ | async,
+        canAssignAllDocuments: canAssignAllDocuments$ | async,
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async
+      } as obs"
+    >
+      <cds-inline-notification
+        *ngIf="obs.canAssignAnyDocuments === false"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('case.bulkAssign.modal.warningTitle' | translate),
+          message: ('case.bulkAssign.modal.cannotAssignAnyWarning' | translate),
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
+
+      <cds-inline-notification
+        *ngIf="obs.canAssignAnyDocuments && obs.canAssignAllDocuments === false"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('case.bulkAssign.modal.warningTitle' | translate),
+          message: ('case.bulkAssign.modal.cannotAssignSomeWarning' | translate),
+          showClose: false,
+          lowContrast: true
+        }"
+      ></cds-inline-notification>
+
+      <form *ngIf="obs.canAssignAnyDocuments && obs.candidateUsers" [formGroup]="formGroup">
+        <cds-combo-box
+          formControlName="assignee"
+          [dropUp]="false"
+          [items]="obs.candidateUsers"
+          [label]="'case.bulkAssign.modal.selectLabel' | translate"
+          [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+        >
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
+      </form>
+    </ng-container>
   </section>
 
   <cds-modal-footer>

@@ -17,18 +17,23 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, Observable, take} from 'rxjs';
+import {BehaviorSubject, forkJoin, Observable, take} from 'rxjs';
 import {CandidateUser} from '../models';
+import {CAN_ASSIGN_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../permissions';
+import {PermissionService} from '@valtimo/access-control';
 
 @Injectable()
 export class CaseBulkAssignService {
   public readonly candidateUsers$ = new BehaviorSubject<CandidateUser[]>([]);
+  public readonly canAssignAllDocuments$ = new BehaviorSubject<boolean>(true);
+  public readonly canAssignAnyDocuments$ = new BehaviorSubject<boolean>(true);
 
   private _valtimoEndpointUri: string;
 
   constructor(
     private configService: ConfigService,
-    private http: HttpClient
+    private http: HttpClient,
+    private permissionService: PermissionService
   ) {
     this._valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/document/`;
   }
@@ -38,16 +43,43 @@ export class CaseBulkAssignService {
   }
 
   public loadCandidateUsers(documentIds: string[]): void {
-    this.http
-      .post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {documentIds})
+    forkJoin(
+      documentIds.map(documentId =>
+        this.permissionService
+          .requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+            identifier: documentId,
+          })
+          .pipe(take(1))
+      )
+    )
       .pipe(take(1))
-      .subscribe({
-        next: (candidateUsers: CandidateUser[]) => {
-          this.candidateUsers$.next(candidateUsers);
-        },
-        error: error => {
-          console.error(error);
-        },
+      .subscribe(permissions => {
+        const canAssignAll = permissions.every(p => p);
+        const canAssignAny = permissions.some(p => p);
+
+        this.canAssignAllDocuments$.next(canAssignAll);
+        this.canAssignAnyDocuments$.next(canAssignAny);
+
+        if (canAssignAny) {
+          const permittedDocumentIds = documentIds.filter((_, index) => permissions[index]);
+
+          this.http
+            .post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {
+              documentIds: permittedDocumentIds,
+            })
+            .pipe(take(1))
+            .subscribe({
+              next: (candidateUsers: CandidateUser[]) => {
+                this.candidateUsers$.next(candidateUsers);
+              },
+              error: error => {
+                console.error(error);
+              },
+            });
+        } else {
+          this.candidateUsers$.next([]);
+        }
       });
   }
 }
