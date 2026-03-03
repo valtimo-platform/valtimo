@@ -39,18 +39,18 @@ export class DocumentenApiDocumentService extends BaseApiService {
 
     return !!paramsMap
       ? this.httpClient.get<Page<DocumentenApiRelatedFile>>(
-          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`),
+          this.getApiUrl(`/v2/zaken-api/case-document/${documentId}/files`),
           {params}
         )
       : this.httpClient.get<Page<DocumentenApiRelatedFile>>(
-          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`)
+          this.getApiUrl(`/v2/zaken-api/case-document/${documentId}/files`)
         );
   }
 
   public updateDocument(file: any, metadata: any, caseDocumentId: string): Observable<void> {
     return this.httpClient.put<void>(
       this.getApiUrl(
-        `/v1/zaken-api/${caseDocumentId}/${file.pluginConfigurationId}/files/${file.fileId}`
+        `/v1/zaken-api/${file.pluginConfigurationId}/case-document/${caseDocumentId}/files/${file.fileId}`
       ),
       metadata
     );
@@ -62,7 +62,7 @@ export class DocumentenApiDocumentService extends BaseApiService {
   ): Observable<DocumentenApiRelatedFile[]> {
     return this.httpClient.delete<DocumentenApiRelatedFile[]>(
       this.getApiUrl(
-        `/v1/zaken-api/${caseDocumentId}/${file.pluginConfigurationId}/files/${file.fileId}`
+        `/v1/zaken-api/${file.pluginConfigurationId}/case-document/${caseDocumentId}/files/${file.fileId}`
       )
     );
   }
