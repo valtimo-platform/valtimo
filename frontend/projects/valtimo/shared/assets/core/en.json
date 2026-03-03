@@ -1017,6 +1017,15 @@
       "fieldType": "Field type",
       "fieldTypePlaceholder": "Enter a field type",
       "fieldTypeTooltip": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+      "dropdownDataProvider": "Dropdown data source",
+      "dropdownDataProviderPlaceholder": "Select a data source",
+      "dropdownDataProviderTooltip": "The dropdown data source determines where the dropdown values come from.",
+      "dropdownValues": "Dropdown values",
+      "dropdownValueKey": "Value",
+      "dropdownValueKeyPlaceholder": "Enter value",
+      "dropdownValueValue": "Display",
+      "dropdownValueValuePlaceholder": "Enter the display text",
+      "addDropdownValue": "Add dropdown value",
       "add": "Add filter"
     },
     "displayConditions": {
@@ -1493,10 +1502,11 @@
     "taskCreated": "Created",
     "taskCompleted": "has successfully been completed",
     "assignedNotificationTitle": "Task assigned",
-    "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned",
-    "unknownAssignee": "unknown"
+    "dueDateSetNotificationTitle": "Due date set",
+    "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Due date removed",
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -1855,6 +1865,7 @@
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
     "modalTitle": "Process step: {{processStepName}}",
+    "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
@@ -2055,6 +2066,7 @@
     "stacktrace": "Stacktrace"
   },
   "setTaskDueDate": {
+    "label": "Select date",
     "buttonText": "Set due date",
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",

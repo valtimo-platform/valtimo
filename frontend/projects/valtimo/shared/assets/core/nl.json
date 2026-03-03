@@ -1042,6 +1042,15 @@
       "fieldType": "Veldtype",
       "fieldTypePlaceholder": "Voer een veldtype in",
       "fieldTypeTooltip": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+      "dropdownDataProvider": "Dropdown-databron",
+      "dropdownDataProviderPlaceholder": "Kies een databron",
+      "dropdownDataProviderTooltip": "De dropdown-databron bepaalt waar de waarden voor de dropdown vandaan komen.",
+      "dropdownValues": "Dropdown-waarden",
+      "dropdownValueKey": "Waarde",
+      "dropdownValueKeyPlaceholder": "Voer een waarde in",
+      "dropdownValueValue": "Weergave",
+      "dropdownValueValuePlaceholder": "Voer de weergegeven tekst in",
+      "addDropdownValue": "Dropdown-waarde toevoegen",
       "add": "Filter toevoegen"
     },
     "displayConditions": {
@@ -1520,10 +1529,11 @@
     "taskCreated": "Aangemaakt op",
     "taskCompleted": "is succesvol afgerond",
     "assignedNotificationTitle": "Taak toegewezen",
-    "assignedNotificationContent": "De taak is toegewezen aan",
     "unassignedNotificationTitle": "Taak niet meer toegewezen",
-    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
-    "unknownAssignee": "onbekend"
+    "dueDateSetNotificationTitle": "Einddatum ingesteld",
+    "dueDateSetNotificationContent": "Einddatum '{{date}}' ingesteld voor taak '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Einddatum verwijderd",
+    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
@@ -1888,6 +1898,7 @@
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
     "modalTitle": "Processtap: {{processStepName}}",
+    "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
@@ -2088,6 +2099,7 @@
     "stacktrace": "Stacktrace"
   },
   "setTaskDueDate": {
+    "label": "Selecteer datum",
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
