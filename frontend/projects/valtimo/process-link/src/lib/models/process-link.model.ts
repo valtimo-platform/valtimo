@@ -219,6 +219,8 @@ type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'u
 interface TaskProcessLinkResult {
   processLinkId: string;
   type: TaskProcessLinkType;
+  assignee: string | null;
+  due: string | null;
   properties: {
     formFlowInstanceId?: string;
     formDefinitionId?: string;

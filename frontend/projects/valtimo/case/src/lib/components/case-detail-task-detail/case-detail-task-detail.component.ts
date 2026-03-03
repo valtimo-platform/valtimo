@@ -71,6 +71,7 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   }
   @Output() public readonly closeEvent = new EventEmitter();
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
+  @Output() public readonly dueDateChanged = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
   @Output() public readonly formSubmit = new EventEmitter();
 
@@ -127,6 +128,10 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
 
   public onActiveChangeEvent(activeChange: boolean): void {
     this.activeChange.emit(activeChange);
+  }
+
+  public onDueDateChanged(): void {
+    this.dueDateChanged.emit();
   }
 
   public onFormSubmitEvent(): void {
