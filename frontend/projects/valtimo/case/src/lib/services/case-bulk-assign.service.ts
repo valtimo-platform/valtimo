@@ -25,8 +25,8 @@ import {PermissionService} from '@valtimo/access-control';
 @Injectable()
 export class CaseBulkAssignService {
   public readonly candidateUsers$ = new BehaviorSubject<CandidateUser[]>([]);
-  public readonly canAssignAllDocuments$ = new BehaviorSubject<boolean>(true);
-  public readonly canAssignAnyDocuments$ = new BehaviorSubject<boolean>(true);
+  public readonly canAssignAllDocuments$ = new BehaviorSubject<boolean>(false);
+  public readonly canAssignAnyDocuments$ = new BehaviorSubject<boolean>(false);
 
   private _valtimoEndpointUri: string;
 
@@ -43,6 +43,14 @@ export class CaseBulkAssignService {
   }
 
   public loadCandidateUsers(documentIds: string[]): void {
+    this.candidateUsers$.next([]);
+    this.canAssignAllDocuments$.next(false);
+    this.canAssignAnyDocuments$.next(false);
+
+    if (!documentIds.length) {
+      return;
+    }
+
     forkJoin(
       documentIds.map(documentId =>
         this.permissionService
