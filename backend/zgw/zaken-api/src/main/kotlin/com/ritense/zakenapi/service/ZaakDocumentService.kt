@@ -39,6 +39,7 @@ import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.authorization.ResourcePermission
 import com.ritense.resource.authorization.ResourcePermissionActionProvider
@@ -334,22 +335,52 @@ class ZaakDocumentService(
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
     }
 
-    fun deleteInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.deleteInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun deleteInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) {
 
+        val (documentenApiPlugin, informatieobjectUrl) = getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        documentenApiService.deleteInformatieObject(documentenApiPlugin, caseDocumentId, informatieobjectUrl)
+    }
 
     fun modifyInformatieObject(
         pluginConfigurationId: String,
-        caseDocumentId: UUID?,
+        caseDocumentId: UUID,
         documentId: String,
         modifyDocumentRequest: ModifyDocumentRequest,
     ): RelatedFile? {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         return documentenApiService.modifyInformatieObject(
             pluginConfigurationId,
             caseDocumentId,
             documentId,
             modifyDocumentRequest
         )
+    }
+
+    private fun getVerifiedInformatieObject(
+        pluginConfigurationId: String,
+        caseDocumentId: UUID,
+        documentId: String,
+    ): Pair<DocumentenApiPlugin, URI> {
+        val zaakUrl = zaakUrlProvider.getZaakUrl(caseDocumentId)
+        val zakenApiPlugin = getZakenApiPlugin(zaakUrl)
+
+        val documentenApiPlugin = pluginService.createInstance(
+            PluginConfigurationId.existingId(UUID.fromString(pluginConfigurationId))
+        ) as DocumentenApiPlugin
+
+        val informatieobjectUrl = documentenApiPlugin.createInformatieObjectUrl(documentId)
+
+        val zaakInformatieObject = zakenApiPlugin.getZaakInformatieObject(
+            caseDocumentId,
+            zaakUrl,
+            informatieobjectUrl
+        )
+
+        if (zaakInformatieObject == null) {
+            throw IllegalArgumentException("InformatieObject is not related to this Zaak")
+        }
+
+        return Pair(documentenApiPlugin, informatieobjectUrl)
     }
 
     fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =

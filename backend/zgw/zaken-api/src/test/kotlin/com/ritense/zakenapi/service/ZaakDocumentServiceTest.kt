@@ -26,6 +26,7 @@ import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.service.DocumentenApiVersionService.Companion.MINIMUM_VERSION
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
+import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
@@ -64,6 +65,7 @@ class ZaakDocumentServiceTest {
     lateinit var documentenApiService: DocumentenApiService
     lateinit var documentenApiVersionService: DocumentenApiVersionService
     lateinit var authorizationService: AuthorizationService
+    lateinit var modifyDocumentRequest: ModifyDocumentRequest
 
     @BeforeEach
     fun init() {
@@ -318,4 +320,69 @@ class ZaakDocumentServiceTest {
         versie = 1,
         informatieobjecttype = "http://localhost/informatieobjecttype",
     )
+
+    @Test
+    fun `should throw exception when deleting informatieObject that is not related to zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // Return null to indicate no relation exists
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(null)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.deleteInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+
+        assertEquals("InformatieObject is not related to this Zaak", exception.message)
+        verify(documentenApiService, times(0)).deleteInformatieObject(any<String>(), any<UUID>(), any<String>())
+    }
+
+    @Test
+    fun `should throw exception when modifying informatieObject that is not related to zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+        modifyDocumentRequest = mock()
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // Return null to indicate no relation exists
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(null)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.modifyInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId, modifyDocumentRequest)
+        }
+
+        assertEquals("InformatieObject is not related to this Zaak", exception.message)
+        verify(documentenApiService, times(0)).modifyInformatieObject(any<String>(), any(), any<String>(), any())
+    }
 }
