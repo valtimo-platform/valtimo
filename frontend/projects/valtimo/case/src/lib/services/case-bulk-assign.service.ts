@@ -54,32 +54,42 @@ export class CaseBulkAssignService {
       )
     )
       .pipe(take(1))
-      .subscribe(permissions => {
-        const canAssignAll = permissions.every(p => p);
-        const canAssignAny = permissions.some(p => p);
+      .subscribe({
+        next: permissions => {
+          const canAssignAll = permissions.every(p => p);
+          const canAssignAny = permissions.some(p => p);
 
-        this.canAssignAllDocuments$.next(canAssignAll);
-        this.canAssignAnyDocuments$.next(canAssignAny);
+          this.canAssignAllDocuments$.next(canAssignAll);
+          this.canAssignAnyDocuments$.next(canAssignAny);
 
-        if (canAssignAny) {
-          const permittedDocumentIds = documentIds.filter((_, index) => permissions[index]);
+          if (canAssignAny) {
+            const permittedDocumentIds = documentIds.filter((_, index) => permissions[index]);
 
-          this.http
-            .post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {
-              documentIds: permittedDocumentIds,
-            })
-            .pipe(take(1))
-            .subscribe({
-              next: (candidateUsers: CandidateUser[]) => {
-                this.candidateUsers$.next(candidateUsers);
-              },
-              error: error => {
-                console.error(error);
-              },
-            });
-        } else {
+            this.http
+              .post<CandidateUser[]>(`${this._valtimoEndpointUri}candidate-user`, {
+                documentIds: permittedDocumentIds,
+              })
+              .pipe(take(1))
+              .subscribe({
+                next: (candidateUsers: CandidateUser[]) => {
+                  this.candidateUsers$.next(candidateUsers);
+                },
+                error: error => {
+                  this.candidateUsers$.next([]);
+                  this.canAssignAllDocuments$.next(false);
+                  this.canAssignAnyDocuments$.next(false);
+                  console.error(error);
+                },
+              });
+          } else {
+            this.candidateUsers$.next([]);
+          }
+        },
+        error: () => {
           this.candidateUsers$.next([]);
-        }
+          this.canAssignAllDocuments$.next(false);
+          this.canAssignAnyDocuments$.next(false);
+        },
       });
   }
 }

@@ -64,10 +64,20 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
+    <ng-container
+      *ngIf="{
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async
+      } as obs"
+    >
+      <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="closeModal(true)">
-      {{ 'case.bulkAssign.modal.confirm' | translate }}
-    </button>
+      <button
+        cdsButton="primary"
+        [disabled]="formGroup.invalid || obs.canAssignAnyDocuments === false"
+        (click)="closeModal(true)"
+      >
+        {{ 'case.bulkAssign.modal.confirm' | translate }}
+      </button>
+    </ng-container>
   </cds-modal-footer>
 </cds-modal>
