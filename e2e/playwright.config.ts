@@ -15,7 +15,13 @@ export default defineConfig({
   // forbidOnly: true,
   retries: process.env.CI ? 3 : 0,
   workers: process.env.CI ? 1 : 1,
-  reporter: [['line'], ['html', {open: 'on-failure'}]],
+  reporter: process.env.CI
+    ? [
+        ['list'],
+        ['html', {open: 'never'}],
+        ['junit', {outputFile: 'test-results/junit.xml'}],
+      ]
+    : [['line'], ['html', {open: 'always'}]],
   globalSetup: './utils/globalSetup.ts',
   globalTeardown: './utils/teardown.ts',
   timeout: process.env.qa_timeout
