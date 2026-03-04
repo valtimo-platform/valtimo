@@ -67,5 +67,31 @@ In order to link processes to a case the following steps are necessary:
 ]
 ```
 {% endcode %}
+
+### Independent processes linked to a case
+
+Independent processes linked to a case can be configured to define the link type
+between a process and a case definition (e.g. `DOCUMENT_UPLOAD`). Create a JSON file under the following path:
+
+`*/resources/config/case/{case-definition-key}/{version-tag}/case-definition-process-link/`
+
+The file name should end with `.case-definition-process-link.json`.
+
+{% code title="example-case.case-definition-process-link.json" %}
+```json
+[
+    {
+        "processDefinitionKey": "document-upload",
+        "linkType": "DOCUMENT_UPLOAD"
+    }
+]
+```
+{% endcode %}
+
+| Property               | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `processDefinitionKey` | The key of the process definition to link.                   |
+| `linkType`             | The type of link (e.g. `DOCUMENT_UPLOAD`).                   |
+
 {% endtab %}
 {% endtabs %}

@@ -18,17 +18,31 @@ package com.ritense.zaakdetails.documentobjectenapisync
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
 interface DocumentObjectenApiSyncRepository : JpaRepository<DocumentObjectenApiSync, UUID> {
 
+    @Query(
+        "SELECT s FROM DocumentObjectenApiSync s " +
+        "WHERE s.caseDefinitionId.key = :#{#caseDefinitionId.key} " +
+        "AND s.caseDefinitionId.versionTag = :#{#caseDefinitionId.versionTag}"
+    )
     fun findByCaseDefinitionId(
-        caseDefinitionId: CaseDefinitionId
+        @Param("caseDefinitionId") caseDefinitionId: CaseDefinitionId
     ): DocumentObjectenApiSync?
 
+    @Modifying
+    @Query(
+        "DELETE FROM DocumentObjectenApiSync s " +
+        "WHERE s.caseDefinitionId.key = :#{#caseDefinitionId.key} " +
+        "AND s.caseDefinitionId.versionTag = :#{#caseDefinitionId.versionTag}"
+    )
     fun deleteByCaseDefinitionId(
-        caseDefinitionId: CaseDefinitionId
+        @Param("caseDefinitionId") caseDefinitionId: CaseDefinitionId
     )
 }
