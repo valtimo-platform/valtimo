@@ -151,7 +151,7 @@
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <button cdsButton="secondary" data-test-id="caseStatusCancelButton" (click)="onClose()" [disabled]="obs.disabled">
+  <button cdsButton="ghost" data-test-id="caseStatusCancelButton" (click)="onClose()" [disabled]="obs.disabled">
     {{ 'interface.cancel' | translate }}
   </button>
 

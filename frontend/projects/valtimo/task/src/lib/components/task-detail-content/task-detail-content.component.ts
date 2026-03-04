@@ -84,6 +84,7 @@ import {
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
+import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 
 @Component({
   selector: 'valtimo-task-detail-content',
@@ -118,11 +119,13 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    this.loadTaskDetails(value.task as any, value.processLinkActivityResult);
+    const task = enrichTaskFromProcessLink(value.task as any as Task, value.processLinkActivityResult);
+    this.loadTaskDetails(task, value.processLinkActivityResult);
   }
   @Input() public set modalClosed(closed: boolean) {
     // save form flow data on modal closed
     if (this.formFlow) this.formFlow.saveData();
+    this.taskInstanceId$.next(null);
 
     if (closed) {
       this.closeModalEvent.emit();
@@ -131,6 +134,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
+  @Output() public readonly taskUpdated = new EventEmitter<Task>();
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
@@ -355,12 +359,24 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   private getTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLink(taskId).subscribe({
       next: res => {
+        this.updateTaskFromProcessLink(res);
         this.setTaskProcessLink(res);
       },
       error: _ => {
         this.loading$.next(false);
       },
     });
+  }
+
+  private updateTaskFromProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
+    const currentTask = this.task$.getValue();
+    if (!currentTask) return;
+
+    const enrichedTask = enrichTaskFromProcessLink(currentTask, processLinkResult);
+    if (enrichedTask !== currentTask) {
+      this.task$.next(enrichedTask);
+      this.taskUpdated.emit(enrichedTask);
+    }
   }
 
   private setTaskProcessLink(processLinkResult: TaskProcessLinkResult | null): void {

@@ -39,6 +39,8 @@ class URLProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLink.id,
             FORM_TASK_TYPE_KEY,
+            task.assignee,
+            task.dueDate,
             URLTaskOpenResultProperties(processLink.url)
         )
     }
@@ -53,6 +55,8 @@ class URLProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLink.id,
             FORM_TASK_TYPE_KEY,
+            null,
+            null,
             URLTaskOpenResultProperties(processLink.url)
         )
     }

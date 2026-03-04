@@ -1502,10 +1502,11 @@
     "taskCreated": "Created",
     "taskCompleted": "has successfully been completed",
     "assignedNotificationTitle": "Task assigned",
-    "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned",
-    "unknownAssignee": "unknown"
+    "dueDateSetNotificationTitle": "Due date set",
+    "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Due date removed",
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -1520,9 +1521,10 @@
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
-    "header": "Assign a user to this case",
+    "header": "Assign user",
     "remove": "Unassign",
-    "fetchingUsers": "Fetching users..."
+    "fetchingUsers": "Fetching users...",
+    "submitButtonText": "Assign user to case"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",

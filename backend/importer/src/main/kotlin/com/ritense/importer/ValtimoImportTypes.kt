@@ -34,6 +34,7 @@ class ValtimoImportTypes {
         const val GLOBAL_PROCESS_DEFINITION = "globalprocessdefinition"
         const val GLOBAL_DECISION_DEFINITION = "globaldecisiondefinition"
         const val PROCESS_DOCUMENT_LINK = "processdocumentlink"
+        const val CASE_DEFINITION_PROCESS_LINK = "casedefinitionprocesslink"
         const val PROCESS_LINK = "processlink"
         const val GLOBAL_PROCESS_LINK = "globalprocesslink"
         const val SEARCH = "search"
@@ -53,6 +54,7 @@ class ValtimoImportTypes {
         const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
+        const val ZGW_ZAAKDETAIL_SYNC = "zgwzaakdetailsync"
 
         // IKO
         const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"

@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-.selected-text {
-  margin: 0;
-}
+package com.ritense.processdocument.domain.config
 
-.clear-icon {
-  font-size: 16px;
-}
+import com.fasterxml.jackson.annotation.JsonProperty
 
-.close {
-  display: flex;
-}
+data class CaseDefinitionProcessLinkConfigItem(
+    @JsonProperty("processDefinitionKey")
+    val processDefinitionKey: String,
+    @JsonProperty("linkType")
+    val linkType: String
+)
