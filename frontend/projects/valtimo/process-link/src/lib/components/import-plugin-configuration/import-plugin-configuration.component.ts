@@ -40,6 +40,7 @@ export class ImportPluginConfigurationComponent {
   >();
 
   public readonly open$ = new Subject<boolean>();
+  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
   private readonly _compatiblePluginProcessLinksSubject$ = new BehaviorSubject<
     CompatiblePluginProcessLinks[]
@@ -116,13 +117,11 @@ export class ImportPluginConfigurationComponent {
     )
   );
 
-  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
-
   constructor(
+    private readonly cdsThemeService: CdsThemeService,
     private readonly formBuilder: FormBuilder,
     private readonly processLinkService: ProcessLinkService,
-    private readonly iconService: IconService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly iconService: IconService
   ) {
     this.iconService.register(Upload16);
   }

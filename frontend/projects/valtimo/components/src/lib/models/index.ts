@@ -36,7 +36,6 @@ export * from './pagination.model';
 export * from './quick-search.model';
 export * from './radio.model';
 export * from './right-sidebar.model';
-export * from './searchable-dropdown.model';
 export * from './select.model';
 export * from './sort.model';
 export * from './stepper.model';
