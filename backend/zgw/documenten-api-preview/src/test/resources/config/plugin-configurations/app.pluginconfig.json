@@ -3,6 +3,7 @@
   "title": "Documenten API Preview",
   "pluginDefinitionKey": "documentenapipreview",
   "properties": {
-    "url": "http://localhost:3000/"
+    "url": "http://localhost:3000/",
+    "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
   }
-},
+}

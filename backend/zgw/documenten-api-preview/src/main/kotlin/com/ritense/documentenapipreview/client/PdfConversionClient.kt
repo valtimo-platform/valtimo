@@ -27,15 +27,15 @@ class PdfConversionClient(
         val fileEntity: HttpEntity<InputStreamResource> = HttpEntity(InputStreamResource(document))
         val formData: MultiValueMap<String, Any> = LinkedMultiValueMap()
         formData.add("files", fileEntity)
-        formData.add("exportFormFields", false)
+        formData.add("exportFormFields", "false")
         formData.add("pdfa", "PDF/A-1b")
-        formData.add("pdfua", true)
+        formData.add("pdfua", "true")
 
         val result = restClient()
             .post()
             .uri {
                 ClientTools.baseUrlToBuilder(it, baseUrl)
-                    .path("enkelvoudiginformatieobjecten")
+                    .path("forms/libreoffice/convert")
                     .build()
             }
             .contentType(MediaType.MULTIPART_FORM_DATA)
