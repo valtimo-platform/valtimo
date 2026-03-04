@@ -514,6 +514,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
               caseDocumentId: specifiedTask.caseDocumentId,
               processInstanceId: specifiedTask.processInstanceId,
               name: specifiedTask.name,
+              isOpened: specifiedTask.isOpened,
               ...(moment(specifiedTask.created).isValid() && {
                 created: moment(specifiedTask.created).format(MOMENT_FORMAT),
               }),
