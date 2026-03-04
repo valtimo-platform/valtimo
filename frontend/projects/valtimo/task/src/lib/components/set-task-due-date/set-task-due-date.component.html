@@ -80,11 +80,11 @@
 
       <div
         cdsToggletipContent
-        [attr.data-carbon-theme]="toggletipTheme$ | async"
         class="assign-due-date-popover-content"
       >
         <cds-date-picker
           *ngIf="!obs.hasDueDate && obs.showDatePicker"
+          [attr.data-carbon-theme]="toggletipTheme$ | async"
           [cdsLayer]="1"
           [label]="'setTaskDueDate.label' | translate"
           [language]="obs.language"
@@ -96,6 +96,7 @@
 
         <button
           cdsButton
+          [attr.data-carbon-theme]="toggletipTheme$ | async"
           class="submit-due-date-button"
           [disabled]="!obs.selectedDateString || obs.disabled"
           (click)="onSubmitButtonClick()"
