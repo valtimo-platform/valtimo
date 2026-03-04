@@ -37,7 +37,7 @@
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -71,7 +71,7 @@
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },

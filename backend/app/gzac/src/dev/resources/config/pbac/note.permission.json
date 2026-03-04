@@ -40,7 +40,7 @@
                     "type": "field",
                     "field": "createdByUserId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -53,7 +53,7 @@
                     "type": "field",
                     "field": "createdByUserId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         }

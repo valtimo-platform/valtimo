@@ -319,7 +319,14 @@ Access to the case definitions can be configured through access control. More in
     "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
     "action": "view_list",
     "roleKey": "ROLE_ADMIN",
-    "conditions": []
+    "conditions": [
+        {
+            "type": "field",
+            "field": "id.key",
+            "operator": "==",
+            "value": "dossier-x"
+        }
+    ]
 }
 ```
 {% endcode %}

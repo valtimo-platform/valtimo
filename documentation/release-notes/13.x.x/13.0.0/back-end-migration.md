@@ -271,7 +271,7 @@ Lets say you have a permission where only the user who created a note for a case
             "type": "field",
             "field": "createdByUserId",
             "operator": "==",
-            "value": "${currentUserId}"
+            "value": "${currentUsername}"
         }
     ]
 }
