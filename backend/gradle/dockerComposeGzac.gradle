@@ -45,7 +45,7 @@ composeUp {
 }
 
 dockerCompose {
-    projectName = "gzac-docker-compose"
+    projectName = "gzac-docker-compose-v12"
     useComposeFiles.addAll(buildDir.absolutePath + "/docker/extract/gzac-docker-compose-main/docker-compose.yaml")
     composeAdditionalArgs = ["--profile", "zgw"]
     stopContainers = false
