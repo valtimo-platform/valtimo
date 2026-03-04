@@ -42,7 +42,7 @@ class DocumentenApiPreviewPlugin(
     lateinit var url: URI
 
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
-    lateinit var documentApiConfigurationId: String
+    lateinit var documentenApiConfigurationId: String
 
     fun generatePreview(documentId: String): InputStream {
         val documentenApiPlugin = getDocumentenApiPlugin()
@@ -52,8 +52,8 @@ class DocumentenApiPreviewPlugin(
     }
 
     private fun getDocumentenApiPlugin(): DocumentenApiPlugin {
-        return checkNotNull(pluginService.createInstance(documentApiConfigurationId)){
-            "Could not create instance of ${DocumentenApiPlugin::class.simpleName} based on documenten API configuration ID: $documentApiConfigurationId"
+        return checkNotNull(pluginService.createInstance(documentenApiConfigurationId)){
+            "Could not create instance of ${DocumentenApiPlugin::class.simpleName} based on documenten API configuration ID: $documentenApiConfigurationId"
         }
     }
 
