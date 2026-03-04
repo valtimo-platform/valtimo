@@ -76,6 +76,8 @@ class FormFlowProcessLinkActivityHandler(
             return ProcessLinkActivityResult(
                 processLink.id,
                 FORM_FLOW_TASK_TYPE_KEY,
+                task.assignee,
+                task.dueDate,
                 FormFlowTaskOpenResultProperties(
                     instance.id.id,
                     processLink.formDisplayType,
@@ -107,6 +109,8 @@ class FormFlowProcessLinkActivityHandler(
             ProcessLinkActivityResult(
                 processLink.id,
                 FORM_FLOW_TASK_TYPE_KEY,
+                null,
+                null,
                 FormFlowTaskOpenResultProperties(
                     formFlowService.save(
                         formFlowDefinition.createInstance(additionalProperties)

@@ -104,9 +104,6 @@ export * from './lib/components/modal/modal.component';
 export * from './lib/components/spinner/spinner.module';
 export * from './lib/components/spinner/spinner.component';
 
-export * from './lib/components/searchable-dropdown/searchable-dropdown.module';
-export * from './lib/components/searchable-dropdown/searchable-dropdown.component';
-
 export * from './lib/components/dropzone/dropzone.module';
 export * from './lib/components/dropzone/dropzone.component';
 
@@ -133,9 +130,6 @@ export * from './lib/components/webcam/webcam.component';
 
 export * from './lib/components/progress-bar/progress-bar.module';
 export * from './lib/components/progress-bar/progress-bar.component';
-
-export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.module';
-export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.component';
 
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';

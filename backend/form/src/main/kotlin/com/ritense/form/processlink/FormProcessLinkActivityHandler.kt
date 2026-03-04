@@ -53,6 +53,8 @@ class FormProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLink.id,
             FORM_TASK_TYPE_KEY,
+            task.assignee,
+            task.dueDate,
             FormTaskOpenResultProperties(
                 processLink.formDefinitionId,
                 formDefinition.asJson(),
@@ -75,6 +77,8 @@ class FormProcessLinkActivityHandler(
         return ProcessLinkActivityResult(
             processLink.id,
             FORM_TASK_TYPE_KEY,
+            null,
+            null,
             FormTaskOpenResultProperties(processLink.formDefinitionId, formDefinition.asJson())
         )
     }

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {DropdownItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
-import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, of, Subject, switchMap} from 'rxjs';
 import {NamedUser} from '@valtimo/shared';
 import {tap} from 'rxjs/operators';
+import {IconService, ListItem} from 'carbon-components-angular';
+import {UserFollow16} from '@carbon/icons';
+import {CdsThemeService} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -41,7 +43,7 @@ export class CaseAssignUserComponent {
 
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
   public readonly documentId$ = new BehaviorSubject<string>('');
-  public readonly userItems$: Observable<Array<DropdownItem>> = this.documentId$.pipe(
+  public readonly userItems$: Observable<Array<ListItem>> = this.documentId$.pipe(
     filter(documentId => !!documentId),
     switchMap(documentId =>
       this.hasPermission ? this.documentService.getCandidateUsers(documentId) : of([])
@@ -51,8 +53,18 @@ export class CaseAssignUserComponent {
   );
   public readonly assigneeId$ = new BehaviorSubject<string>('');
   public readonly assigneeFullName$ = new BehaviorSubject<string>('');
+  public readonly mouseIsOverAssignee$ = new BehaviorSubject<boolean>(false);
+  public readonly selectedUserId$ = new BehaviorSubject<string | null>(null);
+  public readonly open$ = new Subject<boolean>();
+  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
-  constructor(private readonly documentService: DocumentService) {}
+  constructor(
+    private readonly documentService: DocumentService,
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([UserFollow16]);
+  }
 
   public assignDocument(userId: string): void {
     this.disable();
@@ -62,6 +74,7 @@ export class CaseAssignUserComponent {
         switchMap(documentId => this.documentService.assignHandlerToDocument(documentId, userId))
       )
       .subscribe(() => {
+        this.closeToggletip();
         this.emitChange();
         this.enable();
       });
@@ -78,7 +91,30 @@ export class CaseAssignUserComponent {
       });
   }
 
-  private mapUsersForDropdown(users: NamedUser[]): DropdownItem[] {
+  public onUserSelect(event: ListItem): void {
+    this.selectedUserId$.next(event?.id || null);
+  }
+
+  public onSubmitButtonClick(): void {
+    const userId = this.selectedUserId$.getValue();
+    if (userId) {
+      this.assignDocument(userId);
+    }
+  }
+
+  public clear(): void {
+    this.selectedUserId$.next(null);
+  }
+
+  public onMouseEnterAssignee(): void {
+    this.mouseIsOverAssignee$.next(true);
+  }
+
+  public onMouseLeaveAssignee(): void {
+    this.mouseIsOverAssignee$.next(false);
+  }
+
+  private mapUsersForDropdown(users: NamedUser[]): ListItem[] {
     return users
       .sort((a, b) => {
         if (a.lastName && b.lastName) {
@@ -87,7 +123,7 @@ export class CaseAssignUserComponent {
 
         return 0;
       })
-      .map(user => ({text: user.label, id: user.id}));
+      .map(user => ({content: user.label, id: user.id, selected: false}) as ListItem);
   }
 
   private emitChange(): void {
@@ -100,5 +136,10 @@ export class CaseAssignUserComponent {
 
   private disable(): void {
     this.disabled$.next(true);
+  }
+
+  private closeToggletip(): void {
+    this.open$.next(true);
+    setTimeout(() => this.open$.next(false));
   }
 }
