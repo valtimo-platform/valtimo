@@ -15,7 +15,7 @@ open class DocumentenApiPreviewAutoConfiguration {
     @Bean
     fun pdfConversionClient(
         restClientBuilder: RestClient.Builder,
-    ): PdfConversionClient = PdfConversionClient(restClientBuilder)
+    ) = PdfConversionClient(restClientBuilder)
 
     @Bean
     @ConditionalOnMissingBean(DocumentenApiPreviewPluginFactory::class)
