@@ -47,7 +47,8 @@ data class TaskExtended(
     val caseDocumentId: String?,
     val processDefinitionKey: String?,
     val valtimoAssignee: ValtimoUser?,
-    val context: Any?
+    val context: Any?,
+    val isOpened: Boolean
 ) {
 
     companion object {
@@ -61,7 +62,8 @@ data class TaskExtended(
             processDefinitionId: String?,
             processDefinitionKey: String?,
             valtimoAssignee: ValtimoUser?,
-            context: Any?
+            context: Any?,
+            isOpened: Boolean
         ) = TaskExtended(
             task.id,
             task.name,
@@ -88,7 +90,8 @@ data class TaskExtended(
             caseDocumentId,
             processDefinitionKey,
             valtimoAssignee,
-            context
+            context,
+            isOpened
         )
     }
 }
