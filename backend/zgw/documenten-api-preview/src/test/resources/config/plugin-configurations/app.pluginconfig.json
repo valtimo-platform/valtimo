@@ -5,7 +5,7 @@
     "pluginDefinitionKey": "documentenapipreview",
     "properties": {
       "url": "http://localhost:3000/",
-      "documentApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
+      "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
     }
   }
 ]
