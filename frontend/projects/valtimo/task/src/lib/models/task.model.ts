@@ -45,6 +45,7 @@ interface Task {
   caseDocumentId: string;
   processDefinitionKey: string;
   valtimoAssignee: User;
+  isOpened?: boolean;
   locked?: boolean;
   caseLocked?: boolean;
 }
@@ -66,6 +67,7 @@ interface SpecifiedTask {
   processInstanceId: string;
   name: string;
   created: Date;
+  isOpened?: boolean;
   items: {key: string; value: any}[];
 }
 
@@ -76,6 +78,7 @@ interface MappedSpecifiedTask {
   processInstanceId: string;
   name: string;
   created?: string;
+  isOpened?: boolean;
   locked?: boolean;
   caseLocked?: boolean;
   [key: string]: any;

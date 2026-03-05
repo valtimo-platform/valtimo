@@ -77,6 +77,7 @@ import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.repository.operaton.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.util.FormUtils;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.web.rest.dto.TaskCompletionDTO;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -139,6 +140,7 @@ public class OperatonTaskService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers;
+    private final UserTaskOpenedStatusService userTaskOpenedStatusService;
 
     public OperatonTaskService(
         TaskService taskService,
@@ -154,7 +156,8 @@ public class OperatonTaskService {
         AuthorizationService authorizationService,
         OutboxService outboxService,
         ObjectMapper objectMapper,
-        List<TaskBusinessKeyResolver> taskBusinessKeyResolvers
+        List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
+        UserTaskOpenedStatusService userTaskOpenedStatusService
     ) {
         this.taskService = taskService;
         this.formService = formService;
@@ -170,6 +173,7 @@ public class OperatonTaskService {
         this.outboxService = outboxService;
         this.objectMapper = objectMapper;
         this.taskBusinessKeyResolvers = taskBusinessKeyResolvers;
+        this.userTaskOpenedStatusService = userTaskOpenedStatusService;
     }
 
     @Transactional(readOnly = true)
@@ -459,8 +463,17 @@ public class OperatonTaskService {
                 .setMaxResults(pageable.getPageSize());
         }
 
+        var tupleList = typedQuery.getResultList();
+        var taskIds = tupleList.stream()
+            .map(tuple -> tuple.get(0, OperatonTask.class).getId())
+            .collect(toSet());
+        var currentUserId = SecurityUtils.getCurrentUserLogin();
+        var openedTaskIds = currentUserId != null
+            ? userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskIds, currentUserId)
+            : Set.<String>of();
+
         var assigneeMap = new java.util.HashMap<String, ValtimoUser>();
-        var tasks = typedQuery.getResultList().stream()
+        var tasks = tupleList.stream()
             .map(tuple -> {
                 var task = tuple.get(0, OperatonTask.class);
                 var executionId = tuple.get(1, String.class);
@@ -496,7 +509,8 @@ public class OperatonTaskService {
                     processDefinitionId,
                     processDefinitionKey,
                     valtimoUser,
-                    context
+                    context,
+                    openedTaskIds.contains(task.getId())
                 );
             })
             .toList();
