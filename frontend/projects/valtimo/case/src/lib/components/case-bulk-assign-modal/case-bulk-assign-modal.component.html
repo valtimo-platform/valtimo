@@ -22,13 +22,13 @@
   <section cdsModalContent>
     <ng-container
       *ngIf="{
-        candidateUsers: candidateUsers$ | async,
+        candidateUserItems: candidateUserItems$ | async,
         canAssignAllDocuments: canAssignAllDocuments$ | async,
         canAssignAnyDocuments: canAssignAnyDocuments$ | async
       } as obs"
     >
       <cds-inline-notification
-        *ngIf="obs.canAssignAnyDocuments === false"
+        *ngIf="!obs.canAssignAnyDocuments"
         [notificationObj]="{
           type: 'warning',
           title: ('case.bulkAssign.modal.warningTitle' | translate),
@@ -39,7 +39,7 @@
       ></cds-inline-notification>
 
       <cds-inline-notification
-        *ngIf="obs.canAssignAnyDocuments && obs.canAssignAllDocuments === false"
+        *ngIf="obs.canAssignAnyDocuments && !obs.canAssignAllDocuments"
         [notificationObj]="{
           type: 'warning',
           title: ('case.bulkAssign.modal.warningTitle' | translate),
@@ -49,11 +49,11 @@
         }"
       ></cds-inline-notification>
 
-      <form *ngIf="obs.canAssignAnyDocuments && obs.candidateUsers" [formGroup]="formGroup">
+      <form *ngIf="obs.canAssignAnyDocuments && obs.candidateUserItems" [formGroup]="formGroup">
         <cds-combo-box
           formControlName="assignee"
           [dropUp]="false"
-          [items]="obs.candidateUsers"
+          [items]="obs.candidateUserItems"
           [label]="'case.bulkAssign.modal.selectLabel' | translate"
           [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
         >
@@ -73,7 +73,7 @@
 
       <button
         cdsButton="primary"
-        [disabled]="formGroup.invalid || obs.canAssignAnyDocuments === false"
+        [disabled]="formGroup.invalid || !obs.canAssignAnyDocuments"
         (click)="closeModal(true)"
       >
         {{ 'case.bulkAssign.modal.confirm' | translate }}
