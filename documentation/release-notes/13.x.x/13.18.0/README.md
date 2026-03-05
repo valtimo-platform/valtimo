@@ -6,10 +6,6 @@
 
 ## New Features
 
-* **Added PBAC conditions for Resources based on Case definition**
-
-PBAC conditions for Resources (Case related documents on the Document API) allow role-based filtering by case definition
-
 ## Enhancements
 
 * **Replaced case assign user component with Carbon Design System toggletip**
