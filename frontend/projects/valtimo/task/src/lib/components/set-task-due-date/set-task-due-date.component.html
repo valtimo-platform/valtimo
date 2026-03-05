@@ -34,7 +34,6 @@
     (mouseenter)="onMouseEnterDueDate()"
     (mouseleave)="onMouseLeaveDueDate()"
   >
-    <!-- Due date text: visible when has due date and NOT hovering (or no permission) -->
     <div
       class="due-date-text element"
       [ngClass]="{
@@ -44,13 +43,10 @@
       }"
     >
       <span class="bold">{{ 'setTaskDueDate.dueDateText' | translate }}</span>
-
       &nbsp;
-
       {{ obs.taskDueDate | date: 'dd-MM-yyyy' }}
     </div>
 
-    <!-- Click to edit toggletip: visible on hover when has due date -->
     <cds-toggletip
       *ngIf="obs.canModifyTask"
       align="bottom"
@@ -109,7 +105,6 @@
       </div>
     </cds-toggletip>
 
-    <!-- Set due date toggletip: visible when NO due date -->
     <cds-toggletip
       align="bottom"
       class="element main"

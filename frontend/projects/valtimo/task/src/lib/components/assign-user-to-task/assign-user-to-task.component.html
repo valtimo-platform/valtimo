@@ -26,8 +26,7 @@
       selectedUserId: selectedUserId$ | async,
       canAssignUserToTask: canAssignUserToTask$ | async,
       toggletipView: toggletipView$ | async,
-      showEditComboBox: showEditComboBox$ | async,
-      editComboBoxValue: editComboBoxValue$ | async,
+      showComboBox: showComboBox$ | async,
       editToggletipOpen: editToggletipOpen$ | async,
     } as obs
   "
@@ -39,9 +38,6 @@
       (mouseenter)="onMouseEnterAssignee()"
       (mouseleave)="onMouseLeaveAssignee()"
     >
-      <!-- ASSIGNED STATE: show assigned name, on hover show 'click to edit' toggletip -->
-
-      <!-- Assignee text: visible when has assignee and NOT hovering (or no permission) -->
       <div
         class="assignee-text element"
         [ngClass]="{
@@ -51,13 +47,10 @@
         }"
       >
         <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
-
         &nbsp;
-
         <span class="name">{{ obs.assignedUserFullName }}</span>
       </div>
 
-      <!-- Click to edit toggletip: visible on hover when has assignee -->
       <cds-toggletip
         *ngIf="obs.canAssignUserToTask"
         align="bottom"
@@ -80,7 +73,7 @@
 
         <div cdsToggletipContent class="assign-task-popover-content">
           <cds-combo-box
-            *ngIf="obs.showEditComboBox"
+            *ngIf="obs.showComboBox"
             [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
             [label]="'assignTask.comboboxLabel' | translate"
             [placeholder]="'assignTask.placeholder' | translate"
@@ -90,10 +83,8 @@
             [items]="obs?.editCandidateUsers || []"
             [disabled]="obs.disabled"
             itemValueKey="id"
-            [ngModel]="obs.editComboBoxValue"
-            (ngModelChange)="onEditComboBoxChange($event)"
             (selected)="onUserSelect($event)"
-            (clear)="onEditComboBoxClear()"
+            (clear)="onComboBoxClear()"
           >
             <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
           </cds-combo-box>
@@ -107,7 +98,6 @@
             (click)="onSubmitButtonClick()"
           >
             {{ 'assignTask.submitButtonText' | translate }}
-
             <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
           </button>
 
@@ -123,7 +113,6 @@
         </div>
       </cds-toggletip>
 
-      <!-- UNASSIGNED STATE: show Assign button that opens choice toggletip -->
       <cds-toggletip
         align="bottom"
         class="element main"
@@ -145,10 +134,9 @@
         </button>
 
         <div cdsToggletipContent class="assign-task-popover-content">
-          <!-- Step 1: Choice between 'Assign to me' and 'Assign to other user' -->
           <ng-container *ngIf="obs.toggletipView === 'choice'">
             <button
-              cdsButton
+              cdsButton="secondary"
               [attr.data-carbon-theme]="toggletipTheme$ | async"
               class="choice-button"
               [disabled]="obs.disabled"
@@ -157,7 +145,7 @@
             >
               {{ 'assignTask.assignToMe' | translate }}
 
-              <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+              <svg class="cds--btn__icon" cdsIcon="user--role" size="16"></svg>
             </button>
 
             <button
@@ -174,7 +162,6 @@
             </button>
           </ng-container>
 
-          <!-- Step 2: Dropdown to select another user -->
           <ng-container *ngIf="obs.toggletipView === 'dropdown'">
             <cds-combo-box
               [attr.data-carbon-theme]="toggletipTheme$ | async"

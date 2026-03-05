@@ -68,7 +68,6 @@ export class SetTaskDueDateComponent {
   }
 
   public readonly hasDueDate$ = new BehaviorSubject<boolean>(false);
-
   public readonly selectedDateString$ = new BehaviorSubject<string>('');
 
   private get _selectedDateString(): string {
@@ -92,11 +91,8 @@ export class SetTaskDueDateComponent {
   );
 
   public readonly showDatePicker$ = new BehaviorSubject<boolean>(true);
-
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
-
   public readonly open$ = new Subject<boolean>();
-
   public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly mouseIsOverDueDate$ = new BehaviorSubject<boolean>(false);
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
@@ -120,8 +116,7 @@ export class SetTaskDueDateComponent {
 
   public clear(): void {
     this.selectedDateString$.next('');
-    this.showDatePicker$.next(false);
-    setTimeout(() => this.showDatePicker$.next(true));
+    this.resetDatePicker();
   }
 
   public initEditWithCurrentDate(): void {
@@ -132,12 +127,19 @@ export class SetTaskDueDateComponent {
     } else {
       this.selectedDateString$.next('');
     }
-    this.showDatePicker$.next(false);
-    setTimeout(() => this.showDatePicker$.next(true));
+    this.resetDatePicker();
   }
 
   public onCloseEditToggletip(): void {
     this.editToggletipOpen$.next(false);
+  }
+
+  public onMouseEnterDueDate(): void {
+    this.mouseIsOverDueDate$.next(true);
+  }
+
+  public onMouseLeaveDueDate(): void {
+    this.mouseIsOverDueDate$.next(false);
   }
 
   public onDateValueChange(value: Date[]): void {
@@ -184,19 +186,15 @@ export class SetTaskDueDateComponent {
     });
   }
 
+  private resetDatePicker(): void {
+    this.showDatePicker$.next(false);
+    setTimeout(() => this.showDatePicker$.next(true));
+  }
+
   private closeToggletip(): void {
     this.editToggletipOpen$.next(false);
-    // needed to reliably trigger toggle tip closure
     this.open$.next(true);
     setTimeout(() => this.open$.next(false));
-  }
-
-  public onMouseEnterDueDate(): void {
-    this.mouseIsOverDueDate$.next(true);
-  }
-
-  public onMouseLeaveDueDate(): void {
-    this.mouseIsOverDueDate$.next(false);
   }
 
   private showDueDateSetNotification(dateString: string): void {

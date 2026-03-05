@@ -30,19 +30,17 @@ import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take,
 import {TaskService} from '../../services';
 import {NamedUser, UserIdentity} from '@valtimo/shared';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
   ComboBoxModule,
-  DatePickerModule,
   IconModule,
   IconService,
   LayerModule,
   ListItem,
   ToggletipModule,
 } from 'carbon-components-angular';
-import {Edit16, UserFollow16} from '@carbon/icons';
+import {Edit16, UserFollow16, UserRole16} from '@carbon/icons';
 import {filter, map} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
 
@@ -53,19 +51,18 @@ import {UserProviderService} from '@valtimo/security';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     TranslateModule,
     ButtonModule,
     ToggletipModule,
     IconModule,
     LayerModule,
-    DatePickerModule,
     ComboBoxModule,
     RemoveClassnamesDirective,
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
-  private _taskId;
+  private _taskId: string;
+
   @Input() public set taskId(value: string) {
     if (this._taskId === value) return;
     this._taskId = value;
@@ -92,7 +89,6 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   private readonly _candidateUsersForTask$ = new BehaviorSubject<NamedUser[] | undefined>(
     undefined
   );
-
   private readonly _selectedUserId$ = new BehaviorSubject<string | null>(null);
   public readonly selectedUserId$ = this._selectedUserId$.asObservable();
 
@@ -100,25 +96,19 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     map(users => this.mapUsersForDropdown(users))
   );
 
-  /** Separate observable for the edit dropdown that preselects the current assignee */
   public readonly editCandidateUsersForTask$ = combineLatest([
     this._candidateUsersForTask$,
     this.assignedIdOnServer$,
   ]).pipe(map(([users, assignedId]) => this.mapUsersForDropdown(users, assignedId)));
 
-  /** Holds the value for the edit combo-box ngModel (the assignee ID to preselect) */
-  public readonly editComboBoxValue$ = new BehaviorSubject<string | null>(null);
-
+  public readonly toggletipView$ = new BehaviorSubject<'choice' | 'dropdown'>('choice');
   public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly mouseIsOverAssignee$ = new BehaviorSubject<boolean>(false);
+  public readonly showComboBox$ = new BehaviorSubject<boolean>(true);
   public readonly open$ = new Subject<boolean>();
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
   public readonly toggletipDropdownTheme$ = this.cdsThemeService.toggletipDropdownTheme$;
-  public readonly showEditComboBox$ = new BehaviorSubject<boolean>(true);
-
-  /** Tracks which view to show in the toggletip: 'choice' for assign-to-me/other, 'dropdown' for user selection */
-  public readonly toggletipView$ = new BehaviorSubject<'choice' | 'dropdown'>('choice');
 
   private readonly _subscriptions = new Subscription();
 
@@ -130,7 +120,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     private readonly renderer2: Renderer2,
     private readonly userProviderService: UserProviderService
   ) {
-    this.iconService.registerAll([UserFollow16, Edit16]);
+    this.iconService.registerAll([UserFollow16, UserRole16, Edit16]);
   }
 
   public ngOnInit(): void {
@@ -201,15 +191,6 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     return userId || '-';
   }
 
-  private findUserByIdOrUsername(users: NamedUser[], identifier: string): NamedUser | undefined {
-    return users.find(user => user.id === identifier) || users.find(user => user.userName === identifier);
-  }
-
-  private resolveUserId(users: NamedUser[], identifier: string): string {
-    const user = this.findUserByIdOrUsername(users, identifier);
-    return user ? user.id : identifier;
-  }
-
   public onMouseEnterAssignee(): void {
     this.mouseIsOverAssignee$.next(true);
   }
@@ -227,13 +208,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     this._selectedUserId$.next(event.id);
   }
 
-  public onEditComboBoxChange(value: string): void {
-    this.editComboBoxValue$.next(value);
-    this._selectedUserId$.next(value || null);
-  }
-
-  public onEditComboBoxClear(): void {
-    this.editComboBoxValue$.next(null);
+  public onComboBoxClear(): void {
     this._selectedUserId$.next(null);
   }
 
@@ -258,17 +233,14 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     this._selectedUserId$.next(null);
   }
 
-  public onCloseEditToggletip(): void {
-    this.editToggletipOpen$.next(false);
-  }
-
   public onOpenEditToggletip(): void {
     this.editToggletipOpen$.next(true);
-    const assignedId = this.assignedIdOnServer$.getValue();
-    this._selectedUserId$.next(assignedId);
-    this.editComboBoxValue$.next(assignedId);
-    this.showEditComboBox$.next(false);
-    setTimeout(() => this.showEditComboBox$.next(true));
+    this._selectedUserId$.next(this.assignedIdOnServer$.getValue());
+    this.resetComboBox();
+  }
+
+  public onCloseEditToggletip(): void {
+    this.editToggletipOpen$.next(false);
   }
 
   public resetState(): void {
@@ -276,6 +248,17 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     this._selectedUserId$.next(null);
     this._assignedUserFullName$.next(null);
     this.toggletipView$.next('choice');
+  }
+
+  private findUserByIdOrUsername(users: NamedUser[], identifier: string): NamedUser | undefined {
+    return (
+      users.find(user => user.id === identifier) || users.find(user => user.userName === identifier)
+    );
+  }
+
+  private resolveUserId(users: NamedUser[], identifier: string): string {
+    const user = this.findUserByIdOrUsername(users, identifier);
+    return user ? user.id : identifier;
   }
 
   private mapUsersForDropdown(users: NamedUser[], selectedUserId?: string): ListItem[] {
@@ -307,6 +290,11 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
         }
         return a.lastName.localeCompare(b.lastName);
       });
+  }
+
+  private resetComboBox(): void {
+    this.showComboBox$.next(false);
+    setTimeout(() => this.showComboBox$.next(true));
   }
 
   private emitChange(): void {
