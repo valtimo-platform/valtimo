@@ -70,7 +70,7 @@ For example, if we want users with role `ROLE_USER` to only be able to view meet
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         }
