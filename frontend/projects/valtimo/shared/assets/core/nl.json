@@ -1551,9 +1551,10 @@
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
-    "header": "Gebruiker toewijzen aan dit dossier",
+    "header": "Gebruiker toewijzen",
     "remove": "Toewijzing ongedaan maken",
-    "fetchingUsers": "Gebruikers ophalen..."
+    "fetchingUsers": "Gebruikers ophalen...",
+    "submitButtonText": "Gebruiker toewijzen aan dossier"
   },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",

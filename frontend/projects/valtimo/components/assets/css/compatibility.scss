@@ -154,10 +154,6 @@ valtimo-modal {
       }
     }
 
-    valtimo-searchable-dropdown-select h5 {
-      color: var(--cds-text-secondary) !important;
-    }
-
     .formio-component-textfield input {
       background-color: var(--cds-field-02) !important;
       border: none !important;
@@ -433,32 +429,6 @@ valtimo-list {
   background-color: var(--cds-layer-02) !important;
   color: var(--cds-icon) !important;
   border: none !important;
-}
-
-valtimo-case-assign-user {
-  h5.selected-text {
-    font-size: 14px;
-    line-height: 18px;
-    font-weight: 700;
-    color: var(--cds-text-helper);
-    & b {
-      font-weight: 400;
-    }
-  }
-  h5.searchable-dropdown {
-    &__underline-button {
-      text-decoration: none !important;
-      b {
-        color: var(--cds-text-helper);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 14px;
-        line-height: 18px;
-        font-weight: 400;
-      }
-    }
-  }
 }
 
 /* Modal */
