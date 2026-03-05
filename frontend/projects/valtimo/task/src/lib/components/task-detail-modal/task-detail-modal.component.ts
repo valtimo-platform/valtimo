@@ -65,6 +65,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
   @Output() dueDateChanged = new EventEmitter();
+  @Output() modalClosed = new EventEmitter();
 
   @Input() set modalSize(value: FormSize) {
     if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
@@ -283,6 +284,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public closeModal(): void {
     this.modalOpen$.next(false);
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
+    this.modalClosed.emit();
     // Delay clearing task data and submission until after modal close animation completes
     runAfterCarbonModalClosed(() => {
       this.processLinkPreloaded$.next(false);

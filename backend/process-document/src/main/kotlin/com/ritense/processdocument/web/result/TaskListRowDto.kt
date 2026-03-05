@@ -25,6 +25,7 @@ data class TaskListRowDto(
     val name: String?,
     val created: LocalDateTime?,
     val items: List<TaskListItemDto>,
+    val isOpened: Boolean,
 ) {
 
     data class TaskListItemDto(

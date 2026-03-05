@@ -51,7 +51,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 public class KeycloakUserManagementService implements UserManagementService {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserManagementService.class);
-    protected static final int MAX_USERS = 1000;
+    protected static final int MAX_USERS = 100000;
     private static final String MAX_USERS_WARNING_MESSAGE = "Maximum number of users retrieved from keycloak: " + MAX_USERS + ".";
     private static final ValtimoUser SYSTEM_VALTIMO_USER = new ValtimoUserBuilder().id(SYSTEM_ACCOUNT).lastName(SYSTEM_ACCOUNT).build();
 
