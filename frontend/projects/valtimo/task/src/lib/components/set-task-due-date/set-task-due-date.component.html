@@ -22,6 +22,8 @@
       disabled: disabled$ | async,
       mouseIsOverDueDate: mouseIsOverDueDate$ | async,
       canModifyTask: canModifyTask$ | async,
+      language: language$ | async,
+      showDatePicker: showDatePicker$ | async,
     } as obs
   "
 >
@@ -62,6 +64,7 @@
       [autoAlign]="true"
       [isOpen]="open$ | async"
       [ngClass]="{active: !obs.hasDueDate}"
+      (onOpen)="clear()"
     >
       <button
         cdsToggletipButton
@@ -77,13 +80,14 @@
 
       <div
         cdsToggletipContent
-        [attr.data-carbon-theme]="toggletipTheme$ | async"
         class="assign-due-date-popover-content"
       >
         <cds-date-picker
-          *ngIf="!obs.hasDueDate"
+          *ngIf="!obs.hasDueDate && obs.showDatePicker"
+          [attr.data-carbon-theme]="toggletipTheme$ | async"
           [cdsLayer]="1"
-          [label]="'Select date'"
+          [label]="'setTaskDueDate.label' | translate"
+          [language]="obs.language"
           [placeholder]="'dd-mm-jjjj'"
           dateFormat="d/m/Y"
           [disabled]="obs.disabled"
@@ -92,6 +96,7 @@
 
         <button
           cdsButton
+          [attr.data-carbon-theme]="toggletipTheme$ | async"
           class="submit-due-date-button"
           [disabled]="!obs.selectedDateString || obs.disabled"
           (click)="onSubmitButtonClick()"

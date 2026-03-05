@@ -50,7 +50,7 @@ export class DocumentenApiDocumentService extends BaseApiService {
   public updateDocument(file: any, metadata: any, caseDocumentId: string): Observable<void> {
     return this.httpClient.put<void>(
       this.getApiUrl(
-        `/v1/zaken-api/${caseDocumentId}/${file.pluginConfigurationId}/files/${file.fileId}`
+        `/v1/zaken-api/${file.pluginConfigurationId}/case-document/${caseDocumentId}/files/${file.fileId}`
       ),
       metadata
     );
@@ -62,7 +62,7 @@ export class DocumentenApiDocumentService extends BaseApiService {
   ): Observable<DocumentenApiRelatedFile[]> {
     return this.httpClient.delete<DocumentenApiRelatedFile[]>(
       this.getApiUrl(
-        `/v1/zaken-api/${caseDocumentId}/${file.pluginConfigurationId}/files/${file.fileId}`
+        `/v1/zaken-api/${file.pluginConfigurationId}/case-document/${caseDocumentId}/files/${file.fileId}`
       )
     );
   }

@@ -46,6 +46,7 @@ import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -84,6 +85,7 @@ class OperatonTaskServiceTest {
     private EntityManager entityManager;
     private AuthorizationService authorizationService;
     private OutboxService outboxService;
+    private UserTaskOpenedStatusService userTaskOpenedStatusService;
     private final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
 
     @BeforeEach
@@ -98,6 +100,7 @@ class OperatonTaskServiceTest {
         entityManager = mock(EntityManager.class);
         authorizationService = mock(AuthorizationService.class);
         outboxService = mock(OutboxService.class);
+        userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
         task = spy(
             new OperatonTask(
                 TASK_ID,
@@ -141,7 +144,8 @@ class OperatonTaskServiceTest {
                 authorizationService,
                 outboxService,
                 objectMapper,
-                List.of()
+                List.of(),
+                userTaskOpenedStatusService
             )
         );
         when(authorizationService.getAuthorizationSpecification(any(), any()))
@@ -339,7 +343,8 @@ class OperatonTaskServiceTest {
             authorizationService,
             outboxService,
             objectMapper,
-            List.of()
+            List.of(),
+            userTaskOpenedStatusService
         ));
 
         when(operatonTaskRepository.findById(any())).thenReturn(Optional.of(

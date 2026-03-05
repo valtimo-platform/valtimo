@@ -162,6 +162,14 @@ class DocumentenApiService(
         documentApiPlugin.deleteInformatieObject(caseDocumentId, documentUrl)
     }
 
+    fun deleteInformatieObject(
+        @LoggableResource(resourceType = PluginConfigurationId::class) documentApiPlugin: DocumentenApiPlugin,
+        @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK ) caseDocumentId: UUID?,
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentUrl: URI
+    ) {
+        documentApiPlugin.deleteInformatieObject(caseDocumentId, documentUrl)
+    }
+
     fun getColumns(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<DocumentenApiColumn> {

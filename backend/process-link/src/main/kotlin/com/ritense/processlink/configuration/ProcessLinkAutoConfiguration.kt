@@ -43,6 +43,7 @@ import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -120,9 +121,10 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnMissingBean(ProcessLinkTaskResource::class)
     @ConditionalOnBean(ProcessLinkActivityService::class)
     fun processLinkTaskResource(
-        processLinkActivityService: ProcessLinkActivityService
+        processLinkActivityService: ProcessLinkActivityService,
+        userTaskOpenedStatusService: UserTaskOpenedStatusService
     ): ProcessLinkTaskResource {
-        return ProcessLinkTaskResource(processLinkActivityService)
+        return ProcessLinkTaskResource(processLinkActivityService, userTaskOpenedStatusService)
     }
 
     @Bean

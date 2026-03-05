@@ -14,23 +14,78 @@
  * limitations under the License.
  */
 
-.container-fluid {
-  color: #959595;
+:host ::ng-deep .cds--popover-content {
+  max-inline-size: unset;
 }
 
-valtimo-searchable-dropdown-select {
-  color: var(--cds-text-helper) !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px !important;
-  line-height: 18px !important;
+.assign-user-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.16px;
+  color: var(--cds-link-01);
+
+  .bold {
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
-h5 {
-  font-size: 14px !important;
+.remove-button {
+  width: 100%;
 }
 
-:host .case-candidates-dropdown h5 {
-  margin-block: 0;
+.assignee-text {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.element {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  transition: opacity 0.3s ease-in-out;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &.main {
+    position: relative;
+  }
+}
+
+.assign-case-popover-content {
+  width: 400px;
+  max-inline-size: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.set-assignee-button {
+  width: 250px;
+}
+
+.submit-assignee-button {
+  width: 100%;
+  max-width: unset;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: var(--cds-text-secondary);
 }
