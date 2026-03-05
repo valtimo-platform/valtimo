@@ -91,6 +91,7 @@ class ZakenApiClient(
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID,
         baseUrl: URI,
         request: LinkDocumentRequest
     ): LinkDocumentResult {
@@ -99,7 +100,7 @@ class ZakenApiClient(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.CREATE,
-                    ResourcePermission()
+                    ResourcePermission(caseDocumentId)
                 )
             )
         }
@@ -168,6 +169,7 @@ class ZakenApiClient(
 
     fun getZaakInformatieObjecten(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID?,
         baseUrl: URI,
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
@@ -176,9 +178,10 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
+                ResourcePermission(caseDocumentId)
             )
-        )) {
+        )
+            ) {
             return emptyList()
         }
 
@@ -609,7 +612,12 @@ class ZakenApiClient(
         return result
     }
 
-    fun deleteZaakInformatieObject(authentication: ZakenApiAuthentication, baseUrl: URI, zaakInformatieobjectUrl: URI) {
+    fun deleteZaakInformatieObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID?
+    ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
         }
@@ -618,7 +626,7 @@ class ZakenApiClient(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.DELETE,
-                    ResourcePermission()
+                    ResourcePermission(caseDocumentId)
                 )
             )
         }

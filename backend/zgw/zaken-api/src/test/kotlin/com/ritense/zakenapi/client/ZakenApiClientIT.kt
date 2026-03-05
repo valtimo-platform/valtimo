@@ -74,7 +74,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should allow zaak-document link`() {
         val permissions = listOf(
             Permission(
-                id = UUID.randomUUID(),
+                id = CASE_DOCUMENT_ID,
                 resourceType = ResourcePermission::class.java,
                 actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
                 conditionContainer = ConditionContainer(),
@@ -87,6 +87,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         zakenApiClient.linkDocument(
             zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             zakenApiPlugin.url,
             LinkDocumentRequest(
                 informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -103,6 +104,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         assertThrows<AccessDeniedException> {
             zakenApiClient.linkDocument(
                 zakenApiPlugin.authenticationPluginConfiguration,
+                CASE_DOCUMENT_ID,
                 zakenApiPlugin.url,
                 LinkDocumentRequest(
                     informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
@@ -119,7 +121,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should allow zaak-document list`() {
         val permissions = listOf(
             Permission(
-                id = UUID.randomUUID(),
+                id = CASE_DOCUMENT_ID,
                 resourceType = ResourcePermission::class.java,
                 actions = mutableListOf(ResourcePermissionActionProvider.VIEW_LIST),
                 conditionContainer = ConditionContainer(),
@@ -132,6 +134,7 @@ internal class ZakenApiClientIT @Autowired constructor(
 
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
@@ -144,6 +147,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     fun `should respond with empty zaak-document list when missing permission`() {
         val results = zakenApiClient.getZaakInformatieObjecten(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
+            CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
             zaakUrl = ZAAK_URL
         )
@@ -202,6 +206,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
         private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        val CASE_DOCUMENT_ID: UUID = UUID.fromString(ZAAK_ID)
 
         private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
     }

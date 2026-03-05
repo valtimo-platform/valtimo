@@ -35,12 +35,12 @@ class ProcessDocumentDeletedEventListener(
 ) {
     @EventListener(DocumentDeletedEvent::class)
     fun handle(event: DocumentDeletedEvent) {
-        withLoggingContext(JsonSchemaDocument::class, event.documentId) {
-            logger.info { "Deleting all process instances for deleted document ${event.documentId}" }
+        withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
+            logger.info { "Deleting all process instances for deleted document ${event.caseDocumentId}" }
 
             runWithoutAuthorization {
                 runtimeService.createProcessInstanceQuery()
-                    .processInstanceBusinessKey(event.documentId.toString())
+                    .processInstanceBusinessKey(event.caseDocumentId.toString())
                     .rootProcessInstances()
                     .list()
                     .forEach {
@@ -53,10 +53,10 @@ class ProcessDocumentDeletedEventListener(
                             false
                         )
                         processDocumentAssociationService.getProcessDocumentInstanceResult(
-                            CamundaProcessJsonSchemaDocumentInstanceId.existingId(CamundaProcessInstanceId(it.processInstanceId), JsonSchemaDocumentId.existingId(event.documentId))
+                            CamundaProcessJsonSchemaDocumentInstanceId.existingId(CamundaProcessInstanceId(it.processInstanceId), JsonSchemaDocumentId.existingId(event.caseDocumentId))
                         )?.let { processDocumentInstance ->
                             if (processDocumentInstance.isError) {
-                                logger.debug { "Document ${event.documentId} is not related to process ${it.processInstanceId}. No ProcessDocumentInstance to delete." }
+                                logger.debug { "Document ${event.caseDocumentId} is not related to process ${it.processInstanceId}. No ProcessDocumentInstance to delete." }
                             } else {
                                 processDocumentInstance.resultingValue().map(ProcessDocumentInstance::processDocumentInstanceId)
                                     .ifPresent(processDocumentAssociationService::deleteProcessDocumentInstance)
