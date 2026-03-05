@@ -98,7 +98,6 @@ export class SetTaskDueDateComponent {
   public readonly open$ = new Subject<boolean>();
 
   public readonly mouseIsOverDueDate$ = new BehaviorSubject<boolean>(false);
-
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
 
   public readonly language$ = this.translateService.onLangChange.pipe(
@@ -108,9 +107,9 @@ export class SetTaskDueDateComponent {
   );
 
   constructor(
+    private readonly cdsThemeService: CdsThemeService,
     private readonly iconService: IconService,
     private readonly taskService: TaskService,
-    private readonly cdsThemeService: CdsThemeService,
     private readonly translateService: TranslateService,
     private readonly globalNotificationService: GlobalNotificationService
   ) {

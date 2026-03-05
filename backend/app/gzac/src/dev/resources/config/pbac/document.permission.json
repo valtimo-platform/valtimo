@@ -1,5 +1,5 @@
 {
-    "changesetId": "documents-v3",
+    "changesetId": "documents-v4",
     "permissions": [
         {
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
@@ -37,7 +37,7 @@
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -71,7 +71,7 @@
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },

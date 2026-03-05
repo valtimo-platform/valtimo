@@ -61,6 +61,8 @@ import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.service.TaskBusinessKeyResolver;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.web.rest.AccountResource;
 import com.ritense.valtimo.web.rest.PingResource;
 import com.ritense.valtimo.web.rest.ProcessInstanceResource;
@@ -192,6 +194,14 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(UserTaskOpenedStatusService.class)
+    public UserTaskOpenedStatusService userTaskOpenedStatusService(
+        final UserTaskOpenedStatusRepository userTaskOpenedStatusRepository
+    ) {
+        return new UserTaskOpenedStatusService(userTaskOpenedStatusRepository);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(OperatonTaskService.class)
     public OperatonTaskService operatonTaskService(
         final TaskService taskService,
@@ -207,7 +217,8 @@ public class ValtimoAutoConfiguration {
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
         final ObjectMapper objectMapper,
-        final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers
+        final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService
     ) {
         return new OperatonTaskService(
             taskService,
@@ -223,7 +234,8 @@ public class ValtimoAutoConfiguration {
             authorizationService,
             outboxService,
             objectMapper,
-            taskBusinessKeyResolvers
+            taskBusinessKeyResolvers,
+            userTaskOpenedStatusService
         );
     }
 
@@ -276,9 +288,10 @@ public class ValtimoAutoConfiguration {
     public TaskResource taskResource(
         final FormService formService,
         final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final OperatonProcessService operatonProcessService,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService
     ) {
-        return new TaskResource(formService, operatonTaskService, operatonProcessService);
+        return new TaskResource(formService, operatonTaskService, operatonProcessService, userTaskOpenedStatusService);
     }
 
     @Bean
