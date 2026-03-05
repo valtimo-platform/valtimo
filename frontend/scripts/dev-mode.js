@@ -157,24 +157,6 @@ async function runNext() {
 
 let isCleaningUp = false;
 
-function cleanupLockFiles() {
-  const dir = path.resolve(__dirname, '..');
-  try {
-    const files = fs.readdirSync(dir);
-    files
-      .filter(f => f.startsWith('.rebuilding'))
-      .forEach(f => {
-        try {
-          fs.rmSync(path.join(dir, f));
-        } catch (_) {
-          // ignore
-        }
-      });
-  } catch (_) {
-    // ignore
-  }
-}
-
 function cleanup() {
   if (isCleaningUp) return;
   isCleaningUp = true;
@@ -190,7 +172,7 @@ function cleanup() {
     }
   });
 
-  cleanupLockFiles();
+  removeRebuildLock();
   process.exit();
 }
 
