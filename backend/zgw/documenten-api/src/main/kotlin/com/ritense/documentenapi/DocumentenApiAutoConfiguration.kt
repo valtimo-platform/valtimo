@@ -20,9 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.documentenapi.authorization.ZgwResourceDocumentMapper
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.documentenapi.exporter.DocumentenApiUploadFieldExporter
@@ -63,6 +65,13 @@ import org.springframework.web.client.RestClient
 @EnableJpaRepositories(basePackages = ["com.ritense.documentenapi.repository"])
 @EntityScan("com.ritense.documentenapi.domain")
 class DocumentenApiAutoConfiguration {
+
+    @Bean
+    fun zgwResourceDocumentMapper(
+        documentRepository: JsonSchemaDocumentRepository
+    ): ZgwResourceDocumentMapper {
+        return ZgwResourceDocumentMapper(documentRepository)
+    }
 
     @Bean
     fun documentenApiClient(

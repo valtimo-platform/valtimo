@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.documentenapi.service
+package com.ritense.zakenapi
 
 import java.net.URI
 import java.util.UUID
 
-interface DocumentDeleteHandler {
-    fun preDocumentDelete(documentUrl: URI, caseDocumentId: UUID?)
+object ExtractUuid {
+
+    fun extractUuidFromUri(uri: URI): UUID? {
+        return try {
+            val lastSegment = uri.path
+                ?.substringAfterLast("/")
+                ?.takeIf { it.isNotBlank() }
+
+            lastSegment?.let { UUID.fromString(it) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }

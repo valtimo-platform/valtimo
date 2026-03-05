@@ -218,8 +218,19 @@ class DocumentenApiPlugin(
             ?: throw IllegalStateException("Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
         check(documentUrlString.startsWith(url.toASCIIString())) { "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'." }
         val documentUrl = URI(documentUrlString)
-        val metaData = client.getInformatieObject(authenticationPluginConfiguration, documentUrl)
-        val content = client.downloadInformatieObjectContent(authenticationPluginConfiguration, documentUrl)
+        val caseDocumentId = UUID.fromString(execution.businessKey)
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+
+        val metaData = client.getInformatieObject(
+            authenticationPluginConfiguration,
+            caseDocumentId,
+            documentUrl
+        )
+        val content = client.downloadInformatieObjectContent(
+            authenticationPluginConfiguration,
+            caseDocumentId,
+            documentUrl
+        )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
         metaDataMap[MetadataType.DOCUMENT_ID.key] = execution.businessKey
@@ -237,29 +248,36 @@ class DocumentenApiPlugin(
         return tempResourceId
     }
 
-    fun downloadInformatieObject(objectId: String): InputStream {
-        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId)
+    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {
+        return client.downloadInformatieObjectContent(authenticationPluginConfiguration, url, objectId, caseDocumentId)
     }
 
-    fun getInformatieObject(objectId: String): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, url, objectId)
+    fun getInformatieObject(objectId: String, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, url, caseDocumentId,objectId)
     }
 
-    fun getInformatieObject(objectUrl: URI): DocumentInformatieObject {
-        return client.getInformatieObject(authenticationPluginConfiguration, objectUrl)
+    fun getInformatieObject(objectUrl: URI, caseDocumentId: UUID?): DocumentInformatieObject {
+        return client.getInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun getInformatieObjecten(
+        documentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
-        return client.getInformatieObjecten(authenticationPluginConfiguration, url, pageable, documentSearchRequest)
+        return client.getInformatieObjecten(
+            authenticationPluginConfiguration,
+            documentId,
+            url,
+            pageable,
+            documentSearchRequest
+        )
     }
 
-    fun deleteInformatieObject(objectUrl: URI) {
+    fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
-        client.deleteInformatieObject(authenticationPluginConfiguration, objectUrl)
+        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
+        client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
     }
 
     fun createInformatieObjectUrl(objectId: String) = UriComponentsBuilder
@@ -268,7 +286,11 @@ class DocumentenApiPlugin(
         .build()
         .toUri()
 
-    fun modifyInformatieObject(documentUrl: URI, patchDocumentRequest: PatchDocumentRequest): DocumentInformatieObject {
+    fun modifyInformatieObject(
+        caseDocumentId: UUID?,
+        documentUrl: URI,
+        patchDocumentRequest: PatchDocumentRequest
+    ): DocumentInformatieObject {
         val documentLock = client.lockInformatieObject(authenticationPluginConfiguration, documentUrl)
         try {
             patchDocumentRequest.lock = documentLock.lock
@@ -276,14 +298,19 @@ class DocumentenApiPlugin(
             runWithoutAuthorization {
                 require(
                     documentenApiVersionService.getVersionByTag(apiVersion).supportsUpdatingDefinitiveDocument
-                        || getInformatieObject(documentUrl).status != DocumentStatusType.DEFINITIEF
+                        || getInformatieObject(objectUrl = documentUrl, caseDocumentId).status != DocumentStatusType.DEFINITIEF
                 ) {
                     "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated in Documenten API with '$apiVersion'"
                 }
             }
 
             val modifiedDocument =
-                client.modifyInformatieObject(authenticationPluginConfiguration, documentUrl, patchDocumentRequest)
+                client.modifyInformatieObject(
+                    authenticationPluginConfiguration,
+                    documentUrl,
+                    patchDocumentRequest,
+                    caseDocumentId
+                )
             return modifiedDocument
         } finally {
             client.unlockInformatieObject(authenticationPluginConfiguration, documentUrl, documentLock)
@@ -341,6 +368,9 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
+        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
+            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
                 augmentedMetadata,
@@ -365,12 +395,21 @@ class DocumentenApiPlugin(
             beschrijving = beschrijving ?: getUploadField(augmentedMetadata, BESCHRIJVING_FIELD),
             ontvangstdatum = getLocalDateFromMetaData(augmentedMetadata, ONTVANGSTDATUM_FIELD),
             verzenddatum = getLocalDateFromMetaData(augmentedMetadata, VERZENDDATUM_FIELD),
-            informatieobjecttype = informatieobjecttype ?: getUploadField(augmentedMetadata, INFORMATIEOBJECTTYPE_FIELD),
+            informatieobjecttype = informatieobjecttype ?: getUploadField(
+                augmentedMetadata,
+                INFORMATIEOBJECTTYPE_FIELD
+            ),
             formaat = getUploadField(augmentedMetadata, FORMAAT_FIELD),
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }
-        val documentCreateResult = client.storeDocument(authenticationPluginConfiguration, url, request)
+
+        val documentCreateResult = client.storeDocument(
+            authenticationPluginConfiguration,
+            url,
+            caseDocumentId,
+            request
+        )
 
         val event = DocumentCreated(
             documentCreateResult.url,
