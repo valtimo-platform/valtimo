@@ -72,7 +72,9 @@
           ></valtimo-assign-user-to-task>
 
           <valtimo-set-task-due-date
+            [task]="obs.task"
             [canModifyTask]="obs.canModifyTask"
+            (dueDateChanged)="onDueDateChanged()"
           ></valtimo-set-task-due-date>
         }
       </div>
