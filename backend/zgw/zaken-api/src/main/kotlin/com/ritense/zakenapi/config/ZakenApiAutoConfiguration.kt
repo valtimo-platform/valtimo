@@ -146,12 +146,14 @@ class ZakenApiAutoConfiguration {
         catalogiService: CatalogiService,
         documentenApiService: DocumentenApiService,
         documentenApiVersionService: DocumentenApiVersionService,
+        authorizationService: AuthorizationService,
     ) = ZaakDocumentService(
         zaakUrlProvider,
         pluginService,
         catalogiService,
         documentenApiService,
         documentenApiVersionService,
+        authorizationService
     )
 
     @Bean
