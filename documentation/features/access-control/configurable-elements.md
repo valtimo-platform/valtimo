@@ -42,7 +42,7 @@ _**Before Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -55,7 +55,7 @@ _**Before Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -76,7 +76,7 @@ _**Since Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
