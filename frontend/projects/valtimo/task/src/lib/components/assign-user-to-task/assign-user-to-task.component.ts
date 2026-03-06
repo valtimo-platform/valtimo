@@ -235,7 +235,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   public onOpenEditToggletip(): void {
     this.editToggletipOpen$.next(true);
-    this._selectedUserId$.next(this.assignedIdOnServer$.getValue());
+    this._selectedUserId$.next(null);
     this.resetComboBox();
   }
 

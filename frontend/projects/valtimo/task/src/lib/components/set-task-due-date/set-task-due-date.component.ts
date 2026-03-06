@@ -144,7 +144,10 @@ export class SetTaskDueDateComponent {
 
   public onDateValueChange(value: Date[]): void {
     const date = Array.isArray(value) && value[0];
-    if (!date) return;
+    if (!date) {
+      this.selectedDateString$.next('');
+      return;
+    }
     this.selectedDateString$.next(date.toISOString());
   }
 
