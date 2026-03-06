@@ -1542,9 +1542,13 @@
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
     "fetchingUsers": "Gebruikers ophalen...",
-    "buttonText": "Gebruiker toewijzen",
+    "buttonText": "Toewijzen",
+    "assignToMe": "Aan mij toewijzen",
+    "assignToOtherUser": "Aan andere gebruiker toewijzen",
     "submitButtonText": "Gebruiker toewijzen aan taak",
-    "comboboxLabel": "Selecteer gebruiker om toe te wijzen"
+    "comboboxLabel": "Selecteer gebruiker om toe te wijzen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
@@ -2104,7 +2108,9 @@
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
-    "removeButtonText": "Einddatum verwijderen"
+    "removeButtonText": "Einddatum verwijderen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
