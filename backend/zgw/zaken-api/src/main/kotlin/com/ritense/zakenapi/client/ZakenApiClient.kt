@@ -106,14 +106,15 @@ class ZakenApiClient(
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID,
         baseUrl: URI,
-        request: LinkDocumentRequest
+        request: LinkDocumentRequest,
     ): LinkDocumentResult {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -139,7 +140,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        page: Int
+        page: Int,
     ): Page<ZaakObject> {
         val result = buildRestClient(authentication)
             .get()
@@ -161,7 +162,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        objectUrl: URI
+        objectUrl: URI,
     ): ZaakObject? {
         val result = buildRestClient(authentication)
             .get()
@@ -183,6 +184,7 @@ class ZakenApiClient(
 
     fun getZaakInformatieObjecten(
         authentication: ZakenApiAuthentication,
+        caseDocumentId: UUID?,
         baseUrl: URI,
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
@@ -191,7 +193,7 @@ class ZakenApiClient(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission()
+                    ResourcePermission(caseDocumentId)
                 )
             )
         ) {
@@ -253,7 +255,7 @@ class ZakenApiClient(
         baseUrl: URI,
         zaakUrl: URI,
         page: Int,
-        omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null
+        omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null,
     ): Page<Rol> {
         val result = buildRestClient(authentication)
             .get()
@@ -279,7 +281,7 @@ class ZakenApiClient(
     fun createZaakRol(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        rol: Rol
+        rol: Rol,
     ): Rol {
         val result = buildRestClient(authentication)
             .post()
@@ -324,7 +326,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         rolUuid: UUID,
-        rol: Rol
+        rol: Rol,
     ): Rol {
         val result = buildRestClient(authentication)
             .put()
@@ -722,7 +724,12 @@ class ZakenApiClient(
         return result
     }
 
-    fun deleteZaakInformatieObject(authentication: ZakenApiAuthentication, baseUrl: URI, zaakInformatieobjectUrl: URI) {
+    fun deleteZaakInformatieObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID?
+    ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
         }
@@ -730,7 +737,7 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -767,7 +774,7 @@ class ZakenApiClient(
     fun createZaakObject(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        request: com.ritense.zakenapi.domain.ZaakObjectRequest
+        request: com.ritense.zakenapi.domain.ZaakObjectRequest,
     ): ZaakObject {
         val convertedRequest: ZaakObjectRequest = if (request.objectType == ZaakObjectType.OVERIGE.value) {
             ZaakObjectOverigeRequest(
@@ -789,7 +796,7 @@ class ZakenApiClient(
     fun createZaakObject(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        request: ZaakObjectRequest
+        request: ZaakObjectRequest,
     ): ZaakObject {
         validateUrlHost(baseUrl, request.zaakUrl)
         requireNotNull(request.zaakUrl)
@@ -844,7 +851,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         notitieUrl: URI,
-        request: PutZaakNotitieRequest
+        request: PutZaakNotitieRequest,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, notitieUrl)
         validateUrlHost(baseUrl, request.gerelateerdAan)
@@ -871,7 +878,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         notitieUrl: URI,
-        request: PatchZaakNotitieRequest
+        request: PatchZaakNotitieRequest,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, notitieUrl)
         if (request.gerelateerdAan != null) {
@@ -899,7 +906,7 @@ class ZakenApiClient(
     fun deleteZaakNotitie(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        notitieUrl: URI
+        notitieUrl: URI,
     ) {
         validateUrlHost(baseUrl, notitieUrl)
         buildRestClient(authentication)
@@ -920,7 +927,7 @@ class ZakenApiClient(
     fun getZaakNotitie(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        zaakNotitieUrl: URI
+        zaakNotitieUrl: URI,
     ): ZaakNotitie {
         validateUrlHost(baseUrl, zaakNotitieUrl)
         return buildRestClient(authentication)
@@ -942,7 +949,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakUrl: URI,
-        page: Int
+        page: Int,
     ): Page<ZaakNotitie> {
         validateUrlHost(baseUrl, zaakUrl)
         return buildRestClient(authentication)

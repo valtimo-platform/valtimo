@@ -86,7 +86,7 @@ class ZakenApiEventListenerTest {
         zakenApiEventListener.handle(event)
 
         verify(zakenApiPlugin).createZaak(
-            documentId = any<UUID>(),
+            caseDocumentId = any<UUID>(),
             rsin = any(),
             zaaktypeUrl = any(),
             description = anyOrNull(),
@@ -122,7 +122,7 @@ class ZakenApiEventListenerTest {
         zakenApiEventListener.handle(event)
 
         verify(zakenApiPlugin, never()).createZaak(
-            documentId = any<UUID>(),
+            caseDocumentId = any<UUID>(),
             rsin = any(),
             zaaktypeUrl = any(),
             description = anyOrNull(),
@@ -159,7 +159,7 @@ class ZakenApiEventListenerTest {
         zakenApiEventListener.handle(event)
 
         verify(zakenApiPlugin, never()).createZaak(
-            documentId = any<UUID>(),
+            caseDocumentId = any<UUID>(),
             rsin = any(),
             zaaktypeUrl = any(),
             description = anyOrNull(),
