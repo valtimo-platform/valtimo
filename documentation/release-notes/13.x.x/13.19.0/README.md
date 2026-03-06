@@ -19,4 +19,4 @@ This improvement helps case handlers working on multiple cases to quickly distin
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed a bug where a process link on a User Task was sometimes not executed.
