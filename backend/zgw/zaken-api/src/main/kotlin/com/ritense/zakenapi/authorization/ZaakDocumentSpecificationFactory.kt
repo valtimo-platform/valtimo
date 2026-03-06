@@ -20,22 +20,22 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
-import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.zakenapi.domain.ZaakDocument
 import org.springframework.stereotype.Component
 
 @Component
 @SkipComponentScan
-class ZaakDocumentSpecificationFactory : AuthorizationSpecificationFactory<RelatedFileDto> {
+class ZaakDocumentSpecificationFactory : AuthorizationSpecificationFactory<ZaakDocument> {
 
     override fun create(
-        request: AuthorizationRequest<RelatedFileDto>,
+        request: AuthorizationRequest<ZaakDocument>,
         permissionSupplier: () -> List<Permission>
-    ): AuthorizationSpecification<RelatedFileDto> {
+    ): AuthorizationSpecification<ZaakDocument> {
         return ZaakDocumentSpecification(request, permissionSupplier)
     }
 
     override fun canCreate(request: AuthorizationRequest<*>, permissionSupplier: () -> List<Permission>): Boolean {
-        return RelatedFileDto::class.java == request.resourceType
+        return ZaakDocument::class.java == request.resourceType
     }
 }

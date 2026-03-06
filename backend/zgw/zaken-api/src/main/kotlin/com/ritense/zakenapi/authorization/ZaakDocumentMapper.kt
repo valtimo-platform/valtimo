@@ -19,8 +19,8 @@ package com.ritense.zakenapi.authorization
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationEntityMapperResult
-import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.resource.authorization.ResourcePermission
+import com.ritense.zakenapi.domain.ZaakDocument
 import com.ritense.zakenapi.service.ZaakDocumentService
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -29,14 +29,14 @@ import jakarta.persistence.criteria.Root
 class ZaakDocumentMapper(
     private val zaakDocumentService: ZaakDocumentService
 
-) : AuthorizationEntityMapper<ResourcePermission, RelatedFileDto> {
+) : AuthorizationEntityMapper<ResourcePermission, ZaakDocument> {
 
     override fun mapRelated(
         entity: ResourcePermission
-    ): List<RelatedFileDto> {
+    ): List<ZaakDocument> {
         return runWithoutAuthorization {
             entity.caseDocumentId?.let { caseDocumentId ->
-                zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
+                zaakDocumentService.getInformatieObjectenAsZaakDocumenten(caseDocumentId)
                     .filter { it.informatieobjecttype == entity.informatieobjecttype }
             } ?: emptyList()
         }
@@ -46,11 +46,11 @@ class ZaakDocumentMapper(
         root: Root<ResourcePermission>,
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
-    ): AuthorizationEntityMapperResult<RelatedFileDto> {
-        throw UnsupportedOperationException("Mapping query for ResourcePermission to RelatedFileDto is not supported")
+    ): AuthorizationEntityMapperResult<ZaakDocument> {
+        throw UnsupportedOperationException("Mapping query for ResourcePermission to ZaakDocument is not supported")
     }
 
     override fun supports(fromClass: Class<*>, toClass: Class<*>): Boolean {
-        return fromClass == ResourcePermission::class.java && toClass == RelatedFileDto::class.java
+        return fromClass == ResourcePermission::class.java && toClass == ZaakDocument::class.java
     }
 }

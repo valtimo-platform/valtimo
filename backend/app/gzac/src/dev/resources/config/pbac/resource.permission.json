@@ -68,7 +68,7 @@
                 },
                 {
                     "type": "container",
-                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "resourceType": "com.ritense.zakenapi.domain.ZaakDocument",
                     "conditions": [
                         {
                             "type": "field",
@@ -101,7 +101,7 @@
                 },
                 {
                     "type": "container",
-                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "resourceType": "com.ritense.zakenapi.domain.ZaakDocument",
                     "conditions": [
                         {
                             "type": "field",
@@ -134,7 +134,7 @@
                 },
                 {
                     "type": "container",
-                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "resourceType": "com.ritense.zakenapi.domain.ZaakDocument",
                     "conditions": [
                         {
                             "type": "field",
@@ -167,7 +167,7 @@
                 },
                 {
                     "type": "container",
-                    "resourceType": "com.ritense.documentenapi.web.rest.dto.RelatedFileDto",
+                    "resourceType": "com.ritense.zakenapi.domain.ZaakDocument",
                     "conditions": [
                         {
                             "type": "field",

@@ -47,6 +47,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.ExtractUuid.extractUuidFromUri
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
+import com.ritense.zakenapi.domain.ZaakDocument
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
@@ -85,6 +86,22 @@ class ZaakDocumentService(
 
         return zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
             .map { getRelatedFiles(it) }
+    }
+
+    fun getInformatieObjectenAsZaakDocumenten(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) caseDocumentId: UUID,
+    ): List<ZaakDocument> {
+        val zaakUri = zaakUrlProvider.getZaakUrl(caseDocumentId)
+
+        val zakenApiPlugin = checkNotNull(
+            pluginService.createInstance(
+                ZakenApiPlugin::class.java,
+                ZakenApiPlugin.findConfigurationByUrl(zaakUri)
+            )
+        ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
+
+        return zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
+            .map { getZaakDocument(it) }
     }
 
     fun getInformatieObjectenAsRelatedFilesPage(
@@ -182,6 +199,44 @@ class ZaakDocumentService(
         val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
         val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
         return mapRelatedFile(informatieObject, pluginConfiguration)
+    }
+
+    private fun getZaakDocument(zaakInformatieObject: ZaakInformatieObject): ZaakDocument {
+        val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
+        val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
+        val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak)
+            ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
+        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
+        return mapZaakDocument(informatieObject, pluginConfiguration)
+    }
+
+    private fun mapZaakDocument(
+        informatieObject: DocumentInformatieObject,
+        pluginConfiguration: PluginConfiguration,
+    ): ZaakDocument {
+        return ZaakDocument(
+            fileId = UUID.fromString(informatieObject.url.path.substringAfterLast("/")),
+            fileName = informatieObject.bestandsnaam,
+            sizeInBytes = informatieObject.bestandsomvang,
+            createdOn = informatieObject.creatiedatum.atStartOfDay(),
+            createdBy = informatieObject.auteur,
+            author = informatieObject.auteur,
+            title = informatieObject.titel,
+            status = informatieObject.status?.key,
+            language = informatieObject.taal,
+            pluginConfigurationId = pluginConfiguration.id.id,
+            identification = informatieObject.identificatie,
+            description = informatieObject.beschrijving,
+            informatieobjecttype = informatieObject.informatieobjecttype,
+            informatieobjecttypeOmschrijving = getInformatieobjecttypeOmschrijvingByUri(informatieObject.informatieobjecttype),
+            keywords = informatieObject.trefwoorden,
+            format = informatieObject.formaat,
+            sendDate = informatieObject.verzenddatum,
+            receiptDate = informatieObject.ontvangstdatum,
+            confidentialityLevel = informatieObject.vertrouwelijkheidaanduiding?.key,
+            version = informatieObject.versie,
+            indicationUsageRights = informatieObject.indicatieGebruiksrecht
+        )
     }
 
     private fun mapRelatedFile(
@@ -358,6 +413,7 @@ class ZaakDocumentService(
 
     fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String, informatieobjecttype: String?) =
         documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId, informatieobjecttype)
+
     private fun getVerifiedInformatieObject(
         pluginConfigurationId: String,
         caseDocumentId: UUID,
@@ -384,9 +440,6 @@ class ZaakDocumentService(
 
         return Pair(documentenApiPlugin, informatieobjectUrl)
     }
-
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
     fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
         documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)

@@ -19,26 +19,26 @@ package com.ritense.zakenapi.authorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
-import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
+import com.ritense.zakenapi.domain.ZaakDocument
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 
 class ZaakDocumentSpecification(
-    authRequest: AuthorizationRequest<RelatedFileDto>,
+    authRequest: AuthorizationRequest<ZaakDocument>,
     permissionSupplier: () -> List<Permission>,
-) : AuthorizationSpecification<RelatedFileDto>(authRequest, permissionSupplier) {
+) : AuthorizationSpecification<ZaakDocument>(authRequest, permissionSupplier) {
 
     override fun toPredicate(
-        root: Root<RelatedFileDto>,
+        root: Root<ZaakDocument>,
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
         throw NotImplementedError()
     }
 
-    override fun identifierToEntity(identifier: String): RelatedFileDto {
+    override fun identifierToEntity(identifier: String): ZaakDocument {
         throw NotImplementedError()
     }
 }
