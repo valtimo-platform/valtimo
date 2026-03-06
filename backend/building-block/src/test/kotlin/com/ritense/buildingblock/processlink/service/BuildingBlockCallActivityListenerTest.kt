@@ -29,6 +29,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
@@ -112,7 +113,7 @@ class BuildingBlockCallActivityListenerTest {
         )
         .thenReturn(buildingBlockInstance)
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
         val capturedContent = requestCaptor.firstValue.content()
         assertThat(capturedContent.get("name").asText()).isEqualTo("Ada Lovelace")
@@ -187,7 +188,7 @@ class BuildingBlockCallActivityListenerTest {
         )
         .thenReturn(newBBInstance)
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
         val capturedContent = requestCaptor.firstValue.content()
         assertThat(capturedContent.get("input").asText()).isEqualTo("parent data")
@@ -202,7 +203,7 @@ class BuildingBlockCallActivityListenerTest {
         }
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(emptyList())
 
-        listener.onCallActivityStart(execution)
+        listener.onCallActivityStart(OperatonExecutionEvent(execution))
 
         verify(buidingBlockInstanceService, never()).create(any(), any(), any(), any())
     }
@@ -268,7 +269,7 @@ class BuildingBlockCallActivityListenerTest {
             )
         ).thenReturn(mapOf("doc:/result" to "value"))
 
-        listener.onCallActivityEnd(execution)
+        listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 
         verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/result" to "value"))
     }
