@@ -1320,17 +1320,14 @@ class ZakenApiPlugin(
         return results.singleOrNull()
     }
 
-    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI, caseDocumentId: UUID?) {
-    fun getZaakInformatieObjectByUrl(zaakInformatieobjectUrl: URI): ZaakInformatieObject? {
-        logger.debug { "Fetching zaak informatie object by url: '$zaakInformatieobjectUrl'" }
-        val results = client.getZaakInformatieObject(
+    fun getZaakInformatieObjectByUrl(zaakInformatieobjectUrl: URI, caseDocumentId: UUID) =
+        client.getZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
             zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId
         )
-        return results
-    }
 
-    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
+    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI, caseDocumentId: UUID?) {
         logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
         client.deleteZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
@@ -1549,7 +1546,6 @@ class ZakenApiPlugin(
     }
 
     fun patchZaakNotitie(
-
         zaakNotitieUrl: URI,
         onderwerp: String? = null,
         tekst: String? = null,

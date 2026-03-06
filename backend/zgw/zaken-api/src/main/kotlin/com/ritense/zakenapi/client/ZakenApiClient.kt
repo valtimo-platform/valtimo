@@ -225,12 +225,13 @@ class ZakenApiClient(
     fun getZaakInformatieObject(
         authentication: ZakenApiAuthentication,
         zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID
     ): ZaakInformatieObject? {
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
                     ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission()
+                    ResourcePermission(caseDocumentId)
                 )
             )
         ) {

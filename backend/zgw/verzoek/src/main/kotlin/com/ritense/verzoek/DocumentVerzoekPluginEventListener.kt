@@ -84,7 +84,8 @@ class DocumentVerzoekPluginEventListener(
             matchingCaseDefinition(it, zaakType)
         }?.let {
             handleNewDocumentEvent(event, plugin)
-        }?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No matching CaseDefinition found for zaakType '$zaakType'" }
+        }
+            ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No matching CaseDefinition found for zaakType '$zaakType'" }
     }
 
     private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
@@ -103,17 +104,23 @@ class DocumentVerzoekPluginEventListener(
         plugin: DocumentVerzoekPlugin,
     ) {
         zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!)).let { zaak ->
-            plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(URI(event.resourceUrl))?.let { zaakInformatieObject ->
-                plugin.documentenApiPlugin.getInformatieObject(zaakInformatieObject.informatieobject)
-                    .let { informatieObject ->
-                        sendMessage(
-                            zaak.documentId.toString(),
-                            plugin.eventMessage,
-                            zaakInformatieObject,
-                            informatieObject
-                        )
-                    }
-            }?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
+            plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(
+                URI(event.resourceUrl),
+                zaak.documentId
+            )?.let { zaakInformatieObject ->
+                plugin.documentenApiPlugin.getInformatieObject(
+                    zaakInformatieObject.informatieobject,
+                    zaak.documentId
+                ).let { informatieObject ->
+                    sendMessage(
+                        zaak.documentId.toString(),
+                        plugin.eventMessage,
+                        zaakInformatieObject,
+                        informatieObject
+                    )
+                }
+            }
+                ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
         }
     }
 
