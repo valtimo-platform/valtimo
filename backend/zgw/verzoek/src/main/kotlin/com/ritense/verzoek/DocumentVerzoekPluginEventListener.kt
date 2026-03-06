@@ -27,10 +27,12 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.verzoek.domain.DocumentVerzoekProperties
+import com.ritense.zakenapi.ExtractUuid
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -48,6 +50,7 @@ class DocumentVerzoekPluginEventListener(
     private val processDocumentService: OperatonProcessJsonSchemaDocumentAssociationService,
     private val documentService: DocumentService,
     private val pluginService: PluginService,
+    private val environment: Environment
 ) {
 
     @Transactional
@@ -91,7 +94,8 @@ class DocumentVerzoekPluginEventListener(
     private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
         caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
             zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
-                if (zaakTypeLink.zaakTypeUrl == URI(zaakType)) {
+                if (ExtractUuid.extractUuidFromUri(zaakTypeLink.zaakTypeUrl) ==
+                    ExtractUuid.extractUuidFromUri(zaakType)) {
                     return true
                 }
             }
@@ -103,15 +107,22 @@ class DocumentVerzoekPluginEventListener(
         event: NotificatiesApiNotificationReceivedEvent,
         plugin: DocumentVerzoekPlugin,
     ) {
-        zaakInstanceLinkService.getByZaakInstanceUrl(URI(event.hoofdObject!!)).let { zaak ->
+        val (zaakUrl, resourceUrl) = if( environment.activeProfiles.contains("dev") ) {
+            event.hoofdObject!!.replace("host.docker.internal", "localhost") to event.resourceUrl.replace("host.docker.internal", "localhost")
+        } else {
+            event.hoofdObject!! to event.resourceUrl
+        }
+
+        zaakInstanceLinkService.getByZaakInstanceUrl(URI(zaakUrl)).let { zaak ->
             plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(
-                URI(event.resourceUrl),
+                URI(resourceUrl),
                 zaak.documentId
             )?.let { zaakInformatieObject ->
                 plugin.documentenApiPlugin.getInformatieObject(
                     zaakInformatieObject.informatieobject,
                     zaak.documentId
                 ).let { informatieObject ->
+                    logger.info { "DocumentVerzoekPlugin: informatieObject '${informatieObject.informatieobjecttype}'" }
                     sendMessage(
                         zaak.documentId.toString(),
                         plugin.eventMessage,
@@ -119,8 +130,7 @@ class DocumentVerzoekPluginEventListener(
                         informatieObject
                     )
                 }
-            }
-                ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
+            }?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
         }
     }
 

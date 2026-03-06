@@ -144,12 +144,6 @@ class DocumentenApiClient(
         caseDocumentId: UUID?,
         objectUrl: URI
     ): DocumentInformatieObject {
-        val result = restClient(authentication)
-            .get()
-            .uri(objectUrl)
-            .retrieve()
-            .body<DocumentInformatieObject>()!!
-
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
@@ -157,6 +151,13 @@ class DocumentenApiClient(
                 ResourcePermission(caseDocumentId)
             )
         )
+
+        val result = restClient(authentication)
+            .get()
+            .uri(objectUrl)
+            .retrieve()
+            .body<DocumentInformatieObject>()!!
+
 
         outboxService.send {
             DocumentInformatieObjectViewed(

@@ -61,7 +61,9 @@ INSERT INTO catalogi_roltype(id, uuid, omschrijving, omschrijving_generiek, zaak
 SELECT setval(pg_get_serial_sequence('catalogi_roltype', 'id'), 1, true);
 
 INSERT INTO catalogi_informatieobjecttype(id, datum_begin_geldigheid, datum_einde_geldigheid, concept, uuid, omschrijving, vertrouwelijkheidaanduiding, catalogus_id, _etag, omschrijving_generiek_definitie, omschrijving_generiek_herkomst, omschrijving_generiek_hierarchie, omschrijving_generiek_informatieobjecttype, omschrijving_generiek_opmerking, trefwoord, informatieobjectcategorie) VALUES (1, '2021-10-04', NULL, false, 'efc332f2-be3b-4bad-9e3c-49a6219c92ad', 'test', 'zaakvertrouwelijk', 1, '_etag', '', '', '', '', '', '{"rood","rond","groot"}', '');
-SELECT setval(pg_get_serial_sequence('catalogi_informatieobjecttype', 'id'), 1, true);
+-- SELECT setval(pg_get_serial_sequence('catalogi_informatieobjecttype', 'id'), 1, true);
+INSERT INTO catalogi_informatieobjecttype(id, datum_begin_geldigheid, datum_einde_geldigheid, concept, uuid, omschrijving, vertrouwelijkheidaanduiding, catalogus_id, _etag, omschrijving_generiek_definitie, omschrijving_generiek_herkomst, omschrijving_generiek_hierarchie, omschrijving_generiek_informatieobjecttype, omschrijving_generiek_opmerking, trefwoord, informatieobjectcategorie) VALUES (2, '2024-11-12', NULL, false, '38548709-1da8-42df-93c2-f1b569446e4c', 'kofax', 'zaakvertrouwelijk', 1, '_etag', '', '', '', '', '', '{"groen","vierkant","klein"}', '');
+SELECT setval(pg_get_serial_sequence('catalogi_informatieobjecttype', 'id'), 2, true);
 
 INSERT INTO catalogi_besluittype
 (id, datum_begin_geldigheid, datum_einde_geldigheid, concept, uuid, omschrijving, omschrijving_generiek, besluitcategorie, reactietermijn, publicatie_indicatie, publicatietekst, publicatietermijn, toelichting, catalogus_id, _etag)
@@ -79,7 +81,9 @@ VALUES(1, 1, 1);
 SELECT setval(pg_get_serial_sequence('catalogi_besluittype_zaaktypen', 'id'), 1, true);
 
 INSERT INTO catalogi_zaaktypeinformatieobjecttype(id, uuid, volgnummer, richting, informatieobjecttype_id, statustype_id, zaaktype_id, _etag) VALUES (1, '405da8a9-7296-439c-a2eb-a470b84f17ee', 1, 'inkomend', 1, NULL, 1, '_etag');
-SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 1, true);
+-- SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 1, true);
+INSERT INTO catalogi_zaaktypeinformatieobjecttype(id, uuid, volgnummer, richting, informatieobjecttype_id, statustype_id, zaaktype_id, _etag) VALUES (2, '1aaa26ca-f121-4b6d-9407-ba549efed336', 2, 'inkomend', 2, NULL, 1, '_etag');
+SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 2, true);
 
 UPDATE notifications_notificationsconfig SET api_root = 'http://host.docker.internal:8002/api/v1/';
 

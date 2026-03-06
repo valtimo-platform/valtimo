@@ -33,4 +33,14 @@ object ExtractUuid {
         }
     }
 
+    fun extractUuidFromUri(uri: String): UUID? {
+        return try {
+            val lastSegment = uri.substringAfterLast("/").takeIf { it.isNotBlank() }
+
+            lastSegment?.let { UUID.fromString(it) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }

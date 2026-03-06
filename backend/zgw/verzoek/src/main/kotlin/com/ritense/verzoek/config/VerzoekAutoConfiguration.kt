@@ -34,6 +34,7 @@ import com.ritense.verzoek.VerzoekPluginFactory
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.service.ZaakTypeLinkService
+import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -109,7 +110,8 @@ class VerzoekAutoConfiguration {
         runtimeService: RuntimeService,
         operatonProcessJsonSchemaDocumentAssociationService: OperatonProcessJsonSchemaDocumentAssociationService,
         documentService: DocumentService,
-        pluginService: PluginService
+        pluginService: PluginService,
+        environment: Environment
     ): DocumentVerzoekPluginEventListener {
         return DocumentVerzoekPluginEventListener(
             zaakTypeLinkService,
@@ -118,7 +120,8 @@ class VerzoekAutoConfiguration {
             runtimeService,
             operatonProcessJsonSchemaDocumentAssociationService,
             documentService,
-            pluginService
+            pluginService,
+            environment
         )
     }
 }
