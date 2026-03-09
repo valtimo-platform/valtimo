@@ -53,6 +53,7 @@ class TaskCompletedListenerTest {
         when(delegateTask.getProcessInstanceId()).thenReturn("processInstanceId");
         when(delegateTask.getVariables()).thenReturn(mock(VariableMap.class));
         when(delegateTask.getExecution()).thenReturn(mock(DelegateExecution.class));
+        when(delegateTask.getEventName()).thenReturn("start");
     }
 
     @Test

@@ -116,6 +116,7 @@ class CallDepthExecutionListenerTest {
         whenever(processInstance.superExecution).thenReturn(superExecution)
         val execution = mock<DelegateExecution>()
         whenever(execution.processInstance).thenReturn(processInstance)
+        whenever(execution.eventName).thenReturn("start")
         return execution
     }
 

@@ -73,6 +73,7 @@ class BuildingBlockCallActivityListenerTest {
             on { processDefinitionId } doReturn "case-process"
             on { businessKey } doReturn caseDocumentId.toString()
             on { processBusinessKey } doReturn caseDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
         val inputMappings = listOf(
             BuildingBlockInputMapping(
@@ -153,6 +154,7 @@ class BuildingBlockCallActivityListenerTest {
             on { processDefinitionId } doReturn "parent-bb-process"
             on { businessKey } doReturn parentBBDocumentId.toString()
             on { processBusinessKey } doReturn parentBBDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
 
         val inputMappings = listOf(
@@ -200,6 +202,7 @@ class BuildingBlockCallActivityListenerTest {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
             on { businessKey } doReturn UUID.randomUUID().toString()
+            on { this.eventName } doReturn "start"
         }
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(emptyList())
 
@@ -218,6 +221,7 @@ class BuildingBlockCallActivityListenerTest {
             on { businessKey } doReturn caseDocumentId.toString()
             on { processDefinitionId } doReturn testProcessDefinitionId
             on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "start"
         }
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bb", "1.0.0")
