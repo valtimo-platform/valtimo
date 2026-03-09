@@ -44,15 +44,6 @@ class DocumentenApiPreviewService(
         return documentPreviewApiPlugin.generatePreview(documentId)
     }
 
-    private fun downloadDocument(
-        @LoggableResource(resourceType = PluginConfigurationId::class) documentApiConfigurationId: String,
-        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
-    ): InputStream {
-        logger.info { "Download document matching id: $documentId" }
-        val documentApiPlugin = pluginService.createInstance<DocumentenApiPlugin>(documentApiConfigurationId)
-        return documentApiPlugin.downloadInformatieObject(documentId)
-    }
-
     private fun getDocumentenApiPreviewPlugin(documentenApiConfigurationId: String): DocumentenApiPreviewPlugin {
         return checkNotNull(
             pluginService.createInstance(
@@ -60,9 +51,5 @@ class DocumentenApiPreviewService(
                 DocumentenApiPreviewPlugin.findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId)
             )
         ) { "Could not create instance of ${DocumentenApiPreviewPlugin::class.simpleName} based on documenten API configuration ID: $documentenApiConfigurationId" }
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }
