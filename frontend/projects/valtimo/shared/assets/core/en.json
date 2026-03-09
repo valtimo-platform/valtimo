@@ -1502,10 +1502,11 @@
     "taskCreated": "Created",
     "taskCompleted": "has successfully been completed",
     "assignedNotificationTitle": "Task assigned",
-    "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned",
-    "unknownAssignee": "unknown"
+    "dueDateSetNotificationTitle": "Due date set",
+    "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Due date removed",
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -1514,15 +1515,20 @@
     "remove": "Unassign",
     "save": "Save",
     "fetchingUsers": "Fetching users...",
-    "buttonText": "Assign user",
+    "buttonText": "Assign",
+    "assignToMe": "Assign to me",
+    "assignToOtherUser": "Assign to other user",
     "submitButtonText": "Assign user to task",
-    "comboboxLabel": "Select user to assign"
+    "comboboxLabel": "Select user to assign",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
-    "header": "Assign a user to this case",
+    "header": "Assign user",
     "remove": "Unassign",
-    "fetchingUsers": "Fetching users..."
+    "fetchingUsers": "Fetching users...",
+    "submitButtonText": "Assign user to case"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",
@@ -2069,7 +2075,9 @@
     "buttonText": "Set due date",
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",
-    "removeButtonText": "Remove due date"
+    "removeButtonText": "Remove due date",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {

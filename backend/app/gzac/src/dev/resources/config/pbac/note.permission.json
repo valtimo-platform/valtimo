@@ -1,5 +1,5 @@
 {
-    "changesetId": "notes-v1",
+    "changesetId": "notes-v2",
     "permissions": [
         {
             "resourceType": "com.ritense.note.domain.Note",
@@ -40,7 +40,7 @@
                     "type": "field",
                     "field": "createdByUserId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -53,7 +53,7 @@
                     "type": "field",
                     "field": "createdByUserId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         }

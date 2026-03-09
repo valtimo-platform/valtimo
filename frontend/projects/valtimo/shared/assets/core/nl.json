@@ -1529,10 +1529,11 @@
     "taskCreated": "Aangemaakt op",
     "taskCompleted": "is succesvol afgerond",
     "assignedNotificationTitle": "Taak toegewezen",
-    "assignedNotificationContent": "De taak is toegewezen aan",
     "unassignedNotificationTitle": "Taak niet meer toegewezen",
-    "unassignedNotificationContent": "De taak is niet meer aan iemand toegewezen",
-    "unknownAssignee": "onbekend"
+    "dueDateSetNotificationTitle": "Einddatum ingesteld",
+    "dueDateSetNotificationContent": "Einddatum '{{date}}' ingesteld voor taak '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Einddatum verwijderd",
+    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
@@ -1541,15 +1542,20 @@
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
     "fetchingUsers": "Gebruikers ophalen...",
-    "buttonText": "Gebruiker toewijzen",
+    "buttonText": "Toewijzen",
+    "assignToMe": "Aan mij toewijzen",
+    "assignToOtherUser": "Aan andere gebruiker toewijzen",
     "submitButtonText": "Gebruiker toewijzen aan taak",
-    "comboboxLabel": "Selecteer gebruiker om toe te wijzen"
+    "comboboxLabel": "Selecteer gebruiker om toe te wijzen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
-    "header": "Gebruiker toewijzen aan dit dossier",
+    "header": "Gebruiker toewijzen",
     "remove": "Toewijzing ongedaan maken",
-    "fetchingUsers": "Gebruikers ophalen..."
+    "fetchingUsers": "Gebruikers ophalen...",
+    "submitButtonText": "Gebruiker toewijzen aan dossier"
   },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
@@ -2102,7 +2108,9 @@
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
-    "removeButtonText": "Einddatum verwijderen"
+    "removeButtonText": "Einddatum verwijderen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,28 +25,24 @@ import {
   Renderer2,
   SimpleChanges,
 } from '@angular/core';
-import {
-  CdsThemeService,
-  RemoveClassnamesDirective,
-  SearchableDropdownSelectModule,
-} from '@valtimo/components';
+import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
-import {NamedUser} from '@valtimo/shared';
+import {NamedUser, UserIdentity} from '@valtimo/shared';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
   ComboBoxModule,
-  DatePickerModule,
   IconModule,
   IconService,
   LayerModule,
   ListItem,
   ToggletipModule,
 } from 'carbon-components-angular';
-import {UserFollow16} from '@carbon/icons';
+import {Edit16, UserFollow16, UserRole16} from '@carbon/icons';
 import {filter, map} from 'rxjs/operators';
+import {UserProviderService} from '@valtimo/security';
 
 @Component({
   selector: 'valtimo-assign-user-to-task',
@@ -56,18 +52,17 @@ import {filter, map} from 'rxjs/operators';
   imports: [
     CommonModule,
     TranslateModule,
-    SearchableDropdownSelectModule,
     ButtonModule,
     ToggletipModule,
     IconModule,
     LayerModule,
-    DatePickerModule,
     ComboBoxModule,
     RemoveClassnamesDirective,
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
-  private _taskId;
+  private _taskId: string;
+
   @Input() public set taskId(value: string) {
     if (this._taskId === value) return;
     this._taskId = value;
@@ -94,31 +89,38 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   private readonly _candidateUsersForTask$ = new BehaviorSubject<NamedUser[] | undefined>(
     undefined
   );
-
   private readonly _selectedUserId$ = new BehaviorSubject<string | null>(null);
   public readonly selectedUserId$ = this._selectedUserId$.asObservable();
 
-  public readonly candidateUsersForTask$ = combineLatest([
-    this._candidateUsersForTask$,
-    this._selectedUserId$,
-  ]).pipe(map(([users, selectedUserId]) => this.mapUsersForDropdown(users, selectedUserId)));
+  public readonly candidateUsersForTask$ = this._candidateUsersForTask$.pipe(
+    map(users => this.mapUsersForDropdown(users))
+  );
 
+  public readonly editCandidateUsersForTask$ = combineLatest([
+    this._candidateUsersForTask$,
+    this.assignedIdOnServer$,
+  ]).pipe(map(([users, assignedId]) => this.mapUsersForDropdown(users, assignedId)));
+
+  public readonly toggletipView$ = new BehaviorSubject<'choice' | 'dropdown'>('choice');
+  public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly mouseIsOverAssignee$ = new BehaviorSubject<boolean>(false);
+  public readonly showComboBox$ = new BehaviorSubject<boolean>(true);
   public readonly open$ = new Subject<boolean>();
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
-
-  public readonly toggletipTheme$ = this.cdsThemeService.currentTheme$;
+  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
+  public readonly toggletipDropdownTheme$ = this.cdsThemeService.toggletipDropdownTheme$;
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly taskService: TaskService,
+    private readonly cdsThemeService: CdsThemeService,
     private readonly iconService: IconService,
     private readonly elementRef: ElementRef,
     private readonly renderer2: Renderer2,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly userProviderService: UserProviderService
   ) {
-    this.iconService.registerAll([UserFollow16]);
+    this.iconService.registerAll([UserFollow16, UserRole16, Edit16]);
   }
 
   public ngOnInit(): void {
@@ -128,8 +130,11 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public ngOnChanges(changes: SimpleChanges): void {
     this._candidateUsersForTask$.pipe(take(1)).subscribe(candidateUsers => {
       const currentUserId = changes.assigneeId?.currentValue || this.assigneeId;
-      this.assignedIdOnServer$.next(currentUserId || null);
-      this._selectedUserId$.next(currentUserId || null);
+      const resolvedId = candidateUsers?.length
+        ? this.resolveUserId(candidateUsers, currentUserId)
+        : currentUserId;
+      this.assignedIdOnServer$.next(resolvedId || null);
+      this._selectedUserId$.next(resolvedId || null);
       this._assignedUserFullName$.next(
         this.getAssignedUserName(candidateUsers ?? [], currentUserId)
       );
@@ -169,9 +174,10 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .unassignTask(this._taskId)
       .pipe(
         tap(() => {
+          this.closeToggletip();
           this.emitChange();
           this.enable();
-          this.clear();
+          this.resetState();
         })
       )
       .subscribe();
@@ -179,8 +185,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   public getAssignedUserName(users: NamedUser[], userId: string): string {
     if (users && userId) {
-      const findUser =
-        users.find(user => user.id === userId) || users.find(user => user.userName === userId);
+      const findUser = this.findUserByIdOrUsername(users, userId);
       return findUser ? findUser.label : userId;
     }
     return userId || '-';
@@ -197,24 +202,99 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public onSubmitButtonClick(): void {
     this.assignTask(this._selectedUserId$.getValue());
   }
+
   public onUserSelect(event: ListItem): void {
     if (!event?.id) return;
     this._selectedUserId$.next(event.id);
   }
 
-  public clear(): void {
-    this.assignedIdOnServer$.next(null);
+  public onComboBoxClear(): void {
     this._selectedUserId$.next(null);
   }
 
-  private mapUsersForDropdown(users: NamedUser[], selectedUserId: string): ListItem[] {
+  public onAssignToMe(): void {
+    this.userProviderService
+      .getUserSubject()
+      .pipe(take(1))
+      .subscribe((currentUser: UserIdentity) => {
+        if (currentUser?.id) {
+          this.assignTask(currentUser.id);
+        }
+      });
+  }
+
+  public onAssignToOtherUser(): void {
+    this.toggletipView$.next('dropdown');
+    this._selectedUserId$.next(null);
+  }
+
+  public onOpenAssignToggletip(): void {
+    this.toggletipView$.next('choice');
+    this._selectedUserId$.next(null);
+  }
+
+  public onOpenEditToggletip(): void {
+    this.editToggletipOpen$.next(true);
+    this._selectedUserId$.next(null);
+    this.resetComboBox();
+  }
+
+  public onCloseEditToggletip(): void {
+    this.editToggletipOpen$.next(false);
+  }
+
+  public resetState(): void {
+    this.assignedIdOnServer$.next(null);
+    this._selectedUserId$.next(null);
+    this._assignedUserFullName$.next(null);
+    this.toggletipView$.next('choice');
+  }
+
+  private findUserByIdOrUsername(users: NamedUser[], identifier: string): NamedUser | undefined {
     return (
-      users
-        ?.map(user => ({...user, lastName: user.lastName?.split(' ').splice(-1)[0] || ''}))
-        .sort((a, b) => a.lastName.localeCompare(b.lastName))
-        .map(user => ({content: user.label, id: user.id, selected: user.id === selectedUserId})) ||
-      []
+      users.find(user => user.id === identifier) || users.find(user => user.userName === identifier)
     );
+  }
+
+  private resolveUserId(users: NamedUser[], identifier: string): string {
+    const user = this.findUserByIdOrUsername(users, identifier);
+    return user ? user.id : identifier;
+  }
+
+  private mapUsersForDropdown(users: NamedUser[], selectedUserId?: string): ListItem[] {
+    if (!users) return [];
+
+    return this.sortUsersWithCurrentUserFirst(users).map(user => ({
+      content: user.label,
+      id: user.id,
+      selected: selectedUserId ? user.id === selectedUserId : false,
+    }));
+  }
+
+  private sortUsersWithCurrentUserFirst(users: NamedUser[]): NamedUser[] {
+    let currentUserId: string | null = null;
+
+    this.userProviderService
+      .getUserSubject()
+      .pipe(take(1))
+      .subscribe((user: UserIdentity) => {
+        currentUserId = user?.id || null;
+      });
+
+    return users
+      .map(user => ({...user, lastName: user.lastName?.split(' ').splice(-1)[0] || ''}))
+      .sort((a, b) => {
+        if (currentUserId) {
+          if (a.id === currentUserId) return -1;
+          if (b.id === currentUserId) return 1;
+        }
+        return a.lastName.localeCompare(b.lastName);
+      });
+  }
+
+  private resetComboBox(): void {
+    this.showComboBox$.next(false);
+    setTimeout(() => this.showComboBox$.next(true));
   }
 
   private emitChange(): void {
@@ -230,7 +310,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private closeToggletip(): void {
-    // needed to reliably trigger toggle tip closure
+    this.editToggletipOpen$.next(false);
     this.open$.next(true);
     setTimeout(() => this.open$.next(false));
   }
@@ -247,8 +327,9 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
         this.taskService.getCandidateUsers(taskId).subscribe(candidateUsers => {
           this._candidateUsersForTask$.next(candidateUsers);
           if (this.assigneeId) {
-            this.assignedIdOnServer$.next(this.assigneeId);
-            this._selectedUserId$.next(this.assigneeId);
+            const resolvedId = this.resolveUserId(candidateUsers, this.assigneeId);
+            this.assignedIdOnServer$.next(resolvedId);
+            this._selectedUserId$.next(resolvedId);
             this._assignedUserFullName$.next(
               this.getAssignedUserName(candidateUsers, this.assigneeId)
             );
@@ -260,17 +341,15 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   private openHideElementSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.selectedUserId$,
-        this.assignedIdOnServer$,
-        this.canAssignUserToTask$,
-      ]).subscribe(([selectedUserId, idOnServer, canAssignUserToTask]) => {
-        if (!canAssignUserToTask && !(selectedUserId === idOnServer && idOnServer !== null)) {
-          this.renderer2.setStyle(this.elementRef.nativeElement, 'display', 'none');
-        } else {
-          this.renderer2.removeStyle(this.elementRef.nativeElement, 'display');
+      combineLatest([this.assignedIdOnServer$, this.canAssignUserToTask$]).subscribe(
+        ([idOnServer, canAssignUserToTask]) => {
+          if (!canAssignUserToTask && idOnServer === null) {
+            this.renderer2.setStyle(this.elementRef.nativeElement, 'display', 'none');
+          } else {
+            this.renderer2.removeStyle(this.elementRef.nativeElement, 'display');
+          }
         }
-      })
+      )
     );
   }
 }
