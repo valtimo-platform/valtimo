@@ -32,6 +32,7 @@ import {
   map,
   Observable,
   Subscription,
+  switchMap,
   take,
   tap,
 } from 'rxjs';
@@ -193,6 +194,10 @@ export class DocumentVerzoekConfigurationComponent
     const caseDefinitionKey = formValue?.caseDefinitionKey;
   }
 
+  informatieObjectTypeFormChange(formValue: DocumentType, uuid: string): void {
+    const fietsDefinitionKey = formValue;
+  }
+
   deleteRow(uuid: string): void {}
 
   private handleValid(formValue: DocumentVerzoekConfig): void {
@@ -201,6 +206,7 @@ export class DocumentVerzoekConfigurationComponent
       formValue.notificatiesApiPluginConfiguration &&
       formValue.zakenApiPlugin &&
       formValue.documentenApiPlugin &&
+      formValue.externalDocumentType &&
       formValue.eventMessage
     );
     const verzoekTypen = formValue.documentVerzoekProperties || [];

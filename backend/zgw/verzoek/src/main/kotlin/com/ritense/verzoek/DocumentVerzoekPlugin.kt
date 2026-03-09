@@ -30,6 +30,7 @@ import com.ritense.verzoek.domain.DocumentVerzoekProperties
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import jakarta.validation.Valid
+import java.net.URI
 
 @Plugin(
     key = "document-verzoek",
@@ -51,8 +52,15 @@ class DocumentVerzoekPlugin(
     @PluginProperty(key = "documentenApiPlugin", secret = false)
     lateinit var documentenApiPlugin: DocumentenApiPlugin
 
+    @PluginProperty(key = "externalDocumentType", secret = false)
+    lateinit var externalDocumentType: URI
+
     @PluginProperty(key = "eventMessage", secret = false)
     lateinit var eventMessage: String
+
+//    @Valid
+//    @PluginProperty(key = "informatieObjectTypen", secret = false)
+//    lateinit var informatieObjectTypen: List<String>
 
     @Valid
     @PluginProperty(key = "documentVerzoekProperties", secret = false)

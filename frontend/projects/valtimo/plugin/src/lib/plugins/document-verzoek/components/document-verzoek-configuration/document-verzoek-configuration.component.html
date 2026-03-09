@@ -95,6 +95,19 @@
           placeholder=""
   >
   </v-input>
+  <v-input
+          name="externalDocumentType"
+          data-test-id="externalDocumentType"
+          [title]="'externalDocumentType' | pluginTranslate: pluginId | async"
+          [margin]="true"
+          [disabled]="obs.disabled"
+          [defaultValue]="obs.prefill?.externalDocumentType"
+          [required]="true"
+          [trim]="true"
+          [tooltip]="'externalDocumentTypeTooltip' | pluginTranslate: pluginId | async"
+          placeholder=""
+  >
+  </v-input>
   <v-multi-input-form
           name="documentVerzoekProperties"
           data-test-id="documentVerzoekProperties"
@@ -110,7 +123,6 @@
   >
   </v-multi-input-form>
 </v-form>
-
 <ng-template
         #caseTypeForm
         let-index="index"
