@@ -27,11 +27,106 @@
     {
         "resourceType": "com.ritense.resource.authorization.ResourcePermission",
         "action": "view_list",
-        "roleKey": "ROLE_USER"
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "action": "view",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
         "resourceType": "com.ritense.resource.authorization.ResourcePermission",
         "action": "create",
-        "roleKey": "ROLE_USER"
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "action": "modify",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "action": "delete",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 ]

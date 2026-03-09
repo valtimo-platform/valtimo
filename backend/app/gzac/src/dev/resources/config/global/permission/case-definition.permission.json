@@ -10,5 +10,17 @@
         "action": "view",
         "roleKey": "ROLE_ADMIN",
         "conditions": []
+    },
+    {
+        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+        "roleKey": "ROLE_USER",
+        "action": "view_list",
+        "conditions": []
+    },
+    {
+        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+        "roleKey": "ROLE_USER",
+        "action": "view",
+        "conditions": []
     }
 ]
