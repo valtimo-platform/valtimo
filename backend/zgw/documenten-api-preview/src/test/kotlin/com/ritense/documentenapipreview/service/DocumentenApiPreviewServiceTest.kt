@@ -22,11 +22,10 @@ class DocumentenApiPreviewServiceTest {
 
     @Test
     fun `should call plugin to generate preview for document`() {
-        val documentApiConfigurationId = "dummy_document_api_configuration_id"
-        val documentId = "dummy_document_identifier"
+        val documentApiConfigurationId = "mock_document_api_configuration_id"
+        val documentId = "mock_document_identifier"
         val pluginInstance = mock<DocumentenApiPreviewPlugin>()
-        whenever(pluginService
-            .createInstance<DocumentenApiPreviewPlugin>(any(), any()))
+        whenever(pluginService.createInstance<DocumentenApiPreviewPlugin>(any(), any()))
             .thenReturn(pluginInstance)
 
         documentenApiPreviewService.generatePreview(documentApiConfigurationId, documentId)
