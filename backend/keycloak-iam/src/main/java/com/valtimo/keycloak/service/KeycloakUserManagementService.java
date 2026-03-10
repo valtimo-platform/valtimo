@@ -16,13 +16,9 @@
 
 package com.valtimo.keycloak.service;
 
-import static com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsLast;
-
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.TeamProvider;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.UserNotFoundException;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
@@ -49,6 +45,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
+
+import static com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT;
+
 public class KeycloakUserManagementService implements UserManagementService {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserManagementService.class);
     protected static final int MAX_USERS = 100000;
@@ -58,15 +60,18 @@ public class KeycloakUserManagementService implements UserManagementService {
     private final KeycloakService keycloakService;
     private final String clientName;
     private final UserCache userCache;
+    private final TeamProvider teamProvider;
 
     public KeycloakUserManagementService(
         KeycloakService keycloakService,
         String keycloakClientName,
-        UserCache userCache
+        UserCache userCache,
+        TeamProvider teamProvider
     ) {
         this.keycloakService = keycloakService;
         this.clientName = keycloakClientName;
         this.userCache = userCache;
+        this.teamProvider = teamProvider;
     }
 
     @Override
@@ -258,6 +263,16 @@ public class KeycloakUserManagementService implements UserManagementService {
             ).getId();
         } else {
             return SYSTEM_ACCOUNT;
+        }
+    }
+
+    @Override
+    public List<String> getCurrentUserTeams() {
+        ManageableUser user = getCurrentUser();
+        if (user == null || user.getUsername() == null) {
+            return List.of();
+        } else {
+            return teamProvider.findTeamKeysByUsername(user.getUsername());
         }
     }
 

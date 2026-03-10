@@ -37,6 +37,7 @@ import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
@@ -69,7 +70,7 @@ class KeycloakUserManagementServiceTest {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
         cacheManager = new ConcurrentMapCacheManager();
         cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache);
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache, mock());
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
