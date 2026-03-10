@@ -27,4 +27,4 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed a bug where a process link on a User Task was sometimes not executed.
