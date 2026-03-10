@@ -27,5 +27,6 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Bugfixes
 
+* Fixed a bug where a process link on a User Task was sometimes not executed.
 * When auto-assign for tasks was enabled, the case assignee would be auto assigned to tasks, even when there were
   permissions that should prevent this.
