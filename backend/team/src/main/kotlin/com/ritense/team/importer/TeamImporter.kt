@@ -62,6 +62,6 @@ class TeamImporter(
     override fun partOfCaseDefinition(): Boolean = false
 
     companion object {
-        private val FILENAME_REGEX = """config/global/team/(?:.*/)?(.+)\.team\.json""".toRegex()
+        private val FILENAME_REGEX = """/global/team/(?:.*/)?(.+)\.team\.json""".toRegex()
     }
 }

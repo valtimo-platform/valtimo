@@ -119,12 +119,12 @@ class TeamResourceIntTest : BaseIntegrationTest() {
                 .content(objectMapper.writeValueAsString(userRequest))
         )
             .andExpect(status().isCreated)
-            .andExpect(jsonPath("$").value(username))
+            .andExpect(jsonPath("$.username").value(username))
 
         mockMvc.perform(get("/api/v1/team/team-users/user"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$", hasSize<Any>(1)))
-            .andExpect(jsonPath("$[0]").value(username))
+            .andExpect(jsonPath("$[0].username").value(username))
 
         mockMvc.perform(delete("/api/v1/team/team-users/user/$username"))
             .andExpect(status().isNoContent)

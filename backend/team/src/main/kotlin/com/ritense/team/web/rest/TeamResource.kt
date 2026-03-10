@@ -23,6 +23,7 @@ import com.ritense.team.web.rest.dto.TeamListResponseDto
 import com.ritense.team.web.rest.dto.TeamResponseDto
 import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
+import com.ritense.team.web.rest.dto.TeamUserResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -63,6 +64,7 @@ class TeamResource(
 
     @PutMapping("/{key}")
     fun updateTeam(@PathVariable key: String, @RequestBody request: TeamUpdateRequestDto): TeamResponseDto {
+        require(request.key == key) { "Key in request does not match path variable" }
         val team = teamService.update(key, request.title)
         return TeamResponseDto.from(team)
     }
@@ -77,9 +79,9 @@ class TeamResource(
     fun getTeamUsers(
         @PathVariable teamKey: String,
         @RequestParam(required = false) username: String?
-    ): List<String> {
+    ): List<TeamUserResponseDto> {
         return teamService.findAllTeamUsers(teamKey = teamKey, username = username)
-            .map { it.username }
+            .map { TeamUserResponseDto.from(it.username) }
     }
 
     @PostMapping("/{teamKey}/user")
@@ -87,9 +89,9 @@ class TeamResource(
     fun addUserToTeam(
         @PathVariable teamKey: String,
         @RequestBody request: TeamUserCreateRequestDto
-    ): String {
+    ): TeamUserResponseDto {
         val teamUser = teamService.addUserToTeam(request.username, teamKey)
-        return teamUser.username
+        return TeamUserResponseDto.from(teamUser.username)
     }
 
     @DeleteMapping("/{teamKey}/user/{username}")

@@ -14,27 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.team.domain
+package com.ritense.team.web.rest.dto
 
-import jakarta.persistence.EmbeddedId
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.MapsId
-import jakarta.persistence.Table
-
-@Entity
-@Table(name = "team_user")
-class TeamUser(
-    @EmbeddedId
-    val id: TeamUserId,
-
-    @MapsId("teamKey")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_key")
-    val team: Team? = null
+data class TeamUserResponseDto(
+    val username: String
 ) {
-    val username: String get() = id.username ?: ""
-    val teamKey: String get() = id.teamKey ?: ""
+    companion object {
+        fun from(username: String) = TeamUserResponseDto(username)
+    }
 }
