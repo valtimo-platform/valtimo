@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton
 
 import com.ritense.valtimo.contract.config.ValtimoProperties
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
@@ -26,11 +27,13 @@ class CallDepthExecutionListener(
 ) {
 
     @EventListener(
-        condition = "#execution.bpmnModelElementInstance != null "
-            + "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT "
-            + "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"
+        condition = """#event.delegateExecution.bpmnModelElementInstance != null
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START
+        """
     )
-    fun onProcessStart(execution: DelegateExecution) {
+    fun onProcessStart(event: OperatonExecutionEvent) {
+        val execution = event.delegateExecution
         val initialSuperExecution = execution.processInstance?.superExecution
         if (initialSuperExecution != null) {
             val parentDepth = findAndSetParentDepthIfNotPresent(initialSuperExecution)
