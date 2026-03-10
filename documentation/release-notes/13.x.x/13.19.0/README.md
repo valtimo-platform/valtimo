@@ -28,3 +28,4 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 ## Bugfixes
 
 * Fixed a bug where a process link on a User Task was sometimes not executed.
+* Fixed edge case where a document field could sometimes not be selected when configuring a case column.
