@@ -28,7 +28,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-class TeamImporterIntTest {
+class TeamImporterTest {
 
     private val objectMapper = ObjectMapper().registerKotlinModule()
     private val teamService: TeamService = mock()
@@ -36,7 +36,7 @@ class TeamImporterIntTest {
 
     @Test
     fun `should import team`(): Unit = runWithoutAuthorization {
-        val json = """[{"key":"team-1","title":"Team 1","users":[]}]"""
+        val json = """[{"key":"team-1","title":"Team 1"}]"""
         val request = ImportRequest(
             fileName = "config/global/team/teams.team.json",
             content = json.toByteArray(Charsets.UTF_8)
@@ -54,7 +54,7 @@ class TeamImporterIntTest {
         val existingTeam = Team("team-1", "Old Title")
         whenever(teamService.findById("team-1")).thenReturn(existingTeam)
 
-        val json = """[{"key":"team-1","title":"New Title","users":[]}]"""
+        val json = """[{"key":"team-1","title":"New Title"}]"""
         val request = ImportRequest(
             fileName = "config/global/team/teams.team.json",
             content = json.toByteArray(Charsets.UTF_8)

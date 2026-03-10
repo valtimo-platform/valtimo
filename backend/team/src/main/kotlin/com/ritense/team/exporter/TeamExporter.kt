@@ -22,7 +22,7 @@ import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.team.service.TeamService
-import com.ritense.team.web.rest.dto.TeamResponseDto
+import com.ritense.team.web.rest.dto.TeamImportExportDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -48,7 +48,7 @@ class TeamExporter(
             return ExportResult()
         }
 
-        val teamDtos = teams.map { TeamResponseDto.from(it) }
+        val teamDtos = teams.map { TeamImportExportDto.from(it) }
         val fileName = request.teamKey ?: "teams"
 
         val exportFile = ExportFile(
