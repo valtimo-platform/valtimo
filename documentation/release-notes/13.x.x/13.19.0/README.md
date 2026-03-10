@@ -28,3 +28,6 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 ## Bugfixes
 
 * Fixed a bug where a process link on a User Task was sometimes not executed.
+
+* Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
+  once a day.

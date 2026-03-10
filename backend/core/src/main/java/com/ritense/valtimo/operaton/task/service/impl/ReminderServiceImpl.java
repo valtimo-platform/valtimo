@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 
+// TODO: Remove this altogether
 public class ReminderServiceImpl implements ReminderService {
 
     private final OperatonTaskService taskService;
@@ -55,7 +56,6 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    @Scheduled(cron = "${scheduling.job.cron.taskNotificationReminder:-}")
     @SchedulerLock(
         name = "ReminderServiceImpl_notifyUsersWithOpenTasks", lockAtLeastFor = "PT4S", lockAtMostFor = "PT60M"
     )
