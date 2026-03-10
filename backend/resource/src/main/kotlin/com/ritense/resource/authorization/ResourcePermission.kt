@@ -20,5 +20,5 @@ import java.util.UUID
 
 class ResourcePermission(
     val caseDocumentId: UUID? = null,
-    val informatieobjecttype: String? = null
+    val fileId: String? = null
 )

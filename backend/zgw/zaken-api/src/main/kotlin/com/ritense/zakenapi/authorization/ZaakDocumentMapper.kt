@@ -37,7 +37,7 @@ class ZaakDocumentMapper(
         return runWithoutAuthorization {
             entity.caseDocumentId?.let { caseDocumentId ->
                 zaakDocumentService.getInformatieObjectenAsZaakDocumenten(caseDocumentId)
-                    .filter { it.informatieobjecttype == entity.informatieobjecttype }
+                    .filter { it.fileId.toString() == entity.fileId }
             } ?: emptyList()
         }
     }

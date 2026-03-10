@@ -210,7 +210,7 @@ class ZaakDocumentService(
         return mapZaakDocument(informatieObject, pluginConfiguration)
     }
 
-    private fun mapZaakDocument(
+    fun mapZaakDocument(
         informatieObject: DocumentInformatieObject,
         pluginConfiguration: PluginConfiguration,
     ): ZaakDocument {
@@ -339,11 +339,11 @@ class ZaakDocumentService(
         )
     }
 
-    private fun getInformatieobjecttypeOmschrijvingByUri(uri: String?): String? {
+    fun getInformatieobjecttypeOmschrijvingByUri(uri: String?): String? {
         return uri?.let { catalogiService.getInformatieobjecttype(URI(it))?.omschrijving }
     }
 
-    private fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
+    fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
         return checkNotNull(
             pluginService.findPluginConfiguration(
                 DocumentenApiPlugin::class.java,
@@ -411,8 +411,8 @@ class ZaakDocumentService(
         )
     }
 
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String, informatieobjecttype: String?) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId, informatieobjecttype)
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
+        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
     private fun getVerifiedInformatieObject(
         pluginConfigurationId: String,

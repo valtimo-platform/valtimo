@@ -75,9 +75,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission(caseDocumentId,
-                    request.informatieobjecttype
-                )
+                ResourcePermission(caseDocumentId, null)
             )
         )
 
@@ -156,7 +154,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(caseDocumentId, result.informatieobjecttype)
+                ResourcePermission(caseDocumentId, result.url.toString().substringAfterLast('/'))
             )
         )
 
@@ -250,26 +248,23 @@ class DocumentenApiClient(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
         objectId: String,
-        caseDocumentId: UUID?,
-        informatieobjecttype: String?
+        caseDocumentId: UUID?
     ) = downloadInformatieObjectContent(
         authentication,
         caseDocumentId,
-        toObjectUrl(baseUrl, objectId),
-        informatieobjecttype
+        toObjectUrl(baseUrl, objectId)
     )
 
     fun downloadInformatieObjectContent(
         authentication: DocumentenApiAuthentication,
         caseDocumentId: UUID?,
-        objectUrl: URI,
-        informatieobjecttype: String?
+        objectUrl: URI
     ): InputStream {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW,
-                ResourcePermission(caseDocumentId, informatieobjecttype)
+                ResourcePermission(caseDocumentId, objectUrl.toString().substringAfterLast('/'))
             )
         )
 

@@ -60,8 +60,7 @@ class DocumentenApiResource(
         val documentInputStream = documentenApiService.downloadInformatieObject(
             pluginConfigurationId,
             caseDocumentId,
-            documentId,
-            documentMetadata.informatieobjecttype
+            documentId
         )
 
         val responseHeaders = HttpHeaders()

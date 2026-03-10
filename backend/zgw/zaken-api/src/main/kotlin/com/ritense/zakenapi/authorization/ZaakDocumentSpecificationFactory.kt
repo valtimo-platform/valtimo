@@ -20,19 +20,24 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
+import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.domain.ZaakDocument
+import com.ritense.zakenapi.service.ZaakDocumentService
 import org.springframework.stereotype.Component
 
 @Component
 @SkipComponentScan
-class ZaakDocumentSpecificationFactory : AuthorizationSpecificationFactory<ZaakDocument> {
+class ZaakDocumentSpecificationFactory(
+    private val zaakDocumentService: ZaakDocumentService,
+    private val pluginService: PluginService
+) : AuthorizationSpecificationFactory<ZaakDocument> {
 
     override fun create(
         request: AuthorizationRequest<ZaakDocument>,
         permissionSupplier: () -> List<Permission>
     ): AuthorizationSpecification<ZaakDocument> {
-        return ZaakDocumentSpecification(request, permissionSupplier)
+        return ZaakDocumentSpecification(request, permissionSupplier, zaakDocumentService, pluginService)
     }
 
     override fun canCreate(request: AuthorizationRequest<*>, permissionSupplier: () -> List<Permission>): Boolean {

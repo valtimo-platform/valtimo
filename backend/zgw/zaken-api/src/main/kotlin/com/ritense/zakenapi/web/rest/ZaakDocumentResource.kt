@@ -122,8 +122,7 @@ class ZaakDocumentResource(
         val documentInputStream = zaakDocumentService.downloadInformatieObject(
             pluginConfigurationId,
             caseDocumentId,
-            documentId,
-            documentMetadata.informatieobjecttype
+            documentId
         )
         val responseHeaders = HttpHeaders()
         val contentDisposition = ContentDisposition.attachment().filename(documentMetadata.bestandsnaam).build()

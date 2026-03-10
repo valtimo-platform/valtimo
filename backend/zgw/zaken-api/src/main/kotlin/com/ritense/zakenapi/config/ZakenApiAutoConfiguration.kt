@@ -389,7 +389,13 @@ class ZakenApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ZaakDocumentSpecificationFactory::class)
-    fun zaakDocumentSpecificationFactory(): ZaakDocumentSpecificationFactory {
-        return ZaakDocumentSpecificationFactory()
+    fun zaakDocumentSpecificationFactory(
+        @Lazy zaakDocumentService: ZaakDocumentService,
+        @Lazy pluginService: PluginService
+    ): ZaakDocumentSpecificationFactory {
+        return ZaakDocumentSpecificationFactory(
+            zaakDocumentService = zaakDocumentService,
+            pluginService = pluginService
+        )
     }
 }

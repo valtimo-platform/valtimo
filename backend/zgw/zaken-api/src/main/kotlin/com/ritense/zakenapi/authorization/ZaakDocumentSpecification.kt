@@ -16,10 +16,14 @@
 
 package com.ritense.zakenapi.authorization
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
+import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.plugin.service.PluginService
 import com.ritense.zakenapi.domain.ZaakDocument
+import com.ritense.zakenapi.service.ZaakDocumentService
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
@@ -28,6 +32,8 @@ import jakarta.persistence.criteria.Root
 class ZaakDocumentSpecification(
     authRequest: AuthorizationRequest<ZaakDocument>,
     permissionSupplier: () -> List<Permission>,
+    private val zaakDocumentService: ZaakDocumentService,
+    private val pluginService: PluginService
 ) : AuthorizationSpecification<ZaakDocument>(authRequest, permissionSupplier) {
 
     override fun toPredicate(
@@ -39,6 +45,19 @@ class ZaakDocumentSpecification(
     }
 
     override fun identifierToEntity(identifier: String): ZaakDocument {
-        throw NotImplementedError()
+        return runWithoutAuthorization {
+            val (informatieObject, pluginConfiguration) = pluginService.findPluginConfigurations(DocumentenApiPlugin::class.java)
+                .firstNotNullOfOrNull { pluginConfiguration ->
+                    try {
+                        val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
+                        val informatieObject = plugin.getInformatieObject(identifier, null)
+                        informatieObject to pluginConfiguration
+                    } catch (_: Exception) {
+                        null
+                    }
+                } ?: throw IllegalArgumentException("Could not find ZaakDocument for identifier: $identifier")
+
+            zaakDocumentService.mapZaakDocument(informatieObject, pluginConfiguration)
+        }
     }
 }

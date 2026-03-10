@@ -229,8 +229,7 @@ class DocumentenApiPlugin(
         val content = client.downloadInformatieObjectContent(
             authenticationPluginConfiguration,
             caseDocumentId,
-            documentUrl,
-            metaData.informatieobjecttype
+            documentUrl
         )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
@@ -249,13 +248,12 @@ class DocumentenApiPlugin(
         return tempResourceId
     }
 
-    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String, informatieobjecttype: String?): InputStream {
+    fun downloadInformatieObject(caseDocumentId: UUID?, objectId: String): InputStream {
         return client.downloadInformatieObjectContent(
             authenticationPluginConfiguration,
             url,
             objectId,
-            caseDocumentId,
-            informatieobjecttype
+            caseDocumentId
         )
     }
 
@@ -486,7 +484,7 @@ class DocumentenApiPlugin(
         return documentCreateResult
     }
 
-    private fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
+    fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
         return checkNotNull(
             pluginService.findPluginConfiguration(
                 DocumentenApiPlugin::class.java,
