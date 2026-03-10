@@ -19,7 +19,6 @@ package com.ritense.verzoek
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.authorization.annotation.RunWithoutAuthorization
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
@@ -28,7 +27,6 @@ import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumen
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
-import com.ritense.zakenapi.service.ZaakTypeLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
@@ -41,8 +39,6 @@ import java.net.URI
 @Component
 @Transactional
 class DocumentVerzoekPluginEventListener(
-    private val zaakTypeLinkService: ZaakTypeLinkService,
-    private val caseDefinitionService: CaseDefinitionService,
     private val zaakInstanceLinkService: ZaakInstanceLinkService,
     private val runtimeService: RuntimeService,
     private val processDocumentService: OperatonProcessJsonSchemaDocumentAssociationService,

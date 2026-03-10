@@ -17,9 +17,7 @@
 package com.ritense.verzoek.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
@@ -35,7 +33,6 @@ import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
-import com.ritense.zakenapi.service.ZaakTypeLinkService
 import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -106,8 +103,6 @@ class VerzoekAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DocumentVerzoekPluginEventListener::class)
     fun documentVerzoekPluginEventListener(
-        zaakTypeLinkService: ZaakTypeLinkService,
-        caseDefinitionService: CaseDefinitionService,
         zaakInstanceLinkService: ZaakInstanceLinkService,
         runtimeService: RuntimeService,
         operatonProcessJsonSchemaDocumentAssociationService: OperatonProcessJsonSchemaDocumentAssociationService,
@@ -116,8 +111,6 @@ class VerzoekAutoConfiguration {
         environment: Environment
     ): DocumentVerzoekPluginEventListener {
         return DocumentVerzoekPluginEventListener(
-            zaakTypeLinkService,
-            caseDefinitionService,
             zaakInstanceLinkService,
             runtimeService,
             operatonProcessJsonSchemaDocumentAssociationService,
