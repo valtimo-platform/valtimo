@@ -30,3 +30,5 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 * **Fixed accidental deselection in status and tag multi-select filters**
 
   Clicking the selection count chip on the status selector or case tags selector in the case list search panel no longer clears all selected items. The click now passes through to open the dropdown instead. The clear (X) icon on the chip still works as expected to remove all selections.
+
+* Fixed a bug where a process link on a User Task was sometimes not executed.
