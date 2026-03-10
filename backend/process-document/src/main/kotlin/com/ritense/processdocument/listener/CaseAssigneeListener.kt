@@ -70,7 +70,7 @@ class CaseAssigneeListener(
                 }
 
                 logger.debug { "Updating assignee on ${tasks.size} task(s)" }
-                tasks.forEach { task ->
+                for (task in tasks) {
                     try {
                         authorizationService.requirePermission(
                             DelegateUserEntityAuthorizationRequest(
@@ -82,7 +82,7 @@ class CaseAssigneeListener(
                         )
                     } catch (_: AccessDeniedException) {
                         logger.info { "Auto assigning user to task ${task.id} failed." }
-                        return
+                        continue
                     }
                     runWithoutAuthorization {
                         operatonTaskService.assign(task.id, assignee.id)
