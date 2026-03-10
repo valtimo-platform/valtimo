@@ -25,6 +25,7 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
@@ -46,11 +47,12 @@ class BuildingBlockCallActivityListener(
 ) {
 
     @EventListener(
-        condition = """#execution.bpmnModelElementInstance != null
-            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
-            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
+        condition = """#event.delegateExecution.bpmnModelElementInstance != null
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
     )
-    fun onCallActivityStart(execution: DelegateExecution) {
+    fun onCallActivityStart(event: OperatonExecutionEvent) {
+        val execution = event.delegateExecution
         val activityId = execution.currentActivityId ?: return
         val links = processLinkService.getProcessLinks(execution.processDefinitionId, activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
@@ -124,11 +126,12 @@ class BuildingBlockCallActivityListener(
     }
 
     @EventListener(
-        condition = """#execution.bpmnModelElementInstance != null
-            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
-            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
+        condition = """#event.delegateExecution.bpmnModelElementInstance != null
+            && #event.delegateExecution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).CALL_ACTIVITY
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_END"""
     )
-    fun onCallActivityEnd(execution: DelegateExecution) {
+    fun onCallActivityEnd(event: OperatonExecutionEvent) {
+        val execution = event.delegateExecution
 
         val buildingBlockVariableString = execution.getVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE)?.let {
             it as String
