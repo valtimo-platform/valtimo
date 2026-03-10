@@ -27,4 +27,5 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Bugfixes
 
+* When exporting a case, task search fields were formatted incorrectly, which made them unable to be imported.
 * Fixed a bug where a process link on a User Task was sometimes not executed.
