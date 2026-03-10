@@ -19,4 +19,4 @@ This improvement helps case handlers working on multiple cases to quickly distin
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.

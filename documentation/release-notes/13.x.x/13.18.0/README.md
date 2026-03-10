@@ -32,4 +32,3 @@
 * Changing a due date inside the task modal now refreshes the parent task list
 * Setting or removing a due date now shows a notification toast
 * Stale task data no longer persists after closing the task modal
-* Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.
