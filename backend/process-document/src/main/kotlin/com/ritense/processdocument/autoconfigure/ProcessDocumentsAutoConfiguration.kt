@@ -191,10 +191,16 @@ class ProcessDocumentsAutoConfiguration {
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
-        caseDocumentResolver: CaseDocumentResolver
+        caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
-            operatonTaskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            userManagementService,
+            caseDocumentResolver,
+            authorizationService
         )
     }
 

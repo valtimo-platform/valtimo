@@ -27,4 +27,5 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Bugfixes
 
-* New bugfix.
+* When auto assign for tasks was enabled, the case assignee would be auto assigned to tasks, even when there were
+  permissions that should prevent this.
