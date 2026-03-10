@@ -111,48 +111,6 @@ class SearchFieldExporterTest {
         assertThat(exportedContent.get(0).get("key").asText()).isEqualTo("firstname")
         assertThat(exportedContent.get(1).get("key").asText()).isEqualTo("lastname")
         assertThat(result.relatedRequests).isEmpty()
-
-
-//        val path = testExporter.getPath(request)
-//        val ownerTypeKey = testExporter.ownerTypeKey()
-//        val caseTaskListExport = result.exportFiles.singleOrNull {
-//            it.path == path
-//        }
-//        requireNotNull(caseTaskListExport)
-//        val exportJson = objectMapper.readTree(caseTaskListExport.content)
-//
-//        //Check if the changesetId ends with a timestamp
-//        val changesetIdField = "changesetId"
-//        val changesetRegex = """(${request.name}\.$ownerTypeKey)\.\d+""".toRegex()
-//        val matchResult = changesetRegex.matchEntire(exportJson.get(changesetIdField).textValue())
-//        assertNotNull(matchResult)
-//
-//        //Remove the timestamp from the changesetId, so we can compare it as usual
-//        (exportJson as ObjectNode).set<TextNode>(changesetIdField, TextNode(matchResult.groupValues[1]))
-//        JSONAssert.assertEquals(
-//            """[{
-//                    "key":"firstname",
-//                    "title":"Firstname",
-//                    "path":"doc:firstname",
-//                    "dataType":"text",
-//                    "fieldType":"single",
-//                    "matchType":"like",
-//                    "required":false
-//                  },
-//                  {
-//                    "key":"lastname",
-//                    "title":"Lastname",
-//                    "path":"doc:lastname",
-//                    "dataType":"text",
-//                    "fieldType":"single",
-//                    "matchType":"like",
-//                    "required":false
-//                  }
-//                ]""".trimMargin(),
-//
-//            objectMapper.writeValueAsString(exportJson),
-//            JSONCompareMode.NON_EXTENSIBLE
-//        )
     }
 
     private class TestSearchFieldExporter(
