@@ -1,0 +1,39 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "formDefinitionName": "empty-form",
+        "formDisplayType": "modal",
+        "formSize": "medium",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "Activity_01zdn8o",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "create-natuurlijk-persoon-zaak-rol",
+        "actionProperties": {
+            "inpBsn": "999990755",
+            "roltypeUrl": "http://localhost:8001/catalogi/api/v1/roltypen/1c359a1b-c38d-47b8-bed5-994db88ead61",
+            "rolToelichting": "Initiator"
+        },
+        "referenceType": "FIXED",
+        "processLinkType": "plugin"
+    },
+    {
+        "activityId": "Activity_0um6ijv",
+        "activityType": "bpmn:UserTask:create",
+        "pluginConfigurationId": "d65113e0-a9cb-4904-93e1-5e8b1206e625",
+        "pluginActionDefinitionKey": "create-portaaltaak",
+        "actionProperties": {
+            "formType": "id",
+            "receiver": "zaakInitiator",
+            "sendData": [],
+            "formTypeId": "test-form",
+            "receiveData": [],
+            "verloopDurationInDays": "5"
+        },
+        "referenceType": "FIXED",
+        "processLinkType": "plugin"
+    }
+]

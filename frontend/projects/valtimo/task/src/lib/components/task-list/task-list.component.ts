@@ -381,7 +381,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public setCaseDefinition(definition: {item: {id: string}}): void {
-    if (definition.item.id) {
+    if (definition.item.id && definition.item.id !== this.taskListService.caseDefinitionKey) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
       this.taskListService.setCaseDefinitionKey(definition.item.id);
