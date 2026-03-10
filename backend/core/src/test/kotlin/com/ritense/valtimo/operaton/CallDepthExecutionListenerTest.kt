@@ -21,6 +21,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.ritense.valtimo.contract.config.ValtimoProperties
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -37,7 +38,7 @@ class CallDepthExecutionListenerTest {
         val execution = executionWithProcessInstance(superExecution = null)
         whenever(execution.getVariableLocal("VTM_callDepth")).thenReturn(null)
 
-        listener.onProcessStart(execution)
+        listener.onProcessStart(OperatonExecutionEvent(execution))
 
         verify(execution).setVariableLocal("VTM_callDepth", 0)
     }
@@ -56,7 +57,7 @@ class CallDepthExecutionListenerTest {
         targetLogger.addAppender(listAppender)
 
         try {
-            listener.onProcessStart(execution)
+            listener.onProcessStart(OperatonExecutionEvent(execution))
         } finally {
             targetLogger.detachAppender(listAppender)
             listAppender.stop()
@@ -79,7 +80,7 @@ class CallDepthExecutionListenerTest {
 
         val execution = executionWithProcessInstance(superExecution = parentExecution)
 
-        listener.onProcessStart(execution)
+        listener.onProcessStart(OperatonExecutionEvent(execution))
 
         verify(parentExecution).setVariableLocal("VTM_callDepth", 0)
         verify(execution).setVariableLocal("VTM_callDepth", 1)
@@ -104,7 +105,7 @@ class CallDepthExecutionListenerTest {
 
         val execution = executionWithProcessInstance(superExecution = parentExecution)
 
-        listener.onProcessStart(execution)
+        listener.onProcessStart(OperatonExecutionEvent(execution))
 
         verify(parentExecution).setVariableLocal("VTM_callDepth", 2)
         verify(execution).setVariableLocal("VTM_callDepth", 3)
@@ -115,6 +116,7 @@ class CallDepthExecutionListenerTest {
         whenever(processInstance.superExecution).thenReturn(superExecution)
         val execution = mock<DelegateExecution>()
         whenever(execution.processInstance).thenReturn(processInstance)
+        whenever(execution.eventName).thenReturn("start")
         return execution
     }
 
