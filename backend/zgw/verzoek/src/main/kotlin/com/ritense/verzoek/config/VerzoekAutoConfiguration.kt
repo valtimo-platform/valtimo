@@ -51,17 +51,13 @@ class VerzoekAutoConfiguration {
         pluginService: PluginService,
         applicationStateService: ApplicationStateService,
         zaakTypeLinkRepository: ZaakTypeLinkRepository,
-        caseDefinitionService: CaseDefinitionService,
-        caseDefinitionRepository: CaseDefinitionRepository,
-        authorizationService: AuthorizationService
+        caseDefinitionService: CaseDefinitionService
     ): DocumentVerzoekPluginFactory {
         return DocumentVerzoekPluginFactory(
             pluginService,
             applicationStateService,
             zaakTypeLinkRepository,
-            caseDefinitionService,
-            caseDefinitionRepository,
-            authorizationService
+            caseDefinitionService
         )
     }
 

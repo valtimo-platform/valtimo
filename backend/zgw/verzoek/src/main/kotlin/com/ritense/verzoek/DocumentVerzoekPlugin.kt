@@ -17,15 +17,7 @@
 package com.ritense.verzoek
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
-import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
-import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
-import com.ritense.case_.domain.definition.CaseDefinition
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
@@ -36,13 +28,8 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.DocTypes
-import com.ritense.verzoek.domain.DocumentVerzoekProperties
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
-import jakarta.validation.Valid
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.jpa.domain.Specification
-import java.net.URI
 
 @Plugin(
     key = "document-verzoek",
@@ -52,9 +39,7 @@ import java.net.URI
 class DocumentVerzoekPlugin(
     private val applicationStateService: ApplicationStateService,
     private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
-    private val caseDefinitionService: CaseDefinitionService,
-    private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val authorizationService: AuthorizationService
+    private val caseDefinitionService: CaseDefinitionService
 
 ) : NotificatiesApiListener {
 
@@ -83,85 +68,24 @@ class DocumentVerzoekPlugin(
     override fun getNotificatiesApiPlugin(): NotificatiesApiPlugin {
         return notificatiesApiPluginConfiguration
     }
-//
-//    override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-//
-//        caseDefinitionService.get
-//
-//        return documentVerzoekProperties.mapNotNull { verzoekProperty ->
-//            val caseDefinition =
-//                caseDefinitionService.getActiveCaseDefinition(verzoekProperty.caseDefinitionKey)
-//                    ?: return@mapNotNull null
-//
-//            val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
-//                ?: return@mapNotNull null
-//
-//            Abonnement.Kanaal(
-//                naam = "zaken",
-//                filters = mapOf(
-//                    "zaakType" to zaakTypeLink.zaakTypeUrl.toString(),
-//                    "actie" to "create"
-//                )
-//            )
-//        }
-//    }
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        runWithoutAuthorization {
-            val bla = caseDefinitionService.getCaseDefinitions(active = true)
-            val pageable = PageRequest.of(0, 1000)
-            val bla2 = caseDefinitionService.getCaseDefinitions(
-                caseDefinitionKey = null,
-                active = true,
-                final = null,
-                pageable = pageable
-            )
+        return runWithoutAuthorization {
+            val caseList = caseDefinitionService.getCaseDefinitions(active = true, final = false) + caseDefinitionService.getCaseDefinitions(active = true, final = true)
+            caseList.mapNotNull { caseDefinition ->
 
-            var spec: Specification<CaseDefinition> = authorizationService.getAuthorizationSpecification(
-                EntityAuthorizationRequest(
-                    CaseDefinition::class.java,
-                    CaseDefinitionActionProvider.VIEW_LIST
+                val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
+                    ?: return@mapNotNull null
+
+                Abonnement.Kanaal(
+                    naam = "zaken",
+                    filters = mapOf(
+                        "zaakType" to zaakTypeLink.zaakTypeUrl.toString(),
+                        "actie" to "create",
+                        "resource" to "zaakinformatieobject"
+                    )
                 )
-            )
-
-            spec = spec.and(byActive(true))
-
-
-            val all = caseDefinitionRepository.findAll(spec)
-
-        }
-        return caseDefinitionService.getCaseDefinitions(active = true).mapNotNull { caseDefinition ->
-            //private val service: CaseDefinitionService
-            val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
-                ?: return@mapNotNull null
-
-            Abonnement.Kanaal(
-                naam = "zaken",
-                filters = mapOf(
-                    "zaakType" to zaakTypeLink.zaakTypeUrl.toString(),
-                    "actie" to "create"
-                )
-            )
-        }
+            }
+        }.distinct()
     }
-//        caseDefinitionService.getCaseDefinitions(
-//            active = true
-//        )
-//        return documentVerzoekProperties.mapNotNull { verzoekProperty ->
-//            val caseDefinition =
-//                caseDefinitionService.getActiveCaseDefinition(verzoekProperty.caseDefinitionKey)
-//                    ?: return@mapNotNull null
-//
-//            val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
-//                ?: return@mapNotNull null
-//
-//            Abonnement.Kanaal(
-//                naam = "zaken",
-//                filters = mapOf(
-//                    "zaakType" to zaakTypeLink.zaakTypeUrl.toString(),
-//                    "actie" to "create"
-//                )
-//            )
-//        }
-//    }
 }
