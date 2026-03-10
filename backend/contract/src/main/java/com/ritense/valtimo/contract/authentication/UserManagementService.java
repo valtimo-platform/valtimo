@@ -79,6 +79,6 @@ public interface UserManagementService {
     }
 
     default List<String> getCurrentUserTeams() {
-        throw new NotImplementedException("Failed to get current user team because method is not implemented.");
+        throw new NotImplementedException("Failed to get current user teams because method is not implemented.");
     }
 }
