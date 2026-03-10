@@ -26,6 +26,7 @@ import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
 import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.UserCache;
+import com.ritense.valtimo.contract.authentication.TeamProvider;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,7 +42,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
+import java.util.Optional;
 
 @AutoConfiguration
 @EnableConfigurationProperties(KeycloakSpringBootProperties.class)
@@ -79,9 +82,10 @@ public class KeycloakAutoConfiguration {
     public KeycloakUserManagementService keycloakUserManagementService(
         final KeycloakService keycloakService,
         @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
-        final UserCache userCache
+        final UserCache userCache,
+        @Lazy final TeamProvider teamProvider
     ) {
-        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache);
+        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache, teamProvider);
     }
 
     @Bean

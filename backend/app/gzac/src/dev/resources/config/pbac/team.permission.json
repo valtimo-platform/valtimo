@@ -1,0 +1,32 @@
+{
+    "changesetId": "team-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.team.domain.Team",
+            "actions": [
+                "create",
+                "modify",
+                "delete",
+                "assign"
+            ],
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.team.domain.Team",
+            "actions": [
+                "modify",
+                "delete",
+                "assign"
+            ],
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "users",
+                    "operator": "list_contains",
+                    "value": "${currentUsername}"
+                }
+            ]
+        }
+    ]
+}
