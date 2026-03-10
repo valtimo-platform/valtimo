@@ -95,37 +95,23 @@
           placeholder=""
   >
   </v-input>
-  <v-input
-          name="externalDocumentType"
-          data-test-id="externalDocumentType"
-          [title]="'externalDocumentType' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [disabled]="obs.disabled"
-          [defaultValue]="obs.prefill?.externalDocumentType"
-          [required]="true"
-          [trim]="true"
-          [tooltip]="'externalDocumentTypeTooltip' | pluginTranslate: pluginId | async"
-          placeholder=""
-  >
-  </v-input>
   <v-multi-input-form
-          name="documentVerzoekProperties"
-          data-test-id="documentVerzoekProperties"
-          [title]="'documentVerzoekProperties' | pluginTranslate: pluginId | async"
-          [formTemplate]="caseTypeForm"
-          [addRowText]="'addVerzoekType' | pluginTranslate: pluginId | async"
-          [required]="false"
-          [tooltip]="'documentVerzoekPropertiesTooltip' | pluginTranslate: pluginId | async"
+          name="docTypes"
+          data-test-id="docTypes"
+          [title]="'docTypes' | pluginTranslate: pluginId | async"
+          [formTemplate]="docTypesForm"
+          [addRowText]="'addDocType' | pluginTranslate: pluginId | async"
+          [required]="true"
+          [tooltip]="'docTypesTooltip' | pluginTranslate: pluginId | async"
           (deleteRowEvent)="deleteRow($event)"
           [initialAmountOfRows]="0"
           [minimumAmountOfRows]="0"
-          [defaultValues]="obs.prefill?.documentVerzoekProperties"
+          [defaultValues]="obs.prefill?.docTypes"
   >
   </v-multi-input-form>
 </v-form>
 <ng-template
-        #caseTypeForm
-        let-index="index"
+        #docTypesForm
         let-uuid="uuid"
         let-changeFunction="changeFunction"
         let-prefill="prefill"
@@ -135,21 +121,17 @@
       disabled: disabled$ | async,
     } as obs"
   >
-    <v-form (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)">
-      <ng-container *ngIf="{caseSelectItems: caseSelectItems$ | async} as vars">
-        <v-select
-                [items]="vars.caseSelectItems"
-                [smallMargin]="true"
-                name="caseDefinitionKey"
-                data-test-id="verzoekCaseDefinitionKey"
-                [title]="'caseDefinitionKey' | pluginTranslate: pluginId | async"
-                [disabled]="obs.disabled"
-                [defaultSelectionId]="prefill?.caseDefinitionKey"
-                [required]="true"
-                [loading]="!vars.caseSelectItems"
-                [tooltip]="'caseDefinitionKeyTooltip' | pluginTranslate: pluginId | async"
-        ></v-select>
-      </ng-container>
+    <v-form (valueChange)="changeFunction($event, uuid)">
+      <v-input
+              [smallMargin]="true"
+              name="docType"
+              data-test-id="docType"
+              [title]="'docType' | pluginTranslate: pluginId | async"
+              [disabled]="obs.disabled"
+              [defaultValue]="prefill?.docType"
+              [required]="true"
+              [tooltip]="'docTypeTooltip' | pluginTranslate: pluginId | async"
+      ></v-input>
     </v-form>
   </ng-container>
 </ng-template>

@@ -17,7 +17,9 @@
 package com.ritense.verzoek.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
@@ -49,13 +51,17 @@ class VerzoekAutoConfiguration {
         pluginService: PluginService,
         applicationStateService: ApplicationStateService,
         zaakTypeLinkRepository: ZaakTypeLinkRepository,
-        caseDefinitionService: CaseDefinitionService
+        caseDefinitionService: CaseDefinitionService,
+        caseDefinitionRepository: CaseDefinitionRepository,
+        authorizationService: AuthorizationService
     ): DocumentVerzoekPluginFactory {
         return DocumentVerzoekPluginFactory(
             pluginService,
             applicationStateService,
             zaakTypeLinkRepository,
-            caseDefinitionService
+            caseDefinitionService,
+            caseDefinitionRepository,
+            authorizationService
         )
     }
 

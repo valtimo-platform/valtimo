@@ -16,7 +16,9 @@
 
 package com.ritense.verzoek
 
+import com.ritense.authorization.AuthorizationService
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.service.ApplicationStateService
@@ -26,14 +28,18 @@ class DocumentVerzoekPluginFactory(
     pluginService: PluginService,
     private val applicationStateService: ApplicationStateService,
     private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
-    private val caseDefinitionService: CaseDefinitionService
+    private val caseDefinitionService: CaseDefinitionService,
+    private val caseDefinitionRepository: CaseDefinitionRepository,
+    private val authorizationService: AuthorizationService
 ) : PluginFactory<DocumentVerzoekPlugin>(pluginService) {
 
     override fun create(): DocumentVerzoekPlugin {
         return DocumentVerzoekPlugin(
             applicationStateService,
             zaakTypeLinkRepository,
-            caseDefinitionService
+            caseDefinitionService,
+            caseDefinitionRepository,
+            authorizationService
         )
     }
 }

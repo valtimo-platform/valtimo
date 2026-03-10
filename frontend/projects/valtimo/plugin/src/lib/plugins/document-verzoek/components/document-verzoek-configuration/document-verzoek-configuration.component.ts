@@ -36,7 +36,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {DocumentVerzoekConfig, DocumentVerzoekType} from '../../models';
+import {DocumentVerzoekConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {
@@ -165,16 +165,17 @@ export class DocumentVerzoekConfigurationComponent
       filter(prefill => !!prefill),
       map(prefill => ({
         ...prefill,
+        docTypes: (prefill.docTypes?.map(docType => ({docType})) ?? []) as any,
       })),
       tap(prefill => {
         setTimeout(() => {
           this.formValue$.pipe(take(1)).subscribe(formValue => {
-            const prefillVerzoeken = prefill?.documentVerzoekProperties;
+//            const prefillVerzoeken = prefill?.documentVerzoekProperties;
             const formValueVerzoeken = formValue?.documentVerzoekProperties;
 
-            prefillVerzoeken.forEach((verzoek, index) => {
-              const uuidForMapping = formValueVerzoeken[index].uuid;
-            });
+            // prefillVerzoeken.forEach((verzoek, index) => {
+            //   const uuidForMapping = formValueVerzoeken[index].uuid;
+            // });
           });
         }, 250);
       })
@@ -190,14 +191,14 @@ export class DocumentVerzoekConfigurationComponent
     this.handleValid(formValue);
   }
 
-  verzoekTypeFormChange(formValue: DocumentVerzoekType, uuid: string): void {
-    const caseDefinitionKey = formValue?.caseDefinitionKey;
-  }
-
-  informatieObjectTypeFormChange(formValue: DocumentType, uuid: string): void {
-    const fietsDefinitionKey = formValue;
-  }
-
+  // verzoekTypeFormChange(formValue: DocumentVerzoekType, uuid: string): void {
+  //   const caseDefinitionKey = formValue?.caseDefinitionKey;
+  // }
+  //
+  // informatieObjectTypeFormChange(formValue: DocumentType, uuid: string): void {
+  //   const fietsDefinitionKey = formValue;
+  // }
+  //
   deleteRow(uuid: string): void {}
 
   private handleValid(formValue: DocumentVerzoekConfig): void {
@@ -206,7 +207,7 @@ export class DocumentVerzoekConfigurationComponent
       formValue.notificatiesApiPluginConfiguration &&
       formValue.zakenApiPlugin &&
       formValue.documentenApiPlugin &&
-      formValue.externalDocumentType &&
+      formValue.docTypes &&
       formValue.eventMessage
     );
     const verzoekTypen = formValue.documentVerzoekProperties || [];
@@ -223,13 +224,14 @@ export class DocumentVerzoekConfigurationComponent
         .subscribe(([formValue, valid]) => {
           const formValueToSave: DocumentVerzoekConfig = {
             ...formValue,
-            documentVerzoekProperties: formValue.documentVerzoekProperties.map(verzoek => {
-              const verzoekToReturn: DocumentVerzoekType = {...verzoek};
-
-              return {
-                ...verzoekToReturn,
-              };
-            }),
+            docTypes: (formValue.docTypes as any[])?.map(item => item.docType) ?? [],
+            // documentVerzoekProperties: formValue.documentVerzoekProperties.map(verzoek => {
+            //   const verzoekToReturn: DocumentVerzoekType = {...verzoek};
+            //
+            //   return {
+            //     ...verzoekToReturn,
+            //   };
+            // }),
           };
           if (valid) {
             this.configuration.emit(formValueToSave);

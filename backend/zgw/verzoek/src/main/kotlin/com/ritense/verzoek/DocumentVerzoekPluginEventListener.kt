@@ -83,25 +83,28 @@ class DocumentVerzoekPluginEventListener(
             return
         }
         // Find the matching CaseDefinition for the incoming zaakType
-        plugin.documentVerzoekProperties.firstOrNull() {
-            matchingCaseDefinition(it, zaakType)
-        }?.let {
-            handleNewDocumentEvent(event, plugin)
-        }
-            ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No matching CaseDefinition found for zaakType '$zaakType'" }
+
+        handleNewDocumentEvent(event, plugin)
+
+//        plugin.documentVerzoekProperties.firstOrNull() {
+//            matchingCaseDefinition(it, zaakType)
+//        }?.let {
+//            handleNewDocumentEvent(event, plugin)
+//        }
+//            ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No matching CaseDefinition found for zaakType '$zaakType'" }
     }
 
-    private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
-        caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
-            zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
-                if (ExtractUuid.extractUuidFromUri(zaakTypeLink.zaakTypeUrl) ==
-                    ExtractUuid.extractUuidFromUri(zaakType)) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
+//    private fun matchingCaseDefinition(prop: DocumentVerzoekProperties, zaakType: String): Boolean {
+//        caseDefinitionService.getActiveCaseDefinition(prop.caseDefinitionKey)?.let { caseDefinition ->
+//            zaakTypeLinkService.get(caseDefinition.id)?.let { zaakTypeLink ->
+//                if (ExtractUuid.extractUuidFromUri(zaakTypeLink.zaakTypeUrl) ==
+//                    ExtractUuid.extractUuidFromUri(zaakType)) {
+//                    return true
+//                }
+//            }
+//        }
+//        return false
+//    }
 
     private fun handleNewDocumentEvent(
         event: NotificatiesApiNotificationReceivedEvent,

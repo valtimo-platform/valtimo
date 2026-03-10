@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import {PluginConfigurationData} from '../../../models';
+package com.ritense.verzoek.domain
 
-interface DocumentVerzoekConfig extends PluginConfigurationData {
-  notificatiesApiPluginConfiguration: string;
-  zakenApiPlugin: string;
-  documentenApiPlugin: string;
-  externalDocumentType: string;
-  eventMessage: string;
-  docTypes: Array<string>;
-}
-
-export {DocumentVerzoekConfig};
+data class DocTypes(
+    val type: String
+)
