@@ -1518,9 +1518,13 @@
     "remove": "Unassign",
     "save": "Save",
     "fetchingUsers": "Fetching users...",
-    "buttonText": "Assign user",
+    "buttonText": "Assign",
+    "assignToMe": "Assign to me",
+    "assignToOtherUser": "Assign to other user",
     "submitButtonText": "Assign user to task",
-    "comboboxLabel": "Select user to assign"
+    "comboboxLabel": "Select user to assign",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
@@ -2074,7 +2078,9 @@
     "buttonText": "Set due date",
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",
-    "removeButtonText": "Remove due date"
+    "removeButtonText": "Remove due date",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {

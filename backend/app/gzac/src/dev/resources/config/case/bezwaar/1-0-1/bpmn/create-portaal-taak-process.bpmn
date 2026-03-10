@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:operaton="http://operaton.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+  <bpmn:process id="create-portaal-taak-process" isClosed="false" isExecutable="true" name="Create portaal taak" operaton:versionTag="CD:bezwaar:1.0.1" processType="None">
+    <bpmn:startEvent id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
+      <bpmn:outgoing>Flow_004hxoz</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_004hxoz" sourceRef="StartEvent_1" targetRef="Activity_01zdn8o"/>
+    <bpmn:sequenceFlow id="Flow_108mgls" sourceRef="Activity_01zdn8o" targetRef="Activity_0um6ijv"/>
+    <bpmn:endEvent id="Event_1450elh">
+      <bpmn:incoming>Flow_0x0ofi0</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0x0ofi0" sourceRef="Activity_0um6ijv" targetRef="Event_1450elh"/>
+    <bpmn:userTask camunda:candidateGroups="ROLE_USER" completionQuantity="1" id="Activity_0um6ijv" implementation="##unspecified" isForCompensation="false" name="Portaal taak in Objecten API" startQuantity="1">
+      <bpmn:incoming>Flow_108mgls</bpmn:incoming>
+      <bpmn:outgoing>Flow_0x0ofi0</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask completionQuantity="1" id="Activity_01zdn8o" implementation="##WebService" isForCompensation="false" name="Create zaak role: Initiator" operaton:asyncAfter="true" operaton:expression="${null}" startQuantity="1">
+      <bpmn:incoming>Flow_004hxoz</bpmn:incoming>
+      <bpmn:outgoing>Flow_108mgls</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane bpmnElement="create-portaal-taak-process" id="BPMNPlane_1">
+      <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="_BPMNShape_StartEvent_2">
+        <dc:Bounds height="36" width="36" x="173" y="102"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Event_1450elh" id="Event_1450elh_di">
+        <dc:Bounds height="36" width="36" x="582" y="102"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Activity_0um6ijv" id="Activity_1vagrw8_di">
+        <dc:Bounds height="80" width="100" x="420" y="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Activity_01zdn8o" id="Activity_1txdjri_di">
+        <dc:Bounds height="80" width="100" x="260" y="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="Flow_004hxoz" id="Flow_004hxoz_di">
+        <di:waypoint x="209" y="120"/>
+        <di:waypoint x="260" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="Flow_108mgls" id="Flow_108mgls_di">
+        <di:waypoint x="360" y="120"/>
+        <di:waypoint x="420" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="Flow_0x0ofi0" id="Flow_0x0ofi0_di">
+        <di:waypoint x="520" y="120"/>
+        <di:waypoint x="582" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

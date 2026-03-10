@@ -107,7 +107,7 @@ class ZaakDocumentResourceTest : BaseIntegrationTest() {
             verantwoordelijkeOrganisatie = Rsin("002564440"),
             startdatum = LocalDate.now()
         )
-        doReturn(zaak).whenever(zaakDocumentService).getZaakByDocumentId(documentId)
+        doReturn(zaak).whenever(zaakDocumentService).getZaakByCaseDocumentId(documentId)
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/api/v1/zaken-api/document/" +
