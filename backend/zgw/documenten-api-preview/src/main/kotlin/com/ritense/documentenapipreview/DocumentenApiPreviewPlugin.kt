@@ -18,14 +18,16 @@ package com.ritense.documentenapipreview
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin.Companion.PLUGIN_KEY
 import com.ritense.documentenapipreview.client.PdfConversionClient
+import com.ritense.documentenapipreview.domain.PdfFile
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.validation.Url
-import java.io.InputStream
 import java.net.URI
+import java.util.UUID
 
 
 @Plugin(
@@ -44,11 +46,18 @@ class DocumentenApiPreviewPlugin(
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
 
-    fun generatePreview(documentId: String): InputStream {
+    fun generatePreview(documentId: String): PdfFile {
         val documentenApiPlugin = getDocumentenApiPlugin()
         val documentStream = documentenApiPlugin.downloadInformatieObject(documentId)
+        val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId);
+        val pdfStream = pdfConversionClient.convertDocument(url, documentStream)
 
-        return pdfConversionClient.convertDocument(url, documentStream)
+        return PdfFile(createFilename(documentInformatieObject), pdfStream)
+    }
+
+    private fun createFilename(documentInformatieObject: DocumentInformatieObject): String {
+        val filename = documentInformatieObject.bestandsnaam ?: UUID.randomUUID().toString()
+        return "${filename.split('.').first()}.pdf"
     }
 
     private fun getDocumentenApiPlugin(): DocumentenApiPlugin {

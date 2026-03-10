@@ -3,6 +3,7 @@ package com.ritense.documentenapipreview.autoconfigure
 import com.ritense.documentenapipreview.DocumentenApiPreviewPluginFactory
 import com.ritense.documentenapipreview.client.PdfConversionClient
 import com.ritense.documentenapipreview.service.DocumentenApiPreviewService
+import com.ritense.documentenapipreview.web.rest.DocumentenApiPreviewResource
 import com.ritense.plugin.service.PluginService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -38,4 +39,15 @@ open class DocumentenApiPreviewAutoConfiguration {
             pluginService
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentenApiPreviewResource::class)
+    fun documentenApiPreviewResource(
+        documentenApiPreviewService: DocumentenApiPreviewService,
+    ): DocumentenApiPreviewResource {
+        return DocumentenApiPreviewResource(
+            documentenApiPreviewService
+        )
+    }
+
 }
