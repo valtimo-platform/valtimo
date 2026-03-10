@@ -26,7 +26,7 @@ import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 
-class TeamExporterIntTest {
+class TeamExporterTest {
 
     private val objectMapper = ObjectMapper()
     private val teamService: TeamService = mock()
@@ -45,7 +45,7 @@ class TeamExporterIntTest {
         val file1 = exportFiles.find { it.path == "config/global/team/teams.team.json" }!!
 
         JSONAssert.assertEquals(
-            """[{"key":"team-1","title":"Team 1","users":[]},{"key":"team-2","title":"Team 2","users":[]}]""",
+            """[{"key":"team-1","title":"Team 1"},{"key":"team-2","title":"Team 2"}]""",
             objectMapper.writeValueAsString(objectMapper.readTree(file1.content)),
             JSONCompareMode.NON_EXTENSIBLE
         )
@@ -63,7 +63,7 @@ class TeamExporterIntTest {
         val file1 = exportFiles.find { it.path == "config/global/team/team-1.team.json" }!!
 
         JSONAssert.assertEquals(
-            """[{"key":"team-1","title":"Team 1","users":[]}]""",
+            """[{"key":"team-1","title":"Team 1"}]""",
             objectMapper.writeValueAsString(objectMapper.readTree(file1.content)),
             JSONCompareMode.NON_EXTENSIBLE
         )

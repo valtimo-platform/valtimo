@@ -18,16 +18,14 @@ package com.ritense.team.web.rest.dto
 
 import com.ritense.team.domain.Team
 
-data class TeamResponseDto(
+data class TeamImportExportDto(
     val key: String,
-    val title: String,
-    val users: List<String> = emptyList()
+    val title: String
 ) {
     companion object {
-        fun from(team: Team) = TeamResponseDto(
+        fun from(team: Team) = TeamImportExportDto(
             team.key,
-            team.title,
-            team.users
+            team.title
         )
     }
 }
