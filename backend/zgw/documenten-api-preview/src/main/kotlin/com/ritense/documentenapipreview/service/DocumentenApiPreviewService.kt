@@ -19,6 +19,7 @@ package com.ritense.documentenapipreview.service
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.findConfigurationByUrl
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin
+import com.ritense.documentenapipreview.domain.PdfFile
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
@@ -38,7 +39,7 @@ class DocumentenApiPreviewService(
     open fun generatePreview(
         @LoggableResource(resourceType = PluginConfigurationId::class) documentenApiConfigurationId: String,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
-    ): InputStream {
+    ): PdfFile {
         val documentPreviewApiPlugin = getDocumentenApiPreviewPlugin(documentenApiConfigurationId)
 
         return documentPreviewApiPlugin.generatePreview(documentId)

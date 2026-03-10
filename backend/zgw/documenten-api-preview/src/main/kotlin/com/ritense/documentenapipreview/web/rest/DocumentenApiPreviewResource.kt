@@ -1,6 +1,5 @@
 package com.ritense.documentenapipreview.web.rest
 
-import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapipreview.service.DocumentenApiPreviewService
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.net.URLConnection
 
 @RestController
 @SkipComponentScan
@@ -27,12 +25,15 @@ class DocumentenApiPreviewResource(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
+        val pdfFile = documentenApiPreviewService.generatePreview(pluginConfigurationId, documentId)
 
-        val previewStream = documentenApiPreviewService.generatePreview(pluginConfigurationId, documentId)
+        val responseHeaders = HttpHeaders()
+        responseHeaders.set("Content-Disposition", "attachment; filename=\"${pdfFile.fileName}\"")
 
         return ResponseEntity
             .ok()
+            .headers(responseHeaders)
             .contentType(MediaType.APPLICATION_PDF)
-            .body(InputStreamResource(previewStream))
+            .body(InputStreamResource(pdfFile.content))
     }
 }

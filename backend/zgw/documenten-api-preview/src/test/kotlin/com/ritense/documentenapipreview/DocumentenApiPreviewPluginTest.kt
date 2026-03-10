@@ -1,8 +1,10 @@
 package com.ritense.documentenapipreview
 
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapipreview.client.PdfConversionClient
 import com.ritense.plugin.service.PluginService
+import com.ritense.zgw.Rsin
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -10,6 +12,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DocumentenApiPreviewPluginTest {
     private lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
@@ -29,30 +33,60 @@ class DocumentenApiPreviewPluginTest {
 
         whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.downloadInformatieObject(MOCK_DOCUMENT_ID))
+            .thenReturn(MOCK_DOCUMENT_STREAM)
+        whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID))
+            .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
+        whenever(pdfConversionClient.convertDocument(any(), any())).thenReturn(MOCK_DOCUMENT_STREAM)
     }
 
     @Test
     fun `should call download on DocumentenApiPlugin`() {
-        val documentId = "mock_document_identifier"
+        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        whenever(documentenApiPlugin.downloadInformatieObject(documentId))
-            .thenReturn("test_document".byteInputStream())
+        verify(documentenApiPlugin).downloadInformatieObject(MOCK_DOCUMENT_ID)
+    }
 
-        documentenApiPreviewPlugin.generatePreview(documentId)
+    @Test
+    fun `should call getInformatieObject on DocumentenApiPlugin`() {
+        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        verify(documentenApiPlugin).downloadInformatieObject(documentId)
+        verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID)
     }
 
     @Test
     fun `should call generatePreview on PdfConversionClient`() {
-        val documentId = "mock_document_identifier"
-        val documentStream = "test_document".byteInputStream()
+        documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        whenever(documentenApiPlugin.downloadInformatieObject(documentId))
-            .thenReturn(documentStream)
+        verify(pdfConversionClient).convertDocument(documentenApiPreviewPlugin.url, MOCK_DOCUMENT_STREAM)
+    }
 
-        documentenApiPreviewPlugin.generatePreview(documentId)
+    companion object {
+        private val MOCK_DOCUMENT_ID = "mock_document_identifier"
 
-        verify(pdfConversionClient).convertDocument(documentenApiPreviewPlugin.url, documentStream)
+        private val MOCK_DOCUMENT_STREAM = "test_document".byteInputStream()
+        private val MOCK_DOCUMENT_INFORMATIE_OBJECT = DocumentInformatieObject(
+            url = URI("http://mock.url/mock_document"),
+            bronorganisatie = Rsin("001326132"),
+            identificatie = null,
+            creatiedatum = LocalDate.now(),
+            titel = "Mock titel",
+            vertrouwelijkheidaanduiding = null,
+            auteur = "Mock auteur",
+            status = null,
+            formaat = null,
+            taal = "Mock taal",
+            versie = null,
+            beginRegistratie = LocalDateTime.now(),
+            bestandsnaam = "mock_document.docx",
+            bestandsomvang = null,
+            link = null,
+            beschrijving = null,
+            ontvangstdatum = null,
+            verzenddatum = null,
+            indicatieGebruiksrecht = null,
+            informatieobjecttype = null,
+            trefwoorden = null
+        )
     }
 }
