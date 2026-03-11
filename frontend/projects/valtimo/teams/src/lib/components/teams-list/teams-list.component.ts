@@ -21,15 +21,23 @@ import {
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
+  DEFAULT_PAGINATION,
+  Pagination,
   ViewType,
 } from '@valtimo/components';
+import {PermissionService} from '@valtimo/access-control';
 import {TeamsApiService, TeamsService} from '../../services';
-import {map, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, map, switchMap, tap} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {TeamListResponseDto} from '@valtimo/shared';
 import {Router} from '@angular/router';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {TeamsCreateEditModalComponent} from '../teams-create-edit-modal/teams-create-edit-modal.component';
+import {
+  CAN_CREATE_TEAM_PERMISSION,
+  CAN_DELETE_TEAM_PERMISSION,
+  CAN_MODIFY_TEAM_PERMISSION,
+} from '../../permissions';
 
 @Component({
   standalone: true,
@@ -50,10 +58,56 @@ import {TeamsCreateEditModalComponent} from '../teams-create-edit-modal/teams-cr
 export class TeamsListComponent {
   public readonly $loading = signal<boolean>(true);
 
-  public readonly teams$ = this.teamsService.reload$.pipe(
+  public readonly canCreateTeam$ = this.permissionService.requestPermission(
+    CAN_CREATE_TEAM_PERMISSION
+  );
+
+  public readonly canModifyTeam$ = this.permissionService.requestPermission(
+    CAN_MODIFY_TEAM_PERMISSION
+  );
+
+  public readonly canDeleteTeam$ = this.permissionService.requestPermission(
+    CAN_DELETE_TEAM_PERMISSION
+  );
+
+  public readonly actionItems$ = combineLatest([
+    this.canModifyTeam$,
+    this.canDeleteTeam$,
+  ]).pipe(
+    map(([canModify, canDelete]): ActionItem[] => [
+      {
+        label: 'interface.edit',
+        callback: this.onEditTeam.bind(this),
+        disabledCallback: () => !canModify,
+      },
+      {
+        label: 'interface.delete',
+        callback: this.onDeleteTeam.bind(this),
+        type: 'danger',
+        disabledCallback: () => !canDelete,
+      },
+    ])
+  );
+
+  public readonly pagination$ = new BehaviorSubject<Pagination>({...DEFAULT_PAGINATION});
+
+  private readonly paginationParams$ = this.pagination$.pipe(
+    map(p => ({page: p.page, size: p.size})),
+    distinctUntilChanged((a, b) => a.page === b.page && a.size === b.size)
+  );
+
+  public readonly teams$ = combineLatest([this.teamsService.reload$, this.paginationParams$]).pipe(
     tap(() => this.$loading.set(true)),
-    switchMap(() => this.teamsApiService.getTeams()),
-    map(teams => [...teams].sort((a, b) => a.title.localeCompare(b.title))),
+    switchMap(([_, params]) =>
+      this.teamsApiService.getTeams({page: params.page - 1, size: params.size})
+    ),
+    map(page => {
+      this.pagination$.next({
+        ...this.pagination$.getValue(),
+        collectionSize: page.totalElements,
+      });
+      return page.content;
+    }),
     tap(() => this.$loading.set(false))
   );
 
@@ -62,17 +116,13 @@ export class TeamsListComponent {
     {key: 'userCount', label: 'teams.listColumns.members', viewType: ViewType.NUMBER},
   ];
 
-  public readonly ACTION_ITEMS: ActionItem[] = [
-    {label: 'interface.edit', callback: this.onEditTeam.bind(this)},
-    {label: 'interface.delete', callback: this.onDeleteTeam.bind(this), type: 'danger'},
-  ];
-
   public readonly showDeleteModal$ = this.teamsService.showDeleteModal$;
   public readonly teamToDelete$ = this.teamsService.teamToDelete$;
 
   constructor(
     private readonly teamsApiService: TeamsApiService,
     private readonly teamsService: TeamsService,
+    private readonly permissionService: PermissionService,
     private readonly router: Router
   ) {}
 
@@ -95,6 +145,21 @@ export class TeamsListComponent {
   public onDeleteConfirm(team: TeamListResponseDto): void {
     this.teamsApiService.deleteTeam(team.key).subscribe(() => {
       this.teamsService.reload();
+    });
+  }
+
+  public onPaginationClicked(page: number): void {
+    this.pagination$.next({...this.pagination$.getValue(), page});
+  }
+
+  public onPaginationSet(size: number): void {
+    const {collectionSize, page} = this.pagination$.getValue();
+    const resetPage =
+      Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
+    this.pagination$.next({
+      ...this.pagination$.getValue(),
+      size,
+      ...(resetPage && {page: 1}),
     });
   }
 }

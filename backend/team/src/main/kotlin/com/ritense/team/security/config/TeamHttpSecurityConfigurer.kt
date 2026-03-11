@@ -40,6 +40,8 @@ class TeamHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/team/{teamKey}/user")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/team/{teamKey}/user/{userId}"))
                     .authenticated()
+                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{teamKey}/candidate-user"))
+                    .authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -1,0 +1,110 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    members: members$ | async,
+    pagination: membersPagination$ | async,
+    memberActionItems: memberActionItems$ | async,
+    canAddMember: canAddMember$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    [fields]="MEMBER_FIELDS"
+    [items]="obs.members"
+    [loading]="$loadingMembers()"
+    [actionItems]="obs.memberActionItems"
+    [pagination]="obs.pagination"
+    paginationIdentifier="teamMembers"
+    (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+  >
+    <div carbonToolbarContent>
+      <valtimo-team-detail-add-member
+        [disabled]="obs.canAddMember === false"
+      ></valtimo-team-detail-add-member>
+    </div>
+
+    <valtimo-no-results
+      [description]="'teams.detail.noMembers.description' | translate"
+      [title]="'teams.detail.noMembers.title' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+</ng-container>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div
+      class="team-detail__header"
+      *ngIf="{
+        canModify: canModifyTeam$ | async,
+        canDelete: canDeleteTeam$ | async,
+      } as perms"
+    >
+      <ng-template #trigger>
+        <button cdsButton="tertiary">
+          {{ 'teams.detail.more' | translate }}
+          <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
+        </button>
+      </ng-template>
+
+      <cds-overflow-menu
+        [customTrigger]="trigger"
+        class="overflow-button"
+        valtimoCdsOverflowButton
+        [width]="250"
+        [offset]="{y: 48, x: 37}"
+      >
+        <cds-overflow-menu-option
+          (selected)="onEditTeam()"
+          [disabled]="!perms.canModify"
+        >
+          {{ 'teams.detail.editTeam' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          (selected)="onDeleteTeam()"
+          [danger]="true"
+          [disabled]="!perms.canDelete"
+        >
+          {{ 'teams.detail.deleteTeam' | translate }}
+        </cds-overflow-menu-option>
+      </cds-overflow-menu>
+    </div>
+  </ng-template>
+</ng-container>
+
+<valtimo-team-detail-edit-modal></valtimo-team-detail-edit-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="teams.detail.removeMember"
+  confirmButtonType="danger"
+  contentTranslationKey="teams.detail.removeMemberModal.content"
+  [outputOnConfirm]="memberToRemove$ | async"
+  [showModalSubject$]="showRemoveMemberModal$"
+  titleTranslationKey="teams.detail.removeMemberModal.title"
+  (confirmEvent)="onRemoveMemberConfirm($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="teams.deleteModal.content"
+  [outputOnConfirm]="team$ | async"
+  [showModalSubject$]="showDeleteTeamModal$"
+  titleTranslationKey="teams.deleteModal.title"
+  (confirmEvent)="onDeleteTeamConfirm()"
+></valtimo-confirmation-modal>

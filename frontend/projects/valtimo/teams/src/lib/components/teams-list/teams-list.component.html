@@ -14,13 +14,24 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{teams: teams$ | async} as obs">
+<ng-container
+  *ngIf="{
+    teams: teams$ | async,
+    pagination: pagination$ | async,
+    actionItems: actionItems$ | async,
+    canCreateTeam: canCreateTeam$ | async,
+  } as obs"
+>
   <valtimo-carbon-list
     [fields]="FIELDS"
     [items]="obs.teams"
     [loading]="$loading()"
-    [actionItems]="ACTION_ITEMS"
+    [actionItems]="obs.actionItems"
+    [pagination]="obs.pagination"
+    paginationIdentifier="teams"
     (rowClicked)="onRowClick($event)"
+    (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
   >
     <ng-container carbonToolbarContent [ngTemplateOutlet]="teamActions"></ng-container>
 
@@ -33,7 +44,11 @@
 </ng-container>
 
 <ng-template #teamActions>
-  <button cdsButton="primary" (click)="showCreateModal()">
+  <button
+    cdsButton="primary"
+    [disabled]="(canCreateTeam$ | async) === false"
+    (click)="showCreateModal()"
+  >
     {{ 'teams.newTeam' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

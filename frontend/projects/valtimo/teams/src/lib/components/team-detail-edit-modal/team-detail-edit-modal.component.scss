@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of teams
- */
+.valtimo-team-edit {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
 
-export * from './lib/teams.module';
-export * from './lib/services';
-export * from './lib/permissions';
+.cds--text-input__field-wrapper {
+  cds-label {
+    width: 100%;
+  }
+
+  ::ng-deep .cds--label {
+    width: 100%;
+  }
+}

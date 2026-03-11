@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of teams
- */
-
-export * from './lib/teams.module';
-export * from './lib/services';
-export * from './lib/permissions';
+export * from './team.permissions';

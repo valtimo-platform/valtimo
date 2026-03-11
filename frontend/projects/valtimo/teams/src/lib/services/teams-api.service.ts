@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
   ConfigService,
+  Page,
   TeamCreateRequestDto,
   TeamListResponseDto,
   TeamResponseDto,
   TeamUpdateRequestDto,
+  TeamUserCreateRequestDto,
+  TeamUserResponseDto,
+  User,
 } from '@valtimo/shared';
 import {Observable} from 'rxjs';
 
@@ -37,9 +41,27 @@ export class TeamsApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getTeams(params?: {titleContains?: string}): Observable<TeamListResponseDto[]> {
-    return this.httpClient.get<TeamListResponseDto[]>(this.getApiUrl('v1/team'), {
-      params: params as any,
+  public getCandidateUsers(teamKey: string): Observable<User[]> {
+    return this.httpClient.get<User[]>(this.getApiUrl(`v1/team/${teamKey}/candidate-user`));
+  }
+
+  public getTeams(params?: {
+    titleContains?: string;
+    page?: number;
+    size?: number;
+  }): Observable<Page<TeamListResponseDto>> {
+    let httpParams = new HttpParams();
+    if (params?.titleContains) {
+      httpParams = httpParams.set('titleContains', params.titleContains);
+    }
+    if (params?.page !== undefined) {
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params?.size !== undefined) {
+      httpParams = httpParams.set('size', params.size.toString());
+    }
+    return this.httpClient.get<Page<TeamListResponseDto>>(this.getApiUrl('v1/team'), {
+      params: httpParams,
     });
   }
 
@@ -57,5 +79,36 @@ export class TeamsApiService extends BaseApiService {
 
   public deleteTeam(key: string): Observable<void> {
     return this.httpClient.delete<void>(this.getApiUrl(`v1/team/${key}`));
+  }
+
+  public getTeamUsers(
+    teamKey: string,
+    params?: {page?: number; size?: number}
+  ): Observable<Page<TeamUserResponseDto>> {
+    let httpParams = new HttpParams();
+    if (params?.page !== undefined) {
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params?.size !== undefined) {
+      httpParams = httpParams.set('size', params.size.toString());
+    }
+    return this.httpClient.get<Page<TeamUserResponseDto>>(
+      this.getApiUrl(`v1/team/${teamKey}/user`),
+      {params: httpParams}
+    );
+  }
+
+  public addTeamUser(
+    teamKey: string,
+    dto: TeamUserCreateRequestDto
+  ): Observable<TeamUserResponseDto> {
+    return this.httpClient.post<TeamUserResponseDto>(
+      this.getApiUrl(`v1/team/${teamKey}/user`),
+      dto
+    );
+  }
+
+  public removeTeamUser(teamKey: string, username: string): Observable<void> {
+    return this.httpClient.delete<void>(this.getApiUrl(`v1/team/${teamKey}/user/${username}`));
   }
 }

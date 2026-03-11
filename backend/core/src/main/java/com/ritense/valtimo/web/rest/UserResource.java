@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,11 @@ import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_J
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.request.EntityAuthorizationRequest;
+import com.ritense.valtimo.authorization.ManageableUserActionProvider;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
@@ -38,6 +42,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,15 +65,18 @@ public class UserResource {
     private final UserManagementService userManagementService;
     private final UserSettingsService userSettingsService;
     private final ObjectMapper objectMapper;
+    private final AuthorizationService authorizationService;
 
     public UserResource(
         UserManagementService userManagementService,
         UserSettingsService userSettingsService,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        AuthorizationService authorizationService
     ) {
         this.userManagementService = userManagementService;
         this.userSettingsService = userSettingsService;
         this.objectMapper = objectMapper;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping("/v1/users")
@@ -132,6 +142,7 @@ public class UserResource {
     @GetMapping("/v1/users/authority/{authority}")
     public ResponseEntity<List<ManageableUser>> getAllUsersByRole(@PathVariable String authority) {
         logger.debug("Request to get users by role : {}", authority);
+        requireViewUsersPermission();
         final List<ManageableUser> usersWithRole = userManagementService.findByRole(authority);
         return ResponseEntity.ok(usersWithRole);
     }
@@ -175,5 +186,22 @@ public class UserResource {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    private void requireViewUsersPermission() {
+        boolean hasPermission = authorizationService.hasPermission(
+            new EntityAuthorizationRequest<>(
+                ManageableUser.class,
+                ManageableUserActionProvider.VIEW_LIST
+            )
+        );
+        if (!hasPermission) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
+            if (!isAdmin) {
+                throw new AccessDeniedException("User does not have permission to view users");
+            }
+        }
     }
 }
