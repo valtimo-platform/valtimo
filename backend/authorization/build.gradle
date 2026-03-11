@@ -34,6 +34,8 @@ dockerCompose {
 }
 
 dependencies {
+    implementation project(":backend:importer")
+    implementation project(":backend:exporter")
     implementation project(":backend:changelog")
     implementation project(":backend:contract")
     implementation("org.springframework.security:spring-security-core")

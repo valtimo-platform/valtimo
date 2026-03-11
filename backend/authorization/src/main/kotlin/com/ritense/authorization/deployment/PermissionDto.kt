@@ -50,8 +50,19 @@ data class PermissionDto(
         resourceType = resourceType,
         actions = actions.map { Action<Any>(it) }.toMutableList(),
         conditionContainer = ConditionContainer(conditions = conditions),
-        role = roleRepository.findByKey(roleKey)!!,
+        role = roleRepository.findByKey(roleKey) ?: error("Missing role '$roleKey'"),
         contextResourceType = contextResourceType,
         contextConditionContainer = ConditionContainer(conditions = contextConditions)
     )
+
+    companion object {
+        fun from(permission: Permission) = PermissionDto(
+            resourceType = permission.resourceType,
+            actions = permission.actions.map { it.key },
+            conditions = permission.conditionContainer.conditions,
+            roleKey = permission.role.key,
+            contextResourceType = permission.contextResourceType,
+            contextConditions = permission.contextConditionContainer?.conditions ?: emptyList()
+        )
+    }
 }

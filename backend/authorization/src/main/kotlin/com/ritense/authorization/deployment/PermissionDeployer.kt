@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2024 Ritense BV, the Netherlands.
+ *  Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ package com.ritense.authorization.deployment
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationSupportedHelper
+import com.ritense.authorization.importer.GlobalPermissionImporter
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.valtimo.changelog.domain.ChangesetDeployer
 import com.ritense.valtimo.changelog.domain.ChangesetDetails
 import com.ritense.valtimo.changelog.service.ChangelogService
 
+@Deprecated("Since 13.18.0", ReplaceWith("com.ritense.authorization.importer.GlobalPermissionImporter"))
 class PermissionDeployer(
     private val objectMapper: ObjectMapper,
     private val permissionRepository: PermissionRepository,
@@ -43,6 +45,10 @@ class PermissionDeployer(
     }
 
     override fun getChangelogDetails(filename: String, content: String): List<ChangesetDetails> {
+        if (filename.substringAfter("/config").matches(GlobalPermissionImporter.FILENAME_REGEX)) {
+            return emptyList()
+        }
+
         val changeset = objectMapper.readValue<PermissionChangeset>(content)
         return listOf(
             ChangesetDetails(
