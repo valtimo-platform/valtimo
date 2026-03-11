@@ -4,6 +4,7 @@
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
 .claude
+.playwright-mcp
 
 ### IntelliJ IDEA ###
 .idea

@@ -23,6 +23,14 @@
   margin-top: 8px;
 }
 
+::ng-deep .status-selector .cds--list-box__selection--multi {
+  pointer-events: none;
+
+  svg {
+    pointer-events: auto;
+  }
+}
+
 ::ng-deep .status-selector-dropdown-template {
   display: flex;
   margin-top: -4px;
