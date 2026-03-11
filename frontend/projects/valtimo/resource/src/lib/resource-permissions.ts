@@ -27,6 +27,7 @@ enum PERMISSION_ACTION {
 enum RESOURCE_PERMISSION_RESOURCE {
   resourcePermission = 'com.ritense.resource.authorization.ResourcePermission',
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
+  zaakDocument = 'com.ritense.zakenapi.domain.ZaakDocument',
 }
 
 const CAN_VIEW_RESOURCE_PERMISSION: PermissionRequest = {

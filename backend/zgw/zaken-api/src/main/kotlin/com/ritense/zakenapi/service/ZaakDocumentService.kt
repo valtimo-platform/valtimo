@@ -173,7 +173,11 @@ class ZaakDocumentService(
                     caseDocumentId
                 )
             } else {
-                zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url, caseDocumentId)
+                zakenApiPlugin.deleteZaakInformatieobject(
+                    zaakInformatieobject.url,
+                    caseDocumentId,
+                    zaakInformatieobject.informatieobject.toString().substringAfterLast('/')
+                    )
             }
         }
     }

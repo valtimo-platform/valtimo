@@ -699,7 +699,8 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakInformatieobjectUrl: URI,
-        caseDocumentId: UUID?
+        caseDocumentId: UUID?,
+        fileId: String?
     ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
@@ -708,7 +709,10 @@ class ZakenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission(caseDocumentId)
+                ResourcePermission(
+                    caseDocumentId,
+                    fileId,
+                )
             )
         )
 

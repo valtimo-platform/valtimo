@@ -1320,13 +1320,14 @@ class ZakenApiPlugin(
         return results.singleOrNull()
     }
 
-    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI, caseDocumentId: UUID?) {
+    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI, caseDocumentId: UUID?, fileId: String?) {
         logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
         client.deleteZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             zaakInformatieobjectUrl = zaakInformatieobjectUrl,
-            caseDocumentId
+            caseDocumentId,
+            fileId
         )
         logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
     }

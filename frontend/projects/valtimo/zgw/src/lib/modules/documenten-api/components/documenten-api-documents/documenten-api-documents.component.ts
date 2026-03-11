@@ -656,18 +656,30 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   ): Observable<{
     [key: string]: boolean;
   }> {
-    return combineLatest(
-      files.map(file =>
-        this.getPermission(
-          permissionRequest,
-          context || {
-            resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
-            identifier: file.fileId,
-          }
-        ).pipe(map(available => ({[file.fileId]: available})))
-      )
-    ).pipe(
-      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
+    if (files.length === 0) {
+      return of({});
+    }
+
+    const canViewResource$ = this.getPermission(
+      permissionRequest,
+      context || {
+        resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+      }
+    );
+
+    return combineLatest([canViewResource$, ...files.map(file =>
+      this.getPermission(permissionRequest, {
+        resource: RESOURCE_PERMISSION_RESOURCE.zaakDocument,
+        identifier: file.fileId,
+      })
+    )]).pipe(
+      map(([canViewResource, ...canViewByTypes]) => {
+        const result: {[key: string]: boolean} = {};
+        files.forEach((file, index) => {
+          result[file.fileId] = canViewResource && canViewByTypes[index];
+        });
+        return result;
+      })
     );
   }
 

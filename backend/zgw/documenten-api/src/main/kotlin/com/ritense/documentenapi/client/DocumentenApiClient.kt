@@ -75,7 +75,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.CREATE,
-                ResourcePermission(caseDocumentId, null)
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -154,7 +154,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission(caseDocumentId, result.url.toString().substringAfterLast('/'))
+                ResourcePermission(caseDocumentId)
             )
         )
 
@@ -333,7 +333,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.DELETE,
-                ResourcePermission(caseDocumentId)
+                ResourcePermission(caseDocumentId, url.toString().substringAfterLast('/'))
             )
         )
 
@@ -356,7 +356,7 @@ class DocumentenApiClient(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.MODIFY,
-                ResourcePermission(caseDocumentId)
+                ResourcePermission(caseDocumentId, documentUrl.toString().substringAfterLast('/'))
             )
         )
 

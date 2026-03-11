@@ -47,7 +47,7 @@ class ResourceUploadedToDocumentEventListener(
                     CREATE,
                     ResourcePermission(
                         UUID.fromString(caseDocumentId),
-                        metadata.get("documentId") as String?
+                        metadata["documentId"] as String?
                     ),
                 )
             )

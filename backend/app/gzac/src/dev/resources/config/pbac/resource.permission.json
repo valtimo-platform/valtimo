@@ -98,18 +98,6 @@
                             ]
                         }
                     ]
-                },
-                {
-                    "type": "container",
-                    "resourceType": "com.ritense.zakenapi.domain.ZaakDocument",
-                    "conditions": [
-                        {
-                            "type": "field",
-                            "field": "informatieobjecttypeOmschrijving",
-                            "operator": "==",
-                            "value": "test"
-                        }
-                    ]
                 }
             ]
         },

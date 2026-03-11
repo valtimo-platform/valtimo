@@ -9,7 +9,6 @@ object LoggingConstants {
 
     object DOCUMENTEN_API {
         const val ENKELVOUDIG_INFORMATIE_OBJECT = "Documenten API: enkelvoudig informatieobject"
-        const val INFORMATIEOBJECTTYPE = "Documenten API: informatieobjecttype"
     }
 
     object BESLUITEN_API {
