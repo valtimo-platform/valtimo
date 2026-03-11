@@ -9,6 +9,8 @@ export const CASE_MANAGEMENT_DETAIL_TEST_IDS = {
 
 export const CASE_MANAGEMENT_UPLOAD_TEST_IDS = {
   fileUploader: 'caseFileUploader',
+  uploadWarningNotification: 'uploadWarningNotification',
+  uploadWarningCheckbox: 'uploadWarningCheckbox',
   cancelButton: 'uploadWizardCancelButton',
   nextButton: 'uploadWizardNextButton',
   finishButton: 'uploadWizardFinishButton',
