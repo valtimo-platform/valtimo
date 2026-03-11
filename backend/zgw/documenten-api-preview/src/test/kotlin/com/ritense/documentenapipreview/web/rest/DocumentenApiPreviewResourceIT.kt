@@ -69,7 +69,7 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
             objectMapper.readTree(
                 """
                     {
-                        "url": "${mockWebServer.url("/")}",
+                        "pdfConversionUrl": "${mockWebServer.url("/")}",
                         "documentenApiConfigurationId": "$DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID"
                     }
                 """.trimIndent()

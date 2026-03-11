@@ -1,10 +1,8 @@
 package com.ritense.documentenapipreview.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.documentenapipreview.BaseIntegrationTest
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin
-import com.ritense.plugin.domain.PluginConfiguration
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 
@@ -30,7 +28,6 @@ internal class PdfConversionClientIT @Autowired constructor(
 
     lateinit var server: MockWebServer
     lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
-    lateinit var pluginConfiguration: PluginConfiguration
 
     @BeforeAll
     internal fun setUp() {
@@ -38,22 +35,9 @@ internal class PdfConversionClientIT @Autowired constructor(
         setupMockPdfConversionServer()
         server.start(port = 56273)
 
-        val pluginPropertiesJson = """
-            {
-              "url": "${server.url("/")}",
-              "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
-            }
-        """
-
         doCallRealMethod().whenever(pluginService).createPluginConfiguration(any(), any(), any())
 
-        pluginConfiguration = pluginService.createPluginConfiguration(
-            "Documenten API Preview plugin configuration",
-            objectMapper.readTree(pluginPropertiesJson) as ObjectNode,
-            "documentenapipreview"
-        )
-
-        documentenApiPreviewPlugin = pluginService.createInstance(pluginConfiguration.id) as DocumentenApiPreviewPlugin
+        documentenApiPreviewPlugin = pluginService.createInstance("fdb489a2-e352-4431-a36a-8d708c90aff7") as DocumentenApiPreviewPlugin
     }
 
     @AfterAll
@@ -64,7 +48,7 @@ internal class PdfConversionClientIT @Autowired constructor(
     @Test
     fun `should allow document conversion`() {
         val stream = pdfConversionClient.convertDocument(
-            documentenApiPreviewPlugin.url,
+            documentenApiPreviewPlugin.pdfConversionUrl,
             "test_document".byteInputStream()
         )
 
