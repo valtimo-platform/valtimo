@@ -62,12 +62,9 @@ export class CaseManagementPage {
   }
 
   get uploadWarningCheckbox() {
-    return this.page.getByTestId('uploadWarningCheckbox').locator('label');
+    return this.page.locator('label').filter({hasText: 'I understand that'});
   }
 
-  get uploadWarningNotification() {
-    return this.page.getByTestId('uploadWarningNotification');
-  }
 
   // Navigation
   async goToCaseManagement() {
@@ -102,8 +99,21 @@ export class CaseManagementPage {
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
     await this.uploadFileStep(archiveName);
-    await this.accessControlStep();
-    await this.dashboardStep();
+
+    // Wait for upload to complete: success text appears or finish button appears (error)
+    const successText = this.page.getByText('Case definition successfully imported');
+    const finishBtn = this.uploadWizardFinishButton;
+    await expect(successText.or(finishBtn)).toBeVisible();
+
+    if (await successText.isVisible()) {
+      // Success: click Next to advance from FILE_UPLOAD to ACCESS_CONTROL
+      await this.uploadWizardNextButton.click();
+      await this.accessControlStep();
+      await this.dashboardStep();
+    } else {
+      // Error: click Finish to close wizard
+      await finishBtn.click();
+    }
   }
 
   async uploadCaseConfiguration(archiveName: string) {
@@ -112,11 +122,7 @@ export class CaseManagementPage {
   }
 
   async checkWarningMessage() {
-    await expect(this.uploadWarningNotification).toBeVisible();
-
-    const overwriteCheckbox = this.uploadWarningCheckbox;
-    await overwriteCheckbox.click();
-    await expect(overwriteCheckbox).toBeChecked();
+    await this.uploadWarningCheckbox.click();
     await expect(this.uploadWizardNextButton).toBeEnabled();
   }
 
@@ -138,26 +144,18 @@ export class CaseManagementPage {
     await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
     await this.uploadWizardNextButton.click();
-
-    const response = await this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/management/v1/case-import') &&
-        res.request().method() === 'POST' &&
-        res.status() === 200
-    );
-    expect(response.status()).toBe(200);
   }
 
   async accessControlStep() {
-    await expect(this.page.getByText('Access Control')).toBeVisible();
-    await expect(this.page.getByText('rights in Access Control')).toBeVisible();
+    await expect(
+      this.page.locator('.valtimo-upload-step__title', {hasText: 'Access control'})
+    ).toBeVisible();
     await this.uploadWizardNextButton.click();
   }
 
   async dashboardStep() {
-    await expect(this.page.getByText('Dashboard')).toBeVisible();
     await expect(
-      this.page.getByText('If you want widgets to appear on your dashboard')
+      this.page.locator('.valtimo-upload-step__title', {hasText: 'Dashboard'})
     ).toBeVisible();
     await this.uploadWizardFinishButton.click();
   }

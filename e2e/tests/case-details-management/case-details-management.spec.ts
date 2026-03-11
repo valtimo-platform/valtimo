@@ -79,6 +79,8 @@ test.describe('Case management', () => {
       test.beforeEach(async () => {
         //Arrange
         await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        await page.reload();
+        await page.waitForLoadState('domcontentloaded');
       });
 
       test.describe('Case handler', () => {
@@ -126,8 +128,8 @@ test.describe('Case management', () => {
             'true'
           );
           await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-disabled',
-            'false'
+            'ng-reflect-enabled',
+            'true'
           );
 
           await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();
