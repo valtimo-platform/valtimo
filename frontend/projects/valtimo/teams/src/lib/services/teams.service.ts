@@ -16,24 +16,51 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
+import {TeamListResponseDto} from '@valtimo/shared';
 
 @Injectable()
 export class TeamsService {
   private readonly _reload$ = new BehaviorSubject<null>(null);
   public readonly reload$ = this._reload$.asObservable();
 
-  private readonly _showCreateModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showCreateModal$ = this._showCreateModal$.asObservable();
+  private readonly _showCreateEditModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showCreateEditModal$ = this._showCreateEditModal$.asObservable();
+
+  private readonly _editingTeam$ = new BehaviorSubject<TeamListResponseDto | null>(null);
+  public readonly editingTeam$ = this._editingTeam$.asObservable();
+
+  private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
+
+  private readonly _teamToDelete$ = new BehaviorSubject<TeamListResponseDto | null>(null);
+  public readonly teamToDelete$ = this._teamToDelete$.asObservable();
 
   public reload(): void {
     this._reload$.next(null);
   }
 
   public showCreateModal(): void {
-    this._showCreateModal$.next(true);
+    this._editingTeam$.next(null);
+    this._showCreateEditModal$.next(true);
   }
 
-  public hideCreateModal(): void {
-    this._showCreateModal$.next(false);
+  public showEditModal(team: TeamListResponseDto): void {
+    this._editingTeam$.next(team);
+    this._showCreateEditModal$.next(true);
+  }
+
+  public hideCreateEditModal(): void {
+    this._showCreateEditModal$.next(false);
+    this._editingTeam$.next(null);
+  }
+
+  public showDeleteConfirmation(team: TeamListResponseDto): void {
+    this._teamToDelete$.next(team);
+    this._showDeleteModal$.next(true);
+  }
+
+  public hideDeleteModal(): void {
+    this._showDeleteModal$.next(false);
+    this._teamToDelete$.next(null);
   }
 }

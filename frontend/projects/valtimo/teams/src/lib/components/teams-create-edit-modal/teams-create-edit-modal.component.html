@@ -23,22 +23,30 @@
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ 'teams.createModal.title' | translate }}
+      {{
+        (isEditMode ? 'teams.createEditModal.editTitle' : 'teams.createEditModal.createTitle')
+          | translate
+      }}
     </h3>
-    <p cdsModalHeaderDescription>
-      {{ 'teams.createModal.description' | translate }}
+    <p cdsModalHeaderDescription *ngIf="!isEditMode">
+      {{ 'teams.createEditModal.createDescription' | translate }}
     </p>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent class="valtimo-teams-create__content" [cdsLayer]="1">
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    class="valtimo-teams-create__content"
+    [cdsLayer]="1"
+  >
     <div class="cds--text-input__field-wrapper">
       <cds-label [disabled]="formGroup.disabled" [invalid]="title.touched && title.invalid">
-        {{ 'teams.createModal.teamName' | translate }}
+        {{ 'teams.createEditModal.teamName' | translate }}
 
         <input
           formControlName="title"
           cdsText
-          placeholder="{{ 'teams.createModal.teamNamePlaceholder' | translate }}"
+          placeholder="{{ 'teams.createEditModal.teamNamePlaceholder' | translate }}"
         />
       </cds-label>
     </div>
@@ -49,8 +57,12 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid || formGroup.disabled" (click)="onSave()">
-      {{ 'teams.createModal.createTeam' | translate }}
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid || formGroup.disabled"
+      (click)="onSave()"
+    >
+      {{ (isEditMode ? 'teams.createEditModal.save' : 'teams.createEditModal.create') | translate }}
     </button>
   </cds-modal-footer>
 </cds-modal>
