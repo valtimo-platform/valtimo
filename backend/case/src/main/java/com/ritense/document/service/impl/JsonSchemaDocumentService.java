@@ -698,7 +698,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             logger.debug("Cannot set assignee for the invalid user id {}", assigneeId);
             throw new IllegalArgumentException("Cannot set assignee for the invalid user id " + assigneeId);
         }
-        if (assignee.getUsername().equals(userManagementService.getCurrentUser().getUsername())) {
+        if (assignee.getUsername() != null && assignee.getUsername().equals(userManagementService.getCurrentUser().getUsername())) {
             try {
                 authorizationService.requirePermission(
                     new EntityAuthorizationRequest<>(

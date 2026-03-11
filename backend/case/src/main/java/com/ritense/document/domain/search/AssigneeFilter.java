@@ -18,6 +18,7 @@ package com.ritense.document.domain.search;
 
 public enum AssigneeFilter {
     MINE,
+    TEAM,
     ALL,
     OPEN
 }

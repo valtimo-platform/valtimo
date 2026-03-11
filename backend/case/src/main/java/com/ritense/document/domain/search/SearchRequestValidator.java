@@ -26,6 +26,7 @@ import static com.ritense.document.domain.impl.searchfield.SearchFieldFieldType.
 import static com.ritense.document.domain.impl.searchfield.SearchFieldFieldType.SINGLE_SELECT_DROPDOWN;
 import static com.ritense.document.domain.search.AssigneeFilter.MINE;
 import static com.ritense.document.domain.search.AssigneeFilter.OPEN;
+import static com.ritense.document.domain.search.AssigneeFilter.TEAM;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -88,7 +89,7 @@ public class SearchRequestValidator {
     }
 
     private static void validateAssigneeFilter(AssigneeFilter assigneeFilter) {
-        if (assigneeFilter == OPEN || assigneeFilter == MINE) {
+        if (assigneeFilter == OPEN || assigneeFilter == TEAM || assigneeFilter == MINE) {
             var userId = SecurityUtils.getCurrentUserLogin();
             if (userId == null) {
                 throw new ValidationException("Failed to search for " + assigneeFilter + ". Reason: User is not logged in.");
