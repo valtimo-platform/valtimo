@@ -27,6 +27,10 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 ## Bugfixes
 
+* **Fixed accidental deselection in status and tag multi-select filters**
+
+  Clicking the selection count chip on the status selector or case tags selector in the case list search panel no longer clears all selected items. The click now passes through to open the dropdown instead. The clear (X) icon on the chip still works as expected to remove all selections.
+
 * When exporting a case, task search fields were formatted incorrectly, which made them unable to be imported.
 * Fixed a bug where a process link on a User Task was sometimes not executed.
 * Fixed edge case where a document field could sometimes not be selected when configuring a case column.
