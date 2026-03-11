@@ -203,7 +203,7 @@ data class Permission(
         other as Permission
 
         if (resourceType != other.resourceType) return false
-        if (actions.toList() != other.actions.toList()) return false
+        if (actions.toSet() != other.actions.toSet()) return false
         if (conditionContainer != other.conditionContainer) return false
         if (role != other.role) return false
         if (contextResourceType != other.contextResourceType) return false
