@@ -83,11 +83,11 @@ class TeamServiceIntTest : BaseIntegrationTest() {
         assertThat(teamUser.teamKey).isEqualTo("team5")
 
         val teamUsers = teamService.findAllTeamUsers(teamKey = "team5")
-        assertThat(teamUsers).hasSize(1)
-        assertThat(teamUsers[0].username).isEqualTo(username)
+        assertThat(teamUsers.content).hasSize(1)
+        assertThat(teamUsers.content[0].username).isEqualTo(username)
 
         teamService.removeUserFromTeam(username, "team5")
-        assertThat(teamService.findAllTeamUsers(teamKey = "team5")).isEmpty()
+        assertThat(teamService.findAllTeamUsers(teamKey = "team5").content).isEmpty()
     }
 
     @Test
@@ -97,11 +97,11 @@ class TeamServiceIntTest : BaseIntegrationTest() {
         teamService.create(Team(key = "beta", title = "Beta Team"))
 
         val allTeams = teamService.findAll()
-        assertThat(allTeams).isNotEmpty
-        assertThat(allTeams).hasAtLeastOneElementOfType(Team::class.java)
+        assertThat(allTeams.content).isNotEmpty
+        assertThat(allTeams.content).hasAtLeastOneElementOfType(Team::class.java)
 
         val filteredTeams = teamService.findAll(titleContains = "Alpha")
-        assertThat(filteredTeams).hasSize(1)
-        assertThat(filteredTeams[0].key).isEqualTo("alpha")
+        assertThat(filteredTeams.content).hasSize(1)
+        assertThat(filteredTeams.content[0].key).isEqualTo("alpha")
     }
 }

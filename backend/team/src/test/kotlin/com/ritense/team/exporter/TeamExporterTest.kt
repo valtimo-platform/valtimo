@@ -25,6 +25,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
+import org.springframework.data.domain.PageImpl
 
 class TeamExporterTest {
 
@@ -36,34 +37,16 @@ class TeamExporterTest {
     fun `should export teams`(): Unit = runWithoutAuthorization {
         val team1 = Team("team-1", "Team 1")
         val team2 = Team("team-2", "Team 2")
-        whenever(teamService.findAll()).thenReturn(listOf(team1, team2))
+        whenever(teamService.findAll()).thenReturn(PageImpl(listOf(team1, team2)))
 
         val exportResult = teamExporter.export(TeamExportRequest())
         val exportFiles = exportResult.exportFiles
 
         assert(exportFiles.size == 1)
-        val file1 = exportFiles.find { it.path == "config/global/team/teams.team.json" }!!
+        val file1 = exportFiles.find { it.path == "config/global/team/default.team.json" }!!
 
         JSONAssert.assertEquals(
             """[{"key":"team-1","title":"Team 1"},{"key":"team-2","title":"Team 2"}]""",
-            objectMapper.writeValueAsString(objectMapper.readTree(file1.content)),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
-
-    @Test
-    fun `should export single team`(): Unit = runWithoutAuthorization {
-        val team1 = Team("team-1", "Team 1")
-        whenever(teamService.findById("team-1")).thenReturn(team1)
-
-        val exportResult = teamExporter.export(TeamExportRequest(teamKey = "team-1"))
-        val exportFiles = exportResult.exportFiles
-
-        assert(exportFiles.size == 1)
-        val file1 = exportFiles.find { it.path == "config/global/team/team-1.team.json" }!!
-
-        JSONAssert.assertEquals(
-            """[{"key":"team-1","title":"Team 1"}]""",
             objectMapper.writeValueAsString(objectMapper.readTree(file1.content)),
             JSONCompareMode.NON_EXTENSIBLE
         )

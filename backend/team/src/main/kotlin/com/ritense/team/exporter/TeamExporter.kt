@@ -38,21 +38,16 @@ class TeamExporter(
     override fun supports(): Class<TeamExportRequest> = TeamExportRequest::class.java
 
     override fun export(request: TeamExportRequest): ExportResult {
-        val teams = if (request.teamKey != null) {
-            teamService.findById(request.teamKey)?.let { listOf(it) } ?: emptyList()
-        } else {
-            teamService.findAll()
-        }
+        val teams = teamService.findAll().content
 
         if (teams.isEmpty()) {
             return ExportResult()
         }
 
         val teamDtos = teams.map { TeamImportExportDto.from(it) }
-        val fileName = request.teamKey ?: "teams"
 
         val exportFile = ExportFile(
-            PATH.format(fileName),
+            PATH.format("default"),
             objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(teamDtos)
         )
 

@@ -19,6 +19,5 @@ package com.ritense.team.exporter
 import com.ritense.exporter.request.ExportRequest
 
 data class TeamExportRequest(
-    val teamKey: String? = null,
     override val required: Boolean = true
 ) : ExportRequest(required)
