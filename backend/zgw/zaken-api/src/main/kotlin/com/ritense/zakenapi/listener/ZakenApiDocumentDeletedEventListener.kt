@@ -37,18 +37,18 @@ class ZakenApiDocumentDeletedEventListener(
     @Transactional
     @EventListener(DocumentDeletedEvent::class)
     fun handle(event: DocumentDeletedEvent) {
-        withLoggingContext(JsonSchemaDocument::class, event.documentId) {
+        withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
             val link = try {
-                zaakInstanceService.getByDocumentId(event.documentId)
+                zaakInstanceService.getByDocumentId(event.caseDocumentId)
             } catch (e: Exception) {
-                logger.debug { "No zaak instance link found for document '${event.documentId}'. Not deleting any zaak information" }
+                logger.debug { "No zaak instance link found for document '${event.caseDocumentId}'. Not deleting any zaak information" }
                 null
             }
 
             link?.let {
-                logger.info { "Deleting all zaak information for deleted document ${event.documentId}" }
+                logger.info { "Deleting all zaak information for deleted document ${event.caseDocumentId}" }
                 //delete documents
-                zaakDocumentService.deleteRelatedInformatieObjecten(link.zaakInstanceUrl)
+                zaakDocumentService.deleteRelatedInformatieObjecten(event.caseDocumentId, link.zaakInstanceUrl)
 
                 //delete zaak
                 val plugin = pluginService.createInstance(

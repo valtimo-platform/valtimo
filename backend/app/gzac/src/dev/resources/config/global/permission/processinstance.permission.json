@@ -1,0 +1,26 @@
+[
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+        "action": "create",
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "key",
+                        "operator": "==",
+                        "value": "lening-aanvragen"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+        "action": "create",
+        "roleKey": "ROLE_ADMIN"
+    }
+]

@@ -29,7 +29,9 @@ import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.service.request.AssigneeRequest;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.service.request.SetDueDateRequest;
 import com.ritense.valtimo.web.rest.dto.BatchAssignTaskDTO;
 import com.ritense.valtimo.web.rest.dto.CustomTaskDto;
@@ -60,12 +62,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
 public class TaskResource extends AbstractTaskResource {
 
+    private final UserTaskOpenedStatusService userTaskOpenedStatusService;
+
     public TaskResource(
         final FormService formService,
         final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final OperatonProcessService operatonProcessService,
+        final UserTaskOpenedStatusService userTaskOpenedStatusService
     ) {
         super(formService, operatonTaskService, operatonProcessService);
+        this.userTaskOpenedStatusService = userTaskOpenedStatusService;
     }
 
     /**
@@ -103,6 +109,10 @@ public class TaskResource extends AbstractTaskResource {
             customTaskDto = createCustomTaskDto(taskId, request);
         } catch (TaskNotFoundException e) {
             return ResponseEntity.noContent().build();
+        }
+        var currentUserId = SecurityUtils.getCurrentUserLogin();
+        if (currentUserId != null) {
+            userTaskOpenedStatusService.markTaskAsOpened(taskId, currentUserId);
         }
         return ResponseEntity.ok(customTaskDto);
     }

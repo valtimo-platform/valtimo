@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,6 @@
   }
 }
 
-.remove-button {
-  width: 100%;
-}
-
 .due-date-text {
   display: flex;
   justify-content: flex-start;
@@ -49,6 +45,7 @@
   opacity: 0;
   visibility: hidden;
   position: absolute;
+  width: 100%;
   transition: opacity 0.3s ease-in-out;
 
   &.active {
@@ -58,6 +55,7 @@
 
   &.main {
     position: relative;
+    width: auto;
   }
 }
 
@@ -86,4 +84,8 @@
 
 .set-task-due-date-button {
   width: 250px;
+}
+
+.click-to-edit-button {
+  width: 100%;
 }

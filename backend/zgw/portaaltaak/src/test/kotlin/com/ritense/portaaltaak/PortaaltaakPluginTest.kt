@@ -421,7 +421,7 @@ internal class PortaaltaakPluginTest {
             portaaltaakPlugin.getZaakinitiator(delegateTask)
         }
         assertEquals(
-            "No initiator role found for zaak with URL ${getZaakInstanceLink().zaakInstanceUrl}",
+            "No role found for zaak with URL ${getZaakInstanceLink().zaakInstanceUrl} that has omschrijvingGeneriek 'Initiator'",
             result.message
         )
     }

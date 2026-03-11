@@ -67,6 +67,7 @@
       (formSubmit)="reload()"
       (assignmentOfTaskChanged)="reload()"
       (dueDateChanged)="reload()"
+      (modalClosed)="reload()"
     ></valtimo-task-detail-modal>
   </div>
 </div>
@@ -81,6 +82,10 @@
       (selected)="tabChange(tab)"
     ></cds-tab>
   </cds-tabs>
+</ng-template>
+
+<ng-template #unreadIndicator let-data="data">
+  <span *ngIf="!data.item?.isOpened" class="valtimo-task-list__unread-dot"></span>
 </ng-template>
 
 <ng-template #caseLink let-data="data">

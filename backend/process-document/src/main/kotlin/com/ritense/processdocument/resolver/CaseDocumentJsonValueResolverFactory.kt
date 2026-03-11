@@ -340,7 +340,14 @@ class CaseDocumentJsonValueResolverFactory(
     ): List<ValueResolverOption> {
         val options: MutableList<ValueResolverOption> = mutableListOf()
         if (node.has("type")) {
-            val propertyType = node["type"].asText()
+            val typeNode = node["type"]
+            val propertyType = if (typeNode.isArray && typeNode.size() == 2 && typeNode.any { it.asText() == "null" }) {
+                typeNode.firstOrNull { it.asText() != "null" }?.asText() ?: ""
+            } else if (typeNode.isArray) {
+                ""
+            } else {
+                typeNode.asText()
+            }
             if (isSimpleObject(propertyType)) {
                 options += ValueResolverOption(path, ValueResolverOptionType.FIELD)
             } else if (propertyType == "object") {
@@ -357,6 +364,12 @@ class CaseDocumentJsonValueResolverFactory(
                     ValueResolverOptionType.COLLECTION,
                     node["items"]?.let { getPropertyNamesFromObjectNode(definition, it as ObjectNode, "") }
                 )
+            }
+        } else if (node.has("oneOf") || node.has("anyOf")) {
+            val schemas = (node["oneOf"] ?: node["anyOf"])!!
+            val nonNullSchema = schemas.firstOrNull { it.has("type") && it["type"].asText() != "null" }
+            if (schemas.size() == 2 && schemas.any { it.has("type") && it["type"].asText() == "null" } && nonNullSchema != null) {
+                options += getPropertyNamesFromObjectNode(definition, nonNullSchema as ObjectNode, path)
             }
         } else if (node.has("\$ref")) {
             val internalDefinition = node["\$ref"].asText().substring(1)

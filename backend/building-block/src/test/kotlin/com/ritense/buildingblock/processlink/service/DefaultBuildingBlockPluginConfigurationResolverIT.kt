@@ -32,6 +32,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.event.OperatonExecutionEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -175,7 +176,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         )
 
         runWithoutAuthorization {
-            listener.onCallActivityStart(bb1Execution)
+            listener.onCallActivityStart(OperatonExecutionEvent(bb1Execution))
         }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
@@ -188,7 +189,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         )
 
         runWithoutAuthorization {
-            listener.onCallActivityStart(bb2Execution)
+            listener.onCallActivityStart(OperatonExecutionEvent(bb2Execution))
         }
 
         val bb2Instance = buildingBlockInstanceRepository.findAll().find { it.definition.id == bb2DefinitionId }!!
@@ -264,7 +265,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         )
 
         runWithoutAuthorization {
-            listener.onCallActivityStart(bb1Execution)
+            listener.onCallActivityStart(OperatonExecutionEvent(bb1Execution))
         }
 
         val bb1Instance = buildingBlockInstanceRepository.findAll().first()
@@ -310,6 +311,7 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
             on { this.processDefinitionId } doReturn processDefinitionId
             on { this.businessKey } doReturn businessKey
             on { this.processBusinessKey } doReturn businessKey
+            on { this.eventName } doReturn "start"
         }
     }
 }

@@ -37,6 +37,8 @@ class ValtimoImportTypes {
         const val CASE_DEFINITION_PROCESS_LINK = "casedefinitionprocesslink"
         const val PROCESS_LINK = "processlink"
         const val GLOBAL_PROCESS_LINK = "globalprocesslink"
+        const val GLOBAL_PERMISSION = "globalpermission"
+        const val GLOBAL_ROLE = "globalrole"
         const val SEARCH = "search"
         const val SEARCH_FIELD = "searchField"
         const val CASE_HEADER_WIDGET = "caseheaderwidget"

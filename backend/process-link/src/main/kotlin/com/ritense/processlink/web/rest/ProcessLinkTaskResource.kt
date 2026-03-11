@@ -21,9 +21,11 @@ import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResultWithTask
-import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.utils.SecurityUtils
+import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,14 +38,19 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ProcessLinkTaskResource(
-    private var processLinkActivityService: ProcessLinkActivityService
+    private var processLinkActivityService: ProcessLinkActivityService,
+    private val userTaskOpenedStatusService: UserTaskOpenedStatusService
 ) {
     @GetMapping(value = ["/v2/process-link/task/{taskId}"])
     fun getTask(
         @LoggableResource(resourceType = OperatonTask::class) @PathVariable taskId: UUID
     ): ResponseEntity<ProcessLinkActivityResult<*>> {
         return try {
-            ResponseEntity.ok(processLinkActivityService.openTask(taskId))
+            val result = processLinkActivityService.openTask(taskId)
+            SecurityUtils.getCurrentUserLogin()?.let { userId ->
+                userTaskOpenedStatusService.markTaskAsOpened(taskId.toString(), userId)
+            }
+            ResponseEntity.ok(result)
         } catch (e: ProcessLinkNotFoundException) {
             ResponseEntity.notFound().build()
         }

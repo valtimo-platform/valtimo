@@ -26,8 +26,8 @@ import jakarta.persistence.criteria.Root
 
 class ResourceSpecification(
     authRequest: AuthorizationRequest<ResourcePermission>,
-    permissions: List<Permission>,
-) : AuthorizationSpecification<ResourcePermission>(authRequest, permissions) {
+    permissionSupplier: () -> List<Permission>,
+) : AuthorizationSpecification<ResourcePermission>(authRequest, permissionSupplier) {
 
     override fun toPredicate(
         root: Root<ResourcePermission>,

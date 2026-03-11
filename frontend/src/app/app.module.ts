@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BrowserModule} from '@angular/platform-browser';
+ import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
