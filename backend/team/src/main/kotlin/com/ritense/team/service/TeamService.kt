@@ -120,6 +120,10 @@ class TeamService(
         return findAllTeamUsers(username = username).content.map { it.teamKey }
     }
 
+    override fun findTitleByTeamKey(teamKey: String): String {
+        return findById(teamKey)?.title ?: teamKey
+    }
+
     private fun requirePermission(team: Team, action: Action<Team>) {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(

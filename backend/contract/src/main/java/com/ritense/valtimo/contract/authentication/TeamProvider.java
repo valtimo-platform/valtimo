@@ -30,4 +30,12 @@ public interface TeamProvider {
      * @return List of team keys.
      */
     List<String> findTeamKeysByUsername(String username);
+
+    /**
+     * Finds the title for a team key.
+     *
+     * @param teamKey The team key.
+     * @return The team title.
+     */
+    String findTitleByTeamKey(String teamKey);
 }

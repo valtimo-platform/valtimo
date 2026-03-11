@@ -131,7 +131,12 @@ public class JsonSchemaDocumentResource implements DocumentResource {
         @RequestBody @Valid UpdateAssigneeRequest request
     ) {
         logger.debug("REST call /api/v1/document/{}/assign", documentId);
-        documentService.assignUserToDocument(documentId, request.getAssigneeId());
+        if (request.getAssigneeId() != null) {
+            documentService.assignUserToDocument(documentId, request.getAssigneeId());
+        }
+        if (request.getAssignedTeamKey() != null) {
+            documentService.assignTeamToDocument(documentId, request.getAssignedTeamKey());
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -150,9 +155,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
 
         try {
             documentService.unassignUserFromDocument(documentId);
+            documentService.unassignTeamFromDocument(documentId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("Failed to unassign a user to a document", e);
+            logger.error("Failed to unassign a user or team from a document", e);
             return ResponseEntity.badRequest().build();
         }
     }

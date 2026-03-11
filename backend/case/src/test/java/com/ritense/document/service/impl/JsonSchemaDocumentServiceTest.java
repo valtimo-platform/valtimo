@@ -34,13 +34,16 @@ import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
+import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentUnassignedEvent;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.authentication.TeamProvider;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
@@ -79,6 +82,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
     private InternalCaseStatusService internalCaseStatusService;
 
     private CaseTagService caseTagService;
+    private TeamProvider teamProvider;
     private EntityManager entityManager;
 
     private final String documentDefinitionName = "name";
@@ -95,6 +99,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         outboxService = mock(OutboxService.class);
         internalCaseStatusService = mock();
         caseTagService = mock();
+        teamProvider = mock();
         entityManager = mock();
 
         jsonSchemaDocumentService = spy(new JsonSchemaDocumentService(
@@ -109,6 +114,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
             MapperSingleton.INSTANCE.get(),
             internalCaseStatusService,
             caseTagService,
+            teamProvider,
             entityManager
         ));
 
@@ -241,5 +247,40 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         var captor = ArgumentCaptor.forClass(DocumentUnassignedEvent.class);
         verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
         assertEquals("System", captor.getValue().getUser());
+    }
+
+    @Test
+    void shouldAssignTeamToDocument() {
+        String teamKey = "team-key";
+        String teamTitle = "Team Title";
+        when(documentRepository.findById(JsonSchemaDocumentId.existingId(jsonSchemaDocument.id().getId())))
+            .thenReturn(Optional.of(jsonSchemaDocument));
+        when(teamProvider.findTitleByTeamKey(teamKey)).thenReturn(teamTitle);
+
+        jsonSchemaDocumentService.assignTeamToDocument(jsonSchemaDocument.id().getId(), teamKey);
+
+        assertEquals(teamKey, jsonSchemaDocument.assignedTeamKey());
+        assertEquals(teamTitle, jsonSchemaDocument.assignedTeamTitle());
+        verify(documentRepository, times(1)).save(jsonSchemaDocument);
+        var captor = ArgumentCaptor.forClass(DocumentAssigneeChangedEvent.class);
+        verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+        assertEquals(teamTitle, captor.getValue().getAssignedTeamTitle());
+        assertNull(captor.getValue().getAssigneeName());
+    }
+
+    @Test
+    void shouldUnassignTeamFromDocument() {
+        jsonSchemaDocument.setAssignedTeamKey("team-key");
+        jsonSchemaDocument.setAssignedTeamTitle("Team Title");
+        when(documentRepository.findById(JsonSchemaDocumentId.existingId(jsonSchemaDocument.id().getId())))
+            .thenReturn(Optional.of(jsonSchemaDocument));
+
+        jsonSchemaDocumentService.unassignTeamFromDocument(jsonSchemaDocument.id().getId());
+
+        assertNull(jsonSchemaDocument.assignedTeamKey());
+        assertNull(jsonSchemaDocument.assignedTeamTitle());
+        verify(documentRepository, times(1)).save(jsonSchemaDocument);
+        var captor = ArgumentCaptor.forClass(DocumentUnassignedEvent.class);
+        verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
     }
 }

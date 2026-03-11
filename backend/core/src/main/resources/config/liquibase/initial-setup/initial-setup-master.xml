@@ -341,4 +341,5 @@
 
 
     <include file="config/liquibase/initial-setup/team/changelog/20260309-create-table-team.xml"/>
+    <include file="config/liquibase/initial-setup/case/changelog/20260311-add-team-key-to-json-schema-document.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
