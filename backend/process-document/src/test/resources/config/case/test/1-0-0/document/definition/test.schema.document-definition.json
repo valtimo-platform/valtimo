@@ -1,0 +1,50 @@
+{
+    "$id": "test.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "test",
+    "type": "object",
+    "properties": {
+        "string1": {
+            "type": "string",
+            "default": "default value"
+        },
+        "string2": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "null"}
+            ]
+        },
+        "string3": {
+            "type": ["string", "null"]
+        },
+        "string4": {
+            "anyOf": [
+                {"type": "string"},
+                {"type": "null"}
+            ]
+        },
+        "string5": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "integer"},
+                {"type": "null"}
+            ]
+        },
+        "string6": {
+            "type": ["string", "integer"]
+        },
+        "enum1": {
+            "enum": ["DEBET", "CREDIT"],
+            "type": "string",
+            "default": "DEBET"
+        },
+        "enum2": {
+            "type": "array",
+            "items": {
+                "enum": ["BALIE", "TELEFONIE", "INTERNET", "POST"],
+                "type": "string"
+            },
+            "uniqueItems": true
+        }
+    }
+}

@@ -1,5 +1,5 @@
 {
-    "changesetId": "case-definition-v3",
+    "changesetId": "case-definition-v4",
     "permissions": [
         {
             "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",

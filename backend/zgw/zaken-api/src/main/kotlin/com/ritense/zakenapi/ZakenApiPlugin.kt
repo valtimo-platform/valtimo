@@ -944,7 +944,7 @@ class ZakenApiPlugin(
         key = "start-hersteltermijn",
         title = "Start hersteltermijn",
         description = "Start the recovery period for a case",
-        activityTypes = [SERVICE_TASK_START, USER_TASK_CREATE]
+        activityTypes = [SERVICE_TASK_START]
     )
     fun startHersteltermijn(
         execution: DelegateExecution,
