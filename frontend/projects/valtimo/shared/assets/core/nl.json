@@ -2574,5 +2574,16 @@
     "rootObject": "Hoofdniveau",
     "manageRequiredFields": "Vereiste velden beheren",
     "requiredFields": "Vereiste velden"
+  },
+  "teams": {
+    "title": "Teams",
+    "listColumns": {
+      "name": "Naam",
+      "members": "Leden"
+    },
+    "noResults": {
+      "title": "Er zijn geen teams",
+      "description": "Er zijn nog geen teams aangemaakt"
+    }
   }
 }

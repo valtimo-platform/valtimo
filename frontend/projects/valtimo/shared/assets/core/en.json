@@ -2541,5 +2541,16 @@
     "rootObject": "Root level",
     "manageRequiredFields": "Manage required fields",
     "requiredFields": "Required fields"
+  },
+  "teams": {
+    "title": "Teams",
+    "listColumns": {
+      "name": "Name",
+      "members": "Members"
+    },
+    "noResults": {
+      "title": "There are no teams",
+      "description": "No teams have been created yet"
+    }
   }
 }

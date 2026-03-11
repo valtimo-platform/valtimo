@@ -99,6 +99,8 @@
       "@valtimo/logging/*": ["dist/valtimo/logging/*"],
       "@valtimo/iko": ["dist/valtimo/iko"],
       "@valtimo/iko/*": ["dist/valtimo/iko/*"],
+      "@valtimo/teams": ["dist/valtimo/teams"],
+      "@valtimo/teams/*": ["dist/valtimo/teams/*"],
       "@e2e/constants": ["../e2e/constants"]
     }
   },
@@ -364,6 +366,12 @@
     },
     {
       "path": "./projects/valtimo/building-block-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/teams/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/teams/tsconfig.spec.json"
     }
   ]
 }
