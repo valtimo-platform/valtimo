@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+.valtimo-teams-create {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
 
-@Injectable()
-export class TeamsService {
-  private readonly _reload$ = new BehaviorSubject<null>(null);
-  public readonly reload$ = this._reload$.asObservable();
-
-  private readonly _showCreateModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showCreateModal$ = this._showCreateModal$.asObservable();
-
-  public reload(): void {
-    this._reload$.next(null);
+.cds--text-input__field-wrapper {
+  cds-label {
+    width: 100%;
   }
 
-  public showCreateModal(): void {
-    this._showCreateModal$.next(true);
-  }
-
-  public hideCreateModal(): void {
-    this._showCreateModal$.next(false);
+  ::ng-deep .cds--label {
+    width: 100%;
   }
 }

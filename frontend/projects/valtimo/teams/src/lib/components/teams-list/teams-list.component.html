@@ -21,9 +21,22 @@
     [loading]="$loading()"
     (rowClicked)="onRowClick($event)"
   >
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="teamActions"></ng-container>
+
     <valtimo-no-results
+      [action]="teamActions"
       [description]="'teams.noResults.description' | translate"
       [title]="'teams.noResults.title' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-container>
+
+<ng-template #teamActions>
+  <button cdsButton="primary" (click)="showCreateModal()">
+    {{ 'teams.newTeam' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<valtimo-teams-create-modal></valtimo-teams-create-modal>

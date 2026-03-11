@@ -2581,9 +2581,17 @@
       "name": "Naam",
       "members": "Leden"
     },
+    "newTeam": "Nieuw team",
     "noResults": {
       "title": "Er zijn geen teams",
       "description": "Er zijn nog geen teams aangemaakt"
+    },
+    "createModal": {
+      "title": "Nieuw team aanmaken",
+      "description": "Maak een nieuw team van gebruikers aan om toe te wijzen aan dossiers en taken",
+      "teamName": "Teamnaam",
+      "teamNamePlaceholder": "Teamnaam",
+      "createTeam": "Team aanmaken"
     }
   }
 }

@@ -16,7 +16,13 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, TeamListResponseDto, TeamResponseDto} from '@valtimo/shared';
+import {
+  BaseApiService,
+  ConfigService,
+  TeamCreateRequestDto,
+  TeamListResponseDto,
+  TeamResponseDto,
+} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 
 @Injectable({
@@ -38,5 +44,9 @@ export class TeamsApiService extends BaseApiService {
 
   public getTeam(key: string): Observable<TeamResponseDto> {
     return this.httpClient.get<TeamResponseDto>(this.getApiUrl(`v1/team/${key}`));
+  }
+
+  public createTeam(dto: TeamCreateRequestDto): Observable<TeamResponseDto> {
+    return this.httpClient.post<TeamResponseDto>(this.getApiUrl('v1/team'), dto);
   }
 }

@@ -22,13 +22,22 @@ import {switchMap, tap} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {TeamListResponseDto} from '@valtimo/shared';
 import {Router} from '@angular/router';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {TeamsCreateModalComponent} from '../teams-create-modal/teams-create-modal.component';
 
 @Component({
   standalone: true,
   selector: 'valtimo-teams-list',
   templateUrl: './teams-list.component.html',
   styleUrls: ['./teams-list.component.scss'],
-  imports: [CommonModule, CarbonListModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    TranslatePipe,
+    ButtonModule,
+    IconModule,
+    TeamsCreateModalComponent,
+  ],
   providers: [TeamsService],
 })
 export class TeamsListComponent {
@@ -53,5 +62,9 @@ export class TeamsListComponent {
 
   public onRowClick(team: TeamListResponseDto): void {
     this.router.navigate(['/teams', team.key]);
+  }
+
+  public showCreateModal(): void {
+    this.teamsService.showCreateModal();
   }
 }
