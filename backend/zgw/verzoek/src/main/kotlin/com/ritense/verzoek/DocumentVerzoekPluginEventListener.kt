@@ -124,7 +124,7 @@ class DocumentVerzoekPluginEventListener(
                             zaakInformatieObject,
                             informatieObject
                         )
-                        sendEvent(
+                        publishEvent(
                             zaak.documentId,
                             informatieObject.identificatie!!
                         )
@@ -135,7 +135,7 @@ class DocumentVerzoekPluginEventListener(
         }
     }
 
-    private fun sendEvent(documentId: UUID, identificatie: String) {
+    private fun publishEvent(documentId: UUID, identificatie: String) {
         applicationEventPublisher.publishEvent(
             InformatieObjectReceivedEvent(
                 RequestHelper.getOrigin(),
