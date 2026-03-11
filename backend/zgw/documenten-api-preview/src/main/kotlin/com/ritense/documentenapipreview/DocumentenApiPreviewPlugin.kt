@@ -48,8 +48,8 @@ class DocumentenApiPreviewPlugin(
 
     fun generatePreview(documentId: String): PdfFile {
         val documentenApiPlugin = getDocumentenApiPlugin()
-        val documentStream = documentenApiPlugin.downloadInformatieObject(documentId)
-        val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId);
+        val documentStream = documentenApiPlugin.downloadInformatieObject(null,documentId)
+        val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, null);
         val pdfStream = pdfConversionClient.convertDocument(url, documentStream)
 
         return PdfFile(createFilename(documentInformatieObject), pdfStream)
