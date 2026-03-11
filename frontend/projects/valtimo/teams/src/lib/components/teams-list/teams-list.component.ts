@@ -16,14 +16,20 @@
 
 import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
 import {TeamsApiService, TeamsService} from '../../services';
-import {switchMap, tap} from 'rxjs';
+import {map, switchMap, tap} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {TeamListResponseDto} from '@valtimo/shared';
 import {Router} from '@angular/router';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {TeamsCreateModalComponent} from '../teams-create-modal/teams-create-modal.component';
+import {TeamsCreateEditModalComponent} from '../teams-create-edit-modal/teams-create-edit-modal.component';
 
 @Component({
   standalone: true,
@@ -36,7 +42,8 @@ import {TeamsCreateModalComponent} from '../teams-create-modal/teams-create-moda
     TranslatePipe,
     ButtonModule,
     IconModule,
-    TeamsCreateModalComponent,
+    TeamsCreateEditModalComponent,
+    ConfirmationModalModule,
   ],
   providers: [TeamsService],
 })
@@ -46,6 +53,7 @@ export class TeamsListComponent {
   public readonly teams$ = this.teamsService.reload$.pipe(
     tap(() => this.$loading.set(true)),
     switchMap(() => this.teamsApiService.getTeams()),
+    map(teams => [...teams].sort((a, b) => a.title.localeCompare(b.title))),
     tap(() => this.$loading.set(false))
   );
 
@@ -53,6 +61,14 @@ export class TeamsListComponent {
     {key: 'title', label: 'teams.listColumns.name'},
     {key: 'userCount', label: 'teams.listColumns.members', viewType: ViewType.NUMBER},
   ];
+
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {label: 'interface.edit', callback: this.onEditTeam.bind(this)},
+    {label: 'interface.delete', callback: this.onDeleteTeam.bind(this), type: 'danger'},
+  ];
+
+  public readonly showDeleteModal$ = this.teamsService.showDeleteModal$;
+  public readonly teamToDelete$ = this.teamsService.teamToDelete$;
 
   constructor(
     private readonly teamsApiService: TeamsApiService,
@@ -66,5 +82,19 @@ export class TeamsListComponent {
 
   public showCreateModal(): void {
     this.teamsService.showCreateModal();
+  }
+
+  public onEditTeam(team: TeamListResponseDto): void {
+    this.teamsService.showEditModal(team);
+  }
+
+  public onDeleteTeam(team: TeamListResponseDto): void {
+    this.teamsService.showDeleteConfirmation(team);
+  }
+
+  public onDeleteConfirm(team: TeamListResponseDto): void {
+    this.teamsApiService.deleteTeam(team.key).subscribe(() => {
+      this.teamsService.reload();
+    });
   }
 }

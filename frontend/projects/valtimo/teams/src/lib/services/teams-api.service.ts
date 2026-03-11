@@ -22,6 +22,7 @@ import {
   TeamCreateRequestDto,
   TeamListResponseDto,
   TeamResponseDto,
+  TeamUpdateRequestDto,
 } from '@valtimo/shared';
 import {Observable} from 'rxjs';
 
@@ -48,5 +49,13 @@ export class TeamsApiService extends BaseApiService {
 
   public createTeam(dto: TeamCreateRequestDto): Observable<TeamResponseDto> {
     return this.httpClient.post<TeamResponseDto>(this.getApiUrl('v1/team'), dto);
+  }
+
+  public updateTeam(key: string, dto: TeamUpdateRequestDto): Observable<TeamResponseDto> {
+    return this.httpClient.put<TeamResponseDto>(this.getApiUrl(`v1/team/${key}`), dto);
+  }
+
+  public deleteTeam(key: string): Observable<void> {
+    return this.httpClient.delete<void>(this.getApiUrl(`v1/team/${key}`));
   }
 }

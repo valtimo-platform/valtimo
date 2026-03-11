@@ -2553,12 +2553,18 @@
       "title": "There are no teams",
       "description": "No teams have been created yet"
     },
-    "createModal": {
-      "title": "Create new team",
-      "description": "Create a new team of users to assign to cases and tasks",
+    "createEditModal": {
+      "createTitle": "Create new team",
+      "editTitle": "Edit team",
+      "createDescription": "Create a new team of users to assign to cases and tasks",
       "teamName": "Team name",
       "teamNamePlaceholder": "Team name",
-      "createTeam": "Create team"
+      "create": "Create team",
+      "save": "Save team"
+    },
+    "deleteModal": {
+      "title": "Delete team",
+      "content": "Are you sure you want to delete this team? This action cannot be undone."
     }
   }
 }

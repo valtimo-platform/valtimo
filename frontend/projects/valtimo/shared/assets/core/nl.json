@@ -2586,12 +2586,18 @@
       "title": "Er zijn geen teams",
       "description": "Er zijn nog geen teams aangemaakt"
     },
-    "createModal": {
-      "title": "Nieuw team aanmaken",
-      "description": "Maak een nieuw team van gebruikers aan om toe te wijzen aan dossiers en taken",
+    "createEditModal": {
+      "createTitle": "Nieuw team aanmaken",
+      "editTitle": "Team bewerken",
+      "createDescription": "Maak een nieuw team van gebruikers aan om toe te wijzen aan dossiers en taken",
       "teamName": "Teamnaam",
       "teamNamePlaceholder": "Teamnaam",
-      "createTeam": "Team aanmaken"
+      "create": "Team aanmaken",
+      "save": "Team opslaan"
+    },
+    "deleteModal": {
+      "title": "Team verwijderen",
+      "content": "Weet u zeker dat u dit team wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     }
   }
 }

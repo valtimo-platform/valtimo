@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {
-  ButtonModule,
-  InputModule,
-  LayerModule,
-  ModalModule,
-} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   FormBuilder,
   FormControl,
@@ -32,13 +27,14 @@ import {
 import {TranslatePipe} from '@ngx-translate/core';
 import {runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
 import {TeamsApiService, TeamsService} from '../../services';
-import {catchError, of} from 'rxjs';
+import {catchError, of, Subscription} from 'rxjs';
+import {TeamListResponseDto} from '@valtimo/shared';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-teams-create-modal',
-  templateUrl: './teams-create-modal.component.html',
-  styleUrls: ['./teams-create-modal.component.scss'],
+  selector: 'valtimo-teams-create-edit-modal',
+  templateUrl: './teams-create-edit-modal.component.html',
+  styleUrls: ['./teams-create-edit-modal.component.scss'],
   imports: [
     CommonModule,
     ModalModule,
@@ -50,8 +46,10 @@ import {catchError, of} from 'rxjs';
     ValtimoCdsModalDirective,
   ],
 })
-export class TeamsCreateModalComponent {
-  public readonly showModal$ = this.teamsService.showCreateModal$;
+export class TeamsCreateEditModalComponent implements OnDestroy {
+  public readonly showModal$ = this.teamsService.showCreateEditModal$;
+
+  public editingTeam: TeamListResponseDto | null = null;
 
   public formGroup: FormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -61,14 +59,31 @@ export class TeamsCreateModalComponent {
     return this.formGroup.get('title') as FormControl<string>;
   }
 
+  public get isEditMode(): boolean {
+    return this.editingTeam !== null;
+  }
+
+  private readonly _editingTeamSubscription: Subscription;
+
   constructor(
     private readonly teamsApiService: TeamsApiService,
     private readonly teamsService: TeamsService,
     private readonly fb: FormBuilder
-  ) {}
+  ) {
+    this._editingTeamSubscription = this.teamsService.editingTeam$.subscribe(team => {
+      this.editingTeam = team;
+      if (team) {
+        this.formGroup.patchValue({title: team.title});
+      }
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this._editingTeamSubscription.unsubscribe();
+  }
 
   public onCloseModal(): void {
-    this.teamsService.hideCreateModal();
+    this.teamsService.hideCreateEditModal();
     this.resetForm();
   }
 
@@ -76,10 +91,18 @@ export class TeamsCreateModalComponent {
     this.formGroup.disable();
 
     const titleValue = this.title.value;
-    const key = titleValue.replace(/\s+/g, '_');
 
-    this.teamsApiService
-      .createTeam({key, title: titleValue})
+    const request$ = this.isEditMode
+      ? this.teamsApiService.updateTeam(this.editingTeam!.key, {
+          key: this.editingTeam!.key,
+          title: titleValue,
+        })
+      : this.teamsApiService.createTeam({
+          key: titleValue.replace(/\s+/g, '_'),
+          title: titleValue,
+        });
+
+    request$
       .pipe(
         catchError(() => {
           this.formGroup.enable();
@@ -88,7 +111,7 @@ export class TeamsCreateModalComponent {
       )
       .subscribe(result => {
         if (result) {
-          this.teamsService.hideCreateModal();
+          this.teamsService.hideCreateEditModal();
           this.resetForm();
           this.teamsService.reload();
         }
@@ -99,6 +122,7 @@ export class TeamsCreateModalComponent {
     runAfterCarbonModalClosed(() => {
       this.formGroup.reset();
       this.formGroup.enable();
+      this.editingTeam = null;
     });
   }
 }

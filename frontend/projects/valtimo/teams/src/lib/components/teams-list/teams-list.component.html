@@ -19,6 +19,7 @@
     [fields]="FIELDS"
     [items]="obs.teams"
     [loading]="$loading()"
+    [actionItems]="ACTION_ITEMS"
     (rowClicked)="onRowClick($event)"
   >
     <ng-container carbonToolbarContent [ngTemplateOutlet]="teamActions"></ng-container>
@@ -39,4 +40,14 @@
   </button>
 </ng-template>
 
-<valtimo-teams-create-modal></valtimo-teams-create-modal>
+<valtimo-teams-create-edit-modal></valtimo-teams-create-edit-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="teams.deleteModal.content"
+  [outputOnConfirm]="teamToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="teams.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>
