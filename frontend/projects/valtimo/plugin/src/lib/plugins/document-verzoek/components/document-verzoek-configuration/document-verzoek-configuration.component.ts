@@ -32,20 +32,12 @@ import {
   map,
   Observable,
   Subscription,
-  switchMap,
-  take,
-  tap,
+  take
 } from 'rxjs';
 import {DocumentVerzoekConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {
-  SelectItem,
-  ValuePathSelectorPrefix,
-  VModalComponent,
-} from '@valtimo/components';
-import {DocumentVerzoekPluginService} from '../../services';
-import {ProcessService} from '@valtimo/process';
+import {SelectItem, ValuePathSelectorPrefix, VModalComponent} from '@valtimo/components';
 import {DataTable16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 
@@ -115,28 +107,6 @@ export class DocumentVerzoekConfigurationComponent
     )
   );
 
-  readonly processSelectItems$: Observable<Array<SelectItem>> = this.processService
-    .getProcessDefinitions()
-    .pipe(
-      map(processDefinitions =>
-        processDefinitions.map(processDefinition => ({
-          id: processDefinition.key,
-          text: processDefinition.name ?? '',
-        }))
-      )
-    );
-
-  readonly caseSelectItems$: Observable<Array<SelectItem>> = this.verzoekPluginService
-    .getCaseDefinitions({active: true})
-    .pipe(
-      map(caseDefinitions =>
-        caseDefinitions.content.map(caseDefinition => ({
-          id: caseDefinition.caseDefinitionKey,
-          text: caseDefinition.caseDefinitionKey,
-        }))
-      )
-    );
-
   private saveSubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<DocumentVerzoekConfig | null>(null);
@@ -148,8 +118,6 @@ export class DocumentVerzoekConfigurationComponent
     private readonly pluginManagementService: PluginManagementService,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
-    private readonly verzoekPluginService: DocumentVerzoekPluginService,
-    private readonly processService: ProcessService,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([DataTable16]);
@@ -165,20 +133,9 @@ export class DocumentVerzoekConfigurationComponent
       filter(prefill => !!prefill),
       map(prefill => ({
         ...prefill,
-        docTypes: (prefill.docTypes?.map(docType => ({docType})) ?? []) as any,
-      })),
-      tap(prefill => {
-        setTimeout(() => {
-          this.formValue$.pipe(take(1)).subscribe(formValue => {
-//            const prefillVerzoeken = prefill?.documentVerzoekProperties;
-            const formValueVerzoeken = formValue?.documentVerzoekProperties;
-
-            // prefillVerzoeken.forEach((verzoek, index) => {
-            //   const uuidForMapping = formValueVerzoeken[index].uuid;
-            // });
-          });
-        }, 250);
-      })
+        informatieobjecttypeUrls: (prefill.informatieobjecttypeUrls?.map(({url}) => ({informatieobjecttypeUrl: url})) ??
+          []) as any,
+      }))
     );
   }
 
@@ -191,14 +148,6 @@ export class DocumentVerzoekConfigurationComponent
     this.handleValid(formValue);
   }
 
-  // verzoekTypeFormChange(formValue: DocumentVerzoekType, uuid: string): void {
-  //   const caseDefinitionKey = formValue?.caseDefinitionKey;
-  // }
-  //
-  // informatieObjectTypeFormChange(formValue: DocumentType, uuid: string): void {
-  //   const fietsDefinitionKey = formValue;
-  // }
-  //
   deleteRow(uuid: string): void {}
 
   private handleValid(formValue: DocumentVerzoekConfig): void {
@@ -207,12 +156,12 @@ export class DocumentVerzoekConfigurationComponent
       formValue.notificatiesApiPluginConfiguration &&
       formValue.zakenApiPlugin &&
       formValue.documentenApiPlugin &&
-      formValue.docTypes &&
+      formValue.informatieobjecttypeUrls &&
       formValue.eventMessage
     );
-    const verzoekTypen = formValue.documentVerzoekProperties || [];
-    const validVerzoekTypen = verzoekTypen.filter(type => !!type.caseDefinitionKey);
-    const valid = validForm && verzoekTypen.length === validVerzoekTypen.length;
+    const informatieobjecttypeUrls = formValue.informatieobjecttypeUrls || [];
+    const validInformatieobjecttypeUrls = informatieobjecttypeUrls.filter(type => !!type.url);
+    const valid = validForm && informatieobjecttypeUrls.length === validInformatieobjecttypeUrls.length;
     this.valid$.next(valid);
     this.valid.emit(valid);
   }
@@ -224,14 +173,10 @@ export class DocumentVerzoekConfigurationComponent
         .subscribe(([formValue, valid]) => {
           const formValueToSave: DocumentVerzoekConfig = {
             ...formValue,
-            docTypes: (formValue.docTypes as any[])?.map(item => item.docType) ?? [],
-            // documentVerzoekProperties: formValue.documentVerzoekProperties.map(verzoek => {
-            //   const verzoekToReturn: DocumentVerzoekType = {...verzoek};
-            //
-            //   return {
-            //     ...verzoekToReturn,
-            //   };
-            // }),
+            informatieobjecttypeUrls:
+              (formValue.informatieobjecttypeUrls as any[])?.map(
+                item => ({url: item.informatieobjecttypeUrl})
+              ) ?? [],
           };
           if (valid) {
             this.configuration.emit(formValueToSave);

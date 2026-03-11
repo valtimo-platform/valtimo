@@ -33,6 +33,7 @@ The available ZGW plugins are:
 * Open Zaak plugin
 * Portaaltaak plugin
 * Verzoek plugin
+* Document verzoek plugin
 * Zaken API plugin
 
 ## Configuring plugins

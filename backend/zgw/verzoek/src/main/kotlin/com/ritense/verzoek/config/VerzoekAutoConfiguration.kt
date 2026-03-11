@@ -37,6 +37,7 @@ import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
@@ -108,7 +109,8 @@ class VerzoekAutoConfiguration {
         operatonProcessJsonSchemaDocumentAssociationService: OperatonProcessJsonSchemaDocumentAssociationService,
         documentService: DocumentService,
         pluginService: PluginService,
-        environment: Environment
+        environment: Environment,
+        applicationEventPublisher: ApplicationEventPublisher
     ): DocumentVerzoekPluginEventListener {
         return DocumentVerzoekPluginEventListener(
             zaakInstanceLinkService,
@@ -116,7 +118,8 @@ class VerzoekAutoConfiguration {
             operatonProcessJsonSchemaDocumentAssociationService,
             documentService,
             pluginService,
-            environment
+            environment,
+            applicationEventPublisher
         )
     }
 }

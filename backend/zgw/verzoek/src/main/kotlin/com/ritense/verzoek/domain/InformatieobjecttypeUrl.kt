@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-interface CaseListItem {
-  autoAssignTasks: boolean;
-  canHaveAssignee: boolean;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  name: string;
-}
+package com.ritense.verzoek.domain
 
-export {CaseListItem};
+data class InformatieobjecttypeUrl(
+    val url: String
+)

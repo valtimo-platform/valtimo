@@ -96,17 +96,17 @@
   >
   </v-input>
   <v-multi-input-form
-          name="docTypes"
-          data-test-id="docTypes"
-          [title]="'docTypes' | pluginTranslate: pluginId | async"
+          name="informatieobjecttypeUrls"
+          data-test-id="informatieobjecttypeUrls-test-id"
+          [title]="'informatieobjecttypeUrls' | pluginTranslate: pluginId | async"
           [formTemplate]="docTypesForm"
-          [addRowText]="'addDocType' | pluginTranslate: pluginId | async"
+          [addRowText]="'addInformatieobjecttypeUrl' | pluginTranslate: pluginId | async"
           [required]="true"
-          [tooltip]="'docTypesTooltip' | pluginTranslate: pluginId | async"
+          [tooltip]="'informatieobjecttypeUrlTooltip' | pluginTranslate: pluginId | async"
           (deleteRowEvent)="deleteRow($event)"
           [initialAmountOfRows]="0"
           [minimumAmountOfRows]="0"
-          [defaultValues]="obs.prefill?.docTypes"
+          [defaultValues]="obs.prefill?.informatieobjecttypeUrls"
   >
   </v-multi-input-form>
 </v-form>
@@ -124,13 +124,13 @@
     <v-form (valueChange)="changeFunction($event, uuid)">
       <v-input
               [smallMargin]="true"
-              name="docType"
-              data-test-id="docType"
-              [title]="'docType' | pluginTranslate: pluginId | async"
+              name="informatieobjecttypeUrl"
+              data-test-id="informatieobjecttypeUrl-test-id"
+              [title]="'informatieobjecttypeUrl' | pluginTranslate: pluginId | async"
               [disabled]="obs.disabled"
-              [defaultValue]="prefill?.docType"
+              [defaultValue]="prefill?.informatieobjecttypeUrl"
               [required]="true"
-              [tooltip]="'docTypeTooltip' | pluginTranslate: pluginId | async"
+              [tooltip]="'informatieobjecttypeUrlTooltip' | pluginTranslate: pluginId | async"
       ></v-input>
     </v-form>
   </ng-container>

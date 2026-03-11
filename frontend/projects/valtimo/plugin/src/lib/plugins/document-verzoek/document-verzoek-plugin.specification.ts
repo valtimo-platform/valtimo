@@ -33,9 +33,11 @@ const documentVerzoekPluginSpecification: PluginSpecification = {
       notificatiesApiPluginConfiguration: 'Notificaties API-configuratie',
       zakenApiPlugin: 'Zaken API-plugin',
       documentenApiPlugin: 'Documenten API-plugin',
-      zakenApiPluginTooltip: 'Zaken API-plugin die wordt gebruikt om het Zaak Informatie Object op te halen',
-      documentenApiPluginTooltip: 'Documenten API-plugin die wordt gebruikt om het informatie object op te halen',
-      documentVerzoekProperties: 'Document Verzoektypen',
+      zakenApiPluginTooltip:
+        'Zaken API-plugin die wordt gebruikt om het Zaak Informatie Object op te halen',
+      documentenApiPluginTooltip:
+        'Documenten API-plugin die wordt gebruikt om het informatie object op te halen',
+      informatieobjecttypeUrls: 'InformatieObject type Urls',
       type: 'Type',
       eventMessage: 'Message event naam',
       eventMessageTooltip:
@@ -43,8 +45,11 @@ const documentVerzoekPluginSpecification: PluginSpecification = {
       caseDefinitionKey: 'Dossier definitie',
       caseDefinitionKeyTooltip:
         'De naam van de dossier definitie van het dossier type dat verwerkt moet worden.',
-      addVerzoekType: 'Document Verzoektype toevoegen',
-      documentVerzoekPropertiesTooltip: 'De zaak typen waarvoor de notificatie binnen kunnen komen.',
+      addInformatieobjecttypeUrl: 'voeg InformatieObject type Url toe',
+      informatieobjecttypeUrlTooltip:
+        'InformatieObject type Url waarvoor de notificatie binnen kunnen komen',
+      documentVerzoekPropertiesTooltip:
+        'De zaak typen waarvoor de notificatie binnen kunnen komen.',
       notificatiesApiPluginConfigurationTooltip:
         'Configuratie van de Notificaties API die wordt gebruikt om te communiceren tussen GZAC en andere applicaties.',
       typeTooltip: 'Het zaak type waarvoor document typen worden verwerkt',
@@ -63,8 +68,10 @@ const documentVerzoekPluginSpecification: PluginSpecification = {
       zakenApiPluginTooltip: 'Zaken API-plugin used to retrieve the Zaak Informatie Object',
       documentenApiPlugin: 'Documenten API-plugin',
       documentenApiPluginTooltip: 'Documenten API-plugin used to retrieve the information object',
-      documentVerzoekProperties: 'Document Verzoektypen',
-      documentVerzoekPropertiesTooltip: 'The list of case definition keys that subscribe to process new document events.',
+      informatieobjecttypeUrls: 'InformatieObject type Urls',
+      addInformatieobjecttypeUrl: 'Add InformatieObject type Url',
+      informatieobjecttypeUrlTooltip:
+        'InformatieObject type Urls that subscribe to process new document events.',
       type: 'Type',
       eventMessage: 'Message event name',
       eventMessageTooltip: 'name of the event that is published when a case document is received',

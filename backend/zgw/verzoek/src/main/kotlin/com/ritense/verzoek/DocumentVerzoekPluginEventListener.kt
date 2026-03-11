@@ -25,15 +25,21 @@ import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEven
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.audit.utils.AuditHelper
+import com.ritense.valtimo.contract.utils.RequestHelper
+import com.ritense.document.event.InformatieObjectReceivedEvent
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.core.env.Environment
 import org.operaton.bpm.engine.RuntimeService
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
+import java.time.LocalDateTime
+import java.util.UUID
 
 @SkipComponentScan
 @Component
@@ -45,6 +51,7 @@ class DocumentVerzoekPluginEventListener(
     private val documentService: DocumentService,
     private val pluginService: PluginService,
     private val environment: Environment,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional
@@ -73,11 +80,11 @@ class DocumentVerzoekPluginEventListener(
         val plugin: DocumentVerzoekPlugin? = pluginService.createInstance(
             DocumentVerzoekPlugin::class.java
         ) { properties ->
-            !properties["docTypes"].isEmpty
+            !properties["informatieobjecttypeUrls"].isEmpty
         }
 
         if (plugin == null) {
-            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found matching zaakType '$zaakType' in documentVerzoekProperties" }
+            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found with list matching of informatieobjecttypes" }
             return
         }
         // Find the matching CaseDefinition for the incoming zaakType
@@ -107,22 +114,38 @@ class DocumentVerzoekPluginEventListener(
                     zaakInformatieObject.informatieobject,
                     zaak.documentId
                 ).let { informatieObject ->
-                    logger.info { "DocumentVerzoekPlugin: informatieObject '${informatieObject.informatieobjecttype}'" }
-                    if (plugin.docTypes.any { docType ->
-                        docType.type == informatieObject.informatieobjecttype
+                    if (plugin.informatieobjecttypeUrls.any { informatieDocumentType ->
+                        informatieDocumentType.url == informatieObject.informatieobjecttype
                     }) {
-                        logger.info { "DocumentVerzoekPlugin: document type '${informatieObject.informatieobjecttype}' is allowed" }
+                        logger.debug { "DocumentVerzoekPlugin: broadcasting message for '${informatieObject.url}'" }
                         sendMessage(
                             zaak.documentId.toString(),
                             plugin.eventMessage,
                             zaakInformatieObject,
                             informatieObject
                         )
+                        sendEvent(
+                            zaak.documentId,
+                            informatieObject.identificatie!!
+                        )
                     }
                 }
             }
                 ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
         }
+    }
+
+    private fun sendEvent(documentId: UUID, identificatie: String) {
+        applicationEventPublisher.publishEvent(
+            InformatieObjectReceivedEvent(
+                RequestHelper.getOrigin(),
+                LocalDateTime.now(),
+                AuditHelper.getActor(),
+                documentId,
+                identificatie
+            )
+        )
+
     }
 
     private fun sendMessage(
@@ -139,7 +162,7 @@ class DocumentVerzoekPluginEventListener(
                         .setVariable("zaakInformatieObject", objectMapper.convertValue(zaakInformatieObject))
                         .setVariable("informatieObject", objectMapper.convertValue(informatieObject))
                         .correlateAll()
-                    logger.info { "DocumentVerzoekPlugin: message '${eventMessage}' sent to process instance '${procInst.processInstanceId()}' with response '${response}'" }
+                    logger.debug { "DocumentVerzoekPlugin: message '${eventMessage}' sent to process instance '${procInst.processInstanceId()}' with response '${response}'" }
                 }
             }
         }

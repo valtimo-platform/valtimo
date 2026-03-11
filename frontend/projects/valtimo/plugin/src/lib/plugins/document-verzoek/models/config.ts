@@ -16,13 +16,15 @@
 
 import {PluginConfigurationData} from '../../../models';
 
+interface InformatieobjecttypeUrl {
+  url: string;
+}
 interface DocumentVerzoekConfig extends PluginConfigurationData {
   notificatiesApiPluginConfiguration: string;
   zakenApiPlugin: string;
   documentenApiPlugin: string;
-  externalDocumentType: string;
   eventMessage: string;
-  docTypes: Array<string>;
+  informatieobjecttypeUrls: Array<InformatieobjecttypeUrl>;
 }
 
 export {DocumentVerzoekConfig};

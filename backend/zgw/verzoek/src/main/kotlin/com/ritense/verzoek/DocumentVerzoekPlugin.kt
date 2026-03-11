@@ -27,7 +27,7 @@ import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.valtimo.service.ApplicationStateService
-import com.ritense.verzoek.domain.DocTypes
+import com.ritense.verzoek.domain.InformatieobjecttypeUrl
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 
@@ -39,9 +39,9 @@ import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 class DocumentVerzoekPlugin(
     private val applicationStateService: ApplicationStateService,
     private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
-    private val caseDefinitionService: CaseDefinitionService
+    private val caseDefinitionService: CaseDefinitionService,
 
-) : NotificatiesApiListener {
+    ) : NotificatiesApiListener {
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
     lateinit var notificatiesApiPluginConfiguration: NotificatiesApiPlugin
@@ -55,8 +55,8 @@ class DocumentVerzoekPlugin(
     @PluginProperty(key = "eventMessage", secret = false)
     lateinit var eventMessage: String
 
-    @PluginProperty(key = "docTypes", secret = false)
-    lateinit var docTypes: List<DocTypes>
+    @PluginProperty(key = "informatieobjecttypeUrls", secret = false)
+    lateinit var informatieobjecttypeUrls: List<InformatieobjecttypeUrl>
 
     @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
     fun validateProperties() {
@@ -71,8 +71,8 @@ class DocumentVerzoekPlugin(
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
         return runWithoutAuthorization {
-            val caseList = caseDefinitionService.getCaseDefinitions(active = true, final = false) + caseDefinitionService.getCaseDefinitions(active = true, final = true)
-            caseList.mapNotNull { caseDefinition ->
+            (caseDefinitionService.getCaseDefinitions(active = true, final = false) +
+                caseDefinitionService.getCaseDefinitions(active = true, final = true)).mapNotNull { caseDefinition ->
 
                 val zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinition.id)
                     ?: return@mapNotNull null
