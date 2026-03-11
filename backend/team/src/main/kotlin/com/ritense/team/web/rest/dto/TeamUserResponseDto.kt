@@ -17,9 +17,17 @@
 package com.ritense.team.web.rest.dto
 
 data class TeamUserResponseDto(
-    val username: String
+    val username: String,
+    val fullName: String?,
+    val email: String?,
+    val roles: List<String>?,
 ) {
     companion object {
-        fun from(username: String) = TeamUserResponseDto(username)
+        fun from(username: String, fullName: String?, email: String?, roles: List<String>?) = TeamUserResponseDto(
+            username = username,
+            fullName = fullName,
+            email = email,
+            roles = roles?.ifEmpty { null },
+        )
     }
 }

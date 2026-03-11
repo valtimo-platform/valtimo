@@ -28,6 +28,8 @@ import com.ritense.team.repository.TeamUserRepository
 import com.ritense.team.repository.TeamUserRepositoryConfigSpecificationHelper
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamProvider
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,13 +43,16 @@ class TeamService(
     private val authorizationService: AuthorizationService,
 ) : TeamProvider {
     @Transactional(readOnly = true)
-    fun findAll(titleContains: String? = null): List<Team> {
+    fun findAll(
+        titleContains: String? = null,
+        pageable: Pageable = Pageable.unpaged()
+    ): Page<Team> {
         val specification = if (titleContains != null) {
             TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains)
         } else {
             Specification.unrestricted()
         }
-        val teams = teamRepository.findAll(specification)
+        val teams = teamRepository.findAll(specification, pageable)
         teams.forEach { team -> team.users.size } // Initialize lazy collection
         return teams
     }
@@ -81,7 +86,11 @@ class TeamService(
         teamRepository.deleteById(key)
     }
 
-    fun findAllTeamUsers(teamKey: String? = null, username: String? = null): List<TeamUser> {
+    fun findAllTeamUsers(
+        teamKey: String? = null,
+        username: String? = null,
+        pageable: Pageable = Pageable.unpaged()
+    ): Page<TeamUser> {
         var specification = Specification.unrestricted<TeamUser>()
         if (teamKey != null) {
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byTeamKey(teamKey))
@@ -89,7 +98,7 @@ class TeamService(
         if (username != null) {
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byUsername(username))
         }
-        return teamUserRepository.findAll(specification)
+        return teamUserRepository.findAll(specification, pageable)
     }
 
     fun addUserToTeam(username: String, teamKey: String): TeamUser {
@@ -108,7 +117,7 @@ class TeamService(
     }
 
     override fun findTeamKeysByUsername(username: String): List<String> {
-        return findAllTeamUsers(username = username).map { it.teamKey }
+        return findAllTeamUsers(username = username).content.map { it.teamKey }
     }
 
     private fun requirePermission(team: Team, action: Action<Team>) {

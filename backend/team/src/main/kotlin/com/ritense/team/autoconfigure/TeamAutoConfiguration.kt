@@ -27,6 +27,7 @@ import com.ritense.team.security.config.TeamHttpSecurityConfigurer
 import com.ritense.team.service.TeamActionProvider
 import com.ritense.team.service.TeamService
 import com.ritense.team.web.rest.TeamResource
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -59,8 +60,11 @@ class TeamAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(TeamResource::class)
-    fun teamResource(teamService: TeamService): TeamResource {
-        return TeamResource(teamService)
+    fun teamResource(
+        teamService: TeamService,
+        userManagementService: UserManagementService
+    ): TeamResource {
+        return TeamResource(teamService, userManagementService)
     }
 
     @Order(270)

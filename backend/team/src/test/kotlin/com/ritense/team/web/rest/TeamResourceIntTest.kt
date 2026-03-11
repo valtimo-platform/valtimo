@@ -81,7 +81,8 @@ class TeamResourceIntTest : BaseIntegrationTest() {
 
         mockMvc.perform(get("/api/v1/team"))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$[?(@.key == 'rest-team')]").exists())
+            .andExpect(jsonPath("$.content[?(@.key == 'rest-team')]").exists())
+            .andExpect(jsonPath("$.content[?(@.key == 'rest-team')].userCount").value(0))
     }
 
     @Test
@@ -110,8 +111,7 @@ class TeamResourceIntTest : BaseIntegrationTest() {
     fun `should manage team users via REST`() {
         teamService.create(Team(key = "team-users", title = "Team with Users"))
 
-        val username = "user1"
-        val userRequest = TeamUserCreateRequestDto(username = username)
+        val userRequest = TeamUserCreateRequestDto(username = NORMAL_USER_NAME)
 
         mockMvc.perform(
             post("/api/v1/team/team-users/user")
@@ -119,18 +119,24 @@ class TeamResourceIntTest : BaseIntegrationTest() {
                 .content(objectMapper.writeValueAsString(userRequest))
         )
             .andExpect(status().isCreated)
-            .andExpect(jsonPath("$.username").value(username))
+            .andExpect(jsonPath("$.username").value(NORMAL_USER_NAME))
+            .andExpect(jsonPath("$.fullName").value("James Vance"))
+            .andExpect(jsonPath("$.email").value("user@example.com"))
+            .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"))
 
         mockMvc.perform(get("/api/v1/team/team-users/user"))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", hasSize<Any>(1)))
-            .andExpect(jsonPath("$[0].username").value(username))
+            .andExpect(jsonPath("$.content", hasSize<Any>(1)))
+            .andExpect(jsonPath("$.content[0].username").value(NORMAL_USER_NAME))
+            .andExpect(jsonPath("$.content[0].fullName").value("James Vance"))
+            .andExpect(jsonPath("$.content[0].email").value("user@example.com"))
+            .andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_USER"))
 
-        mockMvc.perform(delete("/api/v1/team/team-users/user/$username"))
+        mockMvc.perform(delete("/api/v1/team/team-users/user/$NORMAL_USER_NAME"))
             .andExpect(status().isNoContent)
 
         mockMvc.perform(get("/api/v1/team/team-users/user"))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$", hasSize<Any>(0)))
+            .andExpect(jsonPath("$.content", hasSize<Any>(0)))
     }
 }

@@ -48,11 +48,17 @@ abstract class BaseIntegrationTest {
         val adminUser = ValtimoUser().apply {
             id = ADMIN_USER_ID
             username = ADMIN_USER_NAME
+            firstName = "Asha"
+            lastName = "Miller"
+            email = "admin@example.com"
             roles = listOf(ADMIN)
         }
         val normalUser = ValtimoUser().apply {
             id = NORMAL_USER_ID
             username = NORMAL_USER_NAME
+            firstName = "James"
+            lastName = "Vance"
+            email = "user@example.com"
             roles = listOf(USER)
         }
         whenever(userManagementService.currentUser).thenReturn(adminUser)
