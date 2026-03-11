@@ -262,7 +262,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         String teamTitle = "Team Title";
         when(teamProvider.findTitleByTeamKey(teamKey)).thenReturn(teamTitle);
 
-        var postContent = "{ \"teamKey\": \"" + teamKey + "\"}";
+        var postContent = "{ \"assignedTeamKey\": \"" + teamKey + "\"}";
 
         mockMvc.perform(
                 post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
