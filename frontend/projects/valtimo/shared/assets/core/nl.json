@@ -2598,6 +2598,33 @@
     "deleteModal": {
       "title": "Team verwijderen",
       "content": "Weet u zeker dat u dit team wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "detail": {
+      "title": "Team detail",
+      "more": "Meer",
+      "editTeam": "Team bewerken",
+      "deleteTeam": "Team verwijderen",
+      "addMember": "Lid toevoegen",
+      "removeMember": "Lid verwijderen",
+      "memberColumns": {
+        "name": "Naam",
+        "email": "E-mail",
+        "role": "Rol"
+      },
+      "noMembers": {
+        "title": "Er zijn geen leden",
+        "description": "Er zijn nog geen leden aan dit team toegevoegd"
+      },
+      "addMemberModal": {
+        "selectMember": "Selecteer lid",
+        "selectMemberPlaceholder": "Kies optie(s)",
+        "noUsersAvailable": "Geen beschikbare gebruikers gevonden",
+        "addToTeam": "Toevoegen aan team"
+      },
+      "removeMemberModal": {
+        "title": "Lid verwijderen",
+        "content": "Weet u zeker dat u dit lid uit het team wilt verwijderen?"
+      }
     }
   }
 }

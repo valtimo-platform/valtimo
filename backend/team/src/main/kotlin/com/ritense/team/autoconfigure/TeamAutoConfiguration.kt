@@ -62,9 +62,10 @@ class TeamAutoConfiguration {
     @ConditionalOnMissingBean(TeamResource::class)
     fun teamResource(
         teamService: TeamService,
-        userManagementService: UserManagementService
+        userManagementService: UserManagementService,
+        authorizationService: AuthorizationService
     ): TeamResource {
-        return TeamResource(teamService, userManagementService)
+        return TeamResource(teamService, userManagementService, authorizationService)
     }
 
     @Order(270)

@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of teams
- */
+package com.ritense.valtimo.authorization
 
-export * from './lib/teams.module';
-export * from './lib/services';
-export * from './lib/permissions';
+import com.ritense.authorization.Action
+import com.ritense.authorization.ResourceActionProvider
+import com.ritense.valtimo.contract.authentication.ManageableUser
+
+class ManageableUserActionProvider : ResourceActionProvider<ManageableUser> {
+    override fun getAvailableActions(): List<Action<ManageableUser>> {
+        return listOf(VIEW_LIST)
+    }
+
+    companion object {
+        @JvmField
+        val VIEW_LIST = Action<ManageableUser>(Action.VIEW_LIST)
+    }
+}

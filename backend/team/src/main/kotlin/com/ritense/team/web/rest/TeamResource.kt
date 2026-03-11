@@ -16,6 +16,9 @@
 
 package com.ritense.team.web.rest
 
+import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.team.domain.Team
 import com.ritense.team.service.TeamService
 import com.ritense.team.web.rest.dto.TeamCreateRequestDto
@@ -25,6 +28,7 @@ import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -46,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController
 class TeamResource(
     private val teamService: TeamService,
     private val userManagementService: UserManagementService,
+    private val authorizationService: AuthorizationService,
 ) {
 
     @GetMapping
@@ -123,5 +128,19 @@ class TeamResource(
         @PathVariable username: String
     ) {
         teamService.removeUserFromTeam(username, teamKey)
+    }
+
+    @GetMapping("/{teamKey}/candidate-user")
+    fun getCandidateUsers(@PathVariable teamKey: String): List<ManageableUser> {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ManageableUser::class.java,
+                Action<ManageableUser>(Action.VIEW_LIST)
+            )
+        )
+        val teamMembers = teamService.findAllTeamUsers(teamKey = teamKey)
+        val memberUsernames = teamMembers.content.map { it.username }.toSet()
+        return userManagementService.allUsers
+            .filter { it.username !in memberUsernames }
     }
 }

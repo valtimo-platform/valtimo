@@ -20,6 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_USER} from '@valtimo/shared';
 import {TeamsListComponent} from './components/teams-list/teams-list.component';
+import {TeamDetailComponent} from './components/team-detail/team-detail.component';
 
 const routes: Routes = [
   {
@@ -27,6 +28,12 @@ const routes: Routes = [
     component: TeamsListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'teams.title', roles: [ROLE_USER]},
+  },
+  {
+    path: 'teams/:teamKey',
+    component: TeamDetailComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'teams.detail.title', roles: [ROLE_USER], customPageTitle: true},
   },
 ];
 

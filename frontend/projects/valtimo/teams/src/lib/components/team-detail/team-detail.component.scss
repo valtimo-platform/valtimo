@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of teams
- */
-
-export * from './lib/teams.module';
-export * from './lib/services';
-export * from './lib/permissions';
+:host ::ng-deep .team-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
