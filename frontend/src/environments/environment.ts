@@ -113,10 +113,17 @@ export const environment: ValtimoConfig = {
         sequence: 4,
       },
       {
+        roles: [ROLE_USER],
+        link: ['/teams'],
+        title: 'teams.title',
+        iconClass: 'icon mdi mdi-account-group',
+        sequence: 5,
+      },
+      {
         roles: [ROLE_ADMIN],
         title: 'Admin',
         iconClass: 'icon mdi mdi-tune',
-        sequence: 5,
+        sequence: 6,
         children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {
@@ -162,7 +169,7 @@ export const environment: ValtimoConfig = {
         roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
         iconClass: 'icon mdi mdi-xml',
-        sequence: 6,
+        sequence: 7,
         children: [
           {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
         ],
