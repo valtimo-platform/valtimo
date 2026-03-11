@@ -2548,9 +2548,17 @@
       "name": "Name",
       "members": "Members"
     },
+    "newTeam": "New team",
     "noResults": {
       "title": "There are no teams",
       "description": "No teams have been created yet"
+    },
+    "createModal": {
+      "title": "Create new team",
+      "description": "Create a new team of users to assign to cases and tasks",
+      "teamName": "Team name",
+      "teamNamePlaceholder": "Team name",
+      "createTeam": "Create team"
     }
   }
 }
