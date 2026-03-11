@@ -12,11 +12,10 @@ Plugin that processes events from Notification API regarding new zaakinformatiev
 
 ## Enhancements
 
-* **Title**
+* **New enhancement title**
 
-  Description of the enhancement
+  New enhancement explanation.
 
 ## Bugfixes
 
-* bugfix 1
-* bugfix 2
+* New bugfix.

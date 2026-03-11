@@ -77,7 +77,7 @@ import {
   CASE_LIST_TABLE_TRANSLATIONS,
   DEFAULT_CASE_LIST_TABS,
 } from '../../constants';
-import {CaseListQuickSearchParams} from '../../models';
+import {BulkAssign, CaseListQuickSearchParams} from '../../models';
 import {
   CAN_CREATE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
@@ -701,13 +701,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.showAssignModal$.next(true);
   }
 
-  public onCloseEvent(assigneeId: null | string, documentIds: string[]): void {
+  public onCloseEvent(bulkAssign: null | BulkAssign): void {
     this.showAssignModal$.next(false);
-    if (!assigneeId) {
+    if (!bulkAssign?.assigneeId) {
       return;
     }
 
-    this.bulkAssignService.bulkAssign(assigneeId, documentIds).subscribe(() => {
+    this.bulkAssignService.bulkAssign(bulkAssign.assigneeId, bulkAssign.ids).subscribe(() => {
       this.forceRefresh();
     });
   }
