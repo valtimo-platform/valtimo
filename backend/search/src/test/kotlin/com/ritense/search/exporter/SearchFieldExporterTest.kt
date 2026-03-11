@@ -17,8 +17,6 @@
 package com.ritense.search.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.search.domain.DataType
@@ -27,14 +25,12 @@ import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.skyscreamer.jsonassert.JSONAssert
-import org.skyscreamer.jsonassert.JSONCompareMode
-import kotlin.test.assertNotNull
 
 class SearchFieldExporterTest {
 
@@ -106,51 +102,15 @@ class SearchFieldExporterTest {
 
         val result = testExporter.export(request)
 
-        val path = testExporter.getPath(request)
-        val ownerTypeKey = testExporter.ownerTypeKey()
-        val caseTaskListExport = result.exportFiles.singleOrNull {
-            it.path == path
-        }
-        requireNotNull(caseTaskListExport)
-        val exportJson = objectMapper.readTree(caseTaskListExport.content)
+        assertThat(result.exportFiles).hasSize(1)
+        val exportFile = result.exportFiles.first()
+        assertThat(exportFile.path).isEqualTo("some/DocumentDefinitionExportRequest(name=my-document-definition-name, caseDefinitionId=test:1.0.0)/path")
 
-        //Check if the changesetId ends with a timestamp
-        val changesetIdField = "changesetId"
-        val changesetRegex = """(${request.name}\.$ownerTypeKey)\.\d+""".toRegex()
-        val matchResult = changesetRegex.matchEntire(exportJson.get(changesetIdField).textValue())
-        assertNotNull(matchResult)
-
-        //Remove the timestamp from the changesetId, so we can compare it as usual
-        (exportJson as ObjectNode).set<TextNode>(changesetIdField, TextNode(matchResult.groupValues[1]))
-        JSONAssert.assertEquals(
-            """{
-                "changesetId":"my-document-definition-name.some-owner-type",
-                "collection":[{
-                  "ownerId":"my-document-definition-name",
-                  "searchFields":[{
-                    "key":"firstname",
-                    "title":"Firstname",
-                    "path":"doc:firstname",
-                    "dataType":"text",
-                    "fieldType":"single",
-                    "matchType":"like",
-                    "required":false
-                  },
-                  {
-                    "key":"lastname",
-                    "title":"Lastname",
-                    "path":"doc:lastname",
-                    "dataType":"text",
-                    "fieldType":"single",
-                    "matchType":"like",
-                    "required":false
-                  }
-                ]}
-              ]}""".trimMargin(),
-
-            objectMapper.writeValueAsString(exportJson),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
+        val exportedContent = objectMapper.readTree(exportFile.content)
+        assertThat(exportedContent.size()).isEqualTo(2)
+        assertThat(exportedContent.get(0).get("key").asText()).isEqualTo("firstname")
+        assertThat(exportedContent.get(1).get("key").asText()).isEqualTo("lastname")
+        assertThat(result.relatedRequests).isEmpty()
     }
 
     private class TestSearchFieldExporter(

@@ -26,7 +26,10 @@
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
         "selectPlaceholder": "Kies een optie",
-        "title": "Wijs geselecteerde cases toe aan"
+        "title": "Wijs geselecteerde cases toe aan",
+        "warningTitle": "Waarschuwing",
+        "cannotAssignAnyWarning": "Je hebt geen toestemming om de geselecteerde dossiers toe te wijzen.",
+        "cannotAssignSomeWarning": "Je hebt geen toestemming om sommige van de geselecteerde dossiers toe te wijzen. Deze worden overgeslagen."
       }
     },
     "changePageModal": {

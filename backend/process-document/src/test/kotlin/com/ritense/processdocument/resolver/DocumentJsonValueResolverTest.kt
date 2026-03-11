@@ -547,6 +547,51 @@ internal class DocumentJsonValueResolverTest {
         assertEquals("/object3/object4/text1", options[0].children?.get(0)?.path)
     }
 
+    @Test
+    fun `should include oneOf nullable string field as FIELD option`() {
+        mockDefinition("test")
+
+        val options = documentValueResolver.getResolvableKeyOptions("test")
+
+        assertThat(options).anyMatch { it.path == "doc:/string2" && it.type == ValueResolverOptionType.FIELD }
+    }
+
+    @Test
+    fun `should include union type nullable string field as FIELD option`() {
+        mockDefinition("test")
+
+        val options = documentValueResolver.getResolvableKeyOptions("test")
+
+        assertThat(options).anyMatch { it.path == "doc:/string3" && it.type == ValueResolverOptionType.FIELD }
+    }
+
+    @Test
+    fun `should include anyOf nullable string field as FIELD option`() {
+        mockDefinition("test")
+
+        val options = documentValueResolver.getResolvableKeyOptions("test")
+
+        assertThat(options).anyMatch { it.path == "doc:/string4" && it.type == ValueResolverOptionType.FIELD }
+    }
+
+    @Test
+    fun `should not include oneOf field with more than two schemas as FIELD option`() {
+        mockDefinition("test")
+
+        val options = documentValueResolver.getResolvableKeyOptions("test")
+
+        assertThat(options).noneMatch { it.path == "doc:/string5" }
+    }
+
+    @Test
+    fun `should not include union type field without null as FIELD option`() {
+        mockDefinition("test")
+
+        val options = documentValueResolver.getResolvableKeyOptions("test")
+
+        assertThat(options).noneMatch { it.path == "doc:/string6" }
+    }
+
     private fun mockDefinition(definitionName: String): JsonSchemaDocumentDefinition {
         val definition: JsonSchemaDocumentDefinition = definitionOf(definitionName)
         whenever(documentDefinitionService.findActiveByName(definitionName)).thenReturn(Optional.of(definition))
