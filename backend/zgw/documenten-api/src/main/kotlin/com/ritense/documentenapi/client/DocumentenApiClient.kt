@@ -346,6 +346,20 @@ class DocumentenApiClient(
         outboxService.send { DocumentDeleted(url.toASCIIString()) }
     }
 
+    fun deleteZaakInformatieObject(
+        authentication: DocumentenApiAuthentication,
+        url: URI
+    ) {
+
+        restClient(authentication)
+            .delete()
+            .uri(url)
+            .retrieve()
+            .toBodilessEntity()
+
+        outboxService.send { DocumentDeleted(url.toASCIIString()) }
+    }
+
     fun modifyInformatieObject(
         authentication: DocumentenApiAuthentication,
         documentUrl: URI,

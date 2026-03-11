@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
 import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
@@ -43,6 +45,8 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.resource.authorization.ResourcePermission
+import com.ritense.resource.authorization.ResourcePermissionActionProvider
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
@@ -82,7 +86,8 @@ class DocumentenApiPlugin(
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
     private val virusScanService: VirusScanService,
-    private val virusScanEnabledForDocumentenApiPlugin: Boolean
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean,
+    private val authorizationService: AuthorizationService,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -283,6 +288,21 @@ class DocumentenApiPlugin(
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
         documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
         client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
+    }
+
+    fun deleteZaakinformatieobjectAndDocument(caseDocumentId: UUID?, objectUrl: URI) {
+        logger.info { "Deleting zaakinformatieobject and document with url $objectUrl" }
+
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.DELETE,
+                ResourcePermission(caseDocumentId, objectUrl.toString().substringAfterLast('/'))
+            )
+        )
+
+        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
+        client.deleteZaakInformatieObject(authenticationPluginConfiguration, objectUrl)
     }
 
     fun createInformatieObjectUrl(objectId: String) = UriComponentsBuilder

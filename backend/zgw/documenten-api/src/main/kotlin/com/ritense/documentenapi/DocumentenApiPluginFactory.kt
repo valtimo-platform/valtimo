@@ -17,6 +17,7 @@
 package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.service.DocumentDeleteHandler
 import com.ritense.documentenapi.service.DocumentenApiVersionService
@@ -37,6 +38,7 @@ class DocumentenApiPluginFactory(
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val runtimeService: OperatonRuntimeService,
     private val virusScanService: VirusScanService,
+    private val authorizationService: AuthorizationService,
     private val virusScanEnabledForDocumentenApiPlugin: Boolean,
 ) : PluginFactory<DocumentenApiPlugin>(pluginService) {
 
@@ -51,7 +53,8 @@ class DocumentenApiPluginFactory(
             pluginService,
             runtimeService,
             virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin,
+            authorizationService
         )
     }
 }

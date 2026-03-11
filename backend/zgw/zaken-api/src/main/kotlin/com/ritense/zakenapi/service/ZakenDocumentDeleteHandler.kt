@@ -28,16 +28,13 @@ class ZakenDocumentDeleteHandler(
 
     override fun preDocumentDelete(documentUrl: URI, caseDocumentId: UUID?) {
         val pluginConfigurations = pluginService.findPluginConfigurations(ZakenApiPlugin::class.java)
-        val documentId =  documentUrl.toString().substringAfterLast('/')
         val exceptions = pluginConfigurations.map {
             val plugin = pluginService.createInstance(it.id) as ZakenApiPlugin
             try {
                 plugin.getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId, documentUrl)
                     .forEach { zaakInformatieObject ->
                         plugin.deleteZaakInformatieobject(
-                            zaakInformatieObject.url,
-                            caseDocumentId,
-                            documentId
+                            zaakInformatieObject.url
                         )
                     }
                 null

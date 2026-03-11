@@ -169,7 +169,7 @@ class ZakenApiPlugin(
             val caseDocumentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(caseDocumentId)
 
-            if (getZaakInformatieObject( caseDocumentId, zaakUrl, URI(documentUrl)) != null) {
+            if (getZaakInformatieObject(caseDocumentId, zaakUrl, URI(documentUrl)) != null) {
                 logger.warn { "Skipping document-zaak-link creation. Link already exists between zaak '$zaakUrl' and document: '$documentUrl'." }
                 return
             }
@@ -1328,6 +1328,16 @@ class ZakenApiPlugin(
             zaakInformatieobjectUrl = zaakInformatieobjectUrl,
             caseDocumentId,
             fileId
+        )
+        logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
+    }
+
+    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
+        logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
+        client.deleteZaakInformatieObject(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl
         )
         logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
     }
