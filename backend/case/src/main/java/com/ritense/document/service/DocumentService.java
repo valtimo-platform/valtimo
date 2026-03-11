@@ -74,6 +74,10 @@ public interface DocumentService {
 
     void unassignUserFromDocument(UUID documentId);
 
+    void assignTeamToDocument(UUID documentId, String teamKey);
+
+    void unassignTeamFromDocument(UUID documentId);
+
     void setInternalStatus(Document.Id documentId, @Nullable String internalStatusKey);
 
     void addCaseTag(Document.Id documentId, String caseTagKey);

@@ -61,6 +61,12 @@ public interface Document {
     @JsonProperty
     String assigneeFullName();
 
+    @JsonProperty
+    String assignedTeamKey();
+
+    @JsonProperty
+    String assignedTeamTitle();
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = DocumentContentFilter.class)
     @JsonProperty
     DocumentContent content();

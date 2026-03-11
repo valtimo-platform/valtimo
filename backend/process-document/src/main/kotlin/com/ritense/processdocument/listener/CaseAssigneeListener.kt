@@ -54,14 +54,17 @@ class CaseAssigneeListener(
             )
 
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-                val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
-                val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKey(caseDocument.id().toString())
-                        .and(byCandidateGroups(assignee.roles))
-                )
-                logger.debug { "Updating assignee on ${tasks.size} task(s)" }
-                tasks.forEach { task ->
-                    operatonTaskService.assign(task.id, assignee.id)
+                val assigneeUsername = caseDocument.assigneeId()
+                if (assigneeUsername != null) {
+                    val assignee = userManagementService.findByUsername(assigneeUsername)
+                    val tasks = operatonTaskService.findTasks(
+                        byProcessInstanceBusinessKey(caseDocument.id().toString())
+                            .and(byCandidateGroups(assignee.roles))
+                    )
+                    logger.debug { "Updating assignee on ${tasks.size} task(s)" }
+                    tasks.forEach { task ->
+                        operatonTaskService.assign(task.id, assignee.id)
+                    }
                 }
             }
         } catch (e: CaseDocumentResolutionException) {

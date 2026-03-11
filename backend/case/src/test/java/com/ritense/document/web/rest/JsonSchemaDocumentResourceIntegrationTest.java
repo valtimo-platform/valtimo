@@ -257,6 +257,59 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldAssignTeamToCase() throws Exception {
+        String teamKey = "team-key";
+        String teamTitle = "Team Title";
+        when(teamProvider.findTitleByTeamKey(teamKey)).thenReturn(teamTitle);
+
+        var postContent = "{ \"teamKey\": \"" + teamKey + "\"}";
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
+                    .content(postContent)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        // Assert that the team is saved in the document
+        var result = documentRepository.findById(document.id());
+
+        assertTrue(result.isPresent());
+        assertInstanceOf(JsonSchemaDocument.class, result.get());
+
+        var savedDocument = result.get();
+        assertNotNull(savedDocument.assignedTeamKey());
+        assertEquals(teamKey, savedDocument.assignedTeamKey());
+        assertNotNull(savedDocument.assignedTeamTitle());
+        assertEquals(teamTitle, savedDocument.assignedTeamTitle());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldUnassignTeamFromCase() throws Exception {
+        document.setAssignedTeamKey("team-key");
+        document.setAssignedTeamTitle("Team Title");
+        documentRepository.save(document);
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/unassign", document.id().getId().toString())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        // Assert that the team is cleared in the document
+        var result = documentRepository.findById(document.id());
+
+        assertTrue(result.isPresent());
+        assertInstanceOf(JsonSchemaDocument.class, result.get());
+
+        var savedDocument = result.get();
+        assertNull(savedDocument.assignedTeamKey());
+        assertNull(savedDocument.assignedTeamTitle());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
     void shouldSendOutboxEventWhenRetrievingDocument() throws Exception {
         mockMvc.perform(get("/api/v1/document/{documentId}", document.id().getId().toString()))
             .andDo(print())
