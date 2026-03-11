@@ -89,6 +89,7 @@ include(
     ":backend:zgw",
     ":backend:zgw:catalogi-api",
     ":backend:zgw:documenten-api",
+    ":backend:zgw:documenten-api-preview",
     ":backend:zgw:klantinteracties-api",
     ":backend:zgw:notificaties-api",
     ":backend:zgw:object-management",

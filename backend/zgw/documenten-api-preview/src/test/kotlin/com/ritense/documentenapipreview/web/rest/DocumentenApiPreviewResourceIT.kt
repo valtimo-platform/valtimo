@@ -80,8 +80,8 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should generate PDF document from documenten preview API`() {
-        doReturn("TEST_DOCUMENT_CONTENT".byteInputStream()).whenever(mockDocumentenApiPlugin).downloadInformatieObject(DOCUMENT_ID)
-        doReturn(DOCUMENT_INFORMATIE_OBJECT).whenever(mockDocumentenApiPlugin).getInformatieObject(DOCUMENT_ID)
+        doReturn("TEST_DOCUMENT_CONTENT".byteInputStream()).whenever(mockDocumentenApiPlugin).downloadInformatieObject(null,DOCUMENT_ID)
+        doReturn(DOCUMENT_INFORMATIE_OBJECT).whenever(mockDocumentenApiPlugin).getInformatieObject(DOCUMENT_ID, null)
 
         mockMvc.perform(
             get(

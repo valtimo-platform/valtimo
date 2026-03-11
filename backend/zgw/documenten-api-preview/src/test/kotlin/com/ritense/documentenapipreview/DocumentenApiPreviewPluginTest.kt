@@ -33,9 +33,9 @@ class DocumentenApiPreviewPluginTest {
 
         whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
-        whenever(documentenApiPlugin.downloadInformatieObject(MOCK_DOCUMENT_ID))
+        whenever(documentenApiPlugin.downloadInformatieObject(null,MOCK_DOCUMENT_ID))
             .thenReturn(MOCK_DOCUMENT_STREAM)
-        whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID))
+        whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, null))
             .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
         whenever(pdfConversionClient.convertDocument(any(), any())).thenReturn(MOCK_DOCUMENT_STREAM)
     }
@@ -44,14 +44,14 @@ class DocumentenApiPreviewPluginTest {
     fun `should call download on DocumentenApiPlugin`() {
         documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        verify(documentenApiPlugin).downloadInformatieObject(MOCK_DOCUMENT_ID)
+        verify(documentenApiPlugin).downloadInformatieObject(null,MOCK_DOCUMENT_ID)
     }
 
     @Test
     fun `should call getInformatieObject on DocumentenApiPlugin`() {
         documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID)
+        verify(documentenApiPlugin).getInformatieObject(MOCK_DOCUMENT_ID, null)
     }
 
     @Test
