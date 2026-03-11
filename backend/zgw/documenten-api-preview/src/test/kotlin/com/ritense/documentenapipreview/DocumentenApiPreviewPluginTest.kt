@@ -29,7 +29,7 @@ class DocumentenApiPreviewPluginTest {
 
         documentenApiPreviewPlugin = DocumentenApiPreviewPlugin(pdfConversionClient, pluginService)
         documentenApiPreviewPlugin.documentenApiConfigurationId = "mock_documenten_api_configuration_id"
-        documentenApiPreviewPlugin.url = URI("http://mock.url")
+        documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
 
         whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
@@ -58,7 +58,7 @@ class DocumentenApiPreviewPluginTest {
     fun `should call generatePreview on PdfConversionClient`() {
         documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        verify(pdfConversionClient).convertDocument(documentenApiPreviewPlugin.url, MOCK_DOCUMENT_STREAM)
+        verify(pdfConversionClient).convertDocument(documentenApiPreviewPlugin.pdfConversionUrl, MOCK_DOCUMENT_STREAM)
     }
 
     companion object {

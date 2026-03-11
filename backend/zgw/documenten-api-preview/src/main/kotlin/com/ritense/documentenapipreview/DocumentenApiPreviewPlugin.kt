@@ -40,8 +40,8 @@ class DocumentenApiPreviewPlugin(
     private val pluginService: PluginService,
 ) {
     @Url
-    @PluginProperty(key = URL_PROPERTY, secret = false)
-    lateinit var url: URI
+    @PluginProperty(key = PDF_CONVERSION_URL_PROPERTY, secret = false)
+    lateinit var pdfConversionUrl: URI
 
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
@@ -50,7 +50,7 @@ class DocumentenApiPreviewPlugin(
         val documentenApiPlugin = getDocumentenApiPlugin()
         val documentStream = documentenApiPlugin.downloadInformatieObject(null,documentId)
         val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, null);
-        val pdfStream = pdfConversionClient.convertDocument(url, documentStream)
+        val pdfStream = pdfConversionClient.convertDocument(pdfConversionUrl, documentStream)
 
         return PdfFile(createFilename(documentInformatieObject), pdfStream)
     }
@@ -68,7 +68,7 @@ class DocumentenApiPreviewPlugin(
 
     companion object {
         const val PLUGIN_KEY = "documentenapipreview"
-        const val URL_PROPERTY = "url"
+        const val PDF_CONVERSION_URL_PROPERTY = "pdfConversionUrl"
         const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
 
         fun findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId: String) = { properties: JsonNode ->

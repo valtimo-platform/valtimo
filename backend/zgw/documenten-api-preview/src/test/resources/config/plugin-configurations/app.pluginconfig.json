@@ -4,7 +4,7 @@
     "title": "Documenten API Preview",
     "pluginDefinitionKey": "documentenapipreview",
     "properties": {
-      "url": "http://localhost:56273/",
+      "pdfConversionUrl": "http://localhost:56273/",
       "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
     }
   }
