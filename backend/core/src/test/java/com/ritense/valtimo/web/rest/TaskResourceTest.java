@@ -33,6 +33,7 @@ import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.request.AssigneeRequest;
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.service.request.SetDueDateRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -58,6 +59,7 @@ class TaskResourceTest {
     private FormService formService;
     private OperatonTaskService operatonTaskService;
     private OperatonProcessService operatonProcessService;
+    private UserTaskOpenedStatusService userTaskOpenedStatusService;
     private AssigneeRequest assigneeRequest;
     private SetDueDateRequest dueDateRequest;
     private ObjectMapper objectMapper;
@@ -70,11 +72,13 @@ class TaskResourceTest {
         formService = mock(FormService.class);
         operatonTaskService = mock(OperatonTaskService.class);
         operatonProcessService = mock(OperatonProcessService.class);
+        userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
 
         taskResource = new TaskResource(
             formService,
             operatonTaskService,
-                operatonProcessService
+            operatonProcessService,
+            userTaskOpenedStatusService
         );
         objectMapper = MapperSingleton.INSTANCE.get();
 
@@ -162,7 +166,8 @@ class TaskResourceTest {
                 "businessKey",
                 "processDefinitionKey",
                 null,
-                null
+                null,
+                false
             )
         );
 

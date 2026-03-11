@@ -23,13 +23,19 @@ import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import java.nio.charset.StandardCharsets
 import java.util.UUID
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
@@ -45,14 +51,16 @@ internal class ProcessLinkTaskResourceTest {
     lateinit var processLinkActivityService: ProcessLinkActivityService
     lateinit var processLinkMappers: List<ProcessLinkMapper>
     lateinit var processLinkTaskResource: ProcessLinkTaskResource
+    lateinit var userTaskOpenedStatusService: UserTaskOpenedStatusService
     lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
     fun init() {
         objectMapper = MapperSingleton.get()
         processLinkActivityService = mock()
+        userTaskOpenedStatusService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
-        processLinkTaskResource = ProcessLinkTaskResource(processLinkActivityService)
+        processLinkTaskResource = ProcessLinkTaskResource(processLinkActivityService, userTaskOpenedStatusService)
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
         mappingJackson2HttpMessageConverter.objectMapper = objectMapper
@@ -61,6 +69,14 @@ internal class ProcessLinkTaskResourceTest {
             .standaloneSetup(processLinkTaskResource)
             .setMessageConverters(mappingJackson2HttpMessageConverter)
             .build()
+
+        SecurityContextHolder.getContext().authentication =
+            UsernamePasswordAuthenticationToken("test-user", null, emptyList())
+    }
+
+    @AfterEach
+    fun tearDown() {
+        SecurityContextHolder.clearContext()
     }
 
     @Test
@@ -98,5 +114,34 @@ internal class ProcessLinkTaskResourceTest {
             .andExpect(status().isNotFound)
 
         verify(processLinkActivityService).openTask(taskId)
+    }
+
+    @Test
+    fun `should mark task as opened when task is found`() {
+        val taskId = UUID.randomUUID()
+        val processLinkActivityResult = ProcessLinkActivityResult(UUID.randomUUID(), "test", null, null, mapOf("x" to "y"))
+        whenever(processLinkActivityService.openTask(taskId)).thenReturn(processLinkActivityResult)
+
+        mockMvc.perform(
+            get("/api/v2/process-link/task/$taskId")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpect(status().isOk)
+
+        verify(userTaskOpenedStatusService).markTaskAsOpened(taskId.toString(), "test-user")
+    }
+
+    @Test
+    fun `should not mark task as opened when task is not found`() {
+        val taskId = UUID.randomUUID()
+        whenever(processLinkActivityService.openTask(taskId)).thenThrow(ProcessLinkNotFoundException("No process link found."))
+
+        mockMvc.perform(
+            get("/api/v2/process-link/task/$taskId")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpect(status().isNotFound)
+
+        verify(userTaskOpenedStatusService, never()).markTaskAsOpened(any(), any())
     }
 }

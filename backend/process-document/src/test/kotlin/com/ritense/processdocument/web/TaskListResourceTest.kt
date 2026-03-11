@@ -106,7 +106,8 @@ class TaskListResourceTest {
             caseDocumentId = businessKey,
             processDefinitionKey = null,
             valtimoAssignee = null,
-            context = null
+            context = null,
+            isOpened = false
         )
     }
 }

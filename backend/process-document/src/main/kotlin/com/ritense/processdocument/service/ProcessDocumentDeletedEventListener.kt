@@ -49,11 +49,11 @@ class ProcessDocumentDeletedEventListener(
 
     @EventListener(DocumentDeletedEvent::class)
     fun handle(event: DocumentDeletedEvent) {
-        withLoggingContext(JsonSchemaDocument::class, event.documentId) {
-            logger.info { "Deleting all process instances for deleted document ${event.documentId}" }
+        withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
+            logger.info { "Deleting all process instances for deleted document ${event.caseDocumentId}" }
             runWithoutAuthorization {
                 runtimeService.createProcessInstanceQuery()
-                    .processInstanceBusinessKey(event.documentId.toString())
+                    .processInstanceBusinessKey(event.caseDocumentId.toString())
                     .rootProcessInstances()
                     .list()
                     .forEach {
@@ -63,9 +63,9 @@ class ProcessDocumentDeletedEventListener(
                     }
 
                 val pros = processDocumentAssociationService.findProcessDocumentInstancesWithoutPermissionCheck(
-                    JsonSchemaDocumentId.newId(event.documentId)
+                    JsonSchemaDocumentId.newId(event.caseDocumentId)
                 )
-                logger.info { "Process document ${event.documentId} has been deleted pros: ${pros.size}" }
+                logger.info { "Process document ${event.caseDocumentId} has been deleted pros: ${pros.size}" }
                 pros.forEach {
                     deleteHistoryProcessInstance(
                         it.processDocumentInstanceId().processInstanceId().toString()
