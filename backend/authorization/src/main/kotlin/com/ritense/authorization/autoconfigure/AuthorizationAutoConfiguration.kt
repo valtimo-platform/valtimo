@@ -27,6 +27,10 @@ import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
 import com.ritense.authorization.deployment.PermissionDeployer
 import com.ritense.authorization.deployment.RoleDeployer
+import com.ritense.authorization.exporter.GlobalPermissionExporter
+import com.ritense.authorization.exporter.GlobalRoleExporter
+import com.ritense.authorization.importer.GlobalPermissionImporter
+import com.ritense.authorization.importer.GlobalRoleImporter
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
@@ -164,4 +168,49 @@ class AuthorizationAutoConfiguration(
         return RunWithoutAuthorizationAspect()
     }
 
+    @Bean
+    fun globalPermissionImporter(
+        objectMapper: ObjectMapper,
+        permissionRepository: PermissionRepository,
+        roleRepository: RoleRepository,
+    ): GlobalPermissionImporter {
+        return GlobalPermissionImporter(
+            objectMapper,
+            permissionRepository,
+            roleRepository,
+        )
+    }
+
+    @Bean
+    fun globalPermissionExporter(
+        objectMapper: ObjectMapper,
+        permissionRepository: PermissionRepository
+    ): GlobalPermissionExporter {
+        return GlobalPermissionExporter(
+            objectMapper,
+            permissionRepository
+        )
+    }
+
+    @Bean
+    fun globalRoleImporter(
+        objectMapper: ObjectMapper,
+        roleRepository: RoleRepository,
+    ): GlobalRoleImporter {
+        return GlobalRoleImporter(
+            objectMapper,
+            roleRepository,
+        )
+    }
+
+    @Bean
+    fun globalRoleExporter(
+        objectMapper: ObjectMapper,
+        roleRepository: RoleRepository
+    ): GlobalRoleExporter {
+        return GlobalRoleExporter(
+            objectMapper,
+            roleRepository
+        )
+    }
 }
