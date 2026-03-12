@@ -63,9 +63,11 @@ class TeamAutoConfiguration {
     fun teamResource(
         teamService: TeamService,
         userManagementService: UserManagementService,
-        authorizationService: AuthorizationService
     ): TeamResource {
-        return TeamResource(teamService, userManagementService, authorizationService)
+        return TeamResource(
+            teamService,
+            userManagementService,
+        )
     }
 
     @Order(270)

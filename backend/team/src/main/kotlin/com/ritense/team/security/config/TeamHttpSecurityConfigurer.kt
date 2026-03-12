@@ -16,7 +16,6 @@
 
 package com.ritense.team.security.config
 
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod
@@ -31,11 +30,11 @@ class TeamHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{id}")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/team"))
-                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .authenticated()
                     .requestMatchers(antMatcher(HttpMethod.PUT, "/api/v1/team/{id}"))
-                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .authenticated()
                     .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/team/{id}"))
-                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .authenticated()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/team/{teamKey}/user")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/team/{teamKey}/user")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/team/{teamKey}/user/{userId}"))

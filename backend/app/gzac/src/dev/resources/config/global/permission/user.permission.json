@@ -1,9 +1,0 @@
-[
-    {
-        "resourceType": "com.ritense.valtimo.contract.authentication.ManageableUser",
-        "actions": [
-            "view_list"
-        ],
-        "roleKey": "ROLE_ADMIN"
-    }
-]

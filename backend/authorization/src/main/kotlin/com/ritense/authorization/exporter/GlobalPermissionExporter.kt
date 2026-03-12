@@ -52,6 +52,6 @@ class GlobalPermissionExporter(
     }
 
     companion object {
-        private const val PATH = "global/permission/global.permission.json"
+        private const val PATH = "config/global/permission/global.permission.json"
     }
 }
