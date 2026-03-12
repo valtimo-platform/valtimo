@@ -18,6 +18,7 @@
 
 ## Bugfixes
 
+* Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * **Fixed error when viewing audit events for cases created before 13.15.0**
 
   Opening the progress tab for a case that was created on an older version could result in an error. A database migration now automatically corrects the stored audit data on startup.
