@@ -16,7 +16,6 @@
 
 package com.ritense.document.service.impl;
 
-import static com.ritense.BaseIntegrationTest.FULL_ACCESS_ROLE;
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.domain.search.DatabaseSearchType.BETWEEN;
 import static com.ritense.document.domain.search.DatabaseSearchType.EQUAL;

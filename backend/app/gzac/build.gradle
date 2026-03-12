@@ -21,7 +21,6 @@ dependencies {
     implementation(project(":backend:zgw:portaaltaak"))
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
-    implementation(project(":backend:team"))
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"

@@ -16,9 +16,6 @@
 
 package com.ritense.team.web.rest
 
-import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.team.domain.Team
 import com.ritense.team.service.TeamService
 import com.ritense.team.web.rest.dto.TeamCreateRequestDto
@@ -26,7 +23,6 @@ import com.ritense.team.web.rest.dto.TeamListResponseDto
 import com.ritense.team.web.rest.dto.TeamResponseDto
 import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
-import com.ritense.team.web.rest.dto.TeamUserResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -50,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController
 class TeamResource(
     private val teamService: TeamService,
     private val userManagementService: UserManagementService,
-    private val authorizationService: AuthorizationService,
 ) {
 
     @GetMapping
@@ -92,17 +87,9 @@ class TeamResource(
         @PathVariable teamKey: String,
         @RequestParam(required = false) username: String?,
         pageable: Pageable
-    ): Page<TeamUserResponseDto> {
+    ): Page<ManageableUser> {
         return teamService.findAllTeamUsers(teamKey = teamKey, username = username, pageable = pageable)
-            .map { teamUser ->
-                val user = userManagementService.findByUsername(teamUser.username)
-                TeamUserResponseDto.from(
-                    username = teamUser.username,
-                    fullName = user?.fullName,
-                    email = user?.email,
-                    roles = user?.roles,
-                )
-            }
+            .map { teamUser -> userManagementService.findByUsername(teamUser.username) }
     }
 
     @PostMapping("/{teamKey}/user")
@@ -110,15 +97,9 @@ class TeamResource(
     fun addUserToTeam(
         @PathVariable teamKey: String,
         @RequestBody request: TeamUserCreateRequestDto
-    ): TeamUserResponseDto {
+    ): ManageableUser {
         val teamUser = teamService.addUserToTeam(request.username, teamKey)
-        val user = userManagementService.findByUsername(teamUser.username)
-        return TeamUserResponseDto.from(
-            username = teamUser.username,
-            fullName = user?.fullName,
-            email = user?.email,
-            roles = user?.roles,
-        )
+        return userManagementService.findByUsername(teamUser.username)
     }
 
     @DeleteMapping("/{teamKey}/user/{username}")
@@ -132,12 +113,6 @@ class TeamResource(
 
     @GetMapping("/{teamKey}/candidate-user")
     fun getCandidateUsers(@PathVariable teamKey: String): List<ManageableUser> {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ManageableUser::class.java,
-                Action<ManageableUser>(Action.VIEW_LIST)
-            )
-        )
         val teamMembers = teamService.findAllTeamUsers(teamKey = teamKey)
         val memberUsernames = teamMembers.content.map { it.username }.toSet()
         return userManagementService.allUsers

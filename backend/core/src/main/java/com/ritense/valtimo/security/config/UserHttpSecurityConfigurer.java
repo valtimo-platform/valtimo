@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class UserHttpSecurityConfigurer implements HttpSecurityConfigurer {
                 .requestMatchers(antMatcher(PUT, USER_URL + "/{userId}/deactivate")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, USER_URL + "/email/{email}/")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, USER_URL + "/{userId}")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, USER_URL + "/authority/{authority}")).authenticated()
+                .requestMatchers(antMatcher(GET, USER_URL + "/authority/{authority}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(DELETE, USER_URL + "/{userId}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(POST, USER_URL + "/send-verification-email/{userId}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/user/settings")).authenticated()

@@ -21,8 +21,6 @@ import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
-import com.ritense.valtimo.authorization.ManageableUserActionProvider;
-import com.ritense.valtimo.authorization.ManageableUserSpecificationFactory;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.config.CustomDateTimeProvider;
 import com.ritense.valtimo.config.ValtimoApplicationReadyEventListener;
@@ -365,22 +363,9 @@ public class ValtimoAutoConfiguration {
     public UserResource userResource(
         UserManagementService userManagementService,
         UserSettingsService userSettingsService,
-        ObjectMapper objectMapper,
-        AuthorizationService authorizationService
+        ObjectMapper objectMapper
     ) {
-        return new UserResource(userManagementService, userSettingsService, objectMapper, authorizationService);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ManageableUserActionProvider.class)
-    public ManageableUserActionProvider manageableUserActionProvider() {
-        return new ManageableUserActionProvider();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ManageableUserSpecificationFactory.class)
-    public ManageableUserSpecificationFactory manageableUserSpecificationFactory() {
-        return new ManageableUserSpecificationFactory();
+        return new UserResource(userManagementService, userSettingsService, objectMapper);
     }
 
     @Bean

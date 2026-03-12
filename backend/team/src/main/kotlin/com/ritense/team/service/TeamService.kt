@@ -66,18 +66,14 @@ class TeamService(
 
     fun create(team: Team): Team {
         requirePermission(team, TeamActionProvider.CREATE)
-        val createdTeam = teamRepository.save(team)
-        createdTeam.users.size // Initialize lazy collection
-        return createdTeam
+        return teamRepository.save(team)
     }
 
     fun update(key: String, title: String): Team {
         val team = teamRepository.findById(key).orElseThrow { IllegalArgumentException("Team not found") }
         requirePermission(team, TeamActionProvider.MODIFY)
         team.title = title
-        val updatedTeam = teamRepository.save(team)
-        updatedTeam.users.size // Initialize lazy collection
-        return updatedTeam
+        return teamRepository.save(team)
     }
 
     fun delete(key: String) {

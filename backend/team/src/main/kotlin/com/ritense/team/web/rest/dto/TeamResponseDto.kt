@@ -21,13 +21,11 @@ import com.ritense.team.domain.Team
 data class TeamResponseDto(
     val key: String,
     val title: String,
-    val users: List<String> = emptyList()
 ) {
     companion object {
         fun from(team: Team) = TeamResponseDto(
             team.key,
             team.title,
-            team.users
         )
     }
 }
