@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {OverflowMenuVertical16} from '@carbon/icons';
 import {IconModule, IconService} from 'carbon-components-angular';
 
 @Component({
   selector: 'v-overflow-menu-trigger',
-  template: `<div class="v-overflow-menu-trigger" [class.--compact]="compact">
-    <svg cdsIcon="overflow-menu--vertical" size="16"></svg>
-  </div>`,
+  templateUrl: './overflow-menu-trigger.component.html',
   styleUrls: ['./overflow-menu-trigger.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [IconModule],
 })
 export class OverflowMenuTriggerComponent {
-  @Input() compact = false;
+  @Input() public compact = false;
 
-  constructor(private readonly iconService: IconService) {
-    this.iconService.registerAll([OverflowMenuVertical16]);
+  constructor(private readonly _iconService: IconService) {
+    this._iconService.registerAll([OverflowMenuVertical16]);
   }
 }

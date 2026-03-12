@@ -265,8 +265,8 @@ export * from './lib/directives/digit-only/digit-only.directive';
 export * from './lib/directives/ctrl-click/ctrl-click.directive';
 // overflow menu (floating-ui based)
 export * from './lib/components/overflow-menu/overflow-menu.component';
-export * from './lib/components/overflow-menu/overflow-menu-option.component';
-export * from './lib/components/overflow-menu/overflow-menu-trigger.component';
+export * from './lib/components/overflow-menu/overflow-menu-option/overflow-menu-option.component';
+export * from './lib/components/overflow-menu/overflow-menu-trigger/overflow-menu-trigger.component';
 export * from './lib/components/overflow-menu/overflow-menu.module';
 export * from './lib/components/overflow-menu/overflow-menu.model';
 // remove toggletip button class

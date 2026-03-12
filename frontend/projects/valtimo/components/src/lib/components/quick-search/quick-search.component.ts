@@ -24,7 +24,7 @@ import {
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
 import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
 import {ContextMenuDirective} from '../../directives/context-menu.directive';

@@ -26,33 +26,23 @@ import {
 
 @Component({
   selector: 'v-overflow-menu-option',
-  template: `<button
-    class="v-overflow-menu-option__btn"
-    [class.v-overflow-menu-option__btn--danger]="type === 'danger'"
-    [class.v-overflow-menu-option__btn--disabled]="disabled"
-    [disabled]="disabled"
-    [attr.data-test-id]="testId"
-    [attr.id]="optionId"
-    role="menuitem"
-  >
-    <ng-content></ng-content>
-  </button>`,
+  templateUrl: './overflow-menu-option.component.html',
   styleUrls: ['./overflow-menu-option.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 export class OverflowMenuOptionComponent {
-  @Input() disabled = false;
-  @Input() type: 'default' | 'danger' = 'default';
-  @Input() testId: string | null = null;
-  @Input() optionId: string | null = null;
+  @Input() public disabled = false;
+  @Input() public type: 'default' | 'danger' = 'default';
+  @Input() public testId: string | null = null;
+  @Input() public optionId: string | null = null;
 
-  @Output() selected = new EventEmitter<void>();
+  @Output() public selected = new EventEmitter<void>();
 
-  @HostBinding('attr.role') role = 'none';
+  @HostBinding('attr.role') public role = 'none';
 
   @HostListener('click', ['$event'])
-  onClick(event: Event): void {
+  public onClick(event: Event): void {
     if (this.disabled) {
       event.stopPropagation();
       event.preventDefault();
