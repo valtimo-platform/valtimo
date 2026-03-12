@@ -37,17 +37,17 @@ A general instruction to add a front-end plugin to the implementation can be fou
 In order to use the Verzoek plugin in the frontend, the following can be added to your `app.module.ts`:
 
 ```typescript
-import { VerzoekPluginModule, verzoekPluginSpecification } from '@valtimo/plugin';
+import { DocumentVerzoekPluginModule, documentVerzoekPluginSpecification } from '@valtimo/plugin';
 
 @NgModule({
   imports: [
-      VerzoekPluginModule,
+      DocumentVerzoekPluginModule,
   ],
   providers: [
       {
           provide: PLUGIN_TOKEN,
           useValue: [
-              verzoekPluginSpecification,
+              documentVerzoekPluginSpecification,
           ]
       }
   ]

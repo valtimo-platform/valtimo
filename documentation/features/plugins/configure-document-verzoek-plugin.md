@@ -28,4 +28,4 @@ To configure this plugin the following properties have to be entered:
 * **Zaken API plugin (`zakenApiPlugin`).** Reference to another plugin configuration that will be used to retrieve the zaak zaakinformationobject.
 * **Documenten API plugin (`documentenApiPlugin`).** Reference to another plugin configuration that will be used to retrieve the informatieobject.
 * **Event message (`eventMessage`).** The message that is used to broadcast the event 
-* **Informatieobjecttype Urls (`informatieobjectTypeUrls`).** A list urls of the informationobjecttypes that should be processed by this plugin.
+* **Informatieobjecttype Urls (`informatieobjecttypeUrls`).** A list urls of the informationobjecttypes that should be processed by this plugin.
