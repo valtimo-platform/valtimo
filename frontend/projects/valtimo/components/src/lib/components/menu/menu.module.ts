@@ -23,7 +23,7 @@ import {MenuItemTextComponent} from './menu-item-text.component';
 import {ComponentsPipesModule} from '../../pipes';
 import {LinkModule} from 'carbon-components-angular';
 import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
-import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
 
 @NgModule({
   declarations: [MenuItemTextComponent],

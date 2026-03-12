@@ -31,8 +31,8 @@ import {
 import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 import {EllipsisPipe} from '../../pipes';
 import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
-import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option.component';
-import {OverflowMenuTriggerComponent} from '../overflow-menu/overflow-menu-trigger.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
+import {OverflowMenuTriggerComponent} from '../overflow-menu/overflow-menu-trigger/overflow-menu-trigger.component';
 import {ViewContentModule} from '../view-content/view-content.module';
 import {CarbonListComponent} from './carbon-list.component';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';

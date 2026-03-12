@@ -35,7 +35,7 @@ import {
 } from '@angular/core';
 import {autoUpdate, computePosition, flip, offset, Placement, shift} from '@floating-ui/dom';
 import {merge, Subject, takeUntil} from 'rxjs';
-import {OverflowMenuOptionComponent} from './overflow-menu-option.component';
+import {OverflowMenuOptionComponent} from './overflow-menu-option/overflow-menu-option.component';
 
 @Component({
   selector: 'v-overflow-menu',
@@ -45,78 +45,82 @@ import {OverflowMenuOptionComponent} from './overflow-menu-option.component';
   standalone: true,
 })
 export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChanges, OnDestroy {
-  @Input() open = false;
-  @Input() placement: Placement = 'bottom-end';
-  @Input() menuWidth: number | null = null;
-  @Input() offsetX = 0;
-  @Input() offsetY = 4;
-  @Input() closeOnSelect = true;
-  @Input() useHostAsReference = false;
-  @Input() portalToBody = false;
-
-  @Output() openChange = new EventEmitter<boolean>();
-
   @ContentChildren(OverflowMenuOptionComponent, {descendants: true})
-  options: QueryList<OverflowMenuOptionComponent>;
+  public options: QueryList<OverflowMenuOptionComponent>;
 
-  @ViewChild('triggerContainer', {static: true}) triggerContainer: ElementRef<HTMLElement>;
-  @ViewChild('menuContainer') menuContainer: ElementRef<HTMLElement>;
+  @ViewChild('triggerContainer', {static: true})
+  public triggerContainer: ElementRef<HTMLElement>;
+
+  @ViewChild('menuContainer')
+  public menuContainer: ElementRef<HTMLElement>;
+
+  @Input() public open = false;
+  @Input() public placement: Placement = 'bottom-end';
+  @Input() public menuWidth: number | null = null;
+  @Input() public offsetX = 0;
+  @Input() public offsetY = 4;
+  @Input() public closeOnSelect = true;
+  @Input() public useHostAsReference = false;
+  @Input() public portalToBody = false;
+
+  @Output() public openChange = new EventEmitter<boolean>();
 
   private _cleanupAutoUpdate: (() => void) | null = null;
   private _documentClickHandler: ((event: MouseEvent) => void) | null = null;
   private _documentKeydownHandler: ((event: KeyboardEvent) => void) | null = null;
   private readonly _destroy$ = new Subject<void>();
+  private _optionDestroy$ = new Subject<void>();
   private _portalledPane: HTMLElement | null = null;
   private _originalParent: HTMLElement | null = null;
   private _originalNextSibling: Node | null = null;
 
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private readonly elementRef: ElementRef<HTMLElement>,
-    private readonly cdr: ChangeDetectorRef
+    @Inject(DOCUMENT) private readonly _document: Document,
+    private readonly _elementRef: ElementRef<HTMLElement>,
+    private readonly _cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this._documentClickHandler = (event: MouseEvent) => this.onDocumentClick(event);
-    this._documentKeydownHandler = (event: KeyboardEvent) => this.onDocumentKeydown(event);
-    this.document.addEventListener('click', this._documentClickHandler, true);
-    this.document.addEventListener('keydown', this._documentKeydownHandler);
+  public ngOnInit(): void {
+    this._documentClickHandler = (event: MouseEvent) => this._onDocumentClick(event);
+    this._documentKeydownHandler = (event: KeyboardEvent) => this._onDocumentKeydown(event);
+    this._document.addEventListener('click', this._documentClickHandler, true);
+    this._document.addEventListener('keydown', this._documentKeydownHandler);
   }
 
-  ngAfterContentInit(): void {
-    this.subscribeToOptionSelections();
+  public ngAfterContentInit(): void {
+    this._subscribeToOptionSelections();
     this.options.changes.pipe(takeUntil(this._destroy$)).subscribe(() => {
-      this.subscribeToOptionSelections();
+      this._subscribeToOptionSelections();
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && !changes['open'].firstChange) {
       if (this.open) {
-        this.cdr.detectChanges();
-        this.portalPane();
-        this.setupPositioning();
+        this._cdr.detectChanges();
+        this._portalPane();
+        this._setupPositioning();
       } else {
-        this.cleanupPositioning();
-        this.unportalPane();
+        this._cleanupPositioning();
+        this._unportalPane();
       }
     }
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
-    this.cleanupPositioning();
-    this.unportalPane();
+    this._cleanupPositioning();
+    this._unportalPane();
     if (this._documentClickHandler) {
-      this.document.removeEventListener('click', this._documentClickHandler, true);
+      this._document.removeEventListener('click', this._documentClickHandler, true);
     }
     if (this._documentKeydownHandler) {
-      this.document.removeEventListener('keydown', this._documentKeydownHandler);
+      this._document.removeEventListener('keydown', this._documentKeydownHandler);
     }
   }
 
-  toggle(event?: Event): void {
+  public toggle(event?: Event): void {
     event?.stopPropagation();
     if (this.open) {
       this.close();
@@ -125,24 +129,24 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     }
   }
 
-  openMenu(): void {
+  public openMenu(): void {
     this.open = true;
     this.openChange.emit(true);
-    this.cdr.detectChanges();
-    this.portalPane();
-    this.setupPositioning();
+    this._cdr.detectChanges();
+    this._portalPane();
+    this._setupPositioning();
   }
 
-  close(): void {
+  public close(): void {
     if (!this.open) return;
     this.open = false;
     this.openChange.emit(false);
-    this.cleanupPositioning();
-    this.unportalPane();
-    this.cdr.markForCheck();
+    this._cleanupPositioning();
+    this._unportalPane();
+    this._cdr.markForCheck();
   }
 
-  onPaneClick(event: Event): void {
+  public onPaneClick(event: Event): void {
     if (!this.closeOnSelect) return;
 
     const target = event.target as HTMLElement;
@@ -151,7 +155,7 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     }
   }
 
-  private portalPane(): void {
+  private _portalPane(): void {
     if (!this.portalToBody) return;
 
     const menu = this.menuContainer?.nativeElement;
@@ -160,10 +164,10 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     this._originalParent = menu.parentNode as HTMLElement;
     this._originalNextSibling = menu.nextSibling;
     this._portalledPane = menu;
-    this.document.body.appendChild(menu);
+    this._document.body.appendChild(menu);
   }
 
-  private unportalPane(): void {
+  private _unportalPane(): void {
     if (!this._portalledPane) return;
 
     if (this._originalParent) {
@@ -176,11 +180,11 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     this._originalNextSibling = null;
   }
 
-  private setupPositioning(): void {
-    this.cleanupPositioning();
+  private _setupPositioning(): void {
+    this._cleanupPositioning();
 
     const reference = this.useHostAsReference
-      ? this.elementRef.nativeElement
+      ? this._elementRef.nativeElement
       : this.triggerContainer?.nativeElement;
     const menu = this._portalledPane || this.menuContainer?.nativeElement;
 
@@ -203,18 +207,18 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     });
   }
 
-  private cleanupPositioning(): void {
+  private _cleanupPositioning(): void {
     if (this._cleanupAutoUpdate) {
       this._cleanupAutoUpdate();
       this._cleanupAutoUpdate = null;
     }
   }
 
-  private onDocumentClick(event: MouseEvent): void {
+  private _onDocumentClick(event: MouseEvent): void {
     if (!this.open) return;
 
     const target = event.target as HTMLElement;
-    const clickedInsideHost = this.elementRef.nativeElement.contains(target);
+    const clickedInsideHost = this._elementRef.nativeElement.contains(target);
     const clickedInsidePortal =
       this._portalledPane && this._portalledPane.contains(target);
 
@@ -223,15 +227,13 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
     }
   }
 
-  private onDocumentKeydown(event: KeyboardEvent): void {
+  private _onDocumentKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape' && this.open) {
       this.close();
     }
   }
 
-  private _optionDestroy$ = new Subject<void>();
-
-  private subscribeToOptionSelections(): void {
+  private _subscribeToOptionSelections(): void {
     this._optionDestroy$.next();
 
     const options = this.options?.toArray();

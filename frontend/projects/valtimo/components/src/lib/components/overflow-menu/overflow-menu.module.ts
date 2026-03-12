@@ -16,8 +16,8 @@
 
 import {NgModule} from '@angular/core';
 import {OverflowMenuComponent} from './overflow-menu.component';
-import {OverflowMenuOptionComponent} from './overflow-menu-option.component';
-import {OverflowMenuTriggerComponent} from './overflow-menu-trigger.component';
+import {OverflowMenuOptionComponent} from './overflow-menu-option/overflow-menu-option.component';
+import {OverflowMenuTriggerComponent} from './overflow-menu-trigger/overflow-menu-trigger.component';
 
 @NgModule({
   imports: [OverflowMenuComponent, OverflowMenuOptionComponent, OverflowMenuTriggerComponent],
