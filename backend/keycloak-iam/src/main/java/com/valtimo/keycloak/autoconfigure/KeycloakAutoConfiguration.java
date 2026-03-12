@@ -17,6 +17,7 @@
 package com.valtimo.keycloak.autoconfigure;
 
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.valtimo.contract.authentication.TeamProvider;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.valtimo.keycloak.authorization.UserActionProvider;
 import com.valtimo.keycloak.authorization.UserSpecificationFactory;
@@ -25,15 +26,13 @@ import com.valtimo.keycloak.security.config.KeycloakOAuth2HttpSecurityConfigurer
 import com.valtimo.keycloak.security.config.ValtimoKeycloakPropertyResolver;
 import com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticator;
 import com.valtimo.keycloak.security.jwt.provider.KeycloakSecretKeyProvider;
+import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
-import com.valtimo.keycloak.service.CacheManagerUserCache;
 import com.valtimo.keycloak.service.UserCache;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;

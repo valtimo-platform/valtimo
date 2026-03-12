@@ -460,6 +460,9 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             }
             case TEAM -> {
                 var username = userManagementService.getCurrentUser().getUsername();
+                if (teamProvider == null) {
+                    throw new IllegalStateException();
+                }
                 var teamKeys = teamProvider.findTeamKeysByUsername(username);
                 yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);
             }

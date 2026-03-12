@@ -95,7 +95,7 @@ public class DocumentAutoConfiguration {
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
-        final TeamProvider teamProvider,
+        final Optional<TeamProvider> teamProvider,
         final EntityManager entityManager
     ) {
         return new JsonSchemaDocumentService(
@@ -110,7 +110,7 @@ public class DocumentAutoConfiguration {
             objectMapper,
             internalCaseStatusService,
             caseTagService,
-            teamProvider,
+            teamProvider.orElse(null),
             entityManager
         );
     }
@@ -177,7 +177,7 @@ public class DocumentAutoConfiguration {
         final QueryDialectHelper queryDialectHelper,
         final SearchFieldService searchFieldService,
         final UserManagementService userManagementService,
-        final TeamProvider teamProvider,
+        final Optional<TeamProvider> teamProvider,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
         final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
@@ -188,7 +188,7 @@ public class DocumentAutoConfiguration {
             queryDialectHelper,
             searchFieldService,
             userManagementService,
-            teamProvider,
+            teamProvider.orElse(null),
             authorizationService,
             outboxService,
             jsonSchemaDocumentDefinitionService,
