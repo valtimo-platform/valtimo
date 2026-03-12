@@ -33,8 +33,6 @@ PBAC conditions for Resources (Case related documents on the Document API) allow
 
 * When exporting a case, task search fields were formatted incorrectly, which made them unable to be imported.
 * Fixed a bug where a process link on a User Task was sometimes not executed.
-* Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
-  once a day.
 * Fixed edge case where a document field could sometimes not be selected when configuring a case column.
 * Fixed an issue in the bulk assignment of cases where permission checks were not correctly applied per document.
 * Fixed an issue where selecting the same dropdown item twice in the task list would cause the task list to break.
