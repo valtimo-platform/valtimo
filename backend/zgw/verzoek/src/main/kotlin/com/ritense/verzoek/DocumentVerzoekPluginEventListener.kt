@@ -96,13 +96,19 @@ class DocumentVerzoekPluginEventListener(
         event: NotificatiesApiNotificationReceivedEvent,
         plugin: DocumentVerzoekPlugin,
     ) {
+
+        val hoofdObject = event.hoofdObject
+        if (hoofdObject == null) {
+                logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: hoofdObject is null" }
+                return
+        }
         val (zaakUrl, resourceUrl) = if (environment.activeProfiles.contains("dev")) {
-            event.hoofdObject!!.replace(
+            hoofdObject.replace(
                 "host.docker.internal",
                 "localhost"
             ) to event.resourceUrl.replace("host.docker.internal", "localhost")
         } else {
-            event.hoofdObject!! to event.resourceUrl
+            hoofdObject to event.resourceUrl
         }
 
         zaakInstanceLinkService.getByZaakInstanceUrl(URI(zaakUrl)).let { zaak ->
@@ -126,12 +132,12 @@ class DocumentVerzoekPluginEventListener(
                         )
                         publishEvent(
                             zaak.documentId,
-                            informatieObject.identificatie!!
+                            informatieObject.identificatie?:"unknown"
                         )
                     }
                 }
             }
-                ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '${event.resourceUrl}'" }
+                ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No InformatieObject found for zaakInstanceUrl '$resourceUrl'" }
         }
     }
 
