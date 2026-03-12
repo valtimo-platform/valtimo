@@ -16,6 +16,22 @@
 
 package com.valtimo.keycloak.service;
 
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER;
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
+import static com.valtimo.keycloak.service.KeycloakUserManagementService.MAX_USERS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.OauthConfigHolder;
@@ -41,22 +57,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
-import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER;
-import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
-import static com.valtimo.keycloak.service.KeycloakUserManagementService.MAX_USERS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class KeycloakUserManagementServiceTest {
 

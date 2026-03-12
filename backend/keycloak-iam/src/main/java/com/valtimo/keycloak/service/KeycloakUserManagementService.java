@@ -261,7 +261,6 @@ public class KeycloakUserManagementService implements UserManagementService {
         return roles.stream()
             .map(this::findUserRepresentationByRole)
             .flatMap(Collection::stream)
-            .filter(this::hasUserViewListPermission)
             .map(this::toNamedUser)
             .distinct()
             .sorted(comparing(NamedUser::getLabel))
