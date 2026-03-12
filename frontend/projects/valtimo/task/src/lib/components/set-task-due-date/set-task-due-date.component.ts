@@ -28,7 +28,7 @@ import {
   LayerModule,
   ToggletipModule,
 } from 'carbon-components-angular';
-import {CalendarAdd16} from '@carbon/icons';
+import {CalendarAdd16, Edit16} from '@carbon/icons';
 import {TaskService} from '../../services';
 import {Task} from '../../models';
 import {CdsThemeService, RemoveClassnamesDirective} from '@valtimo/components';
@@ -68,7 +68,6 @@ export class SetTaskDueDateComponent {
   }
 
   public readonly hasDueDate$ = new BehaviorSubject<boolean>(false);
-
   public readonly selectedDateString$ = new BehaviorSubject<string>('');
 
   private get _selectedDateString(): string {
@@ -92,13 +91,12 @@ export class SetTaskDueDateComponent {
   );
 
   public readonly showDatePicker$ = new BehaviorSubject<boolean>(true);
-
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
-
   public readonly open$ = new Subject<boolean>();
-
+  public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly mouseIsOverDueDate$ = new BehaviorSubject<boolean>(false);
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
+  public readonly toggletipDropdownTheme$ = this.cdsThemeService.toggletipDropdownTheme$;
 
   public readonly language$ = this.translateService.onLangChange.pipe(
     map(event => event.lang),
@@ -113,18 +111,43 @@ export class SetTaskDueDateComponent {
     private readonly translateService: TranslateService,
     private readonly globalNotificationService: GlobalNotificationService
   ) {
-    this.iconService.registerAll([CalendarAdd16]);
+    this.iconService.registerAll([CalendarAdd16, Edit16]);
   }
 
   public clear(): void {
     this.selectedDateString$.next('');
-    this.showDatePicker$.next(false);
-    setTimeout(() => this.showDatePicker$.next(true));
+    this.resetDatePicker();
+  }
+
+  public initEditWithCurrentDate(): void {
+    this.editToggletipOpen$.next(true);
+    const task = this._task;
+    if (task?.due) {
+      this.selectedDateString$.next(new Date(task.due).toISOString());
+    } else {
+      this.selectedDateString$.next('');
+    }
+    this.resetDatePicker();
+  }
+
+  public onCloseEditToggletip(): void {
+    this.editToggletipOpen$.next(false);
+  }
+
+  public onMouseEnterDueDate(): void {
+    this.mouseIsOverDueDate$.next(true);
+  }
+
+  public onMouseLeaveDueDate(): void {
+    this.mouseIsOverDueDate$.next(false);
   }
 
   public onDateValueChange(value: Date[]): void {
     const date = Array.isArray(value) && value[0];
-    if (!date) return;
+    if (!date) {
+      this.selectedDateString$.next('');
+      return;
+    }
     this.selectedDateString$.next(date.toISOString());
   }
 
@@ -156,6 +179,7 @@ export class SetTaskDueDateComponent {
         this.disabled$.next(false);
         this.hasDueDate$.next(false);
         this._task$.next({...this._task, due: null});
+        this.closeToggletip();
         this.dueDateChanged.emit();
         this.showDueDateRemovedNotification();
       },
@@ -165,18 +189,15 @@ export class SetTaskDueDateComponent {
     });
   }
 
+  private resetDatePicker(): void {
+    this.showDatePicker$.next(false);
+    setTimeout(() => this.showDatePicker$.next(true));
+  }
+
   private closeToggletip(): void {
-    // needed to reliably trigger toggle tip closure
+    this.editToggletipOpen$.next(false);
     this.open$.next(true);
     setTimeout(() => this.open$.next(false));
-  }
-
-  public onMouseEnterDueDate(): void {
-    this.mouseIsOverDueDate$.next(true);
-  }
-
-  public onMouseLeaveDueDate(): void {
-    this.mouseIsOverDueDate$.next(false);
   }
 
   private showDueDateSetNotification(dateString: string): void {

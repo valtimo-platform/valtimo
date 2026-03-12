@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ritense.valtimo.contract.event.TaskCompletedEvent;
+import com.ritense.valtimo.event.OperatonTaskEvent;
 import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,11 +53,12 @@ class TaskCompletedListenerTest {
         when(delegateTask.getProcessInstanceId()).thenReturn("processInstanceId");
         when(delegateTask.getVariables()).thenReturn(mock(VariableMap.class));
         when(delegateTask.getExecution()).thenReturn(mock(DelegateExecution.class));
+        when(delegateTask.getEventName()).thenReturn("start");
     }
 
     @Test
     void shouldPublishTaskCompletedEventWhenDelegateTaskIsCompleted() {
-        taskCompletedListener.notify(delegateTask);
+        taskCompletedListener.notify(new OperatonTaskEvent(delegateTask, delegateTask.getEventName()));
         verify(applicationEventPublisher, times(1)).publishEvent(taskCompletedEventCaptor.capture());
     }
 

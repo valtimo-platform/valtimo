@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,21 +18,23 @@
   *ngIf="
     (canAssignUserToTaskSet$ | async) && {
       candidateUsers: candidateUsersForTask$ | async,
+      editCandidateUsers: editCandidateUsersForTask$ | async,
       disabled: disabled$ | async,
       idOnServer: assignedIdOnServer$ | async,
       mouseIsOverAssignee: mouseIsOverAssignee$ | async,
       assignedUserFullName: assignedUserFullName$ | async,
       selectedUserId: selectedUserId$ | async,
       canAssignUserToTask: canAssignUserToTask$ | async,
+      toggletipView: toggletipView$ | async,
+      showComboBox: showComboBox$ | async,
+      editToggletipOpen: editToggletipOpen$ | async,
     } as obs
   "
 >
-  <ng-container
-    *ngIf="{hasSelection: obs.selectedUserId === obs.idOnServer && obs.idOnServer !== null} as vars"
-  >
+  <ng-container *ngIf="{isAssigned: obs.idOnServer !== null} as vars">
     <div
       class="assign-user-container"
-      *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.hasSelection)"
+      *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.isAssigned)"
       (mouseenter)="onMouseEnterAssignee()"
       (mouseleave)="onMouseLeaveAssignee()"
     >
@@ -40,65 +42,49 @@
         class="assignee-text element"
         [ngClass]="{
           active: obs.canAssignUserToTask
-            ? vars.hasSelection && !obs.mouseIsOverAssignee
-            : vars.hasSelection,
+            ? vars.isAssigned && !obs.mouseIsOverAssignee && !obs.editToggletipOpen
+            : vars.isAssigned,
         }"
       >
         <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
-
         &nbsp;
-
         <span class="name">{{ obs.assignedUserFullName }}</span>
       </div>
 
-      <button
-        *ngIf="obs.canAssignUserToTask"
-        cdsButton="ghost"
-        class="element remove-button"
-        [ngClass]="{active: vars.hasSelection && obs.mouseIsOverAssignee}"
-        [disabled]="obs.disabled"
-        size="sm"
-        (click)="unassignTask()"
-      >
-        {{ 'assignTask.remove' | translate }}
-      </button>
-
       <cds-toggletip
+        *ngIf="obs.canAssignUserToTask"
         align="bottom"
-        class="element main"
+        class="element"
         [autoAlign]="true"
         [isOpen]="open$ | async"
-        [ngClass]="{active: !vars.hasSelection}"
-        (onOpen)="clear()"
+        [ngClass]="{active: vars.isAssigned && (obs.mouseIsOverAssignee || obs.editToggletipOpen)}"
+        (onOpen)="onOpenEditToggletip()"
+        (onClose)="onCloseEditToggletip()"
       >
         <button
           cdsToggletipButton
           [removeClassnames]="['cds--toggletip-button']"
-          cdsButton="tertiary"
+          cdsButton="ghost"
           size="sm"
-          class="set-assignee-button"
+          class="click-to-edit-button"
         >
-          {{ 'assignTask.buttonText' | translate }}
-
-          <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+          {{ 'assignTask.clickToEdit' | translate }}
         </button>
 
-        <div
-          cdsToggletipContent
-          class="assign-task-popover-content"
-        >
+        <div cdsToggletipContent class="assign-task-popover-content">
           <cds-combo-box
-            *ngIf="!vars.hasSelection"
-            [attr.data-carbon-theme]="toggletipTheme$ | async"
+            *ngIf="obs.showComboBox"
+            [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
             [label]="'assignTask.comboboxLabel' | translate"
             [placeholder]="'assignTask.placeholder' | translate"
             [appendInline]="true"
             [dropUp]="false"
             [cdsLayer]="1"
-            [items]="obs?.candidateUsers || []"
+            [items]="obs?.editCandidateUsers || []"
             [disabled]="obs.disabled"
+            itemValueKey="id"
             (selected)="onUserSelect($event)"
-            (clear)="clear()"
+            (clear)="onComboBoxClear()"
           >
             <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
           </cds-combo-box>
@@ -106,14 +92,104 @@
           <button
             cdsButton
             [attr.data-carbon-theme]="toggletipTheme$ | async"
+            [cdsLayer]="1"
             class="submit-task-button"
             [disabled]="!obs.selectedUserId || obs.disabled"
             (click)="onSubmitButtonClick()"
           >
             {{ 'assignTask.submitButtonText' | translate }}
-
             <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
           </button>
+
+          <button
+            cdsButton="danger--tertiary"
+            [cdsLayer]="1"
+            [attr.data-carbon-theme]="toggletipTheme$ | async"
+            [disabled]="obs.disabled"
+            (click)="unassignTask()"
+          >
+            {{ 'assignTask.remove' | translate }}
+          </button>
+        </div>
+      </cds-toggletip>
+
+      <cds-toggletip
+        align="bottom"
+        class="element main"
+        [autoAlign]="true"
+        [isOpen]="open$ | async"
+        [ngClass]="{active: !vars.isAssigned}"
+        (onOpen)="onOpenAssignToggletip()"
+      >
+        <button
+          cdsToggletipButton
+          [removeClassnames]="['cds--toggletip-button']"
+          cdsButton="tertiary"
+          size="sm"
+          class="assign-button"
+        >
+          {{ 'assignTask.buttonText' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+        </button>
+
+        <div cdsToggletipContent class="assign-task-popover-content">
+          <ng-container *ngIf="obs.toggletipView === 'choice'">
+            <button
+              cdsButton="secondary"
+              [attr.data-carbon-theme]="toggletipTheme$ | async"
+              class="choice-button"
+              [disabled]="obs.disabled"
+              [cdsLayer]="1"
+              (click)="onAssignToMe()"
+            >
+              {{ 'assignTask.assignToMe' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="user--role" size="16"></svg>
+            </button>
+
+            <button
+              cdsButton="secondary"
+              [attr.data-carbon-theme]="toggletipTheme$ | async"
+              class="choice-button"
+              [disabled]="obs.disabled"
+              [cdsLayer]="1"
+              (click)="onAssignToOtherUser(); $event.stopPropagation()"
+            >
+              {{ 'assignTask.assignToOtherUser' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="obs.toggletipView === 'dropdown'">
+            <cds-combo-box
+              [attr.data-carbon-theme]="toggletipTheme$ | async"
+              [label]="'assignTask.comboboxLabel' | translate"
+              [placeholder]="'assignTask.placeholder' | translate"
+              [appendInline]="true"
+              [dropUp]="false"
+              [cdsLayer]="1"
+              [items]="obs?.candidateUsers || []"
+              [disabled]="obs.disabled"
+              (selected)="onUserSelect($event)"
+              (clear)="onAssignToOtherUser()"
+            >
+              <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+            </cds-combo-box>
+
+            <button
+              cdsButton
+              [attr.data-carbon-theme]="toggletipTheme$ | async"
+              class="submit-task-button"
+              [disabled]="!obs.selectedUserId || obs.disabled"
+              (click)="onSubmitButtonClick()"
+            >
+              {{ 'assignTask.submitButtonText' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+            </button>
+          </ng-container>
         </div>
       </cds-toggletip>
     </div>
