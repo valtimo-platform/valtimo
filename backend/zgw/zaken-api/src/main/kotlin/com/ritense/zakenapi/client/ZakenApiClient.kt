@@ -224,9 +224,13 @@ class ZakenApiClient(
 
     fun getZaakInformatieObject(
         authentication: ZakenApiAuthentication,
+        baseUrl: URI,
         zaakInformatieobjectUrl: URI,
-        caseDocumentId: UUID
+        caseDocumentId: UUID,
     ): ZaakInformatieObject? {
+        require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
+            "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
+        }
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
@@ -448,7 +452,7 @@ class ZakenApiClient(
     fun getAllZaakResultaten(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
-        request: GetZaakResultatenRequest
+        request: GetZaakResultatenRequest,
     ): Page<ZaakResultaat> {
         val result = buildRestClient(authentication)
             .get()
@@ -729,7 +733,7 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         zaakInformatieobjectUrl: URI,
-        caseDocumentId: UUID?
+        caseDocumentId: UUID?,
     ) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"

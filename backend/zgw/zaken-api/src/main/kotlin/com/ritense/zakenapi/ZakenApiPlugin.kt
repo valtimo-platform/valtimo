@@ -1323,6 +1323,7 @@ class ZakenApiPlugin(
     fun getZaakInformatieObjectByUrl(zaakInformatieobjectUrl: URI, caseDocumentId: UUID) =
         client.getZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
+            baseUrl = url,
             zaakInformatieobjectUrl = zaakInformatieobjectUrl,
             caseDocumentId
         )
