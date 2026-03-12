@@ -32,7 +32,7 @@ enum USER_PERMISSION_ACTION {
 }
 
 enum USER_PERMISSION_RESOURCE {
-  manageableUser = 'com.ritense.valtimo.contract.authentication.ManageableUser',
+  user = 'com.ritense.valtimo.contract.authentication.User',
 }
 
 const CAN_CREATE_TEAM_PERMISSION: PermissionRequest = {
@@ -57,7 +57,7 @@ const CAN_ASSIGN_TEAM_PERMISSION: PermissionRequest = {
 
 const CAN_VIEW_USERS_PERMISSION: PermissionRequest = {
   action: USER_PERMISSION_ACTION.view_list,
-  resource: USER_PERMISSION_RESOURCE.manageableUser,
+  resource: USER_PERMISSION_RESOURCE.user,
 };
 
 export {
