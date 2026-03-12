@@ -38,6 +38,7 @@ const documentVerzoekPluginSpecification: PluginSpecification = {
       documentenApiPluginTooltip:
         'Documenten API-plugin die wordt gebruikt om het informatie object op te halen',
       informatieobjecttypeUrls: 'InformatieObject type Urls',
+      informatieobjecttypeUrl: 'InformatieObject type Url',
       type: 'Type',
       eventMessage: 'Message event naam',
       eventMessageTooltip:
@@ -72,6 +73,8 @@ const documentVerzoekPluginSpecification: PluginSpecification = {
       addInformatieobjecttypeUrl: 'Add InformatieObject type Url',
       informatieobjecttypeUrlTooltip:
         'InformatieObject type Urls that subscribe to process new document events.',
+      informatieobjecttypeUrl:
+        'InformatieObject type Url that subscribe to process new document events.',
       type: 'Type',
       eventMessage: 'Message event name',
       eventMessageTooltip: 'name of the event that is published when a case document is received',

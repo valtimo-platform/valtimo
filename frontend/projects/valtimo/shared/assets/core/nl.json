@@ -7,7 +7,7 @@
     "DocumentRetentionPeriodUnsetEvent": "Bewaartermijn verwijderd",
     "JsonSchemaDocumentCreatedEvent": "Dossier aangemaakt",
     "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
-    "InformatieObjectReceivedEvent": "Informatie object ontvangen: {{identificatie}}",
+    "InformatieObjectReceivedEvent": "Informatieobject ontvangen: {{identificatie}}",
     "ProcessStartedEvent": "Proces gestart: {{processDefinitionKey}}",
     "ProcessEndedEvent": "Proces afgerond: {{processDefinitionKey}}",
     "CaseDocumentGeneratedEvent": "Dossier document gegenereerd",
