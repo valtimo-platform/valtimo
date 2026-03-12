@@ -66,18 +66,14 @@
         class="overflow-button"
         valtimoCdsOverflowButton
         [width]="250"
-        [offset]="{y: 48, x: 37}"
       >
-        <cds-overflow-menu-option
-          (selected)="onEditTeam()"
-          [disabled]="!perms.canModify"
-        >
+        <cds-overflow-menu-option (selected)="onEditTeam()" [disabled]="!perms.canModify">
           {{ 'teams.detail.editTeam' | translate }}
         </cds-overflow-menu-option>
 
         <cds-overflow-menu-option
           (selected)="onDeleteTeam()"
-          [danger]="true"
+          type="danger"
           [disabled]="!perms.canDelete"
         >
           {{ 'teams.detail.deleteTeam' | translate }}

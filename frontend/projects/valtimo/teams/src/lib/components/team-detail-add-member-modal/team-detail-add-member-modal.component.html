@@ -21,13 +21,16 @@
   [flip]="true"
   [offset]="{x: 2, y: 64}"
   placement="bottom"
+  valtimoCdsOverflowButton
   (openChange)="onOpenChange($event)"
 >
 </cds-overflow-menu>
 
 <ng-template #addMemberTrigger>
-  <button iconOnly="true" cdsButton="ghost" [disabled]="disabled">
-    <svg cdsIcon="add" size="16"></svg>
+  <button cdsButton="primary" [disabled]="disabled" class="add-member-button">
+    {{ 'teams.detail.addMember' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </ng-template>
 
@@ -40,15 +43,17 @@
       noUsersAvailable: noUsersAvailable$ | async,
       selectedUsername: selectedUsername$ | async,
       saving: saving$ | async,
-      showComboBox: showComboBox$ | async
+      showComboBox: showComboBox$ | async,
     } as obs"
   >
     <cds-combo-box
       *ngIf="obs.showComboBox"
       [label]="'teams.detail.addMemberModal.selectMember' | translate"
-      [placeholder]="obs.noUsersAvailable
-        ? ('teams.detail.addMemberModal.noUsersAvailable' | translate)
-        : ('teams.detail.addMemberModal.selectMemberPlaceholder' | translate)"
+      [placeholder]="
+        obs.noUsersAvailable
+          ? ('teams.detail.addMemberModal.noUsersAvailable' | translate)
+          : ('teams.detail.addMemberModal.selectMemberPlaceholder' | translate)
+      "
       [appendInline]="true"
       [dropUp]="false"
       [cdsLayer]="1"

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -25,5 +25,12 @@
     flex-direction: column;
     gap: 16px;
     min-width: 280px;
+  }
+}
+
+.add-member-button {
+  .cds--btn__icon,
+  .cds--btn__icon path {
+    fill: currentColor !important;
   }
 }
