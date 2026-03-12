@@ -27,6 +27,7 @@ import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
 import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.GlobalExportRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,14 +55,11 @@ class GlobalPermissionExporterIntTest @Autowired constructor(
             )
         )
 
-        val result = globalPermissionExporter.export(object : ExportRequest() {
-            override fun equals(other: Any?): Boolean = true
-            override fun hashCode(): Int = 0
-        })
+        val result = globalPermissionExporter.export(GlobalExportRequest())
 
         assertThat(result.exportFiles).hasSize(1)
         val exportFile = result.exportFiles.single()
-        assertThat(exportFile.path).isEqualTo("global/permission/global.permission.json")
+        assertThat(exportFile.path).isEqualTo("config/global/permission/global.permission.json")
 
         val permissions: List<PermissionDto> = objectMapper.readValue(exportFile.content)
         val exportedPermission = permissions.find { it.roleKey == roleKey }
@@ -75,10 +73,7 @@ class GlobalPermissionExporterIntTest @Autowired constructor(
     fun `should return empty result when no permissions exist`() {
         permissionRepository.deleteAll()
 
-        val result = globalPermissionExporter.export(object : ExportRequest() {
-            override fun equals(other: Any?): Boolean = true
-            override fun hashCode(): Int = 0
-        })
+        val result = globalPermissionExporter.export(GlobalExportRequest())
 
         assertThat(result.exportFiles).isEmpty()
     }
