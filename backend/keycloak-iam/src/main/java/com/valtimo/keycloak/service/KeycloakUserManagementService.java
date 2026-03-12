@@ -16,14 +16,14 @@
 
 package com.valtimo.keycloak.service;
 
-import static com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsLast;
-
+import com.ritense.authorization.Action;
+import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.request.EntityAuthorizationRequest;
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.UserNotFoundException;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
@@ -32,9 +32,11 @@ import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +50,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
+
+import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+import static com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT;
+import static com.valtimo.keycloak.authorization.UserActionProvider.VIEW;
+import static com.valtimo.keycloak.authorization.UserActionProvider.VIEW_LIST;
 
 public class KeycloakUserManagementService implements UserManagementService {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserManagementService.class);
@@ -59,17 +73,20 @@ public class KeycloakUserManagementService implements UserManagementService {
     private final KeycloakService keycloakService;
     private final String clientName;
     private final UserCache userCache;
+    private final AuthorizationService authorizationService;
     private final TeamProvider teamProvider;
 
     public KeycloakUserManagementService(
         KeycloakService keycloakService,
         String keycloakClientName,
         UserCache userCache,
+        AuthorizationService authorizationService,
         TeamProvider teamProvider
     ) {
         this.keycloakService = keycloakService;
         this.clientName = keycloakClientName;
         this.userCache = userCache;
+        this.authorizationService = authorizationService;
         this.teamProvider = teamProvider;
     }
 
@@ -103,19 +120,14 @@ public class KeycloakUserManagementService implements UserManagementService {
         throw new NotImplementedException();
     }
 
-    public Integer countUsers() {
-        try (Keycloak keycloak = keycloakService.keycloak()) {
-            return keycloakService.usersResource(keycloak).count();
-        }
-    }
-
     @Override
     public List<ManageableUser> getAllUsers() {
         List<ManageableUser> users;
         try (Keycloak keycloak = keycloakService.keycloak()) {
             users = keycloakService.usersResource(keycloak).list(0, MAX_USERS).stream()
                 .filter(UserRepresentation::isEnabled)
-                .map(this::toManageableUserByRetrievingRoles)
+                .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+                .filter(this::hasUserViewListPermission)
                 .toList();
         }
 
@@ -128,12 +140,21 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public Page<ManageableUser> getAllUsers(Pageable pageable) {
-        throw new NotImplementedException();
+        List<ManageableUser> users = getAllUsers();
+        return PageableExecutionUtils.getPage(users, pageable, users::size);
     }
 
     @Override
     public Page<ManageableUser> queryUsers(String searchTerm, Pageable pageable) {
-        throw new NotImplementedException();
+        String normalizedSearchTerm = searchTerm.toLowerCase().trim();
+        List<ManageableUser> users = getAllUsers().stream()
+            .filter(user ->
+                (user.getEmail() != null && user.getEmail().toLowerCase().contains(normalizedSearchTerm))
+                    || (user.getUsername() != null && user.getUsername().toLowerCase().contains(normalizedSearchTerm))
+                    || (user.getFullName() != null && user.getFullName().toLowerCase().contains(normalizedSearchTerm))
+            )
+            .toList();
+        return PageableExecutionUtils.getPage(users, pageable, users::size);
     }
 
     @Override
@@ -154,7 +175,7 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public ValtimoUser findByIdentifier(String userIdentifier) {
-        return userCache.get(
+        ValtimoUser valtimoUser = userCache.get(
             CacheType.USER_IDENTIFIER,
             userIdentifier,
             (identifier) -> {
@@ -166,14 +187,16 @@ public class KeycloakUserManagementService implements UserManagementService {
                     }
                 }
                 Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
+                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
             }
         );
+        requireUserPermission(VIEW, valtimoUser);
+        return valtimoUser;
     }
 
     @Override
     public ValtimoUser findByUsername(String username) {
-        return userCache.get(
+        ValtimoUser valtimoUser = userCache.get(
             CacheType.USER_IDENTIFIER,
             username,
             (identifier) -> {
@@ -185,28 +208,34 @@ public class KeycloakUserManagementService implements UserManagementService {
                     }
                 }
                 Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
+                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
             }
         );
+        requireUserPermission(VIEW, valtimoUser);
+        return valtimoUser;
     }
 
     @Override
     public ValtimoUser findById(String userId) {
         UserRepresentation user;
         if (userId.equals(SYSTEM_ACCOUNT)) {
+            requireUserPermission(VIEW, SYSTEM_VALTIMO_USER);
             return SYSTEM_VALTIMO_USER;
         } else {
             try (Keycloak keycloak = keycloakService.keycloak()) {
                 user = keycloakService.usersResource(keycloak).get(userId).toRepresentation();
             }
-            return Boolean.TRUE.equals(user.isEnabled()) ? toValtimoUserByRetrievingRoles(user) : null;
+            ValtimoUser valtimoUser = Boolean.TRUE.equals(user.isEnabled()) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
+            requireUserPermission(VIEW, valtimoUser);
+            return valtimoUser;
         }
     }
 
     @Override
     public List<ManageableUser> findByRole(String authority) {
         return findUserRepresentationByRole(authority).stream()
-            .map(this::toManageableUserByRetrievingRoles)
+            .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+            .filter(this::hasUserViewListPermission)
             .toList();
     }
 
@@ -227,6 +256,7 @@ public class KeycloakUserManagementService implements UserManagementService {
                 .map(userGroups -> user.getRoles().stream().anyMatch(userGroups::contains))
                 .reduce(true, (orUserGroup1, orUserGroup2) -> orUserGroup1 && orUserGroup2))
             .sorted(comparing(ManageableUser::getFullName, nullsLast(naturalOrder())))
+            .filter(this::hasUserViewListPermission)
             .toList();
     }
 
@@ -248,18 +278,18 @@ public class KeycloakUserManagementService implements UserManagementService {
         } else if (SecurityUtils.getCurrentUserAuthentication() instanceof AnonymousAuthenticationToken) {
             return null;
         } else {
-            return findByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
+            return runWithoutAuthorization(() -> findByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
                 new IllegalStateException("No user found for email: ${currentUserService.currentUser.email}")
-            );
+            ));
         }
     }
 
     @Override
     public String getCurrentUserId() {
         if (SecurityUtils.getCurrentUserAuthentication() != null) {
-            return findUserRepresentationByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
+            return runWithoutAuthorization(() -> findUserRepresentationByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
                 new IllegalStateException("No user found for email: " + SecurityUtils.getCurrentUserLogin())
-            ).getId();
+            ).getId());
         } else {
             return SYSTEM_ACCOUNT;
         }
@@ -288,7 +318,9 @@ public class KeycloakUserManagementService implements UserManagementService {
         if (userList.isEmpty() || !Objects.equals(userList.get(0).getEmail(), email)) {
             return Optional.empty();
         } else {
-            return Optional.of(userList.get(0));
+            UserRepresentation user = userList.get(0);
+            requireUserPermission(VIEW, user);
+            return Optional.of(user);
         }
     }
 
@@ -343,10 +375,16 @@ public class KeycloakUserManagementService implements UserManagementService {
             logger.error("No active users found with role {}", authority);
         }
 
-        return users;
+        return users.stream().filter(this::hasUserViewListPermission).toList();
     }
 
     private ManageableUser toManageableUserByRetrievingRoles(UserRepresentation userRepresentation) {
+        ManageableUser user = toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation);
+        requireUserPermission(VIEW, user);
+        return user;
+    }
+
+    private ManageableUser toManageableUserByRetrievingRolesWithoutAuthorization(UserRepresentation userRepresentation) {
         return new ValtimoUserBuilder()
             .id(userRepresentation.getId())
             .username(userRepresentation.getUsername())
@@ -368,6 +406,12 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     private List<String> getRolesAsStringFromUser(UserRepresentation userRepresentation) {
+        Map<String, List<String>> clientRoles = userRepresentation.getClientRoles() == null ? Map.of() : userRepresentation.getClientRoles();
+        List<String> roles = userRepresentation.getRealmRoles() == null ? new ArrayList<>() : userRepresentation.getRealmRoles();
+        roles.addAll(clientRoles.values().stream().flatMap(Collection::stream).toList());
+        if (!roles.isEmpty()) {
+            return roles;
+        }
         return getRolesFromUser(userRepresentation)
             .stream()
             .map(RoleRepresentation::getName)
@@ -392,8 +436,51 @@ public class KeycloakUserManagementService implements UserManagementService {
         }
     }
 
-    private ValtimoUser toValtimoUserByRetrievingRoles(UserRepresentation userRepresentation) {
-        return (ValtimoUser) toManageableUserByRetrievingRoles(userRepresentation);
+    private ValtimoUser toValtimoUserByRetrievingRolesWithoutAuthorization(UserRepresentation userRepresentation) {
+        return (ValtimoUser) toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation);
+    }
+
+    private void requireUserPermission(Action<User> action, UserRepresentation user) {
+        requireUserPermission(action, toManageableUserByRetrievingRolesWithoutAuthorization(user));
+    }
+
+    private void requireUserPermission(Action<User> action, User... users) {
+        List<User> userList = Arrays.stream(users).filter(Objects::nonNull).toList();
+        if (userList.isEmpty()) {
+            return;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+            .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
+        if (!isAdmin) {
+            authorizationService.requirePermission(
+                new EntityAuthorizationRequest<>(
+                    User.class,
+                    action,
+                    userList
+                )
+            );
+        }
+    }
+
+    private boolean hasUserViewListPermission(UserRepresentation userRepresentation) {
+        return hasUserViewListPermission(toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation));
+    }
+
+    private boolean hasUserViewListPermission(User user) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+            .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
+        if (isAdmin) {
+            return true;
+        }
+        return authorizationService.hasPermission(
+            new EntityAuthorizationRequest<>(
+                User.class,
+                VIEW_LIST,
+                user
+            )
+        );
     }
 
     private record UserRepresentationWrapper(UserRepresentation userRepresentation) {

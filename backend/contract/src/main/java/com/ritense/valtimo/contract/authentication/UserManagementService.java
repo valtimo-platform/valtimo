@@ -26,16 +26,22 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserManagementService {
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     ManageableUser createUser(ManageableUser user);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     ManageableUser updateUser(ManageableUser user);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void deleteUser(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     boolean resendVerificationEmail(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void activateUser(String userId);
 
+    @Deprecated(since = "Since 13.20.0", forRemoval = true)
     void deactivateUser(String userId);
 
     Page<ManageableUser> getAllUsers(Pageable pageable);
