@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-export class CaseListItem {
-  autoAssignTasks: boolean;
-  canHaveAssignee: boolean;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  name: string;
-  final: boolean;
-  hasConfigurationIssues: boolean;
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, map, Observable} from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ConfigurationIssueService {
+  private readonly _unresolvedIssueTypes$ = new BehaviorSubject<Set<string>>(new Set());
+
+  public setUnresolvedIssueTypes(issueTypes: string[]): void {
+    this._unresolvedIssueTypes$.next(new Set(issueTypes));
+  }
+
+  public hasIssue$(issueType: string): Observable<boolean> {
+    return this._unresolvedIssueTypes$.pipe(map(types => types.has(issueType)));
+  }
 }

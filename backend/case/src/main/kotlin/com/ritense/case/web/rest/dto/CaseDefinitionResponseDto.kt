@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,11 @@ data class CaseDefinitionResponseDto(
     val externalStartFormDescription: String? = null,
 
     val conflictingVersions: String? = null,
+
+    val hasConfigurationIssues: Boolean = false,
 ) {
     companion object {
-        fun of(caseDefinition: CaseDefinition) =
+        fun of(caseDefinition: CaseDefinition, hasConfigurationIssues: Boolean = false) =
             CaseDefinitionResponseDto(
                 caseDefinitionKey =  caseDefinition.id.key,
                 caseDefinitionVersionTag =  caseDefinition.id.versionTag.version,
@@ -57,7 +59,8 @@ data class CaseDefinitionResponseDto(
                 canHaveAssignee =  caseDefinition.canHaveAssignee,
                 autoAssignTasks =  caseDefinition.autoAssignTasks,
                 hasExternalStartForm =  caseDefinition.hasExternalStartForm,
-                externalStartFormUrl =  caseDefinition.externalStartFormUrl
+                externalStartFormUrl =  caseDefinition.externalStartFormUrl,
+                hasConfigurationIssues = hasConfigurationIssues,
             )
 
     fun of(caseDefinition: CaseDefinition, conflictingVersions: String?) =

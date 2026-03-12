@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {Edit16, Save16, TrashCan16} from '@carbon/icons';
+import {Edit16, Save16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, SpinnerModule} from '@valtimo/components';
 import {PluginConfiguration} from '@valtimo/plugin';
@@ -30,6 +30,7 @@ import {
 } from '@valtimo/resource';
 import {
   CaseManagementParams,
+  ConfigurationIssueService,
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
@@ -84,8 +85,11 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink | null>(null);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hasConfigurationIssue$ =
+    this.configurationIssueService.hasIssue$('zaak-type-link');
 
   constructor(
+    private readonly configurationIssueService: ConfigurationIssueService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly openZaakService: OpenZaakService,
@@ -93,7 +97,7 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
     private readonly translateService: TranslateService,
     private readonly zakenApiZaaktypeLinkService: ZakenApiZaaktypeLinkService
   ) {
-    this.iconService.registerAll([Edit16, TrashCan16, Save16]);
+    this.iconService.registerAll([Edit16, TrashCan16, Save16, WarningFilled16]);
   }
 
   public ngOnInit(): void {

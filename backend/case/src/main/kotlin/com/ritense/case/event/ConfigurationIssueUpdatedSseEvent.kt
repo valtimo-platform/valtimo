@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-export class CaseListItem {
-  autoAssignTasks: boolean;
-  canHaveAssignee: boolean;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  name: string;
-  final: boolean;
-  hasConfigurationIssues: boolean;
-}
+package com.ritense.case.event
+
+import com.ritense.valtimo.web.sse.event.BaseSseEvent
+
+class ConfigurationIssueUpdatedSseEvent(
+    val caseDefinitionKey: String,
+    val caseDefinitionVersionTag: String
+) : BaseSseEvent("CONFIGURATION_ISSUE_UPDATED")

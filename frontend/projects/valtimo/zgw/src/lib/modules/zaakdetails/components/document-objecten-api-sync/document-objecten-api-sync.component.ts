@@ -24,7 +24,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {Edit16, TrashCan16} from '@carbon/icons';
+import {Edit16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CdsThemeService,
@@ -37,7 +37,7 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {CaseManagementParams, ConfigurationIssueService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   ButtonModule,
   CheckboxModule,
@@ -117,15 +117,17 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   }
 
   public readonly valid$ = new BehaviorSubject<boolean>(false);
+  public readonly hasConfigurationIssue$ = this.configurationIssueService.hasIssue$('zaakdetail-sync');
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly configurationIssueService: ConfigurationIssueService,
     private readonly documentObjectenApiSyncService: DocumentObjectenApiSyncService,
     private readonly documentService: DocumentService,
     private readonly cdsThemeService: CdsThemeService,
     private readonly iconService: IconService
   ) {
-    this.iconService.registerAll([TrashCan16, Edit16]);
+    this.iconService.registerAll([TrashCan16, Edit16, WarningFilled16]);
   }
 
   public ngOnInit(): void {

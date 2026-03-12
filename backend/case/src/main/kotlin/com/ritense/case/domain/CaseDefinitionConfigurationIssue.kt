@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.zaakdetails.documentobjectenapisync
+package com.ritense.case.domain
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
@@ -22,12 +22,12 @@ import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "document_objecten_api_sync")
-data class DocumentObjectenApiSync(
-
+@Table(name = "case_definition_configuration_issue")
+data class CaseDefinitionConfigurationIssue(
     @Id
     @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
@@ -35,9 +35,15 @@ data class DocumentObjectenApiSync(
     @Embedded
     val caseDefinitionId: CaseDefinitionId,
 
-    @Column(name = "object_management_configuration_id")
-    val objectManagementConfigurationId: UUID? = null,
+    @Column(name = "issue_type", nullable = false)
+    val issueType: String,
 
-    @Column(name = "enabled")
-    val enabled: Boolean = true
+    @Column(name = "resolved", nullable = false)
+    val resolved: Boolean = false,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "resolved_at")
+    val resolvedAt: LocalDateTime? = null
 )

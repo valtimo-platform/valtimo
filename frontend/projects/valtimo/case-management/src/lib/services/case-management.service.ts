@@ -27,6 +27,7 @@ import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {
   CaseDefinition,
+  CaseDefinitionConfigurationIssue,
   CaseDefinitionFinalizationCheckResult,
   DraftVersion,
 } from '../models/case-deployment.model';
@@ -159,6 +160,17 @@ export class CaseManagementService extends BaseApiService {
         `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
       ),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public getConfigurationIssues(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDefinitionConfigurationIssue[]> {
+    return this.httpClient.get<CaseDefinitionConfigurationIssue[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/configuration-issues`
+      )
     );
   }
 

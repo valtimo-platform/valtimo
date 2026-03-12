@@ -14,30 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.zaakdetails.documentobjectenapisync
+package com.ritense.zaakdetails.documentobjectenapisync.event
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import jakarta.persistence.Column
-import jakarta.persistence.Embedded
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import java.util.UUID
 
-@Entity
-@Table(name = "document_objecten_api_sync")
-data class DocumentObjectenApiSync(
-
-    @Id
-    @Column(name = "id")
-    val id: UUID = UUID.randomUUID(),
-
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId,
-
-    @Column(name = "object_management_configuration_id")
-    val objectManagementConfigurationId: UUID? = null,
-
-    @Column(name = "enabled")
-    val enabled: Boolean = true
+data class DocumentObjectenApiSyncSavedEvent(
+    val caseDefinitionId: CaseDefinitionId
 )

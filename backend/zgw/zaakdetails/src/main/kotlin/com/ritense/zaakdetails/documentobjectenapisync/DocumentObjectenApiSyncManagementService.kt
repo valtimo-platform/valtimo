@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncService.Companion.logger
+import com.ritense.zaakdetails.documentobjectenapisync.event.DocumentObjectenApiSyncSavedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 class DocumentObjectenApiSyncManagementService(
     private val documentObjectenApiSyncRepository: DocumentObjectenApiSyncRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun getSyncConfiguration(
         @LoggableResource(resourceType = CaseDefinition ::class) caseDefinitionId: CaseDefinitionId
@@ -41,6 +44,9 @@ class DocumentObjectenApiSyncManagementService(
 
     fun saveSyncConfiguration(sync: DocumentObjectenApiSync) {
         logger.info { "Save sync configuration caseDefinitionId=${sync.caseDefinitionId}" }
+        requireNotNull(sync.objectManagementConfigurationId) {
+            "objectManagementConfigurationId must not be null"
+        }
         caseDefinitionChecker.assertCanUpdateCaseDefinition(sync.caseDefinitionId)
         val modifiedSync = getSyncConfiguration(sync.caseDefinitionId)
             ?.copy(
@@ -50,6 +56,9 @@ class DocumentObjectenApiSyncManagementService(
             ?: sync
 
         documentObjectenApiSyncRepository.save(modifiedSync)
+        applicationEventPublisher.publishEvent(
+            DocumentObjectenApiSyncSavedEvent(sync.caseDefinitionId)
+        )
     }
 
     fun deleteSyncConfigurationByDocumentDefinition(

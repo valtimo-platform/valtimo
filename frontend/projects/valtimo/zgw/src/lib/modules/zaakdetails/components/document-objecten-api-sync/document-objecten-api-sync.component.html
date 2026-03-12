@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile>
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -65,6 +65,13 @@
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{ 'zaakdetails.configurationIssue' | translate }}</span>
+    </div>
   }
 </cds-tile>
 

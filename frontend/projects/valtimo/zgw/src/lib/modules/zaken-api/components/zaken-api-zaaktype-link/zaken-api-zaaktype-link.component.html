@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile>
+<cds-tile [class.tile--danger]="hasConfigurationIssue$ | async">
   <h2 class="valtimo-zaak-type-link__title">{{ 'openZaak.links' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -75,6 +75,13 @@
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     }
+  }
+
+  @if (hasConfigurationIssue$ | async) {
+    <div class="tile-error-message">
+      <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
+      <span class="tile-error-message__text">{{ 'openZaak.configurationIssue' | translate }}</span>
+    </div>
   }
 </cds-tile>
 

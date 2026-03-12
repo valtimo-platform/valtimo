@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -21,6 +21,22 @@
   } as obs"
   class="case-management-detail-container"
 >
+  @if (configurationIssues$ | async; as issues) {
+    @if (issues.length > 0) {
+      <cds-notification
+        class="environment-config-warning"
+        [notificationObj]="{
+          type: 'warning',
+          title: ('caseManagement.environmentConfig.bannerTitle' | translate),
+          message: ('caseManagement.environmentConfig.bannerMessage' | translate),
+          showClose: false,
+          lowContrast: true
+        }"
+        (click)="navigateToTab('zgw')"
+      ></cds-notification>
+    }
+  }
+
   <cds-tabs class="case-management-tabs" type="inline" data-test-id="caseManagementTabs">
     <cds-tab
       class="no-padding-left-right main-content"
@@ -107,7 +123,7 @@
       @if (injectedTab.enabled$ | async) {
         <cds-tab
           class="no-padding-left-right no-padding-top-bottom"
-          [active]="obs.currentTab === injectedTab.translationKey"
+          [active]="obs.currentTab === (injectedTab.tabRoute ?? injectedTab.translationKey)"
           [heading]="injectedTab.translationKey | translate"
           (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
         >
