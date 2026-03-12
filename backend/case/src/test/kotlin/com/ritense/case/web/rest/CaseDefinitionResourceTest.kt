@@ -331,10 +331,11 @@ class CaseDefinitionResourceTest : BaseTest() {
     }
 
     @Test
-    fun `should get case definitions for management`() {
+    fun `should get case definitions for management with configuration issues`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
         whenever(service.getCaseDefinitions(isNull(), isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(setOf(caseDefinitionId))
 
         mockMvc.perform(
             get("/api/management/v1/case-definition")
@@ -348,7 +349,49 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.content[0].canHaveAssignee").value(caseDefinition.canHaveAssignee))
             .andExpect(jsonPath("$.content[0].autoAssignTasks").value(caseDefinition.autoAssignTasks))
             .andExpect(jsonPath("$.content[0].active").value(caseDefinition.active))
+            .andExpect(jsonPath("$.content[0].hasConfigurationIssues").value(true))
 
+    }
+
+    @Test
+    fun `should get case definitions for management without configuration issues`() {
+        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
+        val caseDefinition = caseDefinition(caseDefinitionId)
+        whenever(service.getCaseDefinitions(isNull(), isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(emptySet())
+
+        mockMvc.perform(
+            get("/api/management/v1/case-definition")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].hasConfigurationIssues").value(false))
+
+    }
+
+    @Test
+    fun `should get configuration issues`() {
+        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
+        val issue = com.ritense.case.domain.CaseDefinitionConfigurationIssue(
+            caseDefinitionId = caseDefinitionId,
+            issueType = "zaak-type-link",
+            resolved = false
+        )
+        whenever(configurationIssueRepository.findAllByCaseDefinitionId(caseDefinitionId)).thenReturn(listOf(issue))
+
+        mockMvc.perform(
+            get(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/configuration-issues",
+                caseDefinitionId.key,
+                caseDefinitionId.versionTag
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].issueType").value("zaak-type-link"))
+            .andExpect(jsonPath("$[0].resolved").value(false))
     }
 
     @Test
