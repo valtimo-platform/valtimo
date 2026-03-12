@@ -808,7 +808,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
-        var teamTitle = teamProvider.findTitleByTeamKey(teamKey);
+        var teamTitle = teamProvider == null ? teamKey : teamProvider.findTitleByTeamKey(teamKey);
         document.setAssignedTeamKey(teamKey);
         document.setAssignedTeamTitle(teamTitle);
         documentRepository.save(document);
