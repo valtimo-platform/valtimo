@@ -54,7 +54,7 @@
         "title": "Documenten API Preview",
         "pluginDefinitionKey": "documentenapipreview",
         "properties": {
-            "url": "${VALTIMO_PDF_CONVERSION_API_URL}",
+            "pdfConversionUrl": "${VALTIMO_PDF_CONVERSION_API_URL}",
             "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
         }
     },
