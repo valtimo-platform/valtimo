@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.listener
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.case.service.CaseDefinitionService
@@ -61,7 +62,7 @@ class BuildingBlockCaseAssigneeListener(
                     .map { it.documentId.toString() }
                 if (businessKeys.isEmpty()) return
 
-                val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
+                val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
                 val tasks = operatonTaskService.findTasks(
                     byProcessInstanceBusinessKeys(businessKeys)
                         .and(byCandidateGroups(assignee.roles))
