@@ -11,6 +11,8 @@
   Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
   Teams can be used for case assignment and access control rules.
 
+  More information about teams can be found [here](../../../features/teams/README.md).
+
 ## Enhancements
 
 * **Secure /users endpoint with access control**
@@ -21,6 +23,12 @@
   are:
   - `view`: Allows viewing details of a single user.
   - `view_list`: Allows viewing a list of users or searching for users.
+
+  More information about access control for users can be found [here](../../../features/keycloak/access-control.md).
+
+* **Deprecation of old user management methods**
+
+  Several methods in `UserManagementService` and `UserResource` have been deprecated in favor of the new access-controlled methods. These will be removed in a future version.
 
 ## Bugfixes
 
