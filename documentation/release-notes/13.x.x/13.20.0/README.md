@@ -4,6 +4,10 @@
 **Release date 18-03-2026**
 {% endhint %}
 
+## Migration
+
+* [Front-end migration](./front-end-migration.md)
+
 ## New Features
 
 * **Teams**
