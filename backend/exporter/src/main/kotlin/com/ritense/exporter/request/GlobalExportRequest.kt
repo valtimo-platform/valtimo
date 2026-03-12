@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,11 @@
 
 package com.ritense.exporter.request
 
-import com.ritense.valtimo.contract.annotation.AllOpen
-import java.util.Objects
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-@AllOpen
-class GlobalExportRequest : ExportRequest() {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is GlobalExportRequest) return false
-
-        if (required != other.required) return false
-        if (caseDefinitionId != other.caseDefinitionId) return false
-        if (buildingBlockDefinitionId != other.buildingBlockDefinitionId) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(
-            required,
-            caseDefinitionId,
-            buildingBlockDefinitionId,
-        )
-    }
-}
+data class GlobalExportRequest(
+    override val required: Boolean = true,
+    override val caseDefinitionId: CaseDefinitionId? = null,
+    override val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null,
+) : ExportRequest()
