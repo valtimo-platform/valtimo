@@ -77,18 +77,12 @@ class DocumentVerzoekPluginEventListener(
             return
         }
 
-        val plugin: DocumentVerzoekPlugin? = pluginService.createInstance(
+        pluginService.createInstance(
             DocumentVerzoekPlugin::class.java
         ) { properties ->
-            !properties["informatieobjecttypeUrls"].isEmpty
-        }
-
-        if (plugin == null) {
-            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found with list matching of informatieobjecttypes" }
-            return
-        }
-        // Find the matching CaseDefinition for the incoming zaakType
-        handleNewDocumentEvent(event, plugin)
+            !properties["informatieobjecttypeUrls"].isMissingNode && !properties["informatieobjecttypeUrls"].isEmpty
+        }?.let { handleNewDocumentEvent(event, it) }
+            ?: logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: No DocumentVerzoekPlugin found with list matching of informatieobjecttypes" }
 
     }
 
