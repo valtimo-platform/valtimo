@@ -343,11 +343,11 @@ class ZaakDocumentService(
         )
     }
 
-    fun getInformatieobjecttypeOmschrijvingByUri(uri: String?): String? {
+    private fun getInformatieobjecttypeOmschrijvingByUri(uri: String?): String? {
         return uri?.let { catalogiService.getInformatieobjecttype(URI(it))?.omschrijving }
     }
 
-    fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
+    private fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
         return checkNotNull(
             pluginService.findPluginConfiguration(
                 DocumentenApiPlugin::class.java,
@@ -415,9 +415,6 @@ class ZaakDocumentService(
         )
     }
 
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
-
     private fun getVerifiedInformatieObject(
         pluginConfigurationId: String,
         caseDocumentId: UUID,
@@ -444,6 +441,9 @@ class ZaakDocumentService(
 
         return Pair(documentenApiPlugin, informatieobjectUrl)
     }
+
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
+        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
     fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
         documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)

@@ -500,7 +500,7 @@ class DocumentenApiPlugin(
         return documentCreateResult
     }
 
-    fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
+    private fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
         return checkNotNull(
             pluginService.findPluginConfiguration(
                 DocumentenApiPlugin::class.java,
