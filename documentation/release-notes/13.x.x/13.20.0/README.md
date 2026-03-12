@@ -6,9 +6,10 @@
 
 ## New Features
 
-* **New feature title**
+* **Teams**
 
-  New feature explanation.
+  Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
+  Teams can be used for case assignment and access control rules.
 
 ## Enhancements
 
