@@ -154,6 +154,9 @@ services:
         platform: linux/amd64
         environment: *openzaak-env
         command: /celery_worker.sh
+        profiles:
+            - zgw
+            - openzaak
         healthcheck:
             test: [ "CMD", "python", "/app/bin/check_celery_worker_liveness.py" ]
             interval: 30s
@@ -343,7 +346,7 @@ services:
 
     open-notificaties-celery:
         image: openzaak/open-notificaties:1.13.0
-        container_name: gzac-docker-compose-open-notificaties
+        container_name: gzac-docker-compose-open-notificaties-celery
         platform: linux/amd64
         profiles:
             - zgw
@@ -376,7 +379,7 @@ services:
 
     open-notificaties:
         image: openzaak/open-notificaties:1.13.0
-        container_name: gzac-docker-compose-open-notificaties-celery
+        container_name: gzac-docker-compose-open-notificaties
         platform: linux/amd64
         profiles:
             - zgw
