@@ -51,7 +51,7 @@ class DocumentVerzoekPluginEventListener(
     private val documentService: DocumentService,
     private val pluginService: PluginService,
     private val environment: Environment,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional
@@ -99,8 +99,8 @@ class DocumentVerzoekPluginEventListener(
 
         val hoofdObject = event.hoofdObject
         if (hoofdObject == null) {
-                logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: hoofdObject is null" }
-                return
+            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: hoofdObject is null" }
+            return
         }
         val (zaakUrl, resourceUrl) = if (environment.activeProfiles.contains("dev")) {
             hoofdObject.replace(
@@ -111,7 +111,13 @@ class DocumentVerzoekPluginEventListener(
             hoofdObject to event.resourceUrl
         }
 
-        zaakInstanceLinkService.getByZaakInstanceUrl(URI(zaakUrl)).let { zaak ->
+        val zaak = try {
+            zaakInstanceLinkService.getByZaakInstanceUrl(URI(zaakUrl))
+        } catch (ex: com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException) {
+            logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: no ZaakInstanceLink found for zaakUrl '$zaakUrl'" }
+            return
+        }
+        run {
             plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(
                 URI(resourceUrl),
                 zaak.documentId
@@ -121,8 +127,8 @@ class DocumentVerzoekPluginEventListener(
                     zaak.documentId
                 ).let { informatieObject ->
                     if (plugin.informatieobjecttypeUrls.any { informatieDocumentType ->
-                        informatieDocumentType.url == informatieObject.informatieobjecttype
-                    }) {
+                            informatieDocumentType.url == informatieObject.informatieobjecttype
+                        }) {
                         logger.debug { "DocumentVerzoekPlugin: broadcasting message for '${informatieObject.url}'" }
                         sendMessage(
                             zaak.documentId.toString(),
@@ -132,7 +138,7 @@ class DocumentVerzoekPluginEventListener(
                         )
                         publishEvent(
                             zaak.documentId,
-                            informatieObject.identificatie?:"unknown"
+                            informatieObject.identificatie ?: "unknown"
                         )
                     }
                 }

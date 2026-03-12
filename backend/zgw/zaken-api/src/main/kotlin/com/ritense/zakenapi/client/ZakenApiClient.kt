@@ -228,9 +228,8 @@ class ZakenApiClient(
         zaakInformatieobjectUrl: URI,
         caseDocumentId: UUID,
     ): ZaakInformatieObject? {
-        require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
-            "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
-        }
+        validateUrlHost(baseUrl, zaakInformatieobjectUrl)
+
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
