@@ -233,7 +233,7 @@ class ZakenApiClient(
         if (!authorizationService.hasPermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.VIEW_LIST,
+                    ResourcePermissionActionProvider.VIEW,
                     ResourcePermission(caseDocumentId)
                 )
             )
