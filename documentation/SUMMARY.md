@@ -115,6 +115,7 @@
     * [Custom case tabs](features/case/for-developers/case-tabs.md)
     * [Case migration](features/case/for-developers/case-migration.md)
     * [Custom case headers](features/case/for-developers/custom-case-headers.md)
+    * [Custom audit events](features/case/for-developers/custom-audit-events.md)
     * [Register Angular component](features/case/for-developers/register-angular-component.md)
 * [🧱 Building blocks](features/building-blocks/README.md)
   * [Forms](features/building-blocks/forms.md)

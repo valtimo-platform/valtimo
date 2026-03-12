@@ -33,3 +33,7 @@ The for developers section within each feature gives more tech heavy information
 {% content-ref url="custom-case-headers.md" %}
 [custom-case-headers.md](custom-case-headers.md)
 {% endcontent-ref %}
+
+{% content-ref url="custom-audit-events.md" %}
+[custom-audit-events.md](custom-audit-events.md)
+{% endcontent-ref %}
