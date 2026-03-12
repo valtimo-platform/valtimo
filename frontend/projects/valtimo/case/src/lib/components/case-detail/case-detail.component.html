@@ -188,13 +188,13 @@
 </ng-template>
 
 <ng-template #claimButton let-canClaim="canClaim" let-canHaveAssignee="canHaveAssignee">
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canClaim && canHaveAssignee"
     [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
-    (click)="claimAssignee()"
+    (selected)="claimAssignee()"
   >
     {{ 'case.claimAssigneeCase' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template
@@ -203,24 +203,24 @@
   let-canHaveAssignee="canHaveAssignee"
   let-assigneeId="assigneeId"
 >
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canHaveAssignee && canAssign"
     [disabled]="!assigneeId"
     (selected)="unassignAssignee()"
   >
     {{ 'assignDocument.remove' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template #deleteButton let-canDelete="canDelete">
-  <cds-overflow-menu-option
+  <v-overflow-menu-option
     *ngIf="canDelete"
     [disabled]="isDeleting$ | async"
-    (click)="deleteDocument()"
+    (selected)="deleteDocument()"
     type="danger"
   >
     {{ 'case.delete.delete' | translate }}
-  </cds-overflow-menu-option>
+  </v-overflow-menu-option>
 </ng-template>
 
 <ng-template #customStartTrigger>
@@ -287,13 +287,14 @@
       </div>
 
       <div class="buttons-container">
-        <cds-overflow-menu
-          [ngClass]="{'--compact': compactMode$ | async}"
+        <v-overflow-menu
           *ngIf="obs.canHaveAssignee || obs.canDelete"
-          flip="true"
-          [offset]="(compactMode$ | async) ? {y: 48, x: -4} : {y: 48, x: 4}"
+          placement="bottom-end"
           class="overflow-button assign-overflow"
+          [ngClass]="{'--compact': compactMode$ | async}"
         >
+          <v-overflow-menu-trigger overflowTrigger [compact]="compactMode$ | async"></v-overflow-menu-trigger>
+
           <ng-container
             *ngTemplateOutlet="
               claimButton;
@@ -316,24 +317,25 @@
 
           <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">
           </ng-container>
-        </cds-overflow-menu>
+        </v-overflow-menu>
 
-        <cds-overflow-menu
-          valtimoCdsOverflowButton
+        <v-overflow-menu
           [ngClass]="{'--compact': compactMode$ | async}"
-          [width]="dropdownWidth$ | async"
-          [customTrigger]="customStartTrigger"
-          [offset]="{y: 48, x: 35}"
+          [menuWidth]="dropdownWidth$ | async"
+          placement="bottom-end"
           class="overflow-button case-detail-overflow"
         >
-          <cds-overflow-menu-option
+          <ng-container overflowTrigger>
+            <ng-container *ngTemplateOutlet="customStartTrigger"></ng-container>
+          </ng-container>
+          <v-overflow-menu-option
             *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
             [attr.title]="processDefinitionCaseDefinition.displayName"
-            (click)="startProcess(processDefinitionCaseDefinition)"
+            (selected)="startProcess(processDefinitionCaseDefinition)"
           >
             {{ processDefinitionCaseDefinition.displayName }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
+          </v-overflow-menu-option>
+        </v-overflow-menu>
       </div>
     </div>
   </ng-template>

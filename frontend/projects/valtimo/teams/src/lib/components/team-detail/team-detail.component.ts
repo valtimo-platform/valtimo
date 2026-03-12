@@ -23,9 +23,10 @@ import {
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   PageTitleService,
   RenderInPageHeaderDirective,
-  ValtimoCdsOverflowButtonDirective,
 } from '@valtimo/components';
 import {PermissionService} from '@valtimo/access-control';
 import {TeamUserResponseDto} from '@valtimo/shared';
@@ -54,7 +55,8 @@ import {
     IconModule,
     DialogModule,
     RenderInPageHeaderDirective,
-    ValtimoCdsOverflowButtonDirective,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     ConfirmationModalModule,
     TeamDetailEditModalComponent,
     TeamDetailAddMemberComponent,

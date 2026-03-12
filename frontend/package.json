@@ -251,6 +251,7 @@
     "diagram-js": "15.3.0",
     "dmn-js": "17.2.0",
     "dropzone": "6.0.0-beta.2",
+    "@floating-ui/dom": "1.7.4",
     "flatpickr": "4.6.13",
     "formiojs": "4.19.5",
     "hammerjs": "2.0.8",

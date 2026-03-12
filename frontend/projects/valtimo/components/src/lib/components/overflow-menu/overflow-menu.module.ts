@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-.valtimo-team-add-member {
-  &__pane {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 280px;
-  }
-}
+import {NgModule} from '@angular/core';
+import {OverflowMenuComponent} from './overflow-menu.component';
+import {OverflowMenuOptionComponent} from './overflow-menu-option/overflow-menu-option.component';
+import {OverflowMenuTriggerComponent} from './overflow-menu-trigger/overflow-menu-trigger.component';
+
+@NgModule({
+  imports: [OverflowMenuComponent, OverflowMenuOptionComponent, OverflowMenuTriggerComponent],
+  exports: [OverflowMenuComponent, OverflowMenuOptionComponent, OverflowMenuTriggerComponent],
+})
+export class OverflowMenuModule {}

@@ -59,9 +59,6 @@ body {
     width: 100%;
   }
 
-  &--overflow-menu-options__btn {
-    min-width: 100%;
-  }
 }
 
 .valtimo-carbon-list {
@@ -77,10 +74,6 @@ body {
   &__actions {
     width: 1px !important;
   }
-}
-
-.hide-after::after {
-  display: none;
 }
 
 valtimo-case-detail-tab-progress .cds--dropdown {
@@ -163,32 +156,6 @@ valtimo-modal {
   }
 }
 
-.assign-overflow {
-  button {
-    block-size: 48px !important;
-    inline-size: 48px !important;
-  }
-  &.--compact {
-    button {
-      block-size: 32px !important;
-      inline-size: 32px !important;
-      min-block-size: 32px !important;
-    }
-  }
-}
-
-.case-detail-overflow {
-  .cds--btn--primary .cds--btn__icon,
-  .cds--btn--primary .cds--btn__icon path {
-    fill: currentColor !important;
-  }
-
-  &.--compact {
-    button {
-      min-block-size: 32px !important;
-    }
-  }
-}
 
 .widget-configuration-content {
   background-color: var(--cds-layer) !important;
@@ -607,22 +574,6 @@ valtimo-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.cds--overflow-menu-options--open {
-  z-index: 10000;
-
-  &.--hide-after:after {
-    display: none;
-  }
-
-  &.--wide {
-    width: 13rem;
-
-    .cds--overflow-menu-options__btn {
-      max-width: 100%;
-    }
-  }
 }
 
 /* FormIO */

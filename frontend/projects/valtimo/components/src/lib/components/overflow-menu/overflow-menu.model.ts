@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,3 +14,16 @@
  * limitations under the License.
  */
 
+import {Placement} from '@floating-ui/dom';
+
+export interface OverflowMenuOption {
+  label: string;
+  callback: () => void;
+  disabled?: boolean;
+  type?: 'default' | 'danger';
+  iconClass?: string;
+  testId?: string;
+  id?: string;
+}
+
+export type OverflowMenuPlacement = Placement;
