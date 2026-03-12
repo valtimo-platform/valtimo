@@ -20,6 +20,9 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {AccessControlManagementRoutingModule} from './access-control-management-routing.module';
@@ -27,7 +30,6 @@ import {AccessControlOverviewComponent} from './components/overview/access-contr
 import {RoleMetadataModalComponent} from './components/role-metadata-modal/role-metadata-modal.component';
 import {
   ButtonModule,
-  DialogModule,
   IconModule,
   InputModule,
   LoadingModule,
@@ -62,7 +64,9 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     RenderInPageHeaderDirective,
     LoadingModule,
     IconModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
     NotificationModule,
     CarbonListModule,
   ],

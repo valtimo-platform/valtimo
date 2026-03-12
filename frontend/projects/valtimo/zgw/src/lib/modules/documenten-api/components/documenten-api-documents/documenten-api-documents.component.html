@@ -56,17 +56,19 @@
           #fileInput
         />
 
-        <button
+        <v-overflow-menu
           *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
-          [cdsOverflowMenu]="overflowFilter"
-          [customPane]="true"
-          [flip]="true"
-          [offset]="{x: 0, y: 47}"
-          cdsButton="ghost"
-          placement="bottom"
+          placement="bottom-end"
+          [closeOnSelect]="false"
         >
-          <svg cdsIcon="filter" size="16"></svg>
-        </button>
+          <button overflowTrigger cdsButton="ghost">
+            <svg cdsIcon="filter" size="16"></svg>
+          </button>
+
+          <div overflowPane>
+            <ng-container *ngTemplateOutlet="overflowFilter"></ng-container>
+          </div>
+        </v-overflow-menu>
 
         <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
       </div>
