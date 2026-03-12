@@ -25,13 +25,13 @@ import {
   CarbonTag,
   ColumnConfig,
   DEFAULT_PAGINATION,
+  OverflowMenuComponent,
   Pagination,
   ViewType,
 } from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
-  DialogModule,
   DropdownModule,
   IconModule,
   IconService,
@@ -69,7 +69,7 @@ import {LogSearchComponent} from '../log-search/log-search.component';
     TranslateModule,
     ButtonModule,
     CarbonListModule,
-    DialogModule,
+    OverflowMenuComponent,
     DropdownModule,
     IconModule,
     LogDetailsComponent,

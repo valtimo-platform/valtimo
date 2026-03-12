@@ -21,12 +21,14 @@ import {PluginTranslatePipeModule} from '../../pipes';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 import {PatchZaakBesluitConfigurationComponent} from './components/patch-zaak-besluit/patch-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
-import {ButtonModule, DialogModule, IconModule, LoadingModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
 import {GetBesluitConfigurationComponent} from './components/get-besluit/get-besluit-configuration.component';
 import {
   DatePickerModule,
   FormModule,
   InputModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   ParagraphModule,
   RadioModule,
   SelectModule,
@@ -51,7 +53,8 @@ import {
     RadioModule,
     LoadingModule,
     ButtonModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     IconModule,
   ],
   exports: [

@@ -37,10 +37,6 @@ button.add-button {
   margin-block-end: var(--v-input-margin);
 }
 
-::ng-deep .cds--overflow-menu-options {
-  z-index: 10000 !important;
-  width: 230px;
-}
 
 .property-input {
   display: flex;

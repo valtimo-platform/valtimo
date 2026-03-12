@@ -14,28 +14,15 @@
   ~ limitations under the License.
   -->
 
-<cds-overflow-menu
-  [customTrigger]="addMemberTrigger"
-  [cdsOverflowMenu]="addMemberPane"
-  [customPane]="true"
-  [flip]="true"
-  [offset]="{x: 2, y: 64}"
-  placement="bottom"
-  valtimoCdsOverflowButton
-  (openChange)="onOpenChange($event)"
->
-</cds-overflow-menu>
-
-<ng-template #addMemberTrigger>
-  <button cdsButton="primary" [disabled]="disabled" class="add-member-button">
+<v-overflow-menu placement="bottom-end" [closeOnSelect]="false" (openChange)="onOpenChange($event)">
+  <button overflowTrigger cdsButton="primary" [disabled]="disabled" class="add-member-button">
     {{ 'teams.detail.addMember' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
-</ng-template>
 
-<ng-template #addMemberPane>
   <section
+    overflowPane
     class="valtimo-team-add-member__pane"
     (click)="$event.stopImmediatePropagation()"
     *ngIf="{
@@ -76,4 +63,4 @@
       <svg cdsIcon="group--access" size="16" class="cds--btn__icon"></svg>
     </button>
   </section>
-</ng-template>
+</v-overflow-menu>

@@ -16,13 +16,15 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {DialogModule} from 'carbon-components-angular';
 import {CarbonListModule} from '../carbon-list/carbon-list.module';
+import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option.component';
+import {OverflowMenuTriggerComponent} from '../overflow-menu/overflow-menu-trigger.component';
 import {TimelineComponent} from './timeline.component';
 
 @NgModule({
   declarations: [TimelineComponent],
-  imports: [CommonModule, TranslateModule, CarbonListModule, DialogModule],
+  imports: [CommonModule, TranslateModule, CarbonListModule, OverflowMenuComponent, OverflowMenuOptionComponent, OverflowMenuTriggerComponent],
   exports: [TimelineComponent],
 })
 export class TimelineModule {}

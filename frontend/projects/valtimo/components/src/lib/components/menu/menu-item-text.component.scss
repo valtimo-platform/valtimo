@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
+.menu-item-text-overflow {
+  width: 100%;
+  pointer-events: none;
+  position: static !important;
+
+  .v-overflow-menu,
+  .v-overflow-menu__trigger,
+  .v-overflow-menu__trigger * {
+    pointer-events: none;
+  }
+
+  .v-overflow-menu__pane {
+    pointer-events: auto;
+  }
+}
+
 .menu-item-text-container {
   display: flex;
 
@@ -25,12 +41,5 @@
 
   .empty-menu-icon-text {
     font-weight: 600 !important;
-  }
-
-  .cds--overflow-menu {
-    visibility: hidden;
-    height: 0;
-    width: 0;
-    position: absolute;
   }
 }

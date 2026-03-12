@@ -263,8 +263,12 @@ export * from './lib/directives/fit-page/fit-page.directive';
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
 export * from './lib/directives/ctrl-click/ctrl-click.directive';
-// cds overflow button
-export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
+// overflow menu (floating-ui based)
+export * from './lib/components/overflow-menu/overflow-menu.component';
+export * from './lib/components/overflow-menu/overflow-menu-option.component';
+export * from './lib/components/overflow-menu/overflow-menu-trigger.component';
+export * from './lib/components/overflow-menu/overflow-menu.module';
+export * from './lib/components/overflow-menu/overflow-menu.model';
 // remove toggletip button class
 export * from './lib/directives/remove-classnames/remove-classnames.directive';
 // muuri

@@ -25,7 +25,7 @@ import {
   LayerModule,
   ListItem,
 } from 'carbon-components-angular';
-import {ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
+import {OverflowMenuComponent} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Add16, GroupAccess16} from '@carbon/icons';
 import {BehaviorSubject, catchError, of, Subscription} from 'rxjs';
@@ -45,7 +45,7 @@ import {TeamsApiService, TeamDetailService} from '../../services';
     IconModule,
     LayerModule,
     TranslateModule,
-    ValtimoCdsOverflowButtonDirective,
+    OverflowMenuComponent,
   ],
 })
 export class TeamDetailAddMemberComponent implements OnInit, OnDestroy {
