@@ -31,6 +31,13 @@ Permissions define whether a user with a specific role can access or act on the 
 
 Multiple permissions are evaluated as `OR`: The outcome of an authorization request is `true` when **any** of the permissions passes **all** the configured checks. When permissions are used to filter data from a list query, the result will contain every entry that passes the checks of **any** permission.
 
+Valtimo supports access control on several types of resources:
+- [Cases](../case/#access-control)
+- [Documents](../case/document-definition.md#access-control)
+- [Tasks](../case/tasks/#access-control)
+- [Users](../keycloak/access-control.md)
+- [ZGW Documents](../case/zgw/zgw-documents/access-control.md)
+
 When selecting applicable permissions for evaluation, the following checks are performed:
 
 * The user has the role that is configured for the permission.

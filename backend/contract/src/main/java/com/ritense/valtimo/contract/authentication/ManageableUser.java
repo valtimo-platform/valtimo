@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.contract.authentication;
 
-public interface ManageableUser extends AuthorizedUser {
+public interface ManageableUser extends User {
 
     String getId();
 
