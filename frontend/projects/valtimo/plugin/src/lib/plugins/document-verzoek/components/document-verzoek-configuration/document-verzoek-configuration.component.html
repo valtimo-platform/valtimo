@@ -124,11 +124,11 @@
     <v-form (valueChange)="changeFunction($event, uuid)">
       <v-input
               [smallMargin]="true"
-              name="informatieobjecttypeUrl"
+              name="url"
               data-test-id="informatieobjecttypeUrl-test-id"
               [title]="'informatieobjecttypeUrl' | pluginTranslate: pluginId | async"
               [disabled]="obs.disabled"
-              [defaultValue]="prefill?.informatieobjecttypeUrl"
+              [defaultValue]="prefill?.url"
               [required]="true"
               [tooltip]="'informatieobjecttypeUrlTooltip' | pluginTranslate: pluginId | async"
       ></v-input>

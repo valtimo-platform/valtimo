@@ -25,15 +25,7 @@ import {
   ViewChildren,
 } from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  Subscription,
-  take
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, take} from 'rxjs';
 import {DocumentVerzoekConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
@@ -129,14 +121,7 @@ export class DocumentVerzoekConfigurationComponent
   }
 
   private setMappedPrefill(): void {
-    this.mappedPrefill$ = this.prefillConfiguration$.pipe(
-      filter(prefill => !!prefill),
-      map(prefill => ({
-        ...prefill,
-        informatieobjecttypeUrls: (prefill.informatieobjecttypeUrls?.map(({url}) => ({informatieobjecttypeUrl: url})) ??
-          []) as any,
-      }))
-    );
+    this.mappedPrefill$ = this.prefillConfiguration$.pipe(filter(prefill => !!prefill));
   }
 
   ngOnDestroy() {
@@ -161,7 +146,13 @@ export class DocumentVerzoekConfigurationComponent
     );
     const informatieobjecttypeUrls = formValue.informatieobjecttypeUrls || [];
     const validInformatieobjecttypeUrls = informatieobjecttypeUrls.filter(type => !!type.url);
-    const valid = validForm && informatieobjecttypeUrls.length === validInformatieobjecttypeUrls.length;
+    const valid =
+      validForm &&
+      informatieobjecttypeUrls.length > 0 &&
+      informatieobjecttypeUrls.length === validInformatieobjecttypeUrls.length &&
+      new Set(validInformatieobjecttypeUrls.map(type => type.url)).size ===
+        validInformatieobjecttypeUrls.length;
+
     this.valid$.next(valid);
     this.valid.emit(valid);
   }
@@ -171,13 +162,7 @@ export class DocumentVerzoekConfigurationComponent
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
-          const formValueToSave: DocumentVerzoekConfig = {
-            ...formValue,
-            informatieobjecttypeUrls:
-              (formValue.informatieobjecttypeUrls as any[])?.map(
-                item => ({url: item.informatieobjecttypeUrl})
-              ) ?? [],
-          };
+          const formValueToSave: DocumentVerzoekConfig = {...formValue};
           if (valid) {
             this.configuration.emit(formValueToSave);
           }
