@@ -32,6 +32,8 @@ import org.operaton.bpm.engine.task.IdentityLinkType;
 import org.operaton.bpm.model.bpmn.instance.Task;
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonProperty;
 
+import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+
 public class DelegateTaskHelper {
     private static final String TASK_ASSIGNMENT_EVENT = "assignment";
     private static final String TASK_CREATION_EVENT = "create";
@@ -72,7 +74,7 @@ public class DelegateTaskHelper {
             .filter(identityLink -> IdentityLinkType.CANDIDATE.equals(identityLink.getType()))
             .findFirst();
         if (candidateGroup.isPresent()) {
-            users = userManagementService.findByRole(candidateGroup.get().getGroupId());
+            users = runWithoutAuthorization(() -> userManagementService.findByRole(candidateGroup.get().getGroupId()));
         }
         return users;
     }

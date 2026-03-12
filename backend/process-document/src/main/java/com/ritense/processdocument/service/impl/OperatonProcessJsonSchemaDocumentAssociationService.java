@@ -165,9 +165,9 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
                     ZoneId.systemDefault()
                 );
                 var startedBy = operatonProcess.getStartUserId() == null ? null :
-                    userManagementService.findByEmail(operatonProcess.getStartUserId())
+                    runWithoutAuthorization(() -> userManagementService.findByEmail(operatonProcess.getStartUserId())
                         .map(ManageableUser::getFullName)
-                        .orElse(null);
+                        .orElse(null));
 
                 return new ProcessDocumentInstanceDto(
                     process.getId(),
@@ -228,9 +228,9 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
                     ZoneId.systemDefault()
                 );
                 var startedBy = operatonProcess.getStartUserId() == null ? null :
-                    userManagementService.findByEmail(operatonProcess.getStartUserId())
+                    runWithoutAuthorization(() -> userManagementService.findByEmail(operatonProcess.getStartUserId())
                         .map(ManageableUser::getFullName)
-                        .orElse(null);
+                        .orElse(null));
 
                 return new ProcessDocumentInstanceDto(
                     process.getId(),
