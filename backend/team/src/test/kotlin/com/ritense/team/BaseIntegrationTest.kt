@@ -51,7 +51,7 @@ abstract class BaseIntegrationTest {
             firstName = "Asha"
             lastName = "Miller"
             email = "admin@example.com"
-            roles = listOf(ADMIN)
+            setRoles(listOf(ADMIN))
         }
         val normalUser = ValtimoUser().apply {
             id = NORMAL_USER_ID
@@ -59,7 +59,7 @@ abstract class BaseIntegrationTest {
             firstName = "James"
             lastName = "Vance"
             email = "user@example.com"
-            roles = listOf(USER)
+            setRoles(listOf(USER))
         }
         whenever(userManagementService.currentUser).thenReturn(adminUser)
         whenever(userManagementService.findByUsername(ADMIN_USER_NAME)).thenReturn(adminUser)
