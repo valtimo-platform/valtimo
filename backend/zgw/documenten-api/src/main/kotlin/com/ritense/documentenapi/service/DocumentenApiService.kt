@@ -166,7 +166,7 @@ class DocumentenApiService(
         @LoggableResource(resourceTypeName = ZAKEN_API.ZAAK ) caseDocumentId: UUID?,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentUrl: URI
     ) {
-        documentApiPlugin.deleteZaakinformatieobjectAndDocument(caseDocumentId, documentUrl)
+        documentApiPlugin.deleteInformatieObject(caseDocumentId, documentUrl)
     }
 
     fun getColumns(

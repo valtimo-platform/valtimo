@@ -286,12 +286,6 @@ class DocumentenApiPlugin(
 
     fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
-        client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
-    }
-
-    fun deleteZaakinformatieobjectAndDocument(caseDocumentId: UUID?, objectUrl: URI) {
-        logger.info { "Deleting zaakinformatieobject and document with url $objectUrl" }
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
@@ -301,8 +295,10 @@ class DocumentenApiPlugin(
             )
         )
 
-        documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
-        client.deleteZaakInformatieObject(authenticationPluginConfiguration, objectUrl)
+        runWithoutAuthorization {
+            documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }
+            client.deleteInformatieObject(authenticationPluginConfiguration, caseDocumentId, objectUrl)
+        }
     }
 
     fun createInformatieObjectUrl(objectId: String) = UriComponentsBuilder

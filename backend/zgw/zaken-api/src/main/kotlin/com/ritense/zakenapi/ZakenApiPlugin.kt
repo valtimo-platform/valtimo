@@ -1332,16 +1332,6 @@ class ZakenApiPlugin(
         logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
     }
 
-    fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
-        logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
-        client.deleteZaakInformatieObject(
-            authentication = authenticationPluginConfiguration,
-            baseUrl = url,
-            zaakInformatieobjectUrl = zaakInformatieobjectUrl
-        )
-        logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
-    }
-
     fun getZaakObjecten(zaakUrl: URI): List<ZaakObject> {
         logger.debug { "Fetching zaak objecten for zaak with URL '$zaakUrl'" }
         var currentPage = 1
