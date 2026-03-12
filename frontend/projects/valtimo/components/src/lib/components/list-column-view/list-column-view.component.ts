@@ -29,13 +29,13 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
   CheckboxModule,
-  DialogModule,
   IconModule,
   IconService,
   InputModule,
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
+import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
 import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
 
 @Component({
@@ -46,7 +46,7 @@ import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    DialogModule,
+    OverflowMenuComponent,
     TagModule,
     CheckboxModule,
     ButtonModule,

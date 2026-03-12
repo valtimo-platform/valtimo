@@ -32,7 +32,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
 import {
   IconService,
-  OverflowMenu,
   PaginationModel,
   PaginationTranslations,
   Table,
@@ -86,7 +85,7 @@ import {EllipsisPipe} from '../../pipes';
   standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
+  @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<any>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;

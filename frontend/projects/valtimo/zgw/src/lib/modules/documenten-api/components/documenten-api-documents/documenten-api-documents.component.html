@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -56,17 +56,20 @@
           #fileInput
         />
 
-        <button
+        <v-overflow-menu
           *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
-          [cdsOverflowMenu]="overflowFilter"
-          [customPane]="true"
-          [flip]="true"
-          [offset]="{x: 0, y: 47}"
-          cdsButton="ghost"
-          placement="bottom"
+          placement="bottom-end"
+          [closeOnSelect]="false"
+          [portalToBody]="true"
         >
-          <svg cdsIcon="filter" size="16"></svg>
-        </button>
+          <button overflowTrigger cdsButton="ghost">
+            <svg cdsIcon="filter" size="16"></svg>
+          </button>
+
+          <div overflowPane>
+            <ng-container *ngTemplateOutlet="overflowFilter"></ng-container>
+          </div>
+        </v-overflow-menu>
 
         <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
       </div>

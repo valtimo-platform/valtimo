@@ -4,6 +4,10 @@
 **Release date 18-03-2026**
 {% endhint %}
 
+## Migration
+
+* [Front-end migration](./front-end-migration.md)
+
 ## New Features
 
 * **Teams**
@@ -14,6 +18,10 @@
   More information about teams can be found [here](../../../features/teams/README.md).
 
 ## Enhancements
+
+* **Replaced Carbon overflow menus with custom overflow components**
+
+  The Carbon Design System overflow menu components have been replaced with custom-built overflow components throughout the application. The Carbon overflow menu had persistent issues with sizing, positioning, and lacked adequate support for custom panes and custom trigger elements. The new custom components resolve these limitations and provide a consistent, flexible overflow menu experience across the platform.
 
 * **Secure /users endpoint with access control**
 

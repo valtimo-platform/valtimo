@@ -21,7 +21,9 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {MenuItemTextComponent} from './menu-item-text.component';
 import {ComponentsPipesModule} from '../../pipes';
-import {DialogModule, LinkModule} from 'carbon-components-angular';
+import {LinkModule} from 'carbon-components-angular';
+import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
 
 @NgModule({
   declarations: [MenuItemTextComponent],
@@ -32,7 +34,8 @@ import {DialogModule, LinkModule} from 'carbon-components-angular';
     TranslateModule,
     ComponentsPipesModule,
     LinkModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
   ],
   exports: [MenuItemTextComponent],
 })

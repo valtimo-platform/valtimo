@@ -38,6 +38,7 @@
     "semver",
     "muuri",
     "ajv",
-    "vanilla-jsoneditor"
+    "vanilla-jsoneditor",
+    "@floating-ui/dom"
   ]
 }

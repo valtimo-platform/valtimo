@@ -42,6 +42,9 @@ import {
   RenderInPageHeaderDirective,
   SelectedValue,
   SelectModule as ValtimoSelectModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -49,7 +52,6 @@ import {EMPTY_DECISION} from './empty-decision';
 import {CommonModule} from '@angular/common';
 import {
   ButtonModule,
-  DialogModule,
   IconModule,
   IconService,
   ModalModule,
@@ -84,7 +86,9 @@ declare const $: any;
     ButtonModule,
     IconModule,
     FitPageDirective,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
   ],
 })
 export class DecisionModelerComponent

@@ -19,7 +19,11 @@ import {HttpResponse} from '@angular/common/http';
 import {Component, Inject, TemplateRef, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
-import {ValtimoCdsModalDirective, ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
+import {
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  ValtimoCdsModalDirective,
+} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -55,7 +59,8 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
     ValtimoCdsModalDirective,
     DialogModule,
     BuildingBlockManagementVersionSelectorComponent,
-    ValtimoCdsOverflowButtonDirective,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     LoadingModule,
   ],
 })

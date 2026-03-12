@@ -96,6 +96,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public navigateToRoute(route: Array<string>, event: MouseEvent): void {
     event.preventDefault();
+    this.overflowMenuSequence$.next('');
 
     if (!event.ctrlKey && !event.metaKey) {
       this.router.navigate(route, {queryParams: {}});
