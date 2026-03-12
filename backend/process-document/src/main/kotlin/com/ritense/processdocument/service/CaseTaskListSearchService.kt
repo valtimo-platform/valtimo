@@ -700,7 +700,7 @@ class CaseTaskListSearchService(
                 "assignee" -> {
                     CaseTaskProperties.getByPropertyName("assignee")
                         ?.getValueFromObject(caseTask)
-                        ?.let { assigneeUsername -> userManagementService.findByUsername(assigneeUsername as String)?.fullName }
+                        ?.let { assigneeUsername -> runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername as String)?.fullName } }
                 }
 
                 else -> CaseTaskProperties.getByPropertyName(path)?.getValueFromObject(caseTask)
