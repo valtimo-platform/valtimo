@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Inject, OnInit, Optional, Output} from '@angular/core';
 import {TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import moment from 'moment';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, AuditEvent} from '@valtimo/document';
 import {NgxSpinnerService} from 'ngx-spinner';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  AuditEventTranslations,
+  CASE_AUDIT_TRANSLATION_TOKEN,
+} from '../../../../constants/case-audit-translation-token';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -41,7 +46,11 @@ export class CaseDetailTabAuditComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private documentService: DocumentService,
-    private spinnerService: NgxSpinnerService
+    private spinnerService: NgxSpinnerService,
+    @Optional()
+    @Inject(CASE_AUDIT_TRANSLATION_TOKEN)
+    private readonly auditTranslations: AuditEventTranslations[] | null,
+    private translateService: TranslateService
   ) {
     this.spinnerService.show('auditSpinner');
     const snapshot = this.route.snapshot.paramMap;
@@ -55,7 +64,12 @@ export class CaseDetailTabAuditComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.loadAuditPage(this.defaultAuditPage);
+    this.auditTranslations?.forEach(translations => {
+      Object.entries(translations).forEach(([lang, eventMap]) => {
+        this.translateService.setTranslation(lang, {events: eventMap}, true);
+      });
+    });
+this.loadAuditPage(this.defaultAuditPage);
   }
 
   public loadAuditPage(pageNumber: number): void {

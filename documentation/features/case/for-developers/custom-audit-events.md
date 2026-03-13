@@ -73,9 +73,33 @@ class MyAuditConfiguration {
 
 Multiple providers can coexist. Valtimo collects them all and merges the event type lists, so registering a provider never interferes with other providers or the built-in events.
 
-### Step 3: Add a translation entry
+### Step 3: Register translations via `CASE_AUDIT_TRANSLATION_TOKEN`
 
-The audit tab uses the simple class name of the event as a translation key under the `events` namespace. Add a translation entry in the i18n files of the front-end implementation:
+The audit tab uses the simple class name of the event as a translation key under the `events` namespace. The recommended way to supply translations is via the `CASE_AUDIT_TRANSLATION_TOKEN` injection token exported from `@valtimo/case`. Add a provider in your `app.module.ts` (or any Angular module):
+
+```typescript
+import {CASE_AUDIT_TRANSLATION_TOKEN} from '@valtimo/case';
+
+// In your NgModule providers array:
+{
+  provide: CASE_AUDIT_TRANSLATION_TOKEN,
+  useValue: {
+    en: {MyCustomEvent: 'Something happened: {{description}}'},
+    nl: {MyCustomEvent: 'Er is iets gebeurd: {{description}}'},
+  },
+  multi: true,
+}
+```
+
+All fields on the event object are available as interpolation parameters in the translation string. Multiple providers can be registered — each one is merged independently under the `events` namespace.
+
+{% hint style="info" %}
+**Scoping guarantee:** The token only accepts `{ [eventClassName]: string }` per language — the `events.` namespace prefix is always added by the framework. It is not possible to accidentally overwrite unrelated translation keys.
+{% endhint %}
+
+#### Alternative: static JSON translation files
+
+For simple single-language cases you can also add the translation directly to the i18n asset files of the front-end implementation:
 
 **`assets/i18n/en.json`**
 
@@ -86,5 +110,3 @@ The audit tab uses the simple class name of the event as a translation key under
   }
 }
 ```
-
-All fields on the event object are available as parameters in the translation string.
