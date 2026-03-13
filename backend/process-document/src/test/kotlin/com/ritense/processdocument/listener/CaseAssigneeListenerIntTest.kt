@@ -162,7 +162,7 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
         val task = runWithoutAuthorization {
             taskService.findTask(byName("child process user task"))
         }
-        assertEquals(task.assignee, testUser.username)
+        assertEquals(testUser.username, task.assignee)
     }
 
     @Test

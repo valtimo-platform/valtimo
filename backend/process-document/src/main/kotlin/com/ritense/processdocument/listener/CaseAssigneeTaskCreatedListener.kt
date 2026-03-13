@@ -33,7 +33,10 @@ import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.TaskService
 import org.springframework.context.event.EventListener
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Component
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
@@ -76,26 +79,30 @@ open class CaseAssigneeTaskCreatedListener(
                     && caseDefinition.autoAssignTasks
                     && !caseDocument.assigneeId().isNullOrEmpty()
                 ) {
-                    val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
-                    val operatonTask = operatonTaskRepository.findById(delegateTask.id).getOrNull() ?: return
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val taskId = delegateTask.id
 
-                    authorizationService.requirePermission(
-                        DelegateUserEntityAuthorizationRequest(
-                            OperatonTask::class.java,
-                            OperatonTaskActionProvider.ASSIGNABLE,
-                            assignee.username,
-                            operatonTask
-                        )
-                    )
+                    TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                        override fun beforeCommit(readOnly: Boolean) {
+                            val operatonTask = operatonTaskRepository.findById(taskId).getOrNull() ?: return
 
-                    taskService
-                        .setAssignee(
-                            delegateTask.id,
-                            assignee.username
-                        )
-                        .also {
-                            logger.debug { "Setting assignee for task with id ${delegateTask.id}" }
+                            try {
+                                authorizationService.requirePermission(
+                                    DelegateUserEntityAuthorizationRequest(
+                                        OperatonTask::class.java,
+                                        OperatonTaskActionProvider.ASSIGNABLE,
+                                        assignee.username,
+                                        operatonTask
+                                    )
+                                )
+
+                                taskService.setAssignee(taskId, assignee.username)
+                                logger.debug { "Setting assignee for task with id $taskId" }
+                            } catch (_: AccessDeniedException) {
+                                logger.info { "Auto assigning user to task ${taskId} failed." }
+                            }
                         }
+                    })
                 }
             }
         } catch (e: CaseDocumentResolutionException) {
