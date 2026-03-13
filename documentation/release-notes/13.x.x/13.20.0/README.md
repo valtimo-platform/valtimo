@@ -18,6 +18,8 @@
 
 ## Bugfixes
 
+* Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
+  once a day.
 * **Fixed error when viewing audit events for cases created before 13.15.0**
 
   Opening the progress tab for a case that was created on an older version could result in an error. A database migration now automatically corrects the stored audit data on startup.
