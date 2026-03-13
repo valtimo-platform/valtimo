@@ -25,24 +25,10 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
-import com.ritense.document.domain.impl.event.JsonSchemaDocumentCreatedEvent;
-import com.ritense.document.domain.impl.event.JsonSchemaDocumentModifiedEvent;
-import com.ritense.document.event.DocumentAssigneeChangedEvent;
-import com.ritense.document.event.DocumentRetentionPeriodSetEvent;
-import com.ritense.document.event.DocumentRetentionPeriodUnsetEvent;
-import com.ritense.document.event.DocumentUnassignedEvent;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
-import com.ritense.processdocument.event.BesluitAddedEvent;
+import com.ritense.processdocument.service.DocumentAuditEventProvider;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
-import com.ritense.valtimo.operaton.processaudit.ProcessEndedEvent;
-import com.ritense.valtimo.operaton.processaudit.ProcessStartedEvent;
 import com.ritense.valtimo.contract.audit.AuditEvent;
-import com.ritense.valtimo.contract.document.event.DocumentRelatedFileAddedEvent;
-import com.ritense.valtimo.contract.document.event.DocumentRelatedFileRemovedEvent;
-import com.ritense.valtimo.contract.documentgeneration.event.DossierDocumentGeneratedEvent;
-import com.ritense.valtimo.contract.event.TaskAssignedEvent;
-import com.ritense.valtimo.contract.event.TaskCompletedEvent;
-import com.ritense.valtimo.contract.event.TaskDueDateSetEvent;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -52,17 +38,19 @@ public class OperatonProcessJsonSchemaDocumentAuditService implements ProcessDoc
 
     private final AuditService auditService;
     private final JsonSchemaDocumentService documentService;
-
     private final AuthorizationService authorizationService;
+    private final List<DocumentAuditEventProvider> auditEventProviders;
 
     public OperatonProcessJsonSchemaDocumentAuditService(
         AuditService auditService,
         JsonSchemaDocumentService documentService,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        List<DocumentAuditEventProvider> auditEventProviders
     ) {
         this.auditService = auditService;
         this.documentService = documentService;
         this.authorizationService = authorizationService;
+        this.auditEventProviders = auditEventProviders;
     }
 
     @Override
@@ -70,23 +58,9 @@ public class OperatonProcessJsonSchemaDocumentAuditService implements ProcessDoc
         final Document.Id id,
         final Pageable pageable
     ) {
-        final List<Class<? extends AuditEvent>> eventTypes = List.of(
-            JsonSchemaDocumentCreatedEvent.class,
-            JsonSchemaDocumentModifiedEvent.class,
-            DocumentRetentionPeriodSetEvent.class,
-            DocumentRetentionPeriodUnsetEvent.class,
-            TaskAssignedEvent.class,
-            TaskCompletedEvent.class,
-            ProcessStartedEvent.class,
-            ProcessEndedEvent.class,
-            DossierDocumentGeneratedEvent.class,
-            DocumentRelatedFileAddedEvent.class,
-            DocumentRelatedFileRemovedEvent.class,
-            BesluitAddedEvent.class,
-            DocumentAssigneeChangedEvent.class,
-            DocumentUnassignedEvent.class,
-            TaskDueDateSetEvent.class
-        );
+        final List<Class<? extends AuditEvent>> eventTypes = auditEventProviders.stream()
+            .flatMap(provider -> provider.getAuditEventTypes().stream())
+            .toList();
 
         final var document = documentService.getDocumentBy(id);
         authorizationService.requirePermission(

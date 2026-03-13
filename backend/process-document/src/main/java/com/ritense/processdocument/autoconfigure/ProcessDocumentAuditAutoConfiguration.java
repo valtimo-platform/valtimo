@@ -20,9 +20,12 @@ import com.ritense.audit.service.AuditSearchService;
 import com.ritense.audit.service.AuditService;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
+import com.ritense.processdocument.service.DocumentAuditEventProvider;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
+import com.ritense.processdocument.service.impl.DefaultDocumentAuditEventProvider;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAuditService;
 import com.ritense.processdocument.web.rest.ProcessDocumentAuditResource;
+import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,16 +36,24 @@ import org.springframework.context.annotation.Bean;
 public class ProcessDocumentAuditAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(DefaultDocumentAuditEventProvider.class)
+    public DefaultDocumentAuditEventProvider defaultDocumentAuditEventProvider() {
+        return new DefaultDocumentAuditEventProvider();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessDocumentAuditService.class)
     public OperatonProcessJsonSchemaDocumentAuditService processDocumentAuditService(
         AuditService auditService,
         JsonSchemaDocumentService documentService,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        List<DocumentAuditEventProvider> auditEventProviders
     ) {
         return new OperatonProcessJsonSchemaDocumentAuditService(
             auditService,
             documentService,
-            authorizationService
+            authorizationService,
+            auditEventProviders
         );
     }
 

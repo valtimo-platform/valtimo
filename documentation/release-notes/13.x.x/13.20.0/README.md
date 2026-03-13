@@ -12,9 +12,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Custom audit events can now be added to the case audit tab**
 
-  New enhancement explanation.
+  Third-party developers can now register additional event types to be shown in the audit tab on the case detail page. Implement the new `DocumentAuditEventProvider` interface as a Spring bean and return the event classes to include. Multiple providers can be registered independently — Valtimo merges them all without affecting the built-in events. See [Custom audit events](../../../features/case/for-developers/custom-audit-events.md) for a step-by-step guide.
 
 ## Bugfixes
 
