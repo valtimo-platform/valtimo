@@ -18,9 +18,9 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
-import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionConfigurationIssueDto
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
@@ -161,12 +161,20 @@ class CaseDefinitionResource(
             SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
         ) pageable: Pageable
     ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionKey,
-            active = active,
-            final = final,
-            pageable = pageable
-        )
+        val caseDefinitions = if (active == null) {
+            service.getCaseDefinitionsForManagement(
+                caseDefinitionKey = caseDefinitionKey,
+                final = final,
+                pageable = pageable
+            )
+        } else {
+            service.getCaseDefinitions(
+                caseDefinitionKey = caseDefinitionKey,
+                active = active,
+                final = final,
+                pageable = pageable
+            )
+        }
         val caseDefinitionIds = caseDefinitions.content.map { it.id }
         val idsWithIssues = if (caseDefinitionIds.isNotEmpty()) {
             configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(caseDefinitionIds)

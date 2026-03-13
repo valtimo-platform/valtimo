@@ -168,6 +168,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         applicationEventPublisher: ApplicationEventPublisher,
         caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionService {
         return CaseDefinitionService(
             caseDefinitionListColumnRepository,
@@ -178,7 +179,8 @@ class CaseAutoConfiguration {
             authorizationService,
             applicationEventPublisher,
             caseDefinitionChecker,
-            caseDefinitionFinalizationCheckersProvider
+            caseDefinitionFinalizationCheckersProvider,
+            configurationIssueRepository
         )
     }
 
@@ -189,12 +191,14 @@ class CaseAutoConfiguration {
         environment: Environment,
         @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
         @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionChecker {
         return CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
             environment,
             draftEnvironments,
             draftsEnabled,
+            configurationIssueRepository,
         )
     }
 

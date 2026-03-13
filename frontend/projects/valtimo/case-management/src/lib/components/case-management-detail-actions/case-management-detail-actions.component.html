@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
+    setActiveDisabled: setActiveDisabled$ | async,
+    hasUnresolvedConfigurationIssues: hasUnresolvedConfigurationIssues$ | async,
     compactMode: compactMode$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
@@ -38,6 +40,8 @@
 
     <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
   </div>
+
+
 </div>
 
 <ng-template #versionSelection let-obs="obs">
@@ -115,13 +119,31 @@
       >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
     </cds-overflow-menu-option>
 
-    <cds-overflow-menu-option
-      data-test-id="caseSetActiveVersionButton"
-      [id]="'setGlobalActiveVersion'"
-      [disabled]="obs.selectedVersionIsGloballyActive"
-      (selected)="openGlobalActiveVersionModal()"
-      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
-    </cds-overflow-menu-option>
+    <span
+      *ngIf="obs.hasUnresolvedConfigurationIssues && !obs.selectedVersionIsGloballyActive; else setActiveDefault"
+    >
+      <cds-tooltip
+        [description]="'caseManagement.setGlobalActiveVersionConfigurationIssuesWarning' | translate"
+        [align]="'bottom'"
+      >
+        <cds-overflow-menu-option
+          data-test-id="caseSetActiveVersionButton"
+          [id]="'setGlobalActiveVersion'"
+          [disabled]="true"
+          >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+        </cds-overflow-menu-option>
+      </cds-tooltip>
+    </span>
+
+    <ng-template #setActiveDefault>
+      <cds-overflow-menu-option
+        data-test-id="caseSetActiveVersionButton"
+        [id]="'setGlobalActiveVersion'"
+        [disabled]="obs.selectedVersionIsGloballyActive"
+        (selected)="openGlobalActiveVersionModal()"
+        >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+      </cds-overflow-menu-option>
+    </ng-template>
   </cds-overflow-menu>
 </ng-template>
 

@@ -27,6 +27,10 @@ export class ConfigurationIssueService {
     this._unresolvedIssueTypes$.next(new Set(issueTypes));
   }
 
+  public readonly hasAnyIssues$: Observable<boolean> = this._unresolvedIssueTypes$.pipe(
+    map(types => types.size > 0)
+  );
+
   public hasIssue$(issueType: string): Observable<boolean> {
     return this._unresolvedIssueTypes$.pipe(map(types => types.has(issueType)));
   }

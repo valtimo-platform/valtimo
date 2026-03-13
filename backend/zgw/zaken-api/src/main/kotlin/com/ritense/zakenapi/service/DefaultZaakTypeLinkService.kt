@@ -29,6 +29,7 @@ import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.event.ZaakTypeLinkSavedEvent
+import com.ritense.processdocument.importer.ZaakTypeLinkImporter
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import com.ritense.zgw.Rsin
 import org.springframework.context.ApplicationEventPublisher
@@ -78,7 +79,7 @@ class DefaultZaakTypeLinkService(
             "caseDefinitionId",
             caseDefinitionId.toString()
         ) {
-            caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
+            caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, ZaakTypeLinkImporter.ISSUE_TYPE)
             var zaakTypeLink = zaakTypeLinkRepository.findByCaseDefinitionId(caseDefinitionId)
             if (zaakTypeLink == null) {
                 zaakTypeLink = ZaakTypeLink(
@@ -101,12 +102,12 @@ class DefaultZaakTypeLinkService(
     override fun deleteZaakTypeLinkBy(
         @LoggableResource("caseDefinitionId") caseDefinitionId: CaseDefinitionId
     ) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
+        caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, ZaakTypeLinkImporter.ISSUE_TYPE)
         zaakTypeLinkRepository.deleteByCaseDefinitionId(caseDefinitionId)
     }
 
     override fun modify(zaakTypeLink: ZaakTypeLink) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(zaakTypeLink.caseDefinitionId)
+        caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(zaakTypeLink.caseDefinitionId, ZaakTypeLinkImporter.ISSUE_TYPE)
         zaakTypeLinkRepository.save(zaakTypeLink)
     }
 }

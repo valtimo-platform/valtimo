@@ -47,7 +47,7 @@ class DocumentObjectenApiSyncManagementService(
         requireNotNull(sync.objectManagementConfigurationId) {
             "objectManagementConfigurationId must not be null"
         }
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(sync.caseDefinitionId)
+        caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(sync.caseDefinitionId, DocumentObjectenApiSyncImporter.ISSUE_TYPE)
         val modifiedSync = getSyncConfiguration(sync.caseDefinitionId)
             ?.copy(
                 objectManagementConfigurationId = sync.objectManagementConfigurationId,
@@ -67,7 +67,7 @@ class DocumentObjectenApiSyncManagementService(
         logger.info {
             "Delete sync configuration caseDefinitionId=$caseDefinitionId"
         }
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
+        caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, DocumentObjectenApiSyncImporter.ISSUE_TYPE)
         documentObjectenApiSyncRepository.deleteByCaseDefinitionId(caseDefinitionId)
     }
 }

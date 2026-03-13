@@ -21,7 +21,7 @@ import {Page, TemplatePayload} from '@valtimo/document';
 import {EnvironmentService} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
 
@@ -49,7 +49,6 @@ export class CaseManagementListComponent implements AfterViewInit {
     switchMap(([params, canUpdate]) =>
       this.caseManagementService.getCaseDefinitions({
         ...params,
-        active: true,
         final: canUpdate ? '' : true,
       })
     ),

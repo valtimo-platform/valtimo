@@ -487,10 +487,12 @@
     "setGlobalActiveVersionErrorTitle": "Error",
     "setGlobalActiveVersionErrorMessage": "Something went wrong",
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
     "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
     "needsConfiguration": "Needs configuration",
+    "inactive": "Inactive",
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",

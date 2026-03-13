@@ -15,6 +15,7 @@
  */
 
 export class CaseListItem {
+  active: boolean;
   autoAssignTasks: boolean;
   canHaveAssignee: boolean;
   caseDefinitionKey: string;

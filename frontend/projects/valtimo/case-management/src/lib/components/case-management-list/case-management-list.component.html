@@ -47,6 +47,11 @@
 ></valtimo-case-management-create>
 
 <ng-template #statusColumnTemplate let-data="data">
+  @if (!data?.item?.active) {
+    <cds-tag type="purple" class="cds-tag--no-margin">
+      {{ 'caseManagement.inactive' | translate }}
+    </cds-tag>
+  }
   @if (data?.item?.hasConfigurationIssues) {
     <cds-tag type="red" class="cds-tag--no-margin">
       {{ 'caseManagement.needsConfiguration' | translate }}

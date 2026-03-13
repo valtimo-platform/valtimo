@@ -23,6 +23,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
@@ -58,6 +59,7 @@ import org.semver4j.Semver
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -80,6 +82,7 @@ class CaseDefinitionService(
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+    private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
@@ -233,6 +236,11 @@ class CaseDefinitionService(
     fun setActiveCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
         denyManagementOperation()
         val caseDefinition = runWithoutAuthorization { getCaseDefinition(caseDefinitionId) }
+
+        val unresolvedIssues = configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId)
+        require(unresolvedIssues.isEmpty()) {
+            "Failed to set active case-definition. Case-definition with id: '$caseDefinitionId' has unresolved configuration issues."
+        }
 
         val activeCaseDefinition = caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionId.key)
         if (activeCaseDefinition != null && activeCaseDefinition.id != caseDefinitionId) {
@@ -433,13 +441,44 @@ class CaseDefinitionService(
     }
 
     fun setLatestToActiveIfNoneIsActive() {
-        caseDefinitionRepository.findAll()
+        val allCaseDefinitions = caseDefinitionRepository.findAll()
+        val caseDefinitionIdsWithIssues = configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(
+            allCaseDefinitions.map { it.id }
+        )
+        allCaseDefinitions
             .groupBy { it.id.key }
             .map { it.value }
             .filter { caseDefinitions -> caseDefinitions.none { caseDefinition -> caseDefinition.active } }
-            .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
+            .mapNotNull { caseDefinitions ->
+                caseDefinitions
+                    .filter { it.id !in caseDefinitionIdsWithIssues }
+                    .maxByOrNull { it.id.versionTag }
+            }
             .map { caseDefinition -> caseDefinition.copy(active = true) }
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
+    }
+
+    fun getCaseDefinitionsForManagement(
+        caseDefinitionKey: String? = null,
+        final: Boolean? = null,
+        pageable: Pageable,
+    ): Page<CaseDefinition> {
+        denyManagementOperation()
+        val spec = getCaseDefinitionsQuery(
+            caseDefinitionKey = caseDefinitionKey,
+            final = final,
+        )
+        val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))
+        val representativePerKey = allCaseDefinitions
+            .groupBy { it.id.key }
+            .map { (_, versions) ->
+                versions.find { it.active } ?: versions.maxBy { it.id.versionTag }
+            }
+            .sortedBy { it.name.lowercase() }
+
+        val start = pageable.offset.toInt().coerceAtMost(representativePerKey.size)
+        val end = (start + pageable.pageSize).coerceAtMost(representativePerKey.size)
+        return PageImpl(representativePerKey.subList(start, end), pageable, representativePerKey.size.toLong())
     }
 
     fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
