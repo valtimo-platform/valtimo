@@ -75,6 +75,24 @@ class ConfigurationIssueSseEventMapperTest {
     }
 
     @Test
+    fun `map should return null when result is not ObjectNode and resultId is null`() {
+        val event = ValtimoEvent(
+            id = "test-id",
+            type = ConfigurationIssueUpdated.TYPE,
+            date = LocalDateTime.now(),
+            userId = null,
+            roles = null,
+            resultType = null,
+            resultId = null,
+            result = null
+        )
+
+        val result = mapper.map(event)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
     fun `map should return null when event type does not match`() {
         val event = ValtimoEvent(
             id = "test-id",

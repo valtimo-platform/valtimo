@@ -23,10 +23,11 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import jakarta.transaction.Transactional
-import java.time.LocalDateTime
 import org.springframework.context.event.EventListener
+import java.time.LocalDateTime
 
 @Transactional
 @AllOpen
@@ -62,6 +63,17 @@ open class CaseDefinitionConfigurationIssueListener(
             event.caseDefinitionId, event.issueType
         ) ?: return
         repository.save(existing.copy(resolved = true, resolvedAt = LocalDateTime.now()))
+        outboxService.send {
+            ConfigurationIssueUpdated(
+                caseDefinitionKey = event.caseDefinitionId.key,
+                caseDefinitionVersionTag = event.caseDefinitionId.versionTag.toString()
+            )
+        }
+    }
+
+    @EventListener(CaseConfigurationIssuesResetEvent::class)
+    fun handleIssuesReset(event: CaseConfigurationIssuesResetEvent) {
+        repository.deleteByCaseDefinitionId(event.caseDefinitionId)
         outboxService.send {
             ConfigurationIssueUpdated(
                 caseDefinitionKey = event.caseDefinitionId.key,

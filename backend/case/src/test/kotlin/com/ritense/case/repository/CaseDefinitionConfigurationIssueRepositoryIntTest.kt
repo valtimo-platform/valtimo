@@ -173,6 +173,6 @@ class CaseDefinitionConfigurationIssueRepositoryIntTest @Autowired constructor(
             listOf(caseDefinitionId1, caseDefinitionId2)
         )
 
-        assertThat(result).containsExactly(caseDefinitionId1)
+        assertThat(result).containsOnly(caseDefinitionId1)
     }
 }

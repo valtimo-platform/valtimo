@@ -56,4 +56,10 @@
             <column name="case_definition_version_tag"/>
         </createIndex>
     </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <addUniqueConstraint tableName="case_definition_configuration_issue"
+                             columnNames="case_definition_key, case_definition_version_tag, issue_type, resolved"
+                             constraintName="uc_case_def_config_issue_type_resolved"/>
+    </changeSet>
 </databaseChangeLog>

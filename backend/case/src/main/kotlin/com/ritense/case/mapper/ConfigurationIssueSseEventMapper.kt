@@ -28,8 +28,11 @@ class ConfigurationIssueSseEventMapper : SseEventMapper {
         return when (event.type) {
             ConfigurationIssueUpdated.TYPE -> {
                 val result = event.result as? com.fasterxml.jackson.databind.node.ObjectNode
+                val caseDefinitionKey = result?.get("caseDefinitionKey")?.asText()
+                    ?: event.resultId
+                    ?: return null
                 ConfigurationIssueUpdatedSseEvent(
-                    caseDefinitionKey = result?.get("caseDefinitionKey")?.asText() ?: event.resultId!!,
+                    caseDefinitionKey = caseDefinitionKey,
                     caseDefinitionVersionTag = result?.get("caseDefinitionVersionTag")?.asText() ?: ""
                 )
             }

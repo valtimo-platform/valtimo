@@ -60,6 +60,7 @@ data class CaseDefinitionResponseDto(
                 autoAssignTasks =  caseDefinition.autoAssignTasks,
                 hasExternalStartForm =  caseDefinition.hasExternalStartForm,
                 externalStartFormUrl =  caseDefinition.externalStartFormUrl,
+                externalStartFormDescription =  caseDefinition.externalStartFormDescription,
                 hasConfigurationIssues = hasConfigurationIssues,
             )
 
@@ -79,6 +80,7 @@ data class CaseDefinitionResponseDto(
             autoAssignTasks = caseDefinition.autoAssignTasks,
             hasExternalStartForm = caseDefinition.hasExternalStartForm,
             externalStartFormUrl = caseDefinition.externalStartFormUrl,
+            externalStartFormDescription = caseDefinition.externalStartFormDescription,
 
             conflictingVersions = conflictingVersions,
         )

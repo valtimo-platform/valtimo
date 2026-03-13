@@ -22,10 +22,22 @@ import {BreadcrumbService} from '@valtimo/components';
 import {EnvironmentService, GlobalNotificationService} from '@valtimo/shared';
 import {SseService} from '@valtimo/sse';
 import {IconService, Notification, NotificationContent} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, switchMap} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+import {take, tap, withLatestFrom} from 'rxjs/operators';
 import * as semver from 'semver';
-import {CaseDefinition, CaseDefinitionFinalizationCheckResult, ConfigurationIssueUpdatedSseEvent} from '../../models';
+import {
+  CaseDefinition,
+  CaseDefinitionFinalizationCheckResult,
+  ConfigurationIssueUpdatedSseEvent,
+} from '../../models';
 import {CaseManagementService} from '../../services';
 
 @Component({
@@ -198,7 +210,11 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
     this._deploymentNotificationObject$.asObservable();
 
   public readonly caseDefinitionFinalizationCheckResult$: Observable<CaseDefinitionFinalizationCheckResult> =
-    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$, this._refreshFinalizationCheck$]).pipe(
+    combineLatest([
+      this.caseDefinitionKey$,
+      this.caseDefinitionVersionTag$,
+      this._refreshFinalizationCheck$,
+    ]).pipe(
       switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
         this.caseManagementService.getCaseDefinitionFinalizationCheck(
           caseDefinitionKey,
@@ -259,13 +275,12 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
     });
 
     this._subscriptions.add(
-      combineLatest([
-        this.caseDefinitionKey$,
-        this.sseService.getSseEventObservable<ConfigurationIssueUpdatedSseEvent>(
-          'CONFIGURATION_ISSUE_UPDATED'
-        ),
-      ])
-        .pipe(filter(([key, event]) => event.caseDefinitionKey === key))
+      this.sseService
+        .getSseEventObservable<ConfigurationIssueUpdatedSseEvent>('CONFIGURATION_ISSUE_UPDATED')
+        .pipe(
+          withLatestFrom(this.caseDefinitionKey$),
+          filter(([event, key]) => event.caseDefinitionKey === key)
+        )
         .subscribe(() => {
           this._refreshFinalizationCheck$.next(null);
         })

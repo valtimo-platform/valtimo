@@ -33,7 +33,6 @@ import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionImporter
-import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseExporter
 import com.ritense.case.service.CaseInstanceService
@@ -45,6 +44,7 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionResource
@@ -367,10 +367,12 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = CaseDefinitionImporter(
         objectMapper,
         caseDefinitionRepository,
-        caseDefinitionChecker
+        caseDefinitionChecker,
+        applicationEventPublisher
     )
 
     @Bean

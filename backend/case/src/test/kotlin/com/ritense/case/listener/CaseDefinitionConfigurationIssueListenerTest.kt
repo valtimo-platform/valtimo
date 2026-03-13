@@ -22,6 +22,7 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -109,6 +110,14 @@ class CaseDefinitionConfigurationIssueListenerTest {
 
         verify(repository, never()).save(any())
         verify(outboxService, never()).send(any())
+    }
+
+    @Test
+    fun `handleIssuesReset should delete all issues and send outbox event`() {
+        listener.handleIssuesReset(CaseConfigurationIssuesResetEvent(caseDefinitionId))
+
+        verify(repository).deleteByCaseDefinitionId(caseDefinitionId)
+        verify(outboxService).send(any())
     }
 
     @Test
