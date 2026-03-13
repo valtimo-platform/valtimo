@@ -120,7 +120,7 @@ public class KeycloakUserManagementService implements UserManagementService {
     public List<ManageableUser> getAllUsers() {
         List<ManageableUser> users;
         try (Keycloak keycloak = keycloakService.keycloak()) {
-            users = keycloakService.usersResource(keycloak).list(0, MAX_USERS).stream()
+            users = keycloakService.usersResource(keycloak).search(null, 0, MAX_USERS, true).stream()
                 .filter(UserRepresentation::isEnabled)
                 .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
                 .filter(this::hasUserViewListPermission)
@@ -142,14 +142,18 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public Page<ManageableUser> queryUsers(String searchTerm, Pageable pageable) {
-        String normalizedSearchTerm = searchTerm.toLowerCase().trim();
-        List<ManageableUser> users = getAllUsers().stream()
-            .filter(user ->
-                (user.getEmail() != null && user.getEmail().toLowerCase().contains(normalizedSearchTerm))
-                    || (user.getUsername() != null && user.getUsername().toLowerCase().contains(normalizedSearchTerm))
-                    || (user.getFullName() != null && user.getFullName().toLowerCase().contains(normalizedSearchTerm))
-            )
-            .toList();
+        List<ManageableUser> users;
+        try (Keycloak keycloak = keycloakService.keycloak()) {
+            users = keycloakService.usersResource(keycloak).search(searchTerm, 0, MAX_USERS, true).stream()
+                .filter(UserRepresentation::isEnabled)
+                .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+                .filter(this::hasUserViewListPermission)
+                .toList();
+        }
+
+        if (users.size() >= MAX_USERS) {
+            logger.warn(MAX_USERS_WARNING_MESSAGE);
+        }
         return PageableExecutionUtils.getPage(users, pageable, users::size);
     }
 
