@@ -35,7 +35,16 @@ import {
   GlobalNotificationService,
 } from '@valtimo/shared';
 import {IconService, ListItem, Notification} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
@@ -74,11 +83,12 @@ export class CaseManagementDetailActionsComponent {
     map(params => params.caseDefinitionVersionTag || '')
   );
 
-  public readonly globalActiveVersion$ = this.caseDefinitionKey$.pipe(
+  public readonly globalActiveVersion$: Observable<string | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService
-        .getGlobalActiveCase(caseDefinitionKey)
-        .pipe(map(result => result.caseDefinitionVersionTag))
+      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey).pipe(
+        map(result => result.caseDefinitionVersionTag),
+        catchError(() => of(null))
+      )
     )
   );
 
@@ -100,14 +110,16 @@ export class CaseManagementDetailActionsComponent {
   public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
   public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly _globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+  public readonly _globalActiveCase$: Observable<any | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(catchError(() => of(null)))
     )
   );
 
   public readonly _caseDefinitionTitle$: Observable<string> = this._globalActiveCase$.pipe(
-    map(result => result.name)
+    map(result => result?.name ?? '')
   );
 
   public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;

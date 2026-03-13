@@ -24,10 +24,12 @@ import {SseService} from '@valtimo/sse';
 import {IconService, Notification, NotificationContent} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
 } from 'rxjs';
@@ -101,9 +103,11 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
     'caseManagement.deployment.finalizeDraftConfirmationModal.description'
   );
 
-  public readonly globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+  public readonly globalActiveCase$: Observable<any | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(catchError(() => of(null)))
     )
   );
 
@@ -114,14 +118,14 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
   ]).pipe(
     map(([globalActiveCase, caseDefinitionKey, caseDefinitionVersionTag]) => {
       return (
-        globalActiveCase.caseDefinitionKey === caseDefinitionKey &&
-        globalActiveCase.caseDefinitionVersionTag === caseDefinitionVersionTag
+        globalActiveCase?.caseDefinitionKey === caseDefinitionKey &&
+        globalActiveCase?.caseDefinitionVersionTag === caseDefinitionVersionTag
       );
     })
   );
 
   public readonly _caseDefinitionTitle$: Observable<string> = this.globalActiveCase$.pipe(
-    map(result => result.name)
+    map(result => result?.name ?? '')
   );
 
   public readonly caseDefinition$: Observable<CaseDefinition> = combineLatest([
