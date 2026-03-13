@@ -17,6 +17,8 @@
 package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
@@ -25,6 +27,9 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
+import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.TaskService
 import org.springframework.context.event.EventListener
@@ -39,7 +44,9 @@ open class CaseAssigneeTaskCreatedListener(
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
     private val userManagementService: UserManagementService,
-    private val caseDocumentResolver: CaseDocumentResolver
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val authorizationService: AuthorizationService,
+    private val operatonTaskRepository: OperatonTaskRepository,
 ) {
 
     @EventListener(
@@ -70,6 +77,16 @@ open class CaseAssigneeTaskCreatedListener(
                     && !caseDocument.assigneeId().isNullOrEmpty()
                 ) {
                     val assignee = userManagementService.findByUsername(caseDocument.assigneeId())
+                    val operatonTask = operatonTaskRepository.findById(delegateTask.id).getOrNull() ?: return
+
+                    authorizationService.requirePermission(
+                        DelegateUserEntityAuthorizationRequest(
+                            OperatonTask::class.java,
+                            OperatonTaskActionProvider.ASSIGNABLE,
+                            assignee.username,
+                            operatonTask
+                        )
+                    )
 
                     taskService
                         .setAssignee(
