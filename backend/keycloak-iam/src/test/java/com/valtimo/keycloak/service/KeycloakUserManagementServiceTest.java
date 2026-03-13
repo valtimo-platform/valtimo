@@ -21,20 +21,26 @@ import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.D
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static com.valtimo.keycloak.service.KeycloakUserManagementService.MAX_USERS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
+import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -47,6 +53,10 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 class KeycloakUserManagementServiceTest {
 
@@ -54,6 +64,7 @@ class KeycloakUserManagementServiceTest {
     private KeycloakUserManagementService userManagementService;
     private CacheManager cacheManager;
     private CacheManagerUserCache cacheManagerUserCache;
+    private AuthorizationService authorizationService;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -69,7 +80,8 @@ class KeycloakUserManagementServiceTest {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
         cacheManager = new ConcurrentMapCacheManager();
         cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache);
+        authorizationService = mock(AuthorizationService.class);
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache, authorizationService);
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
@@ -85,11 +97,19 @@ class KeycloakUserManagementServiceTest {
             .thenReturn(Set.of());
         when(keycloakService.clientRolesResource(any()).get(any()).getRoleGroupMembers())
             .thenReturn(Set.of());
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        // Default to admin to bypass permission checks for existing tests
+        when(authentication.getAuthorities()).thenReturn((Collection) List.of(new SimpleGrantedAuthority(ADMIN)));
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @AfterEach
     public void after() {
         reset(keycloakService);
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -228,6 +248,45 @@ class KeycloakUserManagementServiceTest {
 
         verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
         assertThat(user).isNull();
+    }
+
+    @Test
+    void shouldFilterUsersBasedOnPermission() {
+        // Set current user as non-admin
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getAuthorities()).thenReturn((Collection) List.of(new SimpleGrantedAuthority(USER)));
+
+        // Mock permission: grant for johnDoe, deny for jamesVance
+        when(authorizationService.hasPermission(any(EntityAuthorizationRequest.class)))
+            .thenAnswer(invocation -> {
+                EntityAuthorizationRequest<User> request = invocation.getArgument(0);
+                User user = request.getEntities().get(0);
+                return johnDoe.getId().equals(((ManageableUser) user).getId());
+            });
+
+        var users = userManagementService.findByRole(USER);
+
+        var userIds = users.stream().map(ManageableUser::getId).collect(Collectors.toList());
+        assertThat(userIds).containsExactly(johnDoe.getId());
+        assertThat(userIds).doesNotContain(jamesVance.getId());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserViewPermissionIsDenied() {
+        // Set current user as non-admin
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getAuthorities()).thenReturn((Collection) List.of(new SimpleGrantedAuthority(USER)));
+
+        // Mock deny for johnDoe
+        doThrow(new RuntimeException("Permission denied"))
+            .when(authorizationService).requirePermission(any(EntityAuthorizationRequest.class));
+
+        when(keycloakService.usersResource(any()).get(eq(johnDoe.getId())).toRepresentation())
+            .thenReturn(johnDoe);
+
+        assertThatThrownBy(() -> userManagementService.findById(johnDoe.getId()))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Permission denied");
     }
 
     private UserRepresentation newUser(String firstName, String lastName, List<String> roles, String username) {

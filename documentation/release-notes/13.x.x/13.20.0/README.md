@@ -12,9 +12,14 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Secure /users endpoint with access control**
 
-  New enhancement explanation.
+  A new access control resource type has been added `com.ritense.valtimo.contract.authentication.User`.
+
+  This resource type allows for controlling access to user data through the `/api/v1/users/` API. The supported actions
+  are:
+  - `view`: Allows viewing details of a single user.
+  - `view_list`: Allows viewing a list of users or searching for users.
 
 ## Bugfixes
 
