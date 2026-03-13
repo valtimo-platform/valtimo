@@ -64,7 +64,7 @@ class NoteServiceIntTest() : BaseIntegrationTest() {
         val admin = ValtimoUser()
         admin.id = USERNAME
         admin.username = USERNAME
-        admin.roles = listOf(USER, ADMIN)
+        admin.setRoles(listOf(USER, ADMIN))
         whenever(userManagementService.currentUser).thenReturn(admin)
         whenever(userManagementService.findByUsername(USERNAME)).thenReturn(admin)
     }

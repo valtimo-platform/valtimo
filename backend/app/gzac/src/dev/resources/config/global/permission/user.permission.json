@@ -1,0 +1,26 @@
+[
+    {
+        "resourceType": "com.ritense.valtimo.contract.authentication.User",
+        "actions": [
+            "view_list",
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.valtimo.contract.authentication.User",
+        "actions": [
+            "view_list",
+            "view"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "roles",
+                "operator": "list_contains",
+                "value": "ROLE_USER"
+            }
+        ]
+    }
+]
