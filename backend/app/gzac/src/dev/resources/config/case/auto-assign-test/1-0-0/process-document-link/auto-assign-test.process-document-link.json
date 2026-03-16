@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "auto-assign-test",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]
