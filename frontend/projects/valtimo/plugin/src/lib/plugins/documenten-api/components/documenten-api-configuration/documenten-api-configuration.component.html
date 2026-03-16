@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="documentenApiConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    data-test-id="documentenApiUrl"
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +49,7 @@
   </v-input>
   <v-input
     name="bronorganisatie"
-    data-test-id="documentenApiBronorganisatie"
+    [attr.data-test-id]="testIds.bronorganisatie"
     type="digitOnly"
     [title]="'bronorganisatie' | pluginTranslate: pluginId | async"
     [margin]="true"
@@ -69,7 +69,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      data-test-id="documentenApiAuthenticationPluginConfiguration"
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
@@ -83,7 +83,7 @@
       [items]="pObs.apiVersionItems"
       [margin]="true"
       name="apiVersion"
-      data-test-id="documentenApiApiVersion"
+      [attr.data-test-id]="testIds.apiVersion"
       [title]="'apiVersion' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.apiVersion"

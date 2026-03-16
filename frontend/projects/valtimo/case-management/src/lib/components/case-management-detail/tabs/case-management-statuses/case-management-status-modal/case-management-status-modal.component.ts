@@ -47,6 +47,7 @@ import {IconService, ListItem} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {TagColor} from '@valtimo/shared';
+import {CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS} from '../../../../../constants';
 
 @Component({
   standalone: false,
@@ -56,6 +57,8 @@ import {TagColor} from '@valtimo/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS;
+
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 

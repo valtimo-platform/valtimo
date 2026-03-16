@@ -41,7 +41,7 @@
       [label]="'caseManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
       [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
       [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-      data-test-id="caseHandlerCanHaveHandler"
+      [attr.data-test-id]="testIds.canHaveHandler"
     ></cds-toggle>
 
     <cds-tooltip
@@ -66,7 +66,7 @@
         [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
         [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
         [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-        data-test-id="caseHandlerAutomaticallyAssign"
+        [attr.data-test-id]="testIds.automaticallyAssign"
       ></cds-toggle>
     </cds-tooltip>
   </div>

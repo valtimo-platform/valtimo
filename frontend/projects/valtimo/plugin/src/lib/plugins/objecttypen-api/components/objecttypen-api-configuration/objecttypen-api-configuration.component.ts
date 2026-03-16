@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {ObjecttypenApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {OBJECTTYPEN_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -37,6 +38,7 @@ export class ObjecttypenApiConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<ObjecttypenApiConfig> =
     new EventEmitter<ObjecttypenApiConfig>();
+  protected readonly testIds = OBJECTTYPEN_API_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

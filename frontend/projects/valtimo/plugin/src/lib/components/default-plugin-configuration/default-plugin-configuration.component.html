@@ -21,11 +21,9 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
-  <!-- [attr.data-test-id]="PLUGIN_CONFIGURATION_ID_TEST" -->
-
   <v-input
     name="configurationId"
-    data-test-id="pluginConfigurationId"
+    [attr.data-test-id]="testIds.configurationId"
     [title]="'plugin.configurationId' | translate"
     [margin]="true"
     [disabled]="obs.disabled"

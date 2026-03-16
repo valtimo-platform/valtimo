@@ -35,6 +35,7 @@ import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} fro
 import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
+import {CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -44,6 +45,8 @@ import {CaseDetailService, CaseManagementService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailActionsComponent {
+  protected readonly testIds = CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS;
+
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 

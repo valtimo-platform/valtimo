@@ -39,6 +39,7 @@ import {
 } from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {CaseManagementService} from '../../../../services';
+import {CASE_MANAGEMENT_TAGS_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -48,6 +49,8 @@ import {CaseManagementService} from '../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_TAGS_TEST_IDS;
+
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
