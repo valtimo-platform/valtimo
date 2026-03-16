@@ -326,9 +326,9 @@ Access to a user task can be controlled based on properties inside the JsonSchem
 
 <details>
 
-<summary>Conditions for resources based on case definition</summary>
+<summary>Conditions for resources based on Case type</summary>
 
-For this role the metadata of the resources related to a case (related documents on the Document API) is only editable when casetype is included in the 'value' list
+For this role the metadata of the resources related to a case (related documents on the Document API) is only editable when case type is included in the 'value' list
 
 ```json
 {
