@@ -10,5 +10,4 @@ export {
   VALUE_PATH_SELECTOR_VALUE_TEST_IDS,
   KEY_DROPDOWN_VALUE_TEST_IDS,
   SINGLE_VALUE_TEST_IDS,
-  CARBON_LIST_TEST_IDS,
-} from '../../frontend/projects/valtimo/components/src/public_api';
+} from '../../frontend/projects/valtimo/components/src/lib/constants/components.test-ids';
