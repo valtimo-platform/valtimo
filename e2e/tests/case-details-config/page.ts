@@ -96,6 +96,26 @@ export class CaseDetailsConfigPage {
     return this.page.getByTestId('caseTagSaveButton');
   }
 
+  // ─── Version Selector ────────────────────────────────────────────
+
+  get versionSelectDropdown() {
+    return this.page.getByTestId('caseVersionSelectDropdown');
+  }
+
+  async ensureDraftVersionSelected() {
+    const dropdown = this.versionSelectDropdown;
+    const selectedText = await dropdown.innerText();
+
+    if (selectedText.includes('DRAFT')) {
+      return;
+    }
+
+    await dropdown.click();
+    const listbox = this.page.getByRole('listbox');
+    const draftOption = listbox.locator('[data-test-id^="caseVersion"]:has-text("DRAFT")').first();
+    await draftOption.click();
+  }
+
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseDetailsConfig(caseIdentifier: string) {

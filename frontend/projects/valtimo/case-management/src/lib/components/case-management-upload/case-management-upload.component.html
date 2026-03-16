@@ -71,10 +71,14 @@
       >
       </cds-file-uploader>
 
-      <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+      <cds-inline-notification
+        data-test-id="uploadWarningNotification"
+        [notificationObj]="obs.notificationObj"
+      ></cds-inline-notification>
 
       <div class="valtimo-uploader__checkbox">
         <cds-checkbox
+          data-test-id="uploadWarningCheckbox"
           [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
           (checkedChange)="onCheckedChange($event)"
         >

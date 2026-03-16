@@ -68,9 +68,13 @@ test.describe('Case management', () => {
     });
 
     test('Cleanup test file', async () => {
-      await ApiUtils.apiDelete(
-        `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
-      );
+      try {
+        await ApiUtils.apiDelete(
+          `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
+        );
+      } catch {
+        // Case definition may not exist if a previous test failed
+      }
     });
   });
 

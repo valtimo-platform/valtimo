@@ -62,11 +62,11 @@ export class CaseManagementPage {
   }
 
   get uploadWarningCheckbox() {
-    return this.page.getByTestId('uploadWarningCheckbox').locator('label');
+    return this.page.getByRole('checkbox', {name: /I understand that configurations may be overwritten/});
   }
 
   get uploadWarningNotification() {
-    return this.page.getByTestId('uploadWarningNotification');
+    return this.page.getByRole('status');
   }
 
   // Navigation
@@ -115,7 +115,7 @@ export class CaseManagementPage {
     await expect(this.uploadWarningNotification).toBeVisible();
 
     const overwriteCheckbox = this.uploadWarningCheckbox;
-    await overwriteCheckbox.click();
+    await overwriteCheckbox.check({force: true});
     await expect(overwriteCheckbox).toBeChecked();
     await expect(this.uploadWizardNextButton).toBeEnabled();
   }
@@ -137,14 +137,16 @@ export class CaseManagementPage {
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
-    await this.uploadWizardNextButton.click();
 
-    const response = await this.page.waitForResponse(
+    const responsePromise = this.page.waitForResponse(
       res =>
         res.url().includes('/api/management/v1/case-import') &&
         res.request().method() === 'POST' &&
         res.status() === 200
     );
+    await this.uploadWizardNextButton.click();
+
+    const response = await responsePromise;
     expect(response.status()).toBe(200);
   }
 
