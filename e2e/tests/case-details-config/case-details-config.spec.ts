@@ -37,6 +37,7 @@ test.describe('Case details configuration', () => {
 
     await page.goto('/');
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
+    await caseDetailsConfigPage.ensureDraftVersionSelected();
   });
 
   test.afterAll(async () => {
