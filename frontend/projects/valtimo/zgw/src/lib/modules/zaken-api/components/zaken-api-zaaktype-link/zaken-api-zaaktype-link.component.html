@@ -94,7 +94,7 @@
         <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
 
         @for (zaakType of zaakTypes; track zaakType.url) {
-          <option [value]="zaakType.url" [selected]="zaakType.url === selectedZaakType.url">
+          <option [value]="zaakType.url" [selected]="zaakType.url === selectedZaakType?.url">
             {{ zaakType.omschrijving || '-' }}
           </option>
         }
@@ -109,7 +109,8 @@
         @for (pluginConfiguration of pluginConfigurations; track pluginConfiguration.id) {
           <option
             [value]="pluginConfiguration.id"
-            [selected]="pluginConfiguration.id === selectedPluginConfiguration.id"
+            [selected]="pluginConfiguration.id === selectedPluginConfiguration?.id"
+          >
           >
             {{ pluginConfiguration?.title || '-' }}
           </option>
