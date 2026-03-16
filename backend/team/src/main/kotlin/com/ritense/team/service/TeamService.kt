@@ -47,10 +47,15 @@ class TeamService(
         titleContains: String? = null,
         pageable: Pageable = Pageable.unpaged()
     ): Page<Team> {
-        val specification = if (titleContains != null) {
-            TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains)
-        } else {
-            Specification.unrestricted()
+        var specification: Specification<Team> = authorizationService.getAuthorizationSpecification(
+            EntityAuthorizationRequest(
+                Team::class.java,
+                TeamActionProvider.VIEW_LIST
+            )
+        )
+
+        if (titleContains != null) {
+            specification = specification.and(TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains))
         }
         val teams = teamRepository.findAll(specification, pageable)
         teams.forEach { team -> team.users.size } // Initialize lazy collection
@@ -61,6 +66,14 @@ class TeamService(
     fun findById(key: String): Team? {
         val team = teamRepository.findById(key).orElse(null)
         team?.users?.size // Initialize lazy collection
+
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                Team::class.java,
+                TeamActionProvider.VIEW,
+                team
+            )
+        )
         return team
     }
 
@@ -89,8 +102,18 @@ class TeamService(
     ): Page<TeamUser> {
         var specification = Specification.unrestricted<TeamUser>()
         if (teamKey != null) {
+            val team = teamRepository.findById(teamKey).orElse(null)
+
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Team::class.java,
+                    TeamActionProvider.VIEW,
+                    team
+                )
+            )
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byTeamKey(teamKey))
         }
+
         if (username != null) {
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byUsername(username))
         }

@@ -4,6 +4,8 @@
         {
             "resourceType": "com.ritense.team.domain.Team",
             "actions": [
+                "view",
+                "view_list",
                 "create",
                 "modify",
                 "delete",
@@ -14,6 +16,8 @@
         {
             "resourceType": "com.ritense.team.domain.Team",
             "actions": [
+                "view",
+                "view_list",
                 "modify",
                 "delete",
                 "assign"

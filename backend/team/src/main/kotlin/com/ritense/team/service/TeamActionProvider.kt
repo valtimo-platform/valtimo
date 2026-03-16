@@ -26,6 +26,8 @@ class TeamActionProvider : ResourceActionProvider<Team> {
     }
 
     companion object {
+        val VIEW = Action<Team>(Action.VIEW)
+        val VIEW_LIST = Action<Team>(Action.VIEW_LIST)
         val CREATE = Action<Team>(Action.CREATE)
         val MODIFY = Action<Team>(Action.MODIFY)
         val DELETE = Action<Team>(Action.DELETE)

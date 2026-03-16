@@ -302,7 +302,7 @@ public class KeycloakUserManagementService implements UserManagementService {
     @Override
     public List<String> getCurrentUserTeams() {
         ManageableUser user = getCurrentUser();
-        if (user == null || user.getUsername() == null) {
+        if (user == null || user.getUsername() == null || teamProvider == null) {
             return List.of();
         } else {
             return teamProvider.findTeamKeysByUsername(user.getUsername());
