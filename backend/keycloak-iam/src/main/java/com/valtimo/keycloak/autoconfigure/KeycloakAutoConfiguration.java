@@ -46,6 +46,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
+import java.util.Optional;
 
 @AutoConfiguration
 @EnableConfigurationProperties(KeycloakSpringBootProperties.class)
@@ -85,14 +86,14 @@ public class KeycloakAutoConfiguration {
         @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
         final UserCache userCache,
         @Lazy final AuthorizationService authorizationService,
-        @Lazy final TeamProvider teamProvider
+        @Lazy final Optional<TeamProvider> teamProvider
     ) {
         return new KeycloakUserManagementService(
             keycloakService,
             keycloakClientName,
             userCache,
             authorizationService,
-            teamProvider
+            teamProvider.orElse(null)
         );
     }
 

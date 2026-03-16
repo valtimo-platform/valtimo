@@ -28,8 +28,6 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.document.domain.CaseTag;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
-import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
@@ -43,7 +41,9 @@ import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
+import com.ritense.valtimo.contract.authentication.TeamProvider;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import jakarta.persistence.EntityManager;
@@ -461,10 +461,16 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             case TEAM -> {
                 var username = userManagementService.getCurrentUser().getUsername();
                 if (teamProvider == null) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(
+                        "No team provider found. In order to use this feature, the team library must be included.");
                 }
                 var teamKeys = teamProvider.findTeamKeysByUsername(username);
-                yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);
+
+                if (!teamKeys.isEmpty()) {
+                    yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);
+                } else {
+                    yield null;
+                }
             }
             case OPEN -> cb.and(cb.isNull(caseAssigneeIdColumn), cb.isNull(caseAssignedTeamKeyColumn));
             default -> null;
