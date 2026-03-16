@@ -37,7 +37,7 @@
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "documentDefinitionId.caseDefinitionId.key",
+                            "field": "documentDefinitionId.name",
                             "operator": "in",
                             "value": [
                                 "bezwaar"
@@ -58,7 +58,7 @@
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "documentDefinitionId.caseDefinitionId.key",
+                            "field": "documentDefinitionId.name",
                             "operator": "in",
                             "value": [
                                 "bezwaar"
@@ -79,7 +79,7 @@
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "documentDefinitionId.caseDefinitionId.key",
+                            "field": "documentDefinitionId.name",
                             "operator": "in",
                             "value": [
                                 "bezwaar"
@@ -100,7 +100,7 @@
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "documentDefinitionId.caseDefinitionId.key",
+                            "field": "documentDefinitionId.name",
                             "operator": "in",
                             "value": [
                                 "bezwaar"
@@ -121,7 +121,7 @@
                     "conditions": [
                         {
                             "type": "field",
-                            "field": "documentDefinitionId.caseDefinitionId.key",
+                            "field": "documentDefinitionId.name",
                             "operator": "in",
                             "value": [
                                 "bezwaar"

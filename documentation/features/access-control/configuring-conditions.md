@@ -343,7 +343,7 @@ For this role the metadata of the resources related to a case (related documents
             "conditions": [
                 {
                     "type": "field",
-                    "field": "documentDefinitionId.caseDefinitionId.key",
+                     "field": "documentDefinitionId.name",
                     "operator": "in",
                     "value": [
                         "bezwaar"
