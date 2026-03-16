@@ -207,7 +207,6 @@ public class KeycloakUserManagementService implements UserManagementService {
     @Override
     public List<ManageableUser> findByRole(String authority) {
         return findUserRepresentationByRoleWithoutAuthorization(authority).stream()
-            .filter(user -> hasUserViewListPermission(user, List.of(authority))) // <- uses an incomplete list of roles
             .map(user -> (ManageableUser) toValtimoUserByRetrievingRolesWithoutAuthorization(user)) // <- does an additional call to retrieve the roles
             .filter(this::hasUserViewListPermission)
             .toList();
@@ -441,26 +440,6 @@ public class KeycloakUserManagementService implements UserManagementService {
                 User.class,
                 VIEW_LIST,
                 user
-            )
-        );
-    }
-
-    private boolean hasUserViewListPermission(UserRepresentation userRepresentation, List<String> roles) {
-        if (isAdmin()) {
-            return true;
-        }
-        return authorizationService.hasPermission(
-            new EntityAuthorizationRequest<>(
-                User.class,
-                VIEW_LIST,
-                new ValtimoUserBuilder()
-                    .id(userRepresentation.getId())
-                    .username(userRepresentation.getUsername())
-                    .firstName(userRepresentation.getFirstName())
-                    .lastName(userRepresentation.getLastName())
-                    .email(userRepresentation.getEmail())
-                    .roles(roles)
-                    .build()
             )
         );
     }
