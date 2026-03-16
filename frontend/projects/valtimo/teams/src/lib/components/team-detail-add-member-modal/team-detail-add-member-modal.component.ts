@@ -27,7 +27,7 @@ import {
 } from 'carbon-components-angular';
 import {OverflowMenuComponent} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
-import {Add16, GroupAccess16} from '@carbon/icons';
+import {Add16, UserFollow16} from '@carbon/icons';
 import {BehaviorSubject, catchError, of, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {TeamsApiService, TeamDetailService} from '../../services';
@@ -64,7 +64,7 @@ export class TeamDetailAddMemberComponent implements OnInit, OnDestroy {
     private readonly teamDetailService: TeamDetailService,
     private readonly iconService: IconService
   ) {
-    this.iconService.registerAll([Add16, GroupAccess16]);
+    this.iconService.registerAll([Add16, UserFollow16]);
   }
 
   public ngOnInit(): void {

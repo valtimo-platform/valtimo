@@ -2608,8 +2608,7 @@
       "removeMember": "Lid verwijderen",
       "memberColumns": {
         "name": "Naam",
-        "email": "E-mail",
-        "role": "Rol"
+        "email": "E-mail"
       },
       "noMembers": {
         "title": "Er zijn geen leden",

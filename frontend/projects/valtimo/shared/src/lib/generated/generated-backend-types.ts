@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-03-11 11:37:27.
+// Generated using typescript-generator version 3.2.1263 on 2026-03-16 10:02:12.
 
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
@@ -688,23 +688,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
+    activityId: string;
+    processLinkType: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    processLinkType: string;
-    activityId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityType: ActivityTypeWithEventName;
-    processLinkType: string;
     activityId: string;
+    processLinkType: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessLinkResponseDto {
+    activityId: string;
+    processLinkType: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    processLinkType: string;
-    activityId: string;
     id: string;
 }
 
@@ -754,7 +754,6 @@ export interface TeamListResponseDto {
 export interface TeamResponseDto {
     key: string;
     title: string;
-    users: string[];
 }
 
 export interface TeamUpdateRequestDto {
@@ -770,7 +769,6 @@ export interface TeamUserResponseDto {
     username: string;
     fullName: string | null;
     email: string | null;
-    roles: string[] | null;
 }
 
 export interface BatchAssignTaskDTO {
@@ -898,13 +896,13 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    highContrast: boolean;
-    displayConditions: Condition<any>[] | null;
     color: WidgetColor | null;
-    width: number;
     icon: string | null;
+    width: number;
     compact: boolean | null;
     title: string;
+    highContrast: boolean;
+    displayConditions: Condition<any>[] | null;
     key: string;
     actions: WidgetAction[];
 }
@@ -926,8 +924,8 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdBy: string;
     createdOn: DateAsString;
+    createdBy: string;
     fileId: string;
     sizeInBytes: number;
     fileName: string;
@@ -946,9 +944,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
+    activityId: string;
     processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
-    activityId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -1022,9 +1020,9 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    validationConstraints: FormFieldValidationConstraint[];
     label: string;
     businessKey: boolean;
+    validationConstraints: FormFieldValidationConstraint[];
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -1054,26 +1052,26 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    activityId: string;
+    processDefinitionId: string;
+    activityType: string;
+    assignee: string;
+    tenantId: string;
     processDefinitionKey: string;
+    processInstanceId: string;
+    executionId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
+    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    processDefinitionId: string;
-    activityType: string;
-    rootProcessInstanceId: string;
-    processInstanceId: string;
-    startTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    activityId: string;
-    assignee: string;
-    tenantId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
-    executionId: string;
     id: string;
 }
 
@@ -1102,8 +1100,8 @@ export interface Semver extends Comparable<Semver> {
 }
 
 export interface BlueprintId {
-    tagPrefix: string;
     idKey: string;
+    tagPrefix: string;
 }
 
 export interface Serializable {

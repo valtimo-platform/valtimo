@@ -56,11 +56,12 @@
     <button
       cdsButton="primary"
       [cdsLayer]="1"
+      class="add-to-team-button"
       [disabled]="!obs.selectedUsername || obs.saving || obs.noUsersAvailable"
       (click)="onAddToTeam()"
     >
       {{ 'teams.detail.addMemberModal.addToTeam' | translate }}
-      <svg cdsIcon="group--access" size="16" class="cds--btn__icon"></svg>
+      <svg cdsIcon="user--follow" size="16" class="cds--btn__icon"></svg>
     </button>
   </section>
 </v-overflow-menu>

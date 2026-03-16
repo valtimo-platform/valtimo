@@ -23,6 +23,7 @@ import com.ritense.team.web.rest.dto.TeamListResponseDto
 import com.ritense.team.web.rest.dto.TeamResponseDto
 import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
+import com.ritense.team.web.rest.dto.TeamUserResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -87,9 +88,9 @@ class TeamResource(
         @PathVariable teamKey: String,
         @RequestParam(required = false) username: String?,
         pageable: Pageable
-    ): Page<ManageableUser> {
+    ): Page<TeamUserResponseDto> {
         return teamService.findAllTeamUsers(teamKey = teamKey, username = username, pageable = pageable)
-            .map { teamUser -> userManagementService.findByUsername(teamUser.username) }
+            .map { teamUser -> TeamUserResponseDto.from(userManagementService.findByUsername(teamUser.username)) }
     }
 
     @PostMapping("/{teamKey}/user")
@@ -97,9 +98,9 @@ class TeamResource(
     fun addUserToTeam(
         @PathVariable teamKey: String,
         @RequestBody request: TeamUserCreateRequestDto
-    ): ManageableUser {
+    ): TeamUserResponseDto {
         val teamUser = teamService.addUserToTeam(request.username, teamKey)
-        return userManagementService.findByUsername(teamUser.username)
+        return TeamUserResponseDto.from(userManagementService.findByUsername(teamUser.username))
     }
 
     @DeleteMapping("/{teamKey}/user/{username}")
