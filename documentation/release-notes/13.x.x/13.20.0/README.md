@@ -23,6 +23,7 @@
 
 ## Bugfixes
 
+* Scoped Keycloak role lookups to the current client ID so that roles from other clients in the same realm are no longer included when resolving user identity and menu visibility.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.
 * **Fixed error when viewing audit events for cases created before 13.15.0**
