@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, signal} from '@angular/core';
+import {Component, OnDestroy, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   ActionItem,
@@ -27,7 +27,7 @@ import {
 } from '@valtimo/components';
 import {PermissionService} from '@valtimo/access-control';
 import {TeamsApiService, TeamsService} from '../../services';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, map, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
 import {TranslatePipe} from '@ngx-translate/core';
 import {TeamListResponseDto} from '@valtimo/shared';
 import {Router} from '@angular/router';
@@ -55,39 +55,30 @@ import {
   ],
   providers: [TeamsService],
 })
-export class TeamsListComponent {
+export class TeamsListComponent implements OnDestroy {
   public readonly $loading = signal<boolean>(true);
 
   public readonly canCreateTeam$ = this.permissionService.requestPermission(
     CAN_CREATE_TEAM_PERMISSION
   );
 
-  public readonly canModifyTeam$ = this.permissionService.requestPermission(
-    CAN_MODIFY_TEAM_PERMISSION
-  );
+  private canModify = false;
+  private canDelete = false;
+  private readonly permissionSubscription = new Subscription();
 
-  public readonly canDeleteTeam$ = this.permissionService.requestPermission(
-    CAN_DELETE_TEAM_PERMISSION
-  );
-
-  public readonly actionItems$ = combineLatest([
-    this.canModifyTeam$,
-    this.canDeleteTeam$,
-  ]).pipe(
-    map(([canModify, canDelete]): ActionItem[] => [
-      {
-        label: 'interface.edit',
-        callback: this.onEditTeam.bind(this),
-        disabledCallback: () => !canModify,
-      },
-      {
-        label: 'interface.delete',
-        callback: this.onDeleteTeam.bind(this),
-        type: 'danger',
-        disabledCallback: () => !canDelete,
-      },
-    ])
-  );
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'interface.edit',
+      callback: this.onEditTeam.bind(this),
+      disabledCallback: () => !this.canModify,
+    },
+    {
+      label: 'interface.delete',
+      callback: this.onDeleteTeam.bind(this),
+      type: 'danger',
+      disabledCallback: () => !this.canDelete,
+    },
+  ];
 
   public readonly pagination$ = new BehaviorSubject<Pagination>({...DEFAULT_PAGINATION});
 
@@ -124,7 +115,20 @@ export class TeamsListComponent {
     private readonly teamsService: TeamsService,
     private readonly permissionService: PermissionService,
     private readonly router: Router
-  ) {}
+  ) {
+    this.permissionSubscription.add(
+      this.permissionService.requestPermission(CAN_MODIFY_TEAM_PERMISSION)
+        .subscribe(canModify => this.canModify = canModify)
+    );
+    this.permissionSubscription.add(
+      this.permissionService.requestPermission(CAN_DELETE_TEAM_PERMISSION)
+        .subscribe(canDelete => this.canDelete = canDelete)
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this.permissionSubscription.unsubscribe();
+  }
 
   public onRowClick(team: TeamListResponseDto): void {
     this.router.navigate(['/teams', team.key]);
