@@ -394,7 +394,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
     @WithMockUser(username = "user@ritense.com", authorities = ADMIN)
     void shouldFindNamedCandidateUsers() {
         var user = new NamedUser("id", "user@ritense.com", "John", "Doe");
-        when(userManagementService.findNamedUserByRoles(Set.of(ADMIN))).thenReturn(List.of(user));
+        when(userManagementService.findNamedUserByRolesWithoutAuthorization(Set.of(ADMIN))).thenReturn(List.of(user));
         runWithoutAuthorization(() -> operatonProcessService.startProcess(
             processDefinitionKey,
             businessKey,
