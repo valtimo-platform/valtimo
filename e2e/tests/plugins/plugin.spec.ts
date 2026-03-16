@@ -17,6 +17,7 @@
 import {test, expect} from '@playwright/test';
 import {PluginPage} from './page';
 import {pluginTestConfiguration, pluginTypes} from './plugin-config';
+import {BESLUITEN_API_CONFIGURATION_TEST_IDS} from '../../constants';
 
 test.use({storageState: undefined});
 
@@ -78,7 +79,7 @@ test.describe('Plugin management', () => {
       // Act
       await pluginPage.duplicateConfigurationName(
         'Test Besluiten API Plugin',
-        'besluitenApiConfigurationTitle'
+        BESLUITEN_API_CONFIGURATION_TEST_IDS.configurationTitle
       );
 
       // Assert
@@ -89,7 +90,7 @@ test.describe('Plugin management', () => {
       // Act
       await pluginPage.editPluginRowClick(
         'Test Besluiten API Plugin - Test Duplicated',
-        'besluitenApiConfigurationTitle',
+        BESLUITEN_API_CONFIGURATION_TEST_IDS.configurationTitle,
         'Test Edited Besluiten API Row Click'
       );
       // Assert
@@ -100,7 +101,7 @@ test.describe('Plugin management', () => {
       // Act
       await pluginPage.editPluginMenuClick(
         'Test Edited Besluiten API Row Click',
-        'besluitenApiConfigurationTitle',
+        BESLUITEN_API_CONFIGURATION_TEST_IDS.configurationTitle,
         'Test Edited Besluiten API Menu Click'
       );
       // Assert
@@ -141,7 +142,7 @@ test.describe('Plugin management', () => {
       await pluginPage.openWizard();
       await pluginPage.selectPluginType('Besluiten API');
       await pluginPage.fillPluginForm('Besluiten API');
-      await pluginPage.fillIncorrectRsinValue('besluitenApiRsin');
+      await pluginPage.fillIncorrectRsinValue(BESLUITEN_API_CONFIGURATION_TEST_IDS.rsin);
 
       // Assert
       await pluginPage.expectInvalidRSINError();

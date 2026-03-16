@@ -54,7 +54,7 @@
         cdsText
         placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
         [attr.modal-primary-focus]="true"
-        data-test-id="caseDefinitionNameInput"
+        [attr.data-test-id]="testIds.nameInput"
         (focusout)="onFocusOut()"
       />
     </cds-label>
@@ -72,7 +72,7 @@
       <div class="valtimo-definition-create__name">
         <input
           cdsText
-          data-test-id="caseDefinitionKeyInput"
+          [attr.data-test-id]="testIds.keyInput"
           formControlName="caseDefinitionKey"
           [invalid]="!!obs.idError"
           [placeholder]="'caseManagement.createDefinition.keyPlaceholder' | translate"
@@ -82,7 +82,7 @@
         <button
           *ngIf="!obs.editActive"
           cdsButton="secondary"
-          data-test-id="caseDefinitionKeyEditButton"
+          [attr.data-test-id]="testIds.keyEditButton"
           [disabled]="obs.editDisabled"
           [iconOnly]="true"
           size="md"
@@ -105,7 +105,7 @@
 
       <input
         formControlName="caseDefinitionVersion"
-        data-test-id="caseDefinitionVersionInput"
+        [attr.data-test-id]="testIds.versionInput"
         cdsText
         placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
         [invalid]="!!obs.versionError"
@@ -127,7 +127,7 @@
       <textarea
         cdsTextArea
         formControlName="description"
-        data-test-id="caseDefinitionDescriptionInput"
+        [attr.data-test-id]="testIds.descriptionInput"
         placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}"
         [rows]="3"
         [cols]="150"
@@ -138,12 +138,12 @@
   </form>
 
   <cds-modal-footer>
-    <button data-test-id="caseCreateCloseButton" cdsButton="secondary" (click)="onCloseModal()">
+    <button [attr.data-test-id]="testIds.closeButton" cdsButton="secondary" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
-      data-test-id="caseCreateSaveButton"
+      [attr.data-test-id]="testIds.saveButton"
       cdsButton="primary"
       [disabled]="formGroup.invalid"
       (click)="onCloseModal(true)"

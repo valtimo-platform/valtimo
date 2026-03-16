@@ -18,6 +18,7 @@ import {Component, EventEmitter, HostBinding, Input, Output} from '@angular/core
 import {MultiInputKeyValue} from '../../../../models';
 import {CommonModule} from '@angular/common';
 import {InputModule} from 'carbon-components-angular';
+import {SINGLE_VALUE_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-single-value',
@@ -35,6 +36,8 @@ export class SingleValueComponent {
     value: MultiInputKeyValue;
     inputValue: string;
   }> = new EventEmitter();
+
+  protected readonly testIds = SINGLE_VALUE_TEST_IDS;
 
   public onInputChange(inputValue: string): void {
     this.valueChange.emit({value: this.value, inputValue});

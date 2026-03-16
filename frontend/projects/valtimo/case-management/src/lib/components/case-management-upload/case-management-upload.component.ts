@@ -33,6 +33,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.constants';
 import {CaseManagementService} from '../../services';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {CASE_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -44,6 +45,8 @@ import {toObservable} from '@angular/core/rxjs-interop';
 export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   @Input() open = false;
   @Output() closeModal = new EventEmitter<boolean>();
+
+  protected readonly testIds = CASE_MANAGEMENT_UPLOAD_TEST_IDS;
 
   public acceptedFiles: string[] = ['.json', '.zip'];
   public selectedFile: File | null;

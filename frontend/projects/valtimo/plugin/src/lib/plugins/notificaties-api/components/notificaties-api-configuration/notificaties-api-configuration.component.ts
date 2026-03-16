@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {NotificatiesApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {NOTIFICATIES_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -37,6 +38,7 @@ export class NotificatiesApiConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<NotificatiesApiConfig> =
     new EventEmitter<NotificatiesApiConfig>();
+  protected readonly testIds = NOTIFICATIES_API_CONFIGURATION_TEST_IDS;
   readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
       this.pluginManagementService.getPluginConfigurationsByCategory(

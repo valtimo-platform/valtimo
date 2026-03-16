@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {CatalogiApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {CATALOGI_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -36,6 +37,7 @@ export class CatalogiApiConfigurationComponent
   @Input() prefillConfiguration$: Observable<CatalogiApiConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CatalogiApiConfig> = new EventEmitter<CatalogiApiConfig>();
+  protected readonly testIds = CATALOGI_API_CONFIGURATION_TEST_IDS;
   readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
       this.pluginManagementService.getPluginConfigurationsByCategory('catalogi-api-authentication'),

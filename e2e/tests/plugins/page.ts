@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
+import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
 
 export class PluginPage {
   constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
@@ -134,7 +135,7 @@ export class PluginPage {
     await expect(errorToast).toContainText(
       "Plugin property with name 'rsin' failed to parse for plugin"
     );
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async expectSameIdError() {
@@ -153,7 +154,7 @@ export class PluginPage {
     const errorToast = this.page.locator('.cds--toast-notification__details');
 
     await expect(errorToast).toContainText('already used by another plugin');
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {

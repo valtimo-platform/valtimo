@@ -25,7 +25,7 @@
       [defaultValue]="value ? value['' + i] : ''"
       [disabled]="disabled"
       (input)="onInputChange(i, $event.target.value)"
-      data-test-id="arbitraryAmountInput"
+      [attr.data-test-id]="testIds.input"
     />
   </div>
 
