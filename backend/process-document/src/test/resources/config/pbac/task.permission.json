@@ -3,6 +3,12 @@
     "permissions": [
         {
             "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "assignable",
+            "roleKey": "ROLE_USER",
+            "conditions": []
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
             "action": "view",
             "roleKey": "ROLE_USER",
             "conditions": [
