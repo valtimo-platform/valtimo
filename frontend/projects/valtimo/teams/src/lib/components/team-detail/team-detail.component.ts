@@ -107,7 +107,6 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   public readonly MEMBER_FIELDS: ColumnConfig[] = [
     {key: 'fullName', label: 'teams.detail.memberColumns.name'},
     {key: 'email', label: 'teams.detail.memberColumns.email'},
-    {key: 'roles', label: 'teams.detail.memberColumns.role'},
   ];
 
   constructor(

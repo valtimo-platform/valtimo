@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-.valtimo-team-add-member {
-  &__pane {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 280px;
-  }
-}
+package com.ritense.team.web.rest.dto
 
-.add-to-team-button {
-  width: 100%;
-  max-width: 100%;
+import com.ritense.valtimo.contract.authentication.ManageableUser
+
+data class TeamUserResponseDto(
+    val username: String,
+    val fullName: String?,
+    val email: String?,
+) {
+    companion object {
+        fun from(user: ManageableUser) = TeamUserResponseDto(
+            username = user.username,
+            fullName = user.fullName,
+            email = user.email,
+        )
+    }
 }

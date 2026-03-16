@@ -122,7 +122,6 @@ class TeamResourceIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$.username").value(NORMAL_USER_NAME))
             .andExpect(jsonPath("$.fullName").value("James Vance"))
             .andExpect(jsonPath("$.email").value("user@example.com"))
-            .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"))
 
         mockMvc.perform(get("/api/v1/team/team-users/user"))
             .andExpect(status().isOk)
@@ -130,7 +129,6 @@ class TeamResourceIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$.content[0].username").value(NORMAL_USER_NAME))
             .andExpect(jsonPath("$.content[0].fullName").value("James Vance"))
             .andExpect(jsonPath("$.content[0].email").value("user@example.com"))
-            .andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_USER"))
 
         mockMvc.perform(delete("/api/v1/team/team-users/user/$NORMAL_USER_NAME"))
             .andExpect(status().isNoContent)

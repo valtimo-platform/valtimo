@@ -17,6 +17,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {TeamListResponseDto} from '@valtimo/shared';
+import {runAfterCarbonModalClosed} from '@valtimo/components';
 
 @Injectable()
 export class TeamsService {
@@ -51,7 +52,7 @@ export class TeamsService {
 
   public hideCreateEditModal(): void {
     this._showCreateEditModal$.next(false);
-    this._editingTeam$.next(null);
+    runAfterCarbonModalClosed(() => this._editingTeam$.next(null));
   }
 
   public showDeleteConfirmation(team: TeamListResponseDto): void {
