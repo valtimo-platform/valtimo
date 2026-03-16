@@ -30,6 +30,7 @@
 
 ## Bugfixes
 
+* Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.
 * **Replaced Carbon overflow menus with custom overflow components**

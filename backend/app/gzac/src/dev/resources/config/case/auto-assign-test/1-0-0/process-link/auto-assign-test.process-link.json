@@ -1,0 +1,20 @@
+[
+    {
+        "activityId": "start-event",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-auto-assign-test"
+    },
+    {
+        "activityId": "user-role-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "admin-role-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "empty-form",
+        "processLinkType": "form"
+    }
+]
