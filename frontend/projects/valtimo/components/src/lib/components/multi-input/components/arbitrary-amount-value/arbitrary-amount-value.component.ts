@@ -23,6 +23,7 @@ import {
 import {CommonModule} from '@angular/common';
 import {InputModule} from 'carbon-components-angular';
 import {Observable} from 'rxjs';
+import {ARBITRARY_AMOUNT_VALUE_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-arbitrary-amount-value',
@@ -45,6 +46,8 @@ export class ArbitraryAmountValueComponent {
     type: MultiInputChangeEventType;
     arbitraryIndex: number;
   }> = new EventEmitter();
+
+  protected readonly testIds = ARBITRARY_AMOUNT_VALUE_TEST_IDS;
 
   @HostBinding('class.--full-width') get isFullWidth(): boolean {
     return this.fullWidth;

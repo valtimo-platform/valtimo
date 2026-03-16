@@ -23,3 +23,4 @@ export * from './lib/case-management.module';
 export * from './lib/components/case-management-list/case-management-list.component';
 export * from './lib/components/case-management-draft-warning/case-management-draft-warning.component';
 export * from './lib/services';
+export * from './lib/constants';

@@ -35,7 +35,7 @@
 <ng-template #cancelButton let-disabled="disabled">
   <button
     cdsButton="secondary"
-    data-test-id="stepperFooterCancelButton"
+    [attr.data-test-id]="testIds.cancelButton"
     (click)="cancel()"
     [disabled]="disabled"
   >

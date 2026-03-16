@@ -22,6 +22,11 @@ import {
   CaseManagementFieldMap,
 } from './case-config';
 import path from 'path';
+import {
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS,
+  CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS,
+} from '../../constants';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
 
@@ -34,19 +39,19 @@ export class CaseDetailsManagementPage {
 
   // UI Elements
   get versionSelectDropdown() {
-    return this.page.getByTestId('caseVersionSelectDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
   get versionManagementButton() {
-    return this.page.getByTestId('caseVersionManagementButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionManagementButton);
   }
 
   get moreButton() {
-    return this.page.getByTestId('caseMoreButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.moreButton);
   }
 
   get exportButton() {
-    return this.page.getByTestId('caseExportButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.exportButton);
   }
 
   get setActiveVersionButton() {
@@ -58,39 +63,39 @@ export class CaseDetailsManagementPage {
   }
 
   get caseHandlerCanHaveHandlerToggle() {
-    return this.page.getByTestId('caseHandlerCanHaveHandler').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler).locator('.cds--toggle__switch');
   }
 
   get caseHandlerCanHaveHandler() {
-    return this.page.getByTestId('caseHandlerCanHaveHandler');
+    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler);
   }
 
   get caseHandlerAutomaticallyAssignToggle() {
-    return this.page.getByTestId('caseHandlerAutomaticallyAssign').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign).locator('.cds--toggle__switch');
   }
 
   get caseHandlerAutomaticallyAssign() {
-    return this.page.getByTestId('caseHandlerAutomaticallyAssign');
+    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign);
   }
 
   get hasExternalForm() {
-    return this.page.getByTestId('caseManagementHasExternalForm').getByRole('switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).getByRole('switch');
   }
 
   get hasExternalFormToggle() {
-    return this.page.getByTestId('caseManagementHasExternalForm').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).locator('.cds--toggle__switch');
   }
 
   get externalFormUrl() {
-    return this.page.getByTestId('caseManagementExternalFormUrl');
+    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormUrl);
   }
 
   get externalFormDescription() {
-    return this.page.getByTestId('caseManagementExternalFormDescription');
+    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormDescription);
   }
 
   get externalFormSave() {
-    return this.page.getByTestId('caseManagementExternalFormSave');
+    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormSave);
   }
 
   get confirmationModalContinueButton() {
