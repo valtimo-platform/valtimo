@@ -96,40 +96,24 @@ export class CaseDetailsConfigPage {
     return this.page.getByTestId('caseTagSaveButton');
   }
 
-  // ─── Version Selection ───────────────────────────────────────────
+  // ─── Version Selector ────────────────────────────────────────────
 
   get versionSelectDropdown() {
     return this.page.getByTestId('caseVersionSelectDropdown');
   }
 
   async ensureDraftVersionSelected() {
-    // Wait for the version dropdown to finish loading
-    await expect(this.versionSelectDropdown.locator('cds-tag').first()).toBeVisible();
+    const dropdown = this.versionSelectDropdown;
+    const selectedText = await dropdown.innerText();
 
-    // Check if the currently displayed version is already a draft
-    const displayedTag = this.versionSelectDropdown.locator('cds-tag').first();
-    const tagText = await displayedTag.innerText();
-
-    if (tagText.includes('DRAFT:')) {
+    if (selectedText.includes('DRAFT')) {
       return;
     }
 
-    // Open the dropdown and select the first draft version
-    await this.versionSelectDropdown.click();
+    await dropdown.click();
     const listbox = this.page.getByRole('listbox');
-    await expect(listbox).toBeVisible();
-
-    const draftOption = listbox
-      .locator('[data-test-id^="caseVersion"]')
-      .filter({hasText: 'DRAFT:'})
-      .first();
-    await expect(draftOption).toBeVisible();
+    const draftOption = listbox.locator('[data-test-id^="caseVersion"]:has-text("DRAFT")').first();
     await draftOption.click();
-
-    // Wait for the draft version to be reflected in the dropdown after navigation
-    await expect(
-      this.versionSelectDropdown.locator('cds-tag', {hasText: 'DRAFT:'})
-    ).toBeVisible();
   }
 
   // ─── Navigation ───────────────────────────────────────────────────

@@ -73,44 +73,57 @@ test.describe('Case management', () => {
           `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
         );
       } catch {
-        // Case may not exist if upload tests didn't create it
+        // Case definition may not exist if a previous test failed
       }
     });
   });
 
   test.describe('Error test', () => {
-    // test('Upload a case with the same version', async () => {
-    //   // Act - first upload (should succeed)
-    //   await caseManagementPage.uploadCase();
-    //
-    //   // Navigate back
-    //   await caseManagementPage.goToCaseManagement();
-    //
-    //   // Restart upload (same version - should fail)
-    //   await caseManagementPage.uploadCase();
-    //
-    //   // Assert
-    //   await expectNotificationMessage(page, 'This version already exists for this definition', {
-    //     exact: true,
-    //   });
-    // });
+    test('Upload a case with the same version', async () => {
+      // Act
+      await caseManagementPage.uploadCase();
+      await caseManagementPage.saveConfiguration();
+      await caseManagementPage.assertCaseUploaded();
+
+      // Navigate back
+      await caseManagementPage.goToCaseManagement();
+
+      // Restart upload
+      await caseManagementPage.uploadCase();
+      await caseManagementPage.saveConfiguration();
+
+      // Assert
+      await expectNotificationMessage(page, 'This version already exists for this definition', {
+        exact: true,
+      });
+
+      await caseManagementPage.createCancelButton.click();
+    });
 
     test('Upload an invalid file', async () => {
       // Act
       await caseManagementPage.uploadCase({
         archiveName: 'test-case-import-invalid-file.zip',
       });
+      await caseManagementPage.saveConfiguration();
+      await caseManagementPage.assertCaseUploaded();
 
       // Assert
-      await expectNotificationMessage(page, 'entity-not-found');
+      await expectNotificationMessage(page, 'entity-not-found', {exact: true});
+
+      await caseManagementPage.createCancelButton.click();
     });
 
-    // test('Upload a file that exceeds the maximum size', async () => {
-    //   // Act
-    //   await caseManagementPage.uploadCase();
-    //
-    //   // Assert
-    //   await expectNotificationMessage(page, 'Maximum upload size exceeded');
-    // });
+    test('Upload a file that exceeds the maximum size', async () => {
+      // Act
+      await caseManagementPage.uploadCase();
+      await caseManagementPage.saveConfiguration();
+      await caseManagementPage.assertCaseUploaded();
+
+      // Assert
+      await expectNotificationMessage(page, 'Maximum upload size exceeded', {exact: true});
+
+      await caseManagementPage.createCancelButton.click();
+    });
   });
 });

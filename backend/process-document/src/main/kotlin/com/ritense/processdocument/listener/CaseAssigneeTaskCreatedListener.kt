@@ -24,9 +24,9 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.event.OperatonTaskEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.TaskService
-import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -43,11 +43,12 @@ open class CaseAssigneeTaskCreatedListener(
 ) {
 
     @EventListener(
-        condition = """#delegateTask.bpmnModelElementInstance != null
-            && #delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
-            && #delegateTask.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
+        condition = """#event.delegateTask.bpmnModelElementInstance != null
+            && #event.delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
+            && #event.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
     )
-    fun notify(delegateTask: DelegateTask) {
+    fun notify(event: OperatonTaskEvent) {
+        val delegateTask = event.delegateTask
         val documentId = UUID.fromString(delegateTask.execution.businessKey)
 
         try {

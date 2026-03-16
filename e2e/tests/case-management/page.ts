@@ -62,9 +62,12 @@ export class CaseManagementPage {
   }
 
   get uploadWarningCheckbox() {
-    return this.page.locator('label').filter({hasText: 'I understand that'});
+    return this.page.getByRole('checkbox', {name: /I understand that configurations may be overwritten/});
   }
 
+  get uploadWarningNotification() {
+    return this.page.getByRole('status');
+  }
 
   // Navigation
   async goToCaseManagement() {
@@ -122,7 +125,11 @@ export class CaseManagementPage {
   }
 
   async checkWarningMessage() {
-    await this.uploadWarningCheckbox.click();
+    await expect(this.uploadWarningNotification).toBeVisible();
+
+    const overwriteCheckbox = this.uploadWarningCheckbox;
+    await overwriteCheckbox.check({force: true});
+    await expect(overwriteCheckbox).toBeChecked();
     await expect(this.uploadWizardNextButton).toBeEnabled();
   }
 
@@ -143,19 +150,30 @@ export class CaseManagementPage {
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
+
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/management/v1/case-import') &&
+        res.request().method() === 'POST' &&
+        res.status() === 200
+    );
+    await this.uploadWizardNextButton.click();
+
+    const response = await responsePromise;
+    expect(response.status()).toBe(200);
     await this.uploadWizardNextButton.click();
   }
 
   async accessControlStep() {
-    await expect(
-      this.page.locator('.valtimo-upload-step__title', {hasText: 'Access control'})
-    ).toBeVisible();
+    await expect(this.page.getByText('Access Control')).toBeVisible();
+    await expect(this.page.getByText('rights in Access Control')).toBeVisible();
     await this.uploadWizardNextButton.click();
   }
 
   async dashboardStep() {
+    await expect(this.page.getByText('Dashboard')).toBeVisible();
     await expect(
-      this.page.locator('.valtimo-upload-step__title', {hasText: 'Dashboard'})
+      this.page.getByText('If you want widgets to appear on your dashboard')
     ).toBeVisible();
     await this.uploadWizardFinishButton.click();
   }
