@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {OpenZaakConfig} from '../../models';
+import {OPEN_ZAAK_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-open-zaak-configuration',
@@ -34,6 +35,7 @@ export class OpenZaakConfigurationComponent
   @Input() prefillConfiguration$: Observable<OpenZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<OpenZaakConfig> = new EventEmitter<OpenZaakConfig>();
+  protected readonly testIds = OPEN_ZAAK_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

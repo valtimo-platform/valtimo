@@ -26,6 +26,7 @@ import {
   take,
 } from 'rxjs';
 import {OpenKlantTokenAuthenticationConfig} from '../../models';
+import {OPEN_KLANT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-open-klant-token-authentication-configuration',
@@ -42,6 +43,7 @@ export class OpenKlantTokenAuthenticationConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<OpenKlantTokenAuthenticationConfig> =
     new EventEmitter<OpenKlantTokenAuthenticationConfig>();
+  protected readonly testIds = OPEN_KLANT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

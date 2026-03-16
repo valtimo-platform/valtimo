@@ -17,6 +17,13 @@
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
+import {
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  CASE_MANAGEMENT_STATUSES_TEST_IDS,
+  CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS,
+  CASE_MANAGEMENT_TAGS_TEST_IDS,
+  CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS,
+} from '../../constants';
 
 export class CaseDetailsConfigPage {
   constructor(
@@ -27,79 +34,79 @@ export class CaseDetailsConfigPage {
   // ─── Status UI Elements ────────────────────────────────────────────
 
   get statusAddButton() {
-    return this.page.getByTestId('caseStatusAddButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUSES_TEST_IDS.addButton);
   }
 
   get statusTitleInput() {
-    return this.page.getByTestId('caseStatusTitleInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.titleInput);
   }
 
   get statusKeyInput() {
-    return this.page.getByTestId('caseStatusKeyInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.keyInput);
   }
 
   get statusEditKeyButton() {
-    return this.page.getByTestId('caseStatusEditKeyButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.editKeyButton);
   }
 
   get statusColorDropdown() {
-    return this.page.getByTestId('caseStatusColorDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.colorDropdown);
   }
 
   get statusVisibilityToggle() {
-    return this.page.getByTestId('caseStatusVisibilityToggle').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.visibilityToggle).locator('.cds--toggle__switch');
   }
 
   get statusCancelButton() {
-    return this.page.getByTestId('caseStatusCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.cancelButton);
   }
 
   get statusAddConfirmButton() {
-    return this.page.getByTestId('caseStatusAddConfirmButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.addConfirmButton);
   }
 
   get statusSaveButton() {
-    return this.page.getByTestId('caseStatusSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.saveButton);
   }
 
   // ─── Tag UI Elements ──────────────────────────────────────────────
 
   get tagAddButton() {
-    return this.page.getByTestId('caseTagAddButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_TEST_IDS.addButton);
   }
 
   get tagTitleInput() {
-    return this.page.getByTestId('caseTagTitleInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.titleInput);
   }
 
   get tagKeyInput() {
-    return this.page.getByTestId('caseTagKeyInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.keyInput);
   }
 
   get tagEditKeyButton() {
-    return this.page.getByTestId('caseTagEditKeyButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.editKeyButton);
   }
 
   get tagColorDropdown() {
-    return this.page.getByTestId('caseTagColorDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.colorDropdown);
   }
 
   get tagCancelButton() {
-    return this.page.getByTestId('caseTagCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.cancelButton);
   }
 
   get tagAddConfirmButton() {
-    return this.page.getByTestId('caseTagAddConfirmButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.addConfirmButton);
   }
 
   get tagSaveButton() {
-    return this.page.getByTestId('caseTagSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.saveButton);
   }
 
   // ─── Version Selector ────────────────────────────────────────────
 
   get versionSelectDropdown() {
-    return this.page.getByTestId('caseVersionSelectDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
   async ensureDraftVersionSelected() {

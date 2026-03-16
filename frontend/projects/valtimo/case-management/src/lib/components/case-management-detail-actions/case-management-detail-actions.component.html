@@ -43,7 +43,7 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selector"
-    data-test-id="caseVersionSelectDropdown"
+    [attr.data-test-id]="testIds.versionSelectDropdown"
     selectionFeedback="fixed"
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
@@ -76,7 +76,7 @@
 
       <cds-tag
         *ngIf="item?.active"
-        data-test-id="globally-active-case-version"
+        [attr.data-test-id]="testIds.globallyActiveCaseVersion"
         class="cds-tag--no-margin"
         type="high-contrast"
       >
@@ -89,7 +89,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
-    data-test-id="caseVersionManagementButton"
+    [attr.data-test-id]="testIds.versionManagementButton"
     [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
@@ -108,7 +108,7 @@
     class="overflow-button"
   >
     <cds-overflow-menu-option
-      data-test-id="caseExportButton"
+      [attr.data-test-id]="testIds.exportButton"
       [id]="'exportDocumentDefinition'"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
@@ -116,7 +116,7 @@
     </cds-overflow-menu-option>
 
     <cds-overflow-menu-option
-      data-test-id="caseSetActiveVersionButton"
+      [attr.data-test-id]="testIds.setActiveVersionButton"
       [id]="'setGlobalActiveVersion'"
       [disabled]="obs.selectedVersionIsGloballyActive"
       (selected)="openGlobalActiveVersionModal()"
@@ -128,7 +128,7 @@
 <ng-template #customTrigger>
   <button
     cdsButton="tertiary"
-    data-test-id="caseMoreButton"
+    [attr.data-test-id]="testIds.moreButton"
     [size]="(compactMode$ | async) ? 'sm' : 'md'"
   >
     {{ 'caseManagement.more' | translate }}

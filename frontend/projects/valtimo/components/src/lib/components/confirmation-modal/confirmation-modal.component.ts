@@ -16,6 +16,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {ModalButtonType} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {CONFIRMATION_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-confirmation-modal',
@@ -46,6 +47,8 @@ export class ConfirmationModalComponent implements OnInit, OnDestroy {
   @Output() public confirmEvent = new EventEmitter<any>();
   @Output() public optionalEvent = new EventEmitter<void>();
   @Output() public cancelEvent = new EventEmitter<void>();
+
+  protected readonly testIds = CONFIRMATION_MODAL_TEST_IDS;
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 

@@ -24,7 +24,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="zakenApiConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     placeholder="Zaken API Plugin"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.configurationTitle"
@@ -38,7 +38,7 @@
 
   <v-input
     name="url"
-    data-test-id="zakenApiUrl"
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
     [defaultValue]="obs.prefill?.url"
     [disabled]="obs.disabled"
@@ -54,7 +54,7 @@
     *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
   >
     <v-select
-      data-test-id="zakenApiAuthenticationPluginConfiguration"
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       name="authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"

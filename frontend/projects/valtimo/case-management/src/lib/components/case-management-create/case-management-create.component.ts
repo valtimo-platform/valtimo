@@ -21,6 +21,7 @@ import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, take, tap} from 'rxjs';
 import * as semver from 'semver';
+import {CASE_MANAGEMENT_CREATE_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -32,6 +33,8 @@ import * as semver from 'semver';
 export class CaseManagementCreateComponent {
   @Input() open = false;
   @Output() closeModal = new EventEmitter<TemplatePayload | null>();
+
+  protected readonly testIds = CASE_MANAGEMENT_CREATE_TEST_IDS;
 
   public formGroup: FormGroup = this.fb.group({
     name: this.fb.control('', Validators.required),
