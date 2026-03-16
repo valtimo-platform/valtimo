@@ -31,7 +31,7 @@ import {
 import {PermissionService} from '@valtimo/access-control';
 import {TeamUserResponseDto} from '@valtimo/shared';
 import {ButtonModule, DialogModule, IconModule} from 'carbon-components-angular';
-import {combineLatest, map} from 'rxjs';
+import {combineLatest, map, Subscription} from 'rxjs';
 import {TeamsApiService, TeamDetailService} from '../../services';
 import {TeamDetailEditModalComponent} from '../team-detail-edit-modal/team-detail-edit-modal.component';
 import {TeamDetailAddMemberComponent} from '../team-detail-add-member-modal/team-detail-add-member-modal.component';
@@ -81,28 +81,28 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
     CAN_DELETE_TEAM_PERMISSION
   );
 
-  public readonly canAssignTeam$ = this.permissionService.requestPermission(
-    CAN_ASSIGN_TEAM_PERMISSION
-  );
-
   public readonly canViewUsers$ = this.permissionService.requestPermission(
     CAN_VIEW_USERS_PERMISSION
   );
 
-  public readonly canAddMember$ = combineLatest([this.canAssignTeam$, this.canViewUsers$]).pipe(
+  private canAssign = false;
+  private readonly permissionSubscription = new Subscription();
+
+  public readonly canAddMember$ = combineLatest([
+    this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION),
+    this.canViewUsers$,
+  ]).pipe(
     map(([canAssign, canViewUsers]) => canAssign && canViewUsers)
   );
 
-  public readonly memberActionItems$ = this.canAssignTeam$.pipe(
-    map((canAssign): ActionItem[] => [
-      {
-        label: 'teams.detail.removeMember',
-        callback: this.onRemoveMember.bind(this),
-        type: 'danger',
-        disabledCallback: () => !canAssign,
-      },
-    ])
-  );
+  public readonly MEMBER_ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'teams.detail.removeMember',
+      callback: this.onRemoveMember.bind(this),
+      type: 'danger',
+      disabledCallback: () => !this.canAssign,
+    },
+  ];
 
   public readonly MEMBER_FIELDS: ColumnConfig[] = [
     {key: 'fullName', label: 'teams.detail.memberColumns.name'},
@@ -121,6 +121,11 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
     this.teamDetailService.loadingMembers$.subscribe(loading => {
       this.$loadingMembers.set(loading);
     });
+
+    this.permissionSubscription.add(
+      this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION)
+        .subscribe(canAssign => this.canAssign = canAssign)
+    );
   }
 
   public ngOnInit(): void {
@@ -129,6 +134,7 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this.permissionSubscription.unsubscribe();
   }
 
   public onEditTeam(): void {
