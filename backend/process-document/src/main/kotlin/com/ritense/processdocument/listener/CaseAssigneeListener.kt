@@ -17,7 +17,6 @@ package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
@@ -64,10 +63,13 @@ class CaseAssigneeListener(
                 val assigneeUsername = caseDocument.assigneeId()
                 if (assigneeUsername != null) {
                     val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
-                    val tasks = operatonTaskService.findTasks(
-                        byProcessInstanceBusinessKey(caseDocument.id().toString())
-                            .and(byCandidateGroups(assignee.roles))
-                    )
+                    val tasks = runWithoutAuthorization {
+                        operatonTaskService.findTasks(
+                            byProcessInstanceBusinessKey(caseDocument.id().toString())
+                                .and(byCandidateGroups(assignee.roles))
+                        )
+
+                    }
 
                     logger.debug { "Updating assignee on ${tasks.size} task(s)" }
                     for (task in tasks) {
