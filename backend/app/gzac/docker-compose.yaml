@@ -108,7 +108,7 @@ services:
             - openzaak
         environment: &openzaak-env
             - DB_HOST=openzaak-database
-            - DB_POST=5433
+            - DB_PORT=5433
             - SECRET_KEY=veryRestrictedSecretKey
             - DB_USER=openzaak
             - DB_PASSWORD=openzaak
