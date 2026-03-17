@@ -47,7 +47,7 @@ class TeamAutoConfiguration {
     fun teamService(
         teamRepository: TeamRepository,
         teamUserRepository: TeamUserRepository,
-        authorizationService: AuthorizationService,
+        @Lazy authorizationService: AuthorizationService,
     ): TeamService {
         return TeamService(teamRepository, teamUserRepository, authorizationService)
     }
