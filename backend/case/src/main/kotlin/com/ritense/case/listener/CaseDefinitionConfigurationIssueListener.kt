@@ -27,6 +27,7 @@ import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import jakarta.transaction.Transactional
 import org.springframework.context.event.EventListener
+import org.springframework.dao.DataIntegrityViolationException
 import java.time.LocalDateTime
 
 @Transactional
@@ -42,12 +43,16 @@ open class CaseDefinitionConfigurationIssueListener(
             event.caseDefinitionId, event.issueType
         )
         if (existing == null) {
-            repository.save(
-                CaseDefinitionConfigurationIssue(
-                    caseDefinitionId = event.caseDefinitionId,
-                    issueType = event.issueType
+            try {
+                repository.save(
+                    CaseDefinitionConfigurationIssue(
+                        caseDefinitionId = event.caseDefinitionId,
+                        issueType = event.issueType
+                    )
                 )
-            )
+            } catch (_: DataIntegrityViolationException) {
+                return
+            }
             outboxService.send {
                 ConfigurationIssueUpdated(
                     caseDefinitionKey = event.caseDefinitionId.key,

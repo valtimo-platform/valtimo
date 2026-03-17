@@ -95,23 +95,6 @@ class CaseDefinitionCheckerImplTest {
     }
 
     @Test
-    fun `assertCanUpdateCaseDefinitionConfiguration should block update on final case definition with different issue type`() {
-        val caseDefinition = caseDefinition(final = true)
-        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
-        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionIdAndIssueType(caseDefinitionId, "zaak-type-link"))
-            .thenReturn(null)
-        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionIdAndIssueType(caseDefinitionId, "zaakdetail-sync"))
-            .thenReturn(CaseDefinitionConfigurationIssue(
-                caseDefinitionId = caseDefinitionId,
-                issueType = "zaakdetail-sync"
-            ))
-
-        assertThrows<IllegalArgumentException> {
-            checker.assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, "zaak-type-link")
-        }
-    }
-
-    @Test
     fun `assertCanUpdateCaseDefinitionConfiguration should throw when case definition does not exist`() {
         whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.empty())
 

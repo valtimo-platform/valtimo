@@ -469,19 +469,21 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
   }
 
   private initBreadcrumbs(): void {
-    combineLatest([this.params$, this._caseDefinitionTitle$])
-      .pipe(
-        tap(([{caseDefinitionKey, caseDefinitionVersionTag}, caseDefinitionTitle]) => {
-          const route = `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`;
+    this._subscriptions.add(
+      combineLatest([this.params$, this._caseDefinitionTitle$])
+        .pipe(
+          tap(([{caseDefinitionKey, caseDefinitionVersionTag}, caseDefinitionTitle]) => {
+            const route = `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`;
 
-          this.breadcrumbService.setThirdBreadcrumb({
-            route: [route],
-            content: `${caseDefinitionTitle} `,
-            href: route,
-          });
-        })
-      )
-      .subscribe();
+            this.breadcrumbService.setThirdBreadcrumb({
+              route: [route],
+              content: `${caseDefinitionTitle} `,
+              href: route,
+            });
+          })
+        )
+        .subscribe()
+    );
   }
 
   private closeCurrentNotification(): void {

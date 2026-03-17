@@ -21,15 +21,15 @@ import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.importer.ZaakTypeLinkImporter
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
-import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.event.ZaakTypeLinkSavedEvent
-import com.ritense.processdocument.importer.ZaakTypeLinkImporter
+import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import com.ritense.zgw.Rsin
 import org.springframework.context.ApplicationEventPublisher
@@ -109,5 +109,6 @@ class DefaultZaakTypeLinkService(
     override fun modify(zaakTypeLink: ZaakTypeLink) {
         caseDefinitionChecker.assertCanUpdateCaseDefinitionConfiguration(zaakTypeLink.caseDefinitionId, ZaakTypeLinkImporter.ISSUE_TYPE)
         zaakTypeLinkRepository.save(zaakTypeLink)
+        applicationEventPublisher.publishEvent(ZaakTypeLinkSavedEvent(zaakTypeLink.caseDefinitionId))
     }
 }
