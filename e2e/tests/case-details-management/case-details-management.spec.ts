@@ -79,10 +79,18 @@ test.describe('Case management', () => {
       test.beforeEach(async () => {
         //Arrange
         await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        await page.reload();
+        await page.waitForLoadState('domcontentloaded');
       });
 
       test.describe('Case handler', () => {
         test('Can have handler is false', async () => {
+          // Arrange: ensure toggle starts as true so clicking it sets it to false
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'false') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
+
           //Act
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
@@ -98,6 +106,12 @@ test.describe('Case management', () => {
         });
 
         test('Can have handler is true & cannot automatically assign', async () => {
+          // Arrange: ensure toggle starts as false so clicking it sets it to true
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'true') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
+
           //Act
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
@@ -117,17 +131,20 @@ test.describe('Case management', () => {
         });
 
         test('Can have handler is true & can automatically assign', async () => {
-          //Act
-          await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          // Arrange: ensure canHaveHandler is true before testing auto-assign
+          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
+          if (checked === 'false') {
+            await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
+          }
 
-          // Assert
+          // Assert canHaveHandler is true
           await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
             'ng-reflect-checked',
             'true'
           );
           await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-disabled',
-            'false'
+            'ng-reflect-enabled',
+            'true'
           );
 
           await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();

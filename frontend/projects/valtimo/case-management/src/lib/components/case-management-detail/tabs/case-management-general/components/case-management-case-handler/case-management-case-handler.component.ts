@@ -30,6 +30,7 @@ import {
   startWith,
 } from 'rxjs';
 import {tap} from 'rxjs/operators';
+import {CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS} from '../../../../../../constants';
 
 @Component({
   standalone: false,
@@ -38,6 +39,8 @@ import {tap} from 'rxjs/operators';
   styleUrl: './case-management-case-handler.component.scss',
 })
 export class CaseManagementCaseHandlerComponent {
+  protected readonly testIds = CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS;
+
   @Input() public readonly isReadOnly: boolean;
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);

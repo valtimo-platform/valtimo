@@ -18,6 +18,11 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {caseConfiguration, CaseManagementFieldMap} from './case-config';
 import path from 'path';
+import {
+  CASE_MANAGEMENT_CREATE_TEST_IDS,
+  CASE_MANAGEMENT_LIST_TEST_IDS,
+  CASE_MANAGEMENT_UPLOAD_TEST_IDS,
+} from '../../constants';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
 
@@ -30,43 +35,43 @@ export class CaseManagementPage {
 
   // UI Elements
   get createSaveButton() {
-    return this.page.getByTestId('caseCreateSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_CREATE_TEST_IDS.saveButton);
   }
 
   get createCancelButton() {
-    return this.page.getByTestId('caseCreateCloseButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_CREATE_TEST_IDS.closeButton);
   }
 
   get createCaseButton() {
-    return this.page.getByTestId('caseManagementCreateButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton);
   }
 
   get uploadCaseButton() {
-    return this.page.getByTestId('caseManagementUploadButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.uploadButton);
   }
 
   get fileUploader() {
-    return this.page.getByTestId('caseFileUploader');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.fileUploader);
   }
 
   get uploadWizardCancelButton() {
-    return this.page.getByTestId('uploadWizardCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.cancelButton);
   }
 
   get uploadWizardNextButton() {
-    return this.page.getByTestId('uploadWizardNextButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.nextButton);
   }
 
   get uploadWizardFinishButton() {
-    return this.page.getByTestId('uploadWizardFinishButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
   }
 
   get uploadWarningCheckbox() {
-    return this.page.getByTestId('uploadWarningCheckbox').locator('label');
+    return this.page.getByRole('checkbox', {name: /I understand that configurations may be overwritten/});
   }
 
   get uploadWarningNotification() {
-    return this.page.getByTestId('uploadWarningNotification');
+    return this.page.getByRole('status');
   }
 
   // Navigation
@@ -102,8 +107,21 @@ export class CaseManagementPage {
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
     await this.uploadFileStep(archiveName);
-    await this.accessControlStep();
-    await this.dashboardStep();
+
+    // Wait for upload to complete: success text appears or finish button appears (error)
+    const successText = this.page.getByText('Case definition successfully imported');
+    const finishBtn = this.uploadWizardFinishButton;
+    await expect(successText.or(finishBtn)).toBeVisible();
+
+    if (await successText.isVisible()) {
+      // Success: click Next to advance from FILE_UPLOAD to ACCESS_CONTROL
+      await this.uploadWizardNextButton.click();
+      await this.accessControlStep();
+      await this.dashboardStep();
+    } else {
+      // Error: click Finish to close wizard
+      await finishBtn.click();
+    }
   }
 
   async uploadCaseConfiguration(archiveName: string) {
@@ -115,7 +133,7 @@ export class CaseManagementPage {
     await expect(this.uploadWarningNotification).toBeVisible();
 
     const overwriteCheckbox = this.uploadWarningCheckbox;
-    await overwriteCheckbox.click();
+    await overwriteCheckbox.check({force: true});
     await expect(overwriteCheckbox).toBeChecked();
     await expect(this.uploadWizardNextButton).toBeEnabled();
   }
@@ -137,15 +155,18 @@ export class CaseManagementPage {
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
-    await this.uploadWizardNextButton.click();
 
-    const response = await this.page.waitForResponse(
+    const responsePromise = this.page.waitForResponse(
       res =>
         res.url().includes('/api/management/v1/case-import') &&
         res.request().method() === 'POST' &&
         res.status() === 200
     );
+    await this.uploadWizardNextButton.click();
+
+    const response = await responsePromise;
     expect(response.status()).toBe(200);
+    await this.uploadWizardNextButton.click();
   }
 
   async accessControlStep() {

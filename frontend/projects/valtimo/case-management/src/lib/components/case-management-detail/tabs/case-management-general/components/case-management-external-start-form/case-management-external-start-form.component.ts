@@ -25,6 +25,7 @@ import {
 } from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
+import {CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS} from '../../../../../../constants';
 
 @Component({
   standalone: false,
@@ -33,6 +34,8 @@ import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} fr
   styleUrl: './case-management-external-start-form.component.scss',
 })
 export class CaseManagementExternalStartFormComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS;
+
   private _isReadOnly: boolean;
   @Input() public set isReadOnly(value: boolean) {
     this._isReadOnly = value;
