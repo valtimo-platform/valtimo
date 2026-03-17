@@ -27,21 +27,23 @@ import com.ritense.team.repository.TeamRepositoryConfigSpecificationHelper
 import com.ritense.team.repository.TeamUserRepository
 import com.ritense.team.repository.TeamUserRepositoryConfigSpecificationHelper
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.authentication.TeamProvider
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 @Service
 @SkipComponentScan
 @Transactional
-class TeamService(
+class TeamManagementServiceImpl(
     private val teamRepository: TeamRepository,
     private val teamUserRepository: TeamUserRepository,
     private val authorizationService: AuthorizationService,
-) : TeamProvider {
+) : TeamManagementService {
+
     @Transactional(readOnly = true)
     fun findAll(
         titleContains: String? = null,
@@ -63,8 +65,8 @@ class TeamService(
     }
 
     @Transactional(readOnly = true)
-    fun findById(key: String): Team? {
-        val team = teamRepository.findById(key).orElse(null)
+    override fun findByKey(teamKey: String): Team? {
+        val team = teamRepository.findById(teamKey).orElse(null)
         team?.users?.size // Initialize lazy collection
 
         authorizationService.requirePermission(
@@ -139,8 +141,8 @@ class TeamService(
         return findAllTeamUsers(username = username).content.map { it.teamKey }
     }
 
-    override fun findTitleByTeamKey(teamKey: String): String {
-        return findById(teamKey)?.title ?: teamKey
+    override fun findAll(pageable: Pageable): Page<TeamInterface> {
+        return findAll(titleContains = null, pageable = pageable).map { team -> team as TeamInterface }
     }
 
     private fun requirePermission(team: Team, action: Action<Team>) {

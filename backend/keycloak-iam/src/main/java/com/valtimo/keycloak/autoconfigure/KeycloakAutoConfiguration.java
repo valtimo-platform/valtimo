@@ -17,7 +17,7 @@
 package com.valtimo.keycloak.autoconfigure;
 
 import com.ritense.authorization.AuthorizationService;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.valtimo.keycloak.authorization.UserActionProvider;
 import com.valtimo.keycloak.authorization.UserSpecificationFactory;
@@ -86,14 +86,14 @@ public class KeycloakAutoConfiguration {
         @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
         final UserCache userCache,
         @Lazy final AuthorizationService authorizationService,
-        @Lazy final Optional<TeamProvider> teamProvider
+        @Lazy final Optional<TeamManagementService> teamManagementService
     ) {
         return new KeycloakUserManagementService(
             keycloakService,
             keycloakClientName,
             userCache,
             authorizationService,
-            teamProvider.orElse(null)
+            teamManagementService.orElse(null)
         );
     }
 

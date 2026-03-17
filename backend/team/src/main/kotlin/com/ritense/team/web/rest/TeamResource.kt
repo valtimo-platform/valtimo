@@ -17,7 +17,7 @@
 package com.ritense.team.web.rest
 
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.team.web.rest.dto.TeamCreateRequestDto
 import com.ritense.team.web.rest.dto.TeamListResponseDto
 import com.ritense.team.web.rest.dto.TeamResponseDto
@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController
 @SkipComponentScan
 @RequestMapping("/api/v1/team")
 class TeamResource(
-    private val teamService: TeamService,
+    private val teamManagementService: TeamManagementServiceImpl,
     private val userManagementService: UserManagementService,
 ) {
 
@@ -54,33 +54,33 @@ class TeamResource(
         @RequestParam(required = false) titleContains: String?,
         pageable: Pageable
     ): Page<TeamListResponseDto> {
-        return teamService.findAll(titleContains, pageable).map { TeamListResponseDto.from(it) }
+        return teamManagementService.findAll(titleContains, pageable).map { TeamListResponseDto.from(it) }
     }
 
     @GetMapping("/{key}")
     fun getTeamById(@PathVariable key: String): TeamResponseDto {
-        val team = teamService.findById(key) ?: throw IllegalArgumentException("Team not found")
+        val team = teamManagementService.findByKey(key) ?: throw IllegalArgumentException("Team not found")
         return TeamResponseDto.from(team)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createTeam(@RequestBody request: TeamCreateRequestDto): TeamResponseDto {
-        val team = teamService.create(Team(key = request.key, title = request.title))
+        val team = teamManagementService.create(Team(key = request.key, title = request.title))
         return TeamResponseDto.from(team)
     }
 
     @PutMapping("/{key}")
     fun updateTeam(@PathVariable key: String, @RequestBody request: TeamUpdateRequestDto): TeamResponseDto {
         require(request.key == key) { "Key in request does not match path variable" }
-        val team = teamService.update(key, request.title)
+        val team = teamManagementService.update(key, request.title)
         return TeamResponseDto.from(team)
     }
 
     @DeleteMapping("/{key}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteTeam(@PathVariable key: String) {
-        teamService.delete(key)
+        teamManagementService.delete(key)
     }
 
     @GetMapping("/{teamKey}/user")
@@ -89,7 +89,7 @@ class TeamResource(
         @RequestParam(required = false) username: String?,
         pageable: Pageable
     ): Page<TeamUserResponseDto> {
-        return teamService.findAllTeamUsers(teamKey = teamKey, username = username, pageable = pageable)
+        return teamManagementService.findAllTeamUsers(teamKey = teamKey, username = username, pageable = pageable)
             .map { teamUser -> TeamUserResponseDto.from(userManagementService.findByUsername(teamUser.username)) }
     }
 
@@ -99,7 +99,7 @@ class TeamResource(
         @PathVariable teamKey: String,
         @RequestBody request: TeamUserCreateRequestDto
     ): TeamUserResponseDto {
-        val teamUser = teamService.addUserToTeam(request.username, teamKey)
+        val teamUser = teamManagementService.addUserToTeam(request.username, teamKey)
         return TeamUserResponseDto.from(userManagementService.findByUsername(teamUser.username))
     }
 
@@ -109,12 +109,12 @@ class TeamResource(
         @PathVariable teamKey: String,
         @PathVariable username: String
     ) {
-        teamService.removeUserFromTeam(username, teamKey)
+        teamManagementService.removeUserFromTeam(username, teamKey)
     }
 
     @GetMapping("/{teamKey}/candidate-user")
     fun getCandidateUsers(@PathVariable teamKey: String): List<ManageableUser> {
-        val teamMembers = teamService.findAllTeamUsers(teamKey = teamKey)
+        val teamMembers = teamManagementService.findAllTeamUsers(teamKey = teamKey)
         val memberUsernames = teamMembers.content.map { it.username }.toSet()
         return userManagementService.allUsers
             .filter { it.username !in memberUsernames }

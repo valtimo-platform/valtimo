@@ -21,11 +21,11 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 
 class TeamSpecificationFactory(
-    private val teamService: TeamService,
+    private val teamManagementService: TeamManagementServiceImpl,
     private val queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecificationFactory<Team> {
     override fun create(
@@ -35,7 +35,7 @@ class TeamSpecificationFactory(
         return TeamSpecification(
             request,
             permissionSupplier,
-            teamService,
+            teamManagementService,
             queryDialectHelper
         )
     }

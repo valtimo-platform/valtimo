@@ -43,7 +43,8 @@ import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
@@ -82,7 +83,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
     private InternalCaseStatusService internalCaseStatusService;
 
     private CaseTagService caseTagService;
-    private TeamProvider teamProvider;
+    private TeamManagementService teamManagementService;
     private EntityManager entityManager;
 
     private final String documentDefinitionName = "name";
@@ -99,7 +100,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         outboxService = mock(OutboxService.class);
         internalCaseStatusService = mock();
         caseTagService = mock();
-        teamProvider = mock();
+        teamManagementService = mock();
         entityManager = mock();
 
         jsonSchemaDocumentService = spy(new JsonSchemaDocumentService(
@@ -114,7 +115,7 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
             MapperSingleton.INSTANCE.get(),
             internalCaseStatusService,
             caseTagService,
-            teamProvider,
+            teamManagementService,
             entityManager
         ));
 
@@ -255,7 +256,10 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         String teamTitle = "Team Title";
         when(documentRepository.findById(JsonSchemaDocumentId.existingId(jsonSchemaDocument.id().getId())))
             .thenReturn(Optional.of(jsonSchemaDocument));
-        when(teamProvider.findTitleByTeamKey(teamKey)).thenReturn(teamTitle);
+        when(teamManagementService.findByKey(teamKey)).thenReturn(new Team() {
+            @Override public String getKey() { return teamKey; }
+            @Override public String getTitle() { return teamTitle; }
+        });
 
         jsonSchemaDocumentService.assignTeamToDocument(jsonSchemaDocument.id().getId(), teamKey);
 
@@ -282,5 +286,22 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         verify(documentRepository, times(1)).save(jsonSchemaDocument);
         var captor = ArgumentCaptor.forClass(DocumentUnassignedEvent.class);
         verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+    }
+
+    @Test
+    void shouldGetCandidateTeams() {
+        var teamPage = new PageImpl<Team>(List.of(new Team() {
+            @Override public String getKey() { return "team-1"; }
+            @Override public String getTitle() { return "Team One"; }
+        }));
+        doReturn(Optional.of(jsonSchemaDocument))
+            .when(jsonSchemaDocumentService).findBy(jsonSchemaDocument.id());
+        when(teamManagementService.findAll(Pageable.unpaged())).thenReturn(teamPage);
+
+        var result = jsonSchemaDocumentService.getCandidateTeams(jsonSchemaDocument.id(), Pageable.unpaged());
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("team-1", result.getContent().get(0).getKey());
+        assertEquals("Team One", result.getContent().get(0).getTitle());
     }
 }

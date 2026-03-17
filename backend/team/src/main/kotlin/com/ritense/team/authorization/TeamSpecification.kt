@@ -21,7 +21,7 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -31,7 +31,7 @@ import jakarta.persistence.criteria.Root
 class TeamSpecification(
     authRequest: AuthorizationRequest<Team>,
     permissionSupplier: () -> List<Permission>,
-    private val teamService: TeamService,
+    private val teamManagementService: TeamManagementServiceImpl,
     private val queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecification<Team>(authRequest, permissionSupplier) {
 
@@ -59,7 +59,7 @@ class TeamSpecification(
 
     override fun identifierToEntity(identifier: String): Team {
         return runWithoutAuthorization {
-            teamService.findById(identifier) ?: error("Team not found with key: $identifier")
+            teamManagementService.findByKey(identifier) ?: error("Team not found with key: $identifier")
         }
     }
 }

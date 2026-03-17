@@ -41,7 +41,7 @@ import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
@@ -111,7 +111,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
     private final QueryDialectHelper queryDialectHelper;
     private final SearchFieldService searchFieldService;
     private final UserManagementService userManagementService;
-    private final TeamProvider teamProvider;
+    private final TeamManagementService teamManagementService;
 
     private final AuthorizationService authorizationService;
     private final OutboxService outboxService;
@@ -124,7 +124,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         QueryDialectHelper queryDialectHelper,
         SearchFieldService searchFieldService,
         UserManagementService userManagementService,
-        TeamProvider teamProvider,
+        TeamManagementService teamManagementService,
         AuthorizationService authorizationService, OutboxService outboxService,
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
         ObjectMapper objectMapper
@@ -133,7 +133,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         this.queryDialectHelper = queryDialectHelper;
         this.searchFieldService = searchFieldService;
         this.userManagementService = userManagementService;
-        this.teamProvider = teamProvider;
+        this.teamManagementService = teamManagementService;
         this.authorizationService = authorizationService;
         this.outboxService = outboxService;
         this.jsonSchemaDocumentDefinitionService = jsonSchemaDocumentDefinitionService;
@@ -460,11 +460,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             }
             case TEAM -> {
                 var username = userManagementService.getCurrentUser().getUsername();
-                if (teamProvider == null) {
+                if (teamManagementService == null) {
                     throw new IllegalStateException(
-                        "No team provider found. In order to use this feature, the team library must be included.");
+                        "No teamManagementService found. In order to use this feature, the team library must be included.");
                 }
-                var teamKeys = teamProvider.findTeamKeysByUsername(username);
+                var teamKeys = teamManagementService.findTeamKeysByUsername(username);
 
                 if (!teamKeys.isEmpty()) {
                     yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);

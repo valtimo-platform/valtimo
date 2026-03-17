@@ -19,7 +19,7 @@ package com.ritense.team.exporter
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -30,14 +30,14 @@ import org.springframework.data.domain.PageImpl
 class TeamExporterTest {
 
     private val objectMapper = ObjectMapper()
-    private val teamService: TeamService = mock()
-    private val teamExporter = TeamExporter(objectMapper, teamService)
+    private val teamManagementService: TeamManagementServiceImpl = mock()
+    private val teamExporter = TeamExporter(objectMapper, teamManagementService)
 
     @Test
     fun `should export teams`(): Unit = runWithoutAuthorization {
         val team1 = Team("team-1", "Team 1")
         val team2 = Team("team-2", "Team 2")
-        whenever(teamService.findAll()).thenReturn(PageImpl(listOf(team1, team2)))
+        whenever(teamManagementService.findAll()).thenReturn(PageImpl(listOf(team1, team2)))
 
         val exportResult = teamExporter.export(TeamExportRequest())
         val exportFiles = exportResult.exportFiles

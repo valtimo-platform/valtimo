@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.team.BaseIntegrationTest
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.team.web.rest.dto.TeamCreateRequestDto
 import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
@@ -43,7 +43,7 @@ import org.springframework.web.context.WebApplicationContext
 class TeamResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var teamService: TeamService
+    lateinit var teamManagementService: TeamManagementServiceImpl
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -89,7 +89,7 @@ class TeamResourceIntTest : BaseIntegrationTest() {
     @WithMockUser(username = "admin", authorities = [ADMIN])
     fun `should update and delete team via REST`() {
         AuthorizationContext.runWithoutAuthorization {
-            teamService.create(Team(key = "team-to-update", title = "Old Title"))
+            teamManagementService.create(Team(key = "team-to-update", title = "Old Title"))
         }
 
         val updateRequest = TeamUpdateRequestDto(key = "team-to-update", title = "New Title")
@@ -109,7 +109,7 @@ class TeamResourceIntTest : BaseIntegrationTest() {
     @Test
     @WithMockUser(username = "admin", authorities = [ADMIN])
     fun `should manage team users via REST`() {
-        teamService.create(Team(key = "team-users", title = "Team with Users"))
+        teamManagementService.create(Team(key = "team-users", title = "Team with Users"))
 
         val userRequest = TeamUserCreateRequestDto(username = NORMAL_USER_NAME)
 
