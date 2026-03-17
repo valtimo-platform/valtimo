@@ -460,12 +460,14 @@ class CaseDefinitionService(
 
     fun getCaseDefinitionsForManagement(
         caseDefinitionKey: String? = null,
+        active: Boolean? = null,
         final: Boolean? = null,
         pageable: Pageable,
     ): Page<CaseDefinition> {
         denyManagementOperation()
         val spec = getCaseDefinitionsQuery(
             caseDefinitionKey = caseDefinitionKey,
+            active = active,
             final = final,
         )
         val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))

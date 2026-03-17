@@ -161,20 +161,12 @@ class CaseDefinitionResource(
             SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
         ) pageable: Pageable
     ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
-        val caseDefinitions = if (active == null) {
-            service.getCaseDefinitionsForManagement(
-                caseDefinitionKey = caseDefinitionKey,
-                final = final,
-                pageable = pageable
-            )
-        } else {
-            service.getCaseDefinitions(
-                caseDefinitionKey = caseDefinitionKey,
-                active = active,
-                final = final,
-                pageable = pageable
-            )
-        }
+        val caseDefinitions = service.getCaseDefinitionsForManagement(
+            caseDefinitionKey = caseDefinitionKey,
+            active = active,
+            final = final,
+            pageable = pageable
+        )
         val caseDefinitionIds = caseDefinitions.content.map { it.id }
         val idsWithIssues = if (caseDefinitionIds.isNotEmpty()) {
             configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(caseDefinitionIds)
