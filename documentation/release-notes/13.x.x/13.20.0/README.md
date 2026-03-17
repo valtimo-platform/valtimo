@@ -6,9 +6,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Configuration warnings for imported case definitions**
 
-  New feature explanation.
+  When a case definition is imported into a new environment, it may reference configurations — such as a Zaken API plugin or Objecten API sync — that do not yet exist in that environment. Valtimo now detects these missing references during import and shows warnings to help administrators resolve them.
 
 ## Enhancements
 

@@ -27,6 +27,7 @@ import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {
   CaseDefinition,
+  CaseDefinitionConfigurationIssue,
   CaseDefinitionFinalizationCheckResult,
   DraftVersion,
 } from '../models/case-deployment.model';
@@ -83,7 +84,8 @@ export class CaseManagementService extends BaseApiService {
 
   public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {
     return this.httpClient.get<any[]>(
-      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}`)
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}`),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 
@@ -144,10 +146,9 @@ export class CaseManagementService extends BaseApiService {
   }
 
   public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {
-    return this.httpClient.post<HttpResponse<Blob>>(
-      this.getApiUrl(`management/v1/case/import`),
-      file
-    ).pipe(tap(res => console.log({res})));
+    return this.httpClient
+      .post<HttpResponse<Blob>>(this.getApiUrl(`management/v1/case/import`), file)
+      .pipe(tap(res => console.log({res})));
   }
 
   public exportDocumentDefinition(
@@ -159,6 +160,17 @@ export class CaseManagementService extends BaseApiService {
         `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
       ),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public getConfigurationIssues(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDefinitionConfigurationIssue[]> {
+    return this.httpClient.get<CaseDefinitionConfigurationIssue[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/configuration-issues`
+      )
     );
   }
 

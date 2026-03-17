@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.ritense.authorization.AuthorizationContext.runWithoutAuthoriza
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -34,12 +35,12 @@ import com.ritense.authorization.role.RoleRepository;
 import com.ritense.outbox.domain.BaseEvent;
 import com.ritense.outbox.repository.OutboxMessageRepository;
 import com.ritense.valtimo.BaseIntegrationTest;
+import com.ritense.valtimo.contract.authentication.ManageableUser;
+import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
-import com.ritense.valtimo.contract.authentication.ManageableUser;
-import com.ritense.valtimo.contract.authentication.NamedUser;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,10 +49,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.operaton.bpm.engine.TaskService;
-import org.operaton.bpm.engine.task.Task;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.operaton.bpm.engine.TaskService;
+import org.operaton.bpm.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -359,6 +360,8 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
 
         var task = pagedTasks.get().findFirst().orElseThrow().getId();
 
+        outboxRepository.deleteAll();
+        clearInvocations(outboxService);
         operatonTaskService.assign(task, null);
 
         assertThat(outboxRepository.count()).isEqualTo(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,22 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PageHeaderService} from '@valtimo/components';
-import {getCaseManagementRouteParams, GlobalNotificationService} from '@valtimo/shared';
+import {
+  ConfigurationIssueService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {IconService, ListItem, Notification} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
@@ -73,11 +86,12 @@ export class CaseManagementDetailActionsComponent {
     map(params => params.caseDefinitionVersionTag || '')
   );
 
-  public readonly globalActiveVersion$ = this.caseDefinitionKey$.pipe(
+  public readonly globalActiveVersion$: Observable<string | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService
-        .getGlobalActiveCase(caseDefinitionKey)
-        .pipe(map(result => result.caseDefinitionVersionTag))
+      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey).pipe(
+        map(result => result.caseDefinitionVersionTag),
+        catchError(() => of(null))
+      )
     )
   );
 
@@ -86,19 +100,29 @@ export class CaseManagementDetailActionsComponent {
     this.globalActiveVersion$,
   ]).pipe(map(([selectedVersion, globalActiveVersion]) => selectedVersion === globalActiveVersion));
 
+  public readonly hasUnresolvedConfigurationIssues$: Observable<boolean> =
+    this.configurationIssueService.hasAnyIssues$;
+
+  public readonly setActiveDisabled$: Observable<boolean> = combineLatest([
+    this.selectedVersionIsGloballyActive$,
+    this.hasUnresolvedConfigurationIssues$,
+  ]).pipe(map(([isActive, hasIssues]) => isActive || hasIssues));
+
   private readonly _caseDefinitionKey$ = this.caseDetailService.selectedCaseDefinitionKey$;
   public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
   public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
   public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly _globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+  public readonly _globalActiveCase$: Observable<any | null> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(catchError(() => of(null)))
     )
   );
 
   public readonly _caseDefinitionTitle$: Observable<string> = this._globalActiveCase$.pipe(
-    map(result => result.name)
+    map(result => result?.name ?? '')
   );
 
   public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;
@@ -186,7 +210,8 @@ export class CaseManagementDetailActionsComponent {
     private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly configurationIssueService: ConfigurationIssueService
   ) {
     this.iconService.register(Version16);
     this.iconService.register(Deploy16);
