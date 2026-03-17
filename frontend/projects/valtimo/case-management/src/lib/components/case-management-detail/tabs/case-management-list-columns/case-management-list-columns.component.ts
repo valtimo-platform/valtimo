@@ -48,6 +48,7 @@ import {
 } from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ListColumnModal} from '../../../../models';
+import {CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -56,6 +57,8 @@ import {ListColumnModal} from '../../../../models';
   styleUrls: ['./case-management-list-columns.component.scss'],
 })
 export class CaseManagementListColumnsComponent implements AfterViewInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS;
+
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | null>(null);
   private readonly _subscriptions = new Subscription();

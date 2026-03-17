@@ -37,7 +37,7 @@
     }
   }
 
-  <cds-tabs class="case-management-tabs" type="inline" data-test-id="caseManagementTabs">
+  <cds-tabs class="case-management-tabs" type="inline" [attr.data-test-id]="testIds.tabs">
     <cds-tab
       class="no-padding-left-right main-content"
       [id]="TabEnum.GENERAL"

@@ -36,7 +36,7 @@
   >
     <cds-toggle
       *ngIf="obs.showToggle"
-      data-test-id="valuePathSelectorToggle"
+      [attr.data-test-id]="testIds.toggle"
       size="sm"
       [disabled]="obs.disabled"
       [onText]="'valuePathSelector.dropdown' | translate"
@@ -47,7 +47,7 @@
 
     @if (obs.inputModeIsDropdown && obs.showToggle) {
       <cds-combo-box
-        data-test-id="valueValuePathSelectorPath"
+        [attr.data-test-id]="testIds.path"
         [appendInline]="appendInline"
         [disabled]="
           obs.disabled ||
@@ -64,7 +64,7 @@
       </cds-combo-box>
     } @else {
       <input
-        data-test-id="valuePathSelectorInput"
+        [attr.data-test-id]="testIds.input"
         cdsText
         type="text"
         formControlName="selectedPath"

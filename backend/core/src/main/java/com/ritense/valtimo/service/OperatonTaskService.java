@@ -198,7 +198,7 @@ public class OperatonTaskService {
         } else if (EmailValidator.getInstance().isValid(assignee)) {
             throw new IllegalStateException("Task assignee must be an ID. Not an email: '" + assignee + "'");
         } else {
-            String assigneeUsername = userManagementService.findById(assignee).getUsername();
+            String assigneeUsername = runWithoutAuthorization(() -> userManagementService.findById(assignee).getUsername());
             final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
             final String currentUser = userManagementService.getCurrentUser().getUsername();
             if (assignee.equals(currentUser)) {
@@ -324,7 +324,7 @@ public class OperatonTaskService {
             ).stream()
             .map(Role::getKey)
             .collect(toSet());
-        return userManagementService.findNamedUserByRoles(candidateGroups);
+        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(candidateGroups));
     }
 
     @Transactional
@@ -488,7 +488,7 @@ public class OperatonTaskService {
                         if (assigneeMap.containsKey(task.getAssignee())) {
                             valtimoUser = assigneeMap.get(task.getAssignee());
                         } else {
-                            valtimoUser = getValtimoUser(task.getAssignee());
+                            valtimoUser = runWithoutAuthorization(() -> getValtimoUser(task.getAssignee()));
                             assigneeMap.put(task.getAssignee(), valtimoUser);
                         }
                     } catch (Exception e) {

@@ -50,6 +50,7 @@ import {
   TabEnum,
 } from '../../models';
 import {CaseDetailService, CaseManagementService, TabService} from '../../services';
+import {CASE_MANAGEMENT_DETAIL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -59,6 +60,8 @@ import {CaseDetailService, CaseManagementService, TabService} from '../../servic
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_MANAGEMENT_DETAIL_TEST_IDS;
+
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
   private _params: CaseManagementParams | undefined;

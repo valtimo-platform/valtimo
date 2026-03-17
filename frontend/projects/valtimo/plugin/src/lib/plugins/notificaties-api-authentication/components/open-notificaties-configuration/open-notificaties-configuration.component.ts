@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {OpenNotificatiesConfig} from '../../models';
+import {OPEN_NOTIFICATIES_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -35,6 +36,7 @@ export class OpenNotificatiesConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<OpenNotificatiesConfig> =
     new EventEmitter<OpenNotificatiesConfig>();
+  protected readonly testIds = OPEN_NOTIFICATIES_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

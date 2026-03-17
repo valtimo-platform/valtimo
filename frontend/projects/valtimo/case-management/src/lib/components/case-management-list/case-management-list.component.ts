@@ -24,6 +24,7 @@ import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
+import {CASE_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -35,6 +36,9 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class CaseManagementListComponent implements AfterViewInit {
   @ViewChild('statusColumnTemplate') statusColumnTemplate: TemplateRef<any>;
+
+  protected readonly testIds = CASE_MANAGEMENT_LIST_TEST_IDS;
+
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 

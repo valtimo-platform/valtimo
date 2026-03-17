@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication;
+package com.ritense.exporter.request
 
-import java.util.List;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-public interface AuthorizedUser {
-
-    List<String> getRoles();
-
-}
+data class GlobalExportRequest(
+    override val required: Boolean = true,
+    override val caseDefinitionId: CaseDefinitionId? = null,
+    override val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null,
+) : ExportRequest()

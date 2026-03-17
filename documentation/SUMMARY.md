@@ -138,6 +138,8 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+* [🗝️ Keycloak](features/keycloak/README.md)
+  * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
   * [For developers](features/outbox/for-developers.md)
 * [🔌 Plugins](features/plugins/README.md)
