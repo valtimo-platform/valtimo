@@ -60,7 +60,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -95,7 +95,7 @@ public class DocumentAutoConfiguration {
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
-        final Optional<TeamProvider> teamProvider,
+        final Optional<TeamManagementService> teamManagementService,
         final EntityManager entityManager
     ) {
         return new JsonSchemaDocumentService(
@@ -110,7 +110,7 @@ public class DocumentAutoConfiguration {
             objectMapper,
             internalCaseStatusService,
             caseTagService,
-            teamProvider.orElse(null),
+            teamManagementService.orElse(null),
             entityManager
         );
     }
@@ -177,7 +177,7 @@ public class DocumentAutoConfiguration {
         final QueryDialectHelper queryDialectHelper,
         final SearchFieldService searchFieldService,
         final UserManagementService userManagementService,
-        final Optional<TeamProvider> teamProvider,
+        final Optional<TeamManagementService> teamManagementService,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
         final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
@@ -188,7 +188,7 @@ public class DocumentAutoConfiguration {
             queryDialectHelper,
             searchFieldService,
             userManagementService,
-            teamProvider.orElse(null),
+            teamManagementService.orElse(null),
             authorizationService,
             outboxService,
             jsonSchemaDocumentDefinitionService,

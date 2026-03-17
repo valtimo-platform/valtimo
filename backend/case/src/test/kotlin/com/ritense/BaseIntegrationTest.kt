@@ -46,7 +46,7 @@ import com.ritense.outbox.OutboxService
 import com.ritense.resource.service.ResourceService
 import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.ManageableUser
-import com.ritense.valtimo.contract.authentication.TeamProvider
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
 import com.ritense.valtimo.contract.mail.MailSender
@@ -80,7 +80,7 @@ class BaseIntegrationTest: BaseTest() {
     lateinit var userManagementService: UserManagementService
 
     @MockitoBean
-    lateinit var teamProvider: TeamProvider
+    lateinit var teamManagementService: TeamManagementService
 
     @MockitoBean
     lateinit var applicationEventMulticaster: SimpleApplicationEventMulticaster

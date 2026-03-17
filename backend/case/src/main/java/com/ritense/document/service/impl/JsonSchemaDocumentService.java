@@ -78,7 +78,8 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
@@ -127,7 +128,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final CaseTagService caseTagService;
 
-    private final TeamProvider teamProvider;
+    private final TeamManagementService teamManagementService;
 
     private final EntityManager entityManager;
 
@@ -143,7 +144,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         ObjectMapper objectMapper,
         InternalCaseStatusService internalCaseStatusService,
         CaseTagService caseTagService,
-        TeamProvider teamProvider,
+        TeamManagementService teamManagementService,
         EntityManager entityManager
     ) {
         this.documentRepository = documentRepository;
@@ -157,7 +158,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.objectMapper = objectMapper;
         this.internalCaseStatusService = internalCaseStatusService;
         this.caseTagService = caseTagService;
-        this.teamProvider = teamProvider;
+        this.teamManagementService = teamManagementService;
         this.entityManager = entityManager;
     }
 
@@ -808,7 +809,8 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
-        var teamTitle = teamProvider == null ? teamKey : teamProvider.findTitleByTeamKey(teamKey);
+        var team = teamManagementService == null ? null : teamManagementService.findByKey(teamKey);
+        var teamTitle = team != null ? team.getTitle() : teamKey;
         document.setAssignedTeamKey(teamKey);
         document.setAssignedTeamTitle(teamTitle);
         documentRepository.save(document);
@@ -1070,6 +1072,26 @@ public class JsonSchemaDocumentService implements DocumentService {
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
         return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(authorizedRoles));
+    }
+
+    @Override
+    public Page<Team> getCandidateTeams(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId,
+        Pageable pageable
+    ) {
+        var document = AuthorizationContext.runWithoutAuthorization(() -> get(documentId.toString()));
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                document
+            )
+        );
+
+        if (teamManagementService == null) {
+            return Page.empty(pageable);
+        }
+        return runWithoutAuthorization(() -> teamManagementService.findAll(pageable));
     }
 
     public void assignUserToDocuments(List<UUID> documentIds, String assigneeId) {

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.importer.ImportRequest
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -31,8 +31,8 @@ import org.mockito.kotlin.whenever
 class TeamImporterTest {
 
     private val objectMapper = ObjectMapper().registerKotlinModule()
-    private val teamService: TeamService = mock()
-    private val teamImporter = TeamImporter(objectMapper, teamService)
+    private val teamManagementService: TeamManagementServiceImpl = mock()
+    private val teamImporter = TeamImporter(objectMapper, teamManagementService)
 
     @Test
     fun `should import team`(): Unit = runWithoutAuthorization {
@@ -42,17 +42,17 @@ class TeamImporterTest {
             content = json.toByteArray(Charsets.UTF_8)
         )
 
-        whenever(teamService.findById("team-1")).thenReturn(null)
+        whenever(teamManagementService.findByKey("team-1")).thenReturn(null)
 
         teamImporter.import(request)
 
-        verify(teamService).create(any())
+        verify(teamManagementService).create(any())
     }
 
     @Test
     fun `should update existing team on import`(): Unit = runWithoutAuthorization {
         val existingTeam = Team("team-1", "Old Title")
-        whenever(teamService.findById("team-1")).thenReturn(existingTeam)
+        whenever(teamManagementService.findByKey("team-1")).thenReturn(existingTeam)
 
         val json = """[{"key":"team-1","title":"New Title"}]"""
         val request = ImportRequest(
@@ -62,6 +62,6 @@ class TeamImporterTest {
 
         teamImporter.import(request)
 
-        verify(teamService).update("team-1", "New Title")
+        verify(teamManagementService).update("team-1", "New Title")
     }
 }

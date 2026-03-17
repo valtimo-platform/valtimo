@@ -22,7 +22,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
-import com.ritense.valtimo.contract.authentication.TeamProvider;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.UserNotFoundException;
@@ -74,20 +74,20 @@ public class KeycloakUserManagementService implements UserManagementService {
     private final String clientName;
     private final UserCache userCache;
     private final AuthorizationService authorizationService;
-    private final TeamProvider teamProvider;
+    private final TeamManagementService teamManagementService;
 
     public KeycloakUserManagementService(
         KeycloakService keycloakService,
         String keycloakClientName,
         UserCache userCache,
         AuthorizationService authorizationService,
-        TeamProvider teamProvider
+        TeamManagementService teamManagementService
     ) {
         this.keycloakService = keycloakService;
         this.clientName = keycloakClientName;
         this.userCache = userCache;
         this.authorizationService = authorizationService;
-        this.teamProvider = teamProvider;
+        this.teamManagementService = teamManagementService;
     }
 
     @Override
@@ -302,10 +302,10 @@ public class KeycloakUserManagementService implements UserManagementService {
     @Override
     public List<String> getCurrentUserTeams() {
         ManageableUser user = getCurrentUser();
-        if (user == null || user.getUsername() == null || teamProvider == null) {
+        if (user == null || user.getUsername() == null || teamManagementService == null) {
             return List.of();
         } else {
-            return teamProvider.findTeamKeysByUsername(user.getUsername());
+            return teamManagementService.findTeamKeysByUsername(user.getUsername());
         }
     }
 

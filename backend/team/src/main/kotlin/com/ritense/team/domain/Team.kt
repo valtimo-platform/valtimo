@@ -24,19 +24,20 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
+import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 @Entity
 @Table(name = "team")
 data class Team(
     @Id
     @Column(name = "team_key", nullable = false, unique = true, length = 255)
-    var key: String,
+    override var key: String,
 
     @Column(name = "title", nullable = false, length = 255)
-    var title: String,
+    override var title: String,
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "team_user", joinColumns = [JoinColumn(name = "team_key")])
     @Column(name = "username")
     var users: List<String> = emptyList()
-)
+) : TeamInterface

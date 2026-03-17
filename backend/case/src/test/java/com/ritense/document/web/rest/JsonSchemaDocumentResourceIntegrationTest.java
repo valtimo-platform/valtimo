@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,9 +41,12 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.AssignToDocumentsRequest;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.outbox.domain.BaseEvent;
+import com.ritense.valtimo.contract.authentication.Team;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import java.util.List;
 import java.util.function.Supplier;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -79,6 +84,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         jsonSchemaDocumentResource = new JsonSchemaDocumentResource(documentService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(jsonSchemaDocumentResource)
+            .setCustomArgumentResolvers(new org.springframework.data.web.PageableHandlerMethodArgumentResolver())
             .build();
     }
 
@@ -260,7 +266,10 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
     void shouldAssignTeamToCase() throws Exception {
         String teamKey = "team-key";
         String teamTitle = "Team Title";
-        when(teamProvider.findTitleByTeamKey(teamKey)).thenReturn(teamTitle);
+        when(teamManagementService.findByKey(teamKey)).thenReturn(new Team() {
+            @Override public String getKey() { return teamKey; }
+            @Override public String getTitle() { return teamTitle; }
+        });
 
         var postContent = "{ \"assignedTeamKey\": \"" + teamKey + "\"}";
 
@@ -344,5 +353,23 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         assertEquals("com.ritense.valtimo.document.deleted", outboxEvent.getType());
         assertEquals("com.ritense.document.domain.impl.JsonSchemaDocument", outboxEvent.getResultType());
         assertEquals(document.id().toString(), outboxEvent.getResultId());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldGetCandidateTeams() throws Exception {
+        var teams = List.<Team>of(new Team() {
+            @Override public String getKey() { return "team-1"; }
+            @Override public String getTitle() { return "Team One"; }
+        });
+        when(teamManagementService.findAll(any(Pageable.class)))
+            .thenReturn(new PageImpl<>(teams, Pageable.ofSize(20), teams.size()));
+
+        mockMvc.perform(get("/api/v1/document/{document-id}/candidate-team", document.id().getId().toString())
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].key").value("team-1"))
+            .andExpect(jsonPath("$.content[0].title").value("Team One"));
     }
 }

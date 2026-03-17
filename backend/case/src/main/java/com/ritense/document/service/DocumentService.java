@@ -25,6 +25,7 @@ import com.ritense.document.domain.relation.DocumentRelation;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.document.service.result.ModifyDocumentResult;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
@@ -87,4 +88,6 @@ public interface DocumentService {
     List<NamedUser> getCandidateUsers(Document.Id documentId);
 
     List<NamedUser> getCandidateUsers(List<Document.Id> documentIds);
+
+    Page<Team> getCandidateTeams(Document.Id documentId, Pageable pageable);
 }

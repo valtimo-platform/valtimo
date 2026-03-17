@@ -25,7 +25,7 @@ import com.ritense.team.repository.TeamRepository
 import com.ritense.team.repository.TeamUserRepository
 import com.ritense.team.security.config.TeamHttpSecurityConfigurer
 import com.ritense.team.service.TeamActionProvider
-import com.ritense.team.service.TeamService
+import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.team.web.rest.TeamResource
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -43,13 +43,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 class TeamAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(TeamService::class)
-    fun teamService(
+    @ConditionalOnMissingBean(TeamManagementServiceImpl::class)
+    fun teamManagementService(
         teamRepository: TeamRepository,
         teamUserRepository: TeamUserRepository,
         @Lazy authorizationService: AuthorizationService,
-    ): TeamService {
-        return TeamService(teamRepository, teamUserRepository, authorizationService)
+    ): TeamManagementServiceImpl {
+        return TeamManagementServiceImpl(teamRepository, teamUserRepository, authorizationService)
     }
 
     @Bean
@@ -61,11 +61,11 @@ class TeamAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TeamResource::class)
     fun teamResource(
-        teamService: TeamService,
+        teamManagementService: TeamManagementServiceImpl,
         userManagementService: UserManagementService,
     ): TeamResource {
         return TeamResource(
-            teamService,
+            teamManagementService,
             userManagementService,
         )
     }
@@ -81,26 +81,26 @@ class TeamAutoConfiguration {
     @ConditionalOnMissingBean(TeamExporter::class)
     fun teamExporter(
         objectMapper: ObjectMapper,
-        teamService: TeamService
+        teamManagementService: TeamManagementServiceImpl
     ): TeamExporter {
-        return TeamExporter(objectMapper, teamService)
+        return TeamExporter(objectMapper, teamManagementService)
     }
 
     @Bean
     @ConditionalOnMissingBean(TeamImporter::class)
     fun teamImporter(
         objectMapper: ObjectMapper,
-        teamService: TeamService
+        teamManagementService: TeamManagementServiceImpl
     ): TeamImporter {
-        return TeamImporter(objectMapper, teamService)
+        return TeamImporter(objectMapper, teamManagementService)
     }
 
     @Bean
     @ConditionalOnMissingBean(TeamSpecificationFactory::class)
     fun teamSpecificationFactory(
-        @Lazy teamService: TeamService,
+        @Lazy teamManagementService: TeamManagementServiceImpl,
         queryDialectHelper: QueryDialectHelper
     ): TeamSpecificationFactory {
-        return TeamSpecificationFactory(teamService, queryDialectHelper)
+        return TeamSpecificationFactory(teamManagementService, queryDialectHelper)
     }
 }

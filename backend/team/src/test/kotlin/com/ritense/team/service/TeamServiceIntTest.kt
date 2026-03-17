@@ -26,17 +26,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.test.context.support.WithMockUser
 
-class TeamServiceIntTest : BaseIntegrationTest() {
+class TeamManagementServiceImplIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var teamService: TeamService
+    lateinit var teamManagementService: TeamManagementServiceImpl
 
 
     @Test
     @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
     fun `should create team when user has permission`() {
         val team = Team(key = "team1", title = "Team 1")
-        val createdTeam = teamService.create(team)
+        val createdTeam = teamManagementService.create(team)
 
         assertThat(createdTeam.key).isEqualTo("team1")
         assertThat(createdTeam.title).isEqualTo("Team 1")
@@ -46,61 +46,61 @@ class TeamServiceIntTest : BaseIntegrationTest() {
     @WithMockUser(username = NORMAL_USER_NAME, authorities = [USER])
     fun `should fail to update team when user lacks modify permission`() {
         runWithoutAuthorization {
-            teamService.create(Team(key = "team2", title = "Team 2"))
+            teamManagementService.create(Team(key = "team2", title = "Team 2"))
         }
 
         assertThrows<AccessDeniedException> {
-            teamService.update("team2", "Updated Title")
+            teamManagementService.update("team2", "Updated Title")
         }
     }
 
     @Test
     @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
     fun `should update team when user has modify permission`() {
-        teamService.create(Team(key = "team3", title = "Team 3"))
+        teamManagementService.create(Team(key = "team3", title = "Team 3"))
 
-        val updatedTeam = teamService.update("team3", "Updated Title")
+        val updatedTeam = teamManagementService.update("team3", "Updated Title")
         assertThat(updatedTeam.title).isEqualTo("Updated Title")
     }
 
     @Test
     @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
     fun `should delete team when user has delete permission`() {
-        teamService.create(Team(key = "team4", title = "Team 4"))
+        teamManagementService.create(Team(key = "team4", title = "Team 4"))
 
-        teamService.delete("team4")
-        assertThat(teamService.findById("team4")).isNull()
+        teamManagementService.delete("team4")
+        assertThat(teamManagementService.findByKey("team4")).isNull()
     }
 
     @Test
     @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
     fun `should add and remove user from team`() {
-        teamService.create(Team(key = "team5", title = "Team 5"))
+        teamManagementService.create(Team(key = "team5", title = "Team 5"))
 
         val username = "user1"
-        val teamUser = teamService.addUserToTeam(username, "team5")
+        val teamUser = teamManagementService.addUserToTeam(username, "team5")
         assertThat(teamUser.username).isEqualTo(username)
         assertThat(teamUser.teamKey).isEqualTo("team5")
 
-        val teamUsers = teamService.findAllTeamUsers(teamKey = "team5")
+        val teamUsers = teamManagementService.findAllTeamUsers(teamKey = "team5")
         assertThat(teamUsers.content).hasSize(1)
         assertThat(teamUsers.content[0].username).isEqualTo(username)
 
-        teamService.removeUserFromTeam(username, "team5")
-        assertThat(teamService.findAllTeamUsers(teamKey = "team5").content).isEmpty()
+        teamManagementService.removeUserFromTeam(username, "team5")
+        assertThat(teamManagementService.findAllTeamUsers(teamKey = "team5").content).isEmpty()
     }
 
     @Test
     @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
     fun `should find all teams with filter`() {
-        teamService.create(Team(key = "alpha", title = "Alpha Team"))
-        teamService.create(Team(key = "beta", title = "Beta Team"))
+        teamManagementService.create(Team(key = "alpha", title = "Alpha Team"))
+        teamManagementService.create(Team(key = "beta", title = "Beta Team"))
 
-        val allTeams = teamService.findAll()
+        val allTeams = teamManagementService.findAll()
         assertThat(allTeams.content).isNotEmpty
         assertThat(allTeams.content).hasAtLeastOneElementOfType(Team::class.java)
 
-        val filteredTeams = teamService.findAll(titleContains = "Alpha")
+        val filteredTeams = teamManagementService.findAll(titleContains = "Alpha")
         assertThat(filteredTeams.content).hasSize(1)
         assertThat(filteredTeams.content[0].key).isEqualTo("alpha")
     }

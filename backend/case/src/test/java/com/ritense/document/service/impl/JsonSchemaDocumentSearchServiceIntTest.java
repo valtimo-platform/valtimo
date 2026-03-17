@@ -1205,7 +1205,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
 
-        when(teamProvider.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
 
         runWithoutAuthorization(() -> {
             documentService.assignTeamToDocument(document1.id().getId(), "team1");
@@ -1267,7 +1267,7 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document4 = createDocument("{\"street\": \"Dennenlaan\"}").resultingDocument().orElseThrow();
         var document5 = createDocument("{\"street\": \"Edelweiss\"}").resultingDocument().orElseThrow();
 
-        when(teamProvider.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
 
         runWithoutAuthorization(() -> {
             documentService.unassignUserFromDocument(document1.id().getId());

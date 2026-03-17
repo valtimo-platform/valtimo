@@ -14,28 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication;
+package com.ritense.valtimo.contract.authentication
 
-import java.util.List;
-
-/**
- * Interface for providing team memberships.
- */
-public interface TeamProvider {
-
-    /**
-     * Finds the team keys for a user.
-     *
-     * @param username The username.
-     * @return List of team keys.
-     */
-    List<String> findTeamKeysByUsername(String username);
-
-    /**
-     * Finds the title for a team key.
-     *
-     * @param teamKey The team key.
-     * @return The team title.
-     */
-    String findTitleByTeamKey(String teamKey);
+interface Team {
+    val key: String
+    val title: String
 }
