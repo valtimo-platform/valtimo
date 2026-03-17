@@ -18,7 +18,6 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
 import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.byDocumentDefinitionIdName;
-import static com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.expiredDocuments;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGN;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
@@ -961,7 +960,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
-        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(authorizedRoles));
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(authorizedRoles);
     }
 
     @Override
@@ -992,7 +991,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
-        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(authorizedRoles));
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(authorizedRoles);
     }
 
     public void assignUserToDocuments(List<UUID> documentIds, String assigneeId) {

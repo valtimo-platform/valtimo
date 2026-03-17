@@ -165,6 +165,7 @@ class KeycloakUserManagementServiceTest {
         markUser.setEnabled(true);
         markUser.setFirstName("Mark");
         markUser.setLastName("Smit");
+        markUser.setUsername("mark.smit");
         var roleRepresentation = new RoleRepresentation(DEVELOPER, "developer", false);
         when(keycloakService.usersResource(any()).get(markUser.getId()).roles().realmLevel().listEffective(true))
             .thenReturn(List.of());
@@ -229,7 +230,7 @@ class KeycloakUserManagementServiceTest {
     }
 
     @Test
-    void shouldRetrieveManageableUserFromCache() {
+    void shouldRetrieveValtimoUserFromCache() {
         String email = "test@example.com";
 
         userManagementService.findByEmail(email);
@@ -296,6 +297,7 @@ class KeycloakUserManagementServiceTest {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUsername(username);
+        user.setEmail(username + "@example.com");
         var roleRepresentations = roles.stream()
             .map(role -> new RoleRepresentation(role, role + " description", false))
             .collect(Collectors.toList());
@@ -307,6 +309,6 @@ class KeycloakUserManagementServiceTest {
     }
 
     private UserRepresentation newUser(String firstName, String lastName, List<String> roles) {
-        return newUser(firstName, lastName, roles, "username");
+        return newUser(firstName, lastName, roles, firstName.toLowerCase() + "." + lastName.toLowerCase());
     }
 }
