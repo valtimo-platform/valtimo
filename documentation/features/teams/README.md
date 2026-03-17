@@ -27,13 +27,13 @@ The following resources and actions are available for managing teams and their m
 	<tbody>
 		<tr>
 			<td>com.ritense.team.domain.Team</td>
-			<td>create</td>
-			<td>Create a new team.</td>
+			<td>assign</td>
+			<td>Add users to a team or remove them from it.</td>
 		</tr>
 		<tr>
 			<td>com.ritense.team.domain.Team</td>
-			<td>modify</td>
-			<td>Modify an existing team.</td>
+			<td>create</td>
+			<td>Create a new team.</td>
 		</tr>
 		<tr>
 			<td>com.ritense.team.domain.Team</td>
@@ -42,8 +42,18 @@ The following resources and actions are available for managing teams and their m
 		</tr>
 		<tr>
 			<td>com.ritense.team.domain.Team</td>
-			<td>assign</td>
-			<td>Add users to a team or remove them from it.</td>
+			<td>modify</td>
+			<td>Modify an existing team.</td>
+		</tr>
+		<tr>
+			<td>com.ritense.team.domain.Team</td>
+			<td>view</td>
+			<td>Allows viewing of a team.</td>
+		</tr>
+		<tr>
+			<td>com.ritense.team.domain.Team</td>
+			<td>view_list</td>
+			<td>Allows viewing of teams.</td>
 		</tr>
 		<tr>
 			<td>com.ritense.valtimo.contract.authentication.User</td>
