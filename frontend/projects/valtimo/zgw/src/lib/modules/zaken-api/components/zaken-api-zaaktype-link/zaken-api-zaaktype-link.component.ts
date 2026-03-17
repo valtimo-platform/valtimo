@@ -31,6 +31,7 @@ import {
 import {
   CaseManagementParams,
   ConfigurationIssueService,
+  DraftVersionService,
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
@@ -46,7 +47,7 @@ import {
   TilesModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, finalize, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, finalize, map, Observable, switchMap} from 'rxjs';
 import {ZakenApiZaaktypeLinkService} from '../../services';
 
 @Component({
@@ -87,9 +88,24 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly hasConfigurationIssue$ =
     this.configurationIssueService.hasIssue$('zaak-type-link');
+  private readonly _params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+  private readonly _isDraftVersion$: Observable<boolean> = this._params$.pipe(
+    switchMap(params =>
+      this.draftVersionService.isDraftVersion(
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
+      )
+    )
+  );
+  public readonly canEdit$: Observable<boolean> = combineLatest([
+    this._isDraftVersion$,
+    this.hasConfigurationIssue$,
+  ]).pipe(map(([isDraft, hasIssue]) => isDraft || hasIssue));
 
   constructor(
     private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly openZaakService: OpenZaakService,

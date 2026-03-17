@@ -26,19 +26,21 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </span>
 
-        <div class="valtimo-objecten-sync__card-controls">
-          <button cdsButton="tertiary" (click)="showModal()">
-            {{ 'interface.edit' | translate }}
+        @if (canEdit$ | async) {
+          <div class="valtimo-objecten-sync__card-controls">
+            <button cdsButton="tertiary" (click)="showModal()">
+              {{ 'interface.edit' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
-          </button>
+              <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+            </button>
 
-          <button cdsButton="danger" (click)="remove()">
-            {{ 'interface.delete' | translate }}
+            <button cdsButton="danger" (click)="remove()">
+              {{ 'interface.delete' | translate }}
 
-            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-          </button>
-        </div>
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        }
       </section>
 
       <section class="valtimo-objecten-sync__card-body">
@@ -58,7 +60,7 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </div>
       </section>
-    } @else {
+    } @else if (canEdit$ | async) {
       <button cdsButton="primary" (click)="showModal()">
         {{ 'zaakdetails.submitButton' | translate }}
 

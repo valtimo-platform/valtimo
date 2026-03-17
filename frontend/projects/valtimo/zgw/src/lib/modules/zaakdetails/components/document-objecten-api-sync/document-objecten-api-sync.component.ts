@@ -37,7 +37,12 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {CaseManagementParams, ConfigurationIssueService, getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  ConfigurationIssueService,
+  DraftVersionService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {
   ButtonModule,
   CheckboxModule,
@@ -47,7 +52,7 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
@@ -117,11 +122,25 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   }
 
   public readonly valid$ = new BehaviorSubject<boolean>(false);
-  public readonly hasConfigurationIssue$ = this.configurationIssueService.hasIssue$('zaakdetail-sync');
+  public readonly hasConfigurationIssue$ =
+    this.configurationIssueService.hasIssue$('zaakdetail-sync');
+  private readonly _isDraftVersion$: Observable<boolean> = this._params$.pipe(
+    switchMap(params =>
+      this.draftVersionService.isDraftVersion(
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
+      )
+    )
+  );
+  public readonly canEdit$: Observable<boolean> = combineLatest([
+    this._isDraftVersion$,
+    this.hasConfigurationIssue$,
+  ]).pipe(map(([isDraft, hasIssue]) => isDraft || hasIssue));
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly documentObjectenApiSyncService: DocumentObjectenApiSyncService,
     private readonly documentService: DocumentService,
     private readonly cdsThemeService: CdsThemeService,
