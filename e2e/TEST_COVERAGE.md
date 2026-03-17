@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 33         | 295            |
-| **Total**                   | **20**   | **349**   | **35**     | **314**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 36         | 292            |
+| **Total**                   | **20**   | **349**   | **38**     | **311**        |
 
-**Coverage:** `35 / 349` — `10%`
+**Coverage:** `38 / 349` — `10.9%`
 
 ---
 
@@ -226,9 +226,9 @@
 |:-----|:----------------------|:----------------------------|:--------:|:------------------------------------------------|
 | 6.77 | View statuses         | View statuses configuration |    ✅    | case-details-config.spec.ts                     |
 | 6.78 | Add status            | Add new status              |    ✅    | case-details-config.spec.ts                     |
-| 6.79 | Set status color      | Set status color            |    ❌    |                                                 |
-| 6.80 | Set status visibility | Set status visibility       |    ❌    |                                                 |
-| 6.81 | Rearrange statuses    | Rearrange statuses order    |    ❌    |                                                 |
+| 6.79 | Set status color      | Set status color            |    ✅    | case-details-config.spec.ts                     |
+| 6.80 | Set status visibility | Set status visibility       |    ✅    | case-details-config.spec.ts                     |
+| 6.81 | Rearrange statuses    | Rearrange statuses order    |    ✅    | case-details-config.spec.ts                     |
 
 #### 6M · Case Details — Tags
 
