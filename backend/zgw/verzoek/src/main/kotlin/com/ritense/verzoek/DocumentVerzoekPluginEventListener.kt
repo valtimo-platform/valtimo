@@ -65,7 +65,7 @@ class DocumentVerzoekPluginEventListener(
         // Accept both 'zaakType' and 'zaaktype' as provided by the Notificaties API
         val zaakType = event.kenmerken["zaakType"] ?: event.kenmerken["zaaktype"]
         if (zaakType == null) {
-            logger.debug { "DocumentVerzoekPlugin is ignoring Notificaties API event: Event 'zaakType' is null" }
+            logger.debug { "DocumentVerzoekPlugin is ignoring Notificaties API event: Event kenmerk 'zaakType' is null" }
             return
         }
         if (event.resource?.equals("zaakinformatieobject", ignoreCase = true) != true) {
@@ -90,7 +90,7 @@ class DocumentVerzoekPluginEventListener(
         event: NotificatiesApiNotificationReceivedEvent,
         plugin: DocumentVerzoekPlugin,
     ) {
-
+        // zaak
         val hoofdObject = event.hoofdObject
         if (hoofdObject == null) {
             logger.warn { "DocumentVerzoekPlugin is ignoring Notificaties API event: hoofdObject is null" }
@@ -100,9 +100,9 @@ class DocumentVerzoekPluginEventListener(
             hoofdObject.replace(
                 "host.docker.internal",
                 "localhost"
-            ) to event.resourceUrl.replace("host.docker.internal", "localhost")
+            ) to URI(event.resourceUrl.replace("host.docker.internal", "localhost"))
         } else {
-            hoofdObject to event.resourceUrl
+            hoofdObject to URI(event.resourceUrl)
         }
 
         val zaak = try {
@@ -112,10 +112,10 @@ class DocumentVerzoekPluginEventListener(
             return
         }
         run {
-            plugin.zakenApiPlugin.getZaakInformatieObjectByUrl(
-                URI(resourceUrl),
-                zaak.documentId
-            )?.let { zaakInformatieObject ->
+            plugin.zakenApiPlugin.getZaakInformatieObjecten(
+                zaak.documentId,
+                URI(zaakUrl),
+            ).firstOrNull { it.url == resourceUrl }?.let { zaakInformatieObject ->
                 plugin.documentenApiPlugin.getInformatieObject(
                     zaakInformatieObject.informatieobject,
                     zaak.documentId
@@ -151,7 +151,6 @@ class DocumentVerzoekPluginEventListener(
                 identificatie
             )
         )
-
     }
 
     private fun sendMessage(
