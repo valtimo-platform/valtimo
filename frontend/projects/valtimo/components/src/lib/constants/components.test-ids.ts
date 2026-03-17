@@ -53,3 +53,9 @@ export const KEY_DROPDOWN_VALUE_TEST_IDS = {
 export const SINGLE_VALUE_TEST_IDS = {
   input: 'singleValueInput',
 } as const;
+
+export const RIGHT_SIDEBAR_TEST_IDS = {
+  settingsTab: 'rightSidebarSettingsTab',
+  languageDropdown: 'rightSidebarLanguageDropdown',
+  themeDropdown: 'rightSidebarThemeDropdown',
+} as const;
