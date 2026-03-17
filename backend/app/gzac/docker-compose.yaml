@@ -100,28 +100,31 @@ services:
     # ZGW
 
     openzaak:
-        image: openzaak/open-zaak:1.20.0
+        image: openzaak/open-zaak:1.25.0
         container_name: gzac-docker-compose-openzaak
         platform: linux/amd64
         profiles:
             - zgw
             - openzaak
-        environment:
+        environment: &openzaak-env
             - DB_HOST=openzaak-database
-            - DB_POST=5433
+            - DB_PORT=5432
             - SECRET_KEY=veryRestrictedSecretKey
             - DB_USER=openzaak
             - DB_PASSWORD=openzaak
             - DB_NAME=openzaak
-            - CACHE_DEFAULT=openzaak-redis:6379/0
-            - CACHE_AXES=openzaak-redis:6379/0
             - DEBUG=true
             - ALLOWED_HOSTS=localhost,host.docker.internal,172.17.0.1,openzaak
             - OPENZAAK_SUPERUSER_USERNAME=admin
             - OPENZAAK_SUPERUSER_EMAIL=admin@admin.org
             - DJANGO_SUPERUSER_PASSWORD=admin
             - SENDFILE_BACKEND=django_sendfile.backends.simple
-            - NOTIFICATIONS_DISABLED=true
+            - NOTIFICATIONS_DISABLED=false
+            - CACHE_DEFAULT=openzaak-redis:6379/0
+            - CACHE_AXES=openzaak-redis:6379/0
+            - CELERY_BROKER_URL=redis://openzaak-redis:6379/0
+            - CELERY_RESULT_BACKEND=redis://openzaak-redis:6379/0
+            - REDIS_URL=redis://openzaak-redis:6379/0
             - DISABLE_2FA=True
         ports:
             - "8001:8000"
@@ -144,6 +147,22 @@ services:
             - "5433:5432"
         volumes:
             - ./imports/open-zaak:/docker-entrypoint-initdb.d
+
+    openzaak-celery:
+        image: openzaak/open-zaak:1.25.0
+        container_name: gzac-docker-compose-openzaak-celery
+        platform: linux/amd64
+        environment: *openzaak-env
+        command: /celery_worker.sh
+        profiles:
+            - zgw
+            - openzaak
+        healthcheck:
+            test: [ "CMD", "python", "/app/bin/check_celery_worker_liveness.py" ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
     openzaak-redis:
         image: redis:7.4.3
@@ -326,8 +345,8 @@ services:
             - "15673:15672"
 
     open-notificaties-celery:
-        image: openzaak/open-notificaties:1.8.2
-        container_name: gzac-docker-compose-open-notificaties
+        image: openzaak/open-notificaties:1.13.0
+        container_name: gzac-docker-compose-open-notificaties-celery
         platform: linux/amd64
         profiles:
             - zgw
@@ -338,6 +357,7 @@ services:
             - CACHE_DEFAULT=open-notificaties-redis:6379/0
             - CACHE_AXES=open-notificaties-redis:6379/1
             - DB_PORT=5432
+            - LOG_NOTIFICATIONS_IN_DB=true
             - DB_HOST=open-notificaties-database
             - DB_NAME=notifications
             - DB_USER=notifications
@@ -358,8 +378,8 @@ services:
             - open-notificaties-redis
 
     open-notificaties:
-        image: openzaak/open-notificaties:1.8.1
-        container_name: gzac-docker-compose-open-notificaties-celery
+        image: openzaak/open-notificaties:1.13.0
+        container_name: gzac-docker-compose-open-notificaties
         platform: linux/amd64
         profiles:
             - zgw
