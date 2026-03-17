@@ -21,6 +21,11 @@
   - `view`: Allows viewing details of a single user.
   - `view_list`: Allows viewing a list of users or searching for users.
 
+* **Enabled Openzaak to send notifications to Open Notificatie**
+
+  This feature allows Openzaak to send notifications to Open Notificatie, ensuring that relevant parties are informed about
+  case updates and progress. Notifications are sent for various events such as case creation, document added to case.
+
 ## Bugfixes
 
 * Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
