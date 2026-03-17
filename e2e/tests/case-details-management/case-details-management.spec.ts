@@ -18,6 +18,7 @@ import {expect, test} from '@playwright/test';
 import {CASE_VERSIONS} from './case-config';
 import {CaseDetailsManagementPage} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
+import {apiGet, apiPut, apiDelete} from '../../utils/api.utils';
 
 test.use({storageState: undefined});
 
@@ -198,6 +199,82 @@ test.describe('Case management', () => {
               exact: true,
             }
           );
+        });
+      });
+
+      test.describe('Link upload process', () => {
+        const FEATURE_PROCESS_URL =
+          '/api/management/v1/case-definition/bezwaar/version/1.0.1/feature-process';
+        let originalUploadProcessKey: string | null;
+
+        test.beforeAll(async () => {
+          try {
+            const linked = await apiGet<{processDefinitionKey: string}>(
+              `${FEATURE_PROCESS_URL}/DOCUMENT_UPLOAD`
+            );
+            originalUploadProcessKey = linked?.processDefinitionKey ?? null;
+          } catch {
+            originalUploadProcessKey = null;
+          }
+        });
+
+        test.afterAll(async () => {
+          try {
+            if (originalUploadProcessKey) {
+              await apiPut(FEATURE_PROCESS_URL, {
+                processDefinitionKey: originalUploadProcessKey,
+                linkType: 'DOCUMENT_UPLOAD',
+              });
+            } else {
+              await apiDelete(`${FEATURE_PROCESS_URL}/DOCUMENT_UPLOAD`);
+            }
+          } catch {
+            // Ignore cleanup errors
+          }
+        });
+
+        test('Upload process combo box is visible', async () => {
+          await expect(caseDetailsManagementPage.linkUploadProcessComboBox).toBeVisible();
+        });
+
+        test('Can select an upload process', async () => {
+          // Arrange: clear any existing selection first
+          const currentValue = await caseDetailsManagementPage.linkUploadProcessInput.inputValue();
+          if (currentValue) {
+            await caseDetailsManagementPage.clearUploadProcess();
+            await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('');
+          }
+
+          // Act
+          await caseDetailsManagementPage.selectUploadProcess('Bezwaar');
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('Bezwaar');
+        });
+
+        test('Can change the linked upload process', async () => {
+          // Act
+          await caseDetailsManagementPage.selectUploadProcess('Documenten API upload document');
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue(
+            'Documenten API upload document'
+          );
+        });
+
+        test('Can clear the linked upload process', async () => {
+          // Arrange: ensure a process is linked
+          const currentValue = await caseDetailsManagementPage.linkUploadProcessInput.inputValue();
+          if (!currentValue) {
+            await caseDetailsManagementPage.selectUploadProcess('Bezwaar');
+            await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('Bezwaar');
+          }
+
+          // Act
+          await caseDetailsManagementPage.clearUploadProcess();
+
+          // Assert
+          await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('');
         });
       });
 
