@@ -157,6 +157,9 @@ services:
         profiles:
             - zgw
             - openzaak
+        depends_on:
+            - openzaak-database
+            - openzaak-redis
         healthcheck:
             test: [ "CMD", "python", "/app/bin/check_celery_worker_liveness.py" ]
             interval: 30s
