@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'crypto';
 import {
   DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS,
   BESLUITEN_API_CONFIGURATION_TEST_IDS,
@@ -69,7 +69,7 @@ export const pluginTestConfiguration = {
       {
         testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId,
         type: 'input',
-        value: uuidv4(),
+        value: randomUUID(),
       },
       {testId: BESLUITEN_API_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Besluiten API Plugin'},
       {testId: BESLUITEN_API_CONFIGURATION_TEST_IDS.rsin, type: 'input', value: '328674989'},
@@ -84,7 +84,7 @@ export const pluginTestConfiguration = {
   },
   'Catalogi API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: CATALOGI_API_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Catalogi API Plugin'},
       {testId: CATALOGI_API_CONFIGURATION_TEST_IDS.url, type: 'input', value: 'http://localhost:8001/catalogi/api/v1/'},
       {
@@ -115,7 +115,7 @@ export const pluginTestConfiguration = {
 
   'Documenten API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: DOCUMENTEN_API_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -143,7 +143,7 @@ export const pluginTestConfiguration = {
 
   'Klantinteracties API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: KLANTINTERACTIES_API_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -165,7 +165,7 @@ export const pluginTestConfiguration = {
 
   'Notificaties API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: NOTIFICATIES_API_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -188,7 +188,7 @@ export const pluginTestConfiguration = {
 
   OpenNotificaties: {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: OPEN_NOTIFICATIES_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -202,7 +202,7 @@ export const pluginTestConfiguration = {
 
   'Objecten API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: OBJECTEN_API_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Objecten API Plugin'},
       {testId: OBJECTEN_API_CONFIGURATION_TEST_IDS.url, type: 'input', value: 'http://localhost:8002/api/v1/'},
       {
@@ -216,7 +216,7 @@ export const pluginTestConfiguration = {
 
   'Object token authentication': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: OBJECT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -229,7 +229,7 @@ export const pluginTestConfiguration = {
 
   'Objecttypen API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: OBJECTTYPEN_API_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -247,7 +247,7 @@ export const pluginTestConfiguration = {
 
   'OpenKlant token authentication': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: OPEN_KLANT_TOKEN_AUTHENTICATION_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -260,7 +260,7 @@ export const pluginTestConfiguration = {
 
   OpenZaak: {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: OPEN_ZAAK_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test OpenZaak Plugin'},
       {testId: OPEN_ZAAK_CONFIGURATION_TEST_IDS.clientId, type: 'input', value: 'valtimo_client'},
       {testId: OPEN_ZAAK_CONFIGURATION_TEST_IDS.clientSecret, type: 'input', value: '129870443512908776534'},
@@ -270,7 +270,7 @@ export const pluginTestConfiguration = {
 
   Portaaltaak: {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: PORTAALTAAK_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Portaaltaak Plugin'},
       {
         testId: PORTAALTAAK_CONFIGURATION_TEST_IDS.notificatiesApiPluginConfiguration,
@@ -293,7 +293,7 @@ export const pluginTestConfiguration = {
 
   SmartDocuments: {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {
         testId: SMART_DOCUMENTS_CONFIGURATION_TEST_IDS.configurationTitle,
         type: 'input',
@@ -308,7 +308,7 @@ export const pluginTestConfiguration = {
 
   Verzoek: {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: VERZOEK_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Verzoek Plugin'},
       {
         testId: VERZOEK_CONFIGURATION_TEST_IDS.notificatiesApiPluginConfiguration,
@@ -331,7 +331,7 @@ export const pluginTestConfiguration = {
 
   'Zaken API': {
     fieldMap: [
-      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: uuidv4()},
+      {testId: DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId, type: 'input', value: randomUUID()},
       {testId: ZAKEN_API_CONFIGURATION_TEST_IDS.configurationTitle, type: 'input', value: 'Test Zaken API Plugin'},
       {testId: ZAKEN_API_CONFIGURATION_TEST_IDS.url, type: 'input', value: 'http://localhost:8002/zaken/api/v1'},
       {
