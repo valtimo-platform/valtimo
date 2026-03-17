@@ -94,9 +94,8 @@ export class CaseBulkAssignModalComponent {
                 return of([] as CandidateUser[]);
               })
             );
-          } else {
-            return of([] as CandidateUser[]);
           }
+          return of([] as CandidateUser[]);
         }),
         catchError(() => {
           this.permittedDocumentIds$.next([]);
