@@ -334,7 +334,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definitions for management with configuration issues`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
         whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(setOf(caseDefinitionId))
 
         mockMvc.perform(
@@ -357,7 +357,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definitions for management without configuration issues`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
         whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(emptySet())
 
         mockMvc.perform(
