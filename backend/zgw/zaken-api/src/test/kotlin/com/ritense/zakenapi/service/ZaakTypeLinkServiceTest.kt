@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Dimpact.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
+import com.ritense.zakenapi.event.ZaakTypeLinkSavedEvent
 import com.ritense.zakenapi.repository.ZaakTypeLinkRepository
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import org.assertj.core.api.Assertions.assertThat
@@ -32,7 +33,9 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationEventPublisher
 import java.net.URI
 import java.util.Optional
 import java.util.UUID
@@ -52,17 +55,21 @@ class ZaakTypeLinkServiceTest {
     @Mock
     lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
 
+    lateinit var applicationEventPublisher: ApplicationEventPublisher
+
     val zaakTypeUrl = URI.create("http//example.com")
     val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        applicationEventPublisher = mock()
 
         zaakTypeLinkService = DefaultZaakTypeLinkService(
             zaakTypeLinkRepository,
             processDefinitionCaseDefinitionService,
-            mock()
+            mock(),
+            applicationEventPublisher
         )
         zaakTypeLinkId = ZaakTypeLinkId.newId(UUID.randomUUID())
 
@@ -97,6 +104,7 @@ class ZaakTypeLinkServiceTest {
 
         assertThat(result.caseDefinitionId).isEqualTo(caseDefinitionId)
         assertThat(result.zaakTypeUrl).isEqualTo(zaakTypeUrl)
+        verify(applicationEventPublisher).publishEvent(any<ZaakTypeLinkSavedEvent>())
     }
 
     @Test

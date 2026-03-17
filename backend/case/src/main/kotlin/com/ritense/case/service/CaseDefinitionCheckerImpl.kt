@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.case.service
 
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case_.repository.CaseDefinitionRepository
@@ -35,6 +36,7 @@ class CaseDefinitionCheckerImpl(
     private val environment: Environment,
     private val draftEnvironments: String,
     private val draftsEnabled: Boolean,
+    private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
 ) : CaseDefinitionChecker {
 
     override fun existsCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean {
@@ -77,6 +79,21 @@ class CaseDefinitionCheckerImpl(
             ?: error("CaseDefinition $caseDefinitionId does not exist.")
         require(!caseDefinition.final) {
             "Failed to update CaseDefinition $caseDefinitionId. This case definition is final and therefore can't be updated."
+        }
+    }
+
+    override fun assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId: CaseDefinitionId, configurationType: String) {
+        assertCanUpdateGlobalConfiguration()
+        val caseDefinition = caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
+            ?: error("CaseDefinition $caseDefinitionId does not exist.")
+        if (!caseDefinition.final) {
+            return
+        }
+        val hasUnresolvedIssue = configurationIssueRepository.findUnresolvedByCaseDefinitionIdAndIssueType(
+            caseDefinitionId, configurationType
+        ) != null
+        require(hasUnresolvedIssue) {
+            "Failed to update CaseDefinition $caseDefinitionId. This case definition is final and has no unresolved configuration issues of type '$configurationType'."
         }
     }
 
