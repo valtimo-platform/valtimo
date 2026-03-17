@@ -26,6 +26,7 @@ import {
   CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
   CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS,
   CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS,
+  ZGW_LINK_UPLOAD_PROCESS_TEST_IDS,
 } from '../../constants';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
@@ -98,6 +99,27 @@ export class CaseDetailsManagementPage {
     return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormSave);
   }
 
+  // Link upload process
+  get linkUploadProcessComboBox() {
+    return this.page.getByTestId(ZGW_LINK_UPLOAD_PROCESS_TEST_IDS.comboBox);
+  }
+
+  get linkUploadProcessInput() {
+    return this.linkUploadProcessComboBox.getByRole('combobox');
+  }
+
+  get linkUploadProcessClearButton() {
+    return this.linkUploadProcessComboBox.getByRole('button', {name: 'Clear Selection'});
+  }
+
+  get linkUploadProcessMenuButton() {
+    return this.linkUploadProcessComboBox.getByRole('button', {name: /menu/i});
+  }
+
+  get linkUploadProcessListbox() {
+    return this.linkUploadProcessComboBox.getByRole('listbox');
+  }
+
   get confirmationModalContinueButton() {
     return this.page.getByRole('button', {name: 'Continue'});
   }
@@ -157,5 +179,18 @@ export class CaseDetailsManagementPage {
     await this.externalFormUrl.fill(caseExternalFormConfiguration.url);
     await this.externalFormDescription.fill(caseExternalFormConfiguration.description);
     await this.externalFormSave.click();
+  }
+
+  async selectUploadProcess(processName: string) {
+    await expect(this.linkUploadProcessInput).toBeEnabled();
+    await this.linkUploadProcessMenuButton.click();
+    await this.linkUploadProcessListbox.getByRole('option', {name: processName}).click();
+    await expect(this.linkUploadProcessInput).toBeEnabled();
+  }
+
+  async clearUploadProcess() {
+    await expect(this.linkUploadProcessInput).toBeEnabled();
+    await this.linkUploadProcessClearButton.click();
+    await expect(this.linkUploadProcessInput).toBeEnabled();
   }
 }
