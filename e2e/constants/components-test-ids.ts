@@ -10,4 +10,5 @@ export {
   VALUE_PATH_SELECTOR_VALUE_TEST_IDS,
   KEY_DROPDOWN_VALUE_TEST_IDS,
   SINGLE_VALUE_TEST_IDS,
+  RIGHT_SIDEBAR_TEST_IDS,
 } from '../../frontend/projects/valtimo/components/src/lib/constants/components.test-ids';
