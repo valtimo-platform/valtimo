@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.authentication.AuthorizedUserRepository;
 import com.ritense.valtimo.contract.authentication.AuthorizedUsersService;
 import com.ritense.valtimo.contract.authentication.CurrentUserRepository;
 import com.ritense.valtimo.contract.authentication.CurrentUserService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
@@ -62,6 +63,7 @@ import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.service.TaskBusinessKeyResolver;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository;
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.web.rest.AccountResource;
@@ -225,7 +227,9 @@ public class ValtimoAutoConfiguration {
         final OutboxService outboxService,
         final ObjectMapper objectMapper,
         final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
-        final UserTaskOpenedStatusService userTaskOpenedStatusService
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final TaskTeamRepository taskTeamRepository,
+        final Optional<TeamManagementService> teamManagementService
     ) {
         return new OperatonTaskService(
             taskService,
@@ -242,7 +246,9 @@ public class ValtimoAutoConfiguration {
             outboxService,
             objectMapper,
             taskBusinessKeyResolvers,
-            userTaskOpenedStatusService
+            userTaskOpenedStatusService,
+            taskTeamRepository,
+            teamManagementService.orElse(null)
         );
     }
 

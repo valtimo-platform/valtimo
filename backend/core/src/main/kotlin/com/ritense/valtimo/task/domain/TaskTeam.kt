@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
-package com.ritense.team.web.rest.dto
+package com.ritense.valtimo.task.domain
 
 import com.ritense.valtimo.contract.authentication.Team
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 
-data class TeamResponseDto(
-    val key: String,
-    val title: String,
-) {
-    companion object {
-        fun from(team: Team) = TeamResponseDto(
-            team.key,
-            team.title,
-        )
-    }
+@Entity
+@Table(name = "task_team")
+data class TaskTeam(
+    @Id
+    @Column(name = "task_id", nullable = false, length = 64)
+    val taskId: String,
+
+    @Column(name = "team_key", nullable = false, length = 255)
+    var teamKey: String,
+
+    @Column(name = "team_title", nullable = false, length = 255)
+    var teamTitle: String
+) : Team {
+    override val key: String get() = teamKey
+    override val title: String get() = teamTitle
 }

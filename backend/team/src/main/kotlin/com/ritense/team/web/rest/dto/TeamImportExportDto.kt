@@ -16,7 +16,7 @@
 
 package com.ritense.team.web.rest.dto
 
-import com.ritense.team.domain.Team
+import com.ritense.valtimo.contract.authentication.Team
 
 data class TeamImportExportDto(
     val key: String,
