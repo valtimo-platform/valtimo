@@ -101,6 +101,11 @@
     (modalClose)="closeMetadataModal()"
     (metadata)="metadataSet($event)"
   ></valtimo-documenten-api-metadata-modal>
+
+  <valtimo-documenten-api-preview-modal
+    [open]="showPreviewModal$ | async"
+    (modalClose)="closePreviewModal()"
+  ></valtimo-documenten-api-preview-modal>
 </div>
 
 <valtimo-confirmation-modal

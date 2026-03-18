@@ -58,6 +58,7 @@ import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
   DOCUMENTEN_COLUMN_KEYS,
+  DocumentenApiColumnModalTypeCloseEvent,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -68,8 +69,10 @@ import {
 } from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
 import {DocumentenApiDocumentService} from '../../services';
+import {DocumentenApiPreviewService} from '../../services';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -86,6 +89,7 @@ import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-mo
     DocumentenApiFilterComponent,
     DialogModule,
     ConfirmationModalModule,
+    DocumentenApiPreviewModalComponent,
   ],
 })
 export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
@@ -153,6 +157,12 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public document: DocumentenApiRelatedFile;
   public actionItems: ActionItem[] = [
     {
+      label: 'document.preview',
+      callback: this.onPreviewActionClick.bind(this),
+      disabledCallback: this.previewDisabled.bind(this),
+      type: 'normal',
+    },
+    {
       label: 'document.download',
       callback: this.onDownloadActionClick.bind(this),
       disabledCallback: this.downloadDisabled.bind(this),
@@ -191,6 +201,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new Subject<null>();
+  public readonly showPreviewModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
@@ -319,12 +330,16 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     )
   );
 
+  private readonly _showPreviewButton$: Observable<boolean> =
+    this.documentenApiPreviewService.canGeneratePreview();
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly configService: ConfigService,
     private readonly documentenApiColumnService: DocumentenApiColumnService,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
+    private readonly documentenApiPreviewService: DocumentenApiPreviewService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly documentService: DocumentService,
     private readonly downloadService: DownloadService,
@@ -482,6 +497,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       .subscribe();
   }
 
+  public onPreviewActionClick(file: DocumentenApiRelatedFile): void {
+    this.previewDocument(file, false);
+  }
+
   public onDownloadActionClick(file: DocumentenApiRelatedFile): void {
     this.downloadDocument(file, true);
   }
@@ -494,6 +513,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public closeMetadataModal(): void {
     this.showUploadModal$.next(false);
+  }
+
+  public closePreviewModal(): void {
+    this.showPreviewModal$.next(false);
   }
 
   public onFileSelected(event: any): void {
@@ -512,7 +535,9 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onRowClick(event: any): void {
-    if (this.filePermissions[event.fileId]?.canView) {
+    if (!this.previewDisabled) {
+      this.previewDocument(event, false);
+    } else if (this.filePermissions[event.fileId]?.canView) {
       this.downloadDocument(event, false);
     }
   }
@@ -550,6 +575,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this._refetch$.next(null);
   }
 
+  private previewDisabled(file: DocumentenApiRelatedFile): boolean {
+    return !this._showPreviewButton$ || !this.filePermissions[file.fileId]?.canView;
+  }
+
   private downloadDisabled(file: DocumentenApiRelatedFile): boolean {
     return !this.filePermissions[file.fileId]?.canView;
   }
@@ -574,6 +603,35 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         forceDownload
       );
     });
+  }
+
+  private previewDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
+    // Display preview model.
+    this.showPreviewModal$.next(true);
+
+    // HACK (mvanbeusekom): Temporary solution which generates the preview document and downloads
+    //                      and opens the PDF file in a separate browser tab.
+    /*
+    let fileNameSegments: string[] =
+      relatedFile.bestandsnaam != null
+        ? relatedFile.bestandsnaam.split('.')
+        : ['filename_unknown', ''];
+    let fileName: string = fileNameSegments[0];
+    let fileExtension: string = fileNameSegments[fileNameSegments.length - 1];
+
+    if (fileExtension === 'pdf') {
+      this.downloadDocument(relatedFile, forceDownload);
+      return;
+    }
+
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this.downloadService.downloadFile(
+        `${this.valtimoEndpointUri}v1/documenten-api-preview/${relatedFile.pluginConfigurationId}/preview/${relatedFile.fileId}`,
+        `${fileName}.pdf`,
+        forceDownload
+      );
+    });
+    */
   }
 
   private openQueryParamsSubscription(): void {

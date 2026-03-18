@@ -27,13 +27,10 @@ class DocumentenApiPreviewResource(
     ): ResponseEntity<InputStreamResource> {
         val pdfFile = documentenApiPreviewService.generatePreview(pluginConfigurationId, documentId)
 
-        val responseHeaders = HttpHeaders()
-        responseHeaders.set("Content-Disposition", "attachment; filename=\"${pdfFile.fileName}\"")
-
         return ResponseEntity
             .ok()
-            .headers(responseHeaders)
-            .contentType(MediaType.APPLICATION_PDF)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF.toString())
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${pdfFile.fileName}")
             .body(InputStreamResource(pdfFile.content))
     }
 }

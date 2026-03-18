@@ -235,6 +235,7 @@
     "delete": "Verwijderen",
     "download": "Downloaden",
     "edit": "Bewerken",
+    "preview": "Weergeven",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -1147,6 +1148,11 @@
       "noColumns": {
         "description": "Klik hier om een kolom voor dit document te configureren",
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
+      },
+      "preview": {
+        "modal": {
+          "header": "Document weergave"
+        }
       }
     },
     "notifications": {

@@ -232,6 +232,7 @@
     "delete": "Delete",
     "download": "Download",
     "edit": "Edit",
+    "preview": "Preview",
     "application/octet-stream": "Unknown",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -1122,6 +1123,11 @@
       "noColumns": {
         "description": "Click here to configure a column for this document",
         "title": "No configured columns"
+      },
+      "preview": {
+        "modal": {
+          "header": "Document preview"
+        }
       }
     },
     "notifications": {
