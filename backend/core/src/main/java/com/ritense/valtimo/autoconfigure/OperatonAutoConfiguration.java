@@ -17,7 +17,17 @@
 package com.ritense.valtimo.autoconfigure;
 
 import com.ritense.valtimo.OperatonBeansPlugin;
+import com.ritense.valtimo.config.CustomFormTypesProcessEnginePlugin;
 import com.ritense.valtimo.config.OperatonConfiguration;
+import com.ritense.valtimo.contract.annotation.ProcessBean;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.config.LiquibaseRunner;
+import com.ritense.valtimo.contract.config.ValtimoProperties;
+import com.ritense.valtimo.contract.mail.MailSender;
+import com.ritense.valtimo.emailnotificationsettings.service.EmailNotificationSettingsService;
+import com.ritense.valtimo.helper.DelegateTaskHelper;
+import com.ritense.valtimo.helper.OperatonCollectionHelper;
+import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import com.ritense.valtimo.operaton.ProcessDefinitionDeployedEventPublisher;
 import com.ritense.valtimo.operaton.command.ValtimoSchemaOperationsCommand;
 import com.ritense.valtimo.operaton.incident.OperatonIncidentAlertLogProperties;
@@ -26,20 +36,7 @@ import com.ritense.valtimo.operaton.processaudit.HistoryEventAuditProcessEngineP
 import com.ritense.valtimo.operaton.processaudit.TaskEventHandler;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
 import com.ritense.valtimo.operaton.task.service.NotificationService;
-import com.ritense.valtimo.operaton.task.service.ReminderService;
 import com.ritense.valtimo.operaton.task.service.impl.NotificationServiceImpl;
-import com.ritense.valtimo.operaton.task.service.impl.ReminderServiceImpl;
-import com.ritense.valtimo.config.CustomFormTypesProcessEnginePlugin;
-import com.ritense.valtimo.contract.annotation.ProcessBean;
-import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.contract.config.LiquibaseRunner;
-import com.ritense.valtimo.contract.config.ValtimoProperties;
-import com.ritense.valtimo.contract.mail.MailSender;
-import com.ritense.valtimo.emailnotificationsettings.service.EmailNotificationSettingsService;
-import com.ritense.valtimo.helper.OperatonCollectionHelper;
-import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
-import com.ritense.valtimo.helper.DelegateTaskHelper;
-import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.web.rest.error.OperatonExceptionTranslator;
 import org.operaton.bpm.application.impl.event.ProcessApplicationEventListenerPlugin;
 import org.operaton.bpm.spring.boot.starter.OperatonBpmAutoConfiguration;
@@ -94,7 +91,11 @@ public class OperatonAutoConfiguration {
         final OperatonBpmProperties operatonBpmProperties
     ) {
         operatonBpmProperties.setAutoDeploymentEnabled(false);
-        return new OperatonConfiguration(valtimoSchemaOperationsCommand, repositoryService, processDefinitionDeployedEventPublisher);
+        return new OperatonConfiguration(
+            valtimoSchemaOperationsCommand,
+            repositoryService,
+            processDefinitionDeployedEventPublisher
+        );
     }
 
     @Bean
@@ -130,25 +131,6 @@ public class OperatonAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ReminderService.class)
-    @ConditionalOnProperty(prefix = "scheduling", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public ReminderService reminderService(
-        final OperatonTaskService taskService,
-        final EmailNotificationSettingsService emailNotificationService,
-        final MailSender mailSender,
-        final UserManagementService userManagementService,
-        final ValtimoProperties valtimoProperties
-    ) {
-        return new ReminderServiceImpl(
-            taskService,
-            emailNotificationService,
-            mailSender,
-            userManagementService,
-            valtimoProperties.getMandrill().getReminderTemplate()
-        );
-    }
-
-    @Bean
     @ConditionalOnMissingBean(TaskEventHandler.class)
     public TaskEventHandler taskEventHandler(final ApplicationEventPublisher applicationEventPublisher) {
         return new TaskEventHandler(applicationEventPublisher);
@@ -179,7 +161,7 @@ public class OperatonAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(OperatonIncidentHandlerConfig.class)
     @ConditionalOnProperty("operaton.incident.alert-log.enabled")
-    public OperatonIncidentHandlerConfig operatonIncidentHandlerConfig(OperatonIncidentAlertLogProperties props)  {
+    public OperatonIncidentHandlerConfig operatonIncidentHandlerConfig(OperatonIncidentAlertLogProperties props) {
         return new OperatonIncidentHandlerConfig(props);
     }
 }

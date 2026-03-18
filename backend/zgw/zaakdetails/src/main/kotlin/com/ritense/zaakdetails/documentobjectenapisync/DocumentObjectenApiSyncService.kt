@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ class DocumentObjectenApiSyncService(
         }
 
         val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
-        if (syncConfiguration?.enabled == true) {
+        if (syncConfiguration?.enabled == true && syncConfiguration.objectManagementConfigurationId != null) {
             logger.debug { "Sync configuration found for document ${document.id()}" }
             val objectManagementConfiguration =
                 objectObjectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)

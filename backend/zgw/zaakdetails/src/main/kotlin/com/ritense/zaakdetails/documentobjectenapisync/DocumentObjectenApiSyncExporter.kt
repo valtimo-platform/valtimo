@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ class DocumentObjectenApiSyncExporter(
         val caseName = request.name
         val syncConfig = documentObjectenApiSyncRepository.findByCaseDefinitionId(request.caseDefinitionId)
             ?: return ExportResult()
+        if (syncConfig.objectManagementConfigurationId == null) return ExportResult()
 
         val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
             "${it.major}-${it.minor}-${it.patch}"

@@ -29,6 +29,8 @@ import org.operaton.bpm.engine.delegate.DelegateTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.ritense.authorization.AuthorizationContext.runWithoutAuthorization;
+
 public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
@@ -62,7 +64,7 @@ public class NotificationServiceImpl implements NotificationService {
         if (delegateTaskHelper.isTaskBeingAssigned(task)) {
             final String userId = task.getAssignee();
             if (userId != null) {
-                var user = userManagementService.findByUsername(userId);
+                var user = runWithoutAuthorization(() -> userManagementService.findByUsername(userId));
                 notifyUserAboutTaskAssignment(user, task, template, "nl");
             }
         } else if (delegateTaskHelper.isTaskBeingCreated(task)) {

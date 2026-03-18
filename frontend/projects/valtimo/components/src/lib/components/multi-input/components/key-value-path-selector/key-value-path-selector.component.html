@@ -26,7 +26,7 @@
     [defaultValue]="value.key"
     [disabled]="disabled"
     (input)="onInputChange('key', $event.target.value)"
-    data-test-id="keyValuePathSelectorKeyInput"
+    [attr.data-test-id]="testIds.keyInput"
   />
 </div>
 

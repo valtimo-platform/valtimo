@@ -46,6 +46,6 @@
     [defaultValue]="value.value"
     [disabled]="disabled"
     (input)="onInputChange('value', $event.target.value)"
-    data-test-id="valuePathSelectorValueValueInput"
+    [attr.data-test-id]="testIds.valueInput"
   />
 </div>

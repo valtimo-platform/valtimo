@@ -16,7 +16,10 @@
 
 package com.valtimo.keycloak.autoconfigure;
 
+import com.ritense.authorization.AuthorizationService;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
+import com.valtimo.keycloak.authorization.UserActionProvider;
+import com.valtimo.keycloak.authorization.UserSpecificationFactory;
 import com.valtimo.keycloak.repository.KeycloakCurrentUserRepository;
 import com.valtimo.keycloak.security.config.KeycloakOAuth2HttpSecurityConfigurer;
 import com.valtimo.keycloak.security.config.ValtimoKeycloakPropertyResolver;
@@ -41,6 +44,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
@@ -79,9 +83,10 @@ public class KeycloakAutoConfiguration {
     public KeycloakUserManagementService keycloakUserManagementService(
         final KeycloakService keycloakService,
         @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
-        final UserCache userCache
+        final UserCache userCache,
+        @Lazy final AuthorizationService authorizationService
     ) {
-        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache);
+        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache, authorizationService);
     }
 
     @Bean
@@ -123,5 +128,18 @@ public class KeycloakAutoConfiguration {
     ) {
         return new CacheManagerUserCache(cacheManager);
     }
+
+    @Bean
+    @ConditionalOnMissingBean(UserActionProvider.class)
+    public UserActionProvider userActionProvider() {
+        return new UserActionProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(UserSpecificationFactory.class)
+    public UserSpecificationFactory userSpecificationFactory() {
+        return new UserSpecificationFactory();
+    }
+
 
 }

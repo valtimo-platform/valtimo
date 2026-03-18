@@ -177,7 +177,8 @@ export class MenuService implements OnDestroy {
   }
 
   public initReload(): void {
-    const roles = this.keycloakService.getUserRoles(true);
+    const clientId = this.keycloakService.getKeycloakInstance()?.clientId;
+    const roles = this.keycloakService.getUserRoles(true, clientId);
     const existingMenuItemsValue = this._menuItems$.getValue();
     const existingMenuItems =
       Array.isArray(existingMenuItemsValue) && existingMenuItemsValue.length > 0;

@@ -6,8 +6,8 @@ export async function expectNotificationMessage(
   options?: { exact?: boolean }
 ) {
   const errorLocator = options?.exact
-    ? page.getByText(expectedText, { exact: true })
-    : page.getByText(expectedText);
+    ? page.getByText(expectedText, { exact: true }).first()
+    : page.getByText(expectedText).first();
 
   await expect(errorLocator).toBeVisible();
   await expect(errorLocator).toContainText(expectedText);

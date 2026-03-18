@@ -140,13 +140,13 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [ADMIN])
     fun `should set assignee when task is created and autoAssignTasks is on`() {
 
         whenever(userManagementService.findById(any())).thenReturn(testUser)
         whenever(userManagementService.findByUsername(any())).thenReturn(testUser)
         whenever(userManagementService.currentUser).thenReturn(testUser)
 
-        runWithoutAuthorization { documentService.assignUserToDocument(testDocument.id().id, testUser.username) }
         val processInstance = runtimeService.startProcessInstanceByKey(
             "parent-process",
             testDocument.id().toString()
@@ -158,11 +158,12 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
                 "parent process"
             )
         }
+        runWithoutAuthorization { documentService.assignUserToDocument(testDocument.id().id, testUser.username) }
 
         val task = runWithoutAuthorization {
             taskService.findTask(byName("child process user task"))
         }
-        assertEquals(task.assignee, testUser.username)
+        assertEquals(testUser.username, task.assignee)
     }
 
     @Test
@@ -200,9 +201,11 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [ADMIN])
     fun `should should update task assignee when document assignee is changed`() {
 
         whenever(userManagementService.findById(any())).thenReturn(testUser)
+        whenever(userManagementService.findById(testUser2.id)).thenReturn(testUser2)
         whenever(userManagementService.findByUsername(any())).thenReturn(testUser, testUser2)
         whenever(userManagementService.currentUser).thenReturn(testUser)
 
@@ -223,7 +226,7 @@ class CaseAssigneeListenerIntTest : BaseIntegrationTest() {
 
             taskService.findTask(byName("child process user task"))
         }
-        assertEquals(updatedTask.assignee, testUser2.username)
+        assertEquals(testUser2.username, updatedTask.assignee)
     }
 
     @Test

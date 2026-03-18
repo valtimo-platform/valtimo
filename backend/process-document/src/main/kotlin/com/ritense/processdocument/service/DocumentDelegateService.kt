@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
@@ -97,7 +98,7 @@ class DocumentDelegateService(
 
         val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-        val user = userManagementService.findByEmail(userEmail)
+        val user = runWithoutAuthorization { userManagementService.findByEmail(userEmail) }
             .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
         documentService.assignUserToDocument(documentId.id, user.id)
     }

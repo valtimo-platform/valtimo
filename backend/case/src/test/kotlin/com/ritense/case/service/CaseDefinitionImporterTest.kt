@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,13 @@ package com.ritense.case.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.repository.CaseDefinitionRepository
-import com.ritense.importer.ImportRequest
-import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 
 @ExtendWith(MockitoExtension::class)
 class CaseDefinitionImporterTest(
@@ -40,7 +35,7 @@ class CaseDefinitionImporterTest(
 
     @BeforeEach
     fun before() {
-        importer = CaseDefinitionImporter(objectMapper, caseDefinitionRepository, mock())
+        importer = CaseDefinitionImporter(objectMapper, caseDefinitionRepository, mock(), mock())
     }
 
     @Test

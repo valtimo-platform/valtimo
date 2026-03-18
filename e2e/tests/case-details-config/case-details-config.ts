@@ -23,6 +23,19 @@ export const statusTestData = {
   updatedTitle: 'E2e Updated Status',
 };
 
+export const statusColorTestData = {
+  title: 'E2e Color Status',
+};
+
+export const statusVisibilityTestData = {
+  title: 'E2e Visibility Status',
+};
+
+export const statusReorderTestData = {
+  titleA: 'E2e Reorder A',
+  titleB: 'E2e Reorder B',
+};
+
 export const tagTestData = {
   title: 'E2e Test Tag',
   updatedTitle: 'E2e Updated Tag',

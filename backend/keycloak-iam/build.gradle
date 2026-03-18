@@ -30,6 +30,7 @@ dockerCompose {
 }
 
 dependencies {
+    implementation project(':backend:authorization')
     implementation project(':backend:contract')
 
     api "org.springframework.security:spring-security-core"

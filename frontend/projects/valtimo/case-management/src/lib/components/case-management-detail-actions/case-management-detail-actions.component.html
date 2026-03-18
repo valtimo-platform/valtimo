@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
+    setActiveDisabled: setActiveDisabled$ | async,
+    hasUnresolvedConfigurationIssues: hasUnresolvedConfigurationIssues$ | async,
     compactMode: compactMode$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
@@ -38,12 +40,14 @@
 
     <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
   </div>
+
+
 </div>
 
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selector"
-    data-test-id="caseVersionSelectDropdown"
+    [attr.data-test-id]="testIds.versionSelectDropdown"
     selectionFeedback="fixed"
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
@@ -76,7 +80,7 @@
 
       <cds-tag
         *ngIf="item?.active"
-        data-test-id="globally-active-case-version"
+        [attr.data-test-id]="testIds.globallyActiveCaseVersion"
         class="cds-tag--no-margin"
         type="high-contrast"
       >
@@ -89,7 +93,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
-    data-test-id="caseVersionManagementButton"
+    [attr.data-test-id]="testIds.versionManagementButton"
     [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
@@ -108,27 +112,45 @@
     class="overflow-button"
   >
     <cds-overflow-menu-option
-      data-test-id="caseExportButton"
+      [attr.data-test-id]="testIds.exportButton"
       [id]="'exportDocumentDefinition'"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
       >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
     </cds-overflow-menu-option>
 
-    <cds-overflow-menu-option
-      data-test-id="caseSetActiveVersionButton"
-      [id]="'setGlobalActiveVersion'"
-      [disabled]="obs.selectedVersionIsGloballyActive"
-      (selected)="openGlobalActiveVersionModal()"
-      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
-    </cds-overflow-menu-option>
+    <span
+      *ngIf="obs.hasUnresolvedConfigurationIssues && !obs.selectedVersionIsGloballyActive; else setActiveDefault"
+    >
+      <cds-tooltip
+        [description]="'caseManagement.setGlobalActiveVersionConfigurationIssuesWarning' | translate"
+        [align]="'bottom'"
+      >
+        <cds-overflow-menu-option
+          [attr.data-test-id]="testIds.setActiveVersionButton"
+          [id]="'setGlobalActiveVersion'"
+          [disabled]="true"
+          >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+        </cds-overflow-menu-option>
+      </cds-tooltip>
+    </span>
+
+    <ng-template #setActiveDefault>
+      <cds-overflow-menu-option
+        data-test-id="caseSetActiveVersionButton"
+        [id]="'setGlobalActiveVersion'"
+        [disabled]="obs.selectedVersionIsGloballyActive"
+        (selected)="openGlobalActiveVersionModal()"
+        >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+      </cds-overflow-menu-option>
+    </ng-template>
   </cds-overflow-menu>
 </ng-template>
 
 <ng-template #customTrigger>
   <button
     cdsButton="tertiary"
-    data-test-id="caseMoreButton"
+    [attr.data-test-id]="testIds.moreButton"
     [size]="(compactMode$ | async) ? 'sm' : 'md'"
   >
     {{ 'caseManagement.more' | translate }}

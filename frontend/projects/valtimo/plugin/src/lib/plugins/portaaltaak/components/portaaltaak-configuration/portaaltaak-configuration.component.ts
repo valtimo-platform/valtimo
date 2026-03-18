@@ -23,6 +23,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {SelectItem} from '@valtimo/components';
 import {ProcessService} from '@valtimo/process';
 import {ObjectService} from '../../services';
+import {PORTAALTAAK_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -39,6 +40,7 @@ export class PortaaltaakConfigurationComponent
   @Input() prefillConfiguration$: Observable<PortaaltaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PortaaltaakConfig> = new EventEmitter<PortaaltaakConfig>();
+  protected readonly testIds = PORTAALTAAK_CONFIGURATION_TEST_IDS;
   readonly notificatiesApiPluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
     this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
     this.translateService.stream('key'),
