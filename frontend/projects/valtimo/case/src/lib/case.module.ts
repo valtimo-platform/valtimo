@@ -110,6 +110,8 @@ import {CaseDetailTaskListComponent} from './components/case-detail-task-list/ca
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
 import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
+import {CaseListTabsComponent} from './components/case-list-tabs/case-list-tabs.component';
+import {CaseListToolbarComponent} from './components/case-list-toolbar/case-list-toolbar.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -130,6 +132,8 @@ export type TabsFactory = () => Map<string, object>;
     CaseAssignUserComponent,
     NoteModalComponent,
     CaseDetailTabFormioComponent,
+    CaseListTabsComponent,
+    CaseListToolbarComponent,
   ],
   imports: [
     CommonModule,

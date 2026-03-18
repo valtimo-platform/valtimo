@@ -17,6 +17,16 @@
 
   More information about teams can be found [here](../../../features/teams/README.md).
 
+* **Team cases tab in the case list**
+
+  When the case handler option is enabled for a case type, a new "Team cases" tab is now available in the case list.
+  This tab shows all cases assigned to teams that the current user belongs to, making it easy to find work relevant
+  to the user's team without filtering through all cases.
+
+  The tab is included by default alongside the existing "All cases", "My cases", and "Unassigned cases" tabs. Which
+  tabs are visible can be configured via the `visibleCaseListTabs` setting in the Angular environment file. See
+  [case list tab configuration](../../../features/case/configuration.md#configuring-visible-case-list-tabs) for details.
+
 ## Enhancements
 
 * **Secure /users endpoint with access control**
