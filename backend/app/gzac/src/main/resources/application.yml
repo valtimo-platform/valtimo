@@ -227,6 +227,8 @@ valtimo:
             - application/xml
             - image/jpeg
             - image/png
+            - application/msword
+            - application/vnd.openxmlformats-officedocument.wordprocessingml.document
 
     outbox:
         enabled: true
