@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@
     disableSaveSearch: orchestration.disableSaveSearch$ | async,
     assigneeFilter: orchestration.assigneeFilter$ | async,
     hiddenColumns: orchestration.hiddenColumns$ | async,
+    disableStartButton: disableStartButton$ | async,
   } as obs"
 >
   <valtimo-case-list-actions
@@ -118,7 +119,7 @@
         [canCreate]="obs.canCreate"
         [canExport]="obs.canExport"
         [disableExport]="obs.disableExport"
-        [disableStart]="disableStartButton$ | async"
+        [disableStart]="obs.disableStartButton"
         [hasApiColumnConfig]="obs.hasApiColumnConfig"
         [hiddenColumns]="obs.hiddenColumns"
         [loadingExport]="loadingExport"
