@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
@@ -109,6 +110,19 @@ class DocumentenApiVersionService(
             .toList()
     }
 
+    fun detectPluginVersions(
+        caseDefinitionId: CaseDefinitionId
+    ): List<Triple<PluginConfiguration, DocumentenApiPlugin, DocumentenApiVersion?>> {
+        return detectPluginConfigurations(caseDefinitionId)
+            .map { pluginConfiguration ->
+                val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
+                val version = getVersionByTagOrNull(plugin.apiVersion)
+                Triple(pluginConfiguration, plugin, version)
+            }
+            .sortedByDescending { it.third }
+            .toList()
+    }
+
     fun detectPluginConfigurations(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<PluginConfiguration> {
@@ -116,8 +130,14 @@ class DocumentenApiVersionService(
         val caseDefinition = runWithoutAuthorization {
                 activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName)
             }
+        return detectPluginConfigurations(caseDefinition.id)
+    }
+
+    fun detectPluginConfigurations(
+        caseDefinitionId: CaseDefinitionId
+    ): List<PluginConfiguration> {
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(
-            caseDefinition.id,
+            caseDefinitionId,
             "DOCUMENT_UPLOAD"
         )
         if (link == null) {
