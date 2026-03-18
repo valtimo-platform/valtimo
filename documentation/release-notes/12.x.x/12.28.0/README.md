@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed a bug where when using the same form flow multiple times in a case without refreshing the page could cause the wrong data to load.
