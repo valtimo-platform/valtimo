@@ -6,6 +6,7 @@
   },
   "allowedNonPeerDependencies": [
     "carbon-components-angular",
+    "ng2-pdf-viewer",
     "@ngx-translate/core",
     "@angular/forms"
   ]

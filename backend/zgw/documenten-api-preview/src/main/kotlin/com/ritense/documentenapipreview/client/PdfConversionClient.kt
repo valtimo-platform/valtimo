@@ -4,12 +4,9 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zgw.ClientTools
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
-import org.springframework.http.HttpEntity
-import org.springframework.http.MediaType
+import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.stereotype.Component
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.io.InputStream
@@ -22,14 +19,15 @@ class PdfConversionClient(
 ) {
     fun convertDocument(
         baseUrl: URI,
-        document: InputStream
+        document: InputStream,
+        fileName: String?,
     ): InputStream {
-        val fileEntity: HttpEntity<InputStreamResource> = HttpEntity(InputStreamResource(document))
-        val formData: MultiValueMap<String, Any> = LinkedMultiValueMap()
-        formData.add("files", fileEntity)
-        formData.add("exportFormFields", "false")
-        formData.add("pdfa", "PDF/A-1b")
-        formData.add("pdfua", "true")
+        val bodyBuilder = MultipartBodyBuilder().apply {
+            part("files", InputStreamResource(document)).filename(fileName ?: "file_name_unknown")
+            part("exportFormFields", "false")
+            part("pdfa", "PDF/A-1b")
+            part("pdfua", "true")
+        }
 
         val result = restClient()
             .post()
@@ -38,8 +36,7 @@ class PdfConversionClient(
                     .path("forms/libreoffice/convert")
                     .build()
             }
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(formData)
+            .body(bodyBuilder.build())
             .retrieve()
             .body<Resource>()!!
 

@@ -50,7 +50,12 @@ class DocumentenApiPreviewPlugin(
         val documentenApiPlugin = getDocumentenApiPlugin()
         val documentStream = documentenApiPlugin.downloadInformatieObject(null,documentId)
         val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, null);
-        val pdfStream = pdfConversionClient.convertDocument(pdfConversionUrl, documentStream)
+
+        if (documentInformatieObject.bestandsnaam != null && documentInformatieObject.bestandsnaam!!.split('.').last() == "pdf") {
+            return PdfFile(documentInformatieObject.bestandsnaam!!, documentStream)
+        }
+
+        val pdfStream = pdfConversionClient.convertDocument(pdfConversionUrl, documentStream, documentInformatieObject.bestandsnaam)
 
         return PdfFile(createFilename(documentInformatieObject), pdfStream)
     }
