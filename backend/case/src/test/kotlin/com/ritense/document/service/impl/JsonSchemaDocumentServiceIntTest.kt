@@ -89,13 +89,13 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         ashaMiller = NamedUser("1", "Asha", "Miller")
         jamesVance = NamedUser("2", "James ", "Vance")
 
-        whenever(userManagementService.findNamedUserByRoles(setOf(ADMIN, FULL_ACCESS_ROLE)))
+        whenever(userManagementService.findNamedUserByRolesWithoutAuthorization(setOf(ADMIN, FULL_ACCESS_ROLE)))
             .thenReturn(listOf(ashaMiller))
 
-        whenever(userManagementService.findNamedUserByRoles(setOf(USER, ADMIN, FULL_ACCESS_ROLE)))
+        whenever(userManagementService.findNamedUserByRolesWithoutAuthorization(setOf(USER, ADMIN, FULL_ACCESS_ROLE)))
             .thenReturn(listOf(ashaMiller, jamesVance))
 
-        whenever(userManagementService.findNamedUserByRoles(setOf(USER)))
+        whenever(userManagementService.findNamedUserByRolesWithoutAuthorization(setOf(USER)))
             .thenReturn(listOf(ashaMiller, jamesVance))
 
         val admin = ValtimoUser()

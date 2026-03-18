@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ class DocumentenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column/{key}")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/documenten-api/version")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/version/{caseDefinitionVersionTag}/documenten-api/version")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/documenten-api/versions")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")).hasAuthority(ADMIN)

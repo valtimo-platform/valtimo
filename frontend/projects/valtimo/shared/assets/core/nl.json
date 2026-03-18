@@ -49,6 +49,10 @@
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
       },
+      "TEAM": {
+        "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
+        "title": "Geen teamdossiers"
+      },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
         "title": "Geen dossiers gevonden"
@@ -78,6 +82,7 @@
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers",
+      "TEAM": "Teamdossiers",
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
@@ -494,9 +499,12 @@
     "setGlobalActiveVersionErrorTitle": "Oeps",
     "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "Deze versie heeft onopgeloste configuratieproblemen. Los deze op voordat u deze als actieve versie instelt.",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept"},
+    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept", "status": "Status"},
+    "needsConfiguration": "Configuratie vereist",
+    "inactive": "Inactief",
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -575,8 +583,13 @@
       },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
-        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn."
+        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
       }
+    },
+    "environmentConfig": {
+      "bannerTitle": "Configuratie vereist",
+      "bannerMessage": "Deze dossierdefinitie bevat verwijzingen naar configuraties die niet bestaan in deze omgeving. Controleer en werk de relevante instellingen bij."
     },
     "processLinkNotification": {
       "linkSuccess": "Proces succesvol gekoppeld",
@@ -1389,7 +1402,8 @@
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN gebruikt bij aanmaken zaak",
-    "selectInfoObjectType": "Kies informatieobject-type"
+    "selectInfoObjectType": "Kies informatieobject-type",
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "zaakdetails": {
     "title": "Zaakdetails-synchronisatie",
@@ -1403,7 +1417,8 @@
       "objectManagementConfiguration": "Object management-configuratie",
       "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
       "enabled": "Ingeschakeld"
-    }
+    },
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "interface": {
     "icon": "Icoon",

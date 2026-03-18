@@ -4,18 +4,11 @@
 **Release date 18-03-2026**
 {% endhint %}
 
-## Migration
-
-* [Front-end migration](./front-end-migration.md)
-
 ## New Features
 
-* **Teams**
+* **Configuration warnings for imported case definitions**
 
-  Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
-  Teams can be used for case assignment and access control rules.
-
-  More information about teams can be found [here](../../../features/teams/README.md).
+  When a case definition is imported into a new environment, it may reference configurations — such as a Zaken API plugin or Objecten API sync — that do not yet exist in that environment. Valtimo now detects these missing references during import and shows warnings to help administrators resolve them.
 
 ## Enhancements
 
@@ -25,17 +18,15 @@
 
   This resource type allows for controlling access to user data through the `/api/v1/users/` API. The supported actions
   are:
-    - `view`: Allows viewing details of a single user.
-    - `view_list`: Allows viewing a list of users or searching for users.
+  - `view`: Allows viewing details of a single user.
+  - `view_list`: Allows viewing a list of users or searching for users.
 
 ## Bugfixes
 
+* Scoped Keycloak role lookups to the current client ID so that roles from other clients in the same realm are no longer included when resolving user identity and menu visibility.
 * Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.
-* **Replaced Carbon overflow menus with custom overflow components**
-
-  The Carbon Design System overflow menu components have been replaced with custom-built overflow components throughout the application. The Carbon overflow menu had persistent issues with sizing, positioning, and lacked adequate support for custom panes and custom trigger elements. The new custom components resolve these limitations and provide a consistent, flexible overflow menu experience across the platform.
 
 * **Secure /users endpoint with access control**
 

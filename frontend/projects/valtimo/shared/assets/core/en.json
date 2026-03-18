@@ -46,6 +46,7 @@
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
       "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
+      "TEAM": {"description": "No cases have been assigned to your teams yet.", "title": "No team cases"},
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
@@ -75,6 +76,7 @@
       "MINE": "My cases",
       "OPEN": "Unassigned cases",
       "ALL": "All cases",
+      "TEAM": "Team cases",
       "componentNotFound": "Tab component not found",
       "componentNotFoundMessage": "No component has been found for this tab. Please contact your system administrator."
     },
@@ -487,9 +489,12 @@
     "setGlobalActiveVersionErrorTitle": "Error",
     "setGlobalActiveVersionErrorMessage": "Something went wrong",
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft"},
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
+    "needsConfiguration": "Needs configuration",
+    "inactive": "Inactive",
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
@@ -568,8 +573,13 @@
       },
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
-        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final."
+        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
       }
+    },
+    "environmentConfig": {
+      "bannerTitle": "Configuration required",
+      "bannerMessage": "This case definition contains references to configurations that do not exist in this environment. Please review and update the relevant settings."
     },
     "processLinkNotification": {
       "linkSuccess": "Successfully linked process",
@@ -1361,7 +1371,8 @@
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN used when creating the Zaak in the Zaken Api",
-    "selectInfoObjectType": "Select information object type"
+    "selectInfoObjectType": "Select information object type",
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },
   "zaakdetails": {
     "title": "Zaak detail synchronisation",
@@ -1375,7 +1386,8 @@
       "objectManagementConfiguration": "Object management configuration",
       "objectManagementConfigurationPlaceholder": "Select an object management configuration",
       "enabled": "Enabled"
-    }
+    },
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },
   "interface": {
     "icon": "Icon",
