@@ -197,7 +197,7 @@ export const environment: ValtimoConfig = {
   uploadProvider: UploadProvider.DOCUMENTEN_API,
   defaultDefinitionTable: defaultDefinitionColumns,
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
-  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
   featureToggles: {
     allowUserThemeSwitching: true,
     disableCaseCount: false,

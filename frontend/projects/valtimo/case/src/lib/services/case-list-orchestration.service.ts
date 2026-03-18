@@ -471,6 +471,7 @@ export class CaseListOrchestrationService {
     hasApiColumnConfig: boolean;
     isSearchResult: boolean;
     allStatuses: InternalCaseStatus[];
+    assigneeFilter: AssigneeFilter;
   }> {
     const statusKeys: (string | null)[] =
       allStatuses.length === 1
@@ -507,6 +508,7 @@ export class CaseListOrchestrationService {
       hasApiColumnConfig: of(hasApiColumnConfig),
       isSearchResult: of(!!searchFilters),
       allStatuses: of(allStatuses),
+      assigneeFilter: of(assigneeFilter),
     });
   }
 
@@ -515,6 +517,7 @@ export class CaseListOrchestrationService {
     hasApiColumnConfig: boolean;
     isSearchResult: boolean;
     allStatuses: InternalCaseStatus[];
+    assigneeFilter: AssigneeFilter;
   }): Observable<[typeof res, boolean[], string[], string[]]> {
     return combineLatest([
       of(res),
@@ -539,6 +542,7 @@ export class CaseListOrchestrationService {
       hasApiColumnConfig: boolean;
       isSearchResult: boolean;
       allStatuses: InternalCaseStatus[];
+      assigneeFilter: AssigneeFilter;
     },
     boolean[],
     string[],
@@ -549,6 +553,7 @@ export class CaseListOrchestrationService {
     statusColumnKeys: string[];
     caseTagsKeys: string[];
     isSearchResult: boolean;
+    assigneeFilter: AssigneeFilter;
   } {
     const documentsWithLock = {
       ...res.documents,
@@ -567,6 +572,7 @@ export class CaseListOrchestrationService {
       statusColumnKeys,
       caseTagsKeys,
       isSearchResult: res.isSearchResult,
+      assigneeFilter: res.assigneeFilter,
     };
   }
 
@@ -576,10 +582,11 @@ export class CaseListOrchestrationService {
     statusColumnKeys: string[];
     caseTagsKeys: string[];
     isSearchResult: boolean;
+    assigneeFilter: AssigneeFilter;
   }): any[] {
     if (!Array.isArray(res.data)) return res.data;
 
-    this.updateNoResultsMessage(res.isSearchResult, null);
+    this.updateNoResultsMessage(res.isSearchResult, res.assigneeFilter as CaseListTab);
     this.disableExportButton$.next(res.data.length === 0);
 
     return res.data.map(item => {
