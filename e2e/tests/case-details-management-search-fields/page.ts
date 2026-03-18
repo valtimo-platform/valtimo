@@ -16,6 +16,10 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  VALUE_PATH_SELECTOR_TEST_IDS,
+} from '../../constants';
 
 export class CaseDetailsManagementSearchFieldsPage {
   constructor(
@@ -34,7 +38,7 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   // Version dropdown
   get versionSelectDropdown() {
-    return this.page.getByTestId('caseVersionSelectDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
   // Toolbar buttons (data-test-id → getByTestId)
@@ -85,12 +89,12 @@ export class CaseDetailsManagementSearchFieldsPage {
   get valuePathSelectorToggle() {
     return this.page
       .locator('valtimo-value-path-selector')
-      .getByTestId('valuePathSelectorToggle')
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
       .locator('.cds--toggle__switch');
   }
 
   get valuePathSelectorInput() {
-    return this.page.locator('valtimo-value-path-selector').getByTestId('valuePathSelectorInput');
+    return this.page.locator('valtimo-value-path-selector').getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   // Download button

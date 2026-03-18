@@ -17,6 +17,14 @@
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  CASE_MANAGEMENT_STATUSES_TEST_IDS,
+  CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS,
+  CASE_MANAGEMENT_TAGS_TEST_IDS,
+  CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS,
+} from '../../constants';
 
 export class CaseDetailsConfigPage {
   constructor(
@@ -27,73 +35,93 @@ export class CaseDetailsConfigPage {
   // ─── Status UI Elements ────────────────────────────────────────────
 
   get statusAddButton() {
-    return this.page.getByTestId('caseStatusAddButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUSES_TEST_IDS.addButton);
   }
 
   get statusTitleInput() {
-    return this.page.getByTestId('caseStatusTitleInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.titleInput);
   }
 
   get statusKeyInput() {
-    return this.page.getByTestId('caseStatusKeyInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.keyInput);
   }
 
   get statusEditKeyButton() {
-    return this.page.getByTestId('caseStatusEditKeyButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.editKeyButton);
   }
 
   get statusColorDropdown() {
-    return this.page.getByTestId('caseStatusColorDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.colorDropdown);
   }
 
   get statusVisibilityToggle() {
-    return this.page.getByTestId('caseStatusVisibilityToggle').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.visibilityToggle).locator('.cds--toggle__switch');
   }
 
   get statusCancelButton() {
-    return this.page.getByTestId('caseStatusCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.cancelButton);
   }
 
   get statusAddConfirmButton() {
-    return this.page.getByTestId('caseStatusAddConfirmButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.addConfirmButton);
   }
 
   get statusSaveButton() {
-    return this.page.getByTestId('caseStatusSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS.saveButton);
   }
 
   // ─── Tag UI Elements ──────────────────────────────────────────────
 
   get tagAddButton() {
-    return this.page.getByTestId('caseTagAddButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_TEST_IDS.addButton);
   }
 
   get tagTitleInput() {
-    return this.page.getByTestId('caseTagTitleInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.titleInput);
   }
 
   get tagKeyInput() {
-    return this.page.getByTestId('caseTagKeyInput');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.keyInput);
   }
 
   get tagEditKeyButton() {
-    return this.page.getByTestId('caseTagEditKeyButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.editKeyButton);
   }
 
   get tagColorDropdown() {
-    return this.page.getByTestId('caseTagColorDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.colorDropdown);
   }
 
   get tagCancelButton() {
-    return this.page.getByTestId('caseTagCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.cancelButton);
   }
 
   get tagAddConfirmButton() {
-    return this.page.getByTestId('caseTagAddConfirmButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.addConfirmButton);
   }
 
   get tagSaveButton() {
-    return this.page.getByTestId('caseTagSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS.saveButton);
+  }
+
+  // ─── Version Selector ────────────────────────────────────────────
+
+  get versionSelectDropdown() {
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
+  }
+
+  async ensureDraftVersionSelected() {
+    const dropdown = this.versionSelectDropdown;
+    const selectedText = await dropdown.innerText();
+
+    if (selectedText.includes('DRAFT')) {
+      return;
+    }
+
+    await dropdown.click();
+    const listbox = this.page.getByRole('listbox');
+    const draftOption = listbox.locator('[data-test-id^="caseVersion"]:has-text("DRAFT")').first();
+    await draftOption.click();
   }
 
   // ─── Navigation ───────────────────────────────────────────────────
@@ -138,12 +166,63 @@ export class CaseDetailsConfigPage {
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 
+  async openStatusEditModal(title: string) {
+    await this.page.locator(`tr:has(td:has-text("${title}"))`).click();
+  }
+
+  async selectStatusColor(colorName: string) {
+    await this.statusColorDropdown.click();
+    await this.page.getByRole('listbox').getByText(colorName, {exact: true}).click();
+  }
+
+  async toggleStatusVisibility() {
+    await this.statusVisibilityToggle.click();
+  }
+
+  async saveStatus() {
+    await expect(this.statusSaveButton).toBeEnabled();
+    await this.statusSaveButton.click();
+  }
+
   async assertStatusExists(title: string) {
     await expect(this.page.locator(`td:has-text("${title}")`).first()).toBeVisible();
   }
 
   async assertStatusNotExists(title: string) {
     await expect(this.page.locator(`td:has-text("${title}")`)).toHaveCount(0);
+  }
+
+  async assertStatusColorInList(title: string, expectedColorLabel: string) {
+    const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
+    const colorTag = row.locator('cds-tag');
+    await expect(colorTag).toContainText(expectedColorLabel);
+  }
+
+  async assertStatusVisibilityInList(title: string, expectedVisible: boolean) {
+    const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
+    // nth(3) = visible column (0: drag handle, 1: title, 2: key, 3: visible)
+    const visibleCell = row.locator('td').nth(3);
+    await expect(visibleCell).toContainText(expectedVisible ? 'Yes' : 'No');
+  }
+
+  async getStatusTitlesInOrder(): Promise<string[]> {
+    const list = new CarbonList(this.page);
+    const rows = list.rows;
+    const count = await rows.count();
+    const titles: string[] = [];
+    for (let i = 0; i < count; i++) {
+      // nth(1) skips the drag handle column (index 0)
+      const text = await rows.nth(i).locator('td').nth(1).innerText();
+      titles.push(text.trim());
+    }
+    return titles;
+  }
+
+  async dragStatusToPosition(sourceTitle: string, targetTitle: string) {
+    const list = new CarbonList(this.page);
+    const sourceRow = list.row(sourceTitle);
+    const targetRow = list.row(targetTitle);
+    await list.dragRow(sourceRow, targetRow);
   }
 
   // ─── Tag CRUD ─────────────────────────────────────────────────────

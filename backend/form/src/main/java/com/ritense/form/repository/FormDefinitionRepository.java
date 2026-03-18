@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
-import org.semver4j.Semver;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.semver4j.Semver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -146,6 +147,7 @@ public interface FormDefinitionRepository extends JpaRepository<FormIoFormDefini
         );
     }
 
+    @Modifying
     @Query("DELETE FROM FormIoFormDefinition f " +
            "WHERE f.blueprintId.blueprintType = :blueprintType " +
            "AND f.blueprintId.blueprintKey = :blueprintKey " +

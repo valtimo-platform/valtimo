@@ -1,0 +1,12 @@
+{
+    "$id": "auto-assign-test.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Auto assign test",
+    "type": "object",
+    "properties": {
+        "description": {
+            "type": "string",
+            "description": "Description"
+        }
+    }
+}

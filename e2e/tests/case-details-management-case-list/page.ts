@@ -16,6 +16,13 @@
 
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {
+  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS,
+  CONFIRMATION_MODAL_TEST_IDS,
+  KEY_VALUE_TEST_IDS,
+  VALUE_PATH_SELECTOR_TEST_IDS,
+} from '../../constants';
 
 export interface UploadCaseOptions {
   archiveName?: string;
@@ -29,7 +36,7 @@ export class CaseDetailsManagementCaseListPage {
 
   // UI Elements
   get versionSelectDropdown() {
-    return this.page.getByTestId('caseVersionSelectDropdown');
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
   get listColumnsTab() {
@@ -45,117 +52,117 @@ export class CaseDetailsManagementCaseListPage {
   }
 
   get caseListColumnsList() {
-    return this.page.getByTestId('caseListColumnsList');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.columnsList);
   }
 
   get addListColumnButton() {
-    return this.page.getByTestId('caseManagementAddListColumn');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.addListColumn);
   }
 
   get titleInput() {
-    return this.page.getByTestId('listColumnTitle');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.title);
   }
 
   get keyInput() {
-    return this.page.getByTestId('listColumnKey');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.key);
   }
 
   get valuePathSelectorToggle() {
     return this.page
-      .getByTestId('listColumnValuePathSelector')
-      .getByTestId('valuePathSelectorToggle')
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.valuePathSelector)
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
       .locator('.cds--toggle__switch');
   }
 
   get valuePathSelectorInput() {
     return this.page
-      .getByTestId('listColumnValuePathSelector')
-      .getByTestId('valuePathSelectorInput');
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.valuePathSelector)
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   get valuePathSelectorPath() {
     return this.page
-      .getByTestId('listColumnValuePathSelector')
-      .getByTestId('valueValuePathSelectorPath');
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.valuePathSelector)
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.path);
   }
 
   get displayTypeDropdown() {
-    return this.page.getByTestId('listColumnDisplayType');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.displayType);
   }
 
   get tagAmount() {
-    return this.page.getByTestId('listColumnTagAmount');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.tagAmount);
   }
 
   get dateFormat() {
-    return this.page.getByTestId('listColumnDateFormat');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.dateFormat);
   }
 
   get sortableCheckbox() {
-    return this.page.getByTestId('listColumnSortableCheckbox');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.sortableCheckbox);
   }
 
   get defaultSortDropdown() {
-    return this.page.getByTestId('listColumnDefaultSort');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.defaultSort);
   }
 
   get exportableToggle() {
-    return this.page.getByTestId('listColumnExportable').locator('.cds--toggle__switch');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.exportable).locator('.cds--toggle__switch');
   }
 
   get listColumnCancelButton() {
-    return this.page.getByTestId('listColumnCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.cancelButton);
   }
 
   get listColumnSaveButton() {
-    return this.page.getByTestId('listColumnSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.saveButton);
   }
 
   get confirmationModalCloseButton() {
     return this.page
-      .getByTestId('listColumnConfirmationModal')
-      .getByTestId('confirmationModalClose');
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.confirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.closeButton);
   }
 
   get confirmationModalConfirmButton() {
     return this.page
-      .getByTestId('listColumnConfirmationModal')
-      .getByTestId('confirmationModalConfirm');
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.confirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
   }
 
   get switchViewButton() {
-    return this.page.getByTestId('listColumnSwitchView');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.switchView);
   }
 
   get listColumnJSONEditor() {
-    return this.page.getByTestId('listColumnJSONEditor');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.jsonEditor);
   }
 
   get downloadButton() {
-    return this.page.getByTestId('listColumnDownloadButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.downloadButton);
   }
 
   private getMultiInputRow(index: number) {
-    return this.page.getByTestId('listColumnMultiInput').locator('.v-multi-input__row').nth(index);
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.multiInput).locator('.v-multi-input__row').nth(index);
   }
 
   getMultiInputKeyInput(index: number) {
-    return this.getMultiInputRow(index).getByTestId('keyValueKeyInput');
+    return this.getMultiInputRow(index).getByTestId(KEY_VALUE_TEST_IDS.keyInput);
   }
 
   getMultiInputValueInput(index: number) {
-    return this.getMultiInputRow(index).getByTestId('keyValueValueInput');
+    return this.getMultiInputRow(index).getByTestId(KEY_VALUE_TEST_IDS.valueInput);
   }
 
   getMultiInputDeleteButton(index: number) {
     return this.page
-      .getByTestId('listColumnMultiInput')
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.multiInput)
       .getByTestId(`multiInputDeleteButton-${index}`);
   }
 
   getMultiInputAddButton() {
     return this.page
-      .getByTestId('listColumnMultiInput')
+      .getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.multiInput)
       .locator('.v-multi-input__add-button button');
   }
 

@@ -138,6 +138,8 @@
   * [List](features/iko/list.md)
   * [Tabs](features/iko/tabs.md)
   * [Widgets](features/iko/widgets.md)
+* [🗝️ Keycloak](features/keycloak/README.md)
+  * [Access control](features/keycloak/access-control.md)
 * [✉️ Outbox](features/outbox/README.md)
   * [For developers](features/outbox/for-developers.md)
 * [🔌 Plugins](features/plugins/README.md)
@@ -172,6 +174,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/README.md)
+  * [13.20.0](release-notes/13.x.x/13.20.0/README.md)
   * [13.19.0](release-notes/13.x.x/13.19.0/README.md)
   * [13.18.0](release-notes/13.x.x/13.18.0/README.md)
   * [13.17.0](release-notes/13.x.x/13.17.0/README.md)

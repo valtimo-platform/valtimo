@@ -35,14 +35,14 @@ public class UserHttpSecurityConfigurer implements HttpSecurityConfigurer {
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, USER_URL)).hasAuthority(ADMIN)
+                requests.requestMatchers(antMatcher(GET, USER_URL)).authenticated()
                 .requestMatchers(antMatcher(POST, USER_URL)).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(PUT, USER_URL)).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(PUT, USER_URL + "/{userId}/activate")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(PUT, USER_URL + "/{userId}/deactivate")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, USER_URL + "/email/{email}/")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, USER_URL + "/{userId}")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, USER_URL + "/authority/{authority}")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, USER_URL + "/email/{email}/")).authenticated()
+                .requestMatchers(antMatcher(GET, USER_URL + "/{userId}")).authenticated()
+                .requestMatchers(antMatcher(GET, USER_URL + "/authority/{authority}")).authenticated()
                 .requestMatchers(antMatcher(DELETE, USER_URL + "/{userId}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(POST, USER_URL + "/send-verification-email/{userId}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/user/settings")).authenticated()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,13 @@ export class DocumentenApiVersionService extends BaseApiService {
   }
 
   public getManagementApiVersion(
-    caseDefinitionName: string
+    caseDefinitionName: string,
+    caseDefinitionVersionTag: string
   ): Observable<DocumentenApiManagementVersion> {
     return this.httpClient.get<DocumentenApiManagementVersion>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/documenten-api/version`)
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionName}/version/${caseDefinitionVersionTag}/documenten-api/version`
+      )
     );
   }
 

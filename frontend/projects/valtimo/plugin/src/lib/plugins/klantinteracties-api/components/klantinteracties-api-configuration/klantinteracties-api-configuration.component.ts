@@ -29,6 +29,7 @@ import {
 import {KlantinteractiesApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {KLANTINTERACTIES_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -45,6 +46,7 @@ export class KlantinteractiesApiConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<KlantinteractiesApiConfig> =
     new EventEmitter<KlantinteractiesApiConfig>();
+  protected readonly testIds = KLANTINTERACTIES_API_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

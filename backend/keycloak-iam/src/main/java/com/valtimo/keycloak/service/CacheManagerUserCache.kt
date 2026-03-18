@@ -44,11 +44,16 @@ class CacheManagerUserCache(
         if (newValue != null && !cacheType.cachedClass.java.isAssignableFrom(newValue!!::class.java)) {
             throw IllegalArgumentException("The type of the value returned by the request function (${newValue!!::class.java.name}) does not match the cache type (${cacheType.cachedClass.java.name})")
         }
+        CacheType.entries.forEach { cacheType ->
+            cacheType.keyExtractor(newValue)?.let { key ->
+                cacheManager.getCache(cacheType.getCacheName())?.put(key, newValue)
+            }
+        }
         cache.put(key, newValue)
         return newValue
     }
 
-    @CacheEvict(allEntries = true, value = ["EMAIL_ManageableUser", "USER_IDENTIFIER_ValtimoUser"])
+    @CacheEvict(allEntries = true, value = ["EMAIL_ValtimoUser", "USERNAME_ValtimoUser"])
     @Scheduled(fixedRateString = "\${valtimo.keycloak.cache.maxTtl:PT1H}")
     fun logCacheClear() {
         logger.debug { "Clearing all user information cache" }
