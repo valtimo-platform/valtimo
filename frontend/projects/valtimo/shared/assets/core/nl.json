@@ -49,6 +49,10 @@
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
       },
+      "TEAM": {
+        "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
+        "title": "Geen teamdossiers"
+      },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
         "title": "Geen dossiers gevonden"
@@ -78,6 +82,7 @@
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers",
+      "TEAM": "Teamdossiers",
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },

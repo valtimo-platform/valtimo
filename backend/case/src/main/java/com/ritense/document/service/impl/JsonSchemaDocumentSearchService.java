@@ -469,7 +469,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 if (!teamKeys.isEmpty()) {
                     yield cb.in(caseAssignedTeamKeyColumn).value(teamKeys);
                 } else {
-                    yield null;
+                    yield cb.disjunction();
                 }
             }
             case OPEN -> cb.and(cb.isNull(caseAssigneeIdColumn), cb.isNull(caseAssignedTeamKeyColumn));
