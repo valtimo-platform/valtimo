@@ -26,10 +26,14 @@
     </h3>
   </cds-modal-header>
 
-  <pdf-viewer
-            src="https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf"
-            [original-size]="false">
-  </pdf-viewer>
+  <div body class="cds--modal-content">
+    <object
+      [data]="pdfSrc"
+      type="application/pdf"
+      width="100%"
+      height="600px">
+    </object>
+  </div>
 
   <cds-modal-footer [cdsLayer]="1">
     <button cdsButton="primary" (click)="onClose()" >

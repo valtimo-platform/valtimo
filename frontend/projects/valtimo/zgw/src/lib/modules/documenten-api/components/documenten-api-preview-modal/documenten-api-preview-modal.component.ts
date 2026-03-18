@@ -23,11 +23,11 @@ import {
   Output,
 } from '@angular/core';
 
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {Subscription} from 'rxjs';
 import {ButtonModule, LayerModule, ModalModule, ToggleModule} from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
-import {PdfViewerModule} from 'ng2-pdf-viewer';
 
 @Component({
   selector: 'valtimo-documenten-api-preview-modal',
@@ -38,7 +38,6 @@ import {PdfViewerModule} from 'ng2-pdf-viewer';
     CommonModule,
     ModalModule,
     TranslateModule,
-    PdfViewerModule,
     ButtonModule,
     ToggleModule,
     LayerModule,
@@ -50,7 +49,16 @@ export class DocumentenApiPreviewModalComponent implements OnDestroy {
 
   @Output() public modalClose = new EventEmitter();
 
+  public pdfSrc: SafeResourceUrl;
+
   private readonly _subscriptions = new Subscription();
+
+  constructor(private readonly sanitizer: DomSanitizer) {
+    // TODO: replace with actual PDF URL from the preview API
+    this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
+      'https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf'
+    );
+  }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
