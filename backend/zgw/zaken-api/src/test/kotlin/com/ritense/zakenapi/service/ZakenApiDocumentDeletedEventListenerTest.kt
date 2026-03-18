@@ -42,30 +42,29 @@ class ZakenApiDocumentDeletedEventListenerTest {
 
     @Test
     fun `should delete zaak when one is linked`() {
-        val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
-
+        val caseDocumentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
         val zaakInstanceUrl = URI("http://zaaak.url")
         val zaakInstanceLink = mock<ZaakInstanceLink>()
 
-        whenever(zaakInstanceService.getByDocumentId(documentId)).thenReturn(zaakInstanceLink)
+        whenever(zaakInstanceService.getByDocumentId(caseDocumentId)).thenReturn(zaakInstanceLink)
         whenever(zaakInstanceLink.zaakInstanceUrl).thenReturn(zaakInstanceUrl)
 
         val pluginInstance = mock<ZakenApiPlugin>()
         whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any())).thenReturn(pluginInstance)
 
-        listener.handle(DocumentDeletedEvent(documentId))
+        listener.handle(DocumentDeletedEvent(caseDocumentId))
 
-        verify(zaakDocumentService).deleteRelatedInformatieObjecten(zaakInstanceUrl)
+        verify(zaakDocumentService).deleteRelatedInformatieObjecten(caseDocumentId, zaakInstanceUrl)
         verify(pluginInstance).deleteZaak(zaakInstanceUrl)
     }
 
     @Test
     fun `should not throw exception when no zaak is linked`() {
-        val documentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
+        val caseDocumentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
 
-        whenever(zaakInstanceService.getByDocumentId(documentId)).thenThrow(ZaakInstanceLinkNotFoundException("No link found"))
+        whenever(zaakInstanceService.getByDocumentId(caseDocumentId)).thenThrow(ZaakInstanceLinkNotFoundException("No link found"))
 
-        listener.handle(DocumentDeletedEvent(documentId))
+        listener.handle(DocumentDeletedEvent(caseDocumentId))
 
         verifyNoInteractions(zaakDocumentService)
         verifyNoInteractions(pluginService)

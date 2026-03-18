@@ -107,7 +107,6 @@ DocumentenApiClientTest {
     fun `should send request and parse response`() {
         val restClientBuilder = RestClient.builder()
         val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService)
-
         val responseBody = """
             {
               "url": "http://example.com",
@@ -162,6 +161,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -288,6 +288,7 @@ DocumentenApiClientTest {
         val result = client.storeDocument(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
+            CASE_DOCUMENT_ID,
             request
         )
 
@@ -328,6 +329,7 @@ DocumentenApiClientTest {
             client.storeDocument(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
+                CASE_DOCUMENT_ID,
                 request
             )
         }
@@ -383,6 +385,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -458,6 +461,7 @@ DocumentenApiClientTest {
 
         val result = client.getInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/zaakobjects").toUri(),
         )
 
@@ -484,6 +488,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getInformatieObject(
                 TestAuthentication(),
+                CASE_DOCUMENT_ID,
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -506,11 +511,11 @@ DocumentenApiClientTest {
         mockDocumentenApi.enqueue(mockInputStreamResponse(buffer))
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
         client.downloadInformatieObjectContent(
             TestAuthentication(),
             mockDocumentenApi.url("/").toUri(),
-            documentInformatieObjectId
+            documentInformatieObjectId,
+            CASE_DOCUMENT_ID
         )
 
         mockDocumentenApi.takeRequest()
@@ -539,7 +544,8 @@ DocumentenApiClientTest {
             client.downloadInformatieObjectContent(
                 TestAuthentication(),
                 mockDocumentenApi.url("/").toUri(),
-                documentInformatieObjectId
+                documentInformatieObjectId,
+                CASE_DOCUMENT_ID
             )
         }
 
@@ -558,6 +564,7 @@ DocumentenApiClientTest {
 
         client.deleteInformatieObject(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/documenten/api/v1/enkelvoudiginformatieobjecten/123").toUri(),
         )
 
@@ -588,6 +595,7 @@ DocumentenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.deleteInformatieObject(
                 TestAuthentication(),
+                CASE_DOCUMENT_ID,
                 mockDocumentenApi.url("/zaakobjects").toUri(),
             )
         }
@@ -717,7 +725,8 @@ DocumentenApiClientTest {
                     ontvangstdatum = LocalDate.of(2020, 5, 3),
                     verzenddatum = LocalDate.of(2020, 5, 3),
                     indicatieGebruiksrecht = true
-                )
+                ),
+                CASE_DOCUMENT_ID
             )
         }
 
@@ -995,6 +1004,7 @@ DocumentenApiClientTest {
 
         val page = client.getInformatieObjecten(
             TestAuthentication(),
+            CASE_DOCUMENT_ID,
             mockDocumentenApi.url("/").toUri(),
             pageable,
             documentSearchRequest
@@ -1048,5 +1058,10 @@ DocumentenApiClientTest {
             }.build()
             return next.exchange(filteredRequest)
         }
+    }
+
+    companion object {
+        val CASE_DOCUMENT_ID: UUID =
+            UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
     }
 }

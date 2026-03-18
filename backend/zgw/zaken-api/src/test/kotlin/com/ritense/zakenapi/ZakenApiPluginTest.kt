@@ -99,7 +99,7 @@ internal class ZakenApiPluginTest {
         plugin.linkDocumentToZaak(executionMock, "https://document.url", "titel", "beschrijving")
 
         val captor = argumentCaptor<LinkDocumentRequest>()
-        verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
+        verify(zakenApiClient).linkDocument(any(), any(),any(), captor.capture())
 
         val request = captor.firstValue
         assertEquals("https://document.url", request.informatieobject)
@@ -121,7 +121,7 @@ internal class ZakenApiPluginTest {
         whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR)).thenReturn("https://document.url")
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR)).thenReturn("myResourceId")
         whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(URI("https://zaak.url"))
-        whenever(zakenApiClient.linkDocument(any(), any(), any())).thenReturn(mock())
+        whenever(zakenApiClient.linkDocument(any(), any(), any(), any())).thenReturn(mock())
         whenever(storageService.getResourceMetadata("myResourceId")).thenReturn(
             mapOf(
                 "title" to "titel",
@@ -139,7 +139,7 @@ internal class ZakenApiPluginTest {
         plugin.linkUploadedDocumentToZaak(executionMock)
 
         val captor = argumentCaptor<LinkDocumentRequest>()
-        verify(zakenApiClient).linkDocument(any(), any(), captor.capture())
+        verify(zakenApiClient).linkDocument(any(), any(), any(), captor.capture())
 
         val request = captor.firstValue
         assertEquals("https://document.url", request.informatieobject)
@@ -353,7 +353,6 @@ internal class ZakenApiPluginTest {
         assertEquals("innNnpId", betrokkeneIdentificatie.innNnpId)
     }
 
-
     @Test
     fun `should create zaak`() {
         val zakenApiClient: ZakenApiClient = mock()
@@ -547,7 +546,6 @@ internal class ZakenApiPluginTest {
         assertEquals("Status description", request.statustoelichting)
     }
 
-
     @Test
     fun `should create zaak resultaat`() {
         val zakenApiClient: ZakenApiClient = mock()
@@ -626,7 +624,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should update zaakopschorting and verlenging`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -665,7 +662,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should start hersteltermijn`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -714,14 +710,12 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should not start hersteltermijn twice`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
         val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-
         val documentId = UUID.randomUUID()
         val zaakUrl = URI("https://example.com/zaken/1234")
 
@@ -762,7 +756,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should end hersteltermijn`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -815,12 +808,11 @@ internal class ZakenApiPluginTest {
         val request = captor.firstValue
         assertEquals(LocalDate.now().plusDays(50 - 17 + 8), request.uiterlijkeEinddatumAfdoening)
         assertFalse(request.opschorting!!.indicatie)
-        assertEquals("", request.opschorting?.reden)
+        assertEquals("", request.opschorting.reden)
     }
 
     @Test
     fun `should create zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -868,7 +860,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should update zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -918,7 +909,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should delete zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -961,7 +951,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should relateer zaken`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1014,8 +1003,9 @@ internal class ZakenApiPluginTest {
         val zaakUrlProvider: ZaakUrlProvider = mock()
         val authenticationMock = mock<ZakenApiAuthentication>()
 
-        val documentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(URI("https://zaak.url"))
+        whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(zaakUri())
 
         val plugin = zakenApiPlugin(
             zaakUrlProvider = zaakUrlProvider,
@@ -1027,7 +1017,7 @@ internal class ZakenApiPluginTest {
             URI.create("https://zaak.url"),
             URI.create("https://object.url"),
             "zaakdetails",
-            documentId
+            caseDocumentId
         )
 
         val captor = argumentCaptor<ZaakObjectRequest>()
@@ -1103,7 +1093,7 @@ internal class ZakenApiPluginTest {
         val objectMapper = MapperSingleton.get()
         val resultProcessVariable = "resultVariable"
 
-        val documentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
         val relatedFiles = listOf(
@@ -1129,9 +1119,9 @@ internal class ZakenApiPluginTest {
             )
         )
 
-        whenever(executionMock.businessKey).thenReturn(documentId.toString())
-        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
-        whenever(zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)).thenReturn(relatedFiles)
+        whenever(executionMock.businessKey).thenReturn(caseDocumentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+        whenever(zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)).thenReturn(relatedFiles)
 
         val plugin = zakenApiPlugin(
             zaakUrlProvider = zaakUrlProvider,
@@ -1143,8 +1133,8 @@ internal class ZakenApiPluginTest {
         plugin.getZaakInformatieobjecten(executionMock, resultProcessVariable)
 
         // then
-        verify(zaakUrlProvider).getZaakUrl(documentId)
-        verify(zaakDocumentService).getInformatieObjectenAsRelatedFiles(documentId)
+        verify(zaakUrlProvider).getZaakUrl(caseDocumentId)
+        verify(zaakDocumentService).getInformatieObjectenAsRelatedFiles(caseDocumentId)
 
         val captor = argumentCaptor<Any>()
         verify(executionMock).setVariable(eq(resultProcessVariable), captor.capture())

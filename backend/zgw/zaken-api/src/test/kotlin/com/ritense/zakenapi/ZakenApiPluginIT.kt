@@ -175,7 +175,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL
         )
@@ -192,7 +192,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val plannedEndDate = LocalDate.now().plusDays(10)
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
             description = description,
@@ -215,7 +215,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val document = createDocument()
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
+            caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
             zaaktypeUrl = ZAAKTYPE_URL,
         )

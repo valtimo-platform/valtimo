@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,6 +138,7 @@ internal class ZakenApiClientTest {
 
         val result = client.linkDocument(
             TestAuthentication(),
+            UUID.randomUUID(),
             URI(mockApi.url("/").toString()),
             LinkDocumentRequest(
                 "https://example.com",
@@ -222,6 +223,7 @@ internal class ZakenApiClientTest {
 
         client.linkDocument(
             TestAuthentication(),
+            UUID.randomUUID(),
             URI(mockApi.url("/").toString()),
             LinkDocumentRequest(
                 "https://example.com",
@@ -256,6 +258,7 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.linkDocument(
                 TestAuthentication(),
+                UUID.randomUUID(),
                 URI(mockApi.url("/").toString()),
                 LinkDocumentRequest(
                     "https://example.com",
@@ -422,6 +425,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             TestAuthentication(),
+            UUID.randomUUID(),
             URI(mockApi.url("/").toString()),
             URI("https://example.com")
         )
@@ -477,6 +481,7 @@ internal class ZakenApiClientTest {
 
         val result = client.getZaakInformatieObjecten(
             TestAuthentication(),
+            UUID.randomUUID(),
             URI(mockApi.url("/").toString()),
             URI("https://example.com")
         )
@@ -505,6 +510,7 @@ internal class ZakenApiClientTest {
         assertThrows<HttpClientErrorException> {
             client.getZaakInformatieObjecten(
                 TestAuthentication(),
+                UUID.randomUUID(),
                 URI(mockApi.url("/").toString()),
                 URI("https://example.com")
             )
@@ -926,7 +932,6 @@ internal class ZakenApiClientTest {
 
         val firstEventValue = eventCapture.firstValue.get()
         val mappedFirstEventResult: Rol = objectMapper.readValue(firstEventValue.result.toString())
-
 
         assertThat(firstEventValue).isInstanceOf(ZaakRolCreated::class.java)
         assertThat(result.url.toString()).isEqualTo(firstEventValue.resultId.toString())
