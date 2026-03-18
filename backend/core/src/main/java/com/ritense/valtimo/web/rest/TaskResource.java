@@ -26,7 +26,7 @@ import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
-import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
@@ -217,11 +217,11 @@ public class TaskResource extends AbstractTaskResource {
     }
 
     @GetMapping("/v1/task/{taskId}/candidate-team")
-    public ResponseEntity<Page<Team>> getCandidateTeams(
+    public ResponseEntity<Page<TeamDto>> getCandidateTeams(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
         Pageable pageable
     ) {
-        Page<Team> teams = operatonTaskService.getCandidateTeams(taskId, pageable);
+        Page<TeamDto> teams = operatonTaskService.getCandidateTeams(taskId, pageable).map(TeamDto::from);
         return ResponseEntity.ok(teams);
     }
 
