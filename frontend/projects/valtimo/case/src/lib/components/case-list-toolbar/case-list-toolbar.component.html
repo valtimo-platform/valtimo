@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@
     (viewUpdateEvent)="viewUpdateEvent.emit($event)"
   ></valtimo-list-column-view>
 
-  <cds-tooltip
-    *ngIf="canExport"
-    [description]="'case.exportButtonTooltip' | translate"
-  >
+  <cds-tooltip *ngIf="canExport" [description]="'case.exportButtonTooltip' | translate">
     <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
 
     <button
