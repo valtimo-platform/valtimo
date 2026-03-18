@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
+    setActiveDisabled: setActiveDisabled$ | async,
+    hasUnresolvedConfigurationIssues: hasUnresolvedConfigurationIssues$ | async,
     compactMode: compactMode$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
@@ -38,6 +40,7 @@
 
     <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
   </div>
+
 </div>
 
 <ng-template #versionSelection let-obs="obs">

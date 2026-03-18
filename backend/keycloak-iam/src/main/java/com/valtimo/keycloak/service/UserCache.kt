@@ -16,7 +16,6 @@
 
 package com.valtimo.keycloak.service
 
-import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import kotlin.reflect.KClass
 
@@ -25,10 +24,11 @@ interface UserCache {
 }
 
 enum class CacheType(
-    val cachedClass: KClass<*>
+    val cachedClass: KClass<*>,
+    val keyExtractor: (Any?) -> String?,
 ) {
-    EMAIL(ManageableUser::class),
-    USER_IDENTIFIER(ValtimoUser::class);
+    EMAIL(ValtimoUser::class, { if (it is ValtimoUser) it.email else null }),
+    USERNAME(ValtimoUser::class, { if (it is ValtimoUser) it.username else null }), ;
 
     fun getCacheName(): String {
         return "${name}_${cachedClass.simpleName}"

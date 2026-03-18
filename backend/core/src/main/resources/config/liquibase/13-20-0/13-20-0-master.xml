@@ -63,4 +63,7 @@
         </sql>
     </changeSet>
 
+    <include file="20260310-drop-notnull-objecten-api-sync-config-id.xml" relativeToChangelogFile="true"/>
+    <include file="20260310-add-case-definition-configuration-issue-table.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,10 @@ class DocumentObjectenApiSyncManagementResource(
         val syncConfiguration =
             documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
                 ?: return ResponseEntity.ok(null)
+        val objectManagementConfigurationId = syncConfiguration.objectManagementConfigurationId
+            ?: return ResponseEntity.ok(null)
         val objectManagementConfiguration =
-            objectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)
+            objectManagementInfoProvider.getObjectManagementInfo(objectManagementConfigurationId)
         return ResponseEntity.ok(
             DocumentObjectenApiSyncResponse.of(syncConfiguration, objectManagementConfiguration)
         )
