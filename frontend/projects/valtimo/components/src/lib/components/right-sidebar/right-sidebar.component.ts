@@ -40,6 +40,7 @@ import {VersionService} from '../version/version.service';
 import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
 import {map} from 'rxjs/operators';
 import {ListItem} from 'carbon-components-angular';
+import {RIGHT_SIDEBAR_TEST_IDS} from '../../constants/components.test-ids';
 
 @Component({
   selector: 'valtimo-right-sidebar',
@@ -62,6 +63,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  public readonly testIds = RIGHT_SIDEBAR_TEST_IDS;
 
   public readonly panelExpanded$ = this.shellService.panelExpanded$;
 

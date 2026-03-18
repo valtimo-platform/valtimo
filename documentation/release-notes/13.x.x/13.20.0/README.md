@@ -6,9 +6,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Configuration warnings for imported case definitions**
 
-  New feature explanation.
+  When a case definition is imported into a new environment, it may reference configurations — such as a Zaken API plugin or Objecten API sync — that do not yet exist in that environment. Valtimo now detects these missing references during import and shows warnings to help administrators resolve them.
 
 ## Enhancements
 
@@ -23,6 +23,7 @@
 
 ## Bugfixes
 
+* Scoped Keycloak role lookups to the current client ID so that roles from other clients in the same realm are no longer included when resolving user identity and menu visibility.
 * Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.

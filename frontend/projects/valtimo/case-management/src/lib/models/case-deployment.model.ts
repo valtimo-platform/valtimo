@@ -52,3 +52,17 @@ export interface CaseDefinitionFinalizationCheckResult {
   finalizable: boolean;
   code: string;
 }
+
+export interface CaseDefinitionConfigurationIssue {
+  id: string;
+  issueType: string;
+  resolved: boolean;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ConfigurationIssueUpdatedSseEvent {
+  eventType?: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+}
