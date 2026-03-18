@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-:host {
+.case-list-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+}
+
+.loading-spinner {
+  margin: 24px 24px 0px 10px;
 }
