@@ -185,13 +185,6 @@ public class OperatonTaskService {
     }
 
     @Transactional
-    public void assignByEmail(String taskId, String assigneeEmail) throws IllegalStateException {
-        var assignee = userManagementService.findNamedUserByEmail(assigneeEmail)
-            .orElseThrow(() -> new IllegalStateException("Error. No registered user found with email: " + assigneeEmail));
-        assign(taskId, assignee.getId());
-    }
-
-    @Transactional
     public void assign(String taskId, String assignee) throws IllegalStateException {
         if (assignee == null) {
             unassign(taskId);
@@ -324,7 +317,7 @@ public class OperatonTaskService {
             ).stream()
             .map(Role::getKey)
             .collect(toSet());
-        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(candidateGroups));
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(candidateGroups);
     }
 
     @Transactional

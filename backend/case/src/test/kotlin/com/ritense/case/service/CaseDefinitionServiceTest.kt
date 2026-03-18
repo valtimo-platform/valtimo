@@ -24,6 +24,7 @@ import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
@@ -72,6 +73,7 @@ class CaseDefinitionServiceTest : BaseTest() {
     lateinit var authorizationService: AuthorizationService
     lateinit var hiddenCaseListColumnRepository: HiddenCaseListColumnRepository
     lateinit var caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>
+    lateinit var configurationIssueRepository: CaseDefinitionConfigurationIssueRepository
 
     @BeforeEach
     fun setUp() {
@@ -82,6 +84,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         authorizationService = mock()
         hiddenCaseListColumnRepository = mock()
         caseDefinitionFinalizationCheckersProvider = mock()
+        configurationIssueRepository = mock()
         service = CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
@@ -91,7 +94,8 @@ class CaseDefinitionServiceTest : BaseTest() {
             authorizationService,
             mock(),
             mock(),
-            caseDefinitionFinalizationCheckersProvider
+            caseDefinitionFinalizationCheckersProvider,
+            configurationIssueRepository
         )
     }
 
@@ -601,6 +605,60 @@ class CaseDefinitionServiceTest : BaseTest() {
         assertTrue(saved.final)
         assertTrue(captor.firstValue.final)
         assertEquals(caseDefinitionId, captor.firstValue.id)
+    }
+
+    @Test
+    fun `setActiveCaseDefinition should throw when unresolved configuration issues exist`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+        val caseDefinition = caseDefinition(id = caseDefinitionId)
+
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId))
+            .thenReturn(listOf(mock()))
+
+        val ex = assertThrows<IllegalArgumentException> {
+            service.setActiveCaseDefinition(caseDefinitionId)
+        }
+
+        assertTrue(ex.message!!.contains("unresolved configuration issues"))
+        verify(caseDefinitionRepository, never()).save(any())
+    }
+
+    @Test
+    fun `setActiveCaseDefinition should succeed when no unresolved configuration issues exist`() {
+        val caseDefinitionId = CaseDefinitionId.of("key", "1.0.0")
+        val caseDefinition = caseDefinition(id = caseDefinitionId)
+
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(caseDefinitionId))
+            .thenReturn(emptyList())
+        whenever(caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionId.key))
+            .thenReturn(null)
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        val result = service.setActiveCaseDefinition(caseDefinitionId)
+
+        assertTrue(result.active)
+    }
+
+    @Test
+    fun `setLatestToActiveIfNoneIsActive should skip definitions with unresolved issues`() {
+        val id1 = CaseDefinitionId.of("key", "1.0.0")
+        val id2 = CaseDefinitionId.of("key", "2.0.0")
+        val cd1 = caseDefinition(id = id1, active = false)
+        val cd2 = caseDefinition(id = id2, active = false)
+
+        whenever(caseDefinitionRepository.findAll()).thenReturn(listOf(cd1, cd2))
+        whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(listOf(id1, id2)))
+            .thenReturn(setOf(id2))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        service.setLatestToActiveIfNoneIsActive()
+
+        val captor = argumentCaptor<CaseDefinition>()
+        verify(caseDefinitionRepository).save(captor.capture())
+        assertEquals(id1, captor.firstValue.id)
+        assertTrue(captor.firstValue.active)
     }
 
     private fun getListColumnDtoLastName(displayType: DisplayType): CaseListColumnDto {

@@ -24,7 +24,7 @@
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
             </cds-tab>
 
-            <cds-tab [heading]="'settings.title' | translate">
+            <cds-tab [heading]="'settings.title' | translate" [attr.data-test-id]="testIds.settingsTab">
               <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
             </cds-tab>
           </cds-tabs>
@@ -164,6 +164,7 @@
       <cds-list-column>
         <cds-dropdown
           [id]="'language-dropdown'"
+          [attr.data-test-id]="testIds.languageDropdown"
           [appendInline]="true"
           [dropUp]="false"
           (click)="$event.stopPropagation()"
@@ -200,6 +201,7 @@
       <cds-list-column>
         <cds-dropdown
           [label]="'settings.interface.themePreference' | translate"
+          [attr.data-test-id]="testIds.themeDropdown"
           [appendInline]="true"
           (click)="$event.stopPropagation()"
           (selected)="setPreferredTheme($event)"

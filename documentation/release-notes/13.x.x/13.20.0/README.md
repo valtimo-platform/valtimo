@@ -4,28 +4,11 @@
 **Release date 18-03-2026**
 {% endhint %}
 
-## Migration
-
-* [Front-end migration](./front-end-migration.md)
-
 ## New Features
 
-* **Teams**
+* **Configuration warnings for imported case definitions**
 
-  Teams are groups of users in Valtimo. They can be used to organize users and manage their access to resources.
-  Teams can be used for case assignment and access control rules.
-
-  More information about teams can be found [here](../../../features/teams/README.md).
-
-* **Team cases tab in the case list**
-
-  When the case handler option is enabled for a case type, a new "Team cases" tab is now available in the case list.
-  This tab shows all cases assigned to teams that the current user belongs to, making it easy to find work relevant
-  to the user's team without filtering through all cases.
-
-  The tab is included by default alongside the existing "All cases", "My cases", and "Unassigned cases" tabs. Which
-  tabs are visible can be configured via the `visibleCaseListTabs` setting in the Angular environment file. See
-  [case list tab configuration](../../../features/case/configuration.md#configuring-visible-case-list-tabs) for details.
+  When a case definition is imported into a new environment, it may reference configurations — such as a Zaken API plugin or Objecten API sync — that do not yet exist in that environment. Valtimo now detects these missing references during import and shows warnings to help administrators resolve them.
 
 ## Enhancements
 
@@ -35,17 +18,15 @@
 
   This resource type allows for controlling access to user data through the `/api/v1/users/` API. The supported actions
   are:
-    - `view`: Allows viewing details of a single user.
-    - `view_list`: Allows viewing a list of users or searching for users.
+  - `view`: Allows viewing details of a single user.
+  - `view_list`: Allows viewing a list of users or searching for users.
 
 ## Bugfixes
 
+* Scoped Keycloak role lookups to the current client ID so that roles from other clients in the same realm are no longer included when resolving user identity and menu visibility.
 * Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.
-* **Replaced Carbon overflow menus with custom overflow components**
-
-  The Carbon Design System overflow menu components have been replaced with custom-built overflow components throughout the application. The Carbon overflow menu had persistent issues with sizing, positioning, and lacked adequate support for custom panes and custom trigger elements. The new custom components resolve these limitations and provide a consistent, flexible overflow menu experience across the platform.
 
 * **Secure /users endpoint with access control**
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,3 +23,4 @@ export * from './user-settings.service';
 export * from './environment.service';
 export * from './draft-version.service';
 export * from './edit-permissions.service';
+export * from './configuration-issue.service';

@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -126,7 +125,7 @@ public class KeycloakUserManagementService implements UserManagementService {
         try (Keycloak keycloak = keycloakService.keycloak()) {
             users = keycloakService.usersResource(keycloak).search(null, 0, MAX_USERS, true).stream()
                 .filter(UserRepresentation::isEnabled)
-                .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+                .map(user -> (ManageableUser) toValtimoUserByRetrievingRolesWithoutAuthorization(user))
                 .filter(this::hasUserViewListPermission)
                 .toList();
         }
@@ -150,7 +149,7 @@ public class KeycloakUserManagementService implements UserManagementService {
         try (Keycloak keycloak = keycloakService.keycloak()) {
             users = keycloakService.usersResource(keycloak).search(searchTerm, 0, MAX_USERS, true).stream()
                 .filter(UserRepresentation::isEnabled)
-                .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+                .map(user -> (ManageableUser) toValtimoUserByRetrievingRolesWithoutAuthorization(user))
                 .filter(this::hasUserViewListPermission)
                 .toList();
         }
@@ -167,41 +166,15 @@ public class KeycloakUserManagementService implements UserManagementService {
             userCache.get(
                 CacheType.EMAIL,
                 email,
-                (emailToRetrieve) -> findUserRepresentationByEmail(emailToRetrieve).map(this::toManageableUserByRetrievingRoles).orElse(null)
+                (emailToRetrieve) -> findUserRepresentationByEmail(emailToRetrieve).map(this::toValtimoUserByRetrievingRoles).orElse(null)
             )
         );
     }
 
     @Override
-    public Optional<NamedUser> findNamedUserByEmail(String email) {
-        return findUserRepresentationByEmail(email).map(this::toNamedUser);
-    }
-
-    @Override
-    public ValtimoUser findByIdentifier(String userIdentifier) {
-        ValtimoUser valtimoUser = userCache.get(
-            CacheType.USER_IDENTIFIER,
-            userIdentifier,
-            (identifier) -> {
-                UserRepresentation user = null;
-                try (Keycloak keycloak = keycloakService.keycloak()) {
-                    var users = keycloakService.usersResource(keycloak).searchByUsername(userIdentifier, true);
-                    if (!users.isEmpty()) {
-                        user = users.get(0);
-                    }
-                }
-                Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
-            }
-        );
-        requireUserPermission(VIEW, valtimoUser);
-        return valtimoUser;
-    }
-
-    @Override
     public ValtimoUser findByUsername(String username) {
         ValtimoUser valtimoUser = userCache.get(
-            CacheType.USER_IDENTIFIER,
+            CacheType.USERNAME,
             username,
             (identifier) -> {
                 UserRepresentation user = null;
@@ -237,8 +210,8 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public List<ManageableUser> findByRole(String authority) {
-        return findUserRepresentationByRole(authority).stream()
-            .map(this::toManageableUserByRetrievingRolesWithoutAuthorization)
+        return findUserRepresentationByRoleWithoutAuthorization(authority).stream()
+            .map(user -> (ManageableUser) toValtimoUserByRetrievingRolesWithoutAuthorization(user)) // <- does an additional call to retrieve the roles
             .filter(this::hasUserViewListPermission)
             .toList();
     }
@@ -265,9 +238,9 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     @Override
-    public List<NamedUser> findNamedUserByRoles(Set<String> roles) {
+    public List<NamedUser> findNamedUserByRolesWithoutAuthorization(Set<String> roles) {
         return roles.stream()
-            .map(this::findUserRepresentationByRole)
+            .map(this::findUserRepresentationByRoleWithoutAuthorization)
             .flatMap(Collection::stream)
             .map(this::toNamedUser)
             .distinct()
@@ -328,7 +301,7 @@ public class KeycloakUserManagementService implements UserManagementService {
         }
     }
 
-    private List<UserRepresentation> findUserRepresentationByRole(String authority) {
+    private List<UserRepresentation> findUserRepresentationByRoleWithoutAuthorization(String authority) {
 
         List<List<UserRepresentation>> usersList = new ArrayList<>();
         try (Keycloak keycloak = keycloakService.keycloak()) {
@@ -379,24 +352,28 @@ public class KeycloakUserManagementService implements UserManagementService {
             logger.error("No active users found with role {}", authority);
         }
 
-        return users.stream().filter(this::hasUserViewListPermission).toList();
+        return users;
     }
 
-    private ManageableUser toManageableUserByRetrievingRoles(UserRepresentation userRepresentation) {
-        ManageableUser user = toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation);
+    private ValtimoUser toValtimoUserByRetrievingRoles(UserRepresentation userRepresentation) {
+        ValtimoUser user = toValtimoUserByRetrievingRolesWithoutAuthorization(userRepresentation);
         requireUserPermission(VIEW, user);
         return user;
     }
 
-    private ManageableUser toManageableUserByRetrievingRolesWithoutAuthorization(UserRepresentation userRepresentation) {
-        return new ValtimoUserBuilder()
-            .id(userRepresentation.getId())
-            .username(userRepresentation.getUsername())
-            .firstName(userRepresentation.getFirstName())
-            .lastName(userRepresentation.getLastName())
-            .email(userRepresentation.getEmail())
-            .roles(getRolesAsStringFromUser(userRepresentation)) // <- does an additional call to retrieve the roles
-            .build();
+    private ValtimoUser toValtimoUserByRetrievingRolesWithoutAuthorization(UserRepresentation userRepresentation) {
+        return userCache.get(
+            CacheType.USERNAME,
+            userRepresentation.getUsername(),
+            (username) -> new ValtimoUserBuilder()
+                .id(userRepresentation.getId())
+                .username(userRepresentation.getUsername())
+                .firstName(userRepresentation.getFirstName())
+                .lastName(userRepresentation.getLastName())
+                .email(userRepresentation.getEmail())
+                .roles(getRolesAsStringFromUser(userRepresentation)) // <- does an additional call to retrieve the roles
+                .build()
+        );
     }
 
     private NamedUser toNamedUser(UserRepresentation userRepresentation) {
@@ -410,9 +387,13 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     private List<String> getRolesAsStringFromUser(UserRepresentation userRepresentation) {
-        Map<String, List<String>> clientRoles = userRepresentation.getClientRoles() == null ? Map.of() : userRepresentation.getClientRoles();
-        List<String> roles = userRepresentation.getRealmRoles() == null ? new ArrayList<>() : userRepresentation.getRealmRoles();
-        roles.addAll(clientRoles.values().stream().flatMap(Collection::stream).toList());
+        var roles = new ArrayList<String>();
+        if (userRepresentation.getRealmRoles() != null) {
+            roles.addAll(userRepresentation.getRealmRoles());
+        }
+        if (userRepresentation.getClientRoles() != null) {
+            roles.addAll(userRepresentation.getClientRoles().values().stream().flatMap(Collection::stream).toList());
+        }
         if (!roles.isEmpty()) {
             return roles;
         }
@@ -440,23 +421,16 @@ public class KeycloakUserManagementService implements UserManagementService {
         }
     }
 
-    private ValtimoUser toValtimoUserByRetrievingRolesWithoutAuthorization(UserRepresentation userRepresentation) {
-        return (ValtimoUser) toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation);
-    }
-
     private void requireUserPermission(Action<User> action, UserRepresentation user) {
-        requireUserPermission(action, toManageableUserByRetrievingRolesWithoutAuthorization(user));
+        requireUserPermission(action, toValtimoUserByRetrievingRolesWithoutAuthorization(user));
     }
 
     private void requireUserPermission(Action<User> action, User... users) {
-        List<User> userList = Arrays.stream(users).filter(Objects::nonNull).toList();
-        if (userList.isEmpty()) {
-            return;
-        }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-            .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
-        if (!isAdmin) {
+        if (!isAdmin()) {
+            List<User> userList = Arrays.stream(users).filter(Objects::nonNull).toList();
+            if (userList.isEmpty()) {
+                return;
+            }
             authorizationService.requirePermission(
                 new EntityAuthorizationRequest<>(
                     User.class,
@@ -468,14 +442,11 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     private boolean hasUserViewListPermission(UserRepresentation userRepresentation) {
-        return hasUserViewListPermission(toManageableUserByRetrievingRolesWithoutAuthorization(userRepresentation));
+        return hasUserViewListPermission(toValtimoUserByRetrievingRolesWithoutAuthorization(userRepresentation));
     }
 
     private boolean hasUserViewListPermission(User user) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-            .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
-        if (isAdmin) {
+        if (isAdmin()) {
             return true;
         }
         return authorizationService.hasPermission(
@@ -485,6 +456,13 @@ public class KeycloakUserManagementService implements UserManagementService {
                 user
             )
         );
+    }
+
+    /**
+     * TODO: remove in next major release
+     * */
+    private boolean isAdmin() {
+        return SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
     }
 
     private record UserRepresentationWrapper(UserRepresentation userRepresentation) {

@@ -19,6 +19,9 @@ package com.ritense.case.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.deployment.CaseTabDeploymentService
+import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
+import com.ritense.case.mapper.ConfigurationIssueSseEventMapper
+import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
@@ -41,6 +44,7 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionResource
@@ -85,6 +89,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         CaseTabRepository::class,
+        CaseDefinitionConfigurationIssueRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain"])
@@ -99,6 +104,7 @@ class CaseAutoConfiguration {
         activeCaseDefinitionService: ActiveCaseDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -107,6 +113,7 @@ class CaseAutoConfiguration {
             importService,
             caseDefinitionRepository,
             caseDefinitionChecker,
+            configurationIssueRepository,
         )
     }
 
@@ -161,6 +168,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         applicationEventPublisher: ApplicationEventPublisher,
         caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionService {
         return CaseDefinitionService(
             caseDefinitionListColumnRepository,
@@ -171,7 +179,8 @@ class CaseAutoConfiguration {
             authorizationService,
             applicationEventPublisher,
             caseDefinitionChecker,
-            caseDefinitionFinalizationCheckersProvider
+            caseDefinitionFinalizationCheckersProvider,
+            configurationIssueRepository
         )
     }
 
@@ -182,12 +191,14 @@ class CaseAutoConfiguration {
         environment: Environment,
         @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
         @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
+        configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     ): CaseDefinitionChecker {
         return CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
             environment,
             draftEnvironments,
             draftsEnabled,
+            configurationIssueRepository,
         )
     }
 
@@ -360,10 +371,12 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = CaseDefinitionImporter(
         objectMapper,
         caseDefinitionRepository,
-        caseDefinitionChecker
+        caseDefinitionChecker,
+        applicationEventPublisher
     )
 
     @Bean
@@ -417,4 +430,21 @@ class CaseAutoConfiguration {
     fun caseListRowMapper(): CaseListRowMapper {
         return CaseListRowMapper()
     }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionConfigurationIssueListener::class)
+    fun caseDefinitionConfigurationIssueListener(
+        repository: CaseDefinitionConfigurationIssueRepository,
+        outboxService: OutboxService
+    ) = CaseDefinitionConfigurationIssueListener(repository, outboxService)
+
+    @Bean
+    @ConditionalOnMissingBean(ConfigurationIssueSseEventMapper::class)
+    fun configurationIssueSseEventMapper() = ConfigurationIssueSseEventMapper()
+
+    @Bean
+    @ConditionalOnMissingBean(ConfigurationIssueCaseDefinitionFinalizationChecker::class)
+    fun configurationIssueCaseDefinitionFinalizationChecker(
+        repository: CaseDefinitionConfigurationIssueRepository
+    ) = ConfigurationIssueCaseDefinitionFinalizationChecker(repository)
 }

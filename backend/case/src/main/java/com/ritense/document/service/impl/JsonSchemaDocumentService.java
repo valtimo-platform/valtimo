@@ -1040,7 +1040,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
-        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(authorizedRoles));
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(authorizedRoles);
     }
 
     @Override
@@ -1071,7 +1071,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
-        return runWithoutAuthorization(() -> userManagementService.findNamedUserByRoles(authorizedRoles));
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(authorizedRoles);
     }
 
     @Override

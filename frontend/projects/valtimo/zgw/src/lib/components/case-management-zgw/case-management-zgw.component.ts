@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,17 @@ import {
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
 import {TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {ZgwTab, ZgwTabEnum} from '../../models';
 import {
   DocumentenApiColumnsComponent,
@@ -61,10 +71,25 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
     getCaseManagementRouteParams(this.route);
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
     this._params$.pipe(
-      map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
-      filter((caseDefinitionKey: string) => !!caseDefinitionKey),
-      switchMap((caseDefinitionKey: string) =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey ?? '')
+      filter(
+        (params: CaseManagementParams | undefined) =>
+          !!params?.caseDefinitionKey && !!params?.caseDefinitionVersionTag
+      ),
+      switchMap((params: CaseManagementParams) =>
+        this.documentenApiVersionService
+          .getManagementApiVersion(params.caseDefinitionKey, params.caseDefinitionVersionTag)
+          .pipe(
+            catchError(() =>
+              of({
+                selectedVersion: '',
+                detectedVersions: '',
+                supportsFilterableColumns: false,
+                supportsSortableColumns: false,
+                supportsTrefwoorden: false,
+                supportsUpdatingDefinitiveDocument: false,
+              } as SupportedDocumentenApiFeatures)
+            )
+          )
       )
     );
 

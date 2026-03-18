@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,16 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import io.github.oshai.kotlinlogging.KotlinLogging
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 
 class CaseDefinitionImporter(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : Importer {
     override fun type() = CASE_DEFINITION
 
@@ -38,6 +41,9 @@ class CaseDefinitionImporter(
 
     override fun import(request: ImportRequest) {
         deploy(request.content.toString(Charsets.UTF_8))
+        request.caseDefinitionId?.let {
+            applicationEventPublisher.publishEvent(CaseConfigurationIssuesResetEvent(it))
+        }
     }
 
     override fun afterImport(request: ImportRequest) {
