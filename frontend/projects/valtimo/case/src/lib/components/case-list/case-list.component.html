@@ -16,27 +16,28 @@
 
 <ng-container
   *ngIf="{
-    availableFields: availableFields$ | async,
-    fields: fields$ | async,
-    documentItems: documentItems$ | async,
-    noResultsMessage: noResultsMessage$ | async,
-    hasApiColumnConfig: hasApiColumnConfig$ | async,
-    searchFields: searchFields$ | async,
-    schema: schema$ | async,
+    availableFields: orchestration.availableFields$ | async,
+    fields: orchestration.fields$ | async,
+    documentItems: orchestration.documentItems$ | async,
+    noResultsMessage: orchestration.noResultsMessage$ | async,
+    hasApiColumnConfig: orchestration.hasApiColumnConfig$ | async,
+    searchFields: orchestration.searchFields$ | async,
+    schema: orchestration.schema$ | async,
     showAssignModal: showAssignModal$ | async,
     selectedCaseIds: selectedCaseIds$ | async,
-    statuses: statuses$ | async,
-    caseTags: caseTags$ | async,
-    selectedStatusKeys: selectedStatusKeys$ | async,
-    selectedCaseTagKeys: selectedCaseTagKeys$ | async,
-    showStatusSelector: showStatusSelector$ | async,
-    showCaseTagsSelector: showCaseTagsSelector$ | async,
-    loaded:
-      !loadingFields &&
-      !loadingPagination &&
-      !loadingSearchFields &&
-      !loadingAssigneeFilter &&
-      !loadingDocumentItems,
+    statuses: orchestration.statuses$ | async,
+    caseTags: orchestration.caseTags$ | async,
+    selectedStatusKeys: orchestration.selectedStatusKeys$ | async,
+    selectedCaseTagKeys: orchestration.selectedCaseTagKeys$ | async,
+    showStatusSelector: orchestration.showStatusSelector$ | async,
+    showCaseTagsSelector: orchestration.showCaseTagsSelector$ | async,
+    loaded: orchestration.loaded$ | async,
+    canCreate: orchestration.canCreateCase$ | async,
+    canExport: orchestration.canExportCase$ | async,
+    disableExport: orchestration.disableExportButton$ | async,
+    disableSaveSearch: orchestration.disableSaveSearch$ | async,
+    assigneeFilter: orchestration.assigneeFilter$ | async,
+    hiddenColumns: orchestration.hiddenColumns$ | async,
   } as obs"
 >
   <valtimo-case-list-actions
@@ -56,17 +57,15 @@
   <ng-container *ngTemplateOutlet="bulkAssignModal; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="changePageModal"></ng-container>
-
-  <ng-container *ngTemplateOutlet="changeTabModal"></ng-container>
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
   <valtimo-search-fields
-    [disableSaveSearch]="disableSaveSearch$ | async"
+    [disableSaveSearch]="obs.disableSaveSearch"
     [canSaveSearch]="true"
     [searchFields]="obs.searchFields"
-    [caseDefinitionKey]="caseDefinitionKey$ | async"
-    [defaultValues]="searchFieldValues$ | async"
+    [caseDefinitionKey]="orchestration.caseDefinitionKey$ | async"
+    [defaultValues]="orchestration.searchFieldValues$ | async"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"
     (clearEvent)="onClearEvent()"
@@ -113,15 +112,20 @@
       </button>
     </ng-container>
 
-    <div class="case-list-toolbar" carbonToolbarContent>
-      <valtimo-list-column-view
-        [availableFields]="availableFields$ | async"
-        [disabled]="!obs.hasApiColumnConfig"
-        [hiddenColumns]="hiddenColumns$ | async"
+    <div carbonToolbarContent>
+      <valtimo-case-list-toolbar
+        [availableFields]="obs.availableFields"
+        [canCreate]="obs.canCreate"
+        [canExport]="obs.canExport"
+        [disableExport]="obs.disableExport"
+        [disableStart]="disableStartButton$ | async"
+        [hasApiColumnConfig]="obs.hasApiColumnConfig"
+        [hiddenColumns]="obs.hiddenColumns"
+        [loadingExport]="loadingExport"
+        (exportEvent)="export()"
+        (startCaseEvent)="startCase()"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
-      ></valtimo-list-column-view>
-
-      <ng-container *ngTemplateOutlet="caseListActions"></ng-container>
+      ></valtimo-case-list-toolbar>
     </div>
 
     <valtimo-no-results
@@ -131,45 +135,26 @@
     ></valtimo-no-results>
 
     <div tabs *ngIf="canHaveAssignee">
-      <ng-container *ngTemplateOutlet="tabs"></ng-container>
+      <valtimo-case-list-tabs
+        [assigneeFilter]="obs.assigneeFilter"
+        [selectedRowCount]="carbonList?.model?.selectedRowsCount() ?? 0"
+        (tabChangeEvent)="onTabChange($event)"
+      ></valtimo-case-list-tabs>
     </div>
   </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #tabs>
-  <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <cds-tabs *ngIf="!visibleCaseTabs; else configuredTabs" type="contained" class="case-list-tabs">
-      <cds-tab
-        *ngFor="let tab of defaultTabs; trackBy: trackByIndex"
-        [active]="assigneeFilter === tab"
-        heading="{{ 'case.tabs.' + tab | translate }}"
-        [id]="tab"
-        (selected)="tabChange(tab)"
-      ></cds-tab>
-    </cds-tabs>
-  </ng-container>
-</ng-template>
-
-<ng-template #configuredTabs>
-  <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <cds-tabs type="contained" class="case-list-tabs">
-      <cds-tab
-        *ngFor="let tab of visibleCaseTabs; trackBy: trackByIndex"
-        [active]="assigneeFilter === tab"
-        heading="{{ 'case.tabs.' + tab | translate }}"
-        [id]="tab"
-        (selected)="tabChange(tab)"
-      ></cds-tab>
-    </cds-tabs>
-  </ng-container>
-</ng-template>
-
-<ng-template #loading
-  ><valtimo-carbon-list [loading]="true">
+<ng-template #loading>
+  <valtimo-carbon-list [loading]="true">
     <div tabs *ngIf="canHaveAssignee">
-      <ng-container *ngTemplateOutlet="tabs"></ng-container>
-    </div> </valtimo-carbon-list
-></ng-template>
+      <valtimo-case-list-tabs
+        [assigneeFilter]="orchestration.assigneeFilter$ | async"
+        [selectedRowCount]="0"
+        (tabChangeEvent)="onTabChange($event)"
+      ></valtimo-case-list-tabs>
+    </div>
+  </valtimo-carbon-list>
+</ng-template>
 
 <ng-template #bulkAssignModal let-obs="obs">
   <valtimo-case-bulk-assign-modal
@@ -190,52 +175,9 @@
   ></valtimo-confirmation-modal>
 </ng-template>
 
-<ng-template #changeTabModal>
-  <valtimo-confirmation-modal
-    confirmButtonTextTranslationKey="case.changeTabModal.confirm"
-    contentTranslationKey="case.changeTabModal.content"
-    [outputOnConfirm]="tabChange$ | async"
-    [showModalSubject$]="showChangeTabModal$"
-    titleTranslationKey="case.changeTabModal.title"
-    (cancelEvent)="onChangeTabCancel()"
-    (confirmEvent)="onChangeTabConfirm($event)"
-  ></valtimo-confirmation-modal>
-</ng-template>
-
-<ng-template #caseListActions>
-  <cds-tooltip
-    *ngIf="canExportCase$ | async"
-    [description]="'case.exportButtonTooltip' | translate"
-  >
-    <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
-
-    <button
-      *ngIf="!loadingExport"
-      data-testid="case-list-export-button"
-      cdsButton="ghost"
-      iconOnly="true"
-      (click)="export()"
-      [disabled]="disableExportButton$ | async"
-    >
-      <svg cdsIcon="download" size="16"></svg>
-    </button>
-  </cds-tooltip>
-
-  <button
-    *ngIf="canCreateCase$ | async"
-    cdsButton="primary"
-    [disabled]="disableStartButton$ | async"
-    (click)="startCase()"
-  >
-    {{ 'Start Case' | translate }}
-
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
-</ng-template>
-
 <ng-template #caseListActionsNoResult>
   <button
-    *ngIf="canCreateCase$ | async"
+    *ngIf="orchestration.canCreateCase$ | async"
     cdsButton="primary"
     [disabled]="disableStartButton$ | async"
     (click)="startCase()"

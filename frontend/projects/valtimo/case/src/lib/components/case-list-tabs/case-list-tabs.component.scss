@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.case-list-tabs cds-tab {
+  display: none;
 }
