@@ -18,7 +18,6 @@
  * Public API Surface of task
  */
 
-export * from './lib/components/assign-user-to-task/assign-user-to-task.component';
 export * from './lib/components/task-detail-content/task-detail-content.component';
 export * from './lib/components/task-detail-intermediate-save/task-detail-intermediate-save.component';
 export * from './lib/components/task-detail-modal/task-detail-modal.component';

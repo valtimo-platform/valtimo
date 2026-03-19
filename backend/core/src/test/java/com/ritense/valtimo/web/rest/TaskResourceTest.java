@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
@@ -64,6 +65,7 @@ class TaskResourceTest {
     private OperatonTaskService operatonTaskService;
     private OperatonProcessService operatonProcessService;
     private UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private UserManagementService userManagementService;
     private AssigneeRequest assigneeRequest;
     private SetDueDateRequest dueDateRequest;
     private ObjectMapper objectMapper;
@@ -77,12 +79,14 @@ class TaskResourceTest {
         operatonTaskService = mock(OperatonTaskService.class);
         operatonProcessService = mock(OperatonProcessService.class);
         userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
+        userManagementService = mock(UserManagementService.class);
 
         taskResource = new TaskResource(
             formService,
             operatonTaskService,
             operatonProcessService,
-            userTaskOpenedStatusService
+            userTaskOpenedStatusService,
+            userManagementService
         );
         objectMapper = MapperSingleton.INSTANCE.get();
 

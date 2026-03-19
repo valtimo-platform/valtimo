@@ -43,13 +43,15 @@ data class OperatonTaskDto(
     val caseDefinitionId: String?,
     val suspended: Boolean,
     val tenantId: String?,
-    val assignedTeam: TeamDto? = null
+    val assignedTeam: TeamDto? = null,
+    val valtimoAssignee: AssigneeDto? = null
 ) {
 
     companion object {
 
         @JvmStatic
-        fun of(task: OperatonTask, assignedTeam: TeamDto? = null) = OperatonTaskDto(
+        @JvmOverloads
+        fun of(task: OperatonTask, assignedTeam: TeamDto? = null, valtimoAssignee: AssigneeDto? = null) = OperatonTaskDto(
             task.id,
             task.name,
             task.assignee,
@@ -71,7 +73,8 @@ data class OperatonTaskDto(
             task.caseDefinitionId,
             task.isSuspended(),
             task.tenantId,
-            assignedTeam
+            assignedTeam,
+            valtimoAssignee
         )
     }
 }

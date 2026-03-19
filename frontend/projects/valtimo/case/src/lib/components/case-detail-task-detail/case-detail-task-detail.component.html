@@ -65,11 +65,18 @@
 
       <div class="task-actions">
         @if (obs.task) {
-          <valtimo-assign-user-to-task
-            [canAssignUserToTask]="obs.canAssignUserToTask"
-            [taskId]="obs.task.id"
+          <valtimo-assignment
+            mode="task"
             [assigneeId]="obs.task.assignee"
-          ></valtimo-assign-user-to-task>
+            [assigneeFullName]="obs.task.valtimoAssignee?.fullName"
+            [assignedTeamKey]="obs.task.assignedTeam?.key"
+            [assignedTeamTitle]="obs.task.assignedTeam?.title"
+            [hasPermission]="obs.canAssignUserToTask"
+            [candidateUsers$]="candidateUsers$"
+            [candidateTeams$]="candidateTeams$"
+            (assignmentChanged)="onAssignmentChanged($event)"
+            (unassigned)="onUnassigned()"
+          ></valtimo-assignment>
 
           <valtimo-set-task-due-date
             [task]="obs.task"
