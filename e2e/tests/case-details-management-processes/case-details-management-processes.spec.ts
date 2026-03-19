@@ -123,15 +123,12 @@ test.describe('Case details - Processes tab', () => {
     });
 
     test('Can delete the uploaded process', async () => {
-      const rowCountBefore = await processesPage.carbonList.rows.count();
-
       await processesPage.deleteProcess(TEST_PROCESS_NAME);
 
       await expectNotificationMessage(page, 'Delete');
-      await processesPage.carbonList.waitForLoaded();
 
-      const rowCountAfter = await processesPage.carbonList.rows.count();
-      expect(rowCountAfter).toBeLessThan(rowCountBefore);
+      const row = processesPage.carbonList.row(TEST_PROCESS_NAME);
+      await row.assertNotVisible();
     });
   });
 });
