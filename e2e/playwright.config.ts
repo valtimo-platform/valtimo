@@ -14,6 +14,7 @@ export default defineConfig({
   fullyParallel: true,
   // forbidOnly: true,
   retries: process.env.CI ? 1 : 0,
+  maxFailures: 1,
   workers: process.env.CI ? 1 : 1,
   reporter: [['line'], ['html', {open: 'on-failure'}]],
   globalSetup: './utils/globalSetup.ts',
