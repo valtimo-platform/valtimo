@@ -176,14 +176,19 @@
   let-canAssign="canAssign"
 >
   <div *ngIf="canHaveAssignee && document">
-    <valtimo-case-assign-user
+    <valtimo-assignment
       *ngIf="canAssignLoaded$ | async"
+      mode="case"
       [assigneeFullName]="document?.assigneeFullName"
       [assigneeId]="document.assigneeId"
-      [documentId]="document.id"
+      [assignedTeamKey]="document.assignedTeamKey"
+      [assignedTeamTitle]="document.assignedTeamTitle"
       [hasPermission]="canAssign"
-      (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
-    ></valtimo-case-assign-user>
+      [candidateUsers$]="candidateUsers$"
+      [candidateTeams$]="candidateTeams$"
+      (assignmentChangedEvent)="onAssignmentChanged($event)"
+      (unassignedEvent)="onUnassigned()"
+    ></valtimo-assignment>
   </div>
 </ng-template>
 

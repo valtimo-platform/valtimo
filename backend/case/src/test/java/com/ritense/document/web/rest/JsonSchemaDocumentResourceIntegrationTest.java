@@ -319,6 +319,122 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldUnassignUserViaAssignEndpointWithEmptyString() throws Exception {
+        document.setAssignee("some-user", "Some User");
+        documentRepository.save(document);
+
+        var postContent = "{ \"assigneeId\": \"\"}";
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
+                    .content(postContent)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var result = documentRepository.findById(document.id());
+        assertTrue(result.isPresent());
+
+        var savedDocument = (JsonSchemaDocument) result.get();
+        assertNull(savedDocument.assigneeId());
+        assertNull(savedDocument.assigneeFullName());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldUnassignTeamViaAssignEndpointWithEmptyString() throws Exception {
+        document.setAssignedTeamKey("team-key");
+        document.setAssignedTeamTitle("Team Title");
+        documentRepository.save(document);
+
+        var postContent = "{ \"assignedTeamKey\": \"\"}";
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
+                    .content(postContent)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var result = documentRepository.findById(document.id());
+        assertTrue(result.isPresent());
+
+        var savedDocument = result.get();
+        assertNull(savedDocument.assignedTeamKey());
+        assertNull(savedDocument.assignedTeamTitle());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldUnassignUserAndKeepTeamViaAssignEndpoint() throws Exception {
+        var user = mockUser("John", "Doe");
+        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findById(user.getId())).thenReturn(user);
+        when(userManagementService.getCurrentUser()).thenReturn(user);
+
+        document.setAssignee(user.getUsername(), user.getFullName());
+        document.setAssignedTeamKey("team-key");
+        document.setAssignedTeamTitle("Team Title");
+        documentRepository.save(document);
+
+        // Send empty assigneeId to unassign user, omit assignedTeamKey to keep it unchanged
+        var postContent = "{ \"assigneeId\": \"\"}";
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
+                    .content(postContent)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var result = documentRepository.findById(document.id());
+        assertTrue(result.isPresent());
+
+        var savedDocument = (JsonSchemaDocument) result.get();
+        assertNull(savedDocument.assigneeId());
+        assertNull(savedDocument.assigneeFullName());
+        // Team should remain unchanged
+        assertEquals("team-key", savedDocument.assignedTeamKey());
+        assertEquals("Team Title", savedDocument.assignedTeamTitle());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldUnassignTeamAndKeepUserViaAssignEndpoint() throws Exception {
+        var user = mockUser("John", "Doe");
+        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findById(user.getId())).thenReturn(user);
+        when(userManagementService.getCurrentUser()).thenReturn(user);
+
+        document.setAssignee(user.getUsername(), user.getFullName());
+        document.setAssignedTeamKey("team-key");
+        document.setAssignedTeamTitle("Team Title");
+        documentRepository.save(document);
+
+        // Send empty assignedTeamKey to unassign team, omit assigneeId to keep it unchanged
+        var postContent = "{ \"assignedTeamKey\": \"\"}";
+
+        mockMvc.perform(
+                post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
+                    .content(postContent)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var result = documentRepository.findById(document.id());
+        assertTrue(result.isPresent());
+
+        var savedDocument = (JsonSchemaDocument) result.get();
+        // User should remain unchanged
+        assertNotNull(savedDocument.assigneeId());
+        assertEquals(user.getUsername(), savedDocument.assigneeId());
+        // Team should be cleared
+        assertNull(savedDocument.assignedTeamKey());
+        assertNull(savedDocument.assignedTeamTitle());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
     void shouldSendOutboxEventWhenRetrievingDocument() throws Exception {
         mockMvc.perform(get("/api/v1/document/{documentId}", document.id().getId().toString()))
             .andDo(print())

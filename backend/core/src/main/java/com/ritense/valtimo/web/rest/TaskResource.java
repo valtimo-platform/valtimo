@@ -26,6 +26,7 @@ import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
@@ -69,9 +70,10 @@ public class TaskResource extends AbstractTaskResource {
         final FormService formService,
         final OperatonTaskService operatonTaskService,
         final OperatonProcessService operatonProcessService,
-        final UserTaskOpenedStatusService userTaskOpenedStatusService
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final UserManagementService userManagementService
     ) {
-        super(formService, operatonTaskService, operatonProcessService);
+        super(formService, operatonTaskService, operatonProcessService, userManagementService);
         this.userTaskOpenedStatusService = userTaskOpenedStatusService;
     }
 
@@ -124,10 +126,18 @@ public class TaskResource extends AbstractTaskResource {
         @RequestBody AssigneeRequest assigneeRequest
     ) {
         if (assigneeRequest.getAssignee() != null) {
-            operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+            if (assigneeRequest.getAssignee().isEmpty()) {
+                operatonTaskService.unassign(taskId);
+            } else {
+                operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+            }
         }
         if (assigneeRequest.getAssignedTeamKey() != null) {
-            operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+            if (assigneeRequest.getAssignedTeamKey().isEmpty()) {
+                operatonTaskService.unassignTeamFromTask(taskId);
+            } else {
+                operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+            }
         }
         return ResponseEntity.ok().build();
     }

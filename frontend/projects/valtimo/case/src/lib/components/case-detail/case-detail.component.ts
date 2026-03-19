@@ -30,6 +30,7 @@ import {ChevronDown16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
+  AssignmentChangeEvent,
   BreadcrumbService,
   CdsThemeService,
   CurrentCarbonTheme,
@@ -61,6 +62,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   startWith,
   Subject,
   Subscription,
@@ -240,6 +242,28 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     tap(() => {
       this.canAssignLoaded$.next(true);
     })
+  );
+
+  public readonly candidateUsers$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign ? this.documentService.getCandidateUsers(this.documentId) : of([])
+    ),
+    shareReplay(1)
+  );
+
+  public readonly candidateTeams$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign
+        ? this.documentService.getCandidateTeams(this.documentId).pipe(map(page => page.content))
+        : of([])
+    ),
+    shareReplay(1)
   );
 
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
@@ -582,6 +606,23 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public assignmentOfDocumentChanged(): void {
     this.caseService.refresh();
+  }
+
+  public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    const assigneeId = event.userId !== undefined ? (event.userId ?? '') : undefined;
+    const assignedTeamKey = event.teamKey !== undefined ? (event.teamKey ?? '') : undefined;
+
+    this.documentService
+      .assignHandlerToDocument(this.documentId, assigneeId, assignedTeamKey)
+      .subscribe(() => {
+        this.caseService.refresh();
+      });
+  }
+
+  public onUnassigned(): void {
+    this.documentService.unassignHandlerFromDocument(this.documentId).subscribe(() => {
+      this.caseService.refresh();
+    });
   }
 
   private getNestedProperty(obj: any, path: string, defaultValue: any): any {

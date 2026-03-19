@@ -1545,6 +1545,19 @@
     "fetchingUsers": "Fetching users...",
     "submitButtonText": "Assign user to case"
   },
+  "assignment": {
+    "assignThisCase": "Assign this case",
+    "assignThisTask": "Assign this task",
+    "clickToEdit": "Click to edit",
+    "selectUser": "Select user",
+    "selectTeam": "Select team",
+    "confirm": "Confirm",
+    "update": "Update",
+    "unassign": "Unassign",
+    "unassignAll": "Unassign all",
+    "loading": "Loading...",
+    "me": "me"
+  },
   "dropzone": {
     "drop": "Choose a file or drag it here",
     "maxFileSize": "Maximum file size: ",

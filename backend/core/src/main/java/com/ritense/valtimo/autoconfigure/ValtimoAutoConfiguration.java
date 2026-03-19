@@ -302,9 +302,10 @@ public class ValtimoAutoConfiguration {
         final FormService formService,
         final OperatonTaskService operatonTaskService,
         final OperatonProcessService operatonProcessService,
-        final UserTaskOpenedStatusService userTaskOpenedStatusService
+        final UserTaskOpenedStatusService userTaskOpenedStatusService,
+        final UserManagementService userManagementService
     ) {
-        return new TaskResource(formService, operatonTaskService, operatonProcessService, userTaskOpenedStatusService);
+        return new TaskResource(formService, operatonTaskService, operatonProcessService, userTaskOpenedStatusService, userManagementService);
     }
 
     @Bean
