@@ -1555,7 +1555,8 @@
     "update": "Update",
     "unassign": "Unassign",
     "unassignAll": "Unassign all",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "me": "me"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",

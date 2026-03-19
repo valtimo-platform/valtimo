@@ -24,7 +24,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ButtonModule,
   ComboBoxModule,
@@ -36,7 +36,8 @@ import {
 } from 'carbon-components-angular';
 import {Group16, User16, UserFollow16} from '@carbon/icons';
 import {BehaviorSubject, combineLatest, Observable, of, Subject, Subscription, take} from 'rxjs';
-import {NamedUser, TeamResponseDto} from '@valtimo/shared';
+import {NamedUser, TeamResponseDto, UserIdentity} from '@valtimo/shared';
+import {UserProviderService} from '@valtimo/security';
 import {CdsThemeService} from '../../services/cds-theme.service';
 import {RemoveClassnamesDirective} from '../../directives/remove-classnames/remove-classnames.directive';
 
@@ -129,11 +130,20 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
+  private currentUser: UserIdentity | null = null;
+
   constructor(
     private readonly cdsThemeService: CdsThemeService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly userProviderService: UserProviderService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([UserFollow16, Group16, User16]);
+    this._subscriptions.add(
+      this.userProviderService.getUserSubject().subscribe(user => {
+        this.currentUser = user;
+      })
+    );
   }
 
   public ngOnInit(): void {
@@ -231,10 +241,12 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
 
     if (this.candidateUsers$) {
       this._subscriptions.add(
-        this.candidateUsers$.subscribe(users => {
-          this.userItems$.next(this.mapUsersForDropdown(users));
-          this.loading$.next(false);
-        })
+        combineLatest([this.candidateUsers$, this.translateService.stream('key')]).subscribe(
+          ([users]) => {
+            this.userItems$.next(this.mapUsersForDropdown(users));
+            this.loading$.next(false);
+          }
+        )
       );
     } else {
       this.loading$.next(false);
@@ -250,7 +262,9 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadCandidatesForEdit(): void {
-    const users$ = this.candidateUsers$ ? this.candidateUsers$.pipe(take(1)) : of([] as NamedUser[]);
+    const users$ = this.candidateUsers$
+      ? this.candidateUsers$.pipe(take(1))
+      : of([] as NamedUser[]);
     const teams$ = this.candidateTeams$
       ? this.candidateTeams$.pipe(take(1))
       : of([] as TeamResponseDto[]);
@@ -259,7 +273,9 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
       combineLatest([users$, teams$]).subscribe(([users, teams]) => {
         // Resolve assigneeId to UUID if it's a username
         if (this._assigneeId && users?.length) {
-          const match = users.find(u => u.id === this._assigneeId || u.userName === this._assigneeId);
+          const match = users.find(
+            u => u.id === this._assigneeId || u.userName === this._assigneeId
+          );
           if (match) {
             this.selectedUserId$.next(match.id);
           }
@@ -273,18 +289,34 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
+  private isCurrentUser(user: NamedUser): boolean {
+    if (!this.currentUser) return false;
+    return (
+      (!!this.currentUser.id &&
+        (user.id === this.currentUser.id || user.userName === this.currentUser.id)) ||
+      (!!this.currentUser.username &&
+        (user.id === this.currentUser.username || user.userName === this.currentUser.username))
+    );
+  }
+
   private mapUsersForDropdown(users: NamedUser[], selectedUserId?: string): ListItem[] {
     if (!users) return [];
 
+    const meSuffix = ` (${this.translateService.instant('assignment.me')})`;
+
     return users
       .sort((a, b) => {
+        const aIsMe = this.isCurrentUser(a);
+        const bIsMe = this.isCurrentUser(b);
+        if (aIsMe && !bIsMe) return -1;
+        if (!aIsMe && bIsMe) return 1;
         if (a.lastName && b.lastName) {
           return a.lastName.localeCompare(b.lastName);
         }
         return 0;
       })
       .map(user => ({
-        content: user.label,
+        content: this.isCurrentUser(user) ? `${user.label}${meSuffix}` : user.label,
         id: user.id,
         selected: selectedUserId
           ? user.id === selectedUserId || user.userName === selectedUserId
