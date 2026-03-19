@@ -133,14 +133,14 @@
         </div>
       </cds-toggletip>
 
-      <!-- Assign button (shown when not assigned) -->
+      <!-- Assign button: always rendered for layout sizing (position: relative via .main).
+           When hasPermission is false it stays hidden and non-interactive. -->
       <cds-toggletip
-        *ngIf="hasPermission"
         align="bottom"
         class="element main"
         [autoAlign]="true"
         [isOpen]="open$ | async"
-        [ngClass]="{active: !isAssigned}"
+        [ngClass]="{active: hasPermission && !isAssigned}"
         (onOpen)="onOpenAssignToggletip()"
       >
         <button

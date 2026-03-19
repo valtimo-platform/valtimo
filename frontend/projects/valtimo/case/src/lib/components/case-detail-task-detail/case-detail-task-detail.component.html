@@ -74,8 +74,8 @@
             [hasPermission]="obs.canAssignUserToTask"
             [candidateUsers$]="candidateUsers$"
             [candidateTeams$]="candidateTeams$"
-            (assignmentChanged)="onAssignmentChanged($event)"
-            (unassigned)="onUnassigned()"
+            (assignmentChangedEvent)="onAssignmentChanged($event)"
+            (unassignedEvent)="onUnassigned()"
           ></valtimo-assignment>
 
           <valtimo-set-task-due-date

@@ -97,6 +97,18 @@ interface ProcessInstanceVariable {
   local: boolean;
 }
 
+interface ProcessInstanceTaskAssignedTeam {
+  key: string;
+  title: string;
+}
+
+interface ProcessInstanceTaskAssignee {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+}
+
 interface ProcessInstanceTask {
   id: string;
   name: string;
@@ -124,8 +136,8 @@ interface ProcessInstanceTask {
   identityLinks: IdentityLink[];
   isLocked: boolean;
   subtitles?: string[];
-  assignedTeam?: {key: string; title: string};
-  valtimoAssignee?: {username?: string; firstName?: string; lastName?: string; fullName?: string};
+  assignedTeam?: ProcessInstanceTaskAssignedTeam;
+  valtimoAssignee?: ProcessInstanceTaskAssignee;
 }
 
 interface IdentityLink {
@@ -151,6 +163,8 @@ export {
   ProcessInstance,
   ProcessInstanceVariable,
   ProcessInstanceTask,
+  ProcessInstanceTaskAssignedTeam,
+  ProcessInstanceTaskAssignee,
   IdentityLink,
   ProcessDefinitionXml,
 };
