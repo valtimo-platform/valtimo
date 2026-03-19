@@ -15,10 +15,14 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_VERSIONS} from './case-config';
 import {CaseDetailsManagementPage} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
 import {apiGet, apiPut, apiDelete} from '../../utils/api.utils';
+import {
+  ensureDraftVersionSelected,
+  ensureFinalVersionSelected,
+  getVersionFromUrl,
+} from '../../utils/version.utils';
 
 test.use({storageState: undefined});
 
@@ -27,6 +31,7 @@ test.describe('Case management', () => {
   let page;
   let caseDetailsManagementPage;
   let request;
+  let draftVersion: string;
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -39,17 +44,21 @@ test.describe('Case management', () => {
 
     await page.goto('/');
     await caseDetailsManagementPage.goToCaseDetailsManagement('bezwaar');
+    draftVersion = await ensureDraftVersionSelected(page);
   });
 
   test.describe('Success test', () => {
     test.describe('Version switch', () => {
       test('Switch version via dropdown', async () => {
+        // Arrange: ensure we're on a final version first so we actually switch
+        const stableVersion = await ensureFinalVersionSelected(page);
+
         // Act
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        await caseDetailsManagementPage.switchCaseVersionViaDropdown(draftVersion);
 
         // Assert
         await expect(page).toHaveURL(
-          `/case-management/case/bezwaar/version/${CASE_VERSIONS.DRAFT}/general`
+          `/case-management/case/bezwaar/version/${draftVersion}/general`
         );
       });
 
@@ -64,10 +73,11 @@ test.describe('Case management', () => {
       });
 
       test('Set active version', async () => {
-        //Act
-        await caseDetailsManagementPage.makeVersionGlobal(CASE_VERSIONS.STABLE);
+        // Act
+        const stableVersion = await ensureFinalVersionSelected(page);
+        await caseDetailsManagementPage.makeVersionGlobal(stableVersion);
 
-        //Assert
+        // Assert
         await expect(
           caseDetailsManagementPage.versionSelectDropdown.locator('cds-tag', {
             hasText: 'Globally active',
@@ -79,7 +89,7 @@ test.describe('Case management', () => {
     test.describe('General tab', () => {
       test.beforeEach(async () => {
         //Arrange
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+        draftVersion = await ensureDraftVersionSelected(page);
         await page.reload();
         await page.waitForLoadState('domcontentloaded');
       });
@@ -203,14 +213,15 @@ test.describe('Case management', () => {
       });
 
       test.describe('Link upload process', () => {
-        const FEATURE_PROCESS_URL =
-          '/api/management/v1/case-definition/bezwaar/version/1.0.1/feature-process';
         let originalUploadProcessKey: string | null;
+
+        const getFeatureProcessUrl = () =>
+          `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
 
         test.beforeAll(async () => {
           try {
             const linked = await apiGet<{processDefinitionKey: string}>(
-              `${FEATURE_PROCESS_URL}/DOCUMENT_UPLOAD`
+              `${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`
             );
             originalUploadProcessKey = linked?.processDefinitionKey ?? null;
           } catch {
@@ -221,12 +232,12 @@ test.describe('Case management', () => {
         test.afterAll(async () => {
           try {
             if (originalUploadProcessKey) {
-              await apiPut(FEATURE_PROCESS_URL, {
+              await apiPut(getFeatureProcessUrl(), {
                 processDefinitionKey: originalUploadProcessKey,
                 linkType: 'DOCUMENT_UPLOAD',
               });
             } else {
-              await apiDelete(`${FEATURE_PROCESS_URL}/DOCUMENT_UPLOAD`);
+              await apiDelete(`${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`);
             }
           } catch {
             // Ignore cleanup errors
@@ -280,7 +291,7 @@ test.describe('Case management', () => {
 
       test('Read-only states', async () => {
         //Act
-        await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.STABLE);
+        await ensureFinalVersionSelected(page);
 
         //Assert
         await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
@@ -305,11 +316,11 @@ test.describe('Case management', () => {
 
     test('Export case definition', async () => {
       //Act
-      await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.STABLE);
+      const stableVersion = await ensureFinalVersionSelected(page);
       const download = await caseDetailsManagementPage.exportCaseDefinition();
 
       //Assert
-      expect(download.suggestedFilename()).toContain(CASE_VERSIONS.STABLE);
+      expect(download.suggestedFilename()).toContain(stableVersion);
     });
   });
 });
