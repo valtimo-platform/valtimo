@@ -38,6 +38,7 @@ import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 import {ActivatedRoute} from '@angular/router';
 import {getContextObservable} from '../../utils';
+import {PROCESS_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -66,6 +67,8 @@ export class ProcessManagementListComponent {
   );
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly testIds = PROCESS_MANAGEMENT_LIST_TEST_IDS;
+
   public readonly ACTION_ITEMS: ActionItem[] = [
     {label: 'Delete', callback: this.onDeleteProcess.bind(this), type: 'danger'},
   ];

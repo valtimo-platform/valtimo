@@ -62,7 +62,7 @@ test.describe('Case management', () => {
 
       test('Check list column page is loaded', async () => {
         // Assert
-        await expect(testPage.caseListColumnsList).toBeTruthy();
+        await expect(testPage.caseListColumnsList).toBeVisible();
       });
 
       test.describe('JSON Editor', () => {

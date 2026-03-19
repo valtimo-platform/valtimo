@@ -43,28 +43,26 @@ test.describe('Case management', () => {
 
   test.describe('Success test', () => {
     test('Add a case', async () => {
-      // Act
-      await page.route('**/case-management/case/**', async route => {
-        await caseManagementPage.addCase();
-        await caseManagementPage.saveConfiguration();
-        route.abort();
+      // Intercept navigation to case detail page to stay on the list
+      await page.route('**/case-management/case/**', route => route.abort());
 
-        // Assert
-        await caseManagementPage.assertCaseExists('Test case');
-      });
+      // Act
+      await caseManagementPage.addCase();
+      await caseManagementPage.saveConfiguration();
+
+      // Assert
+      await caseManagementPage.assertCaseExists('Test case');
+
+      // Cleanup route interception
+      await page.unroute('**/case-management/case/**');
     });
 
     test('Upload a case', async () => {
       // Act
-      await page.route('**/case-management/case/**', async route => {
-        await caseManagementPage.uploadCase();
-        await caseManagementPage.saveConfiguration();
-        await caseManagementPage.assertCaseUploaded();
+      await caseManagementPage.uploadCase();
 
-        // Assert
-        await caseManagementPage.assertCaseExists('Test case');
-        route.abort();
-      });
+      // Assert
+      await caseManagementPage.assertCaseExists('Test case');
     });
 
     test('Cleanup test file', async () => {
