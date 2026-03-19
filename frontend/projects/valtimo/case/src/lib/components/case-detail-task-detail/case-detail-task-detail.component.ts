@@ -148,8 +148,13 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   public onAssignmentChanged(event: AssignmentChangeEvent): void {
     this.task$.pipe(take(1)).subscribe(task => {
       if (!task) return;
+
+      const assignRequest: {assignee?: string; assignedTeamKey?: string} = {};
+      if (event.userId !== undefined) assignRequest.assignee = event.userId ?? '';
+      if (event.teamKey !== undefined) assignRequest.assignedTeamKey = event.teamKey ?? '';
+
       this.taskService
-        .assignTask(task.id, {assignee: event.userId, assignedTeamKey: event.teamKey})
+        .assignTask(task.id, assignRequest)
         .pipe(
           switchMap(() => this.taskService.getTask(task.id)),
           take(1)

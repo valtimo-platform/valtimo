@@ -305,6 +305,101 @@ class TaskResourceTest {
     }
 
     @Test
+    void assign_emptyAssignee_unassignsUser() throws Exception {
+        var request = new AssigneeRequest("", null);
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_emptyTeamKey_unassignsTeam() throws Exception {
+        var request = new AssigneeRequest(null, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeAndTeamKey_unassignsBoth() throws Exception {
+        var request = new AssigneeRequest("", "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeWithTeam_unassignsUserAndAssignsTeam() throws Exception {
+        var request = new AssigneeRequest("", "team-a");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_assigneeWithEmptyTeam_assignsUserAndUnassignsTeam() throws Exception {
+        var request = new AssigneeRequest(assigneeId, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).assign(taskId, assigneeId);
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
     void unassign_alsoClearsTeam() throws Exception {
         mockMvc.perform(post("/api/v1/task/{taskId}/unassign", taskId)
                 .characterEncoding(StandardCharsets.UTF_8.name())

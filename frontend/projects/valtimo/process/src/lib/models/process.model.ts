@@ -125,7 +125,7 @@ interface ProcessInstanceTask {
   isLocked: boolean;
   subtitles?: string[];
   assignedTeam?: {key: string; title: string};
-  valtimoAssignee?: {username: string; firstName: string; lastName: string; fullName: string};
+  valtimoAssignee?: {username?: string; firstName?: string; lastName?: string; fullName?: string};
 }
 
 interface IdentityLink {

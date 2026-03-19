@@ -1554,6 +1554,7 @@
     "confirm": "Confirm",
     "update": "Update",
     "unassign": "Unassign",
+    "unassignAll": "Unassign all",
     "loading": "Loading..."
   },
   "dropzone": {

@@ -43,8 +43,10 @@ import {RemoveClassnamesDirective} from '../../directives/remove-classnames/remo
 export type AssignmentMode = 'case' | 'task';
 
 export interface AssignmentChangeEvent {
-  userId?: string;
-  teamKey?: string;
+  /** The user ID to assign. `null` means explicitly unassign the user. `undefined` means no change. */
+  userId?: string | null;
+  /** The team key to assign. `null` means explicitly unassign the team. `undefined` means no change. */
+  teamKey?: string | null;
 }
 
 @Component({
@@ -98,6 +100,8 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
   public readonly teamItems$ = new BehaviorSubject<ListItem[]>([]);
   public readonly selectedUserId$ = new BehaviorSubject<string | null>(null);
   public readonly selectedTeamKey$ = new BehaviorSubject<string | null>(null);
+  private initialUserId: string | null = null;
+  private initialTeamKey: string | null = null;
   public readonly mouseIsOver$ = new BehaviorSubject<boolean>(false);
   public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
@@ -116,6 +120,13 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
 
   get assignButtonTranslationKey(): string {
     return this.mode === 'case' ? 'assignment.assignThisCase' : 'assignment.assignThisTask';
+  }
+
+  get hasEditChanges(): boolean {
+    return (
+      this.selectedUserId$.getValue() !== this.initialUserId ||
+      this.selectedTeamKey$.getValue() !== this.initialTeamKey
+    );
   }
 
   constructor(
@@ -175,8 +186,17 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
   public onUpdate(): void {
     const userId = this.selectedUserId$.getValue();
     const teamKey = this.selectedTeamKey$.getValue();
+    const event: AssignmentChangeEvent = {};
+
+    if (userId !== this.initialUserId) {
+      event.userId = userId ?? null;
+    }
+    if (teamKey !== this.initialTeamKey) {
+      event.teamKey = teamKey ?? null;
+    }
+
     this.disable();
-    this.assignmentChanged.emit({userId: userId || undefined, teamKey: teamKey || undefined});
+    this.assignmentChanged.emit(event);
     this.closeToggletip();
     this.enable();
   }
@@ -198,6 +218,7 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     this.editToggletipOpen$.next(true);
     this.selectedUserId$.next(this._assigneeId);
     this.selectedTeamKey$.next(this._assignedTeamKey);
+    this.initialTeamKey = this._assignedTeamKey;
     this.loadCandidatesForEdit();
   }
 
@@ -244,6 +265,7 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
           }
         }
 
+        this.initialUserId = this.selectedUserId$.getValue();
         this.userItems$.next(this.mapUsersForDropdown(users, this._assigneeId));
         this.teamItems$.next(this.mapTeamsForDropdown(teams, this._assignedTeamKey));
         this.resetComboBoxes();

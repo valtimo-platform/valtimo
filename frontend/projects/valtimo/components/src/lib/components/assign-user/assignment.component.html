@@ -115,7 +115,7 @@
             [attr.data-carbon-theme]="toggletipTheme$ | async"
             [cdsLayer]="1"
             class="submit-button"
-            [disabled]="(!obs.selectedUserId && !obs.selectedTeamKey) || obs.disabled"
+            [disabled]="!hasEditChanges || obs.disabled"
             (click)="onUpdate()"
           >
             {{ 'assignment.update' | translate }}
@@ -128,7 +128,7 @@
             [disabled]="obs.disabled"
             (click)="onUnassign()"
           >
-            {{ 'assignment.unassign' | translate }}
+            {{ 'assignment.unassignAll' | translate }}
           </button>
         </div>
       </cds-toggletip>
