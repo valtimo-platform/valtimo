@@ -250,7 +250,7 @@ export const environment: ValtimoConfig = {
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     experimentalDmnEditing: true,
-    largeLogoMargin: true,
+    largeLogoMargin: false,
     sortFilesByDate: true,
     disableCaseCount: false,
     returnToLastUrlAfterTokenExpiration: true,
