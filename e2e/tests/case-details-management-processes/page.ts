@@ -17,6 +17,7 @@
 import {type Locator, type Page, type APIRequestContext, expect} from '@playwright/test';
 import {PROCESS_MANAGEMENT_LIST_TEST_IDS, CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import path from 'path';
 
 const BPMN_ASSET_PATH = path.resolve(__dirname, '../../assets/e2e-test-process.bpmn');
@@ -95,7 +96,7 @@ export class CaseDetailsProcessesPage {
     return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
-  async goToCaseDetailsProcesses(caseIdentifier: string, draftVersion: string) {
+  async goToCaseDetailsProcesses(caseIdentifier: string): Promise<string> {
     await this.page.getByRole('button', {name: 'Admin'}).click();
     await this.page.getByRole('link', {name: 'Cases'}).click();
     await this.page.waitForSelector('valtimo-carbon-list');
@@ -103,13 +104,13 @@ export class CaseDetailsProcessesPage {
     await this.page.waitForURL(/\/case-management\/case\//);
 
     // Switch to draft version so editing functionalities are available
-    await this.versionSelectDropdown.click();
-    await this.page.getByRole('listbox').getByTestId(`caseVersion${draftVersion}`).click();
-    await this.page.waitForURL(new RegExp(`version/${draftVersion}`));
+    const draftVersion = await ensureDraftVersionSelected(this.page);
 
     await this.page.getByRole('tab', {name: 'Processes'}).click();
     await this.page.waitForURL(/\/processes/);
     await this.carbonList.waitForLoaded();
+
+    return draftVersion;
   }
 
   // Actions
