@@ -397,29 +397,31 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
 
     @Test
     fun shouldReturnAssignedTeamTitleWhenTaskHasTeam() {
-        val searchResult = runWithoutAuthorization {
-            caseTaskListSearchService.search("house", SearchWithConfigRequest(), PageRequest.of(0, 50))
-        }
+        val filter = SearchWithConfigRequest.SearchWithConfigFilter()
+        filter.key = "street"
+        filter.setValues(listOf("Funenpark"))
+
+        val searchResult = searchTasks(filter)
         assertThat(searchResult).hasSize(1)
 
-        val task = searchResult.content[0]
+        val task = searchResult!!.content[0]
         assertThat(task.assignedTeamTitle).isNull()
 
         createTeamAndAssignToTask(task.taskId, "team-a", "Team Alpha")
 
-        val searchResultAfter = runWithoutAuthorization {
-            caseTaskListSearchService.search("house", SearchWithConfigRequest(), PageRequest.of(0, 50))
-        }
+        val searchResultAfter = searchTasks(filter)
         assertThat(searchResultAfter).hasSize(1)
-        assertThat(searchResultAfter.content[0].assignedTeamTitle).isEqualTo("Team Alpha")
+        assertThat(searchResultAfter!!.content[0].assignedTeamTitle).isEqualTo("Team Alpha")
     }
 
     @Test
     fun shouldFilterByAssignedTeamTitle() {
-        val searchResult = runWithoutAuthorization {
-            caseTaskListSearchService.search("house", SearchWithConfigRequest(), PageRequest.of(0, 50))
-        }
-        val task = searchResult.content[0]
+        val streetFilter = SearchWithConfigRequest.SearchWithConfigFilter()
+        streetFilter.key = "street"
+        streetFilter.setValues(listOf("Funenpark"))
+
+        val searchResult = searchTasks(streetFilter)
+        val task = searchResult!!.content[0]
 
         createTeamAndAssignToTask(task.taskId, "team-a", "Team Alpha")
 
