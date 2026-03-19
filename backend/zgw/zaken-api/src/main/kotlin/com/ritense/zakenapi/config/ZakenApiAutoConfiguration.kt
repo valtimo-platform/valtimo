@@ -66,9 +66,13 @@ import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import com.ritense.zakenapi.listener.ZakenApiDocumentDeletedEventListener
 import com.ritense.zakenapi.listener.ZakenApiEventListener
+import com.ritense.zakenapi.security.ZaakActionProvider
+import com.ritense.zakenapi.security.ZaakSpecificationFactory
+import com.ritense.zakenapi.service.ZaakService
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
 import com.ritense.zakenapi.web.rest.ZaakDocumentResource
+import com.ritense.zakenapi.web.rest.ZaakResource
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -383,6 +387,35 @@ class ZakenApiAutoConfiguration {
         pluginService,
         zaakNotitieService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakSpecificationFactory::class)
+    fun zaakSpecificationFactory(): ZaakSpecificationFactory {
+        return ZaakSpecificationFactory()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakActionProvider::class)
+    fun zaakActionProvider(): ZaakActionProvider {
+        return ZaakActionProvider()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakService::class)
+    fun zaakService(
+        pluginService: PluginService,
+        authorizationService: AuthorizationService,
+    ): ZaakService {
+        return ZaakService(pluginService, authorizationService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakResource::class)
+    fun zaakResource(
+        zaakService: ZaakService,
+    ): ZaakResource {
+        return ZaakResource(zaakService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(ZaakTypeLinkConfigurationIssueListener::class)
