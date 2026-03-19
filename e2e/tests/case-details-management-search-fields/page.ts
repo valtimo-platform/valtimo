@@ -16,10 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {
-  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
-  VALUE_PATH_SELECTOR_TEST_IDS,
-} from '../../constants';
+import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementSearchFieldsPage {
   constructor(
@@ -34,11 +31,6 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   get listTab() {
     return this.page.locator('#case-list-header');
-  }
-
-  // Version dropdown
-  get versionSelectDropdown() {
-    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
   }
 
   // Toolbar buttons (data-test-id → getByTestId)
@@ -127,11 +119,6 @@ export class CaseDetailsManagementSearchFieldsPage {
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.listTab.click();
-  }
-
-  async switchCaseVersionViaDropdown(caseVersion: string) {
-    await this.versionSelectDropdown.click();
-    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
   }
 
   // Dropdown selection helper

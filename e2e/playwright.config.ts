@@ -13,14 +13,14 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   // forbidOnly: true,
-  retries: process.env.CI ? 3 : 0,
+  retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : 1,
   reporter: [['line'], ['html', {open: 'on-failure'}]],
   globalSetup: './utils/globalSetup.ts',
   globalTeardown: './utils/teardown.ts',
   timeout: process.env.qa_timeout
     ? moment.duration(process.env.qa_timeout).asMilliseconds()
-    : 90_000,
+    : 30_000,
   globalTimeout: 60 * 60 * 1000,
 
   use: {
