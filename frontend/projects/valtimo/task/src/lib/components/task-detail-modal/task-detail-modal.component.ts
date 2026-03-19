@@ -32,7 +32,7 @@ import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, EMPTY, Observable, of, shareReplay, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, EMPTY, Observable, of, shareReplay, Subscription} from 'rxjs';
 import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
@@ -47,7 +47,7 @@ import {IconService} from 'carbon-components-angular';
 import {DocumentService} from '@valtimo/document';
 // @ts-ignore
 import {FolderDetailsReference16} from '@carbon/icons';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService, NamedUser, TeamResponseDto} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -96,16 +96,23 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
-  public readonly candidateUsers$: Observable<any[]> = this.task$.pipe(
-    filter(task => !!task),
-    switchMap(task => this.taskService.getCandidateUsers(task.id)),
+  public readonly candidateUsers$: Observable<NamedUser[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+    ),
     shareReplay(1)
   );
 
-  public readonly candidateTeams$: Observable<any[]> = this.task$.pipe(
-    filter(task => !!task),
-    switchMap(task => this.taskService.getCandidateTeams(task.id)),
-    map(page => page.content),
+  public readonly candidateTeams$: Observable<TeamResponseDto[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+    ),
     shareReplay(1)
   );
 

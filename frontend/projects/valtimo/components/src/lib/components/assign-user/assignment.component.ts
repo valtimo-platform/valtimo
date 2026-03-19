@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnChanges,
   OnDestroy,
@@ -40,21 +42,14 @@ import {NamedUser, TeamResponseDto, UserIdentity} from '@valtimo/shared';
 import {UserProviderService} from '@valtimo/security';
 import {CdsThemeService} from '../../services/cds-theme.service';
 import {RemoveClassnamesDirective} from '../../directives/remove-classnames/remove-classnames.directive';
-
-export type AssignmentMode = 'case' | 'task';
-
-export interface AssignmentChangeEvent {
-  /** The user ID to assign. `null` means explicitly unassign the user. `undefined` means no change. */
-  userId?: string | null;
-  /** The team key to assign. `null` means explicitly unassign the team. `undefined` means no change. */
-  teamKey?: string | null;
-}
+import {AssignmentChangeEvent, AssignmentMode} from '../../models/assignment.model';
 
 @Component({
   selector: 'valtimo-assignment',
   templateUrl: './assignment.component.html',
   styleUrls: ['./assignment.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     TranslateModule,
@@ -67,91 +62,100 @@ export interface AssignmentChangeEvent {
   ],
 })
 export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() mode: AssignmentMode = 'case';
-  @Input() hasPermission = true;
+  @HostBinding('style.display')
+  public get hostDisplay(): string | null {
+    return !this.hasPermission && !this.isAssigned ? 'none' : null;
+  }
 
-  @Input() set assigneeId(value: string) {
+  @Input() public mode: AssignmentMode = 'case';
+  @Input() public hasPermission = true;
+
+  @Input() public set assigneeId(value: string) {
     this._assigneeId = value || null;
   }
 
-  @Input() set assigneeFullName(value: string) {
+  @Input() public set assigneeFullName(value: string) {
     this._assigneeFullName = value || null;
   }
 
-  @Input() set assignedTeamKey(value: string) {
+  @Input() public set assignedTeamKey(value: string) {
     this._assignedTeamKey = value || null;
   }
 
-  @Input() set assignedTeamTitle(value: string) {
+  @Input() public set assignedTeamTitle(value: string) {
     this._assignedTeamTitle = value || null;
   }
 
-  @Input() candidateUsers$: Observable<NamedUser[]>;
-  @Input() candidateTeams$: Observable<TeamResponseDto[]>;
+  @Input() public candidateUsers$: Observable<NamedUser[]>;
+  @Input() public candidateTeams$: Observable<TeamResponseDto[]>;
 
-  @Output() readonly assignmentChanged = new EventEmitter<AssignmentChangeEvent>();
-  @Output() readonly unassigned = new EventEmitter<void>();
+  @Output() public readonly assignmentChangedEvent = new EventEmitter<AssignmentChangeEvent>();
+  @Output() public readonly unassignedEvent = new EventEmitter<void>();
 
   public _assigneeId: string | null = null;
   public _assigneeFullName: string | null = null;
   public _assignedTeamKey: string | null = null;
   public _assignedTeamTitle: string | null = null;
 
-  public readonly userItems$ = new BehaviorSubject<ListItem[]>([]);
-  public readonly teamItems$ = new BehaviorSubject<ListItem[]>([]);
-  public readonly selectedUserId$ = new BehaviorSubject<string | null>(null);
-  public readonly selectedTeamKey$ = new BehaviorSubject<string | null>(null);
-  private initialUserId: string | null = null;
-  private initialTeamKey: string | null = null;
-  public readonly mouseIsOver$ = new BehaviorSubject<boolean>(false);
-  public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
+  public readonly editToggletipOpen$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly mouseIsOver$ = new BehaviorSubject<boolean>(false);
   public readonly open$ = new Subject<boolean>();
-  public readonly showUserComboBox$ = new BehaviorSubject<boolean>(true);
+  public readonly selectedTeamKey$ = new BehaviorSubject<string | null>(null);
+  public readonly selectedUserId$ = new BehaviorSubject<string | null>(null);
   public readonly showTeamComboBox$ = new BehaviorSubject<boolean>(true);
-  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
-  public readonly toggletipDropdownTheme$ = this.cdsThemeService.toggletipDropdownTheme$;
+  public readonly showUserComboBox$ = new BehaviorSubject<boolean>(true);
+  public readonly teamItems$ = new BehaviorSubject<ListItem[]>([]);
+  public readonly toggletipDropdownTheme$ = this._cdsThemeService.toggletipDropdownTheme$;
+  public readonly toggletipTheme$ = this._cdsThemeService.toggletipTheme$;
+  public readonly userItems$ = new BehaviorSubject<ListItem[]>([]);
+
+  private _currentUser: UserIdentity | null = null;
+  private _initialTeamKey: string | null = null;
+  private _initialUserId: string | null = null;
 
   private readonly _subscriptions = new Subscription();
 
-  get isAssigned(): boolean {
-    return !!this._assigneeId || !!this._assignedTeamKey;
-  }
-
-  get assignButtonTranslationKey(): string {
+  public get assignButtonTranslationKey(): string {
     return this.mode === 'case' ? 'assignment.assignThisCase' : 'assignment.assignThisTask';
   }
 
-  get hasEditChanges(): boolean {
+  public get hasEditChanges(): boolean {
     return (
-      this.selectedUserId$.getValue() !== this.initialUserId ||
-      this.selectedTeamKey$.getValue() !== this.initialTeamKey
+      this.selectedUserId$.getValue() !== this._initialUserId ||
+      this.selectedTeamKey$.getValue() !== this._initialTeamKey
     );
   }
 
-  private currentUser: UserIdentity | null = null;
+  public get isAssigned(): boolean {
+    return !!this._assigneeId || !!this._assignedTeamKey;
+  }
 
   constructor(
-    private readonly cdsThemeService: CdsThemeService,
-    private readonly iconService: IconService,
-    private readonly userProviderService: UserProviderService,
-    private readonly translateService: TranslateService
+    private readonly _cdsThemeService: CdsThemeService,
+    private readonly _iconService: IconService,
+    private readonly _translateService: TranslateService,
+    private readonly _userProviderService: UserProviderService
   ) {
-    this.iconService.registerAll([UserFollow16, Group16, User16]);
+    this._iconService.registerAll([UserFollow16, Group16, User16]);
     this._subscriptions.add(
-      this.userProviderService.getUserSubject().subscribe(user => {
-        this.currentUser = user;
+      this._userProviderService.getUserSubject().subscribe(user => {
+        this._currentUser = user;
       })
     );
   }
 
   public ngOnInit(): void {
-    this.loadCandidates();
+    if (this.hasPermission) {
+      this.loadCandidates();
+    }
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.candidateUsers$ || changes.candidateTeams$) {
+    if (changes.hasPermission && this.hasPermission) {
+      this.loadCandidates();
+    } else if (this.hasPermission && (changes.candidateUsers$ || changes.candidateTeams$)) {
       this.loadCandidates();
     }
   }
@@ -160,62 +164,25 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
+  public onConfirm(): void {
+    const userId = this.selectedUserId$.getValue();
+    const teamKey = this.selectedTeamKey$.getValue();
+    this.disable();
+    this.assignmentChangedEvent.emit({userId: userId || undefined, teamKey: teamKey || undefined});
+    this.closeToggletip();
+    this.enable();
+  }
+
+  public onCloseEditToggletip(): void {
+    this.editToggletipOpen$.next(false);
+  }
+
   public onMouseEnter(): void {
     this.mouseIsOver$.next(true);
   }
 
   public onMouseLeave(): void {
     this.mouseIsOver$.next(false);
-  }
-
-  public onUserSelect(event: ListItem): void {
-    this.selectedUserId$.next(event?.id || null);
-  }
-
-  public onUserClear(): void {
-    this.selectedUserId$.next(null);
-  }
-
-  public onTeamSelect(event: ListItem): void {
-    this.selectedTeamKey$.next(event?.id || null);
-  }
-
-  public onTeamClear(): void {
-    this.selectedTeamKey$.next(null);
-  }
-
-  public onConfirm(): void {
-    const userId = this.selectedUserId$.getValue();
-    const teamKey = this.selectedTeamKey$.getValue();
-    this.disable();
-    this.assignmentChanged.emit({userId: userId || undefined, teamKey: teamKey || undefined});
-    this.closeToggletip();
-    this.enable();
-  }
-
-  public onUpdate(): void {
-    const userId = this.selectedUserId$.getValue();
-    const teamKey = this.selectedTeamKey$.getValue();
-    const event: AssignmentChangeEvent = {};
-
-    if (userId !== this.initialUserId) {
-      event.userId = userId ?? null;
-    }
-    if (teamKey !== this.initialTeamKey) {
-      event.teamKey = teamKey ?? null;
-    }
-
-    this.disable();
-    this.assignmentChanged.emit(event);
-    this.closeToggletip();
-    this.enable();
-  }
-
-  public onUnassign(): void {
-    this.disable();
-    this.unassigned.emit();
-    this.closeToggletip();
-    this.enable();
   }
 
   public onOpenAssignToggletip(): void {
@@ -228,12 +195,73 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     this.editToggletipOpen$.next(true);
     this.selectedUserId$.next(this._assigneeId);
     this.selectedTeamKey$.next(this._assignedTeamKey);
-    this.initialTeamKey = this._assignedTeamKey;
+    this._initialTeamKey = this._assignedTeamKey;
     this.loadCandidatesForEdit();
   }
 
-  public onCloseEditToggletip(): void {
+  public onTeamClear(): void {
+    this.selectedTeamKey$.next(null);
+  }
+
+  public onTeamSelect(event: ListItem): void {
+    this.selectedTeamKey$.next(event?.id || null);
+  }
+
+  public onUnassign(): void {
+    this.disable();
+    this.unassignedEvent.emit();
+    this.closeToggletip();
+    this.enable();
+  }
+
+  public onUpdate(): void {
+    const userId = this.selectedUserId$.getValue();
+    const teamKey = this.selectedTeamKey$.getValue();
+    const event: AssignmentChangeEvent = {};
+
+    if (userId !== this._initialUserId) {
+      event.userId = userId ?? null;
+    }
+    if (teamKey !== this._initialTeamKey) {
+      event.teamKey = teamKey ?? null;
+    }
+
+    this.disable();
+    this.assignmentChangedEvent.emit(event);
+    this.closeToggletip();
+    this.enable();
+  }
+
+  public onUserClear(): void {
+    this.selectedUserId$.next(null);
+  }
+
+  public onUserSelect(event: ListItem): void {
+    this.selectedUserId$.next(event?.id || null);
+  }
+
+  private closeToggletip(): void {
     this.editToggletipOpen$.next(false);
+    this.open$.next(true);
+    setTimeout(() => this.open$.next(false));
+  }
+
+  private disable(): void {
+    this.disabled$.next(true);
+  }
+
+  private enable(): void {
+    this.disabled$.next(false);
+  }
+
+  private isCurrentUser(user: NamedUser): boolean {
+    if (!this._currentUser) return false;
+    return (
+      (!!this._currentUser.id &&
+        (user.id === this._currentUser.id || user.userName === this._currentUser.id)) ||
+      (!!this._currentUser.username &&
+        (user.id === this._currentUser.username || user.userName === this._currentUser.username))
+    );
   }
 
   private loadCandidates(): void {
@@ -241,7 +269,7 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
 
     if (this.candidateUsers$) {
       this._subscriptions.add(
-        combineLatest([this.candidateUsers$, this.translateService.stream('key')]).subscribe(
+        combineLatest([this.candidateUsers$, this._translateService.stream('key')]).subscribe(
           ([users]) => {
             this.userItems$.next(this.mapUsersForDropdown(users));
             this.loading$.next(false);
@@ -271,7 +299,6 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
 
     this._subscriptions.add(
       combineLatest([users$, teams$]).subscribe(([users, teams]) => {
-        // Resolve assigneeId to UUID if it's a username
         if (this._assigneeId && users?.length) {
           const match = users.find(
             u => u.id === this._assigneeId || u.userName === this._assigneeId
@@ -281,7 +308,7 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
           }
         }
 
-        this.initialUserId = this.selectedUserId$.getValue();
+        this._initialUserId = this.selectedUserId$.getValue();
         this.userItems$.next(this.mapUsersForDropdown(users, this._assigneeId));
         this.teamItems$.next(this.mapTeamsForDropdown(teams, this._assignedTeamKey));
         this.resetComboBoxes();
@@ -289,20 +316,22 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  private isCurrentUser(user: NamedUser): boolean {
-    if (!this.currentUser) return false;
-    return (
-      (!!this.currentUser.id &&
-        (user.id === this.currentUser.id || user.userName === this.currentUser.id)) ||
-      (!!this.currentUser.username &&
-        (user.id === this.currentUser.username || user.userName === this.currentUser.username))
-    );
+  private mapTeamsForDropdown(teams: TeamResponseDto[], selectedTeamKey?: string): ListItem[] {
+    if (!teams) return [];
+
+    return teams
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .map(team => ({
+        content: team.title,
+        id: team.key,
+        selected: selectedTeamKey ? team.key === selectedTeamKey : false,
+      }));
   }
 
   private mapUsersForDropdown(users: NamedUser[], selectedUserId?: string): ListItem[] {
     if (!users) return [];
 
-    const meSuffix = ` (${this.translateService.instant('assignment.me')})`;
+    const meSuffix = ` (${this._translateService.instant('assignment.me')})`;
 
     return users
       .sort((a, b) => {
@@ -324,18 +353,6 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
       }));
   }
 
-  private mapTeamsForDropdown(teams: TeamResponseDto[], selectedTeamKey?: string): ListItem[] {
-    if (!teams) return [];
-
-    return teams
-      .sort((a, b) => a.title.localeCompare(b.title))
-      .map(team => ({
-        content: team.title,
-        id: team.key,
-        selected: selectedTeamKey ? team.key === selectedTeamKey : false,
-      }));
-  }
-
   private resetComboBoxes(): void {
     this.showUserComboBox$.next(false);
     this.showTeamComboBox$.next(false);
@@ -343,19 +360,5 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
       this.showUserComboBox$.next(true);
       this.showTeamComboBox$.next(true);
     });
-  }
-
-  private enable(): void {
-    this.disabled$.next(false);
-  }
-
-  private disable(): void {
-    this.disabled$.next(true);
-  }
-
-  private closeToggletip(): void {
-    this.editToggletipOpen$.next(false);
-    this.open$.next(true);
-    setTimeout(() => this.open$.next(false));
   }
 }

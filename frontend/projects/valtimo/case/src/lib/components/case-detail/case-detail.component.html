@@ -186,8 +186,8 @@
       [hasPermission]="canAssign"
       [candidateUsers$]="candidateUsers$"
       [candidateTeams$]="candidateTeams$"
-      (assignmentChanged)="onAssignmentChanged($event)"
-      (unassigned)="onUnassigned()"
+      (assignmentChangedEvent)="onAssignmentChanged($event)"
+      (unassignedEvent)="onUnassigned()"
     ></valtimo-assignment>
   </div>
 </ng-template>

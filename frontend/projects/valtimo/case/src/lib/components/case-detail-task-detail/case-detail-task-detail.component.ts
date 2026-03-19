@@ -26,7 +26,7 @@ import {
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {AssignmentChangeEvent, AssignmentComponent, PageHeaderService} from '@valtimo/components';
-import {ConfigService, TeamResponseDto} from '@valtimo/shared';
+import {ConfigService, NamedUser, TeamResponseDto} from '@valtimo/shared';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
@@ -39,8 +39,7 @@ import {
   TaskService,
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Observable, shareReplay, switchMap, take} from 'rxjs';
-import {NamedUser} from '@valtimo/shared';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, shareReplay, switchMap, take} from 'rxjs';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
@@ -65,6 +64,7 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     if (!value) return;
 
     this.taskAndProcessLink$.next(value);
+    this.task$.next(value.task);
     this.pageValue.set({
       title: value?.task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value?.task?.created}`,
@@ -78,9 +78,7 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
 
   public readonly compactMode$: Observable<boolean> = this.pageHeaderService.compactMode$;
   public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
-  public readonly task$ = this.taskAndProcessLink$.pipe(
-    map(taskAndProcessLink => taskAndProcessLink.task)
-  );
+  public readonly task$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
   public readonly canAssignUserToTask$: Observable<boolean> = this.task$.pipe(
     switchMap((task: ProcessInstanceTask | null) =>
       this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
@@ -102,16 +100,21 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     title: '',
     subtitle: '',
   });
-  public readonly candidateUsers$: Observable<NamedUser[]> = this.task$.pipe(
-    filter(task => !!task),
-    switchMap(task => this.taskService.getCandidateUsers(task.id)),
+  public readonly candidateUsers$: Observable<NamedUser[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) => (canAssign ? this.taskService.getCandidateUsers(task.id) : of([]))),
     shareReplay(1)
   );
 
-  public readonly candidateTeams$: Observable<TeamResponseDto[]> = this.task$.pipe(
-    filter(task => !!task),
-    switchMap(task => this.taskService.getCandidateTeams(task.id)),
-    map(page => page.content),
+  public readonly candidateTeams$: Observable<TeamResponseDto[]> = combineLatest([
+    this.task$.pipe(filter(task => !!task)),
+    this.canAssignUserToTask$,
+  ]).pipe(
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+    ),
     shareReplay(1)
   );
 
@@ -183,19 +186,19 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   }
 
   private refreshTask(response: any): void {
-    const current = this.taskAndProcessLink$.getValue();
-    if (!current) return;
+    const currentTask = this.task$.getValue();
+    if (!currentTask) return;
 
     const fetchedTask = response.task as Partial<ProcessInstanceTask>;
     if (!fetchedTask) return;
 
-    const mergedTask: ProcessInstanceTask = {...current.task};
+    const mergedTask: ProcessInstanceTask = {...currentTask};
     for (const [key, value] of Object.entries(fetchedTask)) {
       if (value !== undefined) {
         (mergedTask as any)[key] = value;
       }
     }
-    this.taskAndProcessLink$.next({...current, task: mergedTask});
+    this.task$.next(mergedTask);
   }
 
   public onDueDateChanged(): void {

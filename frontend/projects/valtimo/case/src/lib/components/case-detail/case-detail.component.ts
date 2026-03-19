@@ -244,14 +244,25 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     })
   );
 
-  public readonly candidateUsers$ = this.caseService.refreshDocument$.pipe(
-    switchMap(() => this.documentService.getCandidateUsers(this.documentId)),
+  public readonly candidateUsers$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign ? this.documentService.getCandidateUsers(this.documentId) : of([])
+    ),
     shareReplay(1)
   );
 
-  public readonly candidateTeams$ = this.caseService.refreshDocument$.pipe(
-    switchMap(() => this.documentService.getCandidateTeams(this.documentId)),
-    map(page => page.content),
+  public readonly candidateTeams$ = combineLatest([
+    this.caseService.refreshDocument$,
+    this.canAssign$,
+  ]).pipe(
+    switchMap(([_, canAssign]) =>
+      canAssign
+        ? this.documentService.getCandidateTeams(this.documentId).pipe(map(page => page.content))
+        : of([])
+    ),
     shareReplay(1)
   );
 
