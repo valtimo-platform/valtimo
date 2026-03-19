@@ -126,10 +126,18 @@ public class TaskResource extends AbstractTaskResource {
         @RequestBody AssigneeRequest assigneeRequest
     ) {
         if (assigneeRequest.getAssignee() != null) {
-            operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+            if (assigneeRequest.getAssignee().isEmpty()) {
+                operatonTaskService.unassign(taskId);
+            } else {
+                operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+            }
         }
         if (assigneeRequest.getAssignedTeamKey() != null) {
-            operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+            if (assigneeRequest.getAssignedTeamKey().isEmpty()) {
+                operatonTaskService.unassignTeamFromTask(taskId);
+            } else {
+                operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+            }
         }
         return ResponseEntity.ok().build();
     }

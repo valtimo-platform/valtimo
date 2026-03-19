@@ -598,8 +598,11 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    const assigneeId = event.userId !== undefined ? (event.userId ?? '') : undefined;
+    const assignedTeamKey = event.teamKey !== undefined ? (event.teamKey ?? '') : undefined;
+
     this.documentService
-      .assignHandlerToDocument(this.documentId, event.userId, event.teamKey)
+      .assignHandlerToDocument(this.documentId, assigneeId, assignedTeamKey)
       .subscribe(() => {
         this.caseService.refresh();
       });

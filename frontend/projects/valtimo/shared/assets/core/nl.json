@@ -1584,6 +1584,7 @@
     "confirm": "Bevestigen",
     "update": "Bijwerken",
     "unassign": "Toewijzing ongedaan maken",
+    "unassignAll": "Alles vrijgeven",
     "loading": "Laden..."
   },
   "dropzone": {
