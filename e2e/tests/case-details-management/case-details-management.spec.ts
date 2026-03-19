@@ -48,8 +48,8 @@ test.describe('Case management', () => {
         await caseDetailsManagementPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
 
         // Assert
-        expect(page).toHaveURL(
-          `/case-management/case/bezwaar/version/${CASE_VERSIONS.STABLE}/general`
+        await expect(page).toHaveURL(
+          `/case-management/case/bezwaar/version/${CASE_VERSIONS.DRAFT}/general`
         );
       });
 
@@ -58,7 +58,7 @@ test.describe('Case management', () => {
         await caseDetailsManagementPage.switchCaseVersionViaList(CASE_VERSIONS.STABLE);
 
         // Assert
-        expect(page).toHaveURL(
+        await expect(page).toHaveURL(
           `/case-management/case/bezwaar/version/${CASE_VERSIONS.STABLE}/general`
         );
       });
@@ -144,8 +144,8 @@ test.describe('Case management', () => {
             'true'
           );
           await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-enabled',
-            'true'
+            'ng-reflect-disabled',
+            'false'
           );
 
           await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();

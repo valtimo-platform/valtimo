@@ -15,7 +15,7 @@
  */
 
 import {type Locator, type Page, type APIRequestContext, expect} from '@playwright/test';
-import {PROCESS_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
+import {PROCESS_MANAGEMENT_LIST_TEST_IDS, CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import path from 'path';
 
@@ -91,12 +91,22 @@ export class CaseDetailsProcessesPage {
 
   // Navigation
 
-  async goToCaseDetailsProcesses(caseIdentifier: string) {
+  get versionSelectDropdown() {
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
+  }
+
+  async goToCaseDetailsProcesses(caseIdentifier: string, draftVersion: string) {
     await this.page.getByRole('button', {name: 'Admin'}).click();
     await this.page.getByRole('link', {name: 'Cases'}).click();
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.page.waitForURL(/\/case-management\/case\//);
+
+    // Switch to draft version so editing functionalities are available
+    await this.versionSelectDropdown.click();
+    await this.page.getByRole('listbox').getByTestId(`caseVersion${draftVersion}`).click();
+    await this.page.waitForURL(new RegExp(`version/${draftVersion}`));
+
     await this.page.getByRole('tab', {name: 'Processes'}).click();
     await this.page.waitForURL(/\/processes/);
     await this.carbonList.waitForLoaded();

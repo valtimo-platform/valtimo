@@ -238,7 +238,7 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   async checkSearchFieldsExisting(keys: string[]) {
     for (const key of keys) {
-      await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
+      await expect(this.page.locator(`td[title="${key}"]`).first()).toBeVisible();
     }
   }
 

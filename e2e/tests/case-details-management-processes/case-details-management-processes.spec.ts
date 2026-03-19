@@ -40,7 +40,7 @@ test.describe('Case details - Processes tab', () => {
     processesPage = new CaseDetailsProcessesPage(page, request);
 
     await page.goto('/');
-    await processesPage.goToCaseDetailsProcesses(CASE_KEY);
+    await processesPage.goToCaseDetailsProcesses(CASE_KEY, CASE_VERSION);
   });
 
   test.afterAll(async () => {
