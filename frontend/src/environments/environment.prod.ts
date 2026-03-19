@@ -195,7 +195,7 @@ export const environment: ValtimoConfig = {
     enableTabManagement: true,
     enableUserNameInTopBarToggle: true,
     experimentalDmnEditing: true,
-    largeLogoMargin: true,
+    largeLogoMargin: false,
     returnToLastUrlAfterTokenExpiration: true,
     showPlantATreeButton: false,
     showUserNameInTopBar: true,
