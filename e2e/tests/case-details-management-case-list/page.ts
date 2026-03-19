@@ -183,7 +183,7 @@ export class CaseDetailsManagementCaseListPage {
 
   async checkColumnsExisting(columnKeys: string[]) {
     for (let key of columnKeys) {
-      await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
+      await expect(this.page.locator(`td[title="${key}"]`).first()).toBeVisible();
     }
   }
 

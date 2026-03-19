@@ -15,3 +15,4 @@
  */
 
 export * from './bpmn.constants';
+export * from './process-management.test-ids';
