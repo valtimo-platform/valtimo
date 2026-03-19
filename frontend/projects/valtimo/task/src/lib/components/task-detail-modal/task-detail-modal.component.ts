@@ -27,13 +27,13 @@ import {
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {CarbonModalSize, runAfterCarbonModalClosed} from '@valtimo/components';
+import {AssignmentChangeEvent, CarbonModalSize, runAfterCarbonModalClosed} from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, EMPTY, of, Subscription} from 'rxjs';
-import {catchError, filter, switchMap, take} from 'rxjs/operators';
+import {BehaviorSubject, EMPTY, Observable, of, shareReplay, Subscription} from 'rxjs';
+import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
@@ -95,6 +95,19 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  public readonly candidateUsers$: Observable<any[]> = this.task$.pipe(
+    filter(task => !!task),
+    switchMap(task => this.taskService.getCandidateUsers(task.id)),
+    shareReplay(1)
+  );
+
+  public readonly candidateTeams$: Observable<any[]> = this.task$.pipe(
+    filter(task => !!task),
+    switchMap(task => this.taskService.getCandidateTeams(task.id)),
+    map(page => page.content),
+    shareReplay(1)
+  );
 
   private readonly _subscriptions = new Subscription();
 
@@ -213,6 +226,21 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  private refreshTask(response: any): void {
+    const currentTask = this.task$.getValue();
+    const fetchedTask = response.task as Partial<Task>;
+    if (!currentTask || !fetchedTask) return;
+
+    const mergedTask: Task = {...currentTask};
+    for (const [key, value] of Object.entries(fetchedTask)) {
+      if (value !== undefined) {
+        (mergedTask as any)[key] = value;
+      }
+    }
+
+    this.task$.next(mergedTask);
+  }
+
   private showAssigneeNotification(task: Task): void {
     if (task.assignee) {
       this.globalNotificationService.showToast({
@@ -271,6 +299,38 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public onTaskUpdated(task: Task): void {
     this.task$.next(task);
+  }
+
+  public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    const task = this.task$.getValue();
+    if (!task) return;
+
+    this.taskService
+      .assignTask(task.id, {assignee: event.userId, assignedTeamKey: event.teamKey})
+      .pipe(
+        switchMap(() => this.taskService.getTask(task.id)),
+        take(1)
+      )
+      .subscribe(response => {
+        this.refreshTask(response);
+        this.assignmentOfTaskChanged.emit();
+      });
+  }
+
+  public onUnassigned(): void {
+    const task = this.task$.getValue();
+    if (!task) return;
+
+    this.taskService
+      .unassignTask(task.id)
+      .pipe(
+        switchMap(() => this.taskService.getTask(task.id)),
+        take(1)
+      )
+      .subscribe(response => {
+        this.refreshTask(response);
+        this.assignmentOfTaskChanged.emit();
+      });
   }
 
   public onFormSubmit(): void {

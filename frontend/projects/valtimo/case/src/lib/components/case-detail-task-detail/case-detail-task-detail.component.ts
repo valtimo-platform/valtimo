@@ -25,11 +25,10 @@ import {
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {PageHeaderService} from '@valtimo/components';
-import {ConfigService} from '@valtimo/shared';
+import {AssignmentChangeEvent, AssignmentComponent, PageHeaderService} from '@valtimo/components';
+import {ConfigService, TeamResponseDto} from '@valtimo/shared';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {
-  AssignUserToTaskComponent,
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
   IntermediateSubmission,
@@ -37,9 +36,11 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
   TaskDetailContentComponent,
   TaskDetailIntermediateSaveComponent,
+  TaskService,
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, shareReplay, switchMap, take} from 'rxjs';
+import {NamedUser} from '@valtimo/shared';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
@@ -55,7 +56,7 @@ import {TaskWithProcessLink} from '@valtimo/process-link';
     TaskDetailIntermediateSaveComponent,
     ButtonModule,
     IconModule,
-    AssignUserToTaskComponent,
+    AssignmentComponent,
     SetTaskDueDateComponent,
   ],
 })
@@ -101,13 +102,27 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     title: '',
     subtitle: '',
   });
+  public readonly candidateUsers$: Observable<NamedUser[]> = this.task$.pipe(
+    filter(task => !!task),
+    switchMap(task => this.taskService.getCandidateUsers(task.id)),
+    shareReplay(1)
+  );
+
+  public readonly candidateTeams$: Observable<TeamResponseDto[]> = this.task$.pipe(
+    filter(task => !!task),
+    switchMap(task => this.taskService.getCandidateTeams(task.id)),
+    map(page => page.content),
+    shareReplay(1)
+  );
+
   public enableIntermediateSave = false;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly permissionService: PermissionService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly taskService: TaskService
   ) {
     this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
   }
@@ -128,6 +143,54 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
 
   public onActiveChangeEvent(activeChange: boolean): void {
     this.activeChange.emit(activeChange);
+  }
+
+  public onAssignmentChanged(event: AssignmentChangeEvent): void {
+    this.task$.pipe(take(1)).subscribe(task => {
+      if (!task) return;
+      this.taskService
+        .assignTask(task.id, {assignee: event.userId, assignedTeamKey: event.teamKey})
+        .pipe(
+          switchMap(() => this.taskService.getTask(task.id)),
+          take(1)
+        )
+        .subscribe(response => {
+          this.refreshTask(response);
+          this.assignmentOfTaskChanged.emit();
+        });
+    });
+  }
+
+  public onUnassigned(): void {
+    this.task$.pipe(take(1)).subscribe(task => {
+      if (!task) return;
+      this.taskService
+        .unassignTask(task.id)
+        .pipe(
+          switchMap(() => this.taskService.getTask(task.id)),
+          take(1)
+        )
+        .subscribe(response => {
+          this.refreshTask(response);
+          this.assignmentOfTaskChanged.emit();
+        });
+    });
+  }
+
+  private refreshTask(response: any): void {
+    const current = this.taskAndProcessLink$.getValue();
+    if (!current) return;
+
+    const fetchedTask = response.task as Partial<ProcessInstanceTask>;
+    if (!fetchedTask) return;
+
+    const mergedTask: ProcessInstanceTask = {...current.task};
+    for (const [key, value] of Object.entries(fetchedTask)) {
+      if (value !== undefined) {
+        (mergedTask as any)[key] = value;
+      }
+    }
+    this.taskAndProcessLink$.next({...current, task: mergedTask});
   }
 
   public onDueDateChanged(): void {

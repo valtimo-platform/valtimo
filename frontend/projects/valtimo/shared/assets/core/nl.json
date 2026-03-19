@@ -1575,6 +1575,17 @@
     "fetchingUsers": "Gebruikers ophalen...",
     "submitButtonText": "Gebruiker toewijzen aan dossier"
   },
+  "assignment": {
+    "assignThisCase": "Dossier toewijzen",
+    "assignThisTask": "Taak toewijzen",
+    "clickToEdit": "Klik om te bewerken",
+    "selectUser": "Selecteer gebruiker",
+    "selectTeam": "Selecteer team",
+    "confirm": "Bevestigen",
+    "update": "Bijwerken",
+    "unassign": "Toewijzing ongedaan maken",
+    "loading": "Laden..."
+  },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
     "maxFileSize": "Maximale bestandsgrootte: ",
