@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 36         | 292            |
-| **Total**                   | **20**   | **349**   | **38**     | **311**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 39         | 289            |
+| **Total**                   | **20**   | **349**   | **41**     | **308**        |
 
-**Coverage:** `38 / 349` — `10.9%`
+**Coverage:** `41 / 349` — `11.7%`
 
 ---
 
@@ -103,9 +103,9 @@
 
 | #    | Function                     | Test Scenarios                                                | Coverage | Notes                                           |
 |:-----|:-----------------------------|:--------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 6.6  | View linked processes        | Display list of linked processes                              |    ❌    |                                                 |
-| 6.7  | Create new process           | Create new BPMN process                                       |    ❌    |                                                 |
-| 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ❌    |                                                 |
+| 6.6  | View linked processes        | Display list of linked processes                              |    ✅    | case-details-management-processes.spec.ts       |
+| 6.7  | Create new process           | Create new BPMN process                                       |    ✅    | case-details-management-processes.spec.ts       |
+| 6.8  | Open process in BPMN modeler | Open process in BPMN editor                                   |    ✅    | case-details-management-processes.spec.ts       |
 | 6.9  | Add BPMN elements            | Add BPMN elements via drag-drop                               |    ❌    |                                                 |
 | 6.10 | Set process properties       | Configure process properties (Starts case, Startable by user) |    ❌    |                                                 |
 | 6.11 | Save process                 | Save process definition                                       |    ❌    |                                                 |
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   35    |
-| ❌ Not covered           |   314   |
+| ✅ Covered by Playwright |   41    |
+| ❌ Not covered           |   308   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    0    |
-| **Coverage %**           | **10%** |
+| **Coverage %**           | **11.7%** |
