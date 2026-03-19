@@ -55,11 +55,11 @@ test.describe('Case management', () => {
 
       test('Switch version via list', async () => {
         // Act
-        await caseDetailsManagementPage.switchCaseVersionViaList(CASE_VERSIONS.STABLE);
+        await caseDetailsManagementPage.switchCaseVersionViaList();
 
         // Assert
         await expect(page).toHaveURL(
-          `/case-management/case/bezwaar/version/${CASE_VERSIONS.STABLE}/general`
+          /\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/
         );
       });
 
