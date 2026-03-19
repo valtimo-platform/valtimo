@@ -115,6 +115,8 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
   private _initialTeamKey: string | null = null;
   private _initialUserId: string | null = null;
 
+  private _candidateTeamsSubscription: Subscription | null = null;
+  private _candidateUsersSubscription: Subscription | null = null;
   private readonly _subscriptions = new Subscription();
 
   public get assignButtonTranslationKey(): string {
@@ -161,6 +163,7 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.unsubscribeCandidates();
     this._subscriptions.unsubscribe();
   }
 
@@ -266,26 +269,24 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
 
   private loadCandidates(): void {
     this.loading$.next(true);
+    this.unsubscribeCandidates();
 
     if (this.candidateUsers$) {
-      this._subscriptions.add(
-        combineLatest([this.candidateUsers$, this._translateService.stream('key')]).subscribe(
-          ([users]) => {
-            this.userItems$.next(this.mapUsersForDropdown(users));
-            this.loading$.next(false);
-          }
-        )
-      );
+      this._candidateUsersSubscription = combineLatest([
+        this.candidateUsers$,
+        this._translateService.stream('key'),
+      ]).subscribe(([users]) => {
+        this.userItems$.next(this.mapUsersForDropdown(users));
+        this.loading$.next(false);
+      });
     } else {
       this.loading$.next(false);
     }
 
     if (this.candidateTeams$) {
-      this._subscriptions.add(
-        this.candidateTeams$.subscribe(teams => {
-          this.teamItems$.next(this.mapTeamsForDropdown(teams));
-        })
-      );
+      this._candidateTeamsSubscription = this.candidateTeams$.subscribe(teams => {
+        this.teamItems$.next(this.mapTeamsForDropdown(teams));
+      });
     }
   }
 
@@ -360,5 +361,12 @@ export class AssignmentComponent implements OnInit, OnChanges, OnDestroy {
       this.showUserComboBox$.next(true);
       this.showTeamComboBox$.next(true);
     });
+  }
+
+  private unsubscribeCandidates(): void {
+    this._candidateUsersSubscription?.unsubscribe();
+    this._candidateUsersSubscription = null;
+    this._candidateTeamsSubscription?.unsubscribe();
+    this._candidateTeamsSubscription = null;
   }
 }
