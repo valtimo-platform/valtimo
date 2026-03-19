@@ -51,10 +51,10 @@ test.describe('Case management', () => {
     test.describe('Version switch', () => {
       test('Switch version via dropdown', async () => {
         // Arrange: ensure we're on a final version first so we actually switch
-        await ensureFinalVersionSelected(page);
+        const stableVersion = await ensureFinalVersionSelected(page);
 
         // Act
-        draftVersion = await ensureDraftVersionSelected(page);
+        await caseDetailsManagementPage.switchCaseVersionViaDropdown(draftVersion);
 
         // Assert
         await expect(page).toHaveURL(
@@ -75,16 +75,7 @@ test.describe('Case management', () => {
       test('Set active version', async () => {
         // Act
         const stableVersion = await ensureFinalVersionSelected(page);
-
-        await caseDetailsManagementPage.moreButton.click();
-        const item = caseDetailsManagementPage.setActiveVersionButton;
-        await expect(item).toBeVisible();
-
-        if (!(await item.isDisabled())) {
-          await item.click();
-          await caseDetailsManagementPage.confirmationModalContinueButton.click();
-          await caseDetailsManagementPage.confirmationModalSetActiveButton.click();
-        }
+        await caseDetailsManagementPage.makeVersionGlobal(stableVersion);
 
         // Assert
         await expect(

@@ -137,6 +137,11 @@ export class CaseDetailsManagementPage {
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }
 
+  async switchCaseVersionViaDropdown(caseVersion: string) {
+    await this.versionSelectDropdown.click();
+    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
+  }
+
   async switchCaseVersionViaList() {
     await this.versionSelectDropdown.click();
     await this.seeAllVersionsButton.click();
@@ -153,6 +158,23 @@ export class CaseDetailsManagementPage {
     ]);
 
     return download;
+  }
+
+  async makeVersionGlobal(caseVersion: string) {
+    await this.switchCaseVersionViaDropdown(caseVersion);
+
+    await this.moreButton.click();
+
+    const item = this.setActiveVersionButton;
+    await expect(item).toBeVisible();
+
+    if (await item.isDisabled()) {
+      return;
+    }
+
+    await item.click();
+    await this.confirmationModalContinueButton.click();
+    await this.confirmationModalSetActiveButton.click();
   }
 
   async fillInExternalForm() {
