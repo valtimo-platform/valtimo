@@ -16,20 +16,6 @@
 
 package com.ritense.valtimo.contract.authentication
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-
-interface TeamManagementService {
-
-    fun create(team: Team): Team
-
-    fun update(key: String, title: String): Team
-
-    fun delete(key: String)
-
-    fun findTeamKeysByUsername(username: String): List<String>
-
-    fun findByKey(teamKey: String): Team?
-
-    fun findAll(pageable: Pageable): Page<Team>
-}
+data class TeamDeletedEvent(
+    val teamKey: String
+)

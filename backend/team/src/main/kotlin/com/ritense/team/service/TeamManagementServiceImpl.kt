@@ -27,7 +27,10 @@ import com.ritense.team.repository.TeamRepositoryConfigSpecificationHelper
 import com.ritense.team.repository.TeamUserRepository
 import com.ritense.team.repository.TeamUserRepositoryConfigSpecificationHelper
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.TeamDeletedEvent
 import com.ritense.valtimo.contract.authentication.TeamManagementService
+import com.ritense.valtimo.contract.authentication.TeamUpdatedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
@@ -42,13 +45,13 @@ class TeamManagementServiceImpl(
     private val teamRepository: TeamRepository,
     private val teamUserRepository: TeamUserRepository,
     private val authorizationService: AuthorizationService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : TeamManagementService {
 
-    @Transactional(readOnly = true)
     fun findAll(
         titleContains: String? = null,
         pageable: Pageable = Pageable.unpaged()
-    ): Page<Team> {
+    ): Page<TeamInterface> {
         var specification: Specification<Team> = authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(
                 Team::class.java,
@@ -61,7 +64,7 @@ class TeamManagementServiceImpl(
         }
         val teams = teamRepository.findAll(specification, pageable)
         teams.forEach { team -> team.users.size } // Initialize lazy collection
-        return teams
+        return teams.map { it as TeamInterface }
     }
 
     @Transactional(readOnly = true)
@@ -79,22 +82,26 @@ class TeamManagementServiceImpl(
         return team
     }
 
-    fun create(team: Team): Team {
-        requirePermission(team, TeamActionProvider.CREATE)
-        return teamRepository.save(team)
+    override fun create(team: TeamInterface): TeamInterface {
+        val teamEntity = Team(team.key, team.title)
+        requirePermission(teamEntity, TeamActionProvider.CREATE)
+        return teamRepository.save(teamEntity)
     }
 
-    fun update(key: String, title: String): Team {
+    override fun update(key: String, title: String): TeamInterface {
         val team = teamRepository.findById(key).orElseThrow { IllegalArgumentException("Team not found") }
         requirePermission(team, TeamActionProvider.MODIFY)
         team.title = title
-        return teamRepository.save(team)
+        val savedTeam = teamRepository.save(team)
+        eventPublisher.publishEvent(TeamUpdatedEvent(key, title))
+        return savedTeam
     }
 
-    fun delete(key: String) {
+    override fun delete(key: String) {
         val team = teamRepository.findById(key).orElseThrow { IllegalArgumentException("Team not found") }
         requirePermission(team, TeamActionProvider.DELETE)
         teamRepository.deleteById(key)
+        eventPublisher.publishEvent(TeamDeletedEvent(key))
     }
 
     fun findAllTeamUsers(
@@ -142,7 +149,7 @@ class TeamManagementServiceImpl(
     }
 
     override fun findAll(pageable: Pageable): Page<TeamInterface> {
-        return findAll(titleContains = null, pageable = pageable).map { team -> team as TeamInterface }
+        return findAll(titleContains = null, pageable = pageable)
     }
 
     private fun requirePermission(team: Team, action: Action<Team>) {

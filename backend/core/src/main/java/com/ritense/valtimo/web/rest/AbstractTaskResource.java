@@ -17,6 +17,7 @@
 package com.ritense.valtimo.web.rest;
 
 import com.ritense.authorization.AuthorizationContext;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
@@ -28,6 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.form.FormField;
@@ -51,7 +53,7 @@ public abstract class AbstractTaskResource {
 
     public CustomTaskDto createCustomTaskDto(String id, HttpServletRequest request) {
         final OperatonTask task = operatonTaskService.findTaskById(id);
-        OperatonTaskDto taskDto = OperatonTaskDto.of(task);
+        OperatonTaskDto taskDto = OperatonTaskDto.of(task, Optional.ofNullable(operatonTaskService.getAssignedTeam(id)).map(TeamDto::from).orElse(null));
 
         ProcessInstance processInstance = AuthorizationContext
             .runWithoutAuthorization(

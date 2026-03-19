@@ -36,6 +36,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationH
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.all;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byAssignee;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byProcessInstanceId;
+import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byTeamKeys;
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byUnassigned;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -55,6 +56,9 @@ import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.operaton.dto.TeamDto;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder;
@@ -74,6 +78,8 @@ import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
+import com.ritense.valtimo.task.domain.TaskTeam;
+import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.repository.operaton.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.util.FormUtils;
@@ -141,6 +147,9 @@ public class OperatonTaskService {
     private final ObjectMapper objectMapper;
     private final List<TaskBusinessKeyResolver> taskBusinessKeyResolvers;
     private final UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private final TaskTeamRepository taskTeamRepository;
+    @Nullable
+    private final TeamManagementService teamManagementService;
 
     public OperatonTaskService(
         TaskService taskService,
@@ -157,7 +166,9 @@ public class OperatonTaskService {
         OutboxService outboxService,
         ObjectMapper objectMapper,
         List<TaskBusinessKeyResolver> taskBusinessKeyResolvers,
-        UserTaskOpenedStatusService userTaskOpenedStatusService
+        UserTaskOpenedStatusService userTaskOpenedStatusService,
+        TaskTeamRepository taskTeamRepository,
+        @Nullable TeamManagementService teamManagementService
     ) {
         this.taskService = taskService;
         this.formService = formService;
@@ -174,6 +185,8 @@ public class OperatonTaskService {
         this.objectMapper = objectMapper;
         this.taskBusinessKeyResolvers = taskBusinessKeyResolvers;
         this.userTaskOpenedStatusService = userTaskOpenedStatusService;
+        this.taskTeamRepository = taskTeamRepository;
+        this.teamManagementService = teamManagementService;
     }
 
     @Transactional(readOnly = true)
@@ -465,6 +478,9 @@ public class OperatonTaskService {
             ? userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskIds, currentUserId)
             : Set.<String>of();
 
+        var taskTeamMap = taskTeamRepository.findAllById(taskIds).stream()
+            .collect(Collectors.toMap(TaskTeam::getTaskId, t -> t));
+
         var assigneeMap = new java.util.HashMap<String, ValtimoUser>();
         var tasks = tupleList.stream()
             .map(tuple -> {
@@ -503,7 +519,8 @@ public class OperatonTaskService {
                     processDefinitionKey,
                     valtimoUser,
                     context,
-                    openedTaskIds.contains(task.getId())
+                    openedTaskIds.contains(task.getId()),
+                    Optional.ofNullable(taskTeamMap.get(task.getId())).map(TeamDto::from).orElse(null)
                 );
             })
             .toList();
@@ -522,13 +539,17 @@ public class OperatonTaskService {
 
     @Transactional(readOnly = true)
     public List<TaskInstanceWithIdentityLink> getProcessInstanceTasks(String processInstanceId, String businessKey) {
-        return findTasks(byProcessInstanceId(processInstanceId), Sort.by(DESC, CREATE_TIME))
-            .stream()
+        var tasks = findTasks(byProcessInstanceId(processInstanceId), Sort.by(DESC, CREATE_TIME));
+        var teamKeyMap = taskTeamRepository.findAllById(
+            tasks.stream().map(OperatonTask::getId).collect(toSet())
+        ).stream().collect(Collectors.toMap(TaskTeam::getTaskId, t -> t));
+
+        return tasks.stream()
             .map(task -> AuthorizationContext.runWithoutAuthorization(() -> {
                     final var identityLinks = getIdentityLinks(task.getId());
                     return new TaskInstanceWithIdentityLink(
                         businessKey,
-                        OperatonTaskDto.of(task),
+                        OperatonTaskDto.of(task, Optional.ofNullable(teamKeyMap.get(task.getId())).map(TeamDto::from).orElse(null)),
                         delegateTaskHelper.isTaskPublic(task),
                         task.getProcessDefinition().getKey(),
                         identityLinks,
@@ -614,8 +635,51 @@ public class OperatonTaskService {
         return taskFormData == null || taskFormData.getFormKey() != null || !taskFormData.getFormFields().isEmpty();
     }
 
+    @Transactional(readOnly = true)
+    public TaskTeam getAssignedTeam(String taskId) {
+        return taskTeamRepository.findById(taskId).orElse(null);
+    }
+
+    @Transactional
+    public void assignTeamToTask(String taskId, String teamKey) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        var team = teamManagementService != null ? teamManagementService.findByKey(teamKey) : null;
+        var teamTitle = team != null ? team.getTitle() : teamKey;
+
+        var taskTeam = taskTeamRepository.findById(taskId)
+            .orElse(new TaskTeam(taskId, teamKey, teamTitle));
+        taskTeam.setTeamKey(teamKey);
+        taskTeam.setTeamTitle(teamTitle);
+        taskTeamRepository.save(taskTeam);
+
+        outboxService.send(() -> new TaskAssigned(task.getId(), objectMapper.valueToTree(task)));
+    }
+
+    @Transactional
+    public void unassignTeamFromTask(String taskId) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        taskTeamRepository.deleteById(taskId);
+
+        outboxService.send(() -> new TaskUnassigned(task.getId(), objectMapper.valueToTree(task)));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Team> getCandidateTeams(String taskId, Pageable pageable) {
+        final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
+        requirePermission(task, ASSIGN);
+
+        if (teamManagementService == null) {
+            return Page.empty(pageable);
+        }
+        return runWithoutAuthorization(() -> teamManagementService.findAll(pageable));
+    }
+
     public enum TaskFilter {
-        MINE, OPEN, ALL
+        MINE, OPEN, ALL, TEAM
     }
 
     private void publishTaskAssignedEvent(OperatonTask task, String formerAssignee, String newAssignee) {
@@ -695,6 +759,14 @@ public class OperatonTaskService {
             return filterSpec;
         } else if (taskFilter == TaskFilter.OPEN) {
             return filterSpec.and(byUnassigned());
+        } else if (taskFilter == TaskFilter.TEAM) {
+            if (teamManagementService == null) {
+                throw new IllegalStateException(
+                    "No teamManagementService found. In order to use this feature, the team library must be included.");
+            }
+            String currentUsername = userManagementService.getCurrentUser().getUsername();
+            List<String> teamKeys = teamManagementService.findTeamKeysByUsername(currentUsername);
+            return filterSpec.and(byTeamKeys(teamKeys));
         }
 
         return filterSpec;

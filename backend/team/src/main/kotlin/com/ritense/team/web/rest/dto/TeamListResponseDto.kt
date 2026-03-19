@@ -17,6 +17,7 @@
 package com.ritense.team.web.rest.dto
 
 import com.ritense.team.domain.Team
+import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 data class TeamListResponseDto(
     val key: String,
@@ -24,10 +25,10 @@ data class TeamListResponseDto(
     val userCount: Int,
 ) {
     companion object {
-        fun from(team: Team) = TeamListResponseDto(
+        fun from(team: TeamInterface) = TeamListResponseDto(
             team.key,
             team.title,
-            team.users.size
+            if (team is Team) team.users.size else 0
         )
     }
 }
