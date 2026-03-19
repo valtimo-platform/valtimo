@@ -134,6 +134,7 @@ export class CaseDetailsConfigPage {
   async addStatus(title: string) {
     await this.statusAddButton.click();
     await this.statusTitleInput.fill(title);
+    await expect(this.statusAddConfirmButton).toBeEnabled();
     await this.statusAddConfirmButton.click();
   }
 
@@ -216,6 +217,7 @@ export class CaseDetailsConfigPage {
   async addTag(title: string) {
     await this.tagAddButton.click();
     await this.tagTitleInput.fill(title);
+    await expect(this.tagAddConfirmButton).toBeEnabled();
     await this.tagAddConfirmButton.click();
   }
 
