@@ -17,6 +17,7 @@
 
 package com.ritense.valtimo.operaton.dto
 
+import com.ritense.valtimo.operaton.dto.TeamDto
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import java.time.LocalDateTime
@@ -48,7 +49,8 @@ data class TaskExtended(
     val processDefinitionKey: String?,
     val valtimoAssignee: ValtimoUser?,
     val context: Any?,
-    val isOpened: Boolean
+    val isOpened: Boolean,
+    val assignedTeam: TeamDto? = null
 ) {
 
     companion object {
@@ -63,7 +65,8 @@ data class TaskExtended(
             processDefinitionKey: String?,
             valtimoAssignee: ValtimoUser?,
             context: Any?,
-            isOpened: Boolean
+            isOpened: Boolean,
+            assignedTeam: TeamDto? = null
         ) = TaskExtended(
             task.id,
             task.name,
@@ -91,7 +94,8 @@ data class TaskExtended(
             processDefinitionKey,
             valtimoAssignee,
             context,
-            isOpened
+            isOpened,
+            assignedTeam
         )
     }
 }

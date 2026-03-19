@@ -26,6 +26,7 @@ import com.ritense.valtimo.operaton.dto.TaskExtended;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
@@ -122,7 +123,12 @@ public class TaskResource extends AbstractTaskResource {
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
         @RequestBody AssigneeRequest assigneeRequest
     ) {
-        operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+        if (assigneeRequest.getAssignee() != null) {
+            operatonTaskService.assign(taskId, assigneeRequest.getAssignee());
+        }
+        if (assigneeRequest.getAssignedTeamKey() != null) {
+            operatonTaskService.assignTeamToTask(taskId, assigneeRequest.getAssignedTeamKey());
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -138,6 +144,7 @@ public class TaskResource extends AbstractTaskResource {
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
     ) {
         operatonTaskService.unassign(taskId);
+        operatonTaskService.unassignTeamFromTask(taskId);
         return ResponseEntity.ok().build();
     }
 
@@ -207,6 +214,15 @@ public class TaskResource extends AbstractTaskResource {
     ) {
         List<NamedUser> users = operatonTaskService.getNamedCandidateUsers(taskId);
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/v1/task/{taskId}/candidate-team")
+    public ResponseEntity<Page<TeamDto>> getCandidateTeams(
+        @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
+        Pageable pageable
+    ) {
+        Page<TeamDto> teams = operatonTaskService.getCandidateTeams(taskId, pageable).map(TeamDto::from);
+        return ResponseEntity.ok(teams);
     }
 
     // Overriding the default TaskFilter binder so it's not case sensitive

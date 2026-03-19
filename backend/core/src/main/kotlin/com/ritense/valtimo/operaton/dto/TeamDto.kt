@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication
+package com.ritense.valtimo.operaton.dto
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import com.ritense.valtimo.contract.authentication.Team
 
-interface TeamManagementService {
-
-    fun create(team: Team): Team
-
-    fun update(key: String, title: String): Team
-
-    fun delete(key: String)
-
-    fun findTeamKeysByUsername(username: String): List<String>
-
-    fun findByKey(teamKey: String): Team?
-
-    fun findAll(pageable: Pageable): Page<Team>
+data class TeamDto(
+    override val key: String,
+    override val title: String
+) : Team {
+    companion object {
+        @JvmStatic
+        fun from(team: Team): TeamDto = TeamDto(team.key, team.title)
+    }
 }
