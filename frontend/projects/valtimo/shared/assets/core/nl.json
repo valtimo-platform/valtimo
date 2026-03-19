@@ -1585,7 +1585,8 @@
     "update": "Bijwerken",
     "unassign": "Toewijzing ongedaan maken",
     "unassignAll": "Alles vrijgeven",
-    "loading": "Laden..."
+    "loading": "Laden...",
+    "me": "mij"
   },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
