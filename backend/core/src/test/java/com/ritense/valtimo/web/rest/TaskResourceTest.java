@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
@@ -64,6 +65,7 @@ class TaskResourceTest {
     private OperatonTaskService operatonTaskService;
     private OperatonProcessService operatonProcessService;
     private UserTaskOpenedStatusService userTaskOpenedStatusService;
+    private UserManagementService userManagementService;
     private AssigneeRequest assigneeRequest;
     private SetDueDateRequest dueDateRequest;
     private ObjectMapper objectMapper;
@@ -77,12 +79,14 @@ class TaskResourceTest {
         operatonTaskService = mock(OperatonTaskService.class);
         operatonProcessService = mock(OperatonProcessService.class);
         userTaskOpenedStatusService = mock(UserTaskOpenedStatusService.class);
+        userManagementService = mock(UserManagementService.class);
 
         taskResource = new TaskResource(
             formService,
             operatonTaskService,
             operatonProcessService,
-            userTaskOpenedStatusService
+            userTaskOpenedStatusService,
+            userManagementService
         );
         objectMapper = MapperSingleton.INSTANCE.get();
 
@@ -298,6 +302,101 @@ class TaskResourceTest {
 
         verify(operatonTaskService, times(1)).assign(taskId, assigneeId);
         verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+    }
+
+    @Test
+    void assign_emptyAssignee_unassignsUser() throws Exception {
+        var request = new AssigneeRequest("", null);
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_emptyTeamKey_unassignsTeam() throws Exception {
+        var request = new AssigneeRequest(null, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeAndTeamKey_unassignsBoth() throws Exception {
+        var request = new AssigneeRequest("", "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
+    }
+
+    @Test
+    void assign_emptyAssigneeWithTeam_unassignsUserAndAssignsTeam() throws Exception {
+        var request = new AssigneeRequest("", "team-a");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).unassign(taskId);
+        verify(operatonTaskService, never()).assign(any(), any());
+        verify(operatonTaskService, times(1)).assignTeamToTask(taskId, "team-a");
+        verify(operatonTaskService, never()).unassignTeamFromTask(any());
+    }
+
+    @Test
+    void assign_assigneeWithEmptyTeam_assignsUserAndUnassignsTeam() throws Exception {
+        var request = new AssigneeRequest(assigneeId, "");
+
+        mockMvc.perform(post("/api/v1/task/{taskId}/assign", taskId)
+                .content(objectMapper.writeValueAsString(request))
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(operatonTaskService, times(1)).assign(taskId, assigneeId);
+        verify(operatonTaskService, never()).unassign(any());
+        verify(operatonTaskService, times(1)).unassignTeamFromTask(taskId);
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any());
     }
 
     @Test

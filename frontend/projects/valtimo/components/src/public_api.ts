@@ -283,3 +283,6 @@ export * from './lib/directives/observe-size/observe-size.directive';
 export * from './lib/directives/context-menu.directive';
 // interfaces
 export * from './lib/interfaces';
+
+// assignment
+export * from './lib/components/assign-user/assignment.component';

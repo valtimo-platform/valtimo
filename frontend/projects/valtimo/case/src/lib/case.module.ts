@@ -25,6 +25,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
+  AssignmentComponent,
   BpmnJsDiagramModule,
   CamundaFormModule,
   CarbonListModule,
@@ -86,7 +87,6 @@ import {
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {CaseRoutingModule} from './case-routing.module';
-import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
 import {CaseBulkAssignModalComponent} from './components/case-bulk-assign-modal/case-bulk-assign-modal.component';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseDetailTabAuditComponent} from './components/case-detail/tab/audit/audit.component';
@@ -129,7 +129,6 @@ export type TabsFactory = () => Map<string, object>;
     CaseSupportingProcessStartModalComponent,
     CaseDetailTabS3DocumentsComponent,
     CaseDetailTabNotFoundComponent,
-    CaseAssignUserComponent,
     NoteModalComponent,
     CaseDetailTabFormioComponent,
     CaseListTabsComponent,
@@ -212,6 +211,7 @@ export type TabsFactory = () => Map<string, object>;
     QuickSearchComponent,
     CaseProcessStartModalComponent,
     CaseListActionsComponent,
+    AssignmentComponent,
   ],
   exports: [CaseListComponent, CaseDetailComponent],
 })

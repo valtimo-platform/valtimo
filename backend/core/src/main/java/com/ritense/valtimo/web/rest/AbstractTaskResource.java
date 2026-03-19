@@ -17,6 +17,8 @@
 package com.ritense.valtimo.web.rest;
 
 import com.ritense.authorization.AuthorizationContext;
+import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.operaton.dto.AssigneeDto;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.form.FormField;
@@ -40,20 +44,28 @@ public abstract class AbstractTaskResource {
     final FormService formService;
     final OperatonTaskService operatonTaskService;
     private final OperatonProcessService operatonProcessService;
+    private final UserManagementService userManagementService;
 
     AbstractTaskResource(
         final FormService formService,
         final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final OperatonProcessService operatonProcessService,
+        final UserManagementService userManagementService
     ) {
         this.formService = formService;
         this.operatonTaskService = operatonTaskService;
         this.operatonProcessService = operatonProcessService;
+        this.userManagementService = userManagementService;
     }
 
     public CustomTaskDto createCustomTaskDto(String id, HttpServletRequest request) {
         final OperatonTask task = operatonTaskService.findTaskById(id);
-        OperatonTaskDto taskDto = OperatonTaskDto.of(task, Optional.ofNullable(operatonTaskService.getAssignedTeam(id)).map(TeamDto::from).orElse(null));
+        AssigneeDto valtimoAssignee = resolveAssignee(task.getAssignee());
+        OperatonTaskDto taskDto = OperatonTaskDto.of(
+            task,
+            Optional.ofNullable(operatonTaskService.getAssignedTeam(id)).map(TeamDto::from).orElse(null),
+            valtimoAssignee
+        );
 
         ProcessInstance processInstance = AuthorizationContext
             .runWithoutAuthorization(
@@ -75,6 +87,22 @@ public abstract class AbstractTaskResource {
             formLocation = FormUtils.getFormLocation(formKey, request);
         }
         return new CustomTaskDto(taskDto, taskFormData, variables, formLocation, processInstance, processDefinition);
+    }
+
+    private AssigneeDto resolveAssignee(String assignee) {
+        if (StringUtils.isBlank(assignee)) {
+            return null;
+        }
+        return Optional.ofNullable(userManagementService.findByUsername(assignee))
+            .map(user -> {
+                var firstName = user.getFirstName();
+                var lastName = user.getLastName();
+                var fullName = Stream.of(firstName, lastName)
+                    .filter(s -> s != null && !s.isBlank())
+                    .collect(Collectors.joining(" "));
+                return new AssigneeDto(assignee, firstName, lastName, fullName);
+            })
+            .orElse(null);
     }
 
 }

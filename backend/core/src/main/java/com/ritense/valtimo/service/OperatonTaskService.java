@@ -57,6 +57,7 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.operaton.dto.AssigneeDto;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -544,12 +545,36 @@ public class OperatonTaskService {
             tasks.stream().map(OperatonTask::getId).collect(toSet())
         ).stream().collect(Collectors.toMap(TaskTeam::getTaskId, t -> t));
 
+        var assigneeMap = new java.util.HashMap<String, AssigneeDto>();
+
         return tasks.stream()
             .map(task -> AuthorizationContext.runWithoutAuthorization(() -> {
                     final var identityLinks = getIdentityLinks(task.getId());
+
+                    AssigneeDto assigneeDto = null;
+                    if (task.getAssignee() != null) {
+                        try {
+                            if (assigneeMap.containsKey(task.getAssignee())) {
+                                assigneeDto = assigneeMap.get(task.getAssignee());
+                            } else {
+                                assigneeDto = runWithoutAuthorization(() -> getAssigneeDto(task.getAssignee()));
+                                assigneeMap.put(task.getAssignee(), assigneeDto);
+                            }
+                        } catch (Exception e) {
+                            logger.error(
+                                "Failed to retrieve assignee " + task.getAssignee() + " for task " + task.getId(),
+                                e
+                            );
+                        }
+                    }
+
                     return new TaskInstanceWithIdentityLink(
                         businessKey,
-                        OperatonTaskDto.of(task, Optional.ofNullable(teamKeyMap.get(task.getId())).map(TeamDto::from).orElse(null)),
+                        OperatonTaskDto.of(
+                            task,
+                            Optional.ofNullable(teamKeyMap.get(task.getId())).map(TeamDto::from).orElse(null),
+                            assigneeDto
+                        ),
                         delegateTaskHelper.isTaskPublic(task),
                         task.getProcessDefinition().getKey(),
                         identityLinks,
@@ -698,7 +723,7 @@ public class OperatonTaskService {
                 formerAssignee,
                 newAssignee,
                 task.getId(),
-                task.getName(),
+                task.getName() != null ? task.getName() : task.getTaskDefinitionKey(),
                 task.getCreateTime(),
                 task.getProcessDefinitionId(),
                 task.getProcessInstanceId(),
@@ -740,7 +765,7 @@ public class OperatonTaskService {
                 newDueDate,
                 task.getAssignee(),
                 task.getId(),
-                task.getName(),
+                task.getName() != null ? task.getName() : task.getTaskDefinitionKey(),
                 task.getCreateTime(),
                 task.getProcessDefinitionId(),
                 task.getProcessInstanceId(),
@@ -780,6 +805,17 @@ public class OperatonTaskService {
                     .lastName(user.getLastName())
                     .build())
             .orElse(null);
+    }
+
+    private AssigneeDto getAssigneeDto(String assignee) {
+        return Optional.ofNullable(userManagementService.findByUsername(assignee)).map(user -> {
+            var firstName = user.getFirstName();
+            var lastName = user.getLastName();
+            var fullName = java.util.stream.Stream.of(firstName, lastName)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(" "));
+            return new AssigneeDto(assignee, firstName, lastName, fullName);
+        }).orElse(null);
     }
 
     private List<Order> getOrderBy(CriteriaBuilder cb, Root<OperatonTask> root, Sort sort) {
