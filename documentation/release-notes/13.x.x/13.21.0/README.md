@@ -18,6 +18,9 @@
 
 ## Bugfixes
 
+* Fixed a bug where building blocks could not update the internal case status, case tags, or assignee of the calling
+  case. The building block now correctly references the case definition of the parent case.
+
 * **Fixed auto-deployment of global forms and object management configurations**
 
   Forms used by object management (edit/view forms) could not be auto-deployed in Valtimo 13 because the form importer
