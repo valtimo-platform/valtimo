@@ -28,10 +28,13 @@ Teams are integrated into Valtimo's access control system as a resource. The res
 
 ### Database schema
 
-The teams feature uses two tables:
+The teams feature uses the following tables:
 
 * `team`: Stores information about teams (key and title).
 * `team_user`: Stores the membership information (team key and username).
+* `task_team`: Stores team assignment for tasks (task id and team key).
+
+Additionally, the `json_schema_document` table is extended with `assigned_team_key` and `assigned_team_title` columns to store the team assigned to a case.
 
 ## Frontend implementation
 

@@ -11,13 +11,13 @@ Add the following dependency to `package.json`:
 ```json
 {
   "dependencies": {
-    "@valtimo/teams": "13.20.0"
+    "@valtimo/teams": "13.21.0"
   }
 }
 ```
 
 {% hint style="info" %}
-Replace `13.20.0` with the Valtimo version you are upgrading to, or use the appropriate package URL.
+Replace `13.21.0` with the Valtimo version you are upgrading to, or use the appropriate package URL.
 {% endhint %}
 
 ### 2. Import TeamsModule
