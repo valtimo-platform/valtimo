@@ -31,7 +31,7 @@ import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 data class Team(
     @Id
     @Column(name = "team_key", nullable = false, unique = true, length = 255)
-    override var key: String,
+    override val key: String,
 
     @Column(name = "title", nullable = false, length = 255)
     override var title: String,

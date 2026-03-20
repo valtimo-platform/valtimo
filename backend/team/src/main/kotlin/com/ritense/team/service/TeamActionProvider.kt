@@ -22,7 +22,7 @@ import com.ritense.team.domain.Team
 
 class TeamActionProvider : ResourceActionProvider<Team> {
     override fun getAvailableActions(): List<Action<Team>> {
-        return listOf(CREATE, MODIFY, DELETE, ASSIGN)
+        return listOf(VIEW, VIEW_LIST, CREATE, MODIFY, DELETE, ASSIGN)
     }
 
     companion object {

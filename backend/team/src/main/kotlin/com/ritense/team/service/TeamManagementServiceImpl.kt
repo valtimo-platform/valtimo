@@ -48,6 +48,7 @@ class TeamManagementServiceImpl(
     private val eventPublisher: ApplicationEventPublisher,
 ) : TeamManagementService {
 
+    @Transactional(readOnly = true)
     fun findAll(
         titleContains: String? = null,
         pageable: Pageable = Pageable.unpaged()
@@ -69,8 +70,8 @@ class TeamManagementServiceImpl(
 
     @Transactional(readOnly = true)
     override fun findByKey(teamKey: String): Team? {
-        val team = teamRepository.findById(teamKey).orElse(null)
-        team?.users?.size // Initialize lazy collection
+        val team = teamRepository.findById(teamKey).orElse(null) ?: return null
+        team.users.size // Initialize lazy collection
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
@@ -89,7 +90,7 @@ class TeamManagementServiceImpl(
     }
 
     override fun update(key: String, title: String): TeamInterface {
-        val team = teamRepository.findById(key).orElseThrow { IllegalArgumentException("Team not found") }
+        val team = teamRepository.findById(key).orElseThrow { NoSuchElementException("Team not found") }
         requirePermission(team, TeamActionProvider.MODIFY)
         team.title = title
         val savedTeam = teamRepository.save(team)
@@ -98,7 +99,7 @@ class TeamManagementServiceImpl(
     }
 
     override fun delete(key: String) {
-        val team = teamRepository.findById(key).orElseThrow { IllegalArgumentException("Team not found") }
+        val team = teamRepository.findById(key).orElseThrow { NoSuchElementException("Team not found") }
         requirePermission(team, TeamActionProvider.DELETE)
         teamRepository.deleteById(key)
         eventPublisher.publishEvent(TeamDeletedEvent(key))
@@ -130,13 +131,13 @@ class TeamManagementServiceImpl(
     }
 
     fun addUserToTeam(username: String, teamKey: String): TeamUser {
-        val team = teamRepository.findById(teamKey).orElseThrow { IllegalArgumentException("Team not found") }
+        val team = teamRepository.findById(teamKey).orElseThrow { NoSuchElementException("Team not found") }
         requirePermission(team, TeamActionProvider.ASSIGN)
         return teamUserRepository.save(TeamUser(id = TeamUserId(username, teamKey), team = team))
     }
 
     fun removeUserFromTeam(username: String, teamKey: String) {
-        val team = teamRepository.findById(teamKey).orElseThrow { IllegalArgumentException("Team not found") }
+        val team = teamRepository.findById(teamKey).orElseThrow { NoSuchElementException("Team not found") }
         requirePermission(team, TeamActionProvider.ASSIGN)
         val specification = TeamUserRepositoryConfigSpecificationHelper.byTeamKey(teamKey)
             .and(TeamUserRepositoryConfigSpecificationHelper.byUsername(username))

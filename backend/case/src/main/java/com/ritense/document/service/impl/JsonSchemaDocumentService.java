@@ -91,6 +91,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -810,6 +811,9 @@ public class JsonSchemaDocumentService implements DocumentService {
         );
 
         var team = teamManagementService == null ? null : teamManagementService.findByKey(teamKey);
+        if (teamManagementService != null && team == null) {
+            throw new NoSuchElementException("Team not found: " + teamKey);
+        }
         var teamTitle = team != null ? team.getTitle() : teamKey;
         document.setAssignedTeamKey(teamKey);
         document.setAssignedTeamTitle(teamTitle);
