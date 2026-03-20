@@ -25,7 +25,7 @@ When the case handler option is selected the following changes are visible in th
     * **Team cases**\
       _&#x4F;verview of cases that are assigned to a team that the user belongs to._
     * **Unassigned cases**\
-      _&#x4F;verview of cases that are not assigned to a case handler_\\
+      _&#x4F;verview of cases that are not assigned to a case handler or team_\\
 * **An "Assignee" column is automatically added to the case list columns**\
   This column displays the case handler assigned to each case in the overview. This column is fixed and can't be removed via the case list configuration page.\\
 * **An option to assign a case handler on the case details page.**\
@@ -109,7 +109,7 @@ The available tab values are defined by the `CaseListTab` enum:
 |--------|------------------|--------------------------------------------------------|---------|
 | `ALL`  | All cases        | Shows all cases the user has access to.                |         |
 | `MINE` | My cases         | Shows cases assigned to the current user.              |         |
-| `TEAM` | Team cases       | Shows cases assigned to a team the user belongs to.    | 13.20.0 |
+| `TEAM` | Team cases       | Shows cases assigned to a team the user belongs to.    | 13.21.0 |
 | `OPEN` | Unassigned cases | Shows cases without an assigned handler or team.       |         |
 
 ### Example configuration

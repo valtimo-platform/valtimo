@@ -118,9 +118,11 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   ) {
     this.teamDetailService.setRoute(this.route);
 
-    this.teamDetailService.loadingMembers$.subscribe(loading => {
-      this.$loadingMembers.set(loading);
-    });
+    this.permissionSubscription.add(
+      this.teamDetailService.loadingMembers$.subscribe(loading => {
+        this.$loadingMembers.set(loading);
+      })
+    );
 
     this.permissionSubscription.add(
       this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION)
@@ -146,9 +148,11 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   }
 
   public onDeleteTeamConfirm(): void {
-    this.teamsApiService.deleteTeam(this.teamDetailService.teamKey).subscribe(() => {
-      this.teamDetailService.navigateToTeamsList();
-    });
+    this.permissionSubscription.add(
+      this.teamsApiService.deleteTeam(this.teamDetailService.teamKey).subscribe(() => {
+        this.teamDetailService.navigateToTeamsList();
+      })
+    );
   }
 
   public onRemoveMember(member: TeamUserResponseDto): void {
@@ -156,11 +160,13 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   }
 
   public onRemoveMemberConfirm(member: TeamUserResponseDto): void {
-    this.teamsApiService
-      .removeTeamUser(this.teamDetailService.teamKey, member.username)
-      .subscribe(() => {
-        this.teamDetailService.reloadMembers();
-      });
+    this.permissionSubscription.add(
+      this.teamsApiService
+        .removeTeamUser(this.teamDetailService.teamKey, member.username)
+        .subscribe(() => {
+          this.teamDetailService.reloadMembers();
+        })
+    );
   }
 
   public onPaginationClicked(page: number): void {

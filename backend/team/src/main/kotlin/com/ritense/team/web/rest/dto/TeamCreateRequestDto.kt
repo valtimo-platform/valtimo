@@ -16,7 +16,17 @@
 
 package com.ritense.team.web.rest.dto
 
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
+
 data class TeamCreateRequestDto(
+    @field:NotBlank
+    @field:Size(max = 255)
+    @field:Pattern(regexp = "[a-z0-9_-]+")
     val key: String,
+
+    @field:NotBlank
+    @field:Size(max = 255)
     val title: String
 )

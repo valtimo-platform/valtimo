@@ -24,6 +24,7 @@ import com.ritense.team.web.rest.dto.TeamResponseDto
 import com.ritense.team.web.rest.dto.TeamUpdateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserCreateRequestDto
 import com.ritense.team.web.rest.dto.TeamUserResponseDto
+import jakarta.validation.Valid
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -65,13 +66,13 @@ class TeamResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun createTeam(@RequestBody request: TeamCreateRequestDto): TeamResponseDto {
+    fun createTeam(@Valid @RequestBody request: TeamCreateRequestDto): TeamResponseDto {
         val team = teamManagementService.create(Team(key = request.key, title = request.title))
         return TeamResponseDto.from(team)
     }
 
     @PutMapping("/{key}")
-    fun updateTeam(@PathVariable key: String, @RequestBody request: TeamUpdateRequestDto): TeamResponseDto {
+    fun updateTeam(@PathVariable key: String, @Valid @RequestBody request: TeamUpdateRequestDto): TeamResponseDto {
         require(request.key == key) { "Key in request does not match path variable" }
         val team = teamManagementService.update(key, request.title)
         return TeamResponseDto.from(team)
