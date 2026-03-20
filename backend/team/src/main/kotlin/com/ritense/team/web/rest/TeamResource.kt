@@ -56,7 +56,7 @@ class TeamResource(
     @GetMapping
     fun getAllTeams(
         @RequestParam(required = false) titleContains: String?,
-        @SortDefaults(SortDefault(sort = ["title"], direction = Sort.Direction.DESC)) pageable: Pageable,
+        @SortDefaults(SortDefault(sort = ["title"])) pageable: Pageable,
     ): Page<TeamListResponseDto> {
         return teamManagementService.findAll(titleContains, pageable).map { TeamListResponseDto.from(it) }
     }
