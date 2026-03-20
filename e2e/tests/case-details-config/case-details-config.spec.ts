@@ -18,7 +18,6 @@ import {expect, test} from '@playwright/test';
 import {expectNotificationMessage} from '../../utils/ui.utils';
 import {
   CASE_IDENTIFIER,
-  CASE_VERSION,
   statusTestData,
   statusColorTestData,
   statusVisibilityTestData,
@@ -34,6 +33,7 @@ test.describe('Case details configuration', () => {
   let page;
   let caseDetailsConfigPage;
   let request;
+  let draftVersion: string;
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -45,7 +45,7 @@ test.describe('Case details configuration', () => {
 
     await page.goto('/');
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
-    await caseDetailsConfigPage.ensureDraftVersionSelected();
+    draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
   });
 
   test.afterAll(async () => {
@@ -65,8 +65,8 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, visibilityStatusKey);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyA);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
-    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, CASE_VERSION, tagKey);
-    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, CASE_VERSION, originalTagKey);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
 
     await context.close();
   });
