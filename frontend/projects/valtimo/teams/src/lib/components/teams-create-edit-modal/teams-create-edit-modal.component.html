@@ -50,6 +50,15 @@
         />
       </cds-label>
     </div>
+
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      placeholderTranslationKey="interface.key"
+    >
+    </valtimo-auto-key-input>
   </form>
 
   <cds-modal-footer>

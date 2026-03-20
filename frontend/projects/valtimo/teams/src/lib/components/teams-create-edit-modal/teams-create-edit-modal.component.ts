@@ -25,10 +25,10 @@ import {
   Validators,
 } from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
-import {runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
+import {AutoKeyInputComponent, runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
 import {TeamsApiService, TeamsService} from '../../services';
-import {catchError, of, Subscription} from 'rxjs';
-import {TeamListResponseDto} from '@valtimo/shared';
+import {catchError, map, of, Subscription} from 'rxjs';
+import {ModalMode, TeamListResponseDto} from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -44,6 +44,7 @@ import {TeamListResponseDto} from '@valtimo/shared';
     ReactiveFormsModule,
     TranslatePipe,
     ValtimoCdsModalDirective,
+    AutoKeyInputComponent,
   ],
 })
 export class TeamsCreateEditModalComponent implements OnDestroy {
@@ -53,33 +54,52 @@ export class TeamsCreateEditModalComponent implements OnDestroy {
 
   public formGroup: FormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
+    key: this.fb.control('', Validators.required),
   });
 
   public get title(): FormControl<string> {
     return this.formGroup.get('title') as FormControl<string>;
   }
 
+  public get key(): FormControl<string> {
+    return this.formGroup.get('key') as FormControl<string>;
+  }
+
   public get isEditMode(): boolean {
     return this.editingTeam !== null;
   }
 
-  private readonly _editingTeamSubscription: Subscription;
+  public get modalMode(): ModalMode {
+    return this.isEditMode ? 'edit' : 'add';
+  }
+
+  public usedKeys: string[] = [];
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly teamsApiService: TeamsApiService,
     private readonly teamsService: TeamsService,
     private readonly fb: FormBuilder
   ) {
-    this._editingTeamSubscription = this.teamsService.editingTeam$.subscribe(team => {
-      this.editingTeam = team;
-      if (team) {
-        this.formGroup.patchValue({title: team.title});
-      }
-    });
+    this._subscriptions.add(
+      this.teamsService.editingTeam$.subscribe(team => {
+        this.editingTeam = team;
+        if (team) {
+          this.formGroup.patchValue({title: team.title, key: team.key});
+        }
+      })
+    );
+
+    this._subscriptions.add(
+      this.teamsService.loadedTeams$
+        .pipe(map(teams => teams.map(t => t.key)))
+        .subscribe(keys => (this.usedKeys = keys))
+    );
   }
 
   public ngOnDestroy(): void {
-    this._editingTeamSubscription.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public onCloseModal(): void {
@@ -91,6 +111,7 @@ export class TeamsCreateEditModalComponent implements OnDestroy {
     this.formGroup.disable();
 
     const titleValue = this.title.value;
+    const keyValue = this.key.value;
 
     const request$ = this.isEditMode
       ? this.teamsApiService.updateTeam(this.editingTeam!.key, {
@@ -98,7 +119,7 @@ export class TeamsCreateEditModalComponent implements OnDestroy {
           title: titleValue,
         })
       : this.teamsApiService.createTeam({
-          key: titleValue.replace(/\s+/g, '_'),
+          key: keyValue,
           title: titleValue,
         });
 

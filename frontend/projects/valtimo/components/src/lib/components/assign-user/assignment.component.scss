@@ -42,9 +42,15 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+  max-width: calc(50% - 4px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:only-child {
+    max-width: 100%;
+  }
 
   .pill-icon {
     flex-shrink: 0;
