@@ -17,7 +17,6 @@
 
 package com.ritense.valtimo.operaton.dto
 
-import com.ritense.valtimo.operaton.dto.TeamDto
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import java.time.LocalDateTime
 

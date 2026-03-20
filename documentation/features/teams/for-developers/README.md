@@ -26,6 +26,17 @@ The teams feature provides several REST endpoints for managing teams and their m
 Teams are integrated into Valtimo's access control system as a resource. The resource type for teams is
 `com.ritense.team.domain.Team`.
 
+The following actions are available for the Team resource:
+
+| Action      | Description                              |
+|-------------|------------------------------------------|
+| `view`      | View a single team                       |
+| `view_list` | View the list of teams                   |
+| `create`    | Create a new team                        |
+| `modify`    | Update an existing team                  |
+| `delete`    | Delete a team                            |
+| `assign`    | Add or remove users from a team          |
+
 ### Database schema
 
 The teams feature uses the following tables:

@@ -19,8 +19,8 @@ pluginManager.withPlugin('maven-publish') {
         publications {
             maven(MavenPublication) {
                 pom {
-                    name = 'Notes module'
-                    description = 'The notes module allows you to add notes to an existing case'
+                    name = 'Team module'
+                    description = 'The team module allows you to manage teams and assign them to cases and tasks'
                     developers {
                         developer {
                             id = "team-valtimo"
