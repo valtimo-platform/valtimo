@@ -19,7 +19,6 @@ package com.ritense.form.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
@@ -34,6 +33,7 @@ import com.ritense.form.service.FormDefinitionImporter
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.FormSubmissionService
 import com.ritense.form.service.FormSupportedProcessLinksHandler
+import com.ritense.form.service.GlobalFormDefinitionImporter
 import com.ritense.form.service.IntermediateSubmissionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.form.service.impl.DefaultFormSubmissionService
@@ -94,6 +94,12 @@ class FormAutoConfigurationKotlin {
     fun formDefinitionImporter(
         formDefinitionDeploymentService: FormDefinitionDeploymentService
     ): FormDefinitionImporter = FormDefinitionImporter(formDefinitionDeploymentService)
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalFormDefinitionImporter::class)
+    fun globalFormDefinitionImporter(
+        formDefinitionDeploymentService: FormDefinitionDeploymentService
+    ): GlobalFormDefinitionImporter = GlobalFormDefinitionImporter(formDefinitionDeploymentService)
 
     @Bean
     @ConditionalOnMissingBean(FormSubmissionService::class)

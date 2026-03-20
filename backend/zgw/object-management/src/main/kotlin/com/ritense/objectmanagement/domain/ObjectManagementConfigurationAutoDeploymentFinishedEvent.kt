@@ -18,6 +18,7 @@ package com.ritense.objectmanagement.domain
 
 import com.fasterxml.jackson.annotation.JsonCreator
 
+@Deprecated("Since 13.20.0", ReplaceWith("ObjectManagementImporter"))
 class ObjectManagementConfigurationAutoDeploymentFinishedEvent {
 
     private var objectManagementConfigurations: List<ObjectManagement>? = null
