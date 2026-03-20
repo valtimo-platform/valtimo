@@ -78,16 +78,15 @@ class TeamManagementServiceImplIntTest : BaseIntegrationTest() {
         teamManagementService.create(Team(key = "team5", title = "Team 5"))
 
         val username = "user1"
-        val teamUser = teamManagementService.addUserToTeam(username, "team5")
-        assertThat(teamUser.username).isEqualTo(username)
-        assertThat(teamUser.teamKey).isEqualTo("team5")
+        val addedUsername = teamManagementService.addUserToTeam(username, "team5")
+        assertThat(addedUsername).isEqualTo(username)
 
-        val teamUsers = teamManagementService.findAllTeamUsers(teamKey = "team5")
-        assertThat(teamUsers.content).hasSize(1)
-        assertThat(teamUsers.content[0].username).isEqualTo(username)
+        val teamUsernames = teamManagementService.findAllTeamUsernames(teamKey = "team5")
+        assertThat(teamUsernames.content).hasSize(1)
+        assertThat(teamUsernames.content[0]).isEqualTo(username)
 
         teamManagementService.removeUserFromTeam(username, "team5")
-        assertThat(teamManagementService.findAllTeamUsers(teamKey = "team5").content).isEmpty()
+        assertThat(teamManagementService.findAllTeamUsernames(teamKey = "team5").content).isEmpty()
     }
 
     @Test

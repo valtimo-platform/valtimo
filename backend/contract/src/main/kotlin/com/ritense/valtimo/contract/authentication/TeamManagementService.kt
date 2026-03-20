@@ -32,4 +32,16 @@ interface TeamManagementService {
     fun findByKey(teamKey: String): Team?
 
     fun findAll(pageable: Pageable): Page<Team>
+
+    fun findAll(titleContains: String? = null, pageable: Pageable = Pageable.unpaged()): Page<Team>
+
+    fun findAllTeamUsernames(
+        teamKey: String? = null,
+        username: String? = null,
+        pageable: Pageable = Pageable.unpaged()
+    ): Page<String>
+
+    fun addUserToTeam(username: String, teamKey: String): String
+
+    fun removeUserFromTeam(username: String, teamKey: String)
 }

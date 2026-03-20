@@ -35,6 +35,6 @@ class TeamUser(
     @JoinColumn(name = "team_key")
     val team: Team? = null
 ) {
-    val username: String get() = id.username ?: ""
-    val teamKey: String get() = id.teamKey ?: ""
+    val username: String get() = id.username!!
+    val teamKey: String get() = id.teamKey!!
 }

@@ -49,9 +49,9 @@ class TeamManagementServiceImpl(
 ) : TeamManagementService {
 
     @Transactional(readOnly = true)
-    fun findAll(
-        titleContains: String? = null,
-        pageable: Pageable = Pageable.unpaged()
+    override fun findAll(
+        titleContains: String?,
+        pageable: Pageable
     ): Page<TeamInterface> {
         var specification: Specification<Team> = authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(
@@ -63,15 +63,14 @@ class TeamManagementServiceImpl(
         if (titleContains != null) {
             specification = specification.and(TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains))
         }
+        specification = specification.and(TeamRepositoryConfigSpecificationHelper.fetchUsers())
         val teams = teamRepository.findAll(specification, pageable)
-        teams.forEach { team -> team.users.size } // Initialize lazy collection
         return teams.map { it as TeamInterface }
     }
 
     @Transactional(readOnly = true)
     override fun findByKey(teamKey: String): Team? {
-        val team = teamRepository.findById(teamKey).orElse(null) ?: return null
-        team.users.size // Initialize lazy collection
+        val team = teamRepository.findByKeyWithUsers(teamKey).orElse(null) ?: return null
 
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
@@ -90,7 +89,7 @@ class TeamManagementServiceImpl(
     }
 
     override fun update(key: String, title: String): TeamInterface {
-        val team = teamRepository.findById(key).orElseThrow { NoSuchElementException("Team not found") }
+        val team = teamRepository.findById(key).orElseThrow { error("Team not found") }
         requirePermission(team, TeamActionProvider.MODIFY)
         team.title = title
         val savedTeam = teamRepository.save(team)
@@ -99,45 +98,40 @@ class TeamManagementServiceImpl(
     }
 
     override fun delete(key: String) {
-        val team = teamRepository.findById(key).orElseThrow { NoSuchElementException("Team not found") }
+        val team = teamRepository.findById(key).orElseThrow { error("Team not found") }
         requirePermission(team, TeamActionProvider.DELETE)
         teamRepository.deleteById(key)
         eventPublisher.publishEvent(TeamDeletedEvent(key))
     }
 
-    fun findAllTeamUsers(
-        teamKey: String? = null,
-        username: String? = null,
-        pageable: Pageable = Pageable.unpaged()
-    ): Page<TeamUser> {
+    override fun findAllTeamUsernames(
+        teamKey: String?,
+        username: String?,
+        pageable: Pageable
+    ): Page<String> {
         var specification = Specification.unrestricted<TeamUser>()
         if (teamKey != null) {
             val team = teamRepository.findById(teamKey).orElse(null)
 
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    Team::class.java,
-                    TeamActionProvider.VIEW,
-                    team
-                )
-            )
+            requirePermission(team, TeamActionProvider.VIEW)
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byTeamKey(teamKey))
         }
 
         if (username != null) {
             specification = specification.and(TeamUserRepositoryConfigSpecificationHelper.byUsername(username))
         }
-        return teamUserRepository.findAll(specification, pageable)
+        return teamUserRepository.findAll(specification, pageable).map { it.username }
     }
 
-    fun addUserToTeam(username: String, teamKey: String): TeamUser {
-        val team = teamRepository.findById(teamKey).orElseThrow { NoSuchElementException("Team not found") }
+    override fun addUserToTeam(username: String, teamKey: String): String {
+        val team = teamRepository.findById(teamKey).orElseThrow { error("Team not found") }
         requirePermission(team, TeamActionProvider.ASSIGN)
-        return teamUserRepository.save(TeamUser(id = TeamUserId(username, teamKey), team = team))
+        teamUserRepository.save(TeamUser(id = TeamUserId(username, teamKey), team = team))
+        return username
     }
 
-    fun removeUserFromTeam(username: String, teamKey: String) {
-        val team = teamRepository.findById(teamKey).orElseThrow { NoSuchElementException("Team not found") }
+    override fun removeUserFromTeam(username: String, teamKey: String) {
+        val team = teamRepository.findById(teamKey).orElseThrow { error("Team not found") }
         requirePermission(team, TeamActionProvider.ASSIGN)
         val specification = TeamUserRepositoryConfigSpecificationHelper.byTeamKey(teamKey)
             .and(TeamUserRepositoryConfigSpecificationHelper.byUsername(username))
@@ -146,7 +140,8 @@ class TeamManagementServiceImpl(
     }
 
     override fun findTeamKeysByUsername(username: String): List<String> {
-        return findAllTeamUsers(username = username).content.map { it.teamKey }
+        val specification = TeamUserRepositoryConfigSpecificationHelper.byUsername(username)
+        return teamUserRepository.findAll(specification).map { it.teamKey }
     }
 
     override fun findAll(pageable: Pageable): Page<TeamInterface> {

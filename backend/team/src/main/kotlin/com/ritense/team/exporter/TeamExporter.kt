@@ -21,7 +21,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
-import com.ritense.team.service.TeamManagementServiceImpl
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.team.web.rest.dto.TeamImportExportDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Component
@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class TeamExporter(
     private val objectMapper: ObjectMapper,
-    private val teamManagementService: TeamManagementServiceImpl,
+    private val teamManagementService: TeamManagementService,
 ) : Exporter<TeamExportRequest> {
 
     override fun supports(): Class<TeamExportRequest> = TeamExportRequest::class.java

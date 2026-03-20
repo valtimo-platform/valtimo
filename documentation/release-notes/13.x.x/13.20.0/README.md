@@ -27,21 +27,6 @@
 * Fixed a bug where task auto-assignment ignored permission restrictions. When auto-assign was enabled, the case assignee was automatically assigned to tasks regardless of whether their permissions allowed it.
 * Cleaned up unused code for task notifications, solving an error about `email_notification_settings_days` that appeared
   once a day.
-
-* **Secure /users endpoint with access control**
-
-  A new access control resource type has been added `com.ritense.valtimo.contract.authentication.User`.
-
-  This resource type allows for controlling access to user data through the `/api/v1/users/` API. The supported actions
-  are:
-  - `view`: Allows viewing details of a single user.
-  - `view_list`: Allows viewing a list of users or searching for users.
-  More information about access control for users can be found [here](../../../features/keycloak/access-control.md).
-
-* **Deprecation of old user management methods**
-
-  Several methods in `UserManagementService` and `UserResource` have been deprecated in favor of the new access-controlled methods. These will be removed in a future version.
-
 * **Fixed error when viewing audit events for cases created before 13.15.0**
 
   Opening the progress tab for a case that was created on an older version could result in an error. A database migration now automatically corrects the stored audit data on startup.

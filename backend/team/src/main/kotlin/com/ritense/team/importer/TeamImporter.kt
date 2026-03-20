@@ -22,7 +22,7 @@ import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamManagementServiceImpl
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.team.web.rest.dto.TeamImportExportDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Component
@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class TeamImporter(
     private val objectMapper: ObjectMapper,
-    private val teamManagementService: TeamManagementServiceImpl,
+    private val teamManagementService: TeamManagementService,
 ) : Importer {
 
     override fun type(): String = ValtimoImportTypes.TEAM

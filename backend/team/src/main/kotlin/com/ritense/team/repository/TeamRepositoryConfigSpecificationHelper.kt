@@ -17,6 +17,7 @@
 package com.ritense.team.repository
 
 import com.ritense.team.domain.Team
+import jakarta.persistence.criteria.JoinType
 import org.springframework.data.jpa.domain.Specification
 
 class TeamRepositoryConfigSpecificationHelper {
@@ -28,6 +29,14 @@ class TeamRepositoryConfigSpecificationHelper {
         @JvmStatic
         fun byTitleContains(titlePart: String) = Specification<Team> { root, _, cb ->
             cb.like(cb.lower(root[TITLE]), "%${titlePart.lowercase()}%")
+        }
+
+        @JvmStatic
+        fun fetchUsers() = Specification<Team> { root, query, _ ->
+            if (query?.resultType != Long::class.javaObjectType) {
+                root.fetch<Team, String>("users", JoinType.LEFT)
+            }
+            null
         }
     }
 }
