@@ -71,14 +71,17 @@ export class CaseManagementPage {
   }
 
   get uploadWarningNotification() {
-    return this.page.getByRole('status');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.uploadWarningNotification);
   }
 
   // Navigation
   async goToCaseManagement() {
     console.log('Navigate to Case Management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    const adminButton = this.page.getByRole('button', {name: 'Admin'});
+    if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
+      await adminButton.click();
+    }
+    await this.page.locator('[data-testid="sidenav-item-Admin"]').getByRole('link', {name: 'Cases'}).click();
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
@@ -106,21 +109,17 @@ export class CaseManagementPage {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
-    await this.uploadFileStep(archiveName);
+    const response = await this.uploadFileStep(archiveName);
 
-    // Wait for upload to complete: success text appears or finish button appears (error)
-    const successText = this.page.getByText('Case definition successfully imported');
-    const finishBtn = this.uploadWizardFinishButton;
-    await expect(successText.or(finishBtn)).toBeVisible();
-
-    if (await successText.isVisible()) {
-      // Success: click Next to advance from FILE_UPLOAD to ACCESS_CONTROL
+    if (response.status() === 200) {
+      // Success: click Next to advance through remaining steps
       await this.uploadWizardNextButton.click();
       await this.accessControlStep();
       await this.dashboardStep();
     } else {
-      // Error: click Finish to close wizard
-      await finishBtn.click();
+      // Error: wait for finish button and close wizard
+      await expect(this.uploadWizardFinishButton).toBeVisible();
+      await this.uploadWizardFinishButton.click();
     }
   }
 
@@ -158,27 +157,25 @@ export class CaseManagementPage {
 
     const responsePromise = this.page.waitForResponse(
       res =>
-        res.url().includes('/api/management/v1/case-import') &&
-        res.request().method() === 'POST' &&
-        res.status() === 200
+        res.url().includes('/api/management/v1/case/import') &&
+        res.request().method() === 'POST'
     );
     await this.uploadWizardNextButton.click();
 
-    const response = await responsePromise;
-    expect(response.status()).toBe(200);
-    await this.uploadWizardNextButton.click();
+    return await responsePromise;
   }
 
   async accessControlStep() {
-    await expect(this.page.getByText('Access Control')).toBeVisible();
-    await expect(this.page.getByText('rights in Access Control')).toBeVisible();
+    await expect(this.page.getByText('Access control', {exact: true})).toBeVisible();
+    await expect(this.page.getByText('Don\'t forget to set the rights in Access Control')).toBeVisible();
     await this.uploadWizardNextButton.click();
   }
 
   async dashboardStep() {
-    await expect(this.page.getByText('Dashboard')).toBeVisible();
+    const dialog = this.page.getByRole('dialog');
+    await expect(dialog.getByText('Dashboard', {exact: true})).toBeVisible();
     await expect(
-      this.page.getByText('If you want widgets to appear on your dashboard')
+      dialog.getByText('If you want widgets to appear on your dashboard')
     ).toBeVisible();
     await this.uploadWizardFinishButton.click();
   }

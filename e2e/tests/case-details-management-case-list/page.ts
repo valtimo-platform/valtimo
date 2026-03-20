@@ -17,7 +17,6 @@
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {
-  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
   CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS,
   CONFIRMATION_MODAL_TEST_IDS,
   KEY_VALUE_TEST_IDS,
@@ -35,10 +34,6 @@ export class CaseDetailsManagementCaseListPage {
   ) {}
 
   // UI Elements
-  get versionSelectDropdown() {
-    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
-  }
-
   get listColumnsTab() {
     return this.page.locator('#caseManagementListColumns-header');
   }
@@ -176,14 +171,9 @@ export class CaseDetailsManagementCaseListPage {
     await this.listTab.click();
   }
 
-  async switchCaseVersionViaDropdown(caseVersion: string) {
-    await this.versionSelectDropdown.click();
-    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
-  }
-
   async checkColumnsExisting(columnKeys: string[]) {
     for (let key of columnKeys) {
-      await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
+      await expect(this.page.locator(`td[title="${key}"]`).first()).toBeVisible();
     }
   }
 

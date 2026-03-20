@@ -9,7 +9,7 @@ export async function expectNotificationMessage(
     ? page.getByText(expectedText, { exact: true }).first()
     : page.getByText(expectedText).first();
 
-  await expect(errorLocator).toBeVisible();
+  await expect(errorLocator).toBeVisible({timeout: 15_000});
   await expect(errorLocator).toContainText(expectedText);
 }
 

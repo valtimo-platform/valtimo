@@ -262,7 +262,7 @@ export class PluginPage {
   }
 
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
-    expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
+    await expect(this.page.getByText(pluginIdentifier).first()).toBeVisible();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {

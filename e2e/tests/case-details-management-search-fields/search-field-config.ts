@@ -135,7 +135,3 @@ export const UI_SEARCH_FIELD_MULTI_SELECT_DROPDOWN = {
   fieldType: 'Multi select dropdown',
 };
 
-export enum CASE_VERSIONS {
-  STABLE = '1.0.0',
-  DRAFT = '1.0.1',
-}
