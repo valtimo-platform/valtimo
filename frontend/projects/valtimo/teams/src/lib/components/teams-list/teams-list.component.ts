@@ -99,7 +99,10 @@ export class TeamsListComponent implements OnDestroy {
       });
       return page.content;
     }),
-    tap(() => this.$loading.set(false))
+    tap(teams => {
+      this.teamsService.setLoadedTeams(teams);
+      this.$loading.set(false);
+    })
   );
 
   public readonly FIELDS: ColumnConfig[] = [

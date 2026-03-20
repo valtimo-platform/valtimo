@@ -36,6 +36,13 @@ export class TeamsService {
   private readonly _teamToDelete$ = new BehaviorSubject<TeamListResponseDto | null>(null);
   public readonly teamToDelete$ = this._teamToDelete$.asObservable();
 
+  private readonly _loadedTeams$ = new BehaviorSubject<TeamListResponseDto[]>([]);
+  public readonly loadedTeams$ = this._loadedTeams$.asObservable();
+
+  public setLoadedTeams(teams: TeamListResponseDto[]): void {
+    this._loadedTeams$.next(teams);
+  }
+
   public reload(): void {
     this._reload$.next(null);
   }

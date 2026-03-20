@@ -31,7 +31,7 @@ import {
 import {PermissionService} from '@valtimo/access-control';
 import {TeamUserResponseDto} from '@valtimo/shared';
 import {ButtonModule, DialogModule, IconModule} from 'carbon-components-angular';
-import {combineLatest, map, Subscription} from 'rxjs';
+import {combineLatest, map, Subscription, switchMap} from 'rxjs';
 import {TeamsApiService, TeamDetailService} from '../../services';
 import {TeamDetailEditModalComponent} from '../team-detail-edit-modal/team-detail-edit-modal.component';
 import {TeamDetailAddMemberComponent} from '../team-detail-add-member-modal/team-detail-add-member-modal.component';
@@ -40,6 +40,7 @@ import {
   CAN_DELETE_TEAM_PERMISSION,
   CAN_MODIFY_TEAM_PERMISSION,
   CAN_VIEW_USERS_PERMISSION,
+  TEAM_PERMISSION_RESOURCE,
 } from '../../permissions';
 
 @Component({
@@ -73,12 +74,19 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   public readonly showDeleteTeamModal$ = this.teamDetailService.showDeleteTeamModal$;
   public readonly team$ = this.teamDetailService.team$;
 
-  public readonly canModifyTeam$ = this.permissionService.requestPermission(
-    CAN_MODIFY_TEAM_PERMISSION
+  private readonly teamContext$ = this.teamDetailService.teamKey$.pipe(
+    map(teamKey => ({
+      identifier: teamKey,
+      resource: TEAM_PERMISSION_RESOURCE.team,
+    }))
   );
 
-  public readonly canDeleteTeam$ = this.permissionService.requestPermission(
-    CAN_DELETE_TEAM_PERMISSION
+  public readonly canModifyTeam$ = this.teamContext$.pipe(
+    switchMap(context => this.permissionService.requestPermission(CAN_MODIFY_TEAM_PERMISSION, context))
+  );
+
+  public readonly canDeleteTeam$ = this.teamContext$.pipe(
+    switchMap(context => this.permissionService.requestPermission(CAN_DELETE_TEAM_PERMISSION, context))
   );
 
   public readonly canViewUsers$ = this.permissionService.requestPermission(
@@ -89,7 +97,9 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   private readonly permissionSubscription = new Subscription();
 
   public readonly canAddMember$ = combineLatest([
-    this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION),
+    this.teamContext$.pipe(
+      switchMap(context => this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context))
+    ),
     this.canViewUsers$,
   ]).pipe(
     map(([canAssign, canViewUsers]) => canAssign && canViewUsers)
@@ -125,8 +135,9 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
     );
 
     this.permissionSubscription.add(
-      this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION)
-        .subscribe(canAssign => this.canAssign = canAssign)
+      this.teamContext$.pipe(
+        switchMap(context => this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context))
+      ).subscribe(canAssign => this.canAssign = canAssign)
     );
   }
 

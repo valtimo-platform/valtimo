@@ -40,7 +40,6 @@
 
     <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
   </div>
-
 </div>
 
 <ng-template #versionSelection let-obs="obs">
@@ -103,11 +102,7 @@
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
-  <v-overflow-menu
-    [menuWidth]="250"
-    placement="bottom-end"
-    class="overflow-button"
-  >
+  <v-overflow-menu [menuWidth]="250" placement="bottom-end" class="overflow-button">
     <button
       overflowTrigger
       cdsButton="tertiary"
@@ -134,7 +129,7 @@
     <v-overflow-menu-option
       [attr.data-test-id]="testIds.setActiveVersionButton"
       optionId="setGlobalActiveVersion"
-      [disabled]="obs.selectedVersionIsGloballyActive"
+      [disabled]="obs.setActiveDisabled"
       (selected)="openGlobalActiveVersionModal()"
       >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
     </v-overflow-menu-option>

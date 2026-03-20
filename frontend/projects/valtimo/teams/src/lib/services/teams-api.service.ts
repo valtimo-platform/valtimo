@@ -49,6 +49,7 @@ export class TeamsApiService extends BaseApiService {
     titleContains?: string;
     page?: number;
     size?: number;
+    sort?: string;
   }): Observable<Page<TeamListResponseDto>> {
     let httpParams = new HttpParams();
     if (params?.titleContains) {
@@ -60,6 +61,7 @@ export class TeamsApiService extends BaseApiService {
     if (params?.size !== undefined) {
       httpParams = httpParams.set('size', params.size.toString());
     }
+    httpParams = httpParams.set('sort', params?.sort ?? 'title,asc');
     return this.httpClient.get<Page<TeamListResponseDto>>(this.getApiUrl('v1/team'), {
       params: httpParams,
     });
