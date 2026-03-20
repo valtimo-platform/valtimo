@@ -58,7 +58,6 @@ import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
   DOCUMENTEN_COLUMN_KEYS,
-  DocumentenApiColumnModalTypeCloseEvent,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -199,6 +198,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
 
   public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
+  public readonly documentToPreview$ = new BehaviorSubject<DocumentenApiRelatedFile | null>(null);
   public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new Subject<null>();
   public readonly showPreviewModal$ = new BehaviorSubject<boolean>(false);
@@ -497,8 +497,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       .subscribe();
   }
 
-  public onPreviewActionClick(file: DocumentenApiRelatedFile): void {
-    this.previewDocument(file, false);
+  public onPreviewActionClick(item: DocumentenApiRelatedFile): void {
+    this.previewDocument(item, false);
   }
 
   public onDownloadActionClick(file: DocumentenApiRelatedFile): void {
@@ -520,6 +520,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onFileSelected(event: any): void {
+    if (!this.previewDisabled) {
+      this.previewDocument(event.target.files[0], false);
+      return;
+    }
+
     this.isEditMode$.next(false);
     this.fileToBeUploaded$.next(event.target.files[0]);
     this.showUploadModal$.next(true);
@@ -605,33 +610,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     });
   }
 
-  private previewDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
+  private previewDocument(item: DocumentenApiRelatedFile, forceDownload: boolean): void {
     // Display preview model.
+    this.documentToPreview$.next(item);
     this.showPreviewModal$.next(true);
-
-    // HACK (mvanbeusekom): Temporary solution which generates the preview document and downloads
-    //                      and opens the PDF file in a separate browser tab.
-    /*
-    let fileNameSegments: string[] =
-      relatedFile.bestandsnaam != null
-        ? relatedFile.bestandsnaam.split('.')
-        : ['filename_unknown', ''];
-    let fileName: string = fileNameSegments[0];
-    let fileExtension: string = fileNameSegments[fileNameSegments.length - 1];
-
-    if (fileExtension === 'pdf') {
-      this.downloadDocument(relatedFile, forceDownload);
-      return;
-    }
-
-    this.documentId$.pipe(take(1)).subscribe(documentId => {
-      this.downloadService.downloadFile(
-        `${this.valtimoEndpointUri}v1/documenten-api-preview/${relatedFile.pluginConfigurationId}/preview/${relatedFile.fileId}`,
-        `${fileName}.pdf`,
-        forceDownload
-      );
-    });
-    */
   }
 
   private openQueryParamsSubscription(): void {

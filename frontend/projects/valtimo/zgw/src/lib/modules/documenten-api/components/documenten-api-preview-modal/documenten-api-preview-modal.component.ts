@@ -20,48 +20,80 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
+  OnInit,
   Output,
+  SecurityContext,
 } from '@angular/core';
 
-import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
-import {Subscription} from 'rxjs';
+import {DomSanitizer, SafeResourceUrl, SafeUrl} from '@angular/platform-browser';
+import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
 import {ButtonModule, LayerModule, ModalModule, ToggleModule} from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
+import {ConfigService} from '@valtimo/shared';
+import {DocumentenApiRelatedFile} from '../../models';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-documenten-api-preview-modal',
   templateUrl: './documenten-api-preview-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    ModalModule,
-    TranslateModule,
-    ButtonModule,
-    ToggleModule,
-    LayerModule,
-  ],
+  imports: [CommonModule, ModalModule, TranslateModule, ButtonModule, ToggleModule, LayerModule],
 })
-export class DocumentenApiPreviewModalComponent implements OnDestroy {
+export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey!: string;
-  @Input() public open = false;
-
+  @Input() public showModalSubject$: Observable<boolean>;
+  @Input() public relatedFile$: Observable<DocumentenApiRelatedFile>;
   @Output() public modalClose = new EventEmitter();
 
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   public pdfSrc: SafeResourceUrl;
 
-  private readonly _subscriptions = new Subscription();
+  private readonly _valtimoEndpointUri!: string;
+  private _showModalSubscription!: Subscription;
 
-  constructor(private readonly sanitizer: DomSanitizer) {
-    // TODO: replace with actual PDF URL from the preview API
-    this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
-      'https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf'
-    );
+  constructor(
+    configService: ConfigService,
+    private readonly sanitizer: DomSanitizer,
+    private readonly http: HttpClient
+  ) {
+    this._valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
+  }
+
+  public ngOnInit() {
+    if (this.showModalSubject$) {
+      this._showModalSubscription = this.showModalSubject$.subscribe(showModal => {
+        this.modalOpen$.next(showModal);
+      });
+    }
+
+    this.setPdfSrc();
+  }
+
+  private setPdfSrc(): void {
+    this.relatedFile$.subscribe(document => {
+      if (!document) {
+        return;
+      }
+
+      let pdfUri: string = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${document.fileId}`;
+
+      this.http
+        .get(pdfUri.toString(), {
+          responseType: 'blob',
+        })
+        .subscribe(blob => {
+          const url = URL.createObjectURL(blob);
+          this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+
+          console.log(`DEBUG: PDF is set to: ${this.pdfSrc.toString()}`);
+        });
+    });
   }
 
   public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this._showModalSubscription.unsubscribe();
   }
 
   public onClose(): void {
@@ -69,6 +101,7 @@ export class DocumentenApiPreviewModalComponent implements OnDestroy {
   }
 
   private close(): void {
+    this.modalOpen$.next(false);
     this.modalClose.emit();
   }
 }
