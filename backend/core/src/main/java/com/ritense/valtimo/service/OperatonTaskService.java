@@ -185,20 +185,13 @@ public class OperatonTaskService {
     }
 
     @Transactional
-    public void assignByEmail(String taskId, String assigneeEmail) throws IllegalStateException {
-        var assignee = userManagementService.findNamedUserByEmail(assigneeEmail)
-            .orElseThrow(() -> new IllegalStateException("Error. No registered user found with email: " + assigneeEmail));
-        assign(taskId, assignee.getId());
-    }
-
-    @Transactional
     public void assign(String taskId, String assignee) throws IllegalStateException {
         if (assignee == null) {
             unassign(taskId);
         } else if (EmailValidator.getInstance().isValid(assignee)) {
             throw new IllegalStateException("Task assignee must be an ID. Not an email: '" + assignee + "'");
         } else {
-            String assigneeUsername = userManagementService.findById(assignee).getUsername();
+            String assigneeUsername = runWithoutAuthorization(() -> userManagementService.findById(assignee).getUsername());
             final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
             final String currentUser = userManagementService.getCurrentUser().getUsername();
             if (assignee.equals(currentUser)) {
@@ -324,7 +317,7 @@ public class OperatonTaskService {
             ).stream()
             .map(Role::getKey)
             .collect(toSet());
-        return userManagementService.findNamedUserByRoles(candidateGroups);
+        return userManagementService.findNamedUserByRolesWithoutAuthorization(candidateGroups);
     }
 
     @Transactional
@@ -488,7 +481,7 @@ public class OperatonTaskService {
                         if (assigneeMap.containsKey(task.getAssignee())) {
                             valtimoUser = assigneeMap.get(task.getAssignee());
                         } else {
-                            valtimoUser = getValtimoUser(task.getAssignee());
+                            valtimoUser = runWithoutAuthorization(() -> getValtimoUser(task.getAssignee()));
                             assigneeMap.put(task.getAssignee(), valtimoUser);
                         }
                     } catch (Exception e) {

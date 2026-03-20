@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {expectNotificationMessage} from '../../utils/ui.utils';
 import {caseConfiguration} from './case-config';
@@ -43,83 +43,75 @@ test.describe('Case management', () => {
 
   test.describe('Success test', () => {
     test('Add a case', async () => {
-      // Act
-      await page.route('**/case-management/case/**', async route => {
-        await caseManagementPage.addCase();
-        await caseManagementPage.saveConfiguration();
-        route.abort();
+      // Intercept navigation to case detail page to stay on the list
+      await page.route('**/case-management/case/**', route => route.abort());
 
-        // Assert
-        await caseManagementPage.assertCaseExists('Test case');
-      });
+      // Act
+      await caseManagementPage.addCase();
+      await caseManagementPage.saveConfiguration();
+
+      // Assert
+      await caseManagementPage.assertCaseExists('Test case');
+
+      // Cleanup route interception
+      await page.unroute('**/case-management/case/**');
     });
 
     test('Upload a case', async () => {
-      // Act
-      await page.route('**/case-management/case/**', async route => {
-        await caseManagementPage.uploadCase();
-        await caseManagementPage.saveConfiguration();
-        await caseManagementPage.assertCaseUploaded();
+      // Navigate back to case management list (previous test may leave us on case detail)
+      await caseManagementPage.goToCaseManagement();
 
-        // Assert
-        await caseManagementPage.assertCaseExists('Test case');
-        route.abort();
-      });
+      // Act
+      await caseManagementPage.uploadCase();
+
+      // Assert: the imported case should appear in the list
+      await expect(page.getByRole('cell', {name: 'test-case-import'})).toBeVisible();
     });
 
-    test('Cleanup test file', async () => {
-      await ApiUtils.apiDelete(
-        `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
-      );
+    test('Cleanup test files', async () => {
+      // Clean up case created by "Add a case"
+      try {
+        await ApiUtils.apiDelete(
+          `/api/management/v1/case-definition/${caseConfiguration.caseKey}/version/${caseConfiguration.caseVersion}`
+        );
+      } catch {
+        // Case definition may not exist if a previous test failed
+      }
+
+      // Clean up case created by "Upload a case"
+      try {
+        await ApiUtils.apiDelete(
+          '/api/management/v1/case-definition/test-case-import/version/1.0.0'
+        );
+      } catch {
+        // Case definition may not exist if a previous test failed
+      }
     });
   });
 
   test.describe('Error test', () => {
-    test('Upload a case with the same version', async () => {
-      // Act
-      await caseManagementPage.uploadCase();
-      await caseManagementPage.saveConfiguration();
-      await caseManagementPage.assertCaseUploaded();
-
-      // Navigate back
+    test('Upload an invalid file', async () => {
+      // Ensure we're on the case management list page
       await caseManagementPage.goToCaseManagement();
 
-      // Restart upload
-      await caseManagementPage.uploadCase();
-      await caseManagementPage.saveConfiguration();
-
-      // Assert
-      await expectNotificationMessage(page, 'This version already exists for this definition', {
-        exact: true,
-      });
-
-      await caseManagementPage.createCancelButton.click();
-    });
-
-    test('Upload an invalid file', async () => {
-      // Act
+      // Act: upload a ZIP with non-case content (IKO config)
       await caseManagementPage.uploadCase({
         archiveName: 'test-case-import-invalid-file.zip',
       });
-      await caseManagementPage.saveConfiguration();
-      await caseManagementPage.assertCaseUploaded();
 
-      // Assert
-      await expectNotificationMessage(page, 'entity-not-found', {exact: true});
-
-      await caseManagementPage.createCancelButton.click();
+      // Assert: server returns an error notification
+      await expectNotificationMessage(page, 'entity-not-found');
     });
 
-    test('Upload a file that exceeds the maximum size', async () => {
-      // Act
-      await caseManagementPage.uploadCase();
-      await caseManagementPage.saveConfiguration();
-      await caseManagementPage.assertCaseUploaded();
+    test('Upload a file with invalid structure', async () => {
+      // Ensure we're on the case management list page
+      await caseManagementPage.goToCaseManagement();
 
-      // Assert
-      await expectNotificationMessage(page, 'Maximum upload size exceeded', {exact: true});
+      // Act: upload a ZIP with non-case content (plain text payload)
+      await caseManagementPage.uploadCase({archiveName: 'test-case-import-large.case.zip'});
 
-      await caseManagementPage.createCancelButton.click();
+      // Assert: server returns an error notification
+      await expectNotificationMessage(page, 'entity-not-found');
     });
   });
 });

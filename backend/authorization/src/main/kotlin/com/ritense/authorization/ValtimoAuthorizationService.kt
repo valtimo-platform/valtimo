@@ -16,6 +16,7 @@
 
 package com.ritense.authorization
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.request.AuthorizationRequest
@@ -147,7 +148,7 @@ class ValtimoAuthorizationService(
         val userRoles = if (context.user == null) {
             SecurityUtils.getCurrentUserRoles()
         } else {
-            userManagementService.findByUsername(context.user)
+            runWithoutAuthorization { userManagementService.findByUsername(context.user) }
                 ?.roles
                 ?: return emptyList()
         }

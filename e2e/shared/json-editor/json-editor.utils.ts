@@ -16,6 +16,7 @@
 
 import {Page, expect} from '@playwright/test';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {CONFIRMATION_MODAL_TEST_IDS, JSON_EDITOR_TEST_IDS} from '../../constants';
 
 const REVERT_LIST_COLUMNS = [
   {test: 'This is a random test'},
@@ -27,45 +28,45 @@ export class JsonEditor {
 
   //UI Elements
   get jsonEditorEditButton() {
-    return this.page.getByTestId('jsonEditorEditButton');
+    return this.page.getByTestId(JSON_EDITOR_TEST_IDS.editButton);
   }
 
   get jsonEditorSaveButton() {
-    return this.page.getByTestId('jsonEditorSaveButton');
+    return this.page.getByTestId(JSON_EDITOR_TEST_IDS.saveButton);
   }
 
   get jsonEditorCancelButton() {
-    return this.page.getByTestId('jsonEditorCancelButton');
+    return this.page.getByTestId(JSON_EDITOR_TEST_IDS.cancelButton);
   }
 
   get jsonEditorConfirmationModalConfirmButton() {
     return this.page
-      .getByTestId('jsonEditorSaveConfirmationModal')
-      .getByTestId('confirmationModalConfirm');
+      .getByTestId(JSON_EDITOR_TEST_IDS.saveConfirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
   }
 
   get jsonEditorConfirmationModalCloseButton() {
     return this.page
-      .getByTestId('jsonEditorSaveConfirmationModal')
-      .getByTestId('confirmationModalClose');
+      .getByTestId(JSON_EDITOR_TEST_IDS.saveConfirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.closeButton);
   }
 
   get jsonEditorCancelModalConfirmButton() {
     return this.page
-      .getByTestId('jsonEditorCancelConfirmationModal')
-      .getByTestId('confirmationModalConfirm');
+      .getByTestId(JSON_EDITOR_TEST_IDS.cancelConfirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
   }
 
   get jsonEditorCancelModalKeepEditingButton() {
     return this.page
-      .getByTestId('jsonEditorCancelConfirmationModal')
-      .getByTestId('confirmationModalClose');
+      .getByTestId(JSON_EDITOR_TEST_IDS.cancelConfirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.closeButton);
   }
 
   get jsonEditorCancelModalSaveButton() {
     return this.page
-      .getByTestId('jsonEditorCancelConfirmationModal')
-      .getByTestId('confirmationModalOptional');
+      .getByTestId(JSON_EDITOR_TEST_IDS.cancelConfirmationModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.optionalButton);
   }
 
   async saveChanges(changes: object) {

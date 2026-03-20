@@ -26,7 +26,10 @@
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
         "selectPlaceholder": "Kies een optie",
-        "title": "Wijs geselecteerde cases toe aan"
+        "title": "Wijs geselecteerde cases toe aan",
+        "warningTitle": "Waarschuwing",
+        "cannotAssignAnyWarning": "Je hebt geen toestemming om de geselecteerde dossiers toe te wijzen.",
+        "cannotAssignSomeWarning": "Je hebt geen toestemming om sommige van de geselecteerde dossiers toe te wijzen. Deze worden overgeslagen."
       }
     },
     "changePageModal": {
@@ -491,9 +494,12 @@
     "setGlobalActiveVersionErrorTitle": "Oeps",
     "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "Deze versie heeft onopgeloste configuratieproblemen. Los deze op voordat u deze als actieve versie instelt.",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept"},
+    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept", "status": "Status"},
+    "needsConfiguration": "Configuratie vereist",
+    "inactive": "Inactief",
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
@@ -572,8 +578,13 @@
       },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
-        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn."
+        "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
+        "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat u deze definitief maakt."
       }
+    },
+    "environmentConfig": {
+      "bannerTitle": "Configuratie vereist",
+      "bannerMessage": "Deze dossierdefinitie bevat verwijzingen naar configuraties die niet bestaan in deze omgeving. Controleer en werk de relevante instellingen bij."
     },
     "processLinkNotification": {
       "linkSuccess": "Proces succesvol gekoppeld",
@@ -1386,7 +1397,8 @@
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN gebruikt bij aanmaken zaak",
-    "selectInfoObjectType": "Kies informatieobject-type"
+    "selectInfoObjectType": "Kies informatieobject-type",
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "zaakdetails": {
     "title": "Zaakdetails-synchronisatie",
@@ -1400,7 +1412,8 @@
       "objectManagementConfiguration": "Object management-configuratie",
       "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
       "enabled": "Ingeschakeld"
-    }
+    },
+    "configurationIssue": "Deze configuratie is niet volledig. Controleer en werk de instellingen bij zodat ze overeenkomen met deze omgeving."
   },
   "interface": {
     "icon": "Icoon",
@@ -1542,9 +1555,13 @@
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
     "fetchingUsers": "Gebruikers ophalen...",
-    "buttonText": "Gebruiker toewijzen",
+    "buttonText": "Toewijzen",
+    "assignToMe": "Aan mij toewijzen",
+    "assignToOtherUser": "Aan andere gebruiker toewijzen",
     "submitButtonText": "Gebruiker toewijzen aan taak",
-    "comboboxLabel": "Selecteer gebruiker om toe te wijzen"
+    "comboboxLabel": "Selecteer gebruiker om toe te wijzen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
@@ -2104,7 +2121,9 @@
     "buttonText": "Stel einddatum in",
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
-    "removeButtonText": "Einddatum verwijderen"
+    "removeButtonText": "Einddatum verwijderen",
+    "edit": "Bewerken",
+    "clickToEdit": "Klik om te bewerken"
   },
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {

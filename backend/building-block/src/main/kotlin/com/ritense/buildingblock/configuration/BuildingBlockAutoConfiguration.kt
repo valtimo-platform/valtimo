@@ -548,7 +548,7 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
-    @ConditionalOnMissingBean(CaseDefinitionFinalizationChecker::class)
+    @ConditionalOnMissingBean(BuildingBlockCaseDefinitionFinalizationChecker::class)
     fun buildingBlockCaseDefinitionFinalizationChecker(
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,

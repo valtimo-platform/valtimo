@@ -233,7 +233,7 @@ class PortaaltaakPlugin(
 
         val initiator = requireNotNull(
             zakenPlugin.getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.INITIATOR).firstOrNull()
-        ) { "No initiator role found for zaak with URL $zaakUrl" }
+        ) { "No role found for zaak with URL $zaakUrl that has omschrijvingGeneriek 'Initiator'" }
 
         return requireNotNull(
             initiator.betrokkeneIdentificatie.let {
