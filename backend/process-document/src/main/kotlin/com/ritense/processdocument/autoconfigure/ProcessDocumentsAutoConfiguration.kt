@@ -93,12 +93,14 @@ class ProcessDocumentsAutoConfiguration {
     fun documentDelegate(
         processDocumentService: ProcessDocumentService,
         userManagementService: UserManagementService,
-        documentService: DocumentService
+        documentService: DocumentService,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegate {
         return DocumentDelegate(
             processDocumentService,
             userManagementService,
-            documentService
+            documentService,
+            caseDocumentResolver,
         )
     }
 
@@ -122,6 +124,7 @@ class ProcessDocumentsAutoConfiguration {
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         userManagementService: UserManagementService,
         objectMapper: ObjectMapper,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegateService {
         return DocumentDelegateService(
             processDocumentService,
@@ -129,6 +132,7 @@ class ProcessDocumentsAutoConfiguration {
             jsonSchemaDocumentService,
             userManagementService,
             objectMapper,
+            caseDocumentResolver,
         )
     }
 
