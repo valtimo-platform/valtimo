@@ -21,6 +21,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 
@@ -29,6 +30,7 @@ class DocumentDelegate(
     val processDocumentService: ProcessDocumentService,
     val userManagementService: UserManagementService,
     val documentService: DocumentService,
+    val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
     fun setAssignee(execution: DelegateExecution, userEmail: String?) {
@@ -37,18 +39,23 @@ class DocumentDelegate(
                 unassign(execution)
             }
             logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
-            val documentId = processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
+            val caseDocumentId = getCaseDocumentId(execution)
             val user = userManagementService.findByEmail(userEmail)
                 .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
             AuthorizationContext
-                .runWithoutAuthorization { documentService.assignUserToDocument(documentId.id, user.id) }
+                .runWithoutAuthorization { documentService.assignUserToDocument(caseDocumentId, user.id) }
         }
     }
 
     fun unassign(execution: DelegateExecution) {
         logger.debug("Unassigning user from document {}", execution.processBusinessKey)
+        val caseDocumentId = getCaseDocumentId(execution)
+        documentService.unassignUserFromDocument(caseDocumentId)
+    }
+
+    private fun getCaseDocumentId(execution: DelegateExecution): java.util.UUID {
         val documentId = processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
-        documentService.unassignUserFromDocument(documentId.id)
+        return caseDocumentResolver.resolveCaseDocumentId(documentId.id)
     }
 
     companion object {

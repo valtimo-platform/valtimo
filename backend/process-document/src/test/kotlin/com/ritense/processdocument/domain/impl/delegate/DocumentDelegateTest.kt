@@ -24,8 +24,10 @@ import com.ritense.valtimo.contract.OauthConfigHolder
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -39,6 +41,7 @@ internal class DocumentDelegateTest {
     lateinit var processDocumentService: ProcessDocumentService
     lateinit var userManagementService: UserManagementService
     lateinit var documentService: DocumentService
+    lateinit var caseDocumentResolver: CaseDocumentResolver
     lateinit var documentDelegate: DocumentDelegate
 
     @BeforeEach
@@ -46,10 +49,13 @@ internal class DocumentDelegateTest {
         processDocumentService = mock()
         userManagementService = mock()
         documentService = mock()
+        caseDocumentResolver = mock()
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenAnswer { it.arguments[0] }
         documentDelegate = DocumentDelegate(
             processDocumentService,
             userManagementService,
             documentService,
+            caseDocumentResolver,
         )
         OauthConfigHolder(Oauth())
     }

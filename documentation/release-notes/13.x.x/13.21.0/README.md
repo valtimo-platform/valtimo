@@ -36,6 +36,9 @@
 
 ## Bugfixes
 
+* Fixed a bug where building blocks could not update the internal case status, case tags, or assignee of the calling
+  case. The building block now correctly references the case definition of the parent case.
+
 * **Replaced Carbon overflow menus with custom overflow components**
 
   The Carbon Design System overflow menu components have been replaced with custom-built overflow components throughout the application. The Carbon overflow menu had persistent issues with sizing, positioning, and lacked adequate support for custom panes and custom trigger elements. The new custom components resolve these limitations and provide a consistent, flexible overflow menu experience across the platform.
