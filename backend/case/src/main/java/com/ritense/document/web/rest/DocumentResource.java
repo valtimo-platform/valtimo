@@ -17,7 +17,6 @@
 package com.ritense.document.web.rest;
 
 import com.ritense.document.domain.Document;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.AssignToDocumentsRequest;
 import com.ritense.document.domain.impl.request.GetDocumentCandidateUsersRequest;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
@@ -25,7 +24,6 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.domain.impl.request.UpdateAssigneeRequest;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.document.service.result.ModifyDocumentResult;
-import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.Team;
 import jakarta.validation.Valid;
@@ -34,8 +32,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 public interface DocumentResource {
 
@@ -57,11 +53,7 @@ public interface DocumentResource {
 
     ResponseEntity<Void> unassignHandlerFromDocument(UUID documentId);
 
-    @GetMapping("/v1/document/{document-id}/candidate-team")
-    ResponseEntity<Page<Team>> getCandidateTeams(
-        @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId,
-        Pageable pageable
-    );
+    ResponseEntity<Page<Team>> getCandidateTeams(UUID documentId, Pageable pageable);
 
     ResponseEntity<List<NamedUser>> getCandidateUsers(UUID documentId);
 

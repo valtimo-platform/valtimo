@@ -27,6 +27,7 @@ import com.ritense.team.security.config.TeamHttpSecurityConfigurer
 import com.ritense.team.service.TeamActionProvider
 import com.ritense.team.service.TeamManagementServiceImpl
 import com.ritense.team.web.rest.TeamResource
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -68,7 +69,7 @@ class TeamAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TeamResource::class)
     fun teamResource(
-        teamManagementService: TeamManagementServiceImpl,
+        teamManagementService: TeamManagementService,
         userManagementService: UserManagementService,
     ): TeamResource {
         return TeamResource(
@@ -88,7 +89,7 @@ class TeamAutoConfiguration {
     @ConditionalOnMissingBean(TeamExporter::class)
     fun teamExporter(
         objectMapper: ObjectMapper,
-        teamManagementService: TeamManagementServiceImpl
+        teamManagementService: TeamManagementService
     ): TeamExporter {
         return TeamExporter(objectMapper, teamManagementService)
     }
@@ -97,7 +98,7 @@ class TeamAutoConfiguration {
     @ConditionalOnMissingBean(TeamImporter::class)
     fun teamImporter(
         objectMapper: ObjectMapper,
-        teamManagementService: TeamManagementServiceImpl
+        teamManagementService: TeamManagementService
     ): TeamImporter {
         return TeamImporter(objectMapper, teamManagementService)
     }
@@ -105,7 +106,7 @@ class TeamAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TeamSpecificationFactory::class)
     fun teamSpecificationFactory(
-        @Lazy teamManagementService: TeamManagementServiceImpl,
+        @Lazy teamManagementService: TeamManagementService,
         queryDialectHelper: QueryDialectHelper
     ): TeamSpecificationFactory {
         return TeamSpecificationFactory(teamManagementService, queryDialectHelper)
