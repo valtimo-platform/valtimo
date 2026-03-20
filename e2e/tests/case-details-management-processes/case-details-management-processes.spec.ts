@@ -22,7 +22,6 @@ import {expectNotificationMessage} from '../../utils/ui.utils';
 const TEST_PROCESS_NAME = 'E2E Test Process';
 const TEST_PROCESS_KEY = 'e2e-test-process';
 const CASE_KEY = 'bezwaar';
-const CASE_VERSION = '1.0.1';
 
 test.use({storageState: undefined});
 
@@ -31,6 +30,7 @@ test.describe('Case details - Processes tab', () => {
   let page;
   let processesPage: CaseDetailsProcessesPage;
   let request;
+  let draftVersion: string;
 
   test.beforeAll(async ({browser, baseURL}) => {
     context = await browser.newContext({baseURL});
@@ -40,14 +40,14 @@ test.describe('Case details - Processes tab', () => {
     processesPage = new CaseDetailsProcessesPage(page, request);
 
     await page.goto('/');
-    await processesPage.goToCaseDetailsProcesses(CASE_KEY, CASE_VERSION);
+    draftVersion = await processesPage.goToCaseDetailsProcesses(CASE_KEY);
   });
 
   test.afterAll(async () => {
     // Clean up the test process in case it was left behind
     try {
       await apiDelete(
-        `/api/management/v1/case-definition/${CASE_KEY}/version/${CASE_VERSION}/process-definition/key/${TEST_PROCESS_KEY}`
+        `/api/management/v1/case-definition/${CASE_KEY}/version/${draftVersion}/process-definition/key/${TEST_PROCESS_KEY}`
       );
     } catch {
       // Ignore if already deleted
