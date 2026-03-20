@@ -24,6 +24,7 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 
+@JsonInclude(Include.NON_NULL)
 data class TableWidgetProperties (
     @field:NotBlank val collection: String,
     @field:Min(1) val defaultPageSize: Int,
