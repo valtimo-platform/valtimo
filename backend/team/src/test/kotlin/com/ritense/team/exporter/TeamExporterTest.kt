@@ -18,8 +18,9 @@ package com.ritense.team.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.exporter.request.GlobalExportRequest
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamManagementServiceImpl
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -30,7 +31,7 @@ import org.springframework.data.domain.PageImpl
 class TeamExporterTest {
 
     private val objectMapper = ObjectMapper()
-    private val teamManagementService: TeamManagementServiceImpl = mock()
+    private val teamManagementService: TeamManagementService = mock()
     private val teamExporter = TeamExporter(objectMapper, teamManagementService)
 
     @Test
@@ -39,7 +40,7 @@ class TeamExporterTest {
         val team2 = Team("team-2", "Team 2")
         whenever(teamManagementService.findAll()).thenReturn(PageImpl(listOf(team1, team2)))
 
-        val exportResult = teamExporter.export(TeamExportRequest())
+        val exportResult = teamExporter.export(GlobalExportRequest())
         val exportFiles = exportResult.exportFiles
 
         assert(exportFiles.size == 1)

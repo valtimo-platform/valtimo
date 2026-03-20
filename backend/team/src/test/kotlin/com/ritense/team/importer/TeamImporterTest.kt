@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.importer.ImportRequest
 import com.ritense.team.domain.Team
-import com.ritense.team.service.TeamManagementServiceImpl
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -31,7 +31,7 @@ import org.mockito.kotlin.whenever
 class TeamImporterTest {
 
     private val objectMapper = ObjectMapper().registerKotlinModule()
-    private val teamManagementService: TeamManagementServiceImpl = mock()
+    private val teamManagementService: TeamManagementService = mock()
     private val teamImporter = TeamImporter(objectMapper, teamManagementService)
 
     @Test
