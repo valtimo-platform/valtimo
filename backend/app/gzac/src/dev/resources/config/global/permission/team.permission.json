@@ -7,17 +7,9 @@
             "create",
             "modify",
             "delete",
-            "assign",
-            "assignable"
+            "assign"
         ],
         "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.team.domain.Team",
-        "actions": [
-            "assignable"
-        ],
-        "roleKey": "ROLE_USER"
     },
     {
         "resourceType": "com.ritense.team.domain.Team",

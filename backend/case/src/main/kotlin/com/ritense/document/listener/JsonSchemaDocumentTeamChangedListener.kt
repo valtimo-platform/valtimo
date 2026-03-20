@@ -17,15 +17,17 @@
 package com.ritense.document.listener
 
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamDeletedEvent
 import com.ritense.valtimo.contract.authentication.TeamUpdatedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
+@SkipComponentScan
 @Component
 class JsonSchemaDocumentTeamChangedListener(
-    private val jsonSchemaDocumentRepository: JsonSchemaDocumentRepository
+    private val jsonSchemaDocumentRepository: JsonSchemaDocumentRepository,
 ) {
 
     @EventListener

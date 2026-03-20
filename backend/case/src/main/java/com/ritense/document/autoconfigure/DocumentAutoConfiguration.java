@@ -27,6 +27,7 @@ import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSeq
 import com.ritense.document.exporter.JsonSchemaDocumentDefinitionExporter;
 import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
+import com.ritense.document.listener.JsonSchemaDocumentTeamChangedListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
@@ -271,6 +272,16 @@ public class DocumentAutoConfiguration {
     ) {
         return new DocumentDefinitionCaseEventListener(
             documentDefinitionService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentTeamChangedListener.class)
+    public JsonSchemaDocumentTeamChangedListener jsonSchemaDocumentTeamChangedListener(
+        JsonSchemaDocumentRepository jsonSchemaDocumentRepository
+    ) {
+        return new JsonSchemaDocumentTeamChangedListener(
+            jsonSchemaDocumentRepository
         );
     }
 }

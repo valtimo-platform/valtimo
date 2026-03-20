@@ -1206,6 +1206,8 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
 
         when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
 
         runWithoutAuthorization(() -> {
             documentService.assignTeamToDocument(document1.id().getId(), "team1");
@@ -1235,6 +1237,8 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document1 = createDocument("{\"street\": \"Alpaccalaan\"}").resultingDocument().orElseThrow();
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
+
+        mockTeamFindByKey("some-team", "Some Team");
 
         runWithoutAuthorization(() -> {
             documentService.assignUserToDocument(document2.id().getId(), USER_ID);
@@ -1268,6 +1272,8 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document5 = createDocument("{\"street\": \"Edelweiss\"}").resultingDocument().orElseThrow();
 
         when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
 
         runWithoutAuthorization(() -> {
             documentService.unassignUserFromDocument(document1.id().getId());
@@ -1504,5 +1510,12 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
                 )
             )
         );
+    }
+
+    private void mockTeamFindByKey(String key, String title) {
+        when(teamManagementService.findByKey(key)).thenReturn(new com.ritense.valtimo.contract.authentication.Team() {
+            @Override public String getKey() { return key; }
+            @Override public String getTitle() { return title; }
+        });
     }
 }
