@@ -6,13 +6,13 @@
         "conditions": [
             {
                 "type": "container",
-                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonProcessDefinition",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
                 "conditions": [
                     {
                         "type": "field",
-                        "field": "key",
+                        "field": "id.key",
                         "operator": "==",
-                        "value": "lening-aanvragen"
+                        "value": "bezwaar"
                     }
                 ]
             }

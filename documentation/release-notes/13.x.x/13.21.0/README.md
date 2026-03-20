@@ -6,9 +6,10 @@
 
 ## New Features
 
-* **New feature title**
+* **Case definition-scoped access control permissions**
 
-  New feature explanation.
+  Permissions can now use `CaseDefinition` as a container condition, enabling access control based on which case a
+  resource belongs to. See [container conditions](../../features/access-control/container-conditions.md) for details.
 
 ## Enhancements
 

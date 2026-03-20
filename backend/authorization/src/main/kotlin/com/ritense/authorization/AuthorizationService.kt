@@ -40,10 +40,4 @@ interface AuthorizationService {
     fun <T : Any> getAvailableActionsForResource(clazz: Class<T>): List<Action<T>>
 
     fun <T : Any> hasPermission(request: AuthorizationRequest<T>): Boolean
-
-    fun <FROM, STEP, TO> buildChainedMapper(
-        from: Class<FROM>,
-        step: Class<STEP>,
-        to: Class<TO>
-    ): ChainedAuthorizationEntityMapper<FROM, STEP, TO>?
 }

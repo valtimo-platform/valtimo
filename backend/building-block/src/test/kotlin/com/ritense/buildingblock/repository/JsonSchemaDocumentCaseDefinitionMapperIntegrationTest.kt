@@ -25,9 +25,10 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import java.time.LocalDateTime
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -41,111 +42,119 @@ class JsonSchemaDocumentCaseDefinitionMapperIntegrationTest @Autowired construct
     private val mapper: JsonSchemaDocumentCaseDefinitionMapper,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
     private val jsonSchemaDocumentRepository: JsonSchemaDocumentRepository,
-    private val jsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val buildingBlockDefinitionDeploymentService: BuildingBlockDefinitionDeploymentService,
     private val caseDefinitionDeploymentService: CaseDefinitionDeploymentService,
 ) : BaseIntegrationTest() {
 
     @Test
     fun `mapQuery should correctly link JsonSchemaDocument to CaseDefinition for building block blueprint`() {
-        // 1. Deploy definitions from JSON files
         buildingBlockDefinitionDeploymentService?.deployOnStartup()
         caseDefinitionDeploymentService?.deployOnStartup()
 
         val bbDefinitionId = BuildingBlockDefinitionId("bezwaar", Semver.parse("1.0.0")!!)
 
-        // 2. Setup JsonSchemaDocument for the building block
-        val jsonSchemaDocDefId = JsonSchemaDocumentDefinitionId.forBuildingBlock("bezwaar.schema", bbDefinitionId)
-        
-        val documentId = UUID.randomUUID()
-        val jsonSchemaDocumentId = JsonSchemaDocumentId.newId(documentId)
-        
-        val documentConstructor = JsonSchemaDocument::class.java.getDeclaredConstructor()
-        documentConstructor.isAccessible = true
-        val document = documentConstructor.newInstance()
-        
-        val idField = JsonSchemaDocument::class.java.getDeclaredField("id")
-        idField.isAccessible = true
-        idField.set(document, jsonSchemaDocumentId)
-        document.setDefinitionId(jsonSchemaDocDefId)
-        
-        jsonSchemaDocumentRepository.save(document)
+        // Create a case document (needed as FK target for BuildingBlockInstance.caseDocumentId)
+        val caseDocument = createDocument(
+            JsonSchemaDocumentDefinitionId.forCase("bb-case", CaseDefinitionId("bb-case", Semver.parse("1.0.0")!!))
+        )
 
-        // 3. Setup BuildingBlockInstance linking document to case document
+        // Create building block document
+        val bbDocument = createDocument(
+            JsonSchemaDocumentDefinitionId.forBuildingBlock("bezwaar.schema", bbDefinitionId)
+        )
+
+        // Link building block document to case document via BuildingBlockInstance
         val bbDefinition = buildingBlockDefinitionRepository.findById(bbDefinitionId).get()
         val bbInstance = BuildingBlockInstance(
             id = UUID.randomUUID(),
-            documentId = documentId,
-            caseDocumentId = UUID.randomUUID(), // Arbitrary case document ID
+            documentId = bbDocument.id().id,
+            caseDocumentId = caseDocument.id().id,
             activityId = "activity-1",
             definition = bbDefinition
         )
         buildingBlockInstanceRepository.save(bbInstance)
 
-        // 4. Test mapQuery via Specification
+        // Test mapQuery via Specification (mimics ContainerPermissionCondition behavior)
         val spec = Specification<JsonSchemaDocument> { root, query, cb ->
             val result: AuthorizationEntityMapperResult<CaseDefinition> = mapper.mapQuery(root, query!!, cb)
             val cd = result.root
-            
-            // Apply the condition: CaseDefinition.name == "bb-case"
-            cb.and(
-                result.joinPredicate,
-                cb.equal(cd.get<String>("name"), "bb-case")
-            )
+            val sub = result.query as jakarta.persistence.criteria.Subquery<*>
+
+            val existing = sub.restriction
+            val caseCondition = cb.equal(cd.get<String>("name"), "bb-case")
+            val predicates = listOfNotNull(existing, caseCondition).toTypedArray()
+            sub.where(*predicates)
+
+            result.joinPredicate
         }
 
         val foundDocuments = jsonSchemaDocumentRepository.findAll(spec)
 
-        assertThat(foundDocuments).hasSize(1)
-        assertThat(foundDocuments[0].id().id).isEqualTo(documentId)
+        val foundIds = foundDocuments.map { it.id().id }
+        assertThat(foundIds).contains(bbDocument.id().id)
+        assertThat(foundIds).contains(caseDocument.id().id)
     }
 
     @Test
     fun `mapQuery should not find document if case name does not match`() {
-        // 1. Deploy definitions from JSON files
         buildingBlockDefinitionDeploymentService?.deployOnStartup()
         caseDefinitionDeploymentService?.deployOnStartup()
 
         val bbDefinitionId = BuildingBlockDefinitionId("bezwaar", Semver.parse("1.0.0")!!)
 
-        // 2. Setup JsonSchemaDocument
-        val jsonSchemaDocDefId = JsonSchemaDocumentDefinitionId.forBuildingBlock("bezwaar.schema", bbDefinitionId)
+        val caseDocument = createDocument(
+            JsonSchemaDocumentDefinitionId.forCase("bb-case", CaseDefinitionId("bb-case", Semver.parse("1.0.0")!!))
+        )
 
-        val documentId = UUID.randomUUID()
-        val jsonSchemaDocumentId = JsonSchemaDocumentId.newId(documentId)
-        
-        val documentConstructor = JsonSchemaDocument::class.java.getDeclaredConstructor()
-        documentConstructor.isAccessible = true
-        val document = documentConstructor.newInstance()
-        
-        val idField = JsonSchemaDocument::class.java.getDeclaredField("id")
-        idField.isAccessible = true
-        idField.set(document, jsonSchemaDocumentId)
-        document.setDefinitionId(jsonSchemaDocDefId)
-        
-        jsonSchemaDocumentRepository.save(document)
+        val bbDocument = createDocument(
+            JsonSchemaDocumentDefinitionId.forBuildingBlock("bezwaar.schema", bbDefinitionId)
+        )
 
         val bbDefinition = buildingBlockDefinitionRepository.findById(bbDefinitionId).get()
         val bbInstance = BuildingBlockInstance(
             id = UUID.randomUUID(),
-            documentId = documentId,
-            caseDocumentId = UUID.randomUUID(),
+            documentId = bbDocument.id().id,
+            caseDocumentId = caseDocument.id().id,
             activityId = "activity-2",
             definition = bbDefinition
         )
         buildingBlockInstanceRepository.save(bbInstance)
 
-        // Search for "non-existent-case" should NOT find anything
         val spec = Specification<JsonSchemaDocument> { root, query, cb ->
             val result = mapper.mapQuery(root, query!!, cb)
             val cd = result.root
-            cb.and(
-                result.joinPredicate,
-                cb.equal(cd.get<String>("name"), "non-existent-case")
-            )
+            val sub = result.query as jakarta.persistence.criteria.Subquery<*>
+
+            val existing = sub.restriction
+            val caseCondition = cb.equal(cd.get<String>("name"), "non-existent-case")
+            val predicates = listOfNotNull(existing, caseCondition).toTypedArray()
+            sub.where(*predicates)
+
+            result.joinPredicate
         }
 
         val foundDocuments = jsonSchemaDocumentRepository.findAll(spec)
         assertThat(foundDocuments).isEmpty()
+    }
+
+    private fun createDocument(definitionId: JsonSchemaDocumentDefinitionId): JsonSchemaDocument {
+        val constructor = JsonSchemaDocument::class.java.getDeclaredConstructor()
+        constructor.isAccessible = true
+        val document = constructor.newInstance()
+
+        val idField = JsonSchemaDocument::class.java.getDeclaredField("id")
+        idField.isAccessible = true
+        idField.set(document, JsonSchemaDocumentId.newId(UUID.randomUUID()))
+        document.setDefinitionId(definitionId)
+
+        val createdOnField = JsonSchemaDocument::class.java.getDeclaredField("createdOn")
+        createdOnField.isAccessible = true
+        createdOnField.set(document, LocalDateTime.now())
+
+        val createdByField = JsonSchemaDocument::class.java.getDeclaredField("createdBy")
+        createdByField.isAccessible = true
+        createdByField.set(document, "test-user")
+
+        return jsonSchemaDocumentRepository.save(document)
     }
 }

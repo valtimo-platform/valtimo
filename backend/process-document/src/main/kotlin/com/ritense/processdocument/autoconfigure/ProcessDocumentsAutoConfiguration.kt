@@ -429,12 +429,16 @@ class ProcessDocumentsAutoConfiguration {
     fun operatonExecutionCaseDefinitionMapper(
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         @Lazy caseDefinitionService: CaseDefinitionService,
+        executionDocumentMapper: OperatonExecutionJsonSchemaDocumentMapper,
         @Lazy authorizationService: AuthorizationService,
+        queryDialectHelper: QueryDialectHelper,
     ): OperatonExecutionCaseDefinitionMapper {
         return OperatonExecutionCaseDefinitionMapper(
             processDefinitionCaseDefinitionRepository,
             caseDefinitionService,
+            executionDocumentMapper,
             authorizationService,
+            queryDialectHelper,
         )
     }
 

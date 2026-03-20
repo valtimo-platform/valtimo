@@ -40,6 +40,7 @@ class OperatonExecutionJsonSchemaDocumentMapper(
 
     override fun mapRelated(entity: OperatonExecution): List<JsonSchemaDocument> {
         return if (entity.id == DUMMY_OPERATON_EXECUTION_ID) {
+            // This process is not yet linked to a document. This can happen for the action:CREATE on resource:OperatonExecution
             emptyList()
         } else {
             listOf(
