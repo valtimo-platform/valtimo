@@ -17,7 +17,6 @@
 package com.ritense.objectmanagement.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
@@ -26,15 +25,13 @@ import com.ritense.importer.ValtimoImportTypes.Companion.OBJECT_MANAGEMENT
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.core.env.Environment
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class ObjectManagementImporter(
     private val objectManagementService: ObjectManagementService,
     private val objectManagementRepository: ObjectManagementRepository,
-    private val objectMapper: ObjectMapper,
-    private val environment: Environment
+    private val objectMapper: ObjectMapper
 ) : Importer {
     override fun type(): String = OBJECT_MANAGEMENT
 
@@ -47,20 +44,7 @@ class ObjectManagementImporter(
     override fun partOfBuildingBlockDefinition(): Boolean = false
 
     override fun import(request: ImportRequest) {
-        val objectManagementNode = objectMapper.readValue<ObjectNode>(request.content)
-        val propertyValues = objectManagementNode.properties().map { it.key }.associateWith { key ->
-            getEnvVariableOrYamlPropertyOrDirectValue(
-                objectManagementNode[key].asText()
-                    ?: objectManagementNode[key].asBoolean().toString()
-            )
-        }
-        val objectManagement = objectMapper.readValue<ObjectManagement>(
-            objectManagementNode.apply {
-                propertyValues.forEach { (key, value) ->
-                    put(key, value)
-                }
-            }.toString()
-        )
+        val objectManagement = objectMapper.readValue<ObjectManagement>(request.content)
 
         if (
             objectManagementRepository.findByObjecttypeId(objectManagement.objecttypeId) == null
@@ -71,14 +55,6 @@ class ObjectManagementImporter(
             objectManagementService.update(objectManagement)
         }
         logger.info { "Imported object management configuration ${objectManagement.title}" }
-    }
-
-    private fun getEnvVariableOrYamlPropertyOrDirectValue(value: String): String {
-        return Regex("\\$\\{([^\\}]+)\\}").find(value)?.let { matchResult ->
-            System.getenv(matchResult.groupValues[1])
-                ?: System.getProperty(matchResult.groupValues[1])
-                ?: environment.getProperty(matchResult.groupValues[1])
-        } ?: value
     }
 
     companion object {

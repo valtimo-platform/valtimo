@@ -33,13 +33,10 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.core.env.Environment
-
 @ExtendWith(MockitoExtension::class)
 class ObjectManagementImporterTest(
     @Mock private val objectManagementService: ObjectManagementService,
-    @Mock private val objectManagementRepository: ObjectManagementRepository,
-    @Mock private val environment: Environment
+    @Mock private val objectManagementRepository: ObjectManagementRepository
 ) {
     private lateinit var importer: ObjectManagementImporter
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
@@ -49,8 +46,7 @@ class ObjectManagementImporterTest(
         importer = ObjectManagementImporter(
             objectManagementService,
             objectManagementRepository,
-            objectMapper,
-            environment
+            objectMapper
         )
     }
 

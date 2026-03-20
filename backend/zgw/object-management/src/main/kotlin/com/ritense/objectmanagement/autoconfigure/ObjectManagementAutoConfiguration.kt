@@ -116,14 +116,12 @@ class ObjectManagementAutoConfiguration {
     fun objectManagementImporter(
         objectManagementService: ObjectManagementService,
         objectManagementRepository: ObjectManagementRepository,
-        objectMapper: ObjectMapper,
-        environment: Environment
+        objectMapper: ObjectMapper
     ): ObjectManagementImporter {
         return ObjectManagementImporter(
             objectManagementService,
             objectManagementRepository,
-            objectMapper,
-            environment
+            objectMapper
         )
     }
 
