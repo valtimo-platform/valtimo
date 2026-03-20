@@ -5,10 +5,18 @@
   </bpmn:collaboration>
   <bpmn:process id="income-check-process" name="Inkomenstoets Process" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent" name="Start Inkomenstoets">
-      <bpmn:outgoing>Flow_Start_To_Check</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Start_To_SetStatusInkomenstoets</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:serviceTask id="SetStatusInkomenstoetsTask" name="Status: Inkomenstoets Gestart" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'inkomenstoets-gestart')}">
+      <bpmn:incoming>Flow_Start_To_SetStatusInkomenstoets</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetStatusInkomenstoets_To_RemoveTagPriority</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="RemoveTagPriorityTask" name="Verwijder Tag: Prioriteit" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.removeCaseTag(execution, 'prioriteit-hoog')}">
+      <bpmn:incoming>Flow_SetStatusInkomenstoets_To_RemoveTagPriority</bpmn:incoming>
+      <bpmn:outgoing>Flow_RemoveTagPriority_To_Check</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:serviceTask id="DetermineEligibilityTask" name="Bepaal Geschiktheid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/eligibilityResult', 'Geschikt: '.concat(valueResolverDelegateService.resolveValue(execution, 'doc:/applicantName')).concat(' (huishouden: ').concat(valueResolverDelegateService.resolveValue(execution, 'doc:/householdSize')).concat(' personen)'))}">
-      <bpmn:incoming>Flow_Start_To_Check</bpmn:incoming>
+      <bpmn:incoming>Flow_RemoveTagPriority_To_Check</bpmn:incoming>
       <bpmn:outgoing>Flow_Check_To_Status</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="SetCheckStatusTask" name="Registreer Status" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/checkStatus', 'GOEDGEKEURD')}">
@@ -30,7 +38,9 @@
     <bpmn:endEvent id="EndEvent" name="Inkomenstoets Afgerond">
       <bpmn:incoming>Flow_ReadEinddatum_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_Start_To_Check" sourceRef="StartEvent" targetRef="DetermineEligibilityTask" />
+    <bpmn:sequenceFlow id="Flow_Start_To_SetStatusInkomenstoets" sourceRef="StartEvent" targetRef="SetStatusInkomenstoetsTask" />
+    <bpmn:sequenceFlow id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority" sourceRef="SetStatusInkomenstoetsTask" targetRef="RemoveTagPriorityTask" />
+    <bpmn:sequenceFlow id="Flow_RemoveTagPriority_To_Check" sourceRef="RemoveTagPriorityTask" targetRef="DetermineEligibilityTask" />
     <bpmn:sequenceFlow id="Flow_Check_To_Status" sourceRef="DetermineEligibilityTask" targetRef="SetCheckStatusTask" />
     <bpmn:sequenceFlow id="Flow_Status_To_SetDate" sourceRef="SetCheckStatusTask" targetRef="SetEinddatumGeplandTask" />
     <bpmn:sequenceFlow id="Flow_SetDate_To_PatchZaak" sourceRef="SetEinddatumGeplandTask" targetRef="PatchZaakIncomeCheckTask" />
@@ -40,7 +50,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_IncomeCheck">
       <bpmndi:BPMNShape id="Participant_IncomeCheck_di" bpmnElement="IncomeCheckParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="980" height="200" />
+        <dc:Bounds x="160" y="60" width="1240" height="200" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -49,55 +59,71 @@
           <dc:Bounds x="200" y="185" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DetermineEligibilityTask_di" bpmnElement="DetermineEligibilityTask">
+      <bpmndi:BPMNShape id="SetStatusInkomenstoetsTask_di" bpmnElement="SetStatusInkomenstoetsTask">
         <dc:Bounds x="290" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="SetCheckStatusTask_di" bpmnElement="SetCheckStatusTask">
+      <bpmndi:BPMNShape id="RemoveTagPriorityTask_di" bpmnElement="RemoveTagPriorityTask">
         <dc:Bounds x="420" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="SetEinddatumGeplandTask_di" bpmnElement="SetEinddatumGeplandTask">
+      <bpmndi:BPMNShape id="DetermineEligibilityTask_di" bpmnElement="DetermineEligibilityTask">
         <dc:Bounds x="550" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="PatchZaakIncomeCheckTask_di" bpmnElement="PatchZaakIncomeCheckTask">
+      <bpmndi:BPMNShape id="SetCheckStatusTask_di" bpmnElement="SetCheckStatusTask">
         <dc:Bounds x="680" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ReadZaakEinddatumTask_di" bpmnElement="ReadZaakEinddatumTask">
+      <bpmndi:BPMNShape id="SetEinddatumGeplandTask_di" bpmnElement="SetEinddatumGeplandTask">
         <dc:Bounds x="810" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PatchZaakIncomeCheckTask_di" bpmnElement="PatchZaakIncomeCheckTask">
+        <dc:Bounds x="940" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReadZaakEinddatumTask_di" bpmnElement="ReadZaakEinddatumTask">
+        <dc:Bounds x="1070" y="120" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="972" y="142" width="36" height="36" />
+        <dc:Bounds x="1232" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="948" y="185" width="85" height="27" />
+          <dc:Bounds x="1208" y="185" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_Start_To_Check_di" bpmnElement="Flow_Start_To_Check">
+      <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusInkomenstoets_di" bpmnElement="Flow_Start_To_SetStatusInkomenstoets">
         <di:waypoint x="258" y="160" />
         <di:waypoint x="290" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Check_To_Status_di" bpmnElement="Flow_Check_To_Status">
+      <bpmndi:BPMNEdge id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority_di" bpmnElement="Flow_SetStatusInkomenstoets_To_RemoveTagPriority">
         <di:waypoint x="390" y="160" />
         <di:waypoint x="420" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Status_To_SetDate_di" bpmnElement="Flow_Status_To_SetDate">
+      <bpmndi:BPMNEdge id="Flow_RemoveTagPriority_To_Check_di" bpmnElement="Flow_RemoveTagPriority_To_Check">
         <di:waypoint x="520" y="160" />
         <di:waypoint x="550" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_SetDate_To_PatchZaak_di" bpmnElement="Flow_SetDate_To_PatchZaak">
+      <bpmndi:BPMNEdge id="Flow_Check_To_Status_di" bpmnElement="Flow_Check_To_Status">
         <di:waypoint x="650" y="160" />
         <di:waypoint x="680" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadEinddatum_di" bpmnElement="Flow_PatchZaak_To_ReadEinddatum">
+      <bpmndi:BPMNEdge id="Flow_Status_To_SetDate_di" bpmnElement="Flow_Status_To_SetDate">
         <di:waypoint x="780" y="160" />
         <di:waypoint x="810" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ReadEinddatum_To_End_di" bpmnElement="Flow_ReadEinddatum_To_End">
+      <bpmndi:BPMNEdge id="Flow_SetDate_To_PatchZaak_di" bpmnElement="Flow_SetDate_To_PatchZaak">
         <di:waypoint x="910" y="160" />
-        <di:waypoint x="972" y="160" />
+        <di:waypoint x="940" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadEinddatum_di" bpmnElement="Flow_PatchZaak_To_ReadEinddatum">
+        <di:waypoint x="1040" y="160" />
+        <di:waypoint x="1070" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReadEinddatum_To_End_di" bpmnElement="Flow_ReadEinddatum_To_End">
+        <di:waypoint x="1170" y="160" />
+        <di:waypoint x="1232" y="160" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

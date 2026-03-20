@@ -18,4 +18,5 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed a bug where building blocks could not update the internal case status, case tags, or assignee of the calling
+  case. The building block now correctly references the case definition of the parent case.
