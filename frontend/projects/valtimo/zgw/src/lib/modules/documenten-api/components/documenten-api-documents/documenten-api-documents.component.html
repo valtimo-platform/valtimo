@@ -103,7 +103,8 @@
   ></valtimo-documenten-api-metadata-modal>
 
   <valtimo-documenten-api-preview-modal
-    [open]="showPreviewModal$ | async"
+    [showModalSubject$]="showPreviewModal$"
+    [relatedFile$]="documentToPreview$"
     (modalClose)="closePreviewModal()"
   ></valtimo-documenten-api-preview-modal>
 </div>
