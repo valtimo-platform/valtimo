@@ -89,6 +89,8 @@ interface FieldsWidgetValue {
   displayProperties?: WidgetDisplayType;
   sortable?: boolean;
   defaultSort?: Direction;
+  showInPopup?: boolean;
+  visible?: boolean;
 }
 
 interface GeoJsonSource {

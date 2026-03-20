@@ -18,6 +18,8 @@
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
     widgetPropertyValue: widgetPropertyValue$ | async,
+    mainWidgetPropertyValue: mainWidgetPropertyValue$ | async,
+    hasPopupFields: hasPopupFields$ | async,
     widgetData: widgetData$ | async,
     isEmptyWidgetData: isEmptyWidgetData$ | async,
     noVisibleFields: noVisibleFields$ | async,
@@ -65,7 +67,7 @@
           [smallPadding]="true"
         ></valtimo-no-results>
       } @else {
-        @for (column of obs?.widgetPropertyValue; track column.key) {
+        @for (column of obs?.mainWidgetPropertyValue; track column.key) {
           <div class="valtimo-widget-field__column">
             @for (property of column; track property) {
               <div
@@ -98,5 +100,61 @@
         }
       }
     </div>
+
+    @if (obs.hasPopupFields) {
+      <button
+        cdsButton="tertiary"
+        size="sm"
+        class="valtimo-widget-field__show-more"
+        (click)="popupModalOpen.set(true)"
+      >
+        {{ 'widgets.showMore' | translate }}
+        <svg cdsIcon="arrow--right" size="16" class="cds--btn__icon"></svg>
+      </button>
+    }
   }
 </ng-container>
+
+<valtimo-render-in-body>
+  <cds-modal
+    [open]="popupModalOpen()"
+    (overlaySelected)="popupModalOpen.set(false)"
+    (close)="popupModalOpen.set(false)"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="popupModalOpen.set(false)">
+      <h3 cdsModalHeaderHeading>
+        {{ (widgetConfiguration$ | async)?.title }}
+      </h3>
+    </cds-modal-header>
+
+    <div cdsModalContent class="valtimo-widget-field__popup-modal-content">
+      @for (column of (popupFieldColumns$ | async); track column) {
+        <div class="valtimo-widget-field__popup-column">
+          @for (property of column; track property) {
+            <div
+              *ngIf="
+                (property?.value !== null &&
+                  property?.value !== '-' &&
+                  property?.hideWhenEmpty) ||
+                !property?.hideWhenEmpty
+              "
+              class="valtimo-widget-field__field"
+            >
+              <label class="valtimo-widget-field__field-label" [attr.title]="property?.title">
+                {{ property?.title }}</label
+              >
+
+              <div [attr.title]="property?.value" class="valtimo-widget-field__field-value">
+                @if (property?.isRawValue) {
+                  <div [innerHTML]="property?.value"></div>
+                } @else {
+                  {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </cds-modal>
+</valtimo-render-in-body>

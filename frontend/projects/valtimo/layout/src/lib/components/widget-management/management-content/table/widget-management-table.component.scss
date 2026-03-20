@@ -44,8 +44,43 @@
     flex-direction: column;
   }
 
-  .cds--text-input,
-  .cds--list-box {
-    background: var(--cds-layer-02);
+  &__collection {
+    display: flex;
+    flex-direction: column;
   }
+
+  &__display-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    grid-column: span 2;
+  }
+
+  &__display-mode {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  &__radio-wrapper {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    margin-top: 8px;
+
+    fieldset.cds--radio-button-group {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  &__page-size {
+    flex-shrink: 0;
+
+    .cds--text-input {
+      width: 160px;
+    }
+  }
+
 }

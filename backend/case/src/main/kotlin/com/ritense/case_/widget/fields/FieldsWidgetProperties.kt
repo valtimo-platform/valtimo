@@ -31,6 +31,7 @@ data class FieldsWidgetProperties (
         @field:NotBlank val key: String,
         val title: String,
         @field:NotBlank val value: String,
-        @field:Valid val displayProperties: FieldDisplayProperties? = null
+        @field:Valid val displayProperties: FieldDisplayProperties? = null,
+        val showInPopup: Boolean? = null
     )
 }

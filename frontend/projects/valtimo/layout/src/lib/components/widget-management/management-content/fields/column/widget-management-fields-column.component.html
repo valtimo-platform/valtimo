@@ -423,6 +423,64 @@
       </cds-tag>
     </section>
 
+    <div
+      *ngIf="showInPopupCheckbox"
+      class="valtimo-widget-management-field-column__title-switcher"
+      (click)="$event.stopImmediatePropagation()"
+    >
+      <cds-content-switcher size="sm" class="cds--content-switcher--low-contrast" (selected)="onShowInPopupSwitcherChange(index, $event)">
+        <button
+          cdsContentOption
+          name="widget"
+          [active]="!formRows?.at(index).get('showInPopup')?.value"
+          [iconOnly]="true"
+          [description]="'widgetTabManagement.content.fields.displayWidget' | translate"
+          [title]="'widgetTabManagement.content.fields.displayWidgetTooltip' | translate"
+        >
+          <svg cdsIcon="view--filled" size="16"></svg>
+        </button>
+        <button
+          cdsContentOption
+          name="popup"
+          [active]="formRows?.at(index).get('showInPopup')?.value"
+          [iconOnly]="true"
+          [description]="'widgetTabManagement.content.fields.displayPopup' | translate"
+          [title]="'widgetTabManagement.content.fields.displayPopupTooltip' | translate"
+        >
+          <svg cdsIcon="view--off--filled" size="16"></svg>
+        </button>
+      </cds-content-switcher>
+    </div>
+
+    <div
+      *ngIf="showVisibilityToggle"
+      class="valtimo-widget-management-field-column__title-switcher"
+      (click)="$event.stopImmediatePropagation()"
+    >
+      <cds-content-switcher size="sm" class="cds--content-switcher--low-contrast" (selected)="onVisibilitySwitcherChange(index, $event)">
+        <button
+          cdsContentOption
+          name="visible"
+          [active]="formRows?.at(index).get('visible')?.value !== false"
+          [iconOnly]="true"
+          [description]="'widgetTabManagement.content.fields.columnVisible' | translate"
+          [title]="'widgetTabManagement.content.fields.columnVisibleTooltip' | translate"
+        >
+          <svg cdsIcon="view--filled" size="16"></svg>
+        </button>
+        <button
+          cdsContentOption
+          name="hidden"
+          [active]="formRows?.at(index).get('visible')?.value === false"
+          [iconOnly]="true"
+          [description]="'widgetTabManagement.content.fields.columnHidden' | translate"
+          [title]="'widgetTabManagement.content.fields.columnHiddenTooltip' | translate"
+        >
+          <svg cdsIcon="view--off--filled" size="16"></svg>
+        </button>
+      </cds-content-switcher>
+    </div>
+
     <button
       cdsButton="danger"
       [disabled]="count === 1"

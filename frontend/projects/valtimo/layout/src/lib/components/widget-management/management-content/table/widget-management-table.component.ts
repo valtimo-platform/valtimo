@@ -40,8 +40,9 @@ import {
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService, InputModule, LayerModule, RadioModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
+import {ViewFilled16, ViewOffFilled16} from '@carbon/icons';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
@@ -66,8 +67,10 @@ import {toObservable} from '@angular/core/rxjs-interop';
     ButtonModule,
     InputLabelModule,
     LayerModule,
+    RadioModule,
     ValuePathSelectorComponent,
     MdiIconSelectorComponent,
+    IconModule,
   ],
 })
 export class WidgetManagementTableComponent implements OnInit, OnDestroy {
@@ -105,6 +108,10 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
     () =>
       (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.firstColumnAsTitle || false
   );
+  public readonly $displayMode = computed(
+    () =>
+      (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.displayMode ?? 'paginated'
+  );
 
   public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
 
@@ -129,11 +136,15 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private widgetManagementService: IWidgetManagementService<any>
-  ) {}
+  ) {
+    this.iconService.register(ViewFilled16);
+    this.iconService.register(ViewOffFilled16);
+  }
 
   public ngOnInit(): void {
     this.widgetWizardService.$widgetContentValid.set(false);
@@ -176,6 +187,13 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
     this.widgetWizardService.$widgetContent.update(
       (content: WidgetContentProperties | null) =>
         ({...content, firstColumnAsTitle}) as WidgetTableContent
+    );
+  }
+
+  public onDisplayModeChange(displayMode: 'paginated' | 'popup'): void {
+    this.widgetWizardService.$widgetContent.update(
+      (content: WidgetContentProperties | null) =>
+        ({...content, displayMode}) as WidgetTableContent
     );
   }
 

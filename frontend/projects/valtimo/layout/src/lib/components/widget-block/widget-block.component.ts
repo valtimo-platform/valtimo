@@ -91,6 +91,8 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
       const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
+      viewRef.element.nativeElement.style.setProperty('--widget-available-height', `${blockHeight - 16}px`);
+
       this.widgetLayoutService.triggerMuuriLayout();
     })
   );

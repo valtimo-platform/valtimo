@@ -916,6 +916,15 @@
       "widgetTitlePlaceholder": "Choose a short name",
       "widgetTitleTooltip": "Title that displays at the top of the widget",
       "hideWhenEmpty": "Hide when empty",
+      "showInPopup": "Only show in popup",
+      "displayWidget": "Widget",
+      "displayPopup": "Popup",
+      "displayWidgetTooltip": "Show in widget and pop-up",
+      "displayPopupTooltip": "Show only in pop-up",
+      "columnVisible": "Visible",
+      "columnHidden": "Hidden",
+      "columnVisibleTooltip": "Show column in widget",
+      "columnHiddenTooltip": "Hide column from widget",
       "column": "Column {{number}}",
       "fields": {
         "add": "Add field",
@@ -979,7 +988,13 @@
       "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
       "table": {
         "addColumn": "Add column",
+        "displayMode": "Display overflow as",
+        "displayModeTooltip": "Choose how to display data that does not fit in the widget",
+        "displayModePaginated": "Paginated",
+        "displayModePopup": "Pop-up",
         "defaultPageSize": "Rows per page",
+        "defaultPageSizePopup": "Rows to display in widget",
+        "defaultPageSizePopupTooltip": "Number of rows shown in the widget before the show all button appears",
         "defaultPageSizePlaceholder": "Choose amount of rows per page",
         "defaultPageSizeTooltip": "Number of entries displayed on each page",
         "collection": "Path to table data",
@@ -2086,6 +2101,10 @@
   "widgets": {
     "noData": "No data found",
     "emptyFields": "Nothing here",
+    "showMore": "Show all",
+    "popupModal": {
+      "close": "Close"
+    },
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",

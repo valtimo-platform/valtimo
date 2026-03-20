@@ -17,7 +17,9 @@
 <valtimo-widget-table
   [widgetData]="widgetData$ | async"
   [widgetConfiguration]="widgetConfiguration"
+  [allWidgetData]="allWidgetData$ | async"
   (paginationEvent)="onPaginationEvent($event)"
+  (showAllClick)="onShowAllClick()"
 >
   @if (widgetConfiguration?.actions?.length === 1) {
     @if (widgetConfiguration.actions[0].processDefinitionKey) {

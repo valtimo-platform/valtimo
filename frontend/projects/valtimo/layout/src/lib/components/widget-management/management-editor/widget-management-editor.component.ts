@@ -245,6 +245,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   }
 
   public editWidget(widget: Widget): void {
+    this.widgetWizardService.cancelPendingReset();
     if (widget.type === WidgetType.DIVIDER) {
       this.dividerDefinition$.next(widget);
       this.$dividerModalMode.set('edit');
@@ -292,6 +293,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   }
 
   public openAddModal(): void {
+    this.widgetWizardService.cancelPendingReset();
     this.$isWizardOpen.set(true);
   }
 

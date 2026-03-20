@@ -22,7 +22,7 @@
   </v-input-label>
 
   <div class="mdi-icon-selector">
-    <span class="mdi-icon-preview mdi" [ngClass]="(value$ | async) || 'mdi-minus'"></span>
+    <span *ngIf="value$ | async as icon" class="mdi-icon-preview mdi" [ngClass]="icon"></span>
 
     <cds-combo-box
       [items]="(items$ | async) || []"

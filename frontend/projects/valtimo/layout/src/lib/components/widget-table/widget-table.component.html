@@ -53,23 +53,37 @@
       >
       </valtimo-carbon-list>
 
-      @if ($paginationModel() && $showPagination()) {
-        <cds-pagination-nav
-          class="valtimo-widget-table__pagination"
-          [model]="$paginationModel()"
-          (selectPage)="onSelectPage($event)"
-        >
-        </cds-pagination-nav>
-      } @else if (obs.widgetData === null) {
-        <div class="valtimo-widget-table__pagination">
-          <cds-skeleton-text
-            [lines]="1"
-            [maxLineWidth]="150"
-            [minLineWidth]="150"
-          ></cds-skeleton-text>
-        </div>
+      @if (!$isPopupMode()) {
+        @if ($paginationModel() && $showPagination()) {
+          <cds-pagination-nav
+            class="valtimo-widget-table__pagination"
+            [model]="$paginationModel()"
+            (selectPage)="onSelectPage($event)"
+          >
+          </cds-pagination-nav>
+        } @else if (obs.widgetData === null) {
+          <div class="valtimo-widget-table__pagination">
+            <cds-skeleton-text
+              [lines]="1"
+              [maxLineWidth]="150"
+              [minLineWidth]="150"
+            ></cds-skeleton-text>
+          </div>
+        }
       }
     </section>
+
+    @if ($isPopupMode() && $showPagination()) {
+      <button
+        cdsButton="tertiary"
+        size="sm"
+        class="valtimo-widget-table__show-all-btn"
+        (click)="onShowAllClick()"
+      >
+        {{ 'widgets.showMore' | translate }} ({{ $totalElements() }})
+        <svg cdsIcon="arrow--right" size="16" class="cds--btn__icon"></svg>
+      </button>
+    }
   } @else if (obs.widgetData !== null) {
     <valtimo-no-results
       [collapseVertically]="true"
@@ -78,3 +92,28 @@
     ></valtimo-no-results>
   }
 </cds-tile>
+
+<valtimo-render-in-body *ngIf="$showAllModal()">
+  <cds-modal
+    class="valtimo-widget-table__modal"
+    [open]="true"
+    [hasScrollingContent]="true"
+    size="lg"
+    (overlaySelected)="onModalClose()"
+  >
+    <cds-modal-header (closeSelect)="onModalClose()">
+      <h3 cdsModalHeaderHeading>{{ widgetConfiguration?.title }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent>
+      <valtimo-carbon-list
+        [header]="false"
+        [hideToolbar]="true"
+        [fields]="allFields$ | async"
+        [items]="(allWidgetData$ | async) || []"
+        [loading]="(allWidgetData$ | async) === null"
+        [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
+      ></valtimo-carbon-list>
+    </section>
+  </cds-modal>
+</valtimo-render-in-body>

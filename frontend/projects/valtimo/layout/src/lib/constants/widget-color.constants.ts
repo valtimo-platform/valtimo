@@ -23,6 +23,7 @@ interface WidgetColorVariant {
   accent: string | null;
   background: string | null;
   layer: string | null;
+  border: string | null;
 }
 
 type WidgetColorTheme = Record<WidgetColorThemeVariant, WidgetColorVariant>;
@@ -42,8 +43,8 @@ const WIDGET_COLOR_ITEMS: WidgetColor[] = [
 ];
 
 const DEFAULT_WIDGET_COLOR_THEME: WidgetColorTheme = {
-  light: {text: null, accent: null, background: null, layer: null},
-  dark: {text: null, accent: null, background: null, layer: null},
+  light: {text: null, accent: null, background: null, layer: null, border: null},
+  dark: {text: null, accent: null, background: null, layer: null, border: null},
 };
 
 const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
@@ -54,12 +55,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#393939',
       background: '#161616',
       layer: '#262626',
+      border: '#393939',
     },
     dark: {
       text: '#161616',
       accent: '#C6C6C6',
       background: '#FFFFFF',
       layer: '#F4F4F4',
+      border: '#E0E0E0',
     },
   },
   [WidgetColor.BLUE]: {
@@ -68,12 +71,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#468CBEFF',
       background: '#E2EDF5FF',
       layer: '#F6FBFFFF',
+      border: '#468CBE66',
     },
     dark: {
       text: '#E2EDF5FF',
       accent: '#468CBEFF',
       background: '#314A5EFF',
       layer: '#1A2D3CFF',
+      border: '#468CBEFF',
     },
   },
   [WidgetColor.PERIWINKLE]: {
@@ -82,12 +87,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#4A42BEFF',
       background: '#D5D3F0FF',
       layer: '#EBEAFDFF',
+      border: '#4A42BE66',
     },
     dark: {
       text: '#D5D3F0FF',
       accent: '#4A42BEFF',
       background: '#1A146AFF',
       layer: '#0B0742FF',
+      border: '#4A42BEFF',
     },
   },
   [WidgetColor.PURPLE]: {
@@ -96,12 +103,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#B965BCFF',
       background: '#F4E6F4FF',
       layer: '#FBF5FBFF',
+      border: '#B965BC66',
     },
     dark: {
       text: '#F4E6F4FF',
       accent: '#B965BCFF',
       background: '#603361FF',
       layer: '#3F203FFF',
+      border: '#B965BCFF',
     },
   },
   [WidgetColor.TURQOISE]: {
@@ -110,12 +119,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#359C85FF',
       background: '#ECF8F6FF',
       layer: '#F8FFFEFF',
+      border: '#359C8566',
     },
     dark: {
       text: '#ECF8F6FF',
       accent: '#359C85FF',
       background: '#297063FF',
       layer: '#184A40FF',
+      border: '#359C85FF',
     },
   },
   [WidgetColor.GREEN]: {
@@ -124,12 +135,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#3F9C40FF',
       background: '#E8F3E8FF',
       layer: '#F8FFF8FF',
+      border: '#3F9C4066',
     },
     dark: {
       text: '#E8F3E8FF',
       accent: '#3F9C40FF',
       background: '#245B25FF',
       layer: '#153C15FF',
+      border: '#3F9C40FF',
     },
   },
   [WidgetColor.BROWN]: {
@@ -138,12 +151,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#A07837FF',
       background: '#ECE4D7FF',
       layer: '#F6F2EBFF',
+      border: '#A0783766',
     },
     dark: {
       text: '#ECE4D7FF',
       accent: '#A07837FF',
       background: '#6E5326FF',
       layer: '#493617FF',
+      border: '#A07837FF',
     },
   },
   [WidgetColor.RED]: {
@@ -152,12 +167,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#D34F51FF',
       background: '#F6DCDCFF',
       layer: '#FFEBEBFF',
+      border: '#D34F5166',
     },
     dark: {
       text: '#F6DCDCFF',
       accent: '#D34F51FF',
       background: '#7C2C2DFF',
       layer: '#561D1EFF',
+      border: '#D34F51FF',
     },
   },
   [WidgetColor.ORANGE]: {
@@ -166,12 +183,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#CC6300FF',
       background: '#FFE5CCFF',
       layer: '#FFF1E4FF',
+      border: '#CC630066',
     },
     dark: {
       text: '#FFE5CCFF',
       accent: '#CC6300FF',
       background: '#673D13FF',
       layer: '#41270CFF',
+      border: '#CC6300FF',
     },
   },
   [WidgetColor.YELLOW]: {
@@ -180,12 +199,14 @@ const WIDGET_COLOR_THEME_MAP: Record<WidgetColor, WidgetColorTheme> = {
       accent: '#FAD165FF',
       background: '#FEF6E0FF',
       layer: '#FFFBF1FF',
+      border: '#FAD16566',
     },
     dark: {
       text: '#FEF6E0FF',
       accent: '#FAD165FF',
       background: '#6F5C29FF',
       layer: '#483B17FF',
+      border: '#FAD165FF',
     },
   },
 };

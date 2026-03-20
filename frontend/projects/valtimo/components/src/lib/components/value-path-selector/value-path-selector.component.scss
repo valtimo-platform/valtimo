@@ -43,7 +43,8 @@
   }
 
   ::ng-deep cds-dropdown,
-  ::ng-deep cds-combo-box {
+  ::ng-deep cds-combo-box,
+  ::ng-deep input.cds--text-input {
     width: 100%;
     min-width: 0;
   }

@@ -23,7 +23,15 @@
     justify-content: space-between;
   }
 
-  &,
+  & {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-height: var(--widget-available-height, auto);
+    box-sizing: border-box;
+  }
+
   &__column {
     display: flex;
     flex-direction: column;
@@ -70,7 +78,7 @@
     &-value {
       color: var(--widget-text-color, var(--cds-text-primary));
       padding: 8px 16px;
-      border-bottom: 1px solid var(--cds-border-subtle-01);
+      border-bottom: 1px solid var(--widget-border-color, var(--cds-border-subtle-01));
       font-size: 14px;
 
       cds-skeleton-text {
@@ -90,6 +98,32 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  > valtimo-render-in-body {
+    display: contents;
+  }
+
+  &__show-more {
+    align-self: flex-end;
+    margin-top: auto;
+    --cds-button-tertiary: var(--widget-text-color, var(--cds-interactive));
+    --cds-button-tertiary-hover: var(--widget-text-color, var(--cds-interactive));
+    --cds-button-tertiary-active: var(--widget-text-color, var(--cds-interactive));
+    --cds-text-on-color: var(--widget-background-color, #ffffff);
+  }
+
+  &__popup-modal-content {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+  }
+
+  &__popup-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 16px;
   }
 
   &__render {
@@ -118,7 +152,7 @@
     .valtimo-widget-field {
       &__column {
         gap: 8px;
-        border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
+        border-left: 1px solid var(--widget-border-color, var(--cds-border-subtle-01));
         padding-left: 16px;
       }
 
@@ -140,7 +174,7 @@
 
       &__render > * {
         padding-left: 16px;
-        border-left: 1px solid var(--widget-accent-color, var(--cds-border-subtle-01));
+        border-left: 1px solid var(--widget-border-color, var(--cds-border-subtle-01));
       }
     }
   }

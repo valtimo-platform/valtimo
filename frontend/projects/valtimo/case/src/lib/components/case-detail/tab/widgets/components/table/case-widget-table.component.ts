@@ -33,6 +33,7 @@ import {
   of,
   startWith,
   switchMap,
+  take,
   tap,
 } from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
@@ -145,8 +146,29 @@ export class CaseWidgetTableComponent extends WidgetProcess {
     super(documentService, permissionService);
   }
 
+  public readonly allWidgetData$ = new BehaviorSubject<Page<CarbonListItem> | null>(null);
+
   public onPaginationEvent(event: PaginationModel): void {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
+  }
+
+  public onShowAllClick(): void {
+    combineLatest([this.tabKey$, this._documentId$])
+      .pipe(
+        take(1),
+        switchMap(([tabKey, documentId]) =>
+          this.caseWidgetsApiService.getWidgetData(
+            documentId,
+            tabKey,
+            this.widgetConfiguration.key,
+            'page=0&size=9999'
+          )
+        ),
+        catchError(() => of(null))
+      )
+      .subscribe(data => {
+        this.allWidgetData$.next(data as Page<CarbonListItem>);
+      });
   }
 
   public onProcessStartClick(process: WidgetAction): void {

@@ -40,7 +40,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {TrashCan16} from '@carbon/icons';
+import {TrashCan16, ViewFilled16, ViewOffFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CdsThemeService,
@@ -57,6 +57,7 @@ import {
   AccordionModule,
   ButtonModule,
   CheckboxModule,
+  ContentSwitcherModule,
   Dropdown,
   DropdownModule,
   IconModule,
@@ -64,10 +65,10 @@ import {
   InputModule,
   LayerModule,
   ListItem,
-  ToggleModule,
   TagModule,
+  ToggleModule,
 } from 'carbon-components-angular';
-import {debounceTime, map, Observable, startWith, Subscription, take, tap} from 'rxjs';
+import {map, Observable, startWith, Subscription, take, tap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
 import {IWidgetManagementService} from '../../../../../interfaces';
 import {
@@ -107,6 +108,7 @@ import {WidgetFieldsService, WidgetWizardService} from '../../../../../services'
     SelectModule,
     TagModule,
     ToggleModule,
+    ContentSwitcherModule,
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -116,7 +118,9 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
   @Input() public selectedCollection?: ValuePathItem;
   @Input() public showHideWhenEmptyCheckbox = false;
+  @Input() public showInPopupCheckbox = false;
   @Input() public showSortableCheckbox = false;
+  @Input() public showVisibilityToggle = false;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsWidgetValue[];
@@ -184,6 +188,16 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     private widgetManagementService: IWidgetManagementService<any>
   ) {
     this.iconService.register(TrashCan16);
+    this.iconService.register(ViewFilled16);
+    this.iconService.register(ViewOffFilled16);
+  }
+
+  public onShowInPopupSwitcherChange(index: number, option: {name: string}): void {
+    this.formRows?.at(index).patchValue({showInPopup: option.name === 'popup'});
+  }
+
+  public onVisibilitySwitcherChange(index: number, option: {name: string}): void {
+    this.formRows?.at(index).patchValue({visible: option.name !== 'hidden'});
   }
 
   public ngOnInit(): void {
@@ -192,6 +206,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
   }
 
   public ngOnDestroy(): void {
+    this.emitCurrentFormValue();
     this._subscriptions.unsubscribe();
     this.formGroup.reset();
   }
@@ -212,6 +227,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           Validators.pattern('[1-9][0-9]*')
         ),
         hideWhenEmpty: this.fb.control<boolean>(false),
+        showInPopup: this.fb.control<boolean>(false),
+        visible: this.fb.control<boolean>(true),
         sortable: this.fb.control<boolean>(false),
         defaultSort: this.fb.control<Direction | null>({value: null, disabled: true}),
       })
@@ -227,7 +244,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
 
   public onTypeSelected(formRow: FormGroup, event: {item: ListItem}): void {
     this.widgetFieldsService.onDisplayTypeSelected(
-      ['title', 'content', 'type', 'hideWhenEmpty', 'sortable', 'defaultSort'],
+      ['title', 'content', 'type', 'hideWhenEmpty', 'sortable', 'defaultSort', 'showInPopup', 'visible'],
       formRow,
       event
     );
@@ -290,6 +307,8 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
       hideWhenEmpty: this.fb.control(
         (row.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false
       ),
+      showInPopup: this.fb.control<boolean>(row.showInPopup ?? false),
+      visible: this.fb.control<boolean>(row.visible ?? true),
       ...([WidgetDisplayTypeKey.NUMBER, WidgetDisplayTypeKey.PERCENT].includes(
         row.displayProperties?.type as WidgetDisplayTypeKey
       ) && {
@@ -351,34 +370,42 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     this.columnUpdateEvent.emit({data: this.columnData, valid: true});
   }
 
+  private emitCurrentFormValue(): void {
+    if (!this.formRows) return;
+    const rows = this.formRows.getRawValue();
+    const mappedRows: FieldsWidgetValue[] = rows.map((row: any | null) => ({
+      key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
+      title: row.title,
+      value: row.content,
+      ...(row.sortable !== undefined && {sortable: row.sortable}),
+      ...(row.defaultSort && row.sortable && {defaultSort: row.defaultSort}),
+      ...(!!row?.showInPopup && {showInPopup: row.showInPopup}),
+      ...(row?.visible === false && {visible: false}),
+      ...(!!row?.type.id && {
+        displayProperties: {
+          type: row.type.id,
+          ...(!!row?.ellipsisCharacterLimit && {
+            ellipsisCharacterLimit: row.ellipsisCharacterLimit,
+          }),
+          ...(!!row?.hideWhenEmpty && {hideWhenEmpty: row.hideWhenEmpty}),
+          ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
+          ...(!!row?.display && {display: row.display}),
+          ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
+          ...(!!row?.linkText && {linkText: row.linkText}),
+          ...(!!row?.format && {format: row.format}),
+          ...(!!row?.values && {
+            values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
+          }),
+        },
+      }),
+    }));
+    this.columnUpdateEvent.emit({data: mappedRows, valid: this.formGroup.valid});
+  }
+
   private openFormSubscription(): void {
     this._subscriptions.add(
-      this.formRows?.valueChanges.pipe(debounceTime(100)).subscribe((rows: any) => {
-        const mappedRows: FieldsWidgetValue[] = rows.map((row: any | null) => ({
-          key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
-          title: row.title,
-          value: row.content,
-          ...(row.sortable !== undefined && {sortable: row.sortable}),
-          ...(row.defaultSort && row.sortable && {defaultSort: row.defaultSort}),
-          ...(!!row?.type.id && {
-            displayProperties: {
-              type: row.type.id,
-              ...(!!row?.ellipsisCharacterLimit && {
-                ellipsisCharacterLimit: row.ellipsisCharacterLimit,
-              }),
-              ...(!!row?.hideWhenEmpty && {hideWhenEmpty: row.hideWhenEmpty}),
-              ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
-              ...(!!row?.display && {display: row.display}),
-              ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
-              ...(!!row?.linkText && {linkText: row.linkText}),
-              ...(!!row?.format && {format: row.format}),
-              ...(!!row?.values && {
-                values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
-              }),
-            },
-          }),
-        }));
-        this.columnUpdateEvent.emit({data: mappedRows, valid: this.formGroup.valid});
+      this.formRows?.valueChanges.subscribe(() => {
+        this.emitCurrentFormValue();
       })
     );
   }

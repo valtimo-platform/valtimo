@@ -18,6 +18,7 @@
   *ngIf="{theme: theme$ | async, params: params$ | async} as obs"
   [formGroup]="form"
   class="valtimo-widget-management-table__form"
+  [cdsLayer]="1"
 >
   <cds-text-label [attr.data-carbon-theme]="theme">
     <v-input-label
@@ -39,22 +40,7 @@
     formControlName="widgetIcon"
   ></valtimo-mdi-icon-selector>
 
-  <cds-text-label [attr.data-carbon-theme]="theme">
-    <v-input-label
-      [title]="'widgetTabManagement.content.table.defaultPageSize' | translate"
-      [tooltip]="'widgetTabManagement.content.table.defaultPageSizeTooltip' | translate"
-    >
-    </v-input-label>
-
-    <input
-      formControlName="defaultPageSize"
-      cdsText
-      [placeholder]="'widgetTabManagement.content.table.defaultPageSizePlaceholder' | translate"
-      type="text"
-    />
-  </cds-text-label>
-
-  <cds-text-label [attr.data-carbon-theme]="theme">
+  <div class="valtimo-widget-management-table__collection">
     <v-input-label
       [title]="'widgetTabManagement.content.table.collection' | translate"
       [tooltip]="collectionDataTooltip$ | async"
@@ -74,12 +60,58 @@
       <input
         formControlName="collection"
         cdsText
-        [attr.data-carbon-theme]="theme"
+        [attr.data-carbon-theme]="obs.theme"
         [placeholder]="'widgetTabManagement.content.table.collection' | translate"
         type="text"
       />
     }
-  </cds-text-label>
+  </div>
+
+  <div class="valtimo-widget-management-table__display-row">
+    <div class="valtimo-widget-management-table__display-mode">
+      <v-input-label
+        [title]="'widgetTabManagement.content.table.displayMode' | translate"
+        [tooltip]="'widgetTabManagement.content.table.displayModeTooltip' | translate"
+      ></v-input-label>
+
+      <div class="valtimo-widget-management-table__radio-wrapper">
+        <cds-radio-group
+          [attr.aria-label]="'widgetTabManagement.content.table.displayMode' | translate"
+          orientation="horizontal"
+        >
+          <cds-radio
+            value="paginated"
+            [checked]="$displayMode() === 'paginated'"
+            (change)="onDisplayModeChange('paginated')"
+          >
+            {{ 'widgetTabManagement.content.table.displayModePaginated' | translate }}
+          </cds-radio>
+          <cds-radio
+            value="popup"
+            [checked]="$displayMode() === 'popup'"
+            (change)="onDisplayModeChange('popup')"
+          >
+            {{ 'widgetTabManagement.content.table.displayModePopup' | translate }}
+          </cds-radio>
+        </cds-radio-group>
+      </div>
+    </div>
+
+    <cds-text-label [attr.data-carbon-theme]="obs.theme" class="valtimo-widget-management-table__page-size">
+      <v-input-label
+        [title]="($displayMode() === 'popup' ? 'widgetTabManagement.content.table.defaultPageSizePopup' : 'widgetTabManagement.content.table.defaultPageSize') | translate"
+        [tooltip]="($displayMode() === 'popup' ? 'widgetTabManagement.content.table.defaultPageSizePopupTooltip' : 'widgetTabManagement.content.table.defaultPageSizeTooltip') | translate"
+      >
+      </v-input-label>
+
+      <input
+        formControlName="defaultPageSize"
+        cdsText
+        [placeholder]="'widgetTabManagement.content.table.defaultPageSizePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+  </div>
 </form>
 
 <ng-content></ng-content>
@@ -94,6 +126,7 @@
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
   [selectedCollection]="selectedCollection$ | async"
   [showSortableCheckbox]="sortableColumns"
+  [showVisibilityToggle]="true"
 ></valtimo-widget-management-fields-column>
 
 <section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">

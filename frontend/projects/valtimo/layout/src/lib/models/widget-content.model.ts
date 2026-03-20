@@ -62,6 +62,7 @@ interface WidgetTableContent {
   collection: string;
   firstColumnAsTitle: boolean;
   defaultPageSize: number;
+  displayMode?: 'paginated' | 'popup';
 }
 
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {

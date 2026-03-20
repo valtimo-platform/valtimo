@@ -177,8 +177,19 @@ export class WidgetWizardService {
 
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
 
+  private _resetTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  public cancelPendingReset(): void {
+    if (this._resetTimeoutId !== null) {
+      clearTimeout(this._resetTimeoutId);
+      this._resetTimeoutId = null;
+    }
+  }
+
   public resetWizard(): void {
-    setTimeout(() => {
+    this.cancelPendingReset();
+    this._resetTimeoutId = setTimeout(() => {
+      this._resetTimeoutId = null;
       this.$currentStepIndex.set(0);
       this.$currentStep.set(WidgetWizardStep.TYPE);
       this.$selectedWidget.set(null);

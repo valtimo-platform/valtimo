@@ -220,12 +220,13 @@ export class WidgetManagementWizardComponent implements OnDestroy {
         );
       }
 
+      const widgetToSave = this.widgetWizardService.$widgetsConfig();
       this.closeEvent.emit({
         type:
           this.editMode && !isDuplicateMode
             ? WidgetWizardCloseEventType.EDIT
             : WidgetWizardCloseEventType.CREATE,
-        widget: this.widgetWizardService.$widgetsConfig(),
+        widget: widgetToSave,
       });
 
       this.resetWizard();

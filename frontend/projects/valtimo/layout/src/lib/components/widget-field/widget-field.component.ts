@@ -33,10 +33,20 @@ import {
   CarbonListModule,
   EllipsisPipe,
   MdiIconViewerComponent,
+  RenderInBodyComponent,
   ViewContentService,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, LayerModule, SkeletonModule} from 'carbon-components-angular';
+import {ArrowRight16} from '@carbon/icons';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LayerModule,
+  ModalModule,
+  SkeletonModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
@@ -58,7 +68,10 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     ButtonModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
+    IconModule,
     LayerModule,
+    ModalModule,
+    RenderInBodyComponent,
     SkeletonModule,
   ],
 })
@@ -94,6 +107,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
       ellipsisCharacterLimit: number | null;
       hideWhenEmpty: boolean | false;
       isRawValue: boolean | false;
+      showInPopup: boolean;
     }[][]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     map(([widget, widgetData]) =>
@@ -122,6 +136,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
                     }),
+                    showInPopup: property.showInPopup ?? false,
                   },
                 ]
               : []),
@@ -129,13 +144,40 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
           []
         )
       )
-    ),
-    tap(columns => this.checkEmptyFields(columns))
+    )
   );
+
+  public readonly mainWidgetPropertyValue$ = this.widgetPropertyValue$.pipe(
+    map(columns =>
+      columns
+        ?.map(column => column.filter(field => !field.showInPopup))
+        .filter(column => column.length > 0)
+    ),
+    tap(columns => this.checkEmptyFields(columns ?? []))
+  );
+
+  public readonly hasPopupFields$ = this.widgetPropertyValue$.pipe(
+    map(columns => columns?.some(column => column.some(field => field.showInPopup)) ?? false)
+  );
+
+  public readonly popupFieldColumns$ = this.widgetPropertyValue$.pipe(
+    map(columns => {
+      const allFields = columns?.flatMap(column => column) ?? [];
+      const mid = Math.ceil(allFields.length / 2);
+      return allFields.length > 0 ? [allFields.slice(0, mid), allFields.slice(mid)] : [];
+    })
+  );
+
+  public readonly popupModalOpen = signal(false);
 
   private _observer!: ResizeObserver;
 
-  constructor(private readonly viewContentService: ViewContentService) {}
+  constructor(
+    private readonly iconService: IconService,
+    private readonly viewContentService: ViewContentService
+  ) {
+    this.iconService.register(ArrowRight16);
+  }
 
   public ngAfterViewInit(): void {
     if (this._widgetFieldRef) this.openWidthObserver();

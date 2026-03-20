@@ -30,11 +30,14 @@ import {
   CarbonListModule,
   ColumnConfig,
   MdiIconViewerComponent,
+  RenderInBodyComponent,
   ViewType,
 } from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
+  IconModule,
+  ModalModule,
   PaginationModel,
   PaginationModule,
   SkeletonModule,
@@ -58,9 +61,12 @@ import {WidgetActionButtonComponent} from '../widget-action-button/widget-action
     TilesModule,
     TranslateModule,
     ButtonModule,
+    IconModule,
+    ModalModule,
     WidgetActionButtonComponent,
     MdiIconViewerComponent,
     SkeletonModule,
+    RenderInBodyComponent,
   ],
 })
 export class WidgetTableComponent {
@@ -72,35 +78,37 @@ export class WidgetTableComponent {
 
   @Input({required: true}) public set widgetConfiguration(value: TableWidget) {
     this._widgetConfiguration = value;
+    this.$isPopupMode.set(value.properties.displayMode === 'popup');
+
+    const toColumnConfig = (column: FieldsWidgetValue, index: number) => ({
+      key: column.key,
+      label: column.title,
+      viewType: column.displayProperties?.type ?? ViewType.TEXT,
+      className: `valtimo-widget-table--transparent ${index === 0 && value.properties.firstColumnAsTitle ? 'valtimo-widget-table--title' : ''}`,
+      ...(!!column.displayProperties?.['format'] && {format: column.displayProperties['format']}),
+      ...(!!column.displayProperties?.['digitsInfo'] && {digitsInfo: column.displayProperties['digitsInfo']}),
+      ...(!!column.displayProperties?.['display'] && {display: column.displayProperties['display']}),
+      ...(!!column.displayProperties?.['currencyCode'] && {currencyCode: column.displayProperties['currencyCode']}),
+      ...(!!column.displayProperties?.['values'] && {values: column.displayProperties['values']}),
+    });
 
     this.fields$.next(
-      value.properties.columns.map((column: FieldsWidgetValue, index: number) => ({
-        key: column.key,
-        label: column.title,
-        viewType: column.displayProperties?.type ?? ViewType.TEXT,
-        className: `valtimo-widget-table--transparent ${index === 0 && value.properties.firstColumnAsTitle ? 'valtimo-widget-table--title' : ''}`,
-        ...(!!column.displayProperties?.['format'] && {
-          format: column.displayProperties['format'],
-        }),
-        ...(!!column.displayProperties?.['digitsInfo'] && {
-          digitsInfo: column.displayProperties['digitsInfo'],
-        }),
-        ...(!!column.displayProperties?.['display'] && {
-          display: column.displayProperties['display'],
-        }),
-        ...(!!column.displayProperties?.['currencyCode'] && {
-          currencyCode: column.displayProperties['currencyCode'],
-        }),
-        ...(!!column.displayProperties?.['values'] && {
-          values: column.displayProperties['values'],
-        }),
-      }))
+      value.properties.columns
+        .filter(column => column.visible !== false)
+        .map((column, index) => toColumnConfig(column, index))
+    );
+
+    this.allFields$.next(
+      value.properties.columns.map((column, index) => toColumnConfig(column, index))
     );
 
     this.cdr.detectChanges();
   }
 
   public readonly $showPagination = signal<boolean>(false);
+  public readonly $isPopupMode = signal<boolean>(false);
+  public readonly $showAllModal = signal<boolean>(false);
+  public readonly $totalElements = signal<number>(0);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
   public readonly resolvedData$ = new BehaviorSubject<object | null>(null);
@@ -116,6 +124,7 @@ export class WidgetTableComponent {
     }
 
     this.$showPagination.set(value.totalElements > value.size);
+    this.$totalElements.set(value.totalElements);
 
     if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
@@ -161,8 +170,16 @@ export class WidgetTableComponent {
   }
 
   @Output() public readonly paginationEvent = new EventEmitter<PaginationModel>();
+  @Output() public readonly showAllClick = new EventEmitter<void>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly allFields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly allWidgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
+
+  @Input() set allWidgetData(value: Page<CarbonListItem> | null) {
+    this.allWidgetData$.next(value ? value.content : null);
+    this.cdr.detectChanges();
+  }
 
   public readonly $paginationModel = signal<PaginationModel | null>(new PaginationModel());
 
@@ -172,5 +189,14 @@ export class WidgetTableComponent {
     const paginationModel = this.$paginationModel();
     if (!paginationModel) return;
     this.paginationEvent.emit({...paginationModel, currentPage: page});
+  }
+
+  public onShowAllClick(): void {
+    this.$showAllModal.set(true);
+    this.showAllClick.emit();
+  }
+
+  public onModalClose(): void {
+    this.$showAllModal.set(false);
   }
 }

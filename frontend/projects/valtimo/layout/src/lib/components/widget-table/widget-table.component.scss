@@ -57,6 +57,11 @@
     align-items: center;
   }
 
+  &__show-all-btn {
+    align-self: flex-end;
+    margin-top: auto;
+  }
+
   .cds--data-table {
     & > thead {
       background: transparent !important;
@@ -82,6 +87,24 @@
     tr {
       gap: 16px;
     }
+  }
+
+  &__modal .cds--modal-content .cds--data-table-content {
+    overflow-x: visible;
+  }
+
+  &__modal .cds--modal-content .cds--data-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  &__modal .cds--modal-content .cds--data-table thead th {
+    background-color: var(--cds-layer-01) !important;
+  }
+
+  &__modal section.cds--modal-content {
+    padding-bottom: 32px;
   }
 
   &--compact .cds--data-table tr {

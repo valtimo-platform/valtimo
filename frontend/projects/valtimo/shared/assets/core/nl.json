@@ -938,6 +938,15 @@
       "widgetTitlePlaceholder": "Kies een korte naam",
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
       "hideWhenEmpty": "Verbergen indien leeg",
+      "showInPopup": "Alleen weergeven in popup",
+      "displayWidget": "Widget",
+      "displayPopup": "Popup",
+      "displayWidgetTooltip": "Weergeven in widget en pop-up",
+      "displayPopupTooltip": "Alleen weergeven in pop-up",
+      "columnVisible": "Zichtbaar",
+      "columnHidden": "Verborgen",
+      "columnVisibleTooltip": "Kolom weergeven in widget",
+      "columnHiddenTooltip": "Kolom verbergen in widget",
       "column": "Kolom {{number}}",
       "fields": {
         "add": "Veld toevoegen",
@@ -1004,7 +1013,13 @@
       },
       "table": {
         "addColumn": "Kolom toevoegen",
+        "displayMode": "Overflow weergeven als",
+        "displayModeTooltip": "Kies hoe gegevens worden weergegeven die niet in de widget passen",
+        "displayModePaginated": "Gepagineerd",
+        "displayModePopup": "Pop-up",
         "defaultPageSize": "Rijen per pagina",
+        "defaultPageSizePopup": "Rijen weergeven in widget",
+        "defaultPageSizePopupTooltip": "Aantal rijen dat in de widget wordt getoond voordat de knop ‘alles tonen’ verschijnt",
         "defaultPageSizePlaceholder": "Kies het aantal rijen per pagina",
         "defaultPageSizeTooltip": "Aantal vermeldingen weergegeven op elke pagina",
         "collection": "Pad naar tabeldata",
@@ -2119,6 +2134,10 @@
   "widgets": {
     "noData": "Geen data gevonden",
     "emptyFields": "Niets hier",
+    "showMore": "Laat alles zien",
+    "popupModal": {
+      "close": "Sluiten"
+    },
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
