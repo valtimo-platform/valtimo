@@ -6,9 +6,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Check if a zaak is still active**
 
-  New feature explanation.
+  A new API endpoint has been added to check whether a zaak is still active (i.e. its `einddatum` is not set). The endpoint looks up a zaak by its identificatie and returns whether it is active. Access is controlled through PBAC: a new `com.ritense.zakenapi.security.Zaak` resource type with the `view_active_status` action allows administrators to restrict which zaaktypen a user may query. See [Check zaak active status](../../../features/zgw/check-zaak-active-status.md) for details.
 
 ## Enhancements
 

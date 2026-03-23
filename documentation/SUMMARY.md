@@ -103,6 +103,7 @@
     * [Tabs](features/case/case-detail/tabs/README.md)
       * [Widgets](features/case/case-detail/tabs/widgets.md)
   * [📃 ZGW](features/case/zgw/README.md)
+    * [Check zaak active status](features/zgw/check-zaak-active-status.md)
     * [Documents](features/case/zgw/zgw-documents/README.md)
       * [Access control](features/case/zgw/zgw-documents/access-control.md)
       * [Uploading to Documenten API with metadata](features/case/zgw/zgw-documents/upload-to-documenten-api-with-metadata.md)
