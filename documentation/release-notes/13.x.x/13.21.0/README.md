@@ -27,3 +27,6 @@
   required a case definition context. Global forms can now be placed in `config/global/form/*.form.json` and object
   management configurations in `config/global/object-management/*.object-management.json` for automatic pickup on
   startup.
+
+* Fixed an issue in forms where conditions on fields that were contained in a Data Grid type field were not working 
+  correctly.
