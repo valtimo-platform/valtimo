@@ -23,6 +23,8 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -38,6 +40,8 @@ import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,10 +49,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.xml.parsers.DocumentBuilderFactory;
 import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
+import org.operaton.bpm.model.bpmn.Bpmn;
+import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import org.operaton.bpm.model.bpmn.instance.Process;
+import org.operaton.bpm.model.bpmn.instance.ServiceTask;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +65,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 class OperatonProcessServiceTest {
 
@@ -280,5 +292,131 @@ class OperatonProcessServiceTest {
 
     private Matcher<Object> withStartTime(LocalDateTime date) {
         return hasProperty("startTime", IsEqual.equalTo(date));
+    }
+
+    // ---- normalizeToCamundaNamespace tests ----
+
+    @Test
+    void normalizeToCamundaNamespace_noOperatonNamespace_fastPath() {
+        BpmnModelInstance model = modelWithCamundaExpression("${null}");
+
+        ByteArrayInputStream result = createService().normalizeToCamundaNamespace(model);
+
+        String xml = new String(result.readAllBytes(), StandardCharsets.UTF_8);
+        assertFalse(xml.contains("http://operaton.org/schema/1.0/bpmn"));
+        assertFalse(xml.contains("operaton:"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_onlyOperatonAttribute_convertedToCamunda() throws Exception {
+        BpmnModelInstance model = modelWithNoExtensionAttrs();
+        serviceTask(model).setOperatonExpression("${value}");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element task = findById(result, "task1");
+
+        assertEquals("${value}", task.getAttributeNS(CAMUNDA_NS, "expression"));
+        assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_sameValueInBothNamespaces_operatonAttributeRemoved() throws Exception {
+        BpmnModelInstance model = modelWithCamundaExpression("${null}");
+        serviceTask(model).setOperatonExpression("${null}");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element task = findById(result, "task1");
+
+        assertEquals("${null}", task.getAttributeNS(CAMUNDA_NS, "expression"));
+        assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_differentValueInBothNamespaces_operatonValueWins() throws Exception {
+        BpmnModelInstance model = modelWithCamundaExpression("${camunda-value}");
+        serviceTask(model).setOperatonExpression("${operaton-value}");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element task = findById(result, "task1");
+
+        assertEquals("${operaton-value}", task.getAttributeNS(CAMUNDA_NS, "expression"));
+        assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_nestedElements_allNormalized() throws Exception {
+        BpmnModelInstance model = modelWithNoExtensionAttrs();
+        process(model).setOperatonVersionTag("v1");
+        serviceTask(model).setOperatonExpression("${task-value}");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+
+        Element proc = findById(result, "test-process");
+        assertEquals("v1", proc.getAttributeNS(CAMUNDA_NS, "versionTag"));
+        assertEquals("", proc.getAttributeNS(OPERATON_NS, "versionTag"));
+
+        Element task = findById(result, "task1");
+        assertEquals("${task-value}", task.getAttributeNS(CAMUNDA_NS, "expression"));
+        assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
+    }
+
+    // ---- helpers ----
+
+    private static final String CAMUNDA_NS = "http://camunda.org/schema/1.0/bpmn";
+    private static final String OPERATON_NS = "http://operaton.org/schema/1.0/bpmn";
+
+    private static final String MINIMAL_BPMN_TEMPLATE =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"" +
+        " xmlns:camunda=\"http://camunda.org/schema/1.0/bpmn\"" +
+        " id=\"test\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
+        "<bpmn:process id=\"test-process\" isExecutable=\"true\">" +
+        "<bpmn:serviceTask id=\"task1\" name=\"Task\"%s/>" +
+        "</bpmn:process></bpmn:definitions>";
+
+    private BpmnModelInstance modelWithNoExtensionAttrs() {
+        return Bpmn.readModelFromStream(new ByteArrayInputStream(
+            String.format(MINIMAL_BPMN_TEMPLATE, "").getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private BpmnModelInstance modelWithCamundaExpression(String expression) {
+        return Bpmn.readModelFromStream(new ByteArrayInputStream(
+            String.format(MINIMAL_BPMN_TEMPLATE, " camunda:expression=\"" + expression + "\"")
+                .getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private ServiceTask serviceTask(BpmnModelInstance model) {
+        return model.getModelElementsByType(ServiceTask.class).iterator().next();
+    }
+
+    private Process process(BpmnModelInstance model) {
+        return model.getModelElementsByType(Process.class).iterator().next();
+    }
+
+    private OperatonProcessService createService() {
+        return new OperatonProcessService(
+            runtimeService, operatonRuntimeService, repositoryService, operatonRepositoryService,
+            formService, historyService, processPropertyService, valtimoProperties,
+            authorizationService, operatonExecutionRepository, processDefinitionCaseDefinitionLinker,
+            operatonByteArrayService, applicationEventPublisher, operatonDeploymentSourceHelper,
+            operatonProcessDefinitionRepository
+        );
+    }
+
+    private Document parseResult(ByteArrayInputStream stream) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        return factory.newDocumentBuilder().parse(stream);
+    }
+
+    private Element findById(Document doc, String id) {
+        NodeList all = doc.getElementsByTagName("*");
+        for (int i = 0; i < all.getLength(); i++) {
+            Element el = (Element) all.item(i);
+            if (id.equals(el.getAttribute("id"))) {
+                return el;
+            }
+        }
+        throw new AssertionError("No element with id='" + id + "' found in document");
     }
 }
