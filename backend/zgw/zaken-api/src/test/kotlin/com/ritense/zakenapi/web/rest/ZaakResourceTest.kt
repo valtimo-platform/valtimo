@@ -29,7 +29,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -54,7 +53,6 @@ internal class ZaakResourceTest {
             get("/api/v1/zaken-api/zaak/{zaakIdentificatie}/actief", "ZAAK-001")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.actief").value(true))
     }
@@ -67,7 +65,6 @@ internal class ZaakResourceTest {
             get("/api/v1/zaken-api/zaak/{zaakIdentificatie}/actief", "ZAAK-001")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.actief").value(false))
     }
@@ -81,7 +78,6 @@ internal class ZaakResourceTest {
             get("/api/v1/zaken-api/zaak/{zaakIdentificatie}/actief", "ZAAK-001")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.errorCode").value("ZAAK_NOT_FOUND"))
     }
@@ -95,7 +91,6 @@ internal class ZaakResourceTest {
             get("/api/v1/zaken-api/zaak/{zaakIdentificatie}/actief", "ZAAK-001")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.errorCode").value("MORE_THAN_ONE_ZAAK_FOUND"))
     }
@@ -110,7 +105,6 @@ internal class ZaakResourceTest {
                 .param("zaken_api_plugin_id", pluginId.toString())
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.actief").value(true))
     }

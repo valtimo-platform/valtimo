@@ -29,12 +29,15 @@ class ZaakSpecificationFactory : AuthorizationSpecificationFactory<Zaak> {
 
     override fun create(
         request: AuthorizationRequest<Zaak>,
-        permissions: List<Permission>
+        permissionSupplier: () -> List<Permission>
     ): AuthorizationSpecification<Zaak> {
-        return ZaakSpecification(request, { permissions })
+        return ZaakSpecification(request, permissionSupplier)
     }
 
-    override fun canCreate(request: AuthorizationRequest<*>, permissions: List<Permission>): Boolean {
+    override fun canCreate(
+        request: AuthorizationRequest<*>,
+        permissionSupplier: () -> List<Permission>
+    ): Boolean {
         return Zaak::class.java == request.resourceType
     }
 }
