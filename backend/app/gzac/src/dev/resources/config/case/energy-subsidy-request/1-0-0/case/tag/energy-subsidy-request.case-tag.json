@@ -1,0 +1,17 @@
+[
+    {
+        "key": "prioriteit-hoog",
+        "title": "Prioriteit hoog",
+        "color": "RED"
+    },
+    {
+        "key": "verificatie-vereist",
+        "title": "Verificatie vereist",
+        "color": "WARMGRAY"
+    },
+    {
+        "key": "goedgekeurd",
+        "title": "Goedgekeurd",
+        "color": "GREEN"
+    }
+]
