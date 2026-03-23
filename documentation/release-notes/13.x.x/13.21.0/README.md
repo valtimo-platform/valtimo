@@ -27,3 +27,6 @@
   required a case definition context. Global forms can now be placed in `config/global/form/*.form.json` and object
   management configurations in `config/global/object-management/*.object-management.json` for automatic pickup on
   startup.
+
+* Fixed an issue in the migration script when upgrading from Valtimo 12. When the summary form is used for user tasks this
+  will no longer cause an error when migrating.
