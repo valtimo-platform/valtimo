@@ -24,5 +24,11 @@ import java.util.UUID
 @NoRepositoryBean
 interface OutboxMessageRepository : JpaRepository<OutboxMessage, UUID> {
 
+    @Deprecated(
+        message = "Will be removed in 14.0. Use findOutboxMessages(batchSize) instead",
+        replaceWith = ReplaceWith("findOutboxMessages(1).firstOrNull()")
+    )
     fun findOutboxMessage(): OutboxMessage?
+
+    fun findOutboxMessages(batchSize: Int): List<OutboxMessage>
 }

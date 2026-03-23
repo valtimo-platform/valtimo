@@ -92,9 +92,26 @@ open class ValtimoOutboxService(
         outboxMessageRepository.save(outboxMessage)
     }
 
+    @Deprecated(
+        message = "Will be removed in 14.0. Use getOldestMessages(batchSize) instead",
+        replaceWith = ReplaceWith("getOldestMessages(1).firstOrNull()")
+    )
+    @Transactional(propagation = Propagation.MANDATORY)
     open fun getOldestMessage() = outboxMessageRepository.findOutboxMessage()
 
+    @Transactional(propagation = Propagation.MANDATORY)
+    open fun getOldestMessages(batchSize: Int): List<OutboxMessage> =
+        outboxMessageRepository.findOutboxMessages(batchSize)
+
+    @Deprecated(
+        message = "Will be removed in 14.0. Use deleteMessages(ids) instead",
+        replaceWith = ReplaceWith("deleteMessages(listOf(id))")
+    )
+    @Transactional(propagation = Propagation.MANDATORY)
     open fun deleteMessage(id: UUID) = outboxMessageRepository.deleteById(id)
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    open fun deleteMessages(ids: List<UUID>) = outboxMessageRepository.deleteAllById(ids)
 
     companion object {
         private val logger = KotlinLogging.logger {}
