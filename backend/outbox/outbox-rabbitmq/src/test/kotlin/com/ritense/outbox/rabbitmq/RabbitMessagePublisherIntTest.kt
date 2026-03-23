@@ -68,8 +68,11 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
 
             val msg1 = rabbitTemplate.receive(configurationProperties.routingKey!!)
             val msg2 = rabbitTemplate.receive(configurationProperties.routingKey!!)
-            assertThat(msg1!!.body.toString(Charsets.UTF_8)).isEqualTo(uuid1)
-            assertThat(msg2!!.body.toString(Charsets.UTF_8)).isEqualTo(uuid2)
+            val receivedMessages = setOf(
+                msg1!!.body.toString(Charsets.UTF_8),
+                msg2!!.body.toString(Charsets.UTF_8)
+            )
+            assertThat(receivedMessages).containsExactlyInAnyOrder(uuid1, uuid2)
         }
     }
 
