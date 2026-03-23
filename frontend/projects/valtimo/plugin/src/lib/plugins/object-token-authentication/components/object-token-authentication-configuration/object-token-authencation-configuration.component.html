@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="objectTokenAuthenticationConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="token"
-    data-test-id="objectTokenAuthenticationToken"
+    [attr.data-test-id]="testIds.token"
     type="password"
     [title]="'token' | pluginTranslate: pluginId | async"
     [margin]="true"

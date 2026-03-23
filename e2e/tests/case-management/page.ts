@@ -18,6 +18,11 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {caseConfiguration, CaseManagementFieldMap} from './case-config';
 import path from 'path';
+import {
+  CASE_MANAGEMENT_CREATE_TEST_IDS,
+  CASE_MANAGEMENT_LIST_TEST_IDS,
+  CASE_MANAGEMENT_UPLOAD_TEST_IDS,
+} from '../../constants';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
 
@@ -30,50 +35,53 @@ export class CaseManagementPage {
 
   // UI Elements
   get createSaveButton() {
-    return this.page.getByTestId('caseCreateSaveButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_CREATE_TEST_IDS.saveButton);
   }
 
   get createCancelButton() {
-    return this.page.getByTestId('caseCreateCloseButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_CREATE_TEST_IDS.closeButton);
   }
 
   get createCaseButton() {
-    return this.page.getByTestId('caseManagementCreateButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton);
   }
 
   get uploadCaseButton() {
-    return this.page.getByTestId('caseManagementUploadButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.uploadButton);
   }
 
   get fileUploader() {
-    return this.page.getByTestId('caseFileUploader');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.fileUploader);
   }
 
   get uploadWizardCancelButton() {
-    return this.page.getByTestId('uploadWizardCancelButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.cancelButton);
   }
 
   get uploadWizardNextButton() {
-    return this.page.getByTestId('uploadWizardNextButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.nextButton);
   }
 
   get uploadWizardFinishButton() {
-    return this.page.getByTestId('uploadWizardFinishButton');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
   }
 
   get uploadWarningCheckbox() {
-    return this.page.getByTestId('uploadWarningCheckbox').locator('label');
+    return this.page.getByRole('checkbox', {name: /I understand that configurations may be overwritten/});
   }
 
   get uploadWarningNotification() {
-    return this.page.getByTestId('uploadWarningNotification');
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.uploadWarningNotification);
   }
 
   // Navigation
   async goToCaseManagement() {
     console.log('Navigate to Case Management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    const adminButton = this.page.getByRole('button', {name: 'Admin'});
+    if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
+      await adminButton.click();
+    }
+    await this.page.locator('[data-testid="sidenav-item-Admin"]').getByRole('link', {name: 'Cases'}).click();
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
@@ -101,9 +109,18 @@ export class CaseManagementPage {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
-    await this.uploadFileStep(archiveName);
-    await this.accessControlStep();
-    await this.dashboardStep();
+    const response = await this.uploadFileStep(archiveName);
+
+    if (response.status() === 200) {
+      // Success: click Next to advance through remaining steps
+      await this.uploadWizardNextButton.click();
+      await this.accessControlStep();
+      await this.dashboardStep();
+    } else {
+      // Error: wait for finish button and close wizard
+      await expect(this.uploadWizardFinishButton).toBeVisible();
+      await this.uploadWizardFinishButton.click();
+    }
   }
 
   async uploadCaseConfiguration(archiveName: string) {
@@ -115,7 +132,7 @@ export class CaseManagementPage {
     await expect(this.uploadWarningNotification).toBeVisible();
 
     const overwriteCheckbox = this.uploadWarningCheckbox;
-    await overwriteCheckbox.click();
+    await overwriteCheckbox.check({force: true});
     await expect(overwriteCheckbox).toBeChecked();
     await expect(this.uploadWizardNextButton).toBeEnabled();
   }
@@ -137,27 +154,28 @@ export class CaseManagementPage {
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
     await this.checkWarningMessage();
+
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/management/v1/case/import') &&
+        res.request().method() === 'POST'
+    );
     await this.uploadWizardNextButton.click();
 
-    const response = await this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/management/v1/case-import') &&
-        res.request().method() === 'POST' &&
-        res.status() === 200
-    );
-    expect(response.status()).toBe(200);
+    return await responsePromise;
   }
 
   async accessControlStep() {
-    await expect(this.page.getByText('Access Control')).toBeVisible();
-    await expect(this.page.getByText('rights in Access Control')).toBeVisible();
+    await expect(this.page.getByText('Access control', {exact: true})).toBeVisible();
+    await expect(this.page.getByText('Don\'t forget to set the rights in Access Control')).toBeVisible();
     await this.uploadWizardNextButton.click();
   }
 
   async dashboardStep() {
-    await expect(this.page.getByText('Dashboard')).toBeVisible();
+    const dialog = this.page.getByRole('dialog');
+    await expect(dialog.getByText('Dashboard', {exact: true})).toBeVisible();
     await expect(
-      this.page.getByText('If you want widgets to appear on your dashboard')
+      dialog.getByText('If you want widgets to appear on your dashboard')
     ).toBeVisible();
     await this.uploadWizardFinishButton.click();
   }

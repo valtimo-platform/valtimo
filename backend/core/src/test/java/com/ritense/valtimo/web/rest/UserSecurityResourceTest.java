@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getAllUsersAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(GET, "/api/v1/users", OK);
     }
 
     @Test
@@ -105,7 +105,7 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void queryUsersAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(GET, "/api/v1/users", OK);
     }
 
     @Test
@@ -117,7 +117,7 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getUserByEmailAsUser() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/email/%s/", USER_EMAIL), FORBIDDEN);
+        assertHttpStatus(GET, String.format("/api/v1/users/email/%s/", USER_EMAIL), NOT_FOUND);
     }
 
     @Test
@@ -129,7 +129,7 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getUserAsUser() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), FORBIDDEN);
+        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), OK);
     }
 
     @Test
@@ -141,7 +141,7 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getAllUsersByRoleAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users/authority/USER", FORBIDDEN);
+        assertHttpStatus(GET, "/api/v1/users/authority/USER", OK);
     }
 
     @Test

@@ -64,6 +64,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.decision.OperatonDecisionService
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -90,12 +91,14 @@ class ProcessDocumentsAutoConfiguration {
     fun documentDelegate(
         processDocumentService: ProcessDocumentService,
         userManagementService: UserManagementService,
-        documentService: DocumentService
+        documentService: DocumentService,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegate {
         return DocumentDelegate(
             processDocumentService,
             userManagementService,
-            documentService
+            documentService,
+            caseDocumentResolver,
         )
     }
 
@@ -119,6 +122,7 @@ class ProcessDocumentsAutoConfiguration {
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         userManagementService: UserManagementService,
         objectMapper: ObjectMapper,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegateService {
         return DocumentDelegateService(
             processDocumentService,
@@ -126,6 +130,7 @@ class ProcessDocumentsAutoConfiguration {
             jsonSchemaDocumentService,
             userManagementService,
             objectMapper,
+            caseDocumentResolver,
         )
     }
 
@@ -178,10 +183,18 @@ class ProcessDocumentsAutoConfiguration {
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
-        caseDocumentResolver: CaseDocumentResolver
+        caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
+        operatonTaskRepository: OperatonTaskRepository,
     ): CaseAssigneeTaskCreatedListener {
         return CaseAssigneeTaskCreatedListener(
-            taskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
+            taskService,
+            documentService,
+            caseDefinitionService,
+            userManagementService,
+            caseDocumentResolver,
+            authorizationService,
+            operatonTaskRepository
         )
     }
 
@@ -191,10 +204,16 @@ class ProcessDocumentsAutoConfiguration {
         documentService: DocumentService,
         caseDefinitionService: CaseDefinitionService,
         userManagementService: UserManagementService,
-        caseDocumentResolver: CaseDocumentResolver
+        caseDocumentResolver: CaseDocumentResolver,
+        authorizationService: AuthorizationService,
     ): CaseAssigneeListener {
         return CaseAssigneeListener(
-            operatonTaskService, documentService, caseDefinitionService, userManagementService, caseDocumentResolver
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            userManagementService,
+            caseDocumentResolver,
+            authorizationService
         )
     }
 

@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="besluitenApiConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="rsin"
-    data-test-id="besluitenApiRsin"
+    [attr.data-test-id]="testIds.rsin"
     [title]="'rsin' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +49,7 @@
   </v-input>
   <v-input
     name="url"
-    data-test-id="besluitenApiUrl"
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -67,7 +67,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      data-test-id="besluitenApiAuthenticationPluginConfiguration"
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

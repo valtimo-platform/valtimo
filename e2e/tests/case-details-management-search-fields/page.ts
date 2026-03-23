@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementSearchFieldsPage {
   constructor(
@@ -30,11 +31,6 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   get listTab() {
     return this.page.locator('#case-list-header');
-  }
-
-  // Version dropdown
-  get versionSelectDropdown() {
-    return this.page.getByTestId('caseVersionSelectDropdown');
   }
 
   // Toolbar buttons (data-test-id → getByTestId)
@@ -85,12 +81,12 @@ export class CaseDetailsManagementSearchFieldsPage {
   get valuePathSelectorToggle() {
     return this.page
       .locator('valtimo-value-path-selector')
-      .getByTestId('valuePathSelectorToggle')
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
       .locator('.cds--toggle__switch');
   }
 
   get valuePathSelectorInput() {
-    return this.page.locator('valtimo-value-path-selector').getByTestId('valuePathSelectorInput');
+    return this.page.locator('valtimo-value-path-selector').getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   // Download button
@@ -123,11 +119,6 @@ export class CaseDetailsManagementSearchFieldsPage {
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.listTab.click();
-  }
-
-  async switchCaseVersionViaDropdown(caseVersion: string) {
-    await this.versionSelectDropdown.click();
-    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
   }
 
   // Dropdown selection helper
@@ -234,7 +225,7 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   async checkSearchFieldsExisting(keys: string[]) {
     for (const key of keys) {
-      await expect(this.page.locator(`td[title="${key}"]`)).toBeTruthy();
+      await expect(this.page.locator(`td[title="${key}"]`).first()).toBeVisible();
     }
   }
 

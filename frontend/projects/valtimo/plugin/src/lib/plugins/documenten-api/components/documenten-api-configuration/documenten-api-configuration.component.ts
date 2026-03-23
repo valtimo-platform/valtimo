@@ -21,6 +21,7 @@ import {DocumentenApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentenApiService} from '../../services';
+import {DOCUMENTEN_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-documenten-api-configuration',
@@ -37,6 +38,7 @@ export class DocumentenApiConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<DocumentenApiConfig> =
     new EventEmitter<DocumentenApiConfig>();
+  protected readonly testIds = DOCUMENTEN_API_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

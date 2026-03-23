@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
+import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
 
 export class PluginPage {
   constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
@@ -88,9 +89,10 @@ export class PluginPage {
 
   // Plugin form
   async fillPluginForm(type: string) {
+    const dialog = this.page.getByRole('dialog');
     const fields: PluginFieldMap[] = pluginTestConfiguration[type].fieldMap;
     for (const field of fields) {
-      const inputWrapper = this.page.getByTestId(field.testId);
+      const inputWrapper = dialog.getByTestId(field.testId);
       switch (field.type) {
         case 'input':
           await inputWrapper.locator('input').fill(field.value);
@@ -113,7 +115,14 @@ export class PluginPage {
 
   async saveConfiguration() {
     await expect(this.saveButton).toBeEnabled();
-    await this.saveButton.click();
+    await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          (res.request().method() === 'POST' || res.request().method() === 'PUT')
+      ),
+      this.saveButton.click(),
+    ]);
   }
 
   async expectInvalidRSINError() {
@@ -129,12 +138,14 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page.locator('.cds--toast-notification__details');
+    const errorToast = this.page
+      .locator('.cds--toast-notification__details')
+      .filter({hasText: 'rsin'});
 
     await expect(errorToast).toContainText(
       "Plugin property with name 'rsin' failed to parse for plugin"
     );
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async expectSameIdError() {
@@ -150,10 +161,12 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page.locator('.cds--toast-notification__details');
+    const errorToast = this.page
+      .locator('.cds--toast-notification__details')
+      .filter({hasText: 'already used by another plugin'});
 
     await expect(errorToast).toContainText('already used by another plugin');
-    await this.page.getByTestId('stepperFooterCancelButton').click();
+    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
@@ -210,6 +223,7 @@ export class PluginPage {
   async deletePlugin(pluginIdentifier: string): Promise<void> {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
+      .first()
       .getByRole('menu')
       .locator('button')
       .click();
@@ -248,7 +262,7 @@ export class PluginPage {
   }
 
   async assertPluginExists(pluginIdentifier: string): Promise<void> {
-    expect(await this.page.getByText(pluginIdentifier).first()).toBeVisible();
+    await expect(this.page.getByText(pluginIdentifier).first()).toBeVisible();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {
@@ -262,10 +276,12 @@ export class PluginPage {
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 
-      const isVisible = await this.page
-        .locator(`tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`)
-        .isVisible();
-      if (isVisible) await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      const rows = this.page.locator(
+        `tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`
+      );
+      while ((await rows.count()) > 0) {
+        await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      }
     }
   }
 
