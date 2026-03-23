@@ -23,7 +23,7 @@
 >
   <v-input
     name="configurationTitle"
-    data-test-id="notificatiesApiConfigurationTitle"
+    [attr.data-test-id]="testIds.configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -36,7 +36,7 @@
   </v-input>
   <v-input
     name="url"
-    data-test-id="notificatiesApiUrl"
+    [attr.data-test-id]="testIds.url"
     [title]="'url' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -49,7 +49,7 @@
   </v-input>
   <v-input
     name="callbackUrl"
-    data-test-id="notificatiesApiCallbackUrl"
+    [attr.data-test-id]="testIds.callbackUrl"
     [title]="'callbackUrl' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -79,7 +79,7 @@
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
       name="authenticationPluginConfiguration"
-      data-test-id="notificatiesApiAuthenticationPluginConfiguration"
+      [attr.data-test-id]="testIds.authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"

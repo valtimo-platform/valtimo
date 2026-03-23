@@ -16,7 +16,6 @@
 
 package com.valtimo.keycloak.service
 
-import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -42,8 +41,8 @@ class CacheManagerUserCacheTest {
     fun `should return user information from cache`() {
         val cacheType = CacheType.EMAIL
         val key = "key"
-        val expectedResult = mock<ManageableUser>()
-        val requestFunction: (String) -> ManageableUser? = { expectedResult }
+        val expectedResult = mock<ValtimoUser>()
+        val requestFunction: (String) -> ValtimoUser? = { expectedResult }
 
         val result = cache.get(cacheType, key, requestFunction)
 
@@ -55,9 +54,9 @@ class CacheManagerUserCacheTest {
         // Arrange
         val cacheType = CacheType.EMAIL
         val key = "key"
-        val expectedResult = mock<ManageableUser>()
+        val expectedResult = mock<ValtimoUser>()
         val mockRequestFunction = mock<UserRetrievalFunction>()
-        val requestFunction: (String) -> ManageableUser? = {
+        val requestFunction: (String) -> ValtimoUser? = {
             mockRequestFunction.retrieveUser(key)
             expectedResult
         }
@@ -73,12 +72,12 @@ class CacheManagerUserCacheTest {
     @Test
     fun `should use separate cache for different types`() {
         val cacheType1 = CacheType.EMAIL
-        val cacheType2 = CacheType.USER_IDENTIFIER
+        val cacheType2 = CacheType.USERNAME
         val key = "key"
         val mockRequestFunction = mock<UserRetrievalFunction>()
         // need 2 functions because of different return types, but we want to use the same mock to verify it gets called twice
-        val expectedResult1 = mock<ManageableUser>()
-        val requestFunction1: (String) -> ManageableUser? = {
+        val expectedResult1 = mock<ValtimoUser>()
+        val requestFunction1: (String) -> ValtimoUser? = {
             mockRequestFunction.retrieveUser(key)
             expectedResult1
         }
@@ -107,7 +106,7 @@ class CacheManagerUserCacheTest {
         }
 
         assertEquals(
-            "The type of the value returned by the request function (java.lang.String) does not match the cache type (com.ritense.valtimo.contract.authentication.ManageableUser)",
+            "The type of the value returned by the request function (java.lang.String) does not match the cache type (com.ritense.valtimo.contract.authentication.model.ValtimoUser)",
             ex.message
         )
     }

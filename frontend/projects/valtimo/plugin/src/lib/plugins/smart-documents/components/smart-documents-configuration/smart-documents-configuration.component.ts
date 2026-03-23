@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {SmartDocumentsConfig} from '../../models';
+import {SMART_DOCUMENTS_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-smart-documents-configuration',
@@ -35,6 +36,7 @@ export class SmartDocumentsConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<SmartDocumentsConfig> =
     new EventEmitter<SmartDocumentsConfig>();
+  protected readonly testIds = SMART_DOCUMENTS_CONFIGURATION_TEST_IDS;
 
   private saveSubscription!: Subscription;
 

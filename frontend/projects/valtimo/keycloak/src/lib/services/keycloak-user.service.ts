@@ -73,8 +73,9 @@ export class KeycloakUserService implements UserService, OnDestroy {
     this.userIdentity = new ReplaySubject();
     this.keycloakService.loadUserProfile().then(user => {
       this.logger.debug('KeycloakUserService: loadUserProfile = ', user);
+      const clientId = this.keycloakService.getKeycloakInstance()?.clientId;
       const roles: Array<string> = [];
-      this.keycloakService.getUserRoles(true).forEach(role => roles.push(role));
+      this.keycloakService.getUserRoles(true, clientId).forEach(role => roles.push(role));
       const valtimoUserIdentity = new ValtimoUserIdentity(
         user.email,
         user.firstName,
