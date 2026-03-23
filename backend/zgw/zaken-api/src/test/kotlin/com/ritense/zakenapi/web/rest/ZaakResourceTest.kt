@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -40,7 +41,7 @@ internal class ZaakResourceTest {
 
     @BeforeEach
     fun setUp() {
-        zaakService = org.mockito.kotlin.mock()
+        zaakService = mock()
         val zaakResource = ZaakResource(zaakService)
         mockMvc = MockMvcBuilders.standaloneSetup(zaakResource).build()
     }
