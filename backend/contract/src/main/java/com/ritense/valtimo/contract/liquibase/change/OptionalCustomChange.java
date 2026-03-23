@@ -75,6 +75,8 @@ public class OptionalCustomChange implements CustomTaskChange {
         CustomChange resolved = resolveDelegate();
         if (resolved instanceof CustomTaskChange) {
             ((CustomTaskChange) resolved).execute(database);
+        } else if (resolved != null) {
+            logger.warn("OptionalCustomChange delegate {} does not implement CustomTaskChange; skipping execution.", delegateClass);
         }
     }
 
@@ -101,8 +103,8 @@ public class OptionalCustomChange implements CustomTaskChange {
                 loader = OptionalCustomChange.class.getClassLoader();
             }
             Class<?> candidate = Class.forName(delegateClass, true, loader);
-            if (!CustomChange.class.isAssignableFrom(candidate)) {
-                logger.warn("OptionalCustomChange delegateClass {} does not implement CustomChange; skipping.", delegateClass);
+            if (!CustomTaskChange.class.isAssignableFrom(candidate)) {
+                logger.warn("OptionalCustomChange delegateClass {} does not implement CustomTaskChange; skipping.", delegateClass);
                 return null;
             }
             delegate = (CustomChange) candidate.getDeclaredConstructor().newInstance();
