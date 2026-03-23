@@ -32,7 +32,7 @@ import java.util.UUID
 class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
     @Nested
     inner class RoutingKey @Autowired constructor(
-        val springCloudMessagePublisher: RabbitMessagePublisher,
+        val rabbitMessagePublisher: RabbitMessagePublisher,
         val rabbitTemplate: RabbitTemplate,
         val configurationProperties: RabbitOutboxConfigurationProperties,
         val rabbitAdmin: RabbitAdmin
@@ -42,19 +42,44 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
             rabbitAdmin.purgeQueue(configurationProperties.routingKey!!)
 
             val uuid = UUID.randomUUID().toString()
-            springCloudMessagePublisher.publish(
+            rabbitMessagePublisher.publish(
                 OutboxMessage(message = uuid)
             )
 
             val msg = rabbitTemplate.receive(configurationProperties.routingKey!!)
             assertThat(msg!!.body.toString(Charsets.UTF_8)).isEqualTo(uuid)
         }
+
+        @Test
+        fun `should send batch of messages to rabbitmq queue`() {
+            rabbitAdmin.purgeQueue(configurationProperties.routingKey!!)
+
+            val uuid1 = UUID.randomUUID().toString()
+            val uuid2 = UUID.randomUUID().toString()
+            val results = rabbitMessagePublisher.publishBatch(
+                listOf(
+                    OutboxMessage(message = uuid1),
+                    OutboxMessage(message = uuid2)
+                )
+            )
+
+            assertThat(results).hasSize(2)
+            assertThat(results).allMatch { it.success }
+
+            val msg1 = rabbitTemplate.receive(configurationProperties.routingKey!!)
+            val msg2 = rabbitTemplate.receive(configurationProperties.routingKey!!)
+            val receivedMessages = listOf(
+                msg1!!.body.toString(Charsets.UTF_8),
+                msg2!!.body.toString(Charsets.UTF_8)
+            )
+            assertThat(receivedMessages).containsExactlyInAnyOrder(uuid1, uuid2)
+        }
     }
 
     @Nested
     @ActiveProfiles("exchange")
     inner class Exchange @Autowired constructor(
-        val springCloudMessagePublisher: RabbitMessagePublisher,
+        val rabbitMessagePublisher: RabbitMessagePublisher,
         val rabbitTemplate: RabbitTemplate,
         val configurationProperties: RabbitOutboxConfigurationProperties,
         val rabbitAdmin: RabbitAdmin
@@ -67,7 +92,7 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
             rabbitAdmin.purgeQueue("valtimo-audit")
 
             val uuid = UUID.randomUUID().toString()
-            springCloudMessagePublisher.publish(
+            rabbitMessagePublisher.publish(
                 OutboxMessage(message = uuid)
             )
 
@@ -79,18 +104,32 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
     @Nested
     @ActiveProfiles("invalidrouting")
     inner class InvalidRouting @Autowired constructor(
-        val springCloudMessagePublisher: RabbitMessagePublisher
+        val rabbitMessagePublisher: RabbitMessagePublisher
     ) : BaseIntegrationTest() {
         @Test
         fun `should not send message to rabbitmq`() {
             val uuid = UUID.randomUUID().toString()
             val ex = assertThrows<MessagePublishingFailed> {
-                springCloudMessagePublisher.publish(
+                rabbitMessagePublisher.publish(
                     OutboxMessage(message = uuid)
                 )
             }
 
             assertThat(ex.message).contains("NO_ROUTE")
+        }
+
+        @Test
+        fun `publishBatch should return failure for unroutable messages`() {
+            val results = rabbitMessagePublisher.publishBatch(
+                listOf(
+                    OutboxMessage(message = UUID.randomUUID().toString()),
+                    OutboxMessage(message = UUID.randomUUID().toString())
+                )
+            )
+
+            assertThat(results).hasSize(2)
+            assertThat(results).allMatch { !it.success }
+            assertThat(results).allMatch { it.error!!.message!!.contains("NO_ROUTE") }
         }
     }
 }

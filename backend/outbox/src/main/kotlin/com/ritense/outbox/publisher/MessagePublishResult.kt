@@ -16,4 +16,10 @@
 
 package com.ritense.outbox.publisher
 
-class MessagePublishingFailed(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+import java.util.UUID
+
+data class MessagePublishResult(
+    val messageId: UUID,
+    val success: Boolean,
+    val error: Throwable? = null
+)

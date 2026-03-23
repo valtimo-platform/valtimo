@@ -17,21 +17,26 @@
 package com.ritense.outbox.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.outbox.health.OutboxPublisherHealthIndicator
 import com.ritense.outbox.OutboxLiquibaseRunner
 import com.ritense.outbox.OutboxMessage
-import com.ritense.outbox.repository.OutboxMessageRepository
 import com.ritense.outbox.OutboxService
 import com.ritense.outbox.UserProvider
 import com.ritense.outbox.ValtimoOutboxService
 import com.ritense.outbox.config.condition.ConditionalOnOutboxEnabled
-import com.ritense.outbox.repository.impl.MySqlOutboxMessageRepository
-import com.ritense.outbox.repository.impl.PostgresOutboxMessageRepository
 import com.ritense.outbox.publisher.MessagePublisher
 import com.ritense.outbox.publisher.PollingPublisherJob
 import com.ritense.outbox.publisher.PollingPublisherService
+import com.ritense.outbox.repository.OutboxMessageRepository
+import com.ritense.outbox.repository.impl.MySqlOutboxMessageRepository
+import com.ritense.outbox.repository.impl.PostgresOutboxMessageRepository
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.actuate.health.AbstractHealthIndicator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -43,6 +48,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean
 import org.springframework.transaction.PlatformTransactionManager
+import java.time.Duration
 import java.util.UUID
 import javax.sql.DataSource
 
@@ -51,7 +57,7 @@ import javax.sql.DataSource
 @EnableJpaRepositories(basePackages = ["com.ritense.outbox.repository.impl"])
 @EntityScan(basePackages = ["com.ritense.outbox"])
 @AutoConfigureAfter(DataSourceAutoConfiguration::class, HibernateJpaAutoConfiguration::class)
-@EnableConfigurationProperties(LiquibaseProperties::class)
+@EnableConfigurationProperties(LiquibaseProperties::class, OutboxPollingProperties::class)
 class OutboxAutoConfiguration {
 
     @Bean
@@ -63,10 +69,9 @@ class OutboxAutoConfiguration {
         return OutboxLiquibaseRunner(liquibaseProperties, datasource)
     }
 
-    @ConditionalOnMissingBean(UserProvider::class)
     @Bean
-    fun userProvider(
-    ): UserProvider {
+    @ConditionalOnMissingBean(UserProvider::class)
+    fun outboxUserProvider(): UserProvider {
         return UserProvider()
     }
 
@@ -89,17 +94,49 @@ class OutboxAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(name = ["outboxCircuitBreaker"])
+    fun outboxCircuitBreaker(
+        pollingProperties: OutboxPollingProperties
+    ): CircuitBreaker? {
+        if (!pollingProperties.circuitBreaker.enabled) {
+            return null
+        }
+        val props = pollingProperties.circuitBreaker
+        val config = CircuitBreakerConfig.custom()
+            .failureRateThreshold(props.failureRateThreshold)
+            .minimumNumberOfCalls(props.minimumNumberOfCalls)
+            .slidingWindowSize(props.slidingWindowSize)
+            .waitDurationInOpenState(Duration.ofSeconds(props.waitDurationInOpenStateSeconds))
+            .permittedNumberOfCallsInHalfOpenState(props.permittedNumberOfCallsInHalfOpenState)
+            .build()
+        return CircuitBreaker.of("outboxPollingPublisher", config)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(PollingPublisherService::class)
     fun pollingPublisherService(
         outboxService: ValtimoOutboxService,
         messagePublisher: MessagePublisher,
-        platformTransactionManager: PlatformTransactionManager
+        platformTransactionManager: PlatformTransactionManager,
+        pollingProperties: OutboxPollingProperties,
+        outboxCircuitBreaker: CircuitBreaker?
     ): PollingPublisherService {
         return PollingPublisherService(
             outboxService,
             messagePublisher,
-            platformTransactionManager
+            platformTransactionManager,
+            pollingProperties.batchSize,
+            outboxCircuitBreaker
         )
+    }
+
+    @Bean
+    @ConditionalOnClass(AbstractHealthIndicator::class)
+    @ConditionalOnMissingBean(OutboxPublisherHealthIndicator::class)
+    fun outboxPublisherHealthIndicator(
+        outboxCircuitBreaker: CircuitBreaker?
+    ): OutboxPublisherHealthIndicator {
+        return OutboxPublisherHealthIndicator(outboxCircuitBreaker)
     }
 
     @Bean

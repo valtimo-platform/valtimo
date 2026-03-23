@@ -18,11 +18,15 @@ package com.ritense.outbox
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.outbox.config.condition.OnOutboxEnabledCondition
+import com.ritense.outbox.publisher.MessagePublishResult
 import com.ritense.outbox.publisher.MessagePublisher
 import com.ritense.outbox.repository.OutboxMessageRepository
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -42,6 +46,23 @@ class BaseIntegrationTest {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    @BeforeEach
+    fun baseSetUp() {
+        // Can't use thenCallRealMethod() on interface default methods with Mockito,
+        // so we replicate the default publishBatch behavior: delegate to publish() per message.
+        whenever(messagePublisher.publishBatch(any())).thenAnswer { invocation ->
+            val messages = invocation.getArgument<List<OutboxMessage>>(0)
+            messages.map { message ->
+                try {
+                    messagePublisher.publish(message)
+                    MessagePublishResult(messageId = message.id, success = true)
+                } catch (e: Exception) {
+                    MessagePublishResult(messageId = message.id, success = false, error = e)
+                }
+            }
+        }
+    }
 
     @AfterEach
     fun afterEach() {

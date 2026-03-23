@@ -17,6 +17,7 @@
 package com.ritense.outbox.rabbitmq
 
 import com.ritense.outbox.OutboxMessage
+import com.ritense.outbox.publisher.MessagePublishResult
 import com.ritense.outbox.publisher.MessagePublisher
 import com.ritense.outbox.publisher.MessagePublishingFailed
 import mu.KLogger
@@ -26,6 +27,7 @@ import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import java.time.Duration
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -52,21 +54,73 @@ class RabbitMessagePublisher(
     }
 
     override fun publish(message: OutboxMessage) {
-        val correlationData = CorrelationData(UUID.randomUUID().toString())
-        logger.trace { "Sending message to RabbitMQ: routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}" }
+        val result = publishBatch(listOf(message)).first()
+        if (!result.success) {
+            throw result.error ?: MessagePublishingFailed("Failed to publish outbox message ${message.id}")
+        }
+    }
 
-        rabbitTemplate.convertAndSend(exchange, routingKey, message.message, correlationData)
+    /**
+     * Pipelines message sends to RabbitMQ for improved throughput.
+     *
+     * Instead of send-wait-send-wait per message, this sends all messages first,
+     * then waits for all publisher confirms in parallel. The deliveryTimeout applies
+     * to the entire batch, not per message.
+     *
+     * Each message still gets its own CorrelationData and is individually verified,
+     * so delivery guarantees are identical to calling [publish] per message.
+     */
+    override fun publishBatch(messages: List<OutboxMessage>): List<MessagePublishResult> {
+        if (messages.isEmpty()) return emptyList()
 
+        // Phase 1: send all messages without waiting for confirms
+        val pending = messages.map { message ->
+            val correlationData = CorrelationData(UUID.randomUUID().toString())
+            logger.trace { "Sending message to RabbitMQ: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}" }
+            rabbitTemplate.convertAndSend(exchange, routingKey, message.message, correlationData)
+            message to correlationData
+        }
+
+        // Phase 2: wait for all confirms in parallel with a single timeout for the entire batch
+        val allFutures = pending.map { (_, correlationData) -> correlationData.future.toCompletableFuture() }
         try {
-            val result = correlationData.future.get(deliveryTimeout.toMillis(), TimeUnit.MILLISECONDS)
-            if (!result!!.isAck) {
-                throw MessagePublishingFailed("Outbox message was not acknowledged: reason=${result.reason}, routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}\"")
-            } else if (correlationData.returned != null) {
-                val returned = correlationData.returned!!
-                throw MessagePublishingFailed("Could not deliver outbox message: routingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}\"")
+            CompletableFuture.allOf(*allFutures.toTypedArray())[deliveryTimeout.toMillis(), TimeUnit.MILLISECONDS]
+        } catch (_: TimeoutException) {
+            // Some futures may not have completed — handled per-message below
+        }
+
+        // Phase 3: collect results per message
+        return pending.map { (message, correlationData) ->
+            val future = correlationData.future.toCompletableFuture()
+            if (!future.isDone) {
+                return@map MessagePublishResult(
+                    messageId = message.id,
+                    success = false,
+                    error = MessagePublishingFailed("Outbox message delivery was not confirmed in time: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+                )
             }
-        } catch (timeoutException: TimeoutException) {
-            throw MessagePublishingFailed("Outbox message delivery was not confirmed in time: routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}")
+            val result = future.get()
+                ?: return@map MessagePublishResult(
+                    messageId = message.id,
+                    success = false,
+                    error = MessagePublishingFailed("Outbox message confirmation result was null: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+                )
+            if (!result.isAck) {
+                return@map MessagePublishResult(
+                    messageId = message.id,
+                    success = false,
+                    error = MessagePublishingFailed("Outbox message was not acknowledged: reason=${result.reason}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+                )
+            }
+            val returned = correlationData.returned
+            if (returned != null) {
+                return@map MessagePublishResult(
+                    messageId = message.id,
+                    success = false,
+                    error = MessagePublishingFailed("Could not deliver outbox message: routingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+                )
+            }
+            MessagePublishResult(messageId = message.id, success = true)
         }
     }
 

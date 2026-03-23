@@ -20,10 +20,14 @@ import com.ritense.outbox.OutboxMessage
 import com.ritense.outbox.repository.OutboxMessageRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
+import org.springframework.data.repository.query.Param
 
 @NoRepositoryBean
 interface MySqlOutboxMessageRepository : OutboxMessageRepository {
 
-    @Query("SELECT * FROM outbox_message LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
     override fun findOutboxMessage(): OutboxMessage?
+
+    @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT :batchSize FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    override fun findOutboxMessages(@Param("batchSize") batchSize: Int): List<OutboxMessage>
 }
