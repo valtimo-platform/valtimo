@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import com.ritense.outbox.OutboxContext
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -472,7 +473,6 @@ internal class ObjectManagementFacadeTest {
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
-
         objectManagementFacade.createObject(objectName, data)
 
         clearInvocations(objectManagementRepository, pluginService, objectenApiPlugin)
@@ -490,13 +490,15 @@ internal class ObjectManagementFacadeTest {
     private fun prepareAccessObject(
         objectName: String,
         objectenApiPlugin: ObjectenApiPlugin,
-        objecttypenApiPlugin: ObjecttypenApiPlugin
+        objecttypenApiPlugin: ObjecttypenApiPlugin,
+        suppressOutbox: Boolean = false
     ) {
         val objectManagement = ObjectManagement(
             objecttypeId = objectTypeId,
             title = objectManagementTitle,
             objectenApiPluginConfigurationId = objectenApiPluginConfigurationId,
-            objecttypenApiPluginConfigurationId = objecttypenApiPluginConfigurationId
+            objecttypenApiPluginConfigurationId = objecttypenApiPluginConfigurationId,
+            suppressOutbox = suppressOutbox
         )
 
         whenever(objectManagementRepository.findByTitle(objectName)).thenReturn(objectManagement)
@@ -525,4 +527,56 @@ internal class ObjectManagementFacadeTest {
         startAt = LocalDate.now(),
         typeVersion = 1,
     )
+
+    @Test
+    fun `should suppress outbox when suppressOutbox is true`() {
+        val objectName = "myObject"
+        val objectUuid = UUID.randomUUID()
+
+        val objectenApiPlugin = mock<ObjectenApiPlugin>()
+        val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
+        prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin, suppressOutbox = true)
+
+        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com"))
+        val expectedUrl = URI.create("www.ritense.com/objects/$objectUuid")
+        val expectedResult = createObjectWrapper(url = expectedUrl, uuid = objectUuid)
+        whenever(objectenApiPlugin.getObject(expectedUrl)).thenReturn(expectedResult)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
+
+        var outboxWasSuppressed = false
+        whenever(objectenApiPlugin.getObject(expectedUrl)).thenAnswer {
+            outboxWasSuppressed = OutboxContext.outboxSuppressed
+            expectedResult
+        }
+
+        objectManagementFacade.getObjectByUuid(objectName, objectUuid)
+
+        assertThat(outboxWasSuppressed).isTrue()
+        assertThat(OutboxContext.outboxSuppressed).isFalse()
+    }
+
+    @Test
+    fun `should not suppress outbox when suppressOutbox is false`() {
+        val objectName = "myObject"
+        val objectUuid = UUID.randomUUID()
+
+        val objectenApiPlugin = mock<ObjectenApiPlugin>()
+        val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
+        prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin, suppressOutbox = false)
+
+        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com"))
+        val expectedUrl = URI.create("www.ritense.com/objects/$objectUuid")
+        val expectedResult = createObjectWrapper(url = expectedUrl, uuid = objectUuid)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
+
+        var outboxWasSuppressed = false
+        whenever(objectenApiPlugin.getObject(expectedUrl)).thenAnswer {
+            outboxWasSuppressed = OutboxContext.outboxSuppressed
+            expectedResult
+        }
+
+        objectManagementFacade.getObjectByUuid(objectName, objectUuid)
+
+        assertThat(outboxWasSuppressed).isFalse()
+    }
 }

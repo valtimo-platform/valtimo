@@ -44,6 +44,11 @@ open class ValtimoOutboxService(
 
     @Transactional(propagation = Propagation.MANDATORY)
     override fun send(eventSupplier: Supplier<BaseEvent>) {
+        if (OutboxContext.outboxSuppressed) {
+            logger.debug { "Outbox is suppressed, skipping message" }
+            return
+        }
+
         val cloudEvent = cloudEventFactory.create(eventSupplier.get())
         val serializedCloudEvent = EventFormatProvider
             .getInstance()
