@@ -58,6 +58,9 @@ import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 import org.operaton.bpm.model.bpmn.instance.Process;
 import org.operaton.bpm.model.bpmn.instance.ServiceTask;
+import org.operaton.bpm.model.dmn.Dmn;
+import org.operaton.bpm.model.dmn.DmnModelInstance;
+import org.operaton.bpm.model.dmn.instance.Decision;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,6 +86,18 @@ class OperatonProcessServiceTest {
     private static final String BUSINESSKEY1 = "businessKey1";
     private static final String BUSINESSKEY2 = "businessKey2";
     private static final String BUSINESSKEY3 = "businessKey3";
+
+    private static final String CAMUNDA_NS = "http://camunda.org/schema/1.0/bpmn";
+    private static final String OPERATON_NS = "http://operaton.org/schema/1.0/bpmn";
+
+    private static final String MINIMAL_BPMN_TEMPLATE =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"" +
+            " xmlns:camunda=\"http://camunda.org/schema/1.0/bpmn\"" +
+            " id=\"test\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
+            "<bpmn:process id=\"test-process\" isExecutable=\"true\">" +
+            "<bpmn:serviceTask id=\"task1\" name=\"Task\"%s/>" +
+            "</bpmn:process></bpmn:definitions>";
 
     private OperatonProcessService operatonProcessService;
 
@@ -294,17 +309,15 @@ class OperatonProcessServiceTest {
         return hasProperty("startTime", IsEqual.equalTo(date));
     }
 
-    // ---- normalizeToCamundaNamespace tests ----
-
     @Test
-    void normalizeToCamundaNamespace_noOperatonNamespace_fastPath() {
+    void normalizeToCamundaNamespace_noOperatonAttributes_camundaValuePreserved() throws Exception {
         BpmnModelInstance model = modelWithCamundaExpression("${null}");
 
-        ByteArrayInputStream result = createService().normalizeToCamundaNamespace(model);
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element task = findById(result, "task1");
 
-        String xml = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertFalse(xml.contains("http://operaton.org/schema/1.0/bpmn"));
-        assertFalse(xml.contains("operaton:"));
+        assertEquals("${null}", task.getAttributeNS(CAMUNDA_NS, "expression"));
+        assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
     }
 
     @Test
@@ -360,19 +373,40 @@ class OperatonProcessServiceTest {
         assertEquals("", task.getAttributeNS(OPERATON_NS, "expression"));
     }
 
-    // ---- helpers ----
+    @Test
+    void normalizeToCamundaNamespace_dmn_noOperatonAttributes_camundaValuePreserved() throws Exception {
+        DmnModelInstance model = modelWithCamundaInputVariable("myVar");
 
-    private static final String CAMUNDA_NS = "http://camunda.org/schema/1.0/bpmn";
-    private static final String OPERATON_NS = "http://operaton.org/schema/1.0/bpmn";
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element inputEl = findById(result, "input1");
 
-    private static final String MINIMAL_BPMN_TEMPLATE =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-        "<bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"" +
-        " xmlns:camunda=\"http://camunda.org/schema/1.0/bpmn\"" +
-        " id=\"test\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
-        "<bpmn:process id=\"test-process\" isExecutable=\"true\">" +
-        "<bpmn:serviceTask id=\"task1\" name=\"Task\"%s/>" +
-        "</bpmn:process></bpmn:definitions>";
+        assertEquals("myVar", inputEl.getAttributeNS(CAMUNDA_DMN_NS, "inputVariable"));
+        assertEquals("", inputEl.getAttributeNS(OPERATON_DMN_NS, "inputVariable"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_dmn_onlyOperatonAttribute_convertedToCamunda() throws Exception {
+        DmnModelInstance model = modelWithNoExtensionAttrsDmn();
+        decision(model).setVersionTag("v1");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element decisionEl = findById(result, "decision1");
+
+        assertEquals("v1", decisionEl.getAttributeNS(CAMUNDA_DMN_NS, "versionTag"));
+        assertEquals("", decisionEl.getAttributeNS(OPERATON_DMN_NS, "versionTag"));
+    }
+
+    @Test
+    void normalizeToCamundaNamespace_dmn_differentValueInBothNamespaces_operatonValueWins() throws Exception {
+        DmnModelInstance model = modelWithCamundaVersionTag("camunda-v");
+        decision(model).setVersionTag("operaton-v");
+
+        Document result = parseResult(createService().normalizeToCamundaNamespace(model));
+        Element decisionEl = findById(result, "decision1");
+
+        assertEquals("operaton-v", decisionEl.getAttributeNS(CAMUNDA_DMN_NS, "versionTag"));
+        assertEquals("", decisionEl.getAttributeNS(OPERATON_DMN_NS, "versionTag"));
+    }
 
     private BpmnModelInstance modelWithNoExtensionAttrs() {
         return Bpmn.readModelFromStream(new ByteArrayInputStream(
@@ -418,5 +452,40 @@ class OperatonProcessServiceTest {
             }
         }
         throw new AssertionError("No element with id='" + id + "' found in document");
+    }
+
+    private static final String CAMUNDA_DMN_NS = "http://camunda.org/schema/1.0/dmn";
+    private static final String OPERATON_DMN_NS = "http://operaton.org/schema/1.0/dmn";
+
+    private static final String MINIMAL_DMN_TEMPLATE =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<definitions xmlns=\"https://www.omg.org/spec/DMN/20191111/MODEL/\"" +
+        " xmlns:camunda=\"http://camunda.org/schema/1.0/dmn\"" +
+        " id=\"test\" name=\"Test\" namespace=\"http://camunda.org/schema/1.0/dmn\">" +
+        "<decision id=\"decision1\" name=\"Decision\"%s>" +
+        "<decisionTable id=\"dt1\">" +
+        "<input id=\"input1\" label=\"Input\"%s><inputExpression id=\"expr1\" typeRef=\"string\"/></input>" +
+        "<output id=\"output1\" label=\"Output\" typeRef=\"string\"/>" +
+        "</decisionTable></decision></definitions>";
+
+    private DmnModelInstance modelWithNoExtensionAttrsDmn() {
+        return Dmn.readModelFromStream(new ByteArrayInputStream(
+            String.format(MINIMAL_DMN_TEMPLATE, "", "").getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private DmnModelInstance modelWithCamundaInputVariable(String variable) {
+        return Dmn.readModelFromStream(new ByteArrayInputStream(
+            String.format(MINIMAL_DMN_TEMPLATE, "", " camunda:inputVariable=\"" + variable + "\"")
+                .getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private DmnModelInstance modelWithCamundaVersionTag(String versionTag) {
+        return Dmn.readModelFromStream(new ByteArrayInputStream(
+            String.format(MINIMAL_DMN_TEMPLATE, " camunda:versionTag=\"" + versionTag + "\"", "")
+                .getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private Decision decision(DmnModelInstance model) {
+        return model.getModelElementsByType(Decision.class).iterator().next();
     }
 }

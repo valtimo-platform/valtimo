@@ -606,7 +606,7 @@ public class OperatonProcessService {
                 }
             }
 
-            return repositoryService.createDeployment().addModelInstance(fileName, dmnModel).deployWithResult();
+            return repositoryService.createDeployment().addInputStream(fileName, normalizeToCamundaNamespace(dmnModel)).deployWithResult();
         } else {
             String[] splitFileName = fileName.split("\\.");
 
@@ -1018,27 +1018,36 @@ public class OperatonProcessService {
     }
 
     ByteArrayInputStream normalizeToCamundaNamespace(BpmnModelInstance bpmnModel) {
-        String bpmnXml = Bpmn.convertToString(bpmnModel);
-        if (!bpmnXml.contains("http://operaton.org/schema/1.0/bpmn")) {
-            return new ByteArrayInputStream(bpmnXml.getBytes(StandardCharsets.UTF_8));
-        }
+        return normalizeXmlToCamundaNamespace(
+            Bpmn.convertToString(bpmnModel),
+            "http://operaton.org/schema/1.0/bpmn",
+            "http://camunda.org/schema/1.0/bpmn"
+        );
+    }
+
+    ByteArrayInputStream normalizeToCamundaNamespace(DmnModelInstance dmnModel) {
+        return normalizeXmlToCamundaNamespace(
+            Dmn.convertToString(dmnModel),
+            "http://operaton.org/schema/1.0/dmn",
+            "http://camunda.org/schema/1.0/dmn"
+        );
+    }
+
+    private ByteArrayInputStream normalizeXmlToCamundaNamespace(String xml, String operatonNs, String camundaNs) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
-            Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(bpmnXml)));
-            normalizeElementNamespace(doc.getDocumentElement());
+            Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            normalizeElementNamespace(doc.getDocumentElement(), operatonNs, camundaNs);
             StringWriter writer = new StringWriter();
             TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(writer));
             return new ByteArrayInputStream(writer.toString().getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to normalize BPMN namespace", e);
+            throw new RuntimeException("Failed to normalize namespace from " + operatonNs + " to " + camundaNs, e);
         }
     }
 
-    void normalizeElementNamespace(Element element) {
-        final String operatonNs = "http://operaton.org/schema/1.0/bpmn";
-        final String camundaNs = "http://camunda.org/schema/1.0/bpmn";
-
+    void normalizeElementNamespace(Element element, String operatonNs, String camundaNs) {
         NamedNodeMap attrs = element.getAttributes();
         List<String> operatonLocalNames = new ArrayList<>();
         for (int i = 0; i < attrs.getLength(); i++) {
@@ -1063,7 +1072,7 @@ public class OperatonProcessService {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             if (child instanceof Element childElement) {
-                normalizeElementNamespace(childElement);
+                normalizeElementNamespace(childElement, operatonNs, camundaNs);
             }
         }
     }
