@@ -39,7 +39,7 @@ class InformatieObjectReceivedEvent @JsonCreator constructor(
 
     init {
         assertArgumentNotNull(documentId, "documentId is required")
-        assertArgumentNotNull(identificatie, "informationObjectId.identificatie  is required")
+        assertArgumentNotNull(identificatie, "identificatie  is required")
     }
 
     fun setDocumentId(documentId: UUID) {
