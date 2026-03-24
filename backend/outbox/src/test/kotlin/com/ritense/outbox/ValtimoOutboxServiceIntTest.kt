@@ -67,6 +67,20 @@ class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should batch multiple deferred messages in a single transaction for read-only callers`() {
+        TransactionTemplate(transactionManager).apply {
+            isReadOnly = true
+        }.executeWithoutResult {
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event1")))
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event2")))
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event3")))
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).hasSize(3)
+    }
+
+    @Test
     fun `should throw error when no transaction exists`() {
         val event = OrderCreatedEvent("textBook")
 
