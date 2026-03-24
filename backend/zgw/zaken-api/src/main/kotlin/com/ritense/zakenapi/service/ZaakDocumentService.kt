@@ -69,6 +69,7 @@ class ZaakDocumentService(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean,
 ) {
 
     fun getInformatieObjectenAsRelatedFiles(
@@ -107,15 +108,17 @@ class ZaakDocumentService(
             }
         }
 
-        if (!authorizationService.hasPermission(
-                EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    ResourcePermissionActionProvider.VIEW_LIST,
-                    ResourcePermission(caseDocumentId)
+        if (authorizationEnabled) {
+            if (!authorizationService.hasPermission(
+                    EntityAuthorizationRequest(
+                        ResourcePermission::class.java,
+                        ResourcePermissionActionProvider.VIEW_LIST,
+                        ResourcePermission(caseDocumentId)
+                    )
                 )
-            )
-        ) {
-            return Page.empty(pageable)
+            ) {
+                return Page.empty(pageable)
+            }
         }
 
         return if (version.supportsFilterableColumns() && version.supportsSortableColumns()) {
