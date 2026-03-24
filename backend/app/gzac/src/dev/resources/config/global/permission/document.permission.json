@@ -7,12 +7,6 @@
         "roleKey": "ROLE_USER",
         "conditions": [
             {
-                "type": "field",
-                "field": "assigneeId",
-                "operator": "==",
-                "value": "${currentUsername}"
-            },
-            {
                 "type": "container",
                 "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
                 "conditions": [

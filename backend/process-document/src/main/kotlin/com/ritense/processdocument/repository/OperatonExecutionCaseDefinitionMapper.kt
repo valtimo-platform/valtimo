@@ -21,12 +21,12 @@ import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -44,6 +44,7 @@ class OperatonExecutionCaseDefinitionMapper(
     private val executionDocumentMapper: OperatonExecutionJsonSchemaDocumentMapper,
     private val authorizationService: AuthorizationService,
     private val queryDialectHelper: QueryDialectHelper,
+    private val documentCaseDefinitionPredicateProvider: DocumentCaseDefinitionPredicateProvider,
 ) : AuthorizationEntityMapper<OperatonExecution, CaseDefinition> {
 
     override fun mapRelated(entity: OperatonExecution): List<CaseDefinition> {
@@ -87,17 +88,15 @@ class OperatonExecutionCaseDefinitionMapper(
             )
         )
 
-        // Path B: via Document with CASE blueprint type (cross-join in same subquery)
+        // Path B: via Document → CaseDefinition
         val doc = sub.from(JsonSchemaDocument::class.java)
-        val bpId = doc.get<Any>("documentDefinitionId").get<Any>("blueprintId")
         val predicateB = cb.and(
             cb.equal(
                 root.get<String>("businessKey"),
                 queryDialectHelper.uuidToString(cb, doc.get<JsonSchemaDocumentId>("id").get("id"))
             ),
-            cb.equal(bpId.get<String>("blueprintType"), BlueprintType.CASE.name),
-            cb.equal(bpId.get<String>("blueprintKey"), cdId.get<String>("key")),
-            cb.equal(bpId.get<String>("blueprintVersionTag"), cdId.get<String>("versionTag"))
+            documentCaseDefinitionPredicateProvider
+                .documentToCaseDefinitionPredicate(doc, cdId, sub, cb)
         )
 
         sub.select(cb.literal(1)).where(cb.or(predicateA, predicateB))

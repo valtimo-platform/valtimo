@@ -25,6 +25,7 @@ import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -46,6 +47,7 @@ class OperatonExecutionCaseDefinitionMapperTest {
     private lateinit var executionDocumentMapper: OperatonExecutionJsonSchemaDocumentMapper
     private lateinit var authorizationService: AuthorizationService
     private lateinit var queryDialectHelper: QueryDialectHelper
+    private lateinit var documentCaseDefinitionPredicateProvider: DocumentCaseDefinitionPredicateProvider
     private lateinit var mapper: OperatonExecutionCaseDefinitionMapper
 
     @BeforeEach
@@ -55,12 +57,14 @@ class OperatonExecutionCaseDefinitionMapperTest {
         executionDocumentMapper = mock()
         authorizationService = mock()
         queryDialectHelper = mock()
+        documentCaseDefinitionPredicateProvider = mock()
         mapper = OperatonExecutionCaseDefinitionMapper(
             processDefinitionCaseDefinitionRepository,
             caseDefinitionService,
             executionDocumentMapper,
             authorizationService,
             queryDialectHelper,
+            documentCaseDefinitionPredicateProvider,
         )
     }
 

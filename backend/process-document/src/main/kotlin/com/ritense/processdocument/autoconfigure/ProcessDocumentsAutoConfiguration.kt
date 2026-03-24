@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
@@ -432,6 +433,7 @@ class ProcessDocumentsAutoConfiguration {
         executionDocumentMapper: OperatonExecutionJsonSchemaDocumentMapper,
         @Lazy authorizationService: AuthorizationService,
         queryDialectHelper: QueryDialectHelper,
+        documentCaseDefinitionPredicateProvider: DocumentCaseDefinitionPredicateProvider,
     ): OperatonExecutionCaseDefinitionMapper {
         return OperatonExecutionCaseDefinitionMapper(
             processDefinitionCaseDefinitionRepository,
@@ -439,6 +441,7 @@ class ProcessDocumentsAutoConfiguration {
             executionDocumentMapper,
             authorizationService,
             queryDialectHelper,
+            documentCaseDefinitionPredicateProvider,
         )
     }
 
