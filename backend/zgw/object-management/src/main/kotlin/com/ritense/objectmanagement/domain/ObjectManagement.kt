@@ -52,5 +52,8 @@ data class ObjectManagement(
     override val formDefinitionView: String? = null,
 
     @Column(name = "form_definition_edit")
-    override val formDefinitionEdit: String? = null
+    override val formDefinitionEdit: String? = null,
+
+    @Column(name = "suppress_outbox", nullable = false)
+    val suppressOutbox: Boolean = false
 ) : ObjectManagementInfo

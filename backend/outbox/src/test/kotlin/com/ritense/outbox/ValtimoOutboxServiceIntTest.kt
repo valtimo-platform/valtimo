@@ -138,6 +138,28 @@ class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
         assertThat(roles).containsExactlyInAnyOrder("ADMIN", "USER")
     }
 
+    @Test
+    @Transactional
+    fun `should skip message when outbox is suppressed`() {
+        OutboxContext.runWithSuppressedOutbox {
+            outboxService.send { TestEvent() }
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).isEmpty()
+    }
+
+    @Test
+    @Transactional
+    fun `should not skip message when outbox suppress is false`() {
+        OutboxContext.runWithSuppressedOutbox(suppress = false) {
+            outboxService.send { TestEvent() }
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).hasSize(1)
+    }
+
     data class OrderCreatedEvent(
         val name: String
     )

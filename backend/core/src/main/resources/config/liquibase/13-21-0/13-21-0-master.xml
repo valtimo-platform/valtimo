@@ -20,11 +20,6 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="/initial-setup/initial-setup-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-15-0/13-15-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-16-0/13-16-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-18-0/13-18-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-20-0/13-20-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-21-0/13-21-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="20260324-add-suppress-outbox-to-object-management.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
