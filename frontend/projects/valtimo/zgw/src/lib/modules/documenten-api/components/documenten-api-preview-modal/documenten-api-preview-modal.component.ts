@@ -18,7 +18,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  HostListener,
   Input,
   OnDestroy,
   OnInit,
@@ -72,7 +71,6 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   public pdfSrc: SafeResourceUrl;
   public fileName: string | undefined;
-  public modalHeight: number;
 
   private readonly _valtimoEndpointUri!: string;
   private _showModalSubscription!: Subscription;
@@ -93,13 +91,7 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.modalHeight = window.innerHeight - 150;
     this.setPdfSrc();
-  }
-
-  @HostListener('window:resize', ['$event'])
-  private onResize(event): void {
-    this.modalHeight = event.target.innerHeight - 150;
   }
 
   private setPdfSrc(): void {
