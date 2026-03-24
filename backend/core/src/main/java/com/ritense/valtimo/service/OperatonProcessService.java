@@ -61,7 +61,6 @@ import com.ritense.valtimo.service.util.FormUtils;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -661,15 +660,22 @@ public class OperatonProcessService {
                     )
                     .readAllBytes();
 
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Bpmn.writeModelToStream(outputStream, bpmnModel);
+                // Normalize both through the same XML pipeline so comparisons are
+                // namespace-agnostic. Applying normalizeXmlToCamundaNamespace directly to
+                // the saved bytes handles both old deployments (operaton: namespace, stored
+                // via addModelInstance) and new deployments (camunda: namespace, already
+                // Transformer output) because the DOM+Transformer step is idempotent on
+                // already-normalized XML.
+                byte[] normalizedSavedBytes = normalizeXmlToCamundaNamespace(
+                    new String(savedBytes, StandardCharsets.UTF_8),
+                    "http://operaton.org/schema/1.0/bpmn",
+                    "http://camunda.org/schema/1.0/bpmn"
+                ).readAllBytes();
+                byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
 
-                if (Arrays.equals(outputStream.toByteArray(), savedBytes)) {
-                    outputStream.close();
+                if (Arrays.equals(normalizedNewBytes, normalizedSavedBytes)) {
                     return true;
                 }
-
-                outputStream.close();
 
             } catch (IOException e) {
                 throw new ProcessNotDeployableException(blueprintId + " and process: " + latestProcessDefinition.getKey());
