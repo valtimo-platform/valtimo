@@ -46,6 +46,7 @@ import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
+import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
@@ -1718,6 +1719,73 @@ internal class ZakenApiPluginTest {
             zaakUrl = eq(zaakUrl),
             page = eq(1)
         )
+    }
+
+    @Test
+    fun `should return zaak informatie object by url`() {
+        // given
+        val caseDocumentId = UUID.randomUUID()
+        val zaakInformatieobjectUrl = URI("${zakenApiUrl()}/zaakinformatieobjecten/abc123")
+        val zaakInformatieObject: ZaakInformatieObject = mock()
+
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zakenApiClient: ZakenApiClient = mock {
+            on {
+                this.getZaakInformatieObject(
+                    authentication = eq(authenticationMock),
+                    baseUrl = eq(zakenApiUri()),
+                    zaakInformatieobjectUrl = eq(zaakInformatieobjectUrl),
+                    caseDocumentId = eq(caseDocumentId)
+                )
+            } doReturn zaakInformatieObject
+        }
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        val result = plugin.getZaakInformatieObjectByUrl(zaakInformatieobjectUrl, caseDocumentId)
+
+        // then
+        assertThat(result).isEqualTo(zaakInformatieObject)
+        verify(zakenApiClient, times(1)).getZaakInformatieObject(
+            authentication = eq(authenticationMock),
+            baseUrl = eq(zakenApiUri()),
+            zaakInformatieobjectUrl = eq(zaakInformatieobjectUrl),
+            caseDocumentId = eq(caseDocumentId)
+        )
+    }
+
+    @Test
+    fun `should return null when not authorized to get zaak informatie object by url`() {
+        // given
+        val caseDocumentId = UUID.randomUUID()
+        val zaakInformatieobjectUrl = URI("${zakenApiUrl()}/zaakinformatieobjecten/abc123")
+
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zakenApiClient: ZakenApiClient = mock {
+            on {
+                this.getZaakInformatieObject(
+                    authentication = eq(authenticationMock),
+                    baseUrl = eq(zakenApiUri()),
+                    zaakInformatieobjectUrl = eq(zaakInformatieobjectUrl),
+                    caseDocumentId = eq(caseDocumentId)
+                )
+            } doReturn null
+        }
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        val result = plugin.getZaakInformatieObjectByUrl(zaakInformatieobjectUrl, caseDocumentId)
+
+        // then
+        assertThat(result).isNull()
     }
 
     private fun zakenApiPlugin(
