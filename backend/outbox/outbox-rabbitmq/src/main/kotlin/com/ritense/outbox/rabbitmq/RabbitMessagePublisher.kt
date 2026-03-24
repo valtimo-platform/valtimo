@@ -116,7 +116,7 @@ class RabbitMessagePublisher(
                 return@map MessagePublishResult(
                     messageId = message.id,
                     success = false,
-                    error = MessagePublishingFailed("Could not deliver outbox message: routingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+                    error = MessagePublishingFailed("Could not deliver outbox message: returnedRoutingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, configuredRoutingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
                 )
             }
             MessagePublishResult(messageId = message.id, success = true)

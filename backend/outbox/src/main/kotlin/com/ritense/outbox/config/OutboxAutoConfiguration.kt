@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import com.ritense.outbox.OutboxService
 import com.ritense.outbox.UserProvider
 import com.ritense.outbox.ValtimoOutboxService
 import com.ritense.outbox.config.condition.ConditionalOnOutboxEnabled
-import com.ritense.outbox.health.OutboxPublisherHealthIndicator
 import com.ritense.outbox.publisher.MessagePublisher
 import com.ritense.outbox.publisher.PollingPublisherJob
 import com.ritense.outbox.publisher.PollingPublisherService
@@ -34,7 +33,6 @@ import com.ritense.outbox.repository.impl.PostgresOutboxMessageRepository
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -46,6 +44,7 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean
 import org.springframework.transaction.PlatformTransactionManager
@@ -127,13 +126,16 @@ class OutboxAutoConfiguration {
         )
     }
 
-    @Bean
-    @ConditionalOnClass(AbstractHealthIndicator::class)
-    @ConditionalOnMissingBean(OutboxPublisherHealthIndicator::class)
-    fun outboxPublisherHealthIndicator(
-        outboxCircuitBreaker: CircuitBreaker?
-    ): OutboxPublisherHealthIndicator {
-        return OutboxPublisherHealthIndicator(outboxCircuitBreaker)
+    @Configuration
+    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    class OutboxHealthIndicatorConfiguration {
+        @Bean
+        @ConditionalOnMissingBean(name = ["outboxPublisherHealthIndicator"])
+        fun outboxPublisherHealthIndicator(
+            outboxCircuitBreaker: CircuitBreaker?
+        ): com.ritense.outbox.health.OutboxPublisherHealthIndicator {
+            return com.ritense.outbox.health.OutboxPublisherHealthIndicator(outboxCircuitBreaker)
+        }
     }
 
     @Bean
