@@ -28,6 +28,7 @@ class ValtimoImportTypes {
         const val DECISION_DEFINITION = "decisiondefinition"
         const val DOCUMENT_DEFINITION = "documentdefinition"
         const val FORM = "form"
+        const val GLOBAL_FORM = "globalform"
         const val FORM_FLOW = "formflow"
         const val INTERNAL_CASE_STATUS = "internalcasestatus"
         const val PROCESS_DEFINITION = "processdefinition"
@@ -50,6 +51,8 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_ARTWORK = "buildingblockartwork"
         const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
         const val BUILDING_BLOCK_FORM_DEFINITION = "buildingblockformdefinition"
+
+        const val OBJECT_MANAGEMENT = "objectmanagement"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"

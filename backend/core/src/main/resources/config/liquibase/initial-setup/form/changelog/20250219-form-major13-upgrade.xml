@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@
 
     <!-- migrate process link forms -->
     <changeSet id="5" author="Ritense">
+        <validCheckSum>9:6d167136b84242248195aaa86e5e4952</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="migration_form_name"/>
             <dbms type="postgresql"/>
@@ -107,11 +108,18 @@
                 where pl.migration_form_name is not null
                     and fd.case_definition_key is null
                     and fd.case_definition_version_tag is null
+                    and not exists (
+                        select 1 from form_io_form_definition existing
+                        where existing.name = fd.name
+                            and existing.case_definition_key = pdcd.case_definition_key
+                            and existing.case_definition_version_tag = pdcd.case_definition_version_tag
+                    )
             ) as forms
         </sql>
     </changeSet>
 
     <changeSet id="6" author="Ritense">
+        <validCheckSum>9:a9a1252eacdc2873ca7bec2ad4d5d478</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="migration_form_name"/>
             <dbms type="mysql"/>
@@ -144,6 +152,12 @@
                 where pl.migration_form_name is not null
                     and fd.case_definition_key is null
                     and fd.case_definition_version_tag is null
+                    and not exists (
+                        select 1 from form_io_form_definition existing
+                        where existing.name = fd.name
+                            and existing.case_definition_key = pdcd.case_definition_key
+                            and existing.case_definition_version_tag = pdcd.case_definition_version_tag
+                    )
             ) as forms
         </sql>
     </changeSet>

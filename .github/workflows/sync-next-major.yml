@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.NEXT_MAJOR_BRANCH_SYNC_TOKEN }}
 
       - name: Configure git identity
         run: |
@@ -57,7 +58,7 @@ jobs:
         if: steps.try_merge.outputs.merged != 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NEXT_MAJOR_BRANCH_SYNC_TOKEN }}
           base: next-major
           branch: automation/sync-next-major
           title: "Conflict: sync next-minor → next-major"

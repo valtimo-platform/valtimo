@@ -36,6 +36,7 @@ dependencies {
     implementation project(":backend:web")
     implementation project(":backend:search")
     implementation project(":backend:plugin-authentication:objecten-api-authentication")
+    implementation project(':backend:importer')
     implementation project(':backend:zgw')
     implementation project(':backend:zgw:objecttypen-api')
     implementation project(':backend:zgw:objecten-api')
