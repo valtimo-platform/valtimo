@@ -17,34 +17,39 @@
 <cds-modal
         valtimoCdsModal
         [open]="modalOpen$ | async"
-        size="l"
+        size="lg"
         (close)="onClose()"
+        *ngIf="{loading: loading$ | async} as obs"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1" >
-    <h3 cdsModalHeaderHeading>
-      {{ 'zgw.documents.preview.modal.header' | translate }}
-    </h3>
+      <h3 class="header">
+        {{ fileName ?? ('zgw.documents.preview.modal.header' | translate) }}
+      </h3>
+
+      <a
+              href="#"
+              (click)="onDownload()"
+              style="margin-left: 50px;"
+      >
+        {{ 'zgw.documents.preview.downloadOriginal' | translate }}
+      </a>
   </cds-modal-header>
 
+  <ng-container *ngIf="obs.loading === false; else loading">
   <div body class="cds--modal-content">
     <object
             [data]="pdfSrc"
             type="application/pdf"
             width="100%"
-            height="600px"
+            height="1200px"
+            autofocus
     >
-      <iframe
-              [src]="pdfSrc"
-              width="100%"
-              height="600px"
-              style="border: none;"
-      >
-        <p>
-          Your browser does not support PDF viewing.
-        </p>
-      </iframe>
+      <p>
+        Your browser does not support PDF viewing.
+      </p>
     </object>
   </div>
+  </ng-container>
 
   <cds-modal-footer [cdsLayer]="1">
     <button cdsButton="primary" (click)="onClose()" >
@@ -52,3 +57,9 @@
     </button>
   </cds-modal-footer>
 </cds-modal>
+
+<ng-template #loading>
+  <div class="loading-container pb-2">
+    <cds-loading size="normal"></cds-loading>
+  </div>
+</ng-template>

@@ -1150,6 +1150,7 @@
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
       },
       "preview": {
+        "downloadOriginal": "Download origineel",
         "modal": {
           "header": "Document weergave"
         }

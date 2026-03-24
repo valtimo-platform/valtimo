@@ -22,24 +22,44 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SecurityContext,
 } from '@angular/core';
 
-import {DomSanitizer, SafeResourceUrl, SafeUrl} from '@angular/platform-browser';
-import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
-import {ButtonModule, LayerModule, ModalModule, ToggleModule} from 'carbon-components-angular';
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {
+  ButtonModule,
+  IconModule,
+  LayerModule,
+  LoadingModule,
+  ModalModule,
+  ToggleModule,
+  ToggletipModule,
+} from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {ConfigService} from '@valtimo/shared';
 import {DocumentenApiRelatedFile} from '../../models';
 import {HttpClient} from '@angular/common/http';
+import {DownloadService} from '@valtimo/resource';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-documenten-api-preview-modal',
   templateUrl: './documenten-api-preview-modal.component.html',
+  styleUrls: ['./documenten-api-preview-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ModalModule, TranslateModule, ButtonModule, ToggleModule, LayerModule],
+  imports: [
+    CommonModule,
+    ModalModule,
+    TranslateModule,
+    ButtonModule,
+    ToggleModule,
+    LayerModule,
+    LoadingModule,
+    IconModule,
+    ToggletipModule,
+  ],
 })
 export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey!: string;
@@ -47,14 +67,17 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   @Input() public relatedFile$: Observable<DocumentenApiRelatedFile>;
   @Output() public modalClose = new EventEmitter();
 
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   public pdfSrc: SafeResourceUrl;
+  public fileName: string | undefined;
 
   private readonly _valtimoEndpointUri!: string;
   private _showModalSubscription!: Subscription;
 
   constructor(
     configService: ConfigService,
+    private readonly downloadService: DownloadService,
     private readonly sanitizer: DomSanitizer,
     private readonly http: HttpClient
   ) {
@@ -77,17 +100,18 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
         return;
       }
 
+      this.fileName = document.bestandsnaam;
+
       let pdfUri: string = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${document.fileId}`;
 
+      this.loading$.next(true);
       this.http
         .get(pdfUri.toString(), {
           responseType: 'blob',
         })
         .subscribe(blob => {
-          const url = URL.createObjectURL(blob);
-          this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-
-          console.log(`DEBUG: PDF is set to: ${this.pdfSrc.toString()}`);
+          this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+          this.loading$.next(false);
         });
     });
   }
@@ -103,5 +127,15 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   private close(): void {
     this.modalOpen$.next(false);
     this.modalClose.emit();
+  }
+
+  public onDownload(): void {
+    this.relatedFile$.pipe(take(1)).subscribe(document => {
+      this.downloadService.downloadFile(
+        `${this._valtimoEndpointUri}v1/zaken-api/${document.pluginConfigurationId}/case-document/${document.fileId}/files/${document.fileId}/download`,
+        document.bestandsnaam ?? '',
+        true
+      );
+    });
   }
 }
