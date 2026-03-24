@@ -20,12 +20,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.form.domain.FormDefinition;
+import com.ritense.form.domain.FormDefinitionBlueprintId;
+import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -85,6 +88,42 @@ public class FormDefinitionDeploymentService {
                 )
             );
             logger.info("Deployed form definition {} for case definition {}", name, caseDefinitionId.toString());
+            return Optional.of(formDefinition);
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<FormDefinition> deployGlobalForm(
+        @LoggableResource("formDefinitionName") String name,
+        String formDefinitionAsString,
+        boolean readOnly
+    ) throws JsonProcessingException {
+        var rawFormDefinition = getJson(formDefinitionAsString);
+        var optionalFormDefinition = formDefinitionRepository.findByNameAndBlueprintIdIsNull(name);
+        if (optionalFormDefinition.isPresent()) {
+            var existingFormDefinition = optionalFormDefinition.get();
+            if (!rawFormDefinition.equals(existingFormDefinition.getFormDefinition())) {
+                var formDefinition = formDefinitionService.modifyFormDefinition(
+                    existingFormDefinition.getId(),
+                    name,
+                    rawFormDefinition.toString(),
+                    readOnly
+                );
+                logger.info("Modified existing global form definition {}", name);
+                return Optional.of(formDefinition);
+            }
+        } else {
+            var formDefinition = formDefinitionRepository.save(
+                new FormIoFormDefinition(
+                    UUID.randomUUID(),
+                    name,
+                    rawFormDefinition.toString(),
+                    (FormDefinitionBlueprintId) null,
+                    readOnly
+                )
+            );
+            logger.info("Deployed global form definition {}", name);
             return Optional.of(formDefinition);
         }
 
