@@ -1850,6 +1850,7 @@ internal class ZakenApiClientTest {
     fun `should return null and not call api when not authorized to get zaakinformatieobject`() {
         val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/095be615-a8ad-4c33-8e9c-c7612fbf6c9f")
         val caseDocumentId = UUID.randomUUID()
+        val requestsBefore = mockApi.requestCount
 
         authorizationService = mock {
             on { this.hasPermission<Any>(any()) } doReturn false
@@ -1864,6 +1865,7 @@ internal class ZakenApiClientTest {
         )
 
         assertThat(result).isNull()
+        assertEquals(requestsBefore, mockApi.requestCount)
         verify(outboxService, times(0)).send(any())
     }
 
