@@ -15,7 +15,6 @@
   -->
 
 <cds-modal
-        valtimoCdsModal
         [open]="modalOpen$ | async"
         size="lg"
         passiveModal
@@ -28,9 +27,9 @@
       </h3>
 
       <a
+              class="download-link"
               href="#"
               (click)="onDownload()"
-              style="margin-left: 50px;"
       >
         {{ 'zgw.documents.preview.downloadOriginal' | translate }}
       </a>
@@ -39,10 +38,9 @@
   <ng-container *ngIf="obs.loading === false; else loading">
   <div body class="cds--modal-content">
     <object
+            class="pdf-object"
             [data]="pdfSrc"
             type="application/pdf"
-            width="100%"
-            [height]="modalHeight"
             autofocus
     >
       <p>
@@ -54,7 +52,7 @@
 </cds-modal>
 
 <ng-template #loading>
-  <div class="loading-container pb-2" [style.height]="modalHeight">
+  <div class="loading-container pb-2" >
     <cds-loading size="normal"></cds-loading>
   </div>
 </ng-template>
