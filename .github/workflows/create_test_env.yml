@@ -69,11 +69,12 @@ jobs:
 
       - name: Prepare initial comment body
         id: comment_body
+        env:
+          ENV_NAME: ${{ inputs.env_name }}
         run: |
           set -euo pipefail
           template_file=".github/test_env_comments/initial.md"
-          env_name="${{ inputs.env_name }}"
-          export TEST_ENV_NAME="${env_name}"
+          export TEST_ENV_NAME="${ENV_NAME}"
           export FRONTEND_CONTENTS_SHA="pending"
           export BACKEND_CONTENTS_SHA="pending"
           export COMMENT_TIME="$(date +"%Y-%m-%d %H:%M:%S %Z")"
