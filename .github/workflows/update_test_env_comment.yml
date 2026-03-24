@@ -26,7 +26,9 @@ jobs:
 
       - name: Prepare payload and schema
         id: prepare
-        run: echo '${{ toJson(github.event.client_payload) }}' > ${{env.PAYLOAD_FILE}}
+        env:
+          CLIENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: printf '%s' "$CLIENT_PAYLOAD" > "$PAYLOAD_FILE"
 
       - name: Validate client payload
         uses: dsanders11/json-schema-validate-action@v1.4.0
