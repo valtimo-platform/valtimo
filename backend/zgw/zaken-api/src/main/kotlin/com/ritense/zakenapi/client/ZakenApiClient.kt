@@ -54,6 +54,7 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.event.DocumentLinkedToZaak
 import com.ritense.zakenapi.event.ZaakCreated
+import com.ritense.zakenapi.event.ZaakInformatieObjectListed
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
 import com.ritense.zakenapi.event.ZaakListed
 import com.ritense.zakenapi.event.ZaakObjectCreated
@@ -218,6 +219,38 @@ class ZakenApiClient(
             .body<List<ZaakInformatieObject>>()!!
 
         outboxService.send { ZaakInformatieObjectenListed(objectMapper.valueToTree(result)) }
+        return result
+    }
+
+    fun getZaakInformatieObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakInformatieobjectUrl: URI,
+        caseDocumentId: UUID,
+    ): ZaakInformatieObject? {
+        validateUrlHost(baseUrl, zaakInformatieobjectUrl)
+
+        if (!authorizationService.hasPermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.VIEW,
+                    ResourcePermission(caseDocumentId)
+                )
+            )
+        ) {
+            return null
+        }
+
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, zaakInformatieobjectUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<ZaakInformatieObject>()!!
+
+        outboxService.send { ZaakInformatieObjectListed(objectMapper.valueToTree(result)) }
         return result
     }
 
