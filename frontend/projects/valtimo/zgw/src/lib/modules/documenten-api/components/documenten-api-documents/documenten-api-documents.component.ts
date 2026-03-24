@@ -520,11 +520,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onFileSelected(event: any): void {
-    if (!this.previewDisabled) {
-      this.previewDocument(event.target.files[0], false);
-      return;
-    }
-
     this.isEditMode$.next(false);
     this.fileToBeUploaded$.next(event.target.files[0]);
     this.showUploadModal$.next(true);
@@ -540,7 +535,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onRowClick(event: any): void {
-    if (!this.previewDisabled) {
+    console.log(
+      `DEBUG: handling "onRowClick" event. Preview is: ${this.previewDisabled(event) ? 'disabled' : 'enabled'}`
+    );
+    if (!this.previewDisabled(event)) {
       this.previewDocument(event, false);
     } else if (this.filePermissions[event.fileId]?.canView) {
       this.downloadDocument(event, false);

@@ -1125,6 +1125,7 @@
         "title": "No configured columns"
       },
       "preview": {
+        "downloadOriginal": "Download original",
         "modal": {
           "header": "Document preview"
         }
