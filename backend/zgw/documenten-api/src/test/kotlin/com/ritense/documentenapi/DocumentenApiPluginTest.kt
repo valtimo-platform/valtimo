@@ -60,6 +60,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -661,7 +662,7 @@ internal class DocumentenApiPluginTest {
                 titel = "titel",
                 auteur = "auteur",
                 taal = "taal",
-                beginRegistratie = LocalDateTime.now(),
+                beginRegistratie = OffsetDateTime.now(),
                 status = DEFINITIEF
             )
         )

@@ -67,6 +67,7 @@ import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.test.assertEquals
@@ -405,7 +406,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)
@@ -767,7 +768,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)
