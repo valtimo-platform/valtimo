@@ -1801,6 +1801,72 @@ internal class ZakenApiClientTest {
         verify(outboxService, times(0)).send(any())
     }
 
+    @Test
+    fun `should send get zaakinformatieobject request, parse response and send outbox message`() {
+        val uuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+        val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/$uuid")
+        val caseDocumentId = UUID.randomUUID()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+                "url": "$zaakInformatieobjectUrl",
+                "uuid": "$uuid",
+                "informatieobject": "$HTTPS_EXAMPLE_COM",
+                "zaak": "${zaakUri()}",
+                "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
+                "titel": "test",
+                "beschrijving": "test omschrijving",
+                "registratiedatum": "2019-08-24T14:15:22Z"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val result = client.getZaakInformatieObject(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId = caseDocumentId
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+        assertEquals(URI(zaakInformatieobjectUrl.toString()), result!!.url)
+        assertEquals(UUID.fromString(uuid), result.uuid)
+        assertEquals(URI(HTTPS_EXAMPLE_COM), result.informatieobject)
+        assertEquals("Hoort bij, omgekeerd: kent", result.aardRelatieWeergave)
+        assertEquals("test", result.titel)
+        assertEquals("test omschrijving", result.beschrijving)
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+            assertThat(firstValue.get()).isInstanceOf(ZaakInformatieObjectListed::class.java)
+        }
+    }
+
+    @Test
+    fun `should return null and not call api when not authorized to get zaakinformatieobject`() {
+        val zaakInformatieobjectUrl = zakenApiBaseUri("/zaakinformatieobjecten/095be615-a8ad-4c33-8e9c-c7612fbf6c9f")
+        val caseDocumentId = UUID.randomUUID()
+
+        authorizationService = mock {
+            on { this.hasPermission<Any>(any()) } doReturn false
+        }
+        val client = zakenApiClient()
+
+        val result = client.getZaakInformatieObject(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakInformatieobjectUrl = zaakInformatieobjectUrl,
+            caseDocumentId = caseDocumentId
+        )
+
+        assertThat(result).isNull()
+        verify(outboxService, times(0)).send(any())
+    }
+
     private fun zakenApiClient() = ZakenApiClient(
         restClientBuilder = restClientBuilder,
         outboxService = outboxService,
