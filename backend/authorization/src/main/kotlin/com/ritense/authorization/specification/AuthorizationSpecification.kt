@@ -17,6 +17,8 @@
 package com.ritense.authorization.specification
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationContext
+import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
@@ -74,23 +76,29 @@ abstract class AuthorizationSpecification<T : Any>(
     ): Boolean {
 
         if (relatedEntityAuthorizationRequest.resourceType == relatedEntityAuthorizationRequest.relatedResourceType) {
-            val entity = try {
-                identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
-            } catch (e: NotImplementedError) {
-                null
-            } catch (e: Throwable) {
-                logger.error { e }
-                null
-            }
-            return isAuthorizedForEntity(
-                EntityAuthorizationRequest(
-                    relatedEntityAuthorizationRequest.resourceType,
-                    relatedEntityAuthorizationRequest.action,
-                    entity
-                ).apply {
-                    relatedEntityAuthorizationRequest.context?.let { context -> this.withContext(context) }
-                }
+            val entity = identifierToEntityNullable(relatedEntityAuthorizationRequest.relatedResourceId)
+            return isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, entity)
+        }
+
+        if (hasMapper(relatedEntityAuthorizationRequest.relatedResourceType, relatedEntityAuthorizationRequest.resourceType)) {
+            val relatedEntity = resolveRelatedEntity(
+                relatedEntityAuthorizationRequest.relatedResourceType,
+                relatedEntityAuthorizationRequest.relatedResourceId
             )
+            if (relatedEntity != null) {
+                val mapper = AuthorizationServiceHolder.currentInstance.getMapper(
+                    relatedEntityAuthorizationRequest.relatedResourceType,
+                    relatedEntityAuthorizationRequest.resourceType
+                ) as AuthorizationEntityMapper<Any, T>
+                val entities = AuthorizationContext.runWithoutAuthorization {
+                    mapper.mapRelated(relatedEntity)
+                }
+                if (entities.isNotEmpty()) {
+                    return entities.all { entity ->
+                        isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, entity)
+                    }
+                }
+            }
         }
 
         return permissions
@@ -111,12 +119,29 @@ abstract class AuthorizationSpecification<T : Any>(
             } != null
     }
 
+    private fun isAuthorizedForEntityFromRelated(
+        relatedEntityAuthorizationRequest: RelatedEntityAuthorizationRequest<T>,
+        entity: T?
+    ): Boolean {
+        return isAuthorizedForEntity(
+            EntityAuthorizationRequest(
+                relatedEntityAuthorizationRequest.resourceType,
+                relatedEntityAuthorizationRequest.action,
+                entity
+            ).apply {
+                relatedEntityAuthorizationRequest.context?.let { context -> this.withContext(context) }
+            }
+        )
+    }
+
     private fun isAuthorizedForRelatedEntityRecursive(
         relatedEntityAuthorizationRequest: RelatedEntityAuthorizationRequest<T>,
         permissionCondition: PermissionCondition
     ): Boolean {
         return if (permissionCondition is ContainerPermissionCondition<*>) {
-            if (permissionCondition.resourceType == relatedEntityAuthorizationRequest.relatedResourceType) {
+            if (permissionCondition.resourceType == relatedEntityAuthorizationRequest.relatedResourceType
+                || hasMapper(relatedEntityAuthorizationRequest.relatedResourceType, permissionCondition.resourceType)
+            ) {
                 this.findSpecification(relatedEntityAuthorizationRequest, permissionCondition).isAuthorized()
             } else {
                 permissionCondition.conditions.all {
@@ -126,6 +151,19 @@ abstract class AuthorizationSpecification<T : Any>(
         } else {
             true
         }
+    }
+
+    private fun resolveRelatedEntity(relatedResourceType: Class<*>, relatedResourceId: String): Any? {
+        val relatedSpec = AuthorizationServiceHolder.currentInstance.getAuthorizationSpecification(
+            @Suppress("UNCHECKED_CAST")
+            EntityAuthorizationRequest(relatedResourceType as Class<Any>, Action(Action.IGNORE)),
+            emptyList()
+        )
+        return relatedSpec.identifierToEntityNullable(relatedResourceId)
+    }
+
+    private fun hasMapper(from: Class<*>, to: Class<*>): Boolean {
+        return AuthorizationServiceHolder.currentInstance.hasMapper(from, to)
     }
 
     fun combinePredicates(criteriaBuilder: CriteriaBuilder, predicates: List<Predicate>): Predicate {
@@ -152,6 +190,17 @@ abstract class AuthorizationSpecification<T : Any>(
                 )
             )
         )
+    }
+
+    private fun identifierToEntityNullable(identifier: String): T? {
+        return try {
+            identifierToEntity(identifier)
+        } catch (_: NotImplementedError) {
+            null
+        } catch (e: Throwable) {
+            logger.error { e }
+            null
+        }
     }
 
     protected abstract fun identifierToEntity(identifier: String): T

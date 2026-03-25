@@ -134,6 +134,7 @@ The following table lists all container relationships available out of the box. 
 | `JsonSchemaDocumentDefinition` | `CaseDefinition`               | Scope document definition permissions to a case definition     |
 | `OperatonExecution`            | `CaseDefinition`               | Scope process instance permissions to a case definition        |
 | `OperatonExecution`            | `JsonSchemaDocument`           | Scope process instance permissions to document properties      |
+| `OperatonProcessDefinition`    | `CaseDefinition`               | Scope process definition permissions to a case definition      |
 | `OperatonTask`                 | `JsonSchemaDocument`           | Scope task permissions to document properties                  |
 | `OperatonTask`                 | `OperatonIdentityLink`         | Scope task permissions to identity link properties             |
 | `Note`                         | `JsonSchemaDocument`           | Scope note permissions to document properties                  |

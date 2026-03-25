@@ -38,6 +38,7 @@ import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
 import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMapper
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
+import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
@@ -446,6 +447,18 @@ class ProcessDocumentsAutoConfiguration {
             authorizationService,
             queryDialectHelper,
             documentCaseDefinitionPredicateProvider,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OperatonProcessDefinitionCaseDefinitionMapper::class)
+    fun operatonProcessDefinitionCaseDefinitionMapper(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+    ): OperatonProcessDefinitionCaseDefinitionMapper {
+        return OperatonProcessDefinitionCaseDefinitionMapper(
+            processDefinitionCaseDefinitionRepository,
+            caseDefinitionService,
         )
     }
 
