@@ -1,5 +1,9 @@
 # 13.22.0
 
+{% hint style="info" %}
+**Release date 01-04-2026**
+{% endhint %}
+
 ## New Features
 
 * **Batched outbox message publishing**
