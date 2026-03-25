@@ -28,5 +28,6 @@ class MockObjectManagement(
     override val objectenApiPluginConfigurationId: UUID = UUID.randomUUID(),
     override val showInDataMenu: Boolean = false,
     override val formDefinitionView: String? = null,
-    override val formDefinitionEdit: String? = null
+    override val formDefinitionEdit: String? = null,
+    override val suppressOutbox: Boolean = false
 ) : ObjectManagementInfo
