@@ -81,12 +81,13 @@ class OutboxPublisherHealthIndicatorTest {
         assertThat(health.details).containsKeys(
             "circuitBreakerState",
             "failureRate",
-            "numberOfSuccessfulCalls",
-            "numberOfFailedCalls",
-            "numberOfNotPermittedCalls"
+            "slidingWindow"
         )
-        assertThat(health.details["numberOfSuccessfulCalls"]).isEqualTo(1)
-        assertThat(health.details["numberOfFailedCalls"]).isEqualTo(1)
+        @Suppress("UNCHECKED_CAST")
+        val slidingWindow = health.details["slidingWindow"] as Map<String, Any>
+        assertThat(slidingWindow["successful"]).isEqualTo(1)
+        assertThat(slidingWindow["failed"]).isEqualTo(1)
+        assertThat(slidingWindow["rejected"]).isEqualTo(0)
     }
 
     private fun createCircuitBreaker(): CircuitBreaker {
