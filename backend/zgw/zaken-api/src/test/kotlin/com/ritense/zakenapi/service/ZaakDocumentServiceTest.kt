@@ -81,7 +81,8 @@ class ZaakDocumentServiceTest {
             catalogiService,
             documentenApiService,
             documentenApiVersionService,
-            authorizationService
+            authorizationService,
+            false
         )
     }
 

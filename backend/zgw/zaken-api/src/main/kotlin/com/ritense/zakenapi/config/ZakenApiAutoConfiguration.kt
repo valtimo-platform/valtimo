@@ -131,13 +131,16 @@ class ZakenApiAutoConfiguration {
         documentenApiService: DocumentenApiService,
         documentenApiVersionService: DocumentenApiVersionService,
         authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
+        authorizationEnabled: Boolean,
     ) = ZaakDocumentService(
         zaakUrlProvider,
         pluginService,
         catalogiService,
         documentenApiService,
         documentenApiVersionService,
-        authorizationService
+        authorizationService,
+        authorizationEnabled
     )
 
     @Bean
