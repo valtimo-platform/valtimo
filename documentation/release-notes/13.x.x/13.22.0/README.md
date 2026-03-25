@@ -22,6 +22,11 @@
   Exposes circuit breaker state via `/actuator/health` under `outboxPublisher` when Spring Boot Actuator is on the
   classpath.
 
+* **Suppress outbox for Object Management configurations**
+
+  Object management configurations now support a `suppressOutbox` property. When set to `true`, all object API calls
+  for that configuration skip outbox message creation, reducing unnecessary writes for read-heavy integrations.
+
 * **Pipelined RabbitMQ publisher confirms**
 
   `RabbitMessagePublisher` now sends all messages first, then awaits all confirms in parallel with a single batch-wide
