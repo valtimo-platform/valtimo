@@ -44,9 +44,11 @@ class OutboxPublisherHealthIndicator(
             "circuitBreakerState" to circuitBreaker.state.name,
             // failureRate is -1.0 until minimumNumberOfCalls is reached
             "failureRate" to "${metrics.failureRate}%",
-            "numberOfSuccessfulCalls" to metrics.numberOfSuccessfulCalls,
-            "numberOfFailedCalls" to metrics.numberOfFailedCalls,
-            "numberOfNotPermittedCalls" to metrics.numberOfNotPermittedCalls
+            "slidingWindow" to mapOf(
+                "successful" to metrics.numberOfSuccessfulCalls,
+                "failed" to metrics.numberOfFailedCalls,
+                "rejected" to metrics.numberOfNotPermittedCalls
+            )
         )
 
         when (circuitBreaker.state) {
