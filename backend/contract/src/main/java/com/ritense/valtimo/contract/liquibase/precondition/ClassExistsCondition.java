@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,55 +16,19 @@
 
 package com.ritense.valtimo.contract.liquibase.precondition;
 
-import liquibase.changelog.ChangeSet;
-import liquibase.changelog.DatabaseChangeLog;
-import liquibase.changelog.visitor.ChangeExecListener;
 import liquibase.database.Database;
-import liquibase.exception.PreconditionErrorException;
-import liquibase.exception.PreconditionFailedException;
-import liquibase.exception.ValidationErrors;
-import liquibase.exception.Warnings;
-import liquibase.precondition.AbstractPrecondition;
+import liquibase.exception.CustomPreconditionErrorException;
+import liquibase.exception.CustomPreconditionFailedException;
+import liquibase.precondition.CustomPrecondition;
 
-public class ClassExistsCondition extends AbstractPrecondition {
-
-    private static final String SERIALIZED_NAMESPACE = "http://www.liquibase.org/xml/ns/dbchangelog";
+public class ClassExistsCondition implements CustomPrecondition {
 
     private String className;
 
     @Override
-    public String getName() {
-        return "classExists";
-    }
-
-    @Override
-    public String getSerializedObjectNamespace() {
-        return SERIALIZED_NAMESPACE;
-    }
-
-    @Override
-    public Warnings warn(Database database) {
-        return new Warnings();
-    }
-
-    @Override
-    public ValidationErrors validate(Database database) {
-        ValidationErrors errors = new ValidationErrors();
+    public void check(Database database) throws CustomPreconditionFailedException, CustomPreconditionErrorException {
         if (className == null || className.isBlank()) {
-            errors.addError("className is required");
-        }
-        return errors;
-    }
-
-    @Override
-    public void check(
-        Database database,
-        DatabaseChangeLog changeLog,
-        ChangeSet changeSet,
-        ChangeExecListener changeExecListener
-    ) throws PreconditionFailedException, PreconditionErrorException {
-        if (className == null || className.isBlank()) {
-            throw new PreconditionErrorException(new IllegalStateException("className is required"), changeLog, this);
+            throw new CustomPreconditionErrorException("className is required");
         }
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) {
@@ -73,13 +37,9 @@ public class ClassExistsCondition extends AbstractPrecondition {
         try {
             Class.forName(className, false, classLoader);
         } catch (ClassNotFoundException exception) {
-            throw new PreconditionFailedException("Class not found: " + className, changeLog, this);
+            throw new CustomPreconditionFailedException("Class not found: " + className, exception);
         } catch (LinkageError error) {
-            throw new PreconditionErrorException(
-                new IllegalStateException("Failed to load class: " + className, error),
-                changeLog,
-                this
-            );
+            throw new CustomPreconditionErrorException("Failed to load class: " + className, error);
         }
     }
 

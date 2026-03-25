@@ -142,10 +142,12 @@ export class CaseDetailsManagementPage {
     await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
   }
 
-  async switchCaseVersionViaList(caseVersion: string) {
+  async switchCaseVersionViaList() {
     await this.versionSelectDropdown.click();
     await this.seeAllVersionsButton.click();
-    await this.page.locator(`tr:has(td:has-text("${caseVersion}"))`).click();
+    const firstRow = this.page.getByRole('row').nth(1);
+    await firstRow.waitFor({state: 'visible'});
+    await firstRow.click();
   }
 
   async exportCaseDefinition() {

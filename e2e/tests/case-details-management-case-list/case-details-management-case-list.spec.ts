@@ -18,8 +18,8 @@ import {expect, test} from '@playwright/test';
 
 import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
-  CASE_VERSIONS,
   LIST_COLUMNS,
   LIST_COLUMNS_2,
   UI_COLUMN_1,
@@ -51,7 +51,7 @@ test.describe('Case management', () => {
 
     await page.goto('/');
     await testPage.goToCaseDetailsManagementCaseList('bezwaar');
-    await testPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+    await ensureDraftVersionSelected(page);
   });
 
   test.describe('Success test', () => {
@@ -62,7 +62,7 @@ test.describe('Case management', () => {
 
       test('Check list column page is loaded', async () => {
         // Assert
-        await expect(testPage.caseListColumnsList).toBeTruthy();
+        await expect(testPage.caseListColumnsList).toBeVisible();
       });
 
       test.describe('JSON Editor', () => {
@@ -322,6 +322,7 @@ test.describe('Case management', () => {
 
           // Navigate away and back to verify persistence
           await testPage.goToCaseDetailsManagementCaseList('bezwaar');
+          await ensureDraftVersionSelected(page);
           await testPage.listColumnsTab.click();
 
           // Assert - order is still swapped after fresh load from API

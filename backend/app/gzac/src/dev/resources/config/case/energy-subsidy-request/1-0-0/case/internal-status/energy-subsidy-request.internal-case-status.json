@@ -1,0 +1,44 @@
+[
+    {
+        "key": "aanvraag-ontvangen",
+        "title": "Aanvraag ontvangen",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "BLUE"
+    },
+    {
+        "key": "berekening-gestart",
+        "title": "Berekening gestart",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "PURPLE"
+    },
+    {
+        "key": "verificatie-gestart",
+        "title": "Verificatie gestart",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "MAGENTA"
+    },
+    {
+        "key": "inkomenstoets-gestart",
+        "title": "Inkomenstoets gestart",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "CYAN"
+    },
+    {
+        "key": "in-beoordeling",
+        "title": "In beoordeling",
+        "retentionPeriodInDays": -1,
+        "visibleInCaseListByDefault": true,
+        "color": "TEAL"
+    },
+    {
+        "key": "afgehandeld",
+        "title": "Afgehandeld",
+        "retentionPeriodInDays": 365,
+        "visibleInCaseListByDefault": true,
+        "color": "GREEN"
+    }
+]

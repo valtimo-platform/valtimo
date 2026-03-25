@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,16 @@
 package com.ritense.valtimo.contract.liquibase.change;
 
 import liquibase.change.custom.CustomChange;
-import liquibase.change.custom.CustomSqlChange;
 import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.SetupException;
 import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
-import liquibase.statement.SqlStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OptionalCustomChange implements CustomTaskChange, CustomSqlChange {
+public class OptionalCustomChange implements CustomTaskChange {
 
     private static final Logger logger = LoggerFactory.getLogger(OptionalCustomChange.class);
 
@@ -77,16 +75,9 @@ public class OptionalCustomChange implements CustomTaskChange, CustomSqlChange {
         CustomChange resolved = resolveDelegate();
         if (resolved instanceof CustomTaskChange) {
             ((CustomTaskChange) resolved).execute(database);
+        } else if (resolved != null) {
+            logger.warn("OptionalCustomChange delegate {} does not implement CustomTaskChange; skipping execution.", delegateClass);
         }
-    }
-
-    @Override
-    public SqlStatement[] generateStatements(Database database) throws CustomChangeException {
-        CustomChange resolved = resolveDelegate();
-        if (resolved instanceof CustomSqlChange) {
-            return ((CustomSqlChange) resolved).generateStatements(database);
-        }
-        return new SqlStatement[0];
     }
 
     public String getDelegateClass() {
@@ -112,8 +103,8 @@ public class OptionalCustomChange implements CustomTaskChange, CustomSqlChange {
                 loader = OptionalCustomChange.class.getClassLoader();
             }
             Class<?> candidate = Class.forName(delegateClass, true, loader);
-            if (!CustomChange.class.isAssignableFrom(candidate)) {
-                logger.warn("OptionalCustomChange delegateClass {} does not implement CustomChange; skipping.", delegateClass);
+            if (!CustomTaskChange.class.isAssignableFrom(candidate)) {
+                logger.warn("OptionalCustomChange delegateClass {} does not implement CustomTaskChange; skipping.", delegateClass);
                 return null;
             }
             delegate = (CustomChange) candidate.getDeclaredConstructor().newInstance();

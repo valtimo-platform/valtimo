@@ -18,8 +18,8 @@ import {expect, test} from '@playwright/test';
 
 import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
-  CASE_VERSIONS,
   SEARCH_FIELDS,
   SEARCH_FIELDS_2,
   UI_SEARCH_FIELD_1,
@@ -52,7 +52,7 @@ test.describe('Case management - Search Fields', () => {
 
     await page.goto('/');
     await testPage.goToCaseDetailsManagement('bezwaar');
-    await testPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+    await ensureDraftVersionSelected(page);
   });
 
   test.describe('Success tests', () => {
@@ -442,7 +442,7 @@ test.describe('Case management - Search Fields', () => {
 
           // Navigate away and back to verify persistence
           await testPage.goToCaseDetailsManagement('bezwaar');
-          await testPage.switchCaseVersionViaDropdown(CASE_VERSIONS.DRAFT);
+          await ensureDraftVersionSelected(page);
           await testPage.searchFieldsTab.click();
 
           // Assert - order is still swapped after fresh load from API
