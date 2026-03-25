@@ -24,8 +24,9 @@
 
 * **Suppress outbox for Object Management configurations**
 
-  Object management configurations now support a `suppressOutbox` property. When set to `true`, all object API calls
-  for that configuration skip outbox message creation, reducing unnecessary writes for read-heavy integrations.
+  Object management configurations now support a `suppressOutbox` property. When set to `true`, configured object API 
+  read flows for that configuration skip outbox message creation, reducing unnecessary writes for read-heavy integrations. 
+  Defaults to `false`.
 
 * **Pipelined RabbitMQ publisher confirms**
 
