@@ -18,8 +18,8 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {endpoints} from '../../api/endpoints';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
-  CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
   CASE_MANAGEMENT_STATUSES_TEST_IDS,
   CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS,
   CASE_MANAGEMENT_TAGS_TEST_IDS,
@@ -106,22 +106,8 @@ export class CaseDetailsConfigPage {
 
   // ─── Version Selector ────────────────────────────────────────────
 
-  get versionSelectDropdown() {
-    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.versionSelectDropdown);
-  }
-
-  async ensureDraftVersionSelected() {
-    const dropdown = this.versionSelectDropdown;
-    const selectedText = await dropdown.innerText();
-
-    if (selectedText.includes('DRAFT')) {
-      return;
-    }
-
-    await dropdown.click();
-    const listbox = this.page.getByRole('listbox');
-    const draftOption = listbox.locator('[data-test-id^="caseVersion"]:has-text("DRAFT")').first();
-    await draftOption.click();
+  async ensureDraftVersionSelected(): Promise<string> {
+    return ensureDraftVersionSelected(this.page);
   }
 
   // ─── Navigation ───────────────────────────────────────────────────

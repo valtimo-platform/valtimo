@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ export * from './lib/components/view-content/view-content.service';
 export * from './lib/components/form-io/components/form-io/form-io.component';
 export * from './lib/components/form-io/components/form-io-builder/form-io-builder.component';
 export * from './lib/components/form-io/form-io.module';
+export * from './lib/components/form-io/patches/patched-datagrid';
 
 export * from './lib/components/modal/modal.module';
 export * from './lib/components/modal/modal.component';
