@@ -25,7 +25,6 @@ import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumen
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonExecution.Companion.DUMMY_OPERATON_EXECUTION_ID
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Root
@@ -39,17 +38,12 @@ class OperatonExecutionJsonSchemaDocumentMapper(
 ) : AuthorizationEntityMapper<OperatonExecution, JsonSchemaDocument> {
 
     override fun mapRelated(entity: OperatonExecution): List<JsonSchemaDocument> {
-        return if (entity.id == DUMMY_OPERATON_EXECUTION_ID) {
-            // This process is not yet linked to a document. This can happen for the action:CREATE on resource:OperatonExecution
-            emptyList()
-        } else {
-            listOf(
-                processDocumentService.getDocument(
-                    OperatonProcessInstanceId(entity.getProcessInstanceId()),
-                    entity
-                )
+        return listOf(
+            processDocumentService.getDocument(
+                OperatonProcessInstanceId(entity.getProcessInstanceId()),
+                entity
             )
-        }
+        )
     }
 
     override fun mapQuery(

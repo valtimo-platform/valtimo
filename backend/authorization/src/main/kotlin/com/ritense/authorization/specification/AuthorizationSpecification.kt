@@ -17,7 +17,7 @@
 package com.ritense.authorization.specification
 
 import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationContext
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.permission.ConditionContainer
@@ -90,13 +90,9 @@ abstract class AuthorizationSpecification<T : Any>(
                     relatedEntityAuthorizationRequest.relatedResourceType,
                     relatedEntityAuthorizationRequest.resourceType
                 ) as AuthorizationEntityMapper<Any, T>
-                val entities = AuthorizationContext.runWithoutAuthorization {
-                    mapper.mapRelated(relatedEntity)
-                }
-                if (entities.isNotEmpty()) {
-                    return entities.all { entity ->
-                        isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, entity)
-                    }
+                val entities = runWithoutAuthorization { mapper.mapRelated(relatedEntity) }
+                return entities.all { entity ->
+                    isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, entity)
                 }
             }
         }

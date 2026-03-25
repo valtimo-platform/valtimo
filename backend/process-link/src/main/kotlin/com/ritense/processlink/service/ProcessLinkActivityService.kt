@@ -19,7 +19,7 @@ package com.ritense.processlink.service
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.AuthorizationResourceContext
-import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
@@ -32,18 +32,15 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResultWithTask
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonExecution.Companion.DUMMY_OPERATON_EXECUTION_ID
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byId
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -91,31 +88,26 @@ class ProcessLinkActivityService(
             ActivityTypeWithEventName.START_EVENT_START
         ) ?: return null
 
-        val processDefinition = runWithoutAuthorization {
-            operatonRepositoryService.findProcessDefinitionById(processLink.processDefinitionId)
-                ?: throw ProcessDefinitionNotFoundException(
-                    "For process definition with id ${processLink.processDefinitionId}"
-                )
-        }
-
-        var entityAuthorizationRequest = EntityAuthorizationRequest(
+        var authorizationRequest = RelatedEntityAuthorizationRequest<OperatonExecution>(
             OperatonExecution::class.java,
             OperatonExecutionActionProvider.CREATE,
-            createDummyOperatonExecution(
-                processDefinition
-            )
+            OperatonProcessDefinition::class.java,
+            processLink.processDefinitionId
         )
 
         documentId?.let {
-            entityAuthorizationRequest = entityAuthorizationRequest.withContext(
+            val document = runWithoutAuthorization {
+                documentService.findBy(JsonSchemaDocumentId.existingId(documentId)).get() as JsonSchemaDocument
+            }
+            authorizationRequest = authorizationRequest.withContext(
                 AuthorizationResourceContext(
                     JsonSchemaDocument::class.java,
-                    documentService.findBy(JsonSchemaDocumentId.existingId(documentId)).get() as JsonSchemaDocument
+                    document
                 )
             )
         }
 
-        authorizationService.requirePermission(entityAuthorizationRequest)
+        authorizationService.requirePermission(authorizationRequest)
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLinkActivityHandlers
                 .find { it.supports(processLink) }
@@ -144,37 +136,5 @@ class ProcessLinkActivityService(
 
     companion object {
         val logger = KotlinLogging.logger {}
-
-        fun createDummyOperatonExecution(
-            processDefinition: OperatonProcessDefinition,
-            businessKey: String? = null
-        ): OperatonExecution {
-            val execution = OperatonExecution(
-                DUMMY_OPERATON_EXECUTION_ID,
-                1,
-                null,
-                null,
-                businessKey,
-                null,
-                processDefinition,
-                null,
-                null,
-                null,
-                null,
-                null,
-                true,
-                false,
-                false,
-                false,
-                SuspensionState.ACTIVE.stateCode,
-                0,
-                0,
-                null,
-                HashSet()
-            )
-            execution.processInstance = execution
-            return execution
-        }
-
     }
 }
