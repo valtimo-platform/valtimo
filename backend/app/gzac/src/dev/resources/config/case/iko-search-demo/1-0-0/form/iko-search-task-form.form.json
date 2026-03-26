@@ -1,0 +1,24 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "type": "iko-search",
+            "key": "ikoSearchResult",
+            "label": "Zoek in IKO",
+            "hideLabel": true,
+            "customOptions": {
+                "ikoViewKey": "demo"
+            },
+            "input": true,
+            "tableView": true
+        },
+        {
+            "type": "button",
+            "key": "submit",
+            "label": "Versturen",
+            "input": true,
+            "action": "submit",
+            "disableOnInvalid": true
+        }
+    ]
+}

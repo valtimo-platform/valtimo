@@ -120,7 +120,7 @@ import {CaseMigrationModule} from '@valtimo/case-migration';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {IkoModule} from '@valtimo/iko';
+import {IkoModule, registerIkoSearchFormioComponent} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
@@ -246,5 +246,6 @@ export class AppModule {
     registerFormioIbanComponent(injector);
     registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
+    registerIkoSearchFormioComponent(injector);
   }
 }
