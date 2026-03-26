@@ -87,7 +87,7 @@ class OutboxPublisherHealthIndicatorTest {
         val slidingWindow = health.details["slidingWindow"] as Map<String, Any>
         assertThat(slidingWindow["successful"]).isEqualTo(1)
         assertThat(slidingWindow["failed"]).isEqualTo(1)
-        assertThat(slidingWindow["rejected"]).isEqualTo(0)
+        assertThat(slidingWindow["rejected"]).isEqualTo(0L)
     }
 
     private fun createCircuitBreaker(): CircuitBreaker {
