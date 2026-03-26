@@ -76,8 +76,8 @@ abstract class AuthorizationSpecification<T : Any>(
     ): Boolean {
 
         if (relatedEntityAuthorizationRequest.resourceType == relatedEntityAuthorizationRequest.relatedResourceType) {
-            val entity = identifierToEntityNullable(relatedEntityAuthorizationRequest.relatedResourceId)
-            return isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, entity)
+            val relatedEntity = identifierToEntityNullable(relatedEntityAuthorizationRequest.relatedResourceId)
+            return isAuthorizedForEntityFromRelated(relatedEntityAuthorizationRequest, relatedEntity)
         }
 
         if (hasMapper(relatedEntityAuthorizationRequest.relatedResourceType, relatedEntityAuthorizationRequest.resourceType)) {
@@ -102,17 +102,17 @@ abstract class AuthorizationSpecification<T : Any>(
                 relatedEntityAuthorizationRequest.resourceType == permission.resourceType
                     && permission.actions.contains(relatedEntityAuthorizationRequest.action)
             }
-            .firstOrNull { permission ->
+            .any { permission ->
                 permission.appliesInContext(
                     relatedEntityAuthorizationRequest.context?.resourceType,
                     relatedEntityAuthorizationRequest.context?.entity
                 ) && permission.conditionContainer.conditions.all { permissionCondition ->
-                        isAuthorizedForRelatedEntityRecursive(
-                            relatedEntityAuthorizationRequest,
-                            permissionCondition
-                        )
-                    }
-            } != null
+                    isAuthorizedForRelatedEntityRecursive(
+                        relatedEntityAuthorizationRequest,
+                        permissionCondition
+                    )
+                }
+            }
     }
 
     private fun isAuthorizedForEntityFromRelated(
@@ -134,18 +134,24 @@ abstract class AuthorizationSpecification<T : Any>(
         relatedEntityAuthorizationRequest: RelatedEntityAuthorizationRequest<T>,
         permissionCondition: PermissionCondition
     ): Boolean {
-        return if (permissionCondition is ContainerPermissionCondition<*>) {
-            if (permissionCondition.resourceType == relatedEntityAuthorizationRequest.relatedResourceType
-                || hasMapper(relatedEntityAuthorizationRequest.relatedResourceType, permissionCondition.resourceType)
-            ) {
+        if (permissionCondition !is ContainerPermissionCondition<*>) {
+            return true
+        }
+
+        return when {
+            permissionCondition.resourceType == relatedEntityAuthorizationRequest.relatedResourceType
+                || hasMapper(relatedEntityAuthorizationRequest.relatedResourceType, permissionCondition.resourceType) -> {
                 this.findSpecification(relatedEntityAuthorizationRequest, permissionCondition).isAuthorized()
-            } else {
+            }
+            permissionCondition.resourceType == relatedEntityAuthorizationRequest.context?.resourceType
+                || hasMapper(relatedEntityAuthorizationRequest.context?.resourceType, permissionCondition.resourceType) -> {
+                this.findSpecificationFromContext(relatedEntityAuthorizationRequest, permissionCondition).isAuthorized()
+            }
+            else -> {
                 permissionCondition.conditions.all {
                     isAuthorizedForRelatedEntityRecursive(relatedEntityAuthorizationRequest, it)
                 }
             }
-        } else {
-            true
         }
     }
 
@@ -158,8 +164,8 @@ abstract class AuthorizationSpecification<T : Any>(
         return relatedSpec.identifierToEntityNullable(relatedResourceId)
     }
 
-    private fun hasMapper(from: Class<*>, to: Class<*>): Boolean {
-        return AuthorizationServiceHolder.currentInstance.hasMapper(from, to)
+    private fun hasMapper(from: Class<*>?, to: Class<*>): Boolean {
+        return from != null && AuthorizationServiceHolder.currentInstance.hasMapper(from, to)
     }
 
     fun combinePredicates(criteriaBuilder: CriteriaBuilder, predicates: List<Predicate>): Predicate {
@@ -176,15 +182,47 @@ abstract class AuthorizationSpecification<T : Any>(
                 Action(Action.IGNORE),
                 authRequest.relatedResourceType,
                 authRequest.relatedResourceId
-            ),
-            listOf(
-                Permission(
-                    resourceType = container.resourceType,
-                    actions = mutableListOf(Action<Any>(Action.IGNORE)),
-                    conditionContainer = ConditionContainer(container.conditions),
-                    role = Role(key = "")
-                )
-            )
+            ).apply {
+                authRequest.context?.let { withContext(it) }
+            },
+            listOf(buildContainerPermission(container))
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <TO : Any> findSpecificationFromContext(
+        authRequest: RelatedEntityAuthorizationRequest<T>,
+        container: ContainerPermissionCondition<TO>
+    ): AuthorizationSpecification<TO> {
+        val context = authRequest.context!!
+        val entities = if (context.resourceType == container.resourceType) {
+            listOf(context.entity as TO)
+        } else {
+            val mapper = AuthorizationServiceHolder.currentInstance.getMapper(
+                context.resourceType,
+                container.resourceType
+            ) as AuthorizationEntityMapper<Any, TO>
+            runWithoutAuthorization { mapper.mapRelated(context.entity as Any) }
+        }
+
+        return AuthorizationServiceHolder.currentInstance.getAuthorizationSpecification(
+            EntityAuthorizationRequest(
+                container.resourceType,
+                Action(Action.IGNORE),
+                entities
+            ).apply {
+                authRequest.context?.let { withContext(it) }
+            },
+            listOf(buildContainerPermission(container))
+        )
+    }
+
+    private fun <TO : Any> buildContainerPermission(container: ContainerPermissionCondition<TO>): Permission {
+        return Permission(
+            resourceType = container.resourceType,
+            actions = mutableListOf(Action<Any>(Action.IGNORE)),
+            conditionContainer = ConditionContainer(container.conditions),
+            role = Role(key = "")
         )
     }
 

@@ -4,23 +4,14 @@
 **Release date 25-03-2026**
 {% endhint %}
 
-## New Features
-
-* **Case definition-scoped access control permissions**
-
-  Permissions can now use `CaseDefinition` as a container condition, enabling access control based on which case a
-  resource belongs to. See [container conditions](../../features/access-control/container-conditions.md) for details.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
 ## Bugfixes
 
 * Fixed a bug where building blocks could not update the internal case status, case tags, or assignee of the calling
   case. The building block now correctly references the case definition of the parent case.
+
+* Fixed a bug where the operaton version tag was used instead of the camunda version tag. Upon saving your process
+  definition again, they should now become visible. When using auto deployment for process definitions or decision
+  definitions, make sure to update the files in your project as well.
 
 * **Fixed auto-deployment of global forms and object management configurations**
 
