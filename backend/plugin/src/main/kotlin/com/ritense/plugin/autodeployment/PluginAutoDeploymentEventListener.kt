@@ -35,7 +35,6 @@ import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 
-@Transactional
 class PluginAutoDeploymentEventListener(
     private val resourceLoader: ResourceLoader,
     private val pluginService: PluginService,
@@ -43,7 +42,6 @@ class PluginAutoDeploymentEventListener(
     private val eventPublisher: ApplicationEventPublisher
 ) {
 
-    @Transactional
     @Order(Ordered.LOWEST_PRECEDENCE-1)
     @EventListener(ApplicationReadyEvent::class)
     fun deployPluginConfigurations(){
@@ -55,6 +53,7 @@ class PluginAutoDeploymentEventListener(
                     createPluginConfigurations(resource)
                 } catch (e: Exception) {
                     logger.error(e) { "Error while deploying plugin configuration file: '${resource.filename}'" }
+                    throw e
                 }
             }
 
