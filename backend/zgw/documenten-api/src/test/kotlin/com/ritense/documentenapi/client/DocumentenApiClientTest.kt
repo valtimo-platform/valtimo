@@ -66,7 +66,6 @@ import reactor.core.publisher.Mono
 import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.function.Supplier
@@ -210,7 +209,7 @@ DocumentenApiClientTest {
             "auteur",
             "bestandsnaam.jpg",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             bestandsdelen,
             "de9c883a-cdfc-493b-9c38-5824e334a1b1"
         )

@@ -16,9 +16,9 @@
 
 package com.ritense.documentenapi.client
 
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 
 internal class CreateDocumentResultTest {
 
@@ -29,7 +29,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -51,7 +51,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(bestandsdeel),
             "847789d3-a8b3-469a-ae01-a49a6bd21783"
         )
@@ -66,7 +66,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )

@@ -159,7 +159,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
@@ -257,7 +257,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
@@ -338,7 +338,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
@@ -417,7 +417,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -513,7 +513,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
