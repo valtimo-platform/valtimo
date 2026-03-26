@@ -31,9 +31,11 @@ class ConfigurationIssueSseEventMapper : SseEventMapper {
                 val caseDefinitionKey = result?.get("caseDefinitionKey")?.asText()
                     ?: event.resultId
                     ?: return null
+                val caseDefinitionVersionTag = result?.get("caseDefinitionVersionTag")?.asText()
+                    ?: return null
                 ConfigurationIssueUpdatedSseEvent(
                     caseDefinitionKey = caseDefinitionKey,
-                    caseDefinitionVersionTag = result?.get("caseDefinitionVersionTag")?.asText() ?: ""
+                    caseDefinitionVersionTag = caseDefinitionVersionTag
                 )
             }
             else -> null
