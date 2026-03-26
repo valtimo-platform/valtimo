@@ -1,9 +1,8 @@
-publiccodeYmlVersion: '0.2'
+publiccodeYmlVersion: '0'
 name: Valtimo
 applicationSuite: Valtimo Platform
 url: 'https://github.com/valtimo-platform/valtimo'
 landingURL: 'https://www.valtimo.nl/'
-softwareVersion: 'latest'
 releaseDate: '2026-01-14'
 platforms:
   - web
@@ -17,11 +16,10 @@ categories:
   - business-process-management
   - task-management
 developmentStatus: stable
-softwareType: standalone
+softwareType: standalone/web
 description:
   en:
     localisedName: Valtimo
-    genericName: Case Management Platform
     shortDescription: >-
       Open source case management platform, including GZAC-edition for Dutch Common Ground government organizations,
       licensed under EUPL 1.2.
@@ -48,10 +46,8 @@ description:
       - https://www.valtimo.nl/wp-content/uploads/PE-plugins.png
       - https://www.valtimo.nl/wp-content/uploads/Form-editor-uitgelicht-1.png
       - https://www.valtimo.nl/wp-content/uploads/process-progress-uitgelicht.png
-      
   nl:
     localisedName: Valtimo (GZAC)
-    genericName: Zaakgericht werken platform
     shortDescription: >-
       Open source zaakgericht werken platform voor Nederlandse overheden,
       gelicenseerd onder EUPL 1.2.
@@ -60,16 +56,26 @@ description:
 
       In de Nederlandse overheid staat het systeem ook bekend als GZAC (Gemeentelijk Zaaksysteem Aanbesteding Coalitie).
     documentation: 'https://gzac.gitbook.io/product-docs'
+    features:
+      - Zaakbeheer
+      - Documentbeheer
+      - Workflowautomatisering
+      - Procesorchestratie
+      - Integratieframework
+      - Publieke sector compliance
 legal:
   license: EUPL-1.2
   mainCopyrightOwner: Ritense BV
-  repoOwner: Ritense BV
+organisation:
+  name: Ritense BV
+  uri: 'https://www.ritense.com/'
 maintenance:
   type: contract
   contractors:
     - name: Ritense BV
       email: support@ritense.com
       website: 'https://www.ritense.com/'
+      until: '2099-12-31' # TODO: set actual contract end date
   contacts:
     - name: Rutger Haagsma
       email: rutger.haagsma@ritense.com
@@ -93,10 +99,9 @@ intendedAudience:
     - education
     - local-authorities
   countries:
-    - nl
-    - be
-    - de
-  unsupportedCountries: []
+    - NL
+    - BE
+    - DE
 usedBy:
   - Gemeente Amsterdam
   - Gemeente Den Haag
@@ -104,4 +109,3 @@ usedBy:
   - Gemeente Utrecht
   - Technische Universiteit Delft
 roadmap: 'https://ritense.atlassian.net/jira/discovery/share/views/6a25d852-900a-46de-8e45-a4a7fa554de6'
-
