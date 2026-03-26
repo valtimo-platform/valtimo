@@ -1,0 +1,12 @@
+{
+    "$id": "iko-search-demo.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IKO zoek demo",
+    "type": "object",
+    "properties": {
+        "ikoSearchResult": {
+            "type": "string",
+            "description": "IKO zoekresultaat"
+        }
+    }
+}

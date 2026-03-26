@@ -1,0 +1,49 @@
+[
+    {
+        "key": "summary",
+        "widgets": [
+            {
+                "type": "fields",
+                "key": "aanvrager",
+                "title": "Aanvrager",
+                "width": 1,
+                "highContrast": true,
+                "isCompact": null,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "naam",
+                                "title": "Naam",
+                                "value": "iko:/basisgegevens/naam?adp=demo&id=doc:ikoSearchResult",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            },
+                            {
+                                "key": "geboortedatum",
+                                "title": "Geboortedatum",
+                                "value": "iko:/basisgegevens/geboortedatum?adp=demo&id=doc:ikoSearchResult",
+                                "displayProperties": {
+                                    "type": "date",
+                                    "format": "DD-MM-YYYY",
+                                    "hideWhenEmpty": true
+                                }
+                            },
+                            {
+                                "key": "burgerservicenummer",
+                                "title": "Burgerservicenummer",
+                                "value": "iko:/basisgegevens/bsn?adp=demo&id=doc:ikoSearchResult",
+                                "displayProperties": {
+                                    "type": "text",
+                                    "hideWhenEmpty": true
+                                }
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]
