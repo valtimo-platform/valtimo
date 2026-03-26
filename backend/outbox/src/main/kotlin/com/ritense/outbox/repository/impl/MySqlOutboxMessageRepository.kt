@@ -25,6 +25,9 @@ import org.springframework.data.repository.query.Param
 @NoRepositoryBean
 interface MySqlOutboxMessageRepository : OutboxMessageRepository {
 
+    // ORDER BY created_on ASC guarantees FIFO ordering but causes MySQL gap-locks: InnoDB locks
+    // gaps between index entries during the ordered scan, which can cause parallel pollers to skip
+    // older messages. If you need correct ordering, use a single polling publisher per outbox table.
     @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
     override fun findOutboxMessage(): OutboxMessage?
 
