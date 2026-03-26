@@ -40,7 +40,7 @@ class RabbitMessagePublisher(
         rabbitTemplate.exchange ?: ""
     }
     private val routingKey: String = routingKey ?: run {
-        logger.debug { "Using Rabbit template default routingKey: ${rabbitTemplate.exchange}" }
+        logger.debug { "Using Rabbit template default routingKey: ${rabbitTemplate.routingKey}" }
         rabbitTemplate.routingKey ?: ""
     }
 
@@ -58,14 +58,15 @@ class RabbitMessagePublisher(
 
         try {
             val result = correlationData.future[deliveryTimeout.toMillis(), TimeUnit.MILLISECONDS]
-            if (!result!!.isAck) {
-                throw MessagePublishingFailed("Outbox message was not acknowledged: reason=${result.reason}, routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}\"")
-            } else if (correlationData.returned != null) {
-                val returned = correlationData.returned!!
-                throw MessagePublishingFailed("Could not deliver outbox message: routingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}\"")
+                ?: throw MessagePublishingFailed("Outbox message confirmation result was null: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+            if (!result.isAck) {
+                throw MessagePublishingFailed("Outbox message was not acknowledged: reason=${result.reason}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
+            }
+            correlationData.returned?.let { returned ->
+                throw MessagePublishingFailed("Could not deliver outbox message: routingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
             }
         } catch (timeoutException: TimeoutException) {
-            throw MessagePublishingFailed("Outbox message delivery was not confirmed in time: routingKey=${routingKey}, msgId=${message.id}, correlationId= ${correlationData.id}")
+            throw MessagePublishingFailed("Outbox message delivery was not confirmed in time: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
         }
     }
 
