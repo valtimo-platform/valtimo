@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {AfterViewInit, Component, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
-import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
+import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {Page, TemplatePayload} from '@valtimo/document';
 import {EnvironmentService} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
+import {CASE_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -33,7 +34,11 @@ moment.locale(localStorage.getItem('langKey') || '');
   templateUrl: './case-management-list.component.html',
   styleUrls: ['./case-management-list.component.scss'],
 })
-export class CaseManagementListComponent {
+export class CaseManagementListComponent implements AfterViewInit {
+  @ViewChild('statusColumnTemplate') statusColumnTemplate: TemplateRef<any>;
+
+  protected readonly testIds = CASE_MANAGEMENT_LIST_TEST_IDS;
+
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
@@ -48,7 +53,6 @@ export class CaseManagementListComponent {
     switchMap(([params, canUpdate]) =>
       this.caseManagementService.getCaseDefinitions({
         ...params,
-        active: true,
         final: canUpdate ? '' : true,
       })
     ),
@@ -68,11 +72,7 @@ export class CaseManagementListComponent {
     size: 10,
   };
 
-  public readonly FIELDS: ColumnConfig[] = [
-    {key: 'name', label: 'caseManagement.listColumns.name'},
-    {key: 'caseDefinitionKey', label: 'caseManagement.listColumns.key'},
-    {key: 'caseDefinitionVersionTag', label: 'caseManagement.listColumns.version'},
-  ];
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
@@ -87,6 +87,20 @@ export class CaseManagementListComponent {
     private readonly environmentService: EnvironmentService
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
+  }
+
+  public ngAfterViewInit(): void {
+    this.fields$.next([
+      {key: 'name', label: 'caseManagement.listColumns.name'},
+      {key: 'caseDefinitionKey', label: 'caseManagement.listColumns.key'},
+      {key: 'caseDefinitionVersionTag', label: 'caseManagement.listColumns.version'},
+      {
+        key: 'status',
+        label: 'caseManagement.listColumns.status',
+        viewType: ViewType.TEMPLATE,
+        template: this.statusColumnTemplate,
+      },
+    ]);
   }
 
   public onCloseUploadModal(definitionUploaded: boolean): void {

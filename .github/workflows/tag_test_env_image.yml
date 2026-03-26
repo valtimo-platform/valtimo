@@ -92,6 +92,8 @@ jobs:
           SOURCE_SHA: "${{ inputs.source_sha || needs.determine_test_env.outputs.source_sha }}"
           ENV_NAME: "${{ needs.determine_test_env.outputs.name }}"
           RUN_NUMBER: "${{ github.run_number }}"
+          REPOSITORY: "${{ github.repository }}"
+          TARGET: "${{ inputs.target }}"
         run: |
           if [ -z "${IMAGE_TO_TAG}" ]; then
             echo "image_to_tag is required but was not provided." >&2
@@ -99,7 +101,7 @@ jobs:
           fi
           SOURCE_SHA_SHORT=${SOURCE_SHA:0:10}
           CONTENTS_SHA_SHORT=${CONTENTS_SHA:0:10}
-          TEST_ENV_TAG="ghcr.io/${{ github.repository }}/${{ inputs.target }}:testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
+          TEST_ENV_TAG="ghcr.io/${REPOSITORY}/${TARGET}:testEnv.${ENV_NAME}_commit.${SOURCE_SHA_SHORT}_contents.${CONTENTS_SHA_SHORT}_build.${RUN_NUMBER}"
           docker buildx imagetools create \
             --tag "${TEST_ENV_TAG}" \
             "${IMAGE_TO_TAG}"

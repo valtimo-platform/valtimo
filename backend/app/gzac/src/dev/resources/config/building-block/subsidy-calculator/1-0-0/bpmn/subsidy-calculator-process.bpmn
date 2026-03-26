@@ -5,10 +5,18 @@
   </bpmn:collaboration>
   <bpmn:process id="subsidy-calculator-process" name="Subsidie Berekening Process" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent" name="Start Berekening">
-      <bpmn:outgoing>Flow_Start_To_Init</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Start_To_SetStatusBerekening</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:serviceTask id="SetStatusBerekeningTask" name="Status: Berekening Gestart" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'berekening-gestart')}">
+      <bpmn:incoming>Flow_Start_To_SetStatusBerekening</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetStatusBerekening_To_AddTagPriority</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="AddTagPriorityTask" name="Tag: Prioriteit Hoog" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.addCaseTag(execution, 'prioriteit-hoog')}">
+      <bpmn:incoming>Flow_SetStatusBerekening_To_AddTagPriority</bpmn:incoming>
+      <bpmn:outgoing>Flow_AddTagPriority_To_Init</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:serviceTask id="InitializeCalculationTask" name="Initialiseer Berekening" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'GESTART')}">
-      <bpmn:incoming>Flow_Start_To_Init</bpmn:incoming>
+      <bpmn:incoming>Flow_AddTagPriority_To_Init</bpmn:incoming>
       <bpmn:outgoing>Flow_Init_To_PatchZaak</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="PatchZaakCalculationStartTask" name="Update Zaak: Start Berekening" camunda:asyncAfter="true">
@@ -33,14 +41,38 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="CalculateFinalAmountTask" name="Bereken Eindtotaal" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/finalSubsidyAmount', valueResolverDelegateService.resolveValue(execution, 'doc:/baseSubsidyAmount') + 100)}">
       <bpmn:incoming>Flow_Summary_To_Calculate</bpmn:incoming>
-      <bpmn:outgoing>Flow_Calculate_To_Review</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Calculate_To_SetAssignee</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetAssigneeTask" name="Toewijzen Beoordelaar" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setAssignee(execution, 'user@example.com')}">
+      <bpmn:incoming>Flow_Calculate_To_SetAssignee</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetAssignee_To_SetStatusReview</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetStatusReviewTask" name="Status: In Beoordeling" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'in-beoordeling')}">
+      <bpmn:incoming>Flow_SetAssignee_To_SetStatusReview</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetStatusReview_To_Review</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:userTask id="ReviewCalculationTask" name="Beoordeel Berekening" camunda:candidateGroups="ROLE_USER">
-      <bpmn:incoming>Flow_Calculate_To_Review</bpmn:incoming>
-      <bpmn:outgoing>Flow_Review_To_Complete</bpmn:outgoing>
+      <bpmn:incoming>Flow_SetStatusReview_To_Review</bpmn:incoming>
+      <bpmn:outgoing>Flow_Review_To_RemoveTagVerificatie</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:serviceTask id="RemoveTagVerificatieTask" name="Verwijder Tag: Verificatie" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.removeCaseTag(execution, 'verificatie-vereist')}">
+      <bpmn:incoming>Flow_Review_To_RemoveTagVerificatie</bpmn:incoming>
+      <bpmn:outgoing>Flow_RemoveTagVerificatie_To_AddTagGoedgekeurd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="AddTagGoedgekeurdTask" name="Tag: Goedgekeurd" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.addCaseTag(execution, 'goedgekeurd')}">
+      <bpmn:incoming>Flow_RemoveTagVerificatie_To_AddTagGoedgekeurd</bpmn:incoming>
+      <bpmn:outgoing>Flow_AddTagGoedgekeurd_To_Unassign</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="UnassignTask" name="Toewijzing Opheffen" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.unassign(execution)}">
+      <bpmn:incoming>Flow_AddTagGoedgekeurd_To_Unassign</bpmn:incoming>
+      <bpmn:outgoing>Flow_Unassign_To_SetStatusAfgehandeld</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SetStatusAfgehandeldTask" name="Status: Afgehandeld" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'afgehandeld')}">
+      <bpmn:incoming>Flow_Unassign_To_SetStatusAfgehandeld</bpmn:incoming>
+      <bpmn:outgoing>Flow_SetStatusAfgehandeld_To_Complete</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:serviceTask id="MarkCalculationCompleteTask" name="Markeer Voltooid" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/calculationStatus', 'VOLTOOID')}">
-      <bpmn:incoming>Flow_Review_To_Complete</bpmn:incoming>
+      <bpmn:incoming>Flow_SetStatusAfgehandeld_To_Complete</bpmn:incoming>
       <bpmn:outgoing>Flow_Complete_To_StoreZgwSummary</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Omschrijving (BB1): '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')).concat(' | Toelichting (BB2): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting')).concat(' | Einddatum (BB3): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:einddatumGepland')))}">
@@ -48,12 +80,20 @@
       <bpmn:outgoing>Flow_StoreZgwSummary_To_End</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Summary_To_Calculate" sourceRef="GenerateSummaryTask" targetRef="CalculateFinalAmountTask" />
-    <bpmn:sequenceFlow id="Flow_Calculate_To_Review" sourceRef="CalculateFinalAmountTask" targetRef="ReviewCalculationTask" />
-    <bpmn:sequenceFlow id="Flow_Review_To_Complete" sourceRef="ReviewCalculationTask" targetRef="MarkCalculationCompleteTask" />
+    <bpmn:sequenceFlow id="Flow_Calculate_To_SetAssignee" sourceRef="CalculateFinalAmountTask" targetRef="SetAssigneeTask" />
+    <bpmn:sequenceFlow id="Flow_SetAssignee_To_SetStatusReview" sourceRef="SetAssigneeTask" targetRef="SetStatusReviewTask" />
+    <bpmn:sequenceFlow id="Flow_SetStatusReview_To_Review" sourceRef="SetStatusReviewTask" targetRef="ReviewCalculationTask" />
+    <bpmn:sequenceFlow id="Flow_Review_To_RemoveTagVerificatie" sourceRef="ReviewCalculationTask" targetRef="RemoveTagVerificatieTask" />
+    <bpmn:sequenceFlow id="Flow_RemoveTagVerificatie_To_AddTagGoedgekeurd" sourceRef="RemoveTagVerificatieTask" targetRef="AddTagGoedgekeurdTask" />
+    <bpmn:sequenceFlow id="Flow_AddTagGoedgekeurd_To_Unassign" sourceRef="AddTagGoedgekeurdTask" targetRef="UnassignTask" />
+    <bpmn:sequenceFlow id="Flow_Unassign_To_SetStatusAfgehandeld" sourceRef="UnassignTask" targetRef="SetStatusAfgehandeldTask" />
+    <bpmn:sequenceFlow id="Flow_SetStatusAfgehandeld_To_Complete" sourceRef="SetStatusAfgehandeldTask" targetRef="MarkCalculationCompleteTask" />
     <bpmn:endEvent id="EndEvent" name="Berekening Afgerond">
       <bpmn:incoming>Flow_StoreZgwSummary_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_Start_To_Init" sourceRef="StartEvent" targetRef="InitializeCalculationTask" />
+    <bpmn:sequenceFlow id="Flow_Start_To_SetStatusBerekening" sourceRef="StartEvent" targetRef="SetStatusBerekeningTask" />
+    <bpmn:sequenceFlow id="Flow_SetStatusBerekening_To_AddTagPriority" sourceRef="SetStatusBerekeningTask" targetRef="AddTagPriorityTask" />
+    <bpmn:sequenceFlow id="Flow_AddTagPriority_To_Init" sourceRef="AddTagPriorityTask" targetRef="InitializeCalculationTask" />
     <bpmn:sequenceFlow id="Flow_Init_To_PatchZaak" sourceRef="InitializeCalculationTask" targetRef="PatchZaakCalculationStartTask" />
     <bpmn:sequenceFlow id="Flow_PatchZaak_To_ReadToelichting" sourceRef="PatchZaakCalculationStartTask" targetRef="ReadZaakToelichtingTask" />
     <bpmn:sequenceFlow id="Flow_ReadToelichting_To_CallHousehold" sourceRef="ReadZaakToelichtingTask" targetRef="CallHouseholdVerificationActivity" />
@@ -64,7 +104,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubsidyCalculator">
       <bpmndi:BPMNShape id="Participant_SubsidyCalculator_di" bpmnElement="SubsidyCalculatorParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="1680" height="250" />
+        <dc:Bounds x="160" y="60" width="2830" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -73,87 +113,151 @@
           <dc:Bounds x="196" y="202" width="88" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="InitializeCalculationTask_di" bpmnElement="InitializeCalculationTask">
+      <bpmndi:BPMNShape id="SetStatusBerekeningTask_di" bpmnElement="SetStatusBerekeningTask">
         <dc:Bounds x="290" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="PatchZaakCalculationStartTask_di" bpmnElement="PatchZaakCalculationStartTask">
+      <bpmndi:BPMNShape id="AddTagPriorityTask_di" bpmnElement="AddTagPriorityTask">
         <dc:Bounds x="420" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ReadZaakToelichtingTask_di" bpmnElement="ReadZaakToelichtingTask">
+      <bpmndi:BPMNShape id="InitializeCalculationTask_di" bpmnElement="InitializeCalculationTask">
         <dc:Bounds x="550" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="CallHouseholdVerificationActivity_di" bpmnElement="CallHouseholdVerificationActivity">
+      <bpmndi:BPMNShape id="PatchZaakCalculationStartTask_di" bpmnElement="PatchZaakCalculationStartTask">
         <dc:Bounds x="680" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="GenerateSummaryTask_di" bpmnElement="GenerateSummaryTask">
+      <bpmndi:BPMNShape id="ReadZaakToelichtingTask_di" bpmnElement="ReadZaakToelichtingTask">
         <dc:Bounds x="810" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="CalculateFinalAmountTask_di" bpmnElement="CalculateFinalAmountTask">
+      <bpmndi:BPMNShape id="CallHouseholdVerificationActivity_di" bpmnElement="CallHouseholdVerificationActivity">
         <dc:Bounds x="940" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ReviewCalculationTask_di" bpmnElement="ReviewCalculationTask">
+      <bpmndi:BPMNShape id="GenerateSummaryTask_di" bpmnElement="GenerateSummaryTask">
         <dc:Bounds x="1070" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="MarkCalculationCompleteTask_di" bpmnElement="MarkCalculationCompleteTask">
+      <bpmndi:BPMNShape id="CalculateFinalAmountTask_di" bpmnElement="CalculateFinalAmountTask">
         <dc:Bounds x="1200" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+      <bpmndi:BPMNShape id="SetAssigneeTask_di" bpmnElement="SetAssigneeTask">
         <dc:Bounds x="1330" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SetStatusReviewTask_di" bpmnElement="SetStatusReviewTask">
+        <dc:Bounds x="1460" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReviewCalculationTask_di" bpmnElement="ReviewCalculationTask">
+        <dc:Bounds x="1590" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RemoveTagVerificatieTask_di" bpmnElement="RemoveTagVerificatieTask">
+        <dc:Bounds x="1720" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AddTagGoedgekeurdTask_di" bpmnElement="AddTagGoedgekeurdTask">
+        <dc:Bounds x="1850" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UnassignTask_di" bpmnElement="UnassignTask">
+        <dc:Bounds x="1980" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SetStatusAfgehandeldTask_di" bpmnElement="SetStatusAfgehandeldTask">
+        <dc:Bounds x="2110" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MarkCalculationCompleteTask_di" bpmnElement="MarkCalculationCompleteTask">
+        <dc:Bounds x="2240" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StoreZgwActionSummaryTask_di" bpmnElement="StoreZgwActionSummaryTask">
+        <dc:Bounds x="2500" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="1492" y="159" width="36" height="36" />
+        <dc:Bounds x="2662" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1472" y="202" width="77" height="27" />
+          <dc:Bounds x="2642" y="202" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_Start_To_Init_di" bpmnElement="Flow_Start_To_Init">
+      <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusBerekening_di" bpmnElement="Flow_Start_To_SetStatusBerekening">
         <di:waypoint x="258" y="177" />
         <di:waypoint x="290" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Init_To_PatchZaak_di" bpmnElement="Flow_Init_To_PatchZaak">
+      <bpmndi:BPMNEdge id="Flow_SetStatusBerekening_To_AddTagPriority_di" bpmnElement="Flow_SetStatusBerekening_To_AddTagPriority">
         <di:waypoint x="390" y="177" />
         <di:waypoint x="420" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadToelichting_di" bpmnElement="Flow_PatchZaak_To_ReadToelichting">
+      <bpmndi:BPMNEdge id="Flow_AddTagPriority_To_Init_di" bpmnElement="Flow_AddTagPriority_To_Init">
         <di:waypoint x="520" y="177" />
         <di:waypoint x="550" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ReadToelichting_To_CallHousehold_di" bpmnElement="Flow_ReadToelichting_To_CallHousehold">
+      <bpmndi:BPMNEdge id="Flow_Init_To_PatchZaak_di" bpmnElement="Flow_Init_To_PatchZaak">
         <di:waypoint x="650" y="177" />
         <di:waypoint x="680" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_CallHousehold_To_Summary_di" bpmnElement="Flow_CallHousehold_To_Summary">
+      <bpmndi:BPMNEdge id="Flow_PatchZaak_To_ReadToelichting_di" bpmnElement="Flow_PatchZaak_To_ReadToelichting">
         <di:waypoint x="780" y="177" />
         <di:waypoint x="810" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Summary_To_Calculate_di" bpmnElement="Flow_Summary_To_Calculate">
+      <bpmndi:BPMNEdge id="Flow_ReadToelichting_To_CallHousehold_di" bpmnElement="Flow_ReadToelichting_To_CallHousehold">
         <di:waypoint x="910" y="177" />
         <di:waypoint x="940" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Calculate_To_Review_di" bpmnElement="Flow_Calculate_To_Review">
+      <bpmndi:BPMNEdge id="Flow_CallHousehold_To_Summary_di" bpmnElement="Flow_CallHousehold_To_Summary">
         <di:waypoint x="1040" y="177" />
         <di:waypoint x="1070" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Review_To_Complete_di" bpmnElement="Flow_Review_To_Complete">
+      <bpmndi:BPMNEdge id="Flow_Summary_To_Calculate_di" bpmnElement="Flow_Summary_To_Calculate">
         <di:waypoint x="1170" y="177" />
         <di:waypoint x="1200" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Complete_To_StoreZgwSummary_di" bpmnElement="Flow_Complete_To_StoreZgwSummary">
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_SetAssignee_di" bpmnElement="Flow_Calculate_To_SetAssignee">
         <di:waypoint x="1300" y="177" />
         <di:waypoint x="1330" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+      <bpmndi:BPMNEdge id="Flow_SetAssignee_To_SetStatusReview_di" bpmnElement="Flow_SetAssignee_To_SetStatusReview">
         <di:waypoint x="1430" y="177" />
-        <di:waypoint x="1492" y="177" />
+        <di:waypoint x="1460" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SetStatusReview_To_Review_di" bpmnElement="Flow_SetStatusReview_To_Review">
+        <di:waypoint x="1560" y="177" />
+        <di:waypoint x="1590" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Review_To_RemoveTagVerificatie_di" bpmnElement="Flow_Review_To_RemoveTagVerificatie">
+        <di:waypoint x="1690" y="177" />
+        <di:waypoint x="1720" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RemoveTagVerificatie_To_AddTagGoedgekeurd_di" bpmnElement="Flow_RemoveTagVerificatie_To_AddTagGoedgekeurd">
+        <di:waypoint x="1820" y="177" />
+        <di:waypoint x="1850" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AddTagGoedgekeurd_To_Unassign_di" bpmnElement="Flow_AddTagGoedgekeurd_To_Unassign">
+        <di:waypoint x="1950" y="177" />
+        <di:waypoint x="1980" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Unassign_To_SetStatusAfgehandeld_di" bpmnElement="Flow_Unassign_To_SetStatusAfgehandeld">
+        <di:waypoint x="2080" y="177" />
+        <di:waypoint x="2110" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SetStatusAfgehandeld_To_Complete_di" bpmnElement="Flow_SetStatusAfgehandeld_To_Complete">
+        <di:waypoint x="2210" y="177" />
+        <di:waypoint x="2240" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Complete_To_StoreZgwSummary_di" bpmnElement="Flow_Complete_To_StoreZgwSummary">
+        <di:waypoint x="2340" y="177" />
+        <di:waypoint x="2500" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+        <di:waypoint x="2600" y="177" />
+        <di:waypoint x="2662" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

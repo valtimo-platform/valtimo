@@ -20,6 +20,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  TemplateRef,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -54,6 +55,7 @@ import {
   SortState,
   TaskListTab,
 } from '@valtimo/shared';
+import {ColumnConfig, ViewType} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
@@ -97,6 +99,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class TaskListComponent implements OnInit, OnDestroy {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
+  @ViewChild('unreadIndicator', {static: true}) private readonly _unreadIndicator: TemplateRef<any>;
 
   @HostListener('window:popstate', ['$event'])
   private onPopState() {
@@ -126,7 +129,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
     )
   );
 
-  public readonly fields$ = this.taskListColumnService.fields$;
+  public readonly fields$ = this.taskListColumnService.fields$.pipe(
+    map((fields: ColumnConfig[]) => [
+      {
+        key: 'isOpened',
+        label: '',
+        viewType: ViewType.TEMPLATE,
+        template: this._unreadIndicator,
+        className: 'valtimo-task-list__unread-column',
+      } as ColumnConfig,
+      ...fields,
+    ])
+  );
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
   public readonly visibleTabs$ = new BehaviorSubject<Array<TaskListTab> | null>(null);
 
@@ -367,7 +381,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public setCaseDefinition(definition: {item: {id: string}}): void {
-    if (definition.item.id) {
+    if (definition.item.id && definition.item.id !== this.taskListService.caseDefinitionKey) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
       this.taskListService.setCaseDefinitionKey(definition.item.id);
@@ -500,6 +514,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
               caseDocumentId: specifiedTask.caseDocumentId,
               processInstanceId: specifiedTask.processInstanceId,
               name: specifiedTask.name,
+              isOpened: specifiedTask.isOpened,
               ...(moment(specifiedTask.created).isValid() && {
                 created: moment(specifiedTask.created).format(MOMENT_FORMAT),
               }),

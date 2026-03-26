@@ -20,4 +20,9 @@ interface CandidateUser {
   lastName: string;
 }
 
-export {CandidateUser};
+interface BulkAssign {
+  ids: string[];
+  assigneeId: string;
+}
+
+export {CandidateUser, BulkAssign};

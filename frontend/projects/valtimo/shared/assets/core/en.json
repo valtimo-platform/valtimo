@@ -26,7 +26,10 @@
         "confirm": "Assign",
         "selectLabel": "Assign to user",
         "selectPlaceholder": "Choose an option",
-        "title": "Assign selected cases to"
+        "title": "Assign selected cases to",
+        "warningTitle": "Warning",
+        "cannotAssignAnyWarning": "You do not have permission to assign any of the selected cases.",
+        "cannotAssignSomeWarning": "You do not have permission to assign some of the selected cases. These will be skipped."
       }
     },
     "changePageModal": {
@@ -484,9 +487,12 @@
     "setGlobalActiveVersionErrorTitle": "Error",
     "setGlobalActiveVersionErrorMessage": "Something went wrong",
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
+    "setGlobalActiveVersionConfigurationIssuesWarning": "This version has unresolved configuration issues. Resolve them before setting it as the active version.",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft"},
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version", "draft": "Draft", "status": "Status"},
+    "needsConfiguration": "Needs configuration",
+    "inactive": "Inactive",
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
@@ -565,8 +571,13 @@
       },
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
-        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final."
+        "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
       }
+    },
+    "environmentConfig": {
+      "bannerTitle": "Configuration required",
+      "bannerMessage": "This case definition contains references to configurations that do not exist in this environment. Please review and update the relevant settings."
     },
     "processLinkNotification": {
       "linkSuccess": "Successfully linked process",
@@ -1358,7 +1369,8 @@
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN used when creating the Zaak in the Zaken Api",
-    "selectInfoObjectType": "Select information object type"
+    "selectInfoObjectType": "Select information object type",
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },
   "zaakdetails": {
     "title": "Zaak detail synchronisation",
@@ -1372,7 +1384,8 @@
       "objectManagementConfiguration": "Object management configuration",
       "objectManagementConfigurationPlaceholder": "Select an object management configuration",
       "enabled": "Enabled"
-    }
+    },
+    "configurationIssue": "This configuration is incomplete. Please review and update the settings to match this environment."
   },
   "interface": {
     "icon": "Icon",
@@ -1502,10 +1515,11 @@
     "taskCreated": "Created",
     "taskCompleted": "has successfully been completed",
     "assignedNotificationTitle": "Task assigned",
-    "assignedNotificationContent": "The task has been assigned to",
     "unassignedNotificationTitle": "Task unassigned",
-    "unassignedNotificationContent": "The task has been unassigned",
-    "unknownAssignee": "unknown"
+    "dueDateSetNotificationTitle": "Due date set",
+    "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
+    "dueDateRemovedNotificationTitle": "Due date removed",
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -1514,15 +1528,20 @@
     "remove": "Unassign",
     "save": "Save",
     "fetchingUsers": "Fetching users...",
-    "buttonText": "Assign user",
+    "buttonText": "Assign",
+    "assignToMe": "Assign to me",
+    "assignToOtherUser": "Assign to other user",
     "submitButtonText": "Assign user to task",
-    "comboboxLabel": "Select user to assign"
+    "comboboxLabel": "Select user to assign",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
-    "header": "Assign a user to this case",
+    "header": "Assign user",
     "remove": "Unassign",
-    "fetchingUsers": "Fetching users..."
+    "fetchingUsers": "Fetching users...",
+    "submitButtonText": "Assign user to case"
   },
   "dropzone": {
     "drop": "Choose a file or drag it here",
@@ -2069,7 +2088,9 @@
     "buttonText": "Set due date",
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",
-    "removeButtonText": "Remove due date"
+    "removeButtonText": "Remove due date",
+    "edit": "Edit",
+    "clickToEdit": "Click to edit"
   },
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {

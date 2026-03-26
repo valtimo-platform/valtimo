@@ -33,6 +33,10 @@ export class TaskListService {
     return this._selectedTaskType$.asObservable();
   }
 
+  public get caseDefinitionKey(): string | null {
+    return this._caseDefinitionKey$.getValue();
+  }
+
   public get selectedTaskType(): TaskListTab {
     return this._selectedTaskType$.getValue();
   }

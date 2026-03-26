@@ -60,6 +60,7 @@
     [modalSize]="formSize$ | async"
     (formSubmit)="onFormSubmit()"
     (assignmentOfTaskChanged)="refresh()"
+    (dueDateChanged)="refresh()"
   ></valtimo-task-detail-modal>
 </div>
 

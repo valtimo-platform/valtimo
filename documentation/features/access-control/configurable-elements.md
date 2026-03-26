@@ -15,7 +15,180 @@ Below the full list of elements within Valtimo that can and need to be configure
 of configurable actions is documented and an example of the configuration is added. The available actions per element
 define what can be configured for that element.
 
-<table><thead><tr><th width="143.14453125" valign="top">Feature</th><th width="168.671875" valign="top">Resource name</th><th width="306.703125" valign="top">Resource type</th><th valign="top">Module</th></tr></thead><tbody><tr><td valign="top"><a href="../case/#access-control"><strong>Cases</strong></a></td><td valign="top"></td><td valign="top"><code>com.ritense.case_.domain.definition.CaseDefinition</code></td><td valign="top"></td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/document-definition.md#access-control">Document</a></td><td valign="top"><code>com.ritense.document.domain.impl.JsonSchemaDocument</code></td><td valign="top">Document</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/document-definition.md#access-control">Document definition</a></td><td valign="top"><code>com.ritense.document.domain.impl.JsonSchemaDocumentDefinition</code></td><td valign="top">Document</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/document-definition.md#access-control">Document snapshot</a></td><td valign="top"><code>com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot</code></td><td valign="top">Document</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/case-detail/tabs/#access-control">Notes</a></td><td valign="top"><code>com.ritense.note.domain.Note</code></td><td valign="top">Notes</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/case-list/search-fields.md#access-control">Search fields</a></td><td valign="top"><code>com.ritense.document.domain.impl.searchfield.SearchField</code></td><td valign="top">Document</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/case-detail/tabs/#access-control">Tabs</a></td><td valign="top"><code>com.ritense.case.domain.CaseTab</code></td><td valign="top">CaseTab</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/case-detail/tabs/widgets.md#access-control">Widgets</a></td><td valign="top"><code>com.ritense.case_.domain.tab.CaseWidget</code></td><td valign="top"></td></tr><tr><td valign="top"><a href="../dashboard/#access-control"><strong>Dashboard</strong></a></td><td valign="top"></td><td valign="top"><code>com.ritense.dashboard.domain.Dashboard</code></td><td valign="top"></td></tr><tr><td valign="top"><strong>Process</strong></td><td valign="top"><a href="../process/#access-control">Execution</a></td><td valign="top"><code>com.ritense.valtimo.operaton.domain.OperatonExecution</code></td><td valign="top">Core</td></tr><tr><td valign="top"></td><td valign="top"><a href="../process/#access-control">Definition</a></td><td valign="top"><code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code></td><td valign="top">Core</td></tr><tr><td valign="top"><strong>Tasks</strong></td><td valign="top"><a href="../case/tasks/#access-control">Tasks</a></td><td valign="top"><code>com.ritense.valtimo.operaton.domain.OperatonTask</code></td><td valign="top">Core</td></tr><tr><td valign="top"></td><td valign="top"><a href="../case/tasks/#access-control">Identity links</a></td><td valign="top"><code>com.ritense.valtimo.operaton.domain.OperatonIdentityLink</code></td><td valign="top">Core</td></tr><tr><td valign="top"><strong>ZGW</strong></td><td valign="top"><a href="../case/zgw/zgw-documents/access-control.md">Documents</a></td><td valign="top"><code>com.ritense.resource.authorization.ResourcePermission</code></td><td valign="top">Resource</td></tr></tbody></table>
+<table>
+	<thead>
+		<tr>
+			<th width="143.14453125" valign="top">Feature</th>
+			<th width="168.671875" valign="top">Resource name</th>
+			<th width="306.703125" valign="top">Resource type</th>
+			<th valign="top">Module</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td valign="top">
+				<a href="../case/#access-control">
+					<strong>Cases</strong>
+				</a>
+			</td>
+			<td valign="top"></td>
+			<td valign="top">
+				<code>com.ritense.case_.domain.definition.CaseDefinition</code>
+			</td>
+			<td valign="top"></td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/document-definition.md#access-control">Document</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.document.domain.impl.JsonSchemaDocument</code>
+			</td>
+			<td valign="top">Document</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/document-definition.md#access-control">Document definition</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.document.domain.impl.JsonSchemaDocumentDefinition</code>
+			</td>
+			<td valign="top">Document</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/document-definition.md#access-control">Document snapshot</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot</code>
+			</td>
+			<td valign="top">Document</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/case-detail/tabs/#access-control">Notes</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.note.domain.Note</code>
+			</td>
+			<td valign="top">Notes</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/case-list/search-fields.md#access-control">Search fields</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.document.domain.impl.searchfield.SearchField</code>
+			</td>
+			<td valign="top">Document</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/case-detail/tabs/#access-control">Tabs</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.case.domain.CaseTab</code>
+			</td>
+			<td valign="top">CaseTab</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/case-detail/tabs/widgets.md#access-control">Widgets</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.case_.domain.tab.CaseWidget</code>
+			</td>
+			<td valign="top"></td>
+		</tr>
+		<tr>
+			<td valign="top">
+				<a href="../dashboard/#access-control">
+					<strong>Dashboard</strong>
+				</a>
+			</td>
+			<td valign="top"></td>
+			<td valign="top">
+				<code>com.ritense.dashboard.domain.Dashboard</code>
+			</td>
+			<td valign="top"></td>
+		</tr>
+		<tr>
+			<td valign="top">
+				<strong>Process</strong>
+			</td>
+			<td valign="top">
+				<a href="../process/#access-control">Execution</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonExecution</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../process/#access-control">Definition</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top">
+				<strong>Tasks</strong>
+			</td>
+			<td valign="top">
+				<a href="../case/tasks/#access-control">Tasks</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonTask</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../case/tasks/#access-control">Identity links</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonIdentityLink</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top">
+				<strong>Users</strong>
+			</td>
+			<td valign="top">
+				<a href="../keycloak/access-control.md">User</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.contract.authentication.User</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top">
+				<strong>ZGW</strong>
+			</td>
+			<td valign="top">
+				<a href="../case/zgw/zgw-documents/access-control.md">Documents</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.resource.authorization.ResourcePermission</code>
+			</td>
+			<td valign="top">Resource</td>
+		</tr>
+	</tbody>
+</table>
 
 ## Actions configurable with Access control
 
@@ -42,7 +215,7 @@ _**Before Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -55,7 +228,7 @@ _**Before Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },
@@ -76,7 +249,7 @@ _**Since Valtimo `12.17.0`**_:
                     "type": "field",
                     "field": "assigneeId",
                     "operator": "==",
-                    "value": "${currentUserId}"
+                    "value": "${currentUsername}"
                 }
             ]
         },

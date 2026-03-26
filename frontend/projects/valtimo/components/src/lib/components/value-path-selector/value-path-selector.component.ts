@@ -69,6 +69,7 @@ import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
+import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -237,6 +238,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
+  protected readonly testIds = VALUE_PATH_SELECTOR_TEST_IDS;
+
   private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string | null>(null);
   private get _caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
@@ -377,6 +380,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   public writeValue(value: string) {
     this.selectedPath.setValue(value);
+
+    if (!value) {
+      this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+    }
   }
 
   public registerOnChange(fn: (value: string) => void): void {

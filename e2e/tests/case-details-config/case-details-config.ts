@@ -16,11 +16,22 @@
 
 export const CASE_IDENTIFIER = 'bezwaar';
 
-export const CASE_VERSION = '1.0.1';
-
 export const statusTestData = {
   title: 'E2e Test Status',
   updatedTitle: 'E2e Updated Status',
+};
+
+export const statusColorTestData = {
+  title: 'E2e Color Status',
+};
+
+export const statusVisibilityTestData = {
+  title: 'E2e Visibility Status',
+};
+
+export const statusReorderTestData = {
+  titleA: 'E2e Reorder A',
+  titleB: 'E2e Reorder B',
 };
 
 export const tagTestData = {

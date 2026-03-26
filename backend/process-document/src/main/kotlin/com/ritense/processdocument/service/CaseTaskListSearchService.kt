@@ -45,6 +45,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.utils.RequestHelper
+import com.ritense.valtimo.contract.utils.SecurityUtils
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
@@ -97,6 +99,7 @@ class CaseTaskListSearchService(
     private val authorizationService: AuthorizationService,
     private val searchFieldV2Service: SearchFieldV2Service,
     private val queryDialectHelper: QueryDialectHelper,
+    private val userTaskOpenedStatusService: UserTaskOpenedStatusService,
     private val caseTaskContributors: List<CaseTaskContributor> = emptyList()
 ) {
     private val CONTENT = "content"
@@ -117,8 +120,14 @@ class CaseTaskListSearchService(
         ).ifEmpty { defaultColumns }
         val newPageable = mutatePageable(taskListColumns, pageable)
 
-        return search(caseDefinitionName, AdvancedSearchRequest().assigneeFilter(assignmentFilter), newPageable)
-            .map { task -> toCaseListRowDto(task, taskListColumns) }
+        val taskPage = search(caseDefinitionName, AdvancedSearchRequest().assigneeFilter(assignmentFilter), newPageable)
+        val currentUserId = SecurityUtils.getCurrentUserLogin()
+        val openedTaskIds = if (currentUserId != null) {
+            userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskPage.content.map { it.taskId }.toSet(), currentUserId)
+        } else {
+            emptySet()
+        }
+        return taskPage.map { task -> toCaseListRowDto(task, taskListColumns, openedTaskIds.contains(task.taskId)) }
     }
 
     fun searchTaskListRows(
@@ -131,8 +140,14 @@ class CaseTaskListSearchService(
         ).ifEmpty { defaultColumns }
         val newPageable = mutatePageable(taskListColumns, pageable)
 
-        return search(caseDefinitionName, searchWithConfigRequest, newPageable)
-            .map { task -> toCaseListRowDto(task, taskListColumns) }
+        val taskPage = search(caseDefinitionName, searchWithConfigRequest, newPageable)
+        val currentUserId = SecurityUtils.getCurrentUserLogin()
+        val openedTaskIds = if (currentUserId != null) {
+            userTaskOpenedStatusService.getOpenedTaskIdsForUser(taskPage.content.map { it.taskId }.toSet(), currentUserId)
+        } else {
+            emptySet()
+        }
+        return taskPage.map { task -> toCaseListRowDto(task, taskListColumns, openedTaskIds.contains(task.taskId)) }
     }
 
     fun search(
@@ -664,7 +679,7 @@ class CaseTaskListSearchService(
         return PageRequest.of(pageable.pageNumber, pageable.pageSize, newSort)
     }
 
-    private fun toCaseListRowDto(caseTask: CaseTask, taskListColumns: List<TaskListColumn>): TaskListRowDto {
+    private fun toCaseListRowDto(caseTask: CaseTask, taskListColumns: List<TaskListColumn>, isOpened: Boolean): TaskListRowDto {
         val paths = taskListColumns.map { it.path }
 
         val (taskPaths, otherPaths) = paths.partition { it.startsWith(TASK_PREFIX) }
@@ -676,7 +691,7 @@ class CaseTaskListSearchService(
             TaskListRowDto.TaskListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
         }.toList()
 
-        return TaskListRowDto(caseTask.taskId, caseTask.documentInstanceId.toString(), caseTask.processInstanceId, caseTask.name, caseTask.createTime, items)
+        return TaskListRowDto(caseTask.taskId, caseTask.documentInstanceId.toString(), caseTask.processInstanceId, caseTask.name, caseTask.createTime, items, isOpened)
     }
 
     private fun resolveTaskValue(caseTask: CaseTask, taskPath: String): Pair<String, Any?> {
@@ -685,7 +700,7 @@ class CaseTaskListSearchService(
                 "assignee" -> {
                     CaseTaskProperties.getByPropertyName("assignee")
                         ?.getValueFromObject(caseTask)
-                        ?.let { assigneeUsername -> userManagementService.findByUsername(assigneeUsername as String)?.fullName }
+                        ?.let { assigneeUsername -> runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername as String)?.fullName } }
                 }
 
                 else -> CaseTaskProperties.getByPropertyName(path)?.getValueFromObject(caseTask)

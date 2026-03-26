@@ -21,6 +21,7 @@ import com.ritense.objectmanagement.autodeployment.ObjectManagementDefinitionDep
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objectmanagement.security.config.ObjectManagementHttpSecurityConfigurer
 import com.ritense.objectmanagement.service.ObjectManagementFacade
+import com.ritense.objectmanagement.service.ObjectManagementImporter
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objectmanagement.web.rest.ObjectManagementManagementResource
 import com.ritense.objectmanagement.web.rest.ObjectManagementResource
@@ -107,6 +108,20 @@ class ObjectManagementAutoConfiguration {
             applicationEventPublisher,
             objectMapper,
             environment
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectManagementImporter::class)
+    fun objectManagementImporter(
+        objectManagementService: ObjectManagementService,
+        objectManagementRepository: ObjectManagementRepository,
+        objectMapper: ObjectMapper
+    ): ObjectManagementImporter {
+        return ObjectManagementImporter(
+            objectManagementService,
+            objectManagementRepository,
+            objectMapper
         )
     }
 

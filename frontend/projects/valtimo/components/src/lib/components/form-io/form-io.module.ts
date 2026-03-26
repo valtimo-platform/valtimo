@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,10 @@ import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import bootstrap4 from '@formio/bootstrap/bootstrap4';
+import {applyDataGridPatch} from './patches/patched-datagrid';
+
+// Apply FormIO patches before any form renders
+applyDataGridPatch();
 
 @NgModule({
   imports: [

@@ -22,6 +22,7 @@ import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.search.deployment.ReadFileSearchFieldDto
 import com.ritense.search.service.SearchFieldV2Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -42,18 +43,10 @@ abstract class SearchFieldExporter(
             return ExportResult()
         }
 
-        val caseTaskListChangeset = SearchFieldExportChangeset(
-            "$documentDefinitionName.${ownerTypeKey()}.${Instant.now().toEpochMilli()}",
-            listOf(
-                SearchFieldExportCollection(
-                    documentDefinitionName,
-                    searchFields.map { ExportFileSearchFieldDto.from(it) }
-                )
-            )
-        )
         val caseTaskListExport = ExportFile(
             getPath(request),
-            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(caseTaskListChangeset)
+            objectMapper.writer(ExportPrettyPrinter())
+                .writeValueAsBytes(searchFields.map { ReadFileSearchFieldDto.from(it) })
         )
 
         return ExportResult(
