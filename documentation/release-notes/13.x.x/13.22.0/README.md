@@ -6,9 +6,11 @@
 
 ## New Features
 
-* **New feature title**
+* **Configure case definition name and key during import**
 
-  New feature explanation.
+  The case definition import wizard now includes a configure step where you can change the name and key before
+  importing. This allows importing the same ZIP multiple times under different names. The step also shows warnings
+  when a matching key or version already exists.
 
 ## Enhancements
 

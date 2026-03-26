@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
@@ -22,13 +22,14 @@ import {
   InterceptorSkipHeader,
 } from '@valtimo/shared';
 import {Page} from '@valtimo/document';
-import {map, Observable, tap} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {
   CaseDefinition,
   CaseDefinitionConfigurationIssue,
   CaseDefinitionFinalizationCheckResult,
+  CaseDefinitionImportPreview,
   DraftVersion,
 } from '../models/case-deployment.model';
 
@@ -145,10 +146,26 @@ export class CaseManagementService extends BaseApiService {
     );
   }
 
-  public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {
-    return this.httpClient
-      .post<HttpResponse<Blob>>(this.getApiUrl(`management/v1/case/import`), file)
-      .pipe(tap(res => console.log({res})));
+  public previewImport(file: FormData): Observable<CaseDefinitionImportPreview> {
+    return this.httpClient.post<CaseDefinitionImportPreview>(
+      this.getApiUrl('management/v1/case/import/preview'),
+      file
+    );
+  }
+
+  public importDocumentDefinitionZip(
+    file: FormData,
+    key?: string,
+    name?: string
+  ): Observable<HttpResponse<Blob>> {
+    let params = new HttpParams();
+    if (key) params = params.set('key', key);
+    if (name) params = params.set('name', name);
+    return this.httpClient.post<HttpResponse<Blob>>(
+      this.getApiUrl('management/v1/case/import'),
+      file,
+      {params}
+    );
   }
 
   public exportDocumentDefinition(

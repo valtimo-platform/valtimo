@@ -61,6 +61,13 @@ export interface CaseDefinitionConfigurationIssue {
   resolvedAt: string | null;
 }
 
+export interface CaseDefinitionImportPreview {
+  key: string;
+  name: string;
+  versionTag: string;
+  isFinal: boolean;
+}
+
 export interface ConfigurationIssueUpdatedSseEvent {
   eventType?: string;
   caseDefinitionKey: string;
