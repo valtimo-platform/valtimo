@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed sensitive data logging in inbox messages, silent exception swallowing in cloud event mapping, and null safety issues in SSE event mappers.
