@@ -24,7 +24,7 @@ interface Objecttype {
   showInDataMenu: boolean;
   formDefinitionView?: string;
   formDefinitionEdit?: string;
-  suppressOutbox: boolean;
+  suppressOutbox?: boolean;
 }
 
 export interface SearchListColumn {

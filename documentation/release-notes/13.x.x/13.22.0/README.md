@@ -6,32 +6,15 @@
 
 ## New Features
 
-* **Batched outbox message publishing**
+* **Batched outbox publishing** — Messages are now fetched and published in configurable batches, improving throughput.
 
-  The outbox `PollingPublisherService` now fetches and publishes messages in configurable batches (default: 10) instead
-  of one-at-a-time. The `MessagePublisher` interface has a new `publishBatch` default method. Existing implementations
-  inherit this without changes; publishers with native batch support can override it for optimal throughput.
+* **Outbox circuit breaker** — Automatically stops polling when the message broker is unavailable and resumes once connectivity is restored.
 
-* **Outbox circuit breaker**
+* **Outbox health indicator** — Exposes outbox publisher status via `/actuator/health`.
 
-  A Resilience4j circuit breaker stops outbox polling when the publisher fails repeatedly, and resumes with a single
-  test message once the wait duration passes. Configurable via `valtimo.outbox.publisher.polling.circuit-breaker.*`.
+* **Suppress outbox for Object Management** — A `suppressOutbox` property can be set on object management configurations to skip outbox writes for read-heavy integrations.
 
-* **Outbox publisher health indicator**
-
-  Exposes circuit breaker state via `/actuator/health` under `outboxPublisher` when Spring Boot Actuator is on the
-  classpath.
-
-* **Suppress outbox for Object Management configurations**
-
-  Object management configurations now support a `suppressOutbox` property. When set to `true`, configured object API 
-  read flows for that configuration skip outbox message creation, reducing unnecessary writes for read-heavy integrations. 
-  Defaults to `false`.
-
-* **Pipelined RabbitMQ publisher confirms**
-
-  `RabbitMessagePublisher` now sends all messages first, then awaits all confirms in parallel with a single batch-wide
-  timeout.
+* **Pipelined RabbitMQ confirms** — The RabbitMQ publisher now sends all confirmations in parallel instead of one-by-one.
 
 ## Enhancements
 
@@ -41,10 +24,9 @@
 
 ## Bugfixes
 
-* Fixed sensitive data logging in inbox messages, silent exception swallowing in cloud event mapping, and null safety issues in SSE event mappers.
-* Fixed MySQL `findOutboxMessage` query missing `ORDER BY created_on ASC`.
-* Fixed `RabbitMessagePublisher` null safety on publisher confirm result.
-* Fixed deprecated SLF4J method calls in `OutboxLiquibaseRunner`.
+* Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
+* Fixed MySQL outbox message query missing ordering.
+* Fixed RabbitMQ outbox publisher null safety on confirmation result.
 
 ## Deprecations
 

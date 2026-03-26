@@ -61,20 +61,3 @@ The outbox will be disabled by setting the following application property:
 ```yaml
 valtimo.outbox.enabled: false
 ```
-
-### Suppressing the outbox for Object Management
-
-Object management configurations support a `suppressOutbox` property that prevents outbox messages from being created
-during object API calls. This is useful for read-heavy integrations where outbox overhead is unnecessary.
-
-Set `suppressOutbox` to `true` in the object management JSON configuration:
-
-```json
-{
-    "title": "my-objects",
-    "objectenApiPluginConfigurationId": "...",
-    "objecttypenApiPluginConfigurationId": "...",
-    "objecttypeId": "...",
-    "suppressOutbox": true
-}
-```
