@@ -13,8 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-@if (!!widgetConfiguration.actions[0] && !!widgetConfiguration.actions[0].navigateTo) {
-  <button class="action-button" cdsButton="ghost" (click)="onNavigateButtonClick(widgetConfiguration.actions[0])">
+@if (getNavigateToUrl(widgetConfiguration.actions[0])) {
+  <button
+    class="action-button"
+    cdsButton="ghost"
+    (click)="onNavigateButtonClick(widgetConfiguration.actions[0])"
+  >
     {{ widgetConfiguration.actions[0].name }}
   </button>
 }
