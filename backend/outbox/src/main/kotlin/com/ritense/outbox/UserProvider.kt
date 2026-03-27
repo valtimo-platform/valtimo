@@ -16,31 +16,21 @@
 
 package com.ritense.outbox
 
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
-import java.util.stream.Collectors
 
+/**
+ * Provides the current user's identity and roles for enriching outbox CloudEvents.
+ *
+ * This class exists because the outbox module is intentionally isolated from other
+ * Valtimo modules. It can be overridden by providing a custom [UserProvider] bean.
+ */
 open class UserProvider {
-    open fun getCurrentUserLogin(): String? {
-        val securityContext = SecurityContextHolder.getContext()
-        val authentication = securityContext.authentication
-        var userName: String? = null
-        if (authentication != null) {
-            userName = authentication.name
-        }
-        return userName
-    }
+    open fun getCurrentUserLogin(): String? =
+        SecurityContextHolder.getContext().authentication?.name
 
-    open fun getCurrentUserRoles(): List<String> {
-        val roles: List<String> = ArrayList()
-        val securityContext = SecurityContextHolder.getContext()
-        val authentication = securityContext.authentication
-        return if (authentication != null) {
-            authentication
-                .authorities
-                .stream()
-                .map { obj: GrantedAuthority -> obj.authority }
-                .collect(Collectors.toList())
-        } else roles
-    }
+    open fun getCurrentUserRoles(): List<String> =
+        SecurityContextHolder.getContext().authentication
+            ?.authorities
+            ?.map { it.authority }
+            ?: emptyList()
 }
