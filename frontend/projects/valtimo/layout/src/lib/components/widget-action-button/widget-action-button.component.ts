@@ -34,7 +34,7 @@ export class WidgetActionButtonComponent {
   constructor(private readonly globalNotificationService: GlobalNotificationService) {}
 
   public onNavigateButtonClick(buttonAction: WidgetAction): void {
-    const navigateTo = this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
+    const navigateTo = this.getNavigateToUrl(buttonAction);
     if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
       window.open(navigateTo, '_self');
     } else if (navigateTo?.startsWith('http')) {
@@ -48,8 +48,15 @@ export class WidgetActionButtonComponent {
     }
   }
 
+  public getNavigateToUrl(buttonAction: WidgetAction): string {
+    return this.resolveProperty(buttonAction?.navigateTo, this.resolvedData);
+  }
+
   private resolveProperty(property: string, data: {[key: string]: any}): string {
+    if (!property) return null;
     const resolved = data?.resolved || data;
-    return property ? (resolved ? String(resolved[property]) : property) : null;
+    if (!resolved) return property;
+    const value = resolved[property];
+    return value != null ? String(value) : null;
   }
 }
