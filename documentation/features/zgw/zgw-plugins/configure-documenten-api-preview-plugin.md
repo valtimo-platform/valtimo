@@ -18,8 +18,8 @@ requires some configuration. A general description on how to configure plugins c
 
 To configure this plugin the following properties have to be entered:
 
-* **Configuration ID (`id`).** The plugin will be saved under this ID. The ID must be in the format of a UUID.
-* **Configuration name (`title`).** A user-friendly name that is used to identify the plugin (default value is "Documenten API Preview").
+* **Configuration ID (`configurationId`).** The plugin will be saved under this ID. The ID must be in the format of a UUID.
+* **Configuration name (`configurationTitle`).** A user-friendly name that is used to identify the plugin (default value is "Documenten API Preview").
 * **PDF Conversion URL (`pdfConversionUrl`).** Contains the complete base URL pointing to the server hosting the [Gotenberg][1] API (for example: `https://gotenberg:3000`). 
 * **Configuratie documenten-api plug-in (`documentenApiConfigurationId`).** Contains a reference to the configuration of the "Documenten API plugin". The preview plugin will retrieve documents based on this configuration.
 
@@ -41,7 +41,7 @@ import {authenticationKeycloak} from '../auth/keycloak-config';
 export const cspHeaderParamsDev: CSPHeaderParams = {
   directives: {
     'default-src': [SELF],
-    'frame-src': [SELF, BLOB],  
+    'frame-src': [SELF, BLOB],
     'object-src': [SELF, BLOB],
     'img-src': [SELF, DATA, 'https://tile.openstreetmap.org/'],
     'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
