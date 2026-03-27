@@ -211,7 +211,10 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   public onNameFocusOut(): void {
     const name = this.configureForm.get('name')?.value;
     if (!name || this.editKeyActive$.value) return;
-    const derivedKey = name.replace(/\W+/g, '-').replace(/-$/, '').toLowerCase();
+    const derivedKey = name
+      .replace(/[\W_]+/g, '-')
+      .replace(/-$/, '')
+      .toLowerCase();
     this.configureForm.get('caseDefinitionKey')?.patchValue(derivedKey);
   }
 

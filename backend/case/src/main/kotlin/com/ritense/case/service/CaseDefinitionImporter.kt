@@ -74,6 +74,9 @@ class CaseDefinitionImporter(
         return dto.copy(
             key = keyOverride ?: dto.key,
             name = nameOverride ?: dto.name,
+            originalKey = dto.key,
+            originalName = dto.name,
+            originalVersionTag = dto.versionTag,
         )
     }
 

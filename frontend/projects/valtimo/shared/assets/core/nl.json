@@ -576,6 +576,14 @@
           "description": "Beschrijving"
         }
       },
+      "importOrigin": {
+        "title": "Importherkomst",
+        "fields": {
+          "originalKey": "Oorspronkelijke sleutel",
+          "originalName": "Oorspronkelijke naam",
+          "originalVersionTag": "Oorspronkelijke versie"
+        }
+      },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",

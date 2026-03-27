@@ -27,6 +27,9 @@ export class CaseDefinition {
   autoAssignTasks: boolean;
   active: boolean;
   conflictingVersions: string;
+  originalKey?: string;
+  originalName?: string;
+  originalVersionTag?: string;
 }
 
 export class ReleaseVersionData {
