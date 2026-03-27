@@ -56,7 +56,7 @@ export class CaseDetailsManagementPage {
   }
 
   get setActiveVersionButton() {
-    return this.page.getByRole('menuitem', {name: 'Set as active version'});
+    return this.page.getByTestId(CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS.setActiveVersionButton);
   }
 
   get seeAllVersionsButton() {
