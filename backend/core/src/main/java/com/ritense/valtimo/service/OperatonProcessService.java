@@ -61,8 +61,11 @@ import com.ritense.valtimo.service.util.FormUtils;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -75,6 +78,16 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
@@ -541,7 +554,7 @@ public class OperatonProcessService {
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
-                .addModelInstance(fileName, bpmnModel);
+                .addInputStream(fileName, normalizeToCamundaNamespace(bpmnModel));
 
             OperatonDeploymentSource deploymentSource = new OperatonDeploymentSource(
                 skipProcessLinksCopy,
@@ -592,7 +605,7 @@ public class OperatonProcessService {
                 }
             }
 
-            return repositoryService.createDeployment().addModelInstance(fileName, dmnModel).deployWithResult();
+            return repositoryService.createDeployment().addInputStream(fileName, normalizeToCamundaNamespace(dmnModel)).deployWithResult();
         } else {
             String[] splitFileName = fileName.split("\\.");
 
@@ -647,15 +660,22 @@ public class OperatonProcessService {
                     )
                     .readAllBytes();
 
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Bpmn.writeModelToStream(outputStream, bpmnModel);
+                // Normalize both through the same XML pipeline so comparisons are
+                // namespace-agnostic. Applying normalizeXmlToCamundaNamespace directly to
+                // the saved bytes handles both old deployments (operaton: namespace, stored
+                // via addModelInstance) and new deployments (camunda: namespace, already
+                // Transformer output) because the DOM+Transformer step is idempotent on
+                // already-normalized XML.
+                byte[] normalizedSavedBytes = normalizeXmlToCamundaNamespace(
+                    new String(savedBytes, StandardCharsets.UTF_8),
+                    "http://operaton.org/schema/1.0/bpmn",
+                    "http://camunda.org/schema/1.0/bpmn"
+                ).readAllBytes();
+                byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
 
-                if (Arrays.equals(outputStream.toByteArray(), savedBytes)) {
-                    outputStream.close();
+                if (Arrays.equals(normalizedNewBytes, normalizedSavedBytes)) {
                     return true;
                 }
-
-                outputStream.close();
 
             } catch (IOException e) {
                 throw new ProcessNotDeployableException(blueprintId + " and process: " + latestProcessDefinition.getKey());
@@ -1001,6 +1021,66 @@ public class OperatonProcessService {
             return processProperties.isSystemProcess();
         }
         return false;
+    }
+
+    ByteArrayInputStream normalizeToCamundaNamespace(BpmnModelInstance bpmnModel) {
+        return normalizeXmlToCamundaNamespace(
+            Bpmn.convertToString(bpmnModel),
+            "http://operaton.org/schema/1.0/bpmn",
+            "http://camunda.org/schema/1.0/bpmn"
+        );
+    }
+
+    ByteArrayInputStream normalizeToCamundaNamespace(DmnModelInstance dmnModel) {
+        return normalizeXmlToCamundaNamespace(
+            Dmn.convertToString(dmnModel),
+            "http://operaton.org/schema/1.0/dmn",
+            "http://camunda.org/schema/1.0/dmn"
+        );
+    }
+
+    private ByteArrayInputStream normalizeXmlToCamundaNamespace(String xml, String operatonNs, String camundaNs) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            normalizeElementNamespace(doc.getDocumentElement(), operatonNs, camundaNs);
+            StringWriter writer = new StringWriter();
+            TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(writer));
+            return new ByteArrayInputStream(writer.toString().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to normalize namespace from " + operatonNs + " to " + camundaNs, e);
+        }
+    }
+
+    void normalizeElementNamespace(Element element, String operatonNs, String camundaNs) {
+        NamedNodeMap attrs = element.getAttributes();
+        List<String> operatonLocalNames = new ArrayList<>();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Node attr = attrs.item(i);
+            if (operatonNs.equals(attr.getNamespaceURI())) {
+                operatonLocalNames.add(attr.getLocalName());
+            }
+        }
+
+        for (String localName : operatonLocalNames) {
+            String operatonValue = element.getAttributeNS(operatonNs, localName);
+            String camundaValue = element.getAttributeNS(camundaNs, localName);
+            if (!operatonValue.equals(camundaValue)) {
+                element.setAttributeNS(camundaNs, "camunda:" + localName, operatonValue);
+            }
+            element.removeAttributeNS(operatonNs, localName);
+        }
+
+        element.removeAttributeNS("http://www.w3.org/2000/xmlns/", "operaton");
+
+        NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child instanceof Element childElement) {
+                normalizeElementNamespace(childElement, operatonNs, camundaNs);
+            }
+        }
     }
 
     private void denyAuthorization() {

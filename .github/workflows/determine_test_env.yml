@@ -28,14 +28,14 @@ jobs:
     steps:
       - id: resolve
         shell: bash
+        env:
+          INPUT_ENV_NAME: ${{ inputs.envName }}
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          INPUT_ENV_NAME="${{ inputs.envName }}"
-          INPUT_SOURCE_SHA="${{ inputs.source_sha }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          PR_SHA="${{ github.event.pull_request.head.sha }}"
-          REF_NAME="${{ github.ref_name }}"
-          GITHUB_SHA="${{ github.sha }}"
-
           if [[ -n "${INPUT_ENV_NAME}" ]]; then
             ENV_NAME="${INPUT_ENV_NAME}"
           elif [[ -n "${PR_NUMBER}" ]]; then
