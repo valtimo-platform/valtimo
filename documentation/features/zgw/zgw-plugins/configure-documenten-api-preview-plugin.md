@@ -6,7 +6,7 @@ documents directly within GZAC.
 > NOTE:
 > 
 > The "Documenten API Preview plugin" requires at least one  "Documenten API plugin" to be configured. More details on
-> configuring the "Documenten API plugin" can be found [here](./configure-documenten-api-plugin.md).
+> configuring the "Documenten API plugin" can be found in the [Documenten API plugin configuration guide](./configure-documenten-api-plugin.md).
 
 ## Configure the plugin
 
