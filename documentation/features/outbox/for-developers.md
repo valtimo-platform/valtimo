@@ -51,6 +51,40 @@ When delivery fails or acknowledgement takes too long, a `MessagePublishingFaile
 
 When delivery is successful (no exceptions are thrown), the outbox message will be deleted from the outbox table automatically.
 
+#### Batch publishing
+
+The `MessagePublisher` interface also provides a `publishBatch` method that receives a list of messages and returns per-message results. The default implementation calls `publish()` for each message individually, catching exceptions per message.
+
+Publishers that support native batch operations (e.g. sending multiple messages in a single HTTP POST or pipelining broker confirms) can override `publishBatch` for improved throughput:
+
+```kotlin
+class CustomBatchMessagePublisher : MessagePublisher {
+
+    override fun publish(message: OutboxMessage) {
+        val result = publishBatch(listOf(message)).first()
+        if (!result.success) {
+            throw result.error ?: MessagePublishingFailed("Failed to publish message ${message.id}")
+        }
+    }
+
+    override fun publishBatch(messages: List<OutboxMessage>): List<MessagePublishResult> {
+        // Send all messages in a single batch operation
+        val response = batchSend(messages)
+
+        // Return per-message results
+        return messages.zip(response.results).map { (message, result) ->
+            MessagePublishResult(
+                messageId = message.id,
+                success = result.isSuccess,
+                error = result.error
+            )
+        }
+    }
+}
+```
+
+Successfully published messages are deleted from the outbox. Failed messages remain in the outbox table and will be retried in the next poll cycle.
+
 #### Bean configuration
 
 The custom message publisher should be configured as a Bean in the Spring application.

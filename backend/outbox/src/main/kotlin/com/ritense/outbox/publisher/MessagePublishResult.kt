@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.outbox.repository
+package com.ritense.outbox.publisher
 
-import com.ritense.outbox.OutboxMessage
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.repository.NoRepositoryBean
 import java.util.UUID
 
-@NoRepositoryBean
-interface OutboxMessageRepository : JpaRepository<OutboxMessage, UUID> {
-
-    @Deprecated(
-        message = "Will be removed in 14.0. Use findOutboxMessages(batchSize) instead",
-        replaceWith = ReplaceWith("findOutboxMessages(1).firstOrNull()")
-    )
-    fun findOutboxMessage(): OutboxMessage?
-
-    fun findOutboxMessages(batchSize: Int): List<OutboxMessage>
-}
+data class MessagePublishResult(
+    val messageId: UUID,
+    val success: Boolean,
+    val error: Throwable? = null
+)

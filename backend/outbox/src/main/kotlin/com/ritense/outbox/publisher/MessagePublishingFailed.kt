@@ -16,4 +16,4 @@
 
 package com.ritense.outbox.publisher
 
-class MessagePublishingFailed(message: String) : RuntimeException(message)
+class MessagePublishingFailed(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
