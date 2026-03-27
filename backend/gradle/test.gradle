@@ -49,7 +49,7 @@ tasks.register("integrationTestingPostgresql", Test) {
 tasks.register("integrationTestingMysql", Test) {
     group = 'verification'
     description = 'Runs MySQL-based integration tests.'
-    systemProperty("spring.profiles.include", "inttest,mysql")
+    systemProperty("spring.profiles.include", "mysql")
     testLogging {
         events("passed", "skipped", "failed", "standardError")
     }
@@ -66,7 +66,7 @@ tasks.register("integrationTestingMysql", Test) {
 
 tasks.register("securityTesting", Test) {
     group = 'verification'
-    systemProperty("spring.profiles.include", "inttest,postgresql")
+    systemProperty("spring.profiles.include", "postgresql")
     testLogging {
         events("passed", "skipped", "failed", "standardError")
     }
