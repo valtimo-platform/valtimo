@@ -49,7 +49,7 @@ class PdfConversionClient(
             .post()
             .uri {
                 ClientTools.baseUrlToBuilder(it, baseUrl)
-                    .path("forms/libreoffice/convert")
+                    .replacePath("forms/libreoffice/convert")
                     .build()
             }
             .body(bodyBuilder.build())

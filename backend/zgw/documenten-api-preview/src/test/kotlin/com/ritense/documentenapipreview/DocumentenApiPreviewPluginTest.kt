@@ -27,6 +27,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -36,6 +37,7 @@ class DocumentenApiPreviewPluginTest {
     private lateinit var documentenApiPlugin: DocumentenApiPlugin
     private lateinit var pdfConversionClient: PdfConversionClient
     private lateinit var pluginService: PluginService
+    private lateinit var mockDocumentStream: InputStream;
 
     @BeforeEach
     fun before() {
@@ -47,13 +49,15 @@ class DocumentenApiPreviewPluginTest {
         documentenApiPreviewPlugin.documentenApiConfigurationId = "mock_documenten_api_configuration_id"
         documentenApiPreviewPlugin.pdfConversionUrl = URI("http://mock.url")
 
+        mockDocumentStream = "TEST_DOCUMENT".byteInputStream()
+
         whenever(pluginService.createInstance<DocumentenApiPlugin>(documentenApiPreviewPlugin.documentenApiConfigurationId))
             .thenReturn(documentenApiPlugin)
         whenever(documentenApiPlugin.downloadInformatieObject(null,MOCK_DOCUMENT_ID))
-            .thenReturn(MOCK_DOCUMENT_STREAM)
+            .thenReturn(mockDocumentStream)
         whenever(documentenApiPlugin.getInformatieObject(MOCK_DOCUMENT_ID, null))
             .thenReturn(MOCK_DOCUMENT_INFORMATIE_OBJECT)
-        whenever(pdfConversionClient.convertDocument(any(), any(), any())).thenReturn(MOCK_DOCUMENT_STREAM)
+        whenever(pdfConversionClient.convertDocument(any(), any(), any())).thenReturn(mockDocumentStream)
     }
 
     @Test
@@ -74,13 +78,15 @@ class DocumentenApiPreviewPluginTest {
     fun `should call generatePreview on PdfConversionClient`() {
         documentenApiPreviewPlugin.generatePreview(MOCK_DOCUMENT_ID)
 
-        verify(pdfConversionClient).convertDocument(documentenApiPreviewPlugin.pdfConversionUrl, MOCK_DOCUMENT_STREAM, any())
+        verify(pdfConversionClient).convertDocument(
+            documentenApiPreviewPlugin.pdfConversionUrl,
+            mockDocumentStream,
+            MOCK_DOCUMENT_INFORMATIE_OBJECT.bestandsnaam)
     }
 
     companion object {
         private val MOCK_DOCUMENT_ID = "mock_document_identifier"
 
-        private val MOCK_DOCUMENT_STREAM = "test_document".byteInputStream()
         private val MOCK_DOCUMENT_INFORMATIE_OBJECT = DocumentInformatieObject(
             url = URI("http://mock.url/mock_document"),
             bronorganisatie = Rsin("001326132"),
