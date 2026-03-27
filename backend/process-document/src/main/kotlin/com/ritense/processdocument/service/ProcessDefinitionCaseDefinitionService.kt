@@ -16,6 +16,7 @@
 package com.ritense.processdocument.service
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
@@ -54,7 +55,7 @@ class ProcessDefinitionCaseDefinitionService(
     }
 
     fun findByProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition {
-        return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)
+        return processDefinitionCaseDefinitionRepository.findByIdProcessDefinitionId(processDefinitionId)!!
     }
 
     fun findProcessDefinitionCaseDefinitions(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition> {
@@ -115,7 +116,9 @@ class ProcessDefinitionCaseDefinitionService(
         canInitializeDocument: Boolean?
     ): List<ProcessDefinitionCaseDefinition> {
 
-        val document = documentService.get(documentId.toString())
+        val document = runWithoutAuthorization {
+            documentService.get(documentId.toString())
+        }
         val definitions = processDefinitionCaseDefinitionRepository.findAll(
             document.definitionId().caseDefinitionId(),
             startableByUser,

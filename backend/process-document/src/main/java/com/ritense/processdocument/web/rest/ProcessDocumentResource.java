@@ -80,7 +80,9 @@ public class ProcessDocumentResource {
         @RequestParam(value = "startableByUser", required = false) @Nullable Boolean startableByUser,
         @RequestParam(value = "canInitializeDocument", required = false) @Nullable Boolean canInitializeDocument
     ) {
-        CaseDefinitionId caseDefinitionId = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId();
+        CaseDefinitionId caseDefinitionId = runWithoutAuthorization(() ->
+            activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).getId()
+        );
         List<ProcessDefinitionCaseDefinition> processDocumentDefinitions = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
             caseDefinitionId,
             startableByUser,
