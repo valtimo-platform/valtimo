@@ -14,7 +14,7 @@ The "Documenten API Preview plugin" can be used to generate a readonly preview v
 "Documenten API plugin" and works by converting documents to PDF which are displayed in the browser. The conversion of 
 the original documents to PDF format is done using the open source project [Gotenberg][1], which is 
 a Docker-based API specifically designed to convert documents to PDF. This means the "Documenten API Preview plugin" 
-requires some configuration. A general description on how to configure plugins can be found [here](../../plugins/configure-plugin.md).
+requires some configuration. A general description on how to configure plugins can be found in the [plugin configuration guide](../../plugins/configure-plugin.md).
 
 To configure this plugin the following properties have to be entered:
 
@@ -25,7 +25,7 @@ To configure this plugin the following properties have to be entered:
 
 ## Configure the Content Security Policy (CSP)
 
-Internally the Valtimo downloads the PDF file into a `blob` field and uses the HTML `<object>`, `<iframe>` and tags to 
+Internally the Valtimo downloads the PDF file into a `blob` field and uses the HTML `<object>`, `<iframe>` tags to 
 display the PDF. Since Valtimo offers a strongly typed CSP configuration (see [Content Security Policy][2]), the CSP 
 configuration needs to be updated to allow for `blob` resources to be displayed via the `<object>`, `<iframe>` tags. 
 

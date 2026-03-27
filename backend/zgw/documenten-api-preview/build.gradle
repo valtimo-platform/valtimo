@@ -29,6 +29,14 @@ dockerCompose {
     }
 }
 
+jar {
+    enabled = true
+    manifest {
+        attributes("Implementation-Title": "ZGW Documenten API Preview plugin spring boot starter")
+        attributes("Implementation-Version": projectVersion)
+    }
+}
+
 dependencies {
     implementation project(":backend:core")
     implementation project(":backend:logging")
@@ -58,14 +66,6 @@ dependencies {
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-
-    jar {
-        enabled = true
-        manifest {
-            attributes("Implementation-Title": "ZGW Documenten API Preview plugin spring boot starter")
-            attributes("Implementation-Version": projectVersion)
-        }
-    }
 }
 
 apply from: "gradle/publishing.gradle"
