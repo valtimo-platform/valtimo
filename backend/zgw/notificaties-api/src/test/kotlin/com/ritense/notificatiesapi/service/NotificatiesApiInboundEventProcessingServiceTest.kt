@@ -153,7 +153,8 @@ class NotificatiesApiInboundEventProcessingServiceTest {
             hoofdObject = "http://example.com/object/1",
             actie = "update",
             aanmaakdatum = LocalDateTime.now(),
-            kenmerken = mapOf("a" to "1")
+            kenmerken = mapOf("a" to "1"),
+            resource = null
         )
     }
 }
