@@ -99,13 +99,18 @@ export class WidgetManagementWizardComponent implements OnDestroy {
     toObservable(this.widgetWizardService.$widgetWidth),
     toObservable(this.widgetWizardService.$widgetDensity),
     toObservable(this.widgetWizardService.$widgetColor),
+    toObservable(this.widgetWizardService.$widgetContent),
   ]).pipe(
-    map(([selectedWidget, selectedWidth, selectedDensity, selectedColor]) => {
+    map(([selectedWidget, selectedWidth, selectedDensity, selectedColor, widgetContent]) => {
       const type = selectedWidget?.type ?? '';
+      const orientation = (widgetContent as any)?.orientation as string | undefined;
 
       return {
         [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
         [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth ?? ''] ?? '',
+        [WidgetWizardStep.ORIENTATION]: orientation
+          ? `widgetTabManagement.progress.orientation.${orientation}`
+          : '',
         [WidgetWizardStep.DENSITY]: WIDGET_DENSITY_LABELS[selectedDensity ?? ''] ?? '',
         [WidgetWizardStep.APPEARANCE]: selectedColor ? WIDGET_COLOR_LABELS[selectedColor] : '',
       };

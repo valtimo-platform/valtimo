@@ -114,6 +114,10 @@ interface WidgetMapContent {
   geoJsonSources: GeoJsonSource[];
 }
 
+interface WidgetProgressContent {
+  orientation: 'horizontal' | 'vertical';
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -123,13 +127,15 @@ type WidgetContentProperties =
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent
-  | WidgetMapContent;
+  | WidgetMapContent
+  | WidgetProgressContent;
 
 export {
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
   WidgetFormioContent,
+  WidgetProgressContent,
   WidgetTableContent,
   WidgetInteractiveTableContent,
   WidgetCollectionContent,

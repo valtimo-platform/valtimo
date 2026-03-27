@@ -862,6 +862,7 @@
         "appearance": "Choose widget appearance",
         "type": "Choose widget type",
         "width": "Choose widget width",
+        "orientation": "Choose widget orientation",
         "density": "Choose widget density",
         "filters": "Filters",
         "displayConditions": "Set display conditions"
@@ -883,7 +884,18 @@
       },
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"}
+      "map": {"title": "Map", "description": "Create a map widget"},
+      "progress": {"title": "Progress", "description": "Show case status progress"}
+    },
+    "progress": {
+      "orientation": {
+        "label": "Orientation",
+        "horizontal": "Horizontal",
+        "vertical": "Vertical"
+      }
+    },
+    "orientation": {
+      "description": "Select the desired orientation for the widget."
     },
     "width": {
       "description": "Select the desired width for the widget.",

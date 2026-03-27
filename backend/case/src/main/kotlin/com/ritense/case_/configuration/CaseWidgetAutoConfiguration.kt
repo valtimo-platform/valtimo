@@ -53,6 +53,9 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.fieldsheader.FieldsCaseHeaderWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetDataProvider
 import com.ritense.case_.widget.map.MapCaseWidgetMapper
+import com.ritense.case_.widget.progress.ProgressCaseWidgetDataProvider
+import com.ritense.case_.widget.progress.ProgressCaseWidgetMapper
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.CaseTagService
@@ -267,6 +270,17 @@ class CaseWidgetAutoConfiguration {
         objectMapper,
         geoJsonMappers,
     )
+
+    @ConditionalOnMissingBean(ProgressCaseWidgetMapper::class)
+    @Bean
+    fun progressCaseWidgetMapper() = ProgressCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(ProgressCaseWidgetDataProvider::class)
+    @Bean
+    fun progressCaseWidgetDataProvider(
+        documentService: DocumentService,
+        internalCaseStatusRepository: InternalCaseStatusRepository,
+    ) = ProgressCaseWidgetDataProvider(documentService, internalCaseStatusRepository)
 
     @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
     @Bean

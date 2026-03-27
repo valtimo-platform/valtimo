@@ -20,6 +20,7 @@ import {WidgetWizardAppearanceStepComponent} from './widget-wizard-appearance-st
 import {WidgetWizardTypeStepComponent} from './widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from './widget-wizard-width-step/widget-wizard-width-step.component';
 import {WidgetWizardFiltersStepComponent} from './widget-wizard-filters-step/widget-wizard-filters-step.component';
+import {WidgetWizardOrientationStepComponent} from './widget-wizard-orientation-step/widget-wizard-orientation-step.component';
 
 export const WIDGET_STEPS = [
   WidgetWizardContentStepComponent,
@@ -29,4 +30,5 @@ export const WIDGET_STEPS = [
   WidgetWizardWidthStepComponent,
   WidgetWizardFiltersStepComponent,
   WidgetWizardDisplayConditionsStepComponent,
+  WidgetWizardOrientationStepComponent,
 ];

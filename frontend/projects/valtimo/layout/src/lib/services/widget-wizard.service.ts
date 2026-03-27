@@ -76,6 +76,7 @@ export class WidgetWizardService {
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
     WidgetWizardStep.TYPE,
     WidgetWizardStep.WIDTH,
+    WidgetWizardStep.ORIENTATION,
     WidgetWizardStep.DENSITY,
     WidgetWizardStep.APPEARANCE,
     WidgetWizardStep.CONTENT,
@@ -89,6 +90,7 @@ export class WidgetWizardService {
     () => ({
       [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
+      [WidgetWizardStep.ORIENTATION]: !!(this.$widgetContent() as any)?.orientation,
       [WidgetWizardStep.DENSITY]: this.$widgetDensity() !== null,
       [WidgetWizardStep.APPEARANCE]: !!this.$widgetColor(),
       [WidgetWizardStep.CONTENT]:
@@ -103,6 +105,14 @@ export class WidgetWizardService {
   public readonly $widgetWizardStepEnableCondition: Signal<
     Record<any, {dependingStep: WidgetWizardStep; condition: () => boolean}>
   > = computed(() => ({
+    [WidgetWizardStep.WIDTH]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => this.$selectedWidget()?.type !== WidgetType.PROGRESS,
+    },
+    [WidgetWizardStep.ORIENTATION]: {
+      dependingStep: WidgetWizardStep.TYPE,
+      condition: () => this.$selectedWidget()?.type === WidgetType.PROGRESS,
+    },
     [WidgetWizardStep.DENSITY]: {
       dependingStep: WidgetWizardStep.TYPE,
       condition: () => {
@@ -203,6 +213,7 @@ export class WidgetWizardService {
     this.$widgetWizardSteps.set([
       WidgetWizardStep.TYPE,
       WidgetWizardStep.WIDTH,
+      WidgetWizardStep.ORIENTATION,
       WidgetWizardStep.DENSITY,
       WidgetWizardStep.APPEARANCE,
       WidgetWizardStep.CONTENT,

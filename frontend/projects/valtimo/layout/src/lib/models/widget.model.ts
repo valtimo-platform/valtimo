@@ -22,6 +22,7 @@ import {
   WidgetFieldsContent,
   WidgetInteractiveTableContent,
   WidgetMapContent,
+  WidgetProgressContent,
   WidgetTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
@@ -35,6 +36,7 @@ enum WidgetType {
   FORMIO = 'formio',
   DIVIDER = 'divider',
   MAP = 'map',
+  PROGRESS = 'progress',
 }
 
 enum WidgetColor {
@@ -145,6 +147,11 @@ interface MapWidget extends BasicWidget {
   properties: WidgetMapContent;
 }
 
+interface ProgressWidget extends BasicWidget {
+  type: WidgetType.PROGRESS;
+  properties: WidgetProgressContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -153,7 +160,8 @@ type Widget =
   | InteractiveTableWidget
   | FormioWidget
   | DividerWidget
-  | MapWidget;
+  | MapWidget
+  | ProgressWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -250,6 +258,7 @@ export {
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
+  ProgressWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,

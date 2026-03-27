@@ -881,6 +881,7 @@
         "appearance": "Kies widget-uiterlijk",
         "type": "Kies widget-type",
         "width": "Kies widget-breedte",
+        "orientation": "Kies widget-oriëntatie",
         "density": "Kies widgetdichtheid",
         "filters": "Filters",
         "displayConditions": "Weergavecondities instellen"
@@ -902,7 +903,18 @@
       },
       "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
       "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"}
+      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "progress": {"title": "Voortgang", "description": "Toon voortgang van de zaakstatus"}
+    },
+    "progress": {
+      "orientation": {
+        "label": "Oriëntatie",
+        "horizontal": "Horizontaal",
+        "vertical": "Verticaal"
+      }
+    },
+    "orientation": {
+      "description": "Selecteer de gewenste oriëntatie voor de widget."
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",

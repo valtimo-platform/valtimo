@@ -1,0 +1,72 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.case_.widget.progress
+
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
+import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
+import io.hypersistence.utils.hibernate.type.json.JsonType
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import org.hibernate.annotations.Type
+
+@AllOpen
+@Entity
+@DiscriminatorValue("progress")
+class ProgressCaseWidget(
+    id: CaseWidgetTabWidgetId,
+    title: String,
+    icon: String? = null,
+    color: WidgetColor = WidgetColor.WHITE,
+    order: Int,
+    width: Int,
+    highContrast: Boolean,
+    isCompact: Boolean?,
+    actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
+
+    @Type(value = JsonType::class)
+    @Column(name = "properties", nullable = false)
+    val properties: ProgressWidgetProperties
+) : CaseWidgetTabWidget(
+    id, title, icon, color, order, width, highContrast, isCompact, actions, displayConditions
+) {
+    override fun copy(id: CaseWidgetTabWidgetId) = ProgressCaseWidget(
+        id = id,
+        title = title,
+        icon = icon,
+        color = color,
+        order = order,
+        width = width,
+        highContrast = highContrast,
+        isCompact = isCompact,
+        actions = actions,
+        displayConditions = displayConditions,
+        properties = properties
+    )
+
+    @JsonIgnore
+    override fun getUnresolvedValues(): List<String> = emptyList()
+
+    @JsonIgnore
+    override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> = emptyMap()
+}

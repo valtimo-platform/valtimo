@@ -21,6 +21,7 @@ import {
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
   WidgetManagementMapComponent,
+  WidgetManagementProgressComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -33,10 +34,12 @@ import {WidgetManagementWidgetFormioComponent} from '../components/widget-manage
 import {WidgetWizardDensityStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-density-step/widget-wizard-density-step.component';
 import {WidgetWizardFiltersStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-filters-step/widget-wizard-filters-step.component';
 import {WidgetWizardAppearanceStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-appearance-step/widget-wizard-appearance-step.component';
+import {WidgetWizardOrientationStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-orientation-step/widget-wizard-orientation-step.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
   WIDTH = 'width',
+  ORIENTATION = 'orientation',
   DENSITY = 'density',
   APPEARANCE = 'appearance',
   CONTENT = 'content',
@@ -71,6 +74,7 @@ interface WidgetTypeSelection {
 const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.TYPE]: WidgetWizardTypeStepComponent,
   [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
+  [WidgetWizardStep.ORIENTATION]: WidgetWizardOrientationStepComponent,
   [WidgetWizardStep.DENSITY]: WidgetWizardDensityStepComponent,
   [WidgetWizardStep.APPEARANCE]: WidgetWizardAppearanceStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
@@ -127,6 +131,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
     type: WidgetType.MAP,
     component: WidgetManagementMapComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.progress.title',
+    descriptionKey: 'widgetTabManagement.type.progress.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/progress.svg',
+    type: WidgetType.PROGRESS,
+    component: WidgetManagementProgressComponent,
   },
 ];
 
