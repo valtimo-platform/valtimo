@@ -2,9 +2,15 @@
 
 ## New Features
 
-* **New feature title**
+* **Batched outbox publishing** — Messages are now fetched and published in configurable batches, improving throughput.
 
-  New feature explanation.
+* **Outbox circuit breaker** — Automatically stops polling when the message broker is unavailable and resumes once connectivity is restored.
+
+* **Outbox health indicator** — Exposes outbox publisher status via `/actuator/health`.
+
+* **Suppress outbox for Object Management** — A `suppressOutbox` property can be set on object management configurations to skip outbox writes for read-heavy integrations.
+
+* **Pipelined RabbitMQ confirms** — The RabbitMQ publisher now sends all confirmations in parallel instead of one-by-one.
 
 ## Enhancements
 
@@ -14,4 +20,13 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed MySQL outbox message query missing ordering.
+* Fixed RabbitMQ outbox publisher null safety on confirmation result.
+
+## Deprecations
+
+The following will be removed in 14.0:
+
+* `OutboxMessageRepository.findOutboxMessage()` — use `findOutboxMessages(batchSize)`
+* `ValtimoOutboxService.getOldestMessage()` — use `getOldestMessages(batchSize)`
+* `ValtimoOutboxService.deleteMessage(id)` — use `deleteMessages(ids)`

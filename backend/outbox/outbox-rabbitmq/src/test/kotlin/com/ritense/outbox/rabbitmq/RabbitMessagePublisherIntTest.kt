@@ -120,7 +120,7 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
 
         @Test
         fun `publishBatch should return failure for unroutable messages`() {
-            val results = messagePublisher.publishBatch(
+            val results = springCloudMessagePublisher.publishBatch(
                 listOf(
                     OutboxMessage(message = UUID.randomUUID().toString()),
                     OutboxMessage(message = UUID.randomUUID().toString())

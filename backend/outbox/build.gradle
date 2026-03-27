@@ -49,7 +49,7 @@ dependencies {
     implementation "io.cloudevents:cloudevents-core:$cloudEventsCoreVersion"
     implementation "io.cloudevents:cloudevents-json-jackson:$cloudEventsCoreVersion"
 
-    implementation "io.github.resilience4j:resilience4j-circuitbreaker:${resilience4jVersion}"
+    implementation "io.github.resilience4j:resilience4j-circuitbreaker:$resilience4jVersion"
 
     compileOnly "org.springframework.boot:spring-boot-starter-actuator"
 
