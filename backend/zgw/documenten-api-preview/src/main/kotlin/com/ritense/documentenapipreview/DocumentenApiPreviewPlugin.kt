@@ -51,7 +51,10 @@ class DocumentenApiPreviewPlugin(
         val documentStream = documentenApiPlugin.downloadInformatieObject(null,documentId)
         val documentInformatieObject = documentenApiPlugin.getInformatieObject(documentId, null);
 
-        if (documentInformatieObject.bestandsnaam != null && documentInformatieObject.bestandsnaam!!.split('.').last() == "pdf") {
+        val extension = documentInformatieObject.bestandsnaam
+            ?.substringAfterLast('.', "")
+            ?.lowercase()
+        if (extension == "pdf") {
             return PdfFile(documentInformatieObject.bestandsnaam!!, documentStream)
         }
 
@@ -62,7 +65,7 @@ class DocumentenApiPreviewPlugin(
 
     private fun createFilename(documentInformatieObject: DocumentInformatieObject): String {
         val filename = documentInformatieObject.bestandsnaam ?: UUID.randomUUID().toString()
-        return "${filename.split('.').first()}.pdf"
+        return "${filename.substringBeforeLast('.', filename)}.pdf"
     }
 
     private fun getDocumentenApiPlugin(): DocumentenApiPlugin {
