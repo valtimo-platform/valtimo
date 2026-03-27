@@ -35,6 +35,7 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
+import com.ritense.authorization.request.RelatedEntityAuthorizationRequest;
 import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
@@ -59,7 +60,6 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.service.util.FormUtils;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -69,12 +69,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,7 +89,6 @@ import org.xml.sax.InputSource;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
-import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState;
 import org.operaton.bpm.engine.repository.DecisionDefinition;
 import org.operaton.bpm.engine.repository.DecisionDefinitionQuery;
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions;
@@ -290,13 +287,11 @@ public class OperatonProcessService {
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
         authorizationService.requirePermission(
-            new EntityAuthorizationRequest(
+            new RelatedEntityAuthorizationRequest<>(
                 OperatonExecution.class,
                 OperatonExecutionActionProvider.CREATE,
-                createDummyOperatonExecution(
-                    processDefinition,
-                    businessKey
-                )
+                OperatonProcessDefinition.class,
+                processDefinition.getId()
             )
         );
 
@@ -307,38 +302,6 @@ public class OperatonProcessService {
         );
 
         return new ProcessInstanceWithDefinition(processInstance, processDefinition);
-    }
-
-    public OperatonExecution createDummyOperatonExecution(
-        @NotNull OperatonProcessDefinition processDefinition,
-        String businessKey
-    ) {
-        OperatonExecution execution = new OperatonExecution(
-            UUID.randomUUID().toString(),
-            1,
-            null,
-            null,
-            businessKey,
-            null,
-            processDefinition,
-            null,
-            null,
-            null,
-            null,
-            null,
-            true,
-            false,
-            false,
-            false,
-            SuspensionState.ACTIVE.getStateCode(),
-            0,
-            0,
-            null,
-            new HashSet<>()
-        );
-        execution.setProcessInstance(execution);
-
-        return execution;
     }
 
     /**
