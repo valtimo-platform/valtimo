@@ -10,7 +10,7 @@ documents directly within GZAC.
 
 ## Configure the plugin
 
-The "Documenten API Preview plugin" can be used to generate a readonly preview version of documents retrieved via the
+The "Documenten API Preview plugin" can be used to generate a read-only preview version of documents retrieved via the
 "Documenten API plugin" and works by converting documents to PDF which are displayed in the browser. The conversion of 
 the original documents to PDF format is done using the open-source project [Gotenberg][1], which is 
 a Docker-based API specifically designed to convert documents to PDF. This means the "Documenten API Preview plugin" 
@@ -30,7 +30,7 @@ display the PDF. Since Valtimo offers a strongly typed CSP configuration (see [C
 configuration needs to be updated to allow for `blob` resources to be displayed via the `<object>`, `<iframe>` tags. 
 
 To do so add the lines `'object-src': [SELF, BLOB]` and `'frame-src': [SELF, BLOB]` to the CSP configuration for each of 
-the environments you want support the preview plugin (see [Content Security Policy][2] guide for more detailed 
+the environments you want to support the preview plugin (see [Content Security Policy][2] guide for more detailed 
 instructions on CSP configuration). An example configuration that supports loading `blob` resources looks like this:
 
 ```ts
