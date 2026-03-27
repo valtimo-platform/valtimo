@@ -49,6 +49,31 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
             val msg = rabbitTemplate.receive(configurationProperties.routingKey!!)
             assertThat(msg!!.body.toString(Charsets.UTF_8)).isEqualTo(uuid)
         }
+
+        @Test
+        fun `should send batch of messages to rabbitmq queue`() {
+            rabbitAdmin.purgeQueue(configurationProperties.routingKey!!)
+
+            val uuid1 = UUID.randomUUID().toString()
+            val uuid2 = UUID.randomUUID().toString()
+            val results = springCloudMessagePublisher.publishBatch(
+                listOf(
+                    OutboxMessage(message = uuid1),
+                    OutboxMessage(message = uuid2)
+                )
+            )
+
+            assertThat(results).hasSize(2)
+            assertThat(results).allMatch { it.success }
+
+            val msg1 = rabbitTemplate.receive(configurationProperties.routingKey!!)
+            val msg2 = rabbitTemplate.receive(configurationProperties.routingKey!!)
+            val receivedMessages = setOf(
+                msg1!!.body.toString(Charsets.UTF_8),
+                msg2!!.body.toString(Charsets.UTF_8)
+            )
+            assertThat(receivedMessages).containsExactlyInAnyOrder(uuid1, uuid2)
+        }
     }
 
     @Nested
@@ -91,6 +116,20 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
             }
 
             assertThat(ex.message).contains("NO_ROUTE")
+        }
+
+        @Test
+        fun `publishBatch should return failure for unroutable messages`() {
+            val results = messagePublisher.publishBatch(
+                listOf(
+                    OutboxMessage(message = UUID.randomUUID().toString()),
+                    OutboxMessage(message = UUID.randomUUID().toString())
+                )
+            )
+
+            assertThat(results).hasSize(2)
+            assertThat(results).allMatch { !it.success }
+            assertThat(results).allMatch { it.error!!.message!!.contains("NO_ROUTE") }
         }
     }
 }

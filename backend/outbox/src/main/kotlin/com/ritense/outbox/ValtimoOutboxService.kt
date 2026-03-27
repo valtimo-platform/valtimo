@@ -51,6 +51,11 @@ open class ValtimoOutboxService(
 
     @Transactional(propagation = Propagation.MANDATORY)
     override fun send(eventSupplier: Supplier<BaseEvent>) {
+        if (OutboxContext.outboxSuppressed) {
+            logger.debug { "Outbox is suppressed, skipping message" }
+            return
+        }
+
         val baseEvent = eventSupplier.get()
 
         val userId = baseEvent.userId ?: userProvider.getCurrentUserLogin() ?: "System"
@@ -96,14 +101,40 @@ open class ValtimoOutboxService(
         persistMessage(message)
     }
 
+    /**
+     * Collects deferred messages for a read-only transaction and persists them all in a single
+     * REQUIRES_NEW transaction during beforeCommit. This avoids opening a separate transaction
+     * per message, which would otherwise cause N transactions for N messages.
+     *
+     * Messages are stored as a transaction-bound resource using [TransactionSynchronizationManager],
+     * and a single [TransactionSynchronization] is registered on the first call. Subsequent calls
+     * within the same transaction simply add to the existing list.
+     */
     private fun deferMessage(message: String) {
-        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-            override fun beforeCommit(readOnly: Boolean) {
-                requiresNewTransactionTemplate.executeWithoutResult {
-                    persistMessage(message)
+        val key = DeferredMessagesKey::class.java
+
+        @Suppress("UNCHECKED_CAST")
+        var deferredMessages = TransactionSynchronizationManager.getResource(key) as MutableList<String>?
+
+        if (deferredMessages == null) {
+            deferredMessages = mutableListOf()
+            TransactionSynchronizationManager.bindResource(key, deferredMessages)
+            TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                override fun beforeCommit(readOnly: Boolean) {
+                    @Suppress("UNCHECKED_CAST")
+                    val messages = TransactionSynchronizationManager.getResource(key) as List<String>
+                    requiresNewTransactionTemplate.executeWithoutResult {
+                        persistMessages(messages)
+                    }
                 }
-            }
-        })
+
+                override fun afterCompletion(status: Int) {
+                    TransactionSynchronizationManager.unbindResourceIfPossible(key)
+                }
+            })
+        }
+
+        deferredMessages.add(message)
     }
 
     private fun persistMessage(message: String) {
@@ -112,9 +143,35 @@ open class ValtimoOutboxService(
         outboxMessageRepository.save(outboxMessage)
     }
 
+    private fun persistMessages(messages: List<String>) {
+        val outboxMessages = messages.map { OutboxMessage(message = it) }
+        logger.debug { "Saving ${outboxMessages.size} OutboxMessage(s)" }
+        outboxMessageRepository.saveAll(outboxMessages)
+    }
+
+    /** Resource key used to bind the list of deferred messages to the current transaction. */
+    private object DeferredMessagesKey
+
+    @Deprecated(
+        message = "Will be removed in 14.0. Use getOldestMessages(batchSize) instead",
+        replaceWith = ReplaceWith("getOldestMessages(1).firstOrNull()")
+    )
+    @Transactional(propagation = Propagation.MANDATORY)
     open fun getOldestMessage() = outboxMessageRepository.findOutboxMessage()
 
+    @Transactional(propagation = Propagation.MANDATORY)
+    open fun getOldestMessages(batchSize: Int): List<OutboxMessage> =
+        outboxMessageRepository.findOutboxMessages(batchSize)
+
+    @Deprecated(
+        message = "Will be removed in 14.0. Use deleteMessages(ids) instead",
+        replaceWith = ReplaceWith("deleteMessages(listOf(id))")
+    )
+    @Transactional(propagation = Propagation.MANDATORY)
     open fun deleteMessage(id: UUID) = outboxMessageRepository.deleteById(id)
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    open fun deleteMessages(ids: List<UUID>) = outboxMessageRepository.deleteAllById(ids)
 
     companion object {
         private val logger = KotlinLogging.logger {}

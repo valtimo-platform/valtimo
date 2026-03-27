@@ -6,5 +6,6 @@
     "objectenApiPluginConfigurationId": "8f35c270-21f4-4e99-a8a1-6c4f9d5a6c5c",
     "showInDataMenu": true,
     "formDefinitionView": "view_form",
-    "formDefinitionEdit": "edit_form"
+    "formDefinitionEdit": "edit_form",
+    "suppressOutbox": false
 }
