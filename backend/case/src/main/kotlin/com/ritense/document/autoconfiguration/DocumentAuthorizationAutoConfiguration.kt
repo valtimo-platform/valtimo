@@ -16,7 +16,10 @@
 
 package com.ritense.document.autoconfiguration
 
+import com.ritense.case.service.CaseDefinitionService
+import com.ritense.document.DocumentDefinitionCaseDefinitionMapper
 import com.ritense.document.DocumentDocumentDefinitionMapper
+import com.ritense.document.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.document.JsonSchemaDocumentDefinitionSpecificationFactory
 import com.ritense.document.JsonSchemaDocumentSpecificationFactory
 import com.ritense.document.SearchFieldSpecificationFactory
@@ -56,4 +59,16 @@ class DocumentAuthorizationAutoConfiguration {
     fun documentDocumentDefinitionMapper(
         documentDefinitionRepository: DocumentDefinitionRepository<JsonSchemaDocumentDefinition>
     ) = DocumentDocumentDefinitionMapper(documentDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentDefinitionCaseDefinitionMapper::class)
+    fun documentDefinitionCaseDefinitionMapper(
+        @Lazy caseDefinitionService: CaseDefinitionService
+    ) = DocumentDefinitionCaseDefinitionMapper(caseDefinitionService)
+
+    @Bean
+    @ConditionalOnMissingBean(name = ["jsonSchemaDocumentCaseDefinitionMapper"])
+    fun jsonSchemaDocumentCaseDefinitionMapper(
+        @Lazy caseDefinitionService: CaseDefinitionService,
+    ) = JsonSchemaDocumentCaseDefinitionMapper(caseDefinitionService)
 }

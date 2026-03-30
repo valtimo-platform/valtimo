@@ -27,6 +27,7 @@ import com.ritense.document.event.DocumentUpdatedSseEvent
 import com.ritense.inbox.ValtimoEvent
 import com.ritense.valtimo.web.sse.domain.SseEventMapper
 import com.ritense.valtimo.web.sse.event.BaseSseEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class DocumentSseEventMapper : SseEventMapper {
 
@@ -35,13 +36,20 @@ class DocumentSseEventMapper : SseEventMapper {
             DocumentCreated.TYPE -> CaseCreatedEvent()
             DocumentAssigned.TYPE -> CaseAssignedEvent()
             DocumentUnassigned.TYPE -> CaseUnassignedEvent()
-            DocumentUpdated.TYPE -> event.let {
-                DocumentUpdatedSseEvent(
-                    it.resultId!!
-                )
+            DocumentUpdated.TYPE -> {
+                val resultId = event.resultId
+                if (resultId == null) {
+                    logger.warn { "Received DocumentUpdated event without resultId, skipping" }
+                    return null
+                }
+                DocumentUpdatedSseEvent(resultId)
             }
 
             else -> null
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

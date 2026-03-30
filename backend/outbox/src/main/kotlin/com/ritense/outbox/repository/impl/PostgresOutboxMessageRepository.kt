@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,14 @@ import com.ritense.outbox.OutboxMessage
 import com.ritense.outbox.repository.OutboxMessageRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
+import org.springframework.data.repository.query.Param
 
 @NoRepositoryBean
 interface PostgresOutboxMessageRepository : OutboxMessageRepository {
 
     @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
     override fun findOutboxMessage(): OutboxMessage?
+
+    @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT :batchSize FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    override fun findOutboxMessages(@Param("batchSize") batchSize: Int): List<OutboxMessage>
 }
