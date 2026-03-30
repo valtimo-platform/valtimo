@@ -46,7 +46,8 @@ jobs:
       - name: Prepare deployment folder
         run: |
           mkdir deployment
-          mv app/gzac/build/ app/gzac/Dockerfile deployment/
+          mv app/gzac/build/ deployment/
+          if [ -f app/gzac/Dockerfile ]; then mv app/gzac/Dockerfile deployment/; fi
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
