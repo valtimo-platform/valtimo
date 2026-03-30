@@ -63,6 +63,7 @@ import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.service.TaskBusinessKeyResolver;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.task.listener.TaskTeamChangedListener;
 import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository;
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
@@ -415,6 +416,17 @@ public class ValtimoAutoConfiguration {
         final OperatonRepositoryService repositoryService
     ) {
         return new ProcessPropertyService(processDefinitionPropertiesRepository, valtimoProperties, repositoryService);
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(TaskTeamChangedListener.class)
+    public TaskTeamChangedListener taskTeamChangedListener(
+        final TaskTeamRepository taskTeamRepository
+    ) {
+        return new TaskTeamChangedListener(
+            taskTeamRepository
+        );
     }
 
 }
