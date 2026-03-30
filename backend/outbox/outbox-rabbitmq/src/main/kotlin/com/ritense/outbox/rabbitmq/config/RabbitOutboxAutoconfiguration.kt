@@ -33,7 +33,7 @@ class RabbitOutboxAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean(MessagePublisher::class)
-    fun outboxPublisher(rabbitTemplate: RabbitTemplate, configurationProperties: RabbitOutboxConfigurationProperties): MessagePublisher {
+    fun rabbitMessagePublisher(rabbitTemplate: RabbitTemplate, configurationProperties: RabbitOutboxConfigurationProperties): MessagePublisher {
         return RabbitMessagePublisher(
             rabbitTemplate,
             configurationProperties.routingKey,

@@ -20,10 +20,17 @@ import com.ritense.outbox.OutboxMessage
 import com.ritense.outbox.repository.OutboxMessageRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
+import org.springframework.data.repository.query.Param
 
 @NoRepositoryBean
 interface MySqlOutboxMessageRepository : OutboxMessageRepository {
 
-    @Query("SELECT * FROM outbox_message LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    // ORDER BY created_on ASC guarantees FIFO ordering but causes MySQL gap-locks: InnoDB locks
+    // gaps between index entries during the ordered scan, which can cause parallel pollers to skip
+    // older messages. If you need correct ordering, use a single polling publisher per outbox table.
+    @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT 1 FOR UPDATE SKIP LOCKED", nativeQuery = true)
     override fun findOutboxMessage(): OutboxMessage?
+
+    @Query("SELECT * FROM outbox_message ORDER BY created_on ASC LIMIT :batchSize FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    override fun findOutboxMessages(@Param("batchSize") batchSize: Int): List<OutboxMessage>
 }
