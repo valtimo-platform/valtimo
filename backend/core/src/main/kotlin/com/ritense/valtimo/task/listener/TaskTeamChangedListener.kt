@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.task.listener
 
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamDeletedEvent
 import com.ritense.valtimo.contract.authentication.TeamUpdatedEvent
 import com.ritense.valtimo.task.repository.TaskTeamRepository
@@ -23,9 +24,10 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
+@SkipComponentScan
 @Component
 class TaskTeamChangedListener(
-    private val taskTeamRepository: TaskTeamRepository
+    private val taskTeamRepository: TaskTeamRepository,
 ) {
 
     @EventListener
