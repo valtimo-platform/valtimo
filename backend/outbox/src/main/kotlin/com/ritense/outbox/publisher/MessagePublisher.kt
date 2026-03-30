@@ -21,4 +21,24 @@ import com.ritense.outbox.OutboxMessage
 interface MessagePublisher {
 
     fun publish(message: OutboxMessage)
+
+    /**
+     * Publishes a batch of messages and returns a per-message result.
+     *
+     * The default implementation delegates to [publish] for each message individually,
+     * catching exceptions per message so that one failure does not prevent the rest from being published.
+     *
+     * Batch-capable publishers (e.g. using RabbitMQ batch sends) can override this
+     * to publish multiple messages in a single network round-trip.
+     */
+    fun publishBatch(messages: List<OutboxMessage>): List<MessagePublishResult> {
+        return messages.map { message ->
+            try {
+                publish(message)
+                MessagePublishResult(messageId = message.id, success = true)
+            } catch (e: Exception) {
+                MessagePublishResult(messageId = message.id, success = false, error = e)
+            }
+        }
+    }
 }

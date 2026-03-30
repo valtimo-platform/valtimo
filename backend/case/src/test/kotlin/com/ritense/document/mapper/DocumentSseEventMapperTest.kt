@@ -83,6 +83,16 @@ class DocumentSseEventMapperTest {
     }
 
     @Test
+    fun `should return null when document updated event has no resultId`() {
+        val valtimoEvent = mock<ValtimoEvent>()
+        whenever(valtimoEvent.type).thenReturn(DocumentUpdated.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(null)
+
+        val sseEvent = documentSseEventMapper.map(valtimoEvent)
+        assertNull(sseEvent)
+    }
+
+    @Test
     fun `should map to null with unknown type event`() {
         val valtimoEvent = mock<ValtimoEvent>()
         whenever(valtimoEvent.type).thenReturn("unknown")
