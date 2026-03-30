@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.valtimo.web.logging
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.web.client.RestClientCustomizer
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpRequest
 import org.springframework.http.MediaType
 import org.springframework.http.client.ClientHttpRequestExecution
@@ -45,9 +46,9 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
         val response = execution.execute(request, requestBody)
         val requestBodyHead = requestBody.take(DEFAULT_BUFFER_SIZE).toByteArray()
         return CopiedHeadClientHttpResponse(response) { responseBodyHead ->
-            logger.debug { createRequestReport(request, requestBodyHead, response, responseBodyHead) }
+            val report = createRequestReport(request, requestBodyHead, response, responseBodyHead)
+            logger.debug { report }
             if (response.statusCode.isError) {
-                val report = createRequestReport(request, requestBodyHead, response, responseBodyHead)
                 throw HttpClientErrorException(
                     report,
                     response.statusCode,
@@ -70,15 +71,25 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
             |Request:
             |HTTP Method = ${request.method}
             |Request URI = ${request.uri}
-            |Header names = ${request.headers.keys}
+            |Headers = ${redactHeaders(request.headers)}
             |Body = ${getFormattedBody(requestBody, request.headers.contentType)}
             |---------------------------------------
             |Response:
             |Status = ${response.statusCode}
-            |Headers = ${response.headers}
+            |Headers = ${redactHeaders(response.headers)}
             |Content type = ${response.headers.contentType}
             |Body = ${getFormattedBody(responseBody, response.headers.contentType)}
         |""".trimMargin()
+    }
+
+    private fun redactHeaders(headers: HttpHeaders): Map<String, List<String>> {
+        return headers.entries.associate { (name, values) ->
+            if (SENSITIVE_HEADERS.any { it.equals(name, ignoreCase = true) }) {
+                name to listOf(REDACTED)
+            } else {
+                name to values
+            }
+        }
     }
 
     private fun getFormattedBody(body: ByteArray, contentType: MediaType?): String {
@@ -142,5 +153,18 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
 
     companion object {
         val logger = KotlinLogging.logger {}
+
+        private const val REDACTED = "REDACTED"
+
+        internal val SENSITIVE_HEADERS = setOf(
+            "Authorization",
+            "X-Api-Key",
+            "X-API-Key",
+            "Proxy-Authorization",
+            "Cookie",
+            "Set-Cookie",
+            "WWW-Authenticate",
+            "X-Auth-Token",
+        )
     }
 }

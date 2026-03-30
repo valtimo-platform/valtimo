@@ -27,6 +27,11 @@
 ## Bugfixes
 
 * Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
+* Fixed sensitive data exposure in REST client logging. The `LoggingRestClientCustomizer` now redacts
+  sensitive HTTP headers (e.g. `Authorization`, `X-Api-Key`, `Cookie`, `Set-Cookie`,
+  `WWW-Authenticate`) in both debug logs and error exception messages. Previously, authentication
+  tokens and API keys could leak into log aggregation tools and Valtimo's built-in logging module
+  when outgoing HTTP calls (e.g. to ZGW APIs) were logged.
 * Fixed MySQL outbox message query missing ordering.
 * Fixed RabbitMQ outbox publisher null safety on confirmation result.
 
