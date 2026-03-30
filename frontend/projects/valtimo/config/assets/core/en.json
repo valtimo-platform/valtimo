@@ -1838,7 +1838,7 @@
       "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
       "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
       "showInDataMenu": "Indicates whether the object type is visible in the menu",
-      "suppressOutbox": "When enabled, read flows this objecttype skip outbox message creation."
+      "suppressOutbox": "When enabled, read flows for this object type skip outbox message creation."
     },
     "cancel": "Cancel",
     "add": "Add object",

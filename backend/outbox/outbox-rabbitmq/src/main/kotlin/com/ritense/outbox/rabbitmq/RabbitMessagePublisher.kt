@@ -29,6 +29,7 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
 class RabbitMessagePublisher(
@@ -87,6 +88,11 @@ class RabbitMessagePublisher(
             CompletableFuture.allOf(*allFutures.toTypedArray())[deliveryTimeout.toMillis(), TimeUnit.MILLISECONDS]
         } catch (_: TimeoutException) {
             // Some futures may not have completed — handled per-message below
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            // Proceed to collect partial results — incomplete futures handled per-message below
+        } catch (_: ExecutionException) {
+            // Individual future failures handled per-message below
         }
 
         // Phase 3: collect results per message
