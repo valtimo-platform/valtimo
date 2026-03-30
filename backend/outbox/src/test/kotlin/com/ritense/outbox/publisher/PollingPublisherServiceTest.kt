@@ -51,7 +51,6 @@ class PollingPublisherServiceTest {
     @Test
     fun `should use default batch size of 10 with secondary constructor`() {
         val msg = OutboxMessage(message = "test")
-        whenever(outboxService.getOldestMessages(10)).thenReturn(listOf(msg))
         whenever(outboxService.getOldestMessages(10))
             .thenReturn(listOf(msg))
             .thenReturn(emptyList())

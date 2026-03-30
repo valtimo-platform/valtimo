@@ -16,6 +16,7 @@
 
 package com.ritense.outbox
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -108,16 +109,18 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
         insertOutboxMessage("event 3")
 
         // First transaction locks the first 2 messages
+        val locksAcquired = CompletableDeferred<Unit>()
         val batch1Ref = async(Dispatchers.IO) {
             TransactionTemplate(platformTransactionManager).execute {
                 val messages = outboxMessageRepository.findOutboxMessages(2)
+                locksAcquired.complete(Unit)
                 Thread.sleep(1000) // hold the lock
                 messages
             }
         }
 
         // Second transaction should skip the locked messages and get the 3rd
-        Thread.sleep(100) // ensure first transaction has acquired locks
+        locksAcquired.await()
         val batch2Ref = async(Dispatchers.IO) {
             TransactionTemplate(platformTransactionManager).execute {
                 outboxMessageRepository.findOutboxMessages(2)
