@@ -145,7 +145,15 @@ public class TaskResource extends AbstractTaskResource {
     @PostMapping("/v1/task/assign/batch-assign")
     public ResponseEntity<Void> batchClaim(@RequestBody BatchAssignTaskDTO batchAssignTaskDTO) {
         final String assignee = batchAssignTaskDTO.getAssignee();
-        batchAssignTaskDTO.getTasksIds().forEach(taskId -> operatonTaskService.assign(taskId, assignee));
+        final String assignedTeamKey = batchAssignTaskDTO.getAssignedTeamKey();
+        batchAssignTaskDTO.getTasksIds().forEach(taskId -> {
+            if (assignee != null) {
+                operatonTaskService.assign(taskId, assignee);
+            }
+            if (assignedTeamKey != null) {
+                operatonTaskService.assignTeamToTask(taskId, assignedTeamKey);
+            }
+        });
         return ResponseEntity.ok().build();
     }
 

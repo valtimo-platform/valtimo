@@ -2,164 +2,6 @@
     {
         "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
         "actions": [
-            "view",
-            "view_list",
-            "modify",
-            "export"
-        ],
-        "roleKey": "ROLE_USER",
-        "conditions": [
-            {
-                "type": "field",
-                "field": "assigneeId",
-                "operator": "==",
-                "value": "${currentUsername}"
-            },
-            {
-                "type": "container",
-                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
-                "conditions": [
-                    {
-                        "type": "field",
-                        "field": "id.key",
-                        "operator": "==",
-                        "value": "bezwaar"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "actions": [
-            "view",
-            "view_list",
-            "modify",
-            "export"
-        ],
-        "roleKey": "ROLE_USER",
-        "conditions": [
-            {
-                "type": "field",
-                "field": "assignedTeamKey",
-                "operator": "in",
-                "value": "${currentUserTeams}"
-            },
-            {
-                "type": "container",
-                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
-                "conditions": [
-                    {
-                        "type": "field",
-                        "field": "id.key",
-                        "operator": "==",
-                        "value": "bezwaar"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "actions": [
-            "assignable",
-            "claim"
-        ],
-        "roleKey": "ROLE_USER",
-        "conditions": [
-            {
-                "type": "field",
-                "field": "assigneeId",
-                "operator": "==",
-                "value": null
-            },
-            {
-                "type": "field",
-                "field": "assignedTeamKey",
-                "operator": "==",
-                "value": null
-            },
-            {
-                "type": "container",
-                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
-                "conditions": [
-                    {
-                        "type": "field",
-                        "field": "id.key",
-                        "operator": "==",
-                        "value": "bezwaar"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "actions": [
-            "assignable",
-            "claim"
-        ],
-        "roleKey": "ROLE_USER",
-        "conditions": [
-            {
-                "type": "field",
-                "field": "assigneeId",
-                "operator": "==",
-                "value": null
-            },
-            {
-                "type": "field",
-                "field": "assignedTeamKey",
-                "operator": "in",
-                "value": "${currentUserTeams}"
-            },
-            {
-                "type": "container",
-                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
-                "conditions": [
-                    {
-                        "type": "field",
-                        "field": "id.key",
-                        "operator": "==",
-                        "value": "bezwaar"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "action": "assign",
-        "roleKey": "ROLE_USER",
-        "conditions": [
-            {
-                "type": "field",
-                "field": "assigneeId",
-                "operator": "==",
-                "value": null
-            },
-            {
-                "type": "container",
-                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
-                "conditions": [
-                    {
-                        "type": "field",
-                        "field": "id.key",
-                        "operator": "==",
-                        "value": "bezwaar"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "action": "assignable",
-        "roleKey": "ROLE_USER"
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-        "actions": [
             "create"
         ],
         "roleKey": "ROLE_USER",
@@ -176,6 +18,112 @@
                             "leningen",
                             "bezwaar"
                         ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "assignable",
+            "claim",
+            "assign"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "assignable",
+            "claim",
+            "assign"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": null
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "==",
+                "value": "${currentUserTeams}"
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "modify",
+            "export"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "assigneeId",
+                "operator": "==",
+                "value": "${currentUsername}"
+            },
+            {
+                "type": "field",
+                "field": "assignedTeamKey",
+                "operator": "in",
+                "value": "${currentUserTeams}"
+            },
+            {
+                "type": "container",
+                "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "id.key",
+                        "operator": "==",
+                        "value": "bezwaar"
                     }
                 ]
             }
