@@ -37,6 +37,8 @@ interface AuthorizationService {
 
     fun <FROM, TO> getMapper(from: Class<FROM>, to: Class<TO>): AuthorizationEntityMapper<FROM, TO>
 
+    fun hasMapper(from: Class<*>, to: Class<*>): Boolean
+
     fun <T : Any> getAvailableActionsForResource(clazz: Class<T>): List<Action<T>>
 
     fun <T : Any> hasPermission(request: AuthorizationRequest<T>): Boolean

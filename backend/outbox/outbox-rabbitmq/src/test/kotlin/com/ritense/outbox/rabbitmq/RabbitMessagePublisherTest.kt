@@ -101,6 +101,126 @@ class RabbitMessagePublisherTest {
         Assertions.assertThat(ex.message).contains("not confirmed in time")
     }
 
+    @Test
+    fun `publishBatch should send all messages before waiting for confirms`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        val sendOrder = mutableListOf<String>()
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            sendOrder.add("send")
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            correlationData.future.complete(CorrelationData.Confirm(true, null))
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "msg1"),
+            OutboxMessage(message = "msg2"),
+            OutboxMessage(message = "msg3")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results).hasSize(3)
+        Assertions.assertThat(results).allMatch { it.success }
+        Assertions.assertThat(sendOrder).hasSize(3)
+    }
+
+    @Test
+    fun `publishBatch should return per-message results on partial failure`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        var callCount = 0
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            callCount++
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            if (callCount == 2) {
+                correlationData.future.complete(CorrelationData.Confirm(false, "nacked"))
+            } else {
+                correlationData.future.complete(CorrelationData.Confirm(true, null))
+            }
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "ok1"),
+            OutboxMessage(message = "fail"),
+            OutboxMessage(message = "ok2")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results[0].success).isTrue()
+        Assertions.assertThat(results[1].success).isFalse()
+        Assertions.assertThat(results[1].error!!.message).contains("not acknowledged")
+        Assertions.assertThat(results[2].success).isTrue()
+    }
+
+    @Test
+    fun `publishBatch should handle returned messages per message`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        var callCount = 0
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            callCount++
+            val message = MessageBuilder.withBody(answer.getArgument(2, String::class.java).toByteArray()).build()
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            if (callCount == 1) {
+                correlationData.returned = ReturnedMessage(message, 312, "NO_ROUTE", "", "")
+            }
+            correlationData.future.complete(CorrelationData.Confirm(true, null))
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "unroutable"),
+            OutboxMessage(message = "ok")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results[0].success).isFalse()
+        Assertions.assertThat(results[0].error!!.message).contains("NO_ROUTE")
+        Assertions.assertThat(results[1].success).isTrue()
+    }
+
+    @Test
+    fun `publishBatch should handle timeout per message`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        var callCount = 0
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            callCount++
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            // Only complete the second message — first will time out
+            if (callCount == 2) {
+                correlationData.future.complete(CorrelationData.Confirm(true, null))
+            }
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "timeout"),
+            OutboxMessage(message = "ok")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results[0].success).isFalse()
+        Assertions.assertThat(results[0].error!!.message).contains("not confirmed in time")
+        Assertions.assertThat(results[1].success).isTrue()
+    }
+
+    @Test
+    fun `publishBatch should return empty list for empty input`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+
+        val results = publisher.publishBatch(emptyList())
+
+        Assertions.assertThat(results).isEmpty()
+    }
+
     private fun getMockedRabbitTemplate(
         publisherConfirms: Boolean = true,
         publisherReturns: Boolean = true,

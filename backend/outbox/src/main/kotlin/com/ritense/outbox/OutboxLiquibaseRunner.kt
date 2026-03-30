@@ -42,7 +42,7 @@ class OutboxLiquibaseRunner(
         val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection)
         try {
             val liquibase = Liquibase(LIQUIBASE_CHANGE_LOG_LOCATION, ClassLoaderResourceAccessor(), database)
-            logger.info("Running liquibase master changelog: {}", liquibase.changeLogFile)
+            logger.info { "Running liquibase master changelog: ${liquibase.changeLogFile}" }
             liquibase.update(context)
         } catch (liquibaseException: LiquibaseException) {
             throw DatabaseException(liquibaseException)
@@ -51,7 +51,7 @@ class OutboxLiquibaseRunner(
                 connection.rollback()
                 connection.close()
             } catch (sqlException: SQLException) {
-                logger.error("Error closing connection ", sqlException)
+                logger.error(sqlException) { "Error closing connection" }
             }
         }
     }
