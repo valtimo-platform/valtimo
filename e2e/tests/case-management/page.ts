@@ -15,8 +15,7 @@
  */
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
-import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
-import {caseConfiguration, CaseManagementFieldMap} from './case-config';
+import {caseConfiguration} from './case-config';
 import path from 'path';
 import {
   CASE_MANAGEMENT_CREATE_TEST_IDS,
@@ -31,7 +30,10 @@ export interface UploadCaseOptions {
 }
 
 export class CaseManagementPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get createSaveButton() {
@@ -66,12 +68,28 @@ export class CaseManagementPage {
     return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
   }
 
-  get uploadWarningCheckbox() {
-    return this.page.getByRole('checkbox', {name: /I understand that configurations may be overwritten/});
+  get configureNameInput() {
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.nameInput);
   }
 
-  get uploadWarningNotification() {
-    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.uploadWarningNotification);
+  get configureKeyInput() {
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.keyInput);
+  }
+
+  get configureVersionTag() {
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.versionTag);
+  }
+
+  get configureKeyEditButton() {
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.keyEditButton);
+  }
+
+  get overrideCheckbox() {
+    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.overrideCheckbox);
+  }
+
+  get uploadWizardCloseButton() {
+    return this.page.getByRole('dialog').locator('button.cds--modal-close');
   }
 
   // Navigation
@@ -81,7 +99,10 @@ export class CaseManagementPage {
     if ((await adminButton.getAttribute('aria-expanded')) !== 'true') {
       await adminButton.click();
     }
-    await this.page.locator('[data-testid="sidenav-item-Admin"]').getByRole('link', {name: 'Cases'}).click();
+    await this.page
+      .locator('[data-testid="sidenav-item-Admin"]')
+      .getByRole('link', {name: 'Cases'})
+      .click();
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 
@@ -109,7 +130,8 @@ export class CaseManagementPage {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
-    const response = await this.uploadFileStep(archiveName);
+    await this.uploadFileStep(archiveName);
+    const response = await this.configureStep();
 
     if (response.status() === 200) {
       // Success: click Next to advance through remaining steps
@@ -123,18 +145,22 @@ export class CaseManagementPage {
     }
   }
 
+  async uploadInvalidCase(options?: UploadCaseOptions) {
+    const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
+    await this.uploadCaseButton.click();
+    await this.pluginConfigurationStep();
+    await this.uploadInvalidFileStep(archiveName);
+    await this.closeUploadWizard();
+  }
+
+  async closeUploadWizard() {
+    await this.uploadWizardCloseButton.click();
+    await expect(this.page.locator('.cds--modal.is-visible')).not.toBeVisible();
+  }
+
   async uploadCaseConfiguration(archiveName: string) {
     const filePath = path.resolve(process.cwd(), 'assets', 'case-import-archives', archiveName);
     await this.fileUploader.locator('input.cds--file-input[type="file"]').setInputFiles(filePath);
-  }
-
-  async checkWarningMessage() {
-    await expect(this.uploadWarningNotification).toBeVisible();
-
-    const overwriteCheckbox = this.uploadWarningCheckbox;
-    await overwriteCheckbox.check({force: true});
-    await expect(overwriteCheckbox).toBeChecked();
-    await expect(this.uploadWizardNextButton).toBeEnabled();
   }
 
   // Upload steps
@@ -147,36 +173,125 @@ export class CaseManagementPage {
   }
 
   async uploadFileStep(archiveName: string) {
-    await expect(this.page.getByText('Upload File')).toBeVisible();
-    await expect(this.page.getByRole('alert')).toBeVisible();
+    await expect(this.page.getByText('Upload file')).toBeVisible();
     await expect(
-      this.page.getByText('Max file size is 500kb. Supported file types are ZIP and JSON.')
+      this.page.getByText('Max file size is 500kb. Supported file type is ZIP.')
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
-    await this.checkWarningMessage();
+    await expect(this.uploadWizardNextButton).toBeEnabled();
+    await this.uploadWizardNextButton.click();
+  }
+
+  async uploadInvalidFileStep(archiveName: string) {
+    await expect(this.page.getByText('Upload file')).toBeVisible();
+    await this.uploadCaseConfiguration(archiveName);
+    await expect(this.page.getByText('Invalid file')).toBeVisible();
+    await expect(
+      this.page.getByText('The file could not be read as a valid case definition archive.')
+    ).toBeVisible();
+    await expect(this.uploadWizardNextButton).toBeDisabled();
+  }
+
+  async configureStep() {
+    await expect(this.configureNameInput).toBeVisible();
+    await expect(this.configureKeyInput).toBeVisible();
+    await expect(this.configureVersionTag).toBeVisible();
+
+    // If an existing draft warning appears, confirm the override checkbox
+    const overrideCheckbox = this.overrideCheckbox;
+    if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
+      await overrideCheckbox.locator('input[type="checkbox"]').click({force: true});
+    }
 
     const responsePromise = this.page.waitForResponse(
       res =>
-        res.url().includes('/api/management/v1/case/import') &&
-        res.request().method() === 'POST'
+        res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
     );
+    await expect(this.uploadWizardNextButton).toBeEnabled();
     await this.uploadWizardNextButton.click();
 
     return await responsePromise;
   }
 
+  async configureStepWithCustomKey(name: string, key: string) {
+    await expect(this.configureNameInput).toBeVisible();
+
+    // Clear and fill custom name
+    await this.configureNameInput.clear();
+    await this.configureNameInput.fill(name);
+
+    // Enable key editing and fill custom key
+    await this.changeConfigureKey(key);
+
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
+    );
+    await expect(this.uploadWizardNextButton).toBeEnabled();
+    await this.uploadWizardNextButton.click();
+
+    return await responsePromise;
+  }
+
+  async changeConfigureKey(key: string) {
+    await this.configureKeyEditButton.click();
+    await expect(this.configureKeyInput).toBeEnabled();
+    await this.configureKeyInput.clear();
+    await this.configureKeyInput.fill(key);
+  }
+
+  async assertConfigurePreFilled(
+    expectedName: string,
+    expectedKey: string,
+    expectedVersion: string
+  ) {
+    await expect(this.configureNameInput).toBeVisible();
+    await expect(this.configureNameInput).toHaveValue(expectedName);
+    await expect(this.configureKeyInput).toHaveValue(expectedKey);
+    await expect(this.configureVersionTag).toContainText(expectedVersion);
+  }
+
+  async assertNewVersionWarning() {
+    await expect(this.page.getByText('New version')).toBeVisible();
+    await expect(
+      this.page.getByText(
+        'A case definition with this key already exists. This will be imported as a new version.'
+      )
+    ).toBeVisible();
+    await expect(this.uploadWizardNextButton).toBeEnabled();
+  }
+
+  async assertExistingDraftWarning() {
+    await expect(this.page.getByText('Warning')).toBeVisible();
+    await expect(
+      this.page.getByText(
+        'A draft version with this key and version already exists. Importing will override the existing draft.'
+      )
+    ).toBeVisible();
+    await expect(this.uploadWizardNextButton).toBeDisabled();
+    await expect(this.overrideCheckbox).toBeVisible();
+  }
+
+  async assertExistingFinalWarning() {
+    await expect(this.page.getByText('Cannot import')).toBeVisible();
+    await expect(
+      this.page.getByText('A finalized version with this key and version already exists.')
+    ).toBeVisible();
+    await expect(this.uploadWizardNextButton).toBeDisabled();
+  }
+
   async accessControlStep() {
     await expect(this.page.getByText('Access control', {exact: true})).toBeVisible();
-    await expect(this.page.getByText('Don\'t forget to set the rights in Access Control')).toBeVisible();
+    await expect(
+      this.page.getByText("Don't forget to set the rights in Access Control")
+    ).toBeVisible();
     await this.uploadWizardNextButton.click();
   }
 
   async dashboardStep() {
     const dialog = this.page.getByRole('dialog');
     await expect(dialog.getByText('Dashboard', {exact: true})).toBeVisible();
-    await expect(
-      dialog.getByText('If you want widgets to appear on your dashboard')
-    ).toBeVisible();
+    await expect(dialog.getByText('If you want widgets to appear on your dashboard')).toBeVisible();
     await this.uploadWizardFinishButton.click();
   }
 

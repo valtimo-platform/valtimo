@@ -149,7 +149,8 @@ export class CaseManagementService extends BaseApiService {
   public previewImport(file: FormData): Observable<CaseDefinitionImportPreview> {
     return this.httpClient.post<CaseDefinitionImportPreview>(
       this.getApiUrl('management/v1/case/import/preview'),
-      file
+      file,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400')}
     );
   }
 
