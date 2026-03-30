@@ -25,6 +25,7 @@
       "modal": {
         "confirm": "Assign",
         "selectLabel": "Assign to user",
+        "selectTeamLabel": "Assign to team",
         "selectPlaceholder": "Choose an option",
         "title": "Assign selected cases to",
         "warningTitle": "Warning",

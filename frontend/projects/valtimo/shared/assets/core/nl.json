@@ -25,6 +25,7 @@
       "modal": {
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
+        "selectTeamLabel": "Toewijzen aan team",
         "selectPlaceholder": "Kies een optie",
         "title": "Wijs geselecteerde cases toe aan",
         "warningTitle": "Waarschuwing",

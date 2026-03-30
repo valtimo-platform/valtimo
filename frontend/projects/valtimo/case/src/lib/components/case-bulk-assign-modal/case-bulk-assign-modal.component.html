@@ -23,6 +23,7 @@
     <ng-container
       *ngIf="{
         candidateUserItems: candidateUserItems$ | async,
+        teamItems: teamItems$ | async,
         canAssignAllDocuments: canAssignAllDocuments$ | async,
         canAssignAnyDocuments: canAssignAnyDocuments$ | async
       } as obs"
@@ -59,6 +60,17 @@
         >
           <cds-dropdown-list></cds-dropdown-list>
         </cds-combo-box>
+
+        <cds-combo-box
+          *ngIf="obs.teamItems?.length"
+          formControlName="team"
+          [dropUp]="false"
+          [items]="obs.teamItems"
+          [label]="'case.bulkAssign.modal.selectTeamLabel' | translate"
+          [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+        >
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
       </form>
     </ng-container>
   </section>
@@ -73,7 +85,7 @@
 
       <button
         cdsButton="primary"
-        [disabled]="formGroup.invalid || !obs.canAssignAnyDocuments"
+        [disabled]="!isFormValid || !obs.canAssignAnyDocuments"
         (click)="closeModal(true)"
       >
         {{ 'case.bulkAssign.modal.confirm' | translate }}
