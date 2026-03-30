@@ -18,6 +18,7 @@ import {APIRequestContext, expect, Page} from '@playwright/test';
 import {caseConfiguration} from './case-config';
 import path from 'path';
 import {
+  AUTO_KEY_INPUT_TEST_IDS,
   CASE_MANAGEMENT_CREATE_TEST_IDS,
   CASE_MANAGEMENT_LIST_TEST_IDS,
   CASE_MANAGEMENT_UPLOAD_TEST_IDS,
@@ -73,7 +74,7 @@ export class CaseManagementPage {
   }
 
   get configureKeyInput() {
-    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.keyInput);
+    return this.page.getByTestId(AUTO_KEY_INPUT_TEST_IDS.input);
   }
 
   get configureVersionTag() {
@@ -81,7 +82,7 @@ export class CaseManagementPage {
   }
 
   get configureKeyEditButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_UPLOAD_TEST_IDS.keyEditButton);
+    return this.page.getByTestId(AUTO_KEY_INPUT_TEST_IDS.editButton);
   }
 
   get overrideCheckbox() {
@@ -235,7 +236,7 @@ export class CaseManagementPage {
 
   async changeConfigureKey(key: string) {
     await this.configureKeyEditButton.click();
-    await expect(this.configureKeyInput).toBeEnabled();
+    await expect(this.configureKeyEditButton).not.toBeVisible();
     await this.configureKeyInput.clear();
     await this.configureKeyInput.fill(key);
   }

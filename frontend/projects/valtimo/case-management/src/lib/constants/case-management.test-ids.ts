@@ -29,8 +29,6 @@ export const CASE_MANAGEMENT_UPLOAD_TEST_IDS = {
   nextButton: 'uploadWizardNextButton',
   finishButton: 'uploadWizardFinishButton',
   nameInput: 'importConfigureNameInput',
-  keyInput: 'importConfigureKeyInput',
-  keyEditButton: 'importConfigureKeyEditButton',
   versionTag: 'importConfigureVersionTag',
   overrideCheckbox: 'importConfigureOverrideCheckbox',
 } as const;

@@ -23,10 +23,9 @@ import {
   Output,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {FileItem, IconService} from 'carbon-components-angular';
+import {FileItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -72,7 +71,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   public readonly uploadStatus$ = new BehaviorSubject<UPLOAD_STATUS>(UPLOAD_STATUS.ACTIVE);
   public readonly preview$ = new BehaviorSubject<CaseDefinitionImportPreview | null>(null);
   public readonly importWarning$ = new BehaviorSubject<IMPORT_WARNING>(IMPORT_WARNING.NONE);
-  public readonly editKeyActive$ = new BehaviorSubject<boolean>(false);
   public readonly overrideConfirmed$ = new BehaviorSubject<boolean>(false);
 
   public readonly backButtonEnabled$: Observable<boolean> = this.activeStep$.pipe(
@@ -126,11 +124,12 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
 
   public configureForm: FormGroup = this.fb.group({
     name: this.fb.control('', Validators.required),
-    caseDefinitionKey: this.fb.control({value: '', disabled: true}, [
-      Validators.required,
-      Validators.pattern('[A-Za-z0-9-]*'),
-    ]),
+    caseDefinitionKey: this.fb.control('', Validators.required),
   });
+
+  public get nameControl(): AbstractControl {
+    return this.configureForm.get('name');
+  }
 
   private readonly _importFile$ = new BehaviorSubject<FormData | null>(null);
   private readonly _subscriptions = new Subscription();
@@ -138,11 +137,8 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   constructor(
     private readonly caseManagementService: CaseManagementService,
     private readonly fb: FormBuilder,
-    private readonly iconService: IconService,
     private readonly translateService: TranslateService
-  ) {
-    this.iconService.register(Edit16);
-  }
+  ) {}
 
   public ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
@@ -206,21 +202,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
     }
 
     this.uploadDefinition();
-  }
-
-  public onNameFocusOut(): void {
-    const name = this.configureForm.get('name')?.value;
-    if (!name || this.editKeyActive$.value) return;
-    const derivedKey = name
-      .replace(/[\W_]+/g, '-')
-      .replace(/-$/, '')
-      .toLowerCase();
-    this.configureForm.get('caseDefinitionKey')?.patchValue(derivedKey);
-  }
-
-  public enableKeyEdit(): void {
-    this.editKeyActive$.next(true);
-    this.configureForm.get('caseDefinitionKey')?.enable();
   }
 
   private setZipFile(fileItem: FileItem): void {
@@ -342,7 +323,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       this.preview$.next(null);
       this.importWarning$.next(IMPORT_WARNING.NONE);
       this.overrideConfirmed$.next(false);
-      this.editKeyActive$.next(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }
