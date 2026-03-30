@@ -27,5 +27,4 @@
     <include file="/13-20-0/13-20-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-22-0/13-22-0-master.xml" relativeToChangelogFile="true"/>
 
-
 </databaseChangeLog>

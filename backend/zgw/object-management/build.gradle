@@ -41,6 +41,7 @@ dependencies {
     implementation project(':backend:zgw:objecttypen-api')
     implementation project(':backend:zgw:objecten-api')
     implementation project(':backend:logging')
+    implementation project(':backend:outbox')
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"

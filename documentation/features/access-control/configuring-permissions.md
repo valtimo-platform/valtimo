@@ -150,6 +150,9 @@ The example below shows how container conditions can be used to join other entit
     ]
 }
 ```
+
+For more information on container conditions, including CaseDefinition scoping, nesting containers, and a full list of
+available container relationships, see [Container conditions](container-conditions.md).
 {% endtab %}
 {% endtabs %}
 

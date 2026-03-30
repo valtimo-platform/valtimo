@@ -37,6 +37,7 @@ class PollingPublisherJobIntTest : BaseIntegrationTest() {
 
         pollingPublisherJob.scheduledTaskPollMessage()
 
+        verify(messagePublisher, times(1)).publishBatch(any())
         verify(messagePublisher, times(1)).publish(any())
     }
 }

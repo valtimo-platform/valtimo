@@ -158,6 +158,9 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
     if (data.showInDataMenu === '') {
       data.showInDataMenu = false;
     }
+    if (data.suppressOutbox === '') {
+      data.suppressOutbox = false;
+    }
     this.formData$.next(data);
     this.setValid(data);
   }

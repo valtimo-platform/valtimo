@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,12 @@ import com.ritense.outbox.publisher.PollingPublisherService
 import com.ritense.outbox.repository.OutboxMessageRepository
 import com.ritense.outbox.repository.impl.MySqlOutboxMessageRepository
 import com.ritense.outbox.repository.impl.PostgresOutboxMessageRepository
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -41,9 +44,11 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean
 import org.springframework.transaction.PlatformTransactionManager
+import java.time.Duration
 import java.util.UUID
 import javax.sql.DataSource
 
@@ -52,7 +57,7 @@ import javax.sql.DataSource
 @EnableJpaRepositories(basePackages = ["com.ritense.outbox.repository.impl"])
 @EntityScan(basePackages = ["com.ritense.outbox"])
 @AutoConfigureAfter(DataSourceAutoConfiguration::class, HibernateJpaAutoConfiguration::class)
-@EnableConfigurationProperties(LiquibaseProperties::class)
+@EnableConfigurationProperties(LiquibaseProperties::class, OutboxPollingProperties::class)
 class OutboxAutoConfiguration {
 
     @Bean
@@ -64,10 +69,9 @@ class OutboxAutoConfiguration {
         return OutboxLiquibaseRunner(liquibaseProperties, datasource)
     }
 
-    @ConditionalOnMissingBean(UserProvider::class)
     @Bean
-    fun userProvider(
-    ): UserProvider {
+    @ConditionalOnMissingBean(UserProvider::class)
+    fun outboxUserProvider(): UserProvider {
         return UserProvider()
     }
 
@@ -86,17 +90,52 @@ class OutboxAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(name = ["outboxCircuitBreaker"])
+    fun outboxCircuitBreaker(
+        pollingProperties: OutboxPollingProperties
+    ): CircuitBreaker? {
+        if (!pollingProperties.circuitBreaker.enabled) {
+            return null
+        }
+        val props = pollingProperties.circuitBreaker
+        val config = CircuitBreakerConfig.custom()
+            .failureRateThreshold(props.failureRateThreshold)
+            .minimumNumberOfCalls(props.minimumNumberOfCalls)
+            .slidingWindowSize(props.slidingWindowSize)
+            .waitDurationInOpenState(Duration.ofSeconds(props.waitDurationInOpenStateSeconds))
+            .permittedNumberOfCallsInHalfOpenState(props.permittedNumberOfCallsInHalfOpenState)
+            .build()
+        return CircuitBreaker.of("outboxPollingPublisher", config)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(PollingPublisherService::class)
     fun pollingPublisherService(
         outboxService: ValtimoOutboxService,
         messagePublisher: MessagePublisher,
-        platformTransactionManager: PlatformTransactionManager
+        platformTransactionManager: PlatformTransactionManager,
+        pollingProperties: OutboxPollingProperties,
+        outboxCircuitBreaker: CircuitBreaker?
     ): PollingPublisherService {
         return PollingPublisherService(
             outboxService,
             messagePublisher,
-            platformTransactionManager
+            platformTransactionManager,
+            pollingProperties.batchSize,
+            outboxCircuitBreaker
         )
+    }
+
+    @Configuration
+    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    class OutboxHealthIndicatorConfiguration {
+        @Bean
+        @ConditionalOnMissingBean(name = ["outboxPublisherHealthIndicator"])
+        fun outboxPublisherHealthIndicator(
+            outboxCircuitBreaker: CircuitBreaker?
+        ): com.ritense.outbox.health.OutboxPublisherHealthIndicator {
+            return com.ritense.outbox.health.OutboxPublisherHealthIndicator(outboxCircuitBreaker)
+        }
     }
 
     @Bean
