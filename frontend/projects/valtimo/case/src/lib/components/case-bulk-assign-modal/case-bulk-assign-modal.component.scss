@@ -23,3 +23,7 @@
     overflow: unset;
   }
 }
+
+:host form cds-combo-box + cds-combo-box {
+  margin-top: 1rem;
+}

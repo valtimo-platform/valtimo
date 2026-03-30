@@ -210,9 +210,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public onCloseEvent(bulkAssign: null | BulkAssign): void {
     this.showAssignModal$.next(false);
-    if (!bulkAssign?.assigneeId) return;
+    if (!bulkAssign?.assigneeId && !bulkAssign?.assignedTeamKey) return;
 
-    this.bulkAssignService.bulkAssign(bulkAssign.assigneeId, bulkAssign.ids).subscribe(() => {
+    this.bulkAssignService.bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey).subscribe(() => {
       this.forceRefresh();
     });
   }

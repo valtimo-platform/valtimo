@@ -31,8 +31,8 @@ export class CaseBulkAssignService {
     this._valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/document/`;
   }
 
-  public bulkAssign(assigneeId: string, documentIds: string[]): Observable<void> {
-    return this.http.post<void>(`${this._valtimoEndpointUri}assign`, {assigneeId, documentIds});
+  public bulkAssign(documentIds: string[], assigneeId?: string, assignedTeamKey?: string): Observable<void> {
+    return this.http.post<void>(`${this._valtimoEndpointUri}assign`, {assigneeId, assignedTeamKey, documentIds});
   }
 
   public loadCandidateUsers(documentIds: string[]): Observable<CandidateUser[]> {
