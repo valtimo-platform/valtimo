@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.provider.EventFormatProvider
 import io.cloudevents.jackson.JsonFormat
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ValtimoCloudEventMapper(
     private val objectMapper: ObjectMapper
@@ -34,6 +35,7 @@ class ValtimoCloudEventMapper(
         return try {
             cloudEventFormat.deserialize(payload.encodeToByteArray())
         } catch (ex: Exception) {
+            logger.warn(ex) { "Failed to deserialize CloudEvent from payload" }
             null
         }
     }
@@ -52,7 +54,12 @@ class ValtimoCloudEventMapper(
                 result = cloudEventData?.result
             )
         } catch (ex: Exception) {
+            logger.warn(ex) { "Failed to map CloudEvent to ValtimoEvent" }
             null
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

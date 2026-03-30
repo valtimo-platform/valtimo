@@ -22,7 +22,7 @@ class InboxHandlingService(
     private val eventHandlers: List<InboxEventHandler>,
 ) {
     fun handle(message: String) {
-        logger.info("Received message: {}", message)
+        logger.debug { "Received inbox message" }
         eventHandlers.forEach { it.handle(message) }
     }
 
