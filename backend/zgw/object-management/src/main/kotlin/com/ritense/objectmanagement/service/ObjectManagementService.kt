@@ -31,6 +31,7 @@ import com.ritense.objectmanagement.domain.search.SearchWithConfigFilter
 import com.ritense.objectmanagement.domain.search.SearchWithConfigRequest
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
+import com.ritense.outbox.OutboxContext.Companion.runWithSuppressedOutbox
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.domain.DataType.BOOLEAN
@@ -120,27 +121,29 @@ class ObjectManagementService(
             throw IllegalArgumentException("The requested Id is not configured as a object management configuration. The requested id was: $id")
         }
 
-        val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
+        return runWithSuppressedOutbox(objectManagement.suppressOutbox) {
+            val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
 
-        val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
+            val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
 
-        val objectsList = objectenPluginInstance.getObjectsByObjectTypeId(
-            objecttypesApiUrl = objectTypePluginInstance.url,
-            objectsApiUrl = objectenPluginInstance.url,
-            objecttypeId = objectManagement.objecttypeId,
-            pageable = pageable
-        )
-
-        val objectsListDto = objectsList.results.map {
-            ObjectsListRowDto(
-                it.url.toString(), listOf(
-                    ObjectsListRowDto.ObjectsListItemDto("objectUrl", it.url),
-                    ObjectsListRowDto.ObjectsListItemDto("recordIndex", it.record.index),
-                )
+            val objectsList = objectenPluginInstance.getObjectsByObjectTypeId(
+                objecttypesApiUrl = objectTypePluginInstance.url,
+                objectsApiUrl = objectenPluginInstance.url,
+                objecttypeId = objectManagement.objecttypeId,
+                pageable = pageable
             )
-        }
 
-        return PageImpl(objectsListDto, pageable, objectsList.count.toLong())
+            val objectsListDto = objectsList.results.map {
+                ObjectsListRowDto(
+                    it.url.toString(), listOf(
+                        ObjectsListRowDto.ObjectsListItemDto("objectUrl", it.url),
+                        ObjectsListRowDto.ObjectsListItemDto("recordIndex", it.record.index),
+                    )
+                )
+            }
+
+            PageImpl(objectsListDto, pageable, objectsList.count.toLong())
+        }
     }
 
     @Transactional
@@ -176,20 +179,22 @@ class ObjectManagementService(
         logger.debug {
             "Get objects with searchParams objectManagement=$objectManagement searchParameters=$searchParameters pageable=$pageable"
         }
-        val searchString = ObjectSearchParameter.toQueryParameter(searchParameters)
+        return runWithSuppressedOutbox(objectManagement.suppressOutbox) {
+            val searchString = ObjectSearchParameter.toQueryParameter(searchParameters)
 
-        val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
+            val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
 
-        val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
+            val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
 
-        val objectsList = objectenPluginInstance.getObjectsByObjectTypeIdWithSearchParams(
-            objecttypesApiUrl = objectTypePluginInstance.url,
-            objecttypeId = objectManagement.objecttypeId,
-            searchString = searchString,
-            pageable = pageable
-        )
+            val objectsList = objectenPluginInstance.getObjectsByObjectTypeIdWithSearchParams(
+                objecttypesApiUrl = objectTypePluginInstance.url,
+                objecttypeId = objectManagement.objecttypeId,
+                searchString = searchString,
+                pageable = pageable
+            )
 
-        return PageImpl(objectsList.results, pageable, objectsList.count.toLong())
+            PageImpl(objectsList.results, pageable, objectsList.count.toLong())
+        }
     }
 
     private fun mapToObjectListRowDto(

@@ -39,7 +39,16 @@ The outbox can be configured to better match the environment:
 valtimo:
   outbox:
     publisher:
-      polling.rate: "PT1M" # ISO 8601 duration format
+      polling:
+        rate: "PT1M" # ISO 8601 duration format. Default: PT10S
+        batch-size: 10 # Number of messages to fetch and publish per poll cycle
+        circuit-breaker:
+          enabled: true # Enable/disable the circuit breaker
+          failure-rate-threshold: 50 # Percentage of failures that triggers the circuit to open
+          minimum-number-of-calls: 5 # Minimum calls before failure rate is evaluated
+          sliding-window-size: 10 # Number of calls tracked for failure rate calculation
+          wait-duration-in-open-state-seconds: 60 # How long the circuit stays open
+          permitted-number-of-calls-in-half-open-state: 3 # Test calls allowed in half-open state
 ```
 
 ### Disabling the outbox
