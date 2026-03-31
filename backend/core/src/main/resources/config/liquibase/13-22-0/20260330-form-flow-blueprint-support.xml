@@ -1,0 +1,145 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/changelog/20260330-form-flow-blueprint-support.xml">
+
+    <!-- Drop existing FK and PK constraints before renaming columns -->
+
+    <changeSet id="1" author="Ritense">
+        <dropForeignKeyConstraint baseTableName="form_flow_instance"
+                                  constraintName="fk_form_flow_definition_instance"/>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <dropForeignKeyConstraint baseTableName="form_flow_step"
+                                  constraintName="fk_form_flow_definition_step"/>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <dropPrimaryKey tableName="form_flow_definition"/>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <dropPrimaryKey tableName="form_flow_step"/>
+    </changeSet>
+
+    <!-- Add blueprint_type column to all three tables (default CASE for existing data) -->
+
+    <changeSet id="5" author="Ritense">
+        <addColumn tableName="form_flow_definition">
+            <column name="blueprint_type" type="VARCHAR(40)" defaultValue="CASE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="6" author="Ritense">
+        <addColumn tableName="form_flow_step">
+            <column name="blueprint_type" type="VARCHAR(40)" defaultValue="CASE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="7" author="Ritense">
+        <addColumn tableName="form_flow_instance">
+            <column name="blueprint_type" type="VARCHAR(40)" defaultValue="CASE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Rename case_definition_key -> blueprint_key -->
+
+    <changeSet id="8" author="Ritense">
+        <renameColumn tableName="form_flow_definition"
+                      oldColumnName="case_definition_key"
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
+    </changeSet>
+
+    <changeSet id="9" author="Ritense">
+        <renameColumn tableName="form_flow_step"
+                      oldColumnName="case_definition_key"
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
+    </changeSet>
+
+    <changeSet id="10" author="Ritense">
+        <renameColumn tableName="form_flow_instance"
+                      oldColumnName="case_definition_key"
+                      newColumnName="blueprint_key"
+                      columnDataType="VARCHAR(256)"/>
+    </changeSet>
+
+    <!-- Rename case_definition_version_tag -> blueprint_version_tag -->
+
+    <changeSet id="11" author="Ritense">
+        <renameColumn tableName="form_flow_definition"
+                      oldColumnName="case_definition_version_tag"
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(200)"/>
+    </changeSet>
+
+    <changeSet id="12" author="Ritense">
+        <renameColumn tableName="form_flow_step"
+                      oldColumnName="case_definition_version_tag"
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(200)"/>
+    </changeSet>
+
+    <changeSet id="13" author="Ritense">
+        <renameColumn tableName="form_flow_instance"
+                      oldColumnName="case_definition_version_tag"
+                      newColumnName="blueprint_version_tag"
+                      columnDataType="VARCHAR(200)"/>
+    </changeSet>
+
+    <!-- Restore PK constraints with new column names -->
+
+    <changeSet id="14" author="Ritense">
+        <addPrimaryKey tableName="form_flow_definition"
+                       columnNames="form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"/>
+    </changeSet>
+
+    <changeSet id="15" author="Ritense">
+        <addPrimaryKey tableName="form_flow_step"
+                       columnNames="form_flow_step_key,form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"/>
+    </changeSet>
+
+    <!-- Restore FK constraints with new column names -->
+
+    <changeSet id="16" author="Ritense">
+        <addForeignKeyConstraint baseTableName="form_flow_step"
+                                 baseColumnNames="form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"
+                                 constraintName="fk_form_flow_definition_step"
+                                 referencedTableName="form_flow_definition"
+                                 referencedColumnNames="form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"/>
+    </changeSet>
+
+    <changeSet id="17" author="Ritense">
+        <addForeignKeyConstraint baseTableName="form_flow_instance"
+                                 baseColumnNames="form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"
+                                 constraintName="fk_form_flow_definition_instance"
+                                 referencedTableName="form_flow_definition"
+                                 referencedColumnNames="form_flow_definition_key,blueprint_type,blueprint_key,blueprint_version_tag"/>
+    </changeSet>
+
+</databaseChangeLog>

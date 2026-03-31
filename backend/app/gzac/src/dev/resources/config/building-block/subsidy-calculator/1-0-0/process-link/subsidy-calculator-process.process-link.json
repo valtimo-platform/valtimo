@@ -2,8 +2,8 @@
     {
         "activityId": "ReviewCalculationTask",
         "activityType": "bpmn:UserTask:create",
-        "processLinkType": "form",
-        "formDefinitionName": "review-subsidy-calculation"
+        "processLinkType": "form-flow",
+        "formFlowDefinitionKey": "review-subsidy-calculation"
     },
     {
         "activityId": "PatchZaakCalculationStartTask",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,13 +8,13 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-package com.ritense.formflow.importer
+package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
@@ -23,10 +23,11 @@ import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.FORM
-import com.ritense.importer.ValtimoImportTypes.Companion.FORM_FLOW
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITION
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_FORM_DEFINITION
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_FORM_FLOW_DEFINITION
 import com.ritense.logging.withLoggingContext
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
@@ -37,21 +38,30 @@ import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class FormFlowDefinitionImporter(
-    private val resourceLoader: ResourceLoader,
+class BuildingBlockFormFlowDefinitionImporter(
     private val formFlowService: FormFlowService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val resourceLoader: ResourceLoader,
 ) : Importer {
-    override fun type() = FORM_FLOW
 
-    override fun dependsOn() = setOf(FORM)
+    override fun type() = BUILDING_BLOCK_FORM_FLOW_DEFINITION
 
-    override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
+    override fun dependsOn() = setOf(BUILDING_BLOCK_DEFINITION, BUILDING_BLOCK_FORM_DEFINITION)
+
+    override fun supports(fileName: String) = fileName.matches(PATH_REGEX)
 
     override fun import(request: ImportRequest) {
-        val formFlowKey = FILENAME_REGEX.matchEntire(request.fileName)!!.groupValues[1]
-        deploy(formFlowKey, request.content.toString(Charsets.UTF_8), request.caseDefinitionId!!)
+        val buildingBlockDefinitionId = request.buildingBlockDefinitionId
+            ?: throw IllegalArgumentException("Building block definition ID is required for form flow import")
+
+        val formFlowKey = PATH_REGEX.matchEntire(request.fileName)!!.groupValues[1]
+
+        deploy(formFlowKey, request.content.toString(Charsets.UTF_8), buildingBlockDefinitionId)
     }
+
+    override fun partOfCaseDefinition() = false
+
+    override fun partOfBuildingBlockDefinition() = true
 
     fun isAutoDeployed(formFlowDefinitionKey: String): Boolean {
         withLoggingContext("formFlowDefinitionKey" to formFlowDefinitionKey) {
@@ -61,7 +71,7 @@ class FormFlowDefinitionImporter(
         }
     }
 
-    fun deploy(formFlowKey: String, formFlowJson: String, caseDefinitionId: CaseDefinitionId) {
+    private fun deploy(formFlowKey: String, formFlowJson: String, buildingBlockDefinitionId: BuildingBlockDefinitionId) {
         withLoggingContext("formFlowDefinitionKey" to formFlowKey) {
             validate(formFlowJson)
 
@@ -70,8 +80,8 @@ class FormFlowDefinitionImporter(
             validate(formFlowDefinitionConfig)
 
             try {
-                val existingDefinition = formFlowService.findDefinitionOrNull(formFlowKey, caseDefinitionId)
-                val definitionId = FormFlowDefinitionId.newId(formFlowKey, caseDefinitionId)
+                val existingDefinition = formFlowService.findDefinitionOrNull(formFlowKey, buildingBlockDefinitionId)
+                val definitionId = FormFlowDefinitionId.newId(formFlowKey, buildingBlockDefinitionId)
 
                 if (existingDefinition != null && formFlowDefinitionConfig.contentEquals(existingDefinition)) {
                     logger.info { "Form Flow already deployed - $definitionId" }
@@ -88,7 +98,6 @@ class FormFlowDefinitionImporter(
 
     private fun validate(formFlowJson: String) {
         val definitionJsonObject = JSONObject(JSONTokener(formFlowJson))
-
         val schema = SchemaLoader.load(JSONObject(JSONTokener(loadFormFlowSchemaResource().inputStream)))
         schema.validate(definitionJsonObject)
     }
@@ -109,8 +118,8 @@ class FormFlowDefinitionImporter(
     private companion object {
         private const val FORM_FLOW_SCHEMA_PATH = "classpath:config/form-flow/schema/formflow.schema.json"
         private const val FORM_FLOW_DEFINITIONS_PATH =
-            "classpath:config/case/*/*/form-flow/{formFlowKey}.form-flow.json"
-        val FILENAME_REGEX = """/form-flow/([^/]+)\.form-flow\.json""".toRegex()
+            "classpath:config/building-block/*/*/form-flow/{formFlowKey}.form-flow.json"
+        val PATH_REGEX = """/form-flow/([^/]+)\.form-flow\.json""".toRegex()
         val logger = KotlinLogging.logger {}
     }
 }
