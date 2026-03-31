@@ -16,19 +16,16 @@
 
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
-import {AssigneeFilter, CaseListTab, ConfigService} from '@valtimo/shared';
+import {AssigneeFilter, CaseListTab} from '@valtimo/shared';
 import {Tab, Tabs} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {DEFAULT_CASE_LIST_TABS} from '../../constants';
-import {TeamsApiService} from '@valtimo/teams';
 
 @Component({
   standalone: false,
@@ -37,36 +34,19 @@ import {TeamsApiService} from '@valtimo/teams';
   styleUrls: ['./case-list-tabs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseListTabsComponent implements OnInit {
+export class CaseListTabsComponent {
   @ViewChild(Tabs) tabsComponent: Tabs;
 
   @Input() public assigneeFilter: AssigneeFilter | null = null;
   @Input() public selectedRowCount = 0;
+  @Input() public visibleTabs: Array<CaseListTab> | null = null;
 
   @Output() public tabChangeEvent = new EventEmitter<CaseListTab>();
 
   public activeTab: CaseListTab | null = null;
-  public visibleCaseTabs: Array<CaseListTab> | null = null;
   public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
   public readonly tabChange$ = new BehaviorSubject<CaseListTab | null>(null);
-
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly teamsApiService: TeamsApiService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
-
-  public ngOnInit(): void {
-    const tabs = this.configService.config?.visibleCaseListTabs || this.defaultTabs;
-    this.visibleCaseTabs = tabs;
-
-    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
-      this.visibleCaseTabs =
-        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
-      this.cdr.markForCheck();
-    });
-  }
 
   public trackByIndex(index: number): number {
     return index;
