@@ -57,7 +57,8 @@ import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/o
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
-  DOCUMENTEN_COLUMN_KEYS, DocumentenApiFilePermissions,
+  DOCUMENTEN_COLUMN_KEYS,
+  DocumentenApiFilePermissions,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -301,7 +302,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
           content: trefwoord,
         })),
       }));
-      console.log('DEBUG: relatedFiles', relatedFiles);
       return translatedFiles || [];
     }),
     tap(() => {
@@ -318,7 +318,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
     this.configService.getFeatureToggleObservable('enablePbacDocumentenApiDocuments');
 
-  public filePermissions$ = new BehaviorSubject<DocumentenApiFilePermissions>({})
+  public filePermissions$ = new BehaviorSubject<DocumentenApiFilePermissions>({});
 
   public get filePermissions(): DocumentenApiFilePermissions {
     return this.filePermissions$.getValue();
@@ -391,17 +391,17 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
           })
         )
         .subscribe(permissions => {
-            const documentenApiFilePermissions: DocumentenApiFilePermissions = {};
-            permissions.files.forEach(file => {
-                documentenApiFilePermissions[file.fileId] = {
-                    canView: permissions.canView[file.fileId],
-                    canModify: permissions.canModify[file.fileId],
-                    canDelete: permissions.canDelete[file.fileId],
-                  }
-            })
+          const documentenApiFilePermissions: DocumentenApiFilePermissions = {};
+          permissions.files.forEach(file => {
+            documentenApiFilePermissions[file.fileId] = {
+              canView: permissions.canView[file.fileId],
+              canModify: permissions.canModify[file.fileId],
+              canDelete: permissions.canDelete[file.fileId],
+            };
+          });
           this.filePermissions$.next(documentenApiFilePermissions);
         })
-    )
+    );
   }
 
   public ngOnDestroy(): void {
@@ -578,23 +578,34 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
-    return combineLatest([this.documentenApiPreviewService.canGeneratePreview(file?.pluginConfigurationId), this.filePermissions$]).pipe(
-      map(([canGeneratePreview, permissions]) => !canGeneratePreview || !permissions[file.fileId]?.canView)
+    return combineLatest([
+      this.documentenApiPreviewService.canGeneratePreview(file?.pluginConfigurationId),
+      this.filePermissions$,
+    ]).pipe(
+      map(
+        ([canGeneratePreview, permissions]) =>
+          !canGeneratePreview || !permissions[file.fileId]?.canView
       )
+    );
   }
 
   private downloadDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
-    return this.filePermissions$.pipe(map((permissions) => !permissions[file.fileId]?.canView))
+    return this.filePermissions$.pipe(map(permissions => !permissions[file.fileId]?.canView));
   }
 
   private editDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
-    return  combineLatest([this.filePermissions$, this.supportedDocumentenApiFeatures$]).pipe(
-      map(([permissions, supportedFeatures]) => file.status === 'definitief' || !permissions[file.fileId]?.canModify || !supportedFeatures.supportsUpdatingDefinitiveDocument)
-    )
+    return combineLatest([this.filePermissions$, this.supportedDocumentenApiFeatures$]).pipe(
+      map(
+        ([permissions, supportedFeatures]) =>
+          file.status === 'definitief' ||
+          !permissions[file.fileId]?.canModify ||
+          !supportedFeatures.supportsUpdatingDefinitiveDocument
+      )
+    );
   }
 
   private deleteDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
-    return this.filePermissions$.pipe(map((permissions) => !permissions[file.fileId]?.canDelete))
+    return this.filePermissions$.pipe(map(permissions => !permissions[file.fileId]?.canDelete));
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
