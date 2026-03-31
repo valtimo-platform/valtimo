@@ -61,7 +61,7 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
     @Test
     fun `should fetch batch of messages ordered by created_on`() {
         insertOutboxMessage("event 1")
-        Thread.sleep(10)
+        Thread.sleep(10) // ensure distinct created_on timestamps
         insertOutboxMessage("event 2")
         Thread.sleep(10)
         insertOutboxMessage("event 3")
