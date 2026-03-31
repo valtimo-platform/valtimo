@@ -98,7 +98,6 @@
     "libs:build-6:object-management": "ng build @valtimo/object-management",
     "libs:build-7:zgw": "ng build @valtimo/zgw",
     "libs:build-7:iko": "ng build @valtimo/iko",
-    "libs:build-7:copy-version": "npm run copy-frontend-version",
     "libs:build:case-migration": "ng build @valtimo/case-migration",
     "libs:build:keycloak": "ng build @valtimo/keycloak",
     "libs:build:form-view-model": "ng build @valtimo/form-view-model",
@@ -194,7 +193,6 @@
     "libs:lint:access-control-management": "ng lint @valtimo/access-control-management",
     "libs:lint:logging": "ng lint @valtimo/logging",
     "libs:lint:iko": "ng lint @valtimo/iko",
-    "copy-frontend-version": "node scripts/copy-frontend-version.js",
     "libs-increment-all": "node scripts/libs.increment.all.js",
     "libs-publish-all": "node scripts/libs.publish.all.js"
   },

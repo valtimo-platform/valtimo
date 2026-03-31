@@ -16,8 +16,23 @@
 
 import {Versions} from '../models';
 
+async function getLibVersion() {
+  let version = 'unknown';
+  try {
+    const VERSION_ASSET_URL = '/valtimo-translation/version.json';
+    const versionRes = await fetch(VERSION_ASSET_URL);
+    const versionJson = await versionRes.json();
+    version = versionJson.appVersion;
+  } catch (err) {
+    console.error(err);
+  }
+  return version;
+}
+
 const VERSIONS: Versions = {
-  frontendLibraries: '13.0.1',
-};
+  frontendLibraries: 'unknown',
+} as Versions;
+
+getLibVersion().then(version => (VERSIONS.frontendLibraries = version));
 
 export {VERSIONS};

@@ -6,6 +6,7 @@ on:
       project_version:
         description: "The determined project version. Required for release-candidate, not for snapshot"
         required: false
+        default: ""
         type: string
       frontend_libraries_build_artifact_name:
         required: true
@@ -30,6 +31,30 @@ jobs:
         with:
           name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist
+
+      - name: Determine project version
+        id: determine_project_version
+        if: inputs.project_version == ''
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          # replace special characters with - and make all-lowercase
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+
+          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+
+          echo "Version is ${PROJECT_VERSION}"
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set project version on all libraries
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version || steps.determine_project_version.outputs.project_version }}
+        run: |
+          npm run libs-increment-all -- ${PROJECT_VERSION} './projects/valtimo'
+          frontend_libs_version_asset='frontend/dist/valtimo/shared/assets/version.json'
+          jq ".appVersion = \"${PROJECT_VERSION}\"" "$frontend_libs_version_asset"
 
       - name: "Publish all libs to NPM"
         env:
