@@ -66,7 +66,7 @@ import reactor.core.publisher.Mono
 import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.test.assertEquals
@@ -209,7 +209,7 @@ DocumentenApiClientTest {
             "auteur",
             "bestandsnaam.jpg",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             bestandsdelen,
             "de9c883a-cdfc-493b-9c38-5824e334a1b1"
         )
@@ -405,7 +405,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)
@@ -767,7 +767,7 @@ DocumentenApiClientTest {
         assertEquals("formaat", result.formaat)
         assertEquals("nl", result.taal)
         assertEquals(4, result.versie)
-        assertEquals(LocalDateTime.of(2019, 8, 24, 14, 15, 22), result.beginRegistratie)
+        assertEquals(OffsetDateTime.parse("2019-08-24T14:15:22Z"), result.beginRegistratie)
         assertEquals("bestandsnaam", result.bestandsnaam)
         assertEquals(123, result.bestandsomvang)
         assertEquals(URI("http://example.com/link"), result.link)

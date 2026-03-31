@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,77 @@
 
 package com.ritense.documentenapi.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 internal class CreateDocumentResultTest {
+
+    private val objectMapper = ObjectMapper()
+        .registerModule(KotlinModule.Builder().build())
+        .registerModule(JavaTimeModule())
+
+    @Test
+    fun `should deserialize beginRegistratie with offset`() {
+        val json = """
+            {
+                "url": "https://www.example.com/847789d3-a8b3-469a-ae01-a49a6bd21783",
+                "auteur": "test",
+                "bestandsnaam": "test.txt",
+                "bestandsomvang": 123,
+                "beginRegistratie": "2026-03-23T14:37:41+01:00",
+                "bestandsdelen": [],
+                "lock": null
+            }
+        """.trimIndent()
+
+        val result = objectMapper.readValue<CreateDocumentResult>(json)
+
+        assertEquals(OffsetDateTime.of(2026, 3, 23, 14, 37, 41, 0, ZoneOffset.ofHours(1)), result.beginRegistratie)
+    }
+
+    @Test
+    fun `should deserialize beginRegistratie without offset`() {
+        val json = """
+            {
+                "url": "https://www.example.com/847789d3-a8b3-469a-ae01-a49a6bd21783",
+                "auteur": "test",
+                "bestandsnaam": "test.txt",
+                "bestandsomvang": 123,
+                "beginRegistratie": "2026-03-23T14:37:41",
+                "bestandsdelen": [],
+                "lock": null
+            }
+        """.trimIndent()
+
+        val result = objectMapper.readValue<CreateDocumentResult>(json)
+
+        assertEquals(OffsetDateTime.of(2026, 3, 23, 14, 37, 41, 0, ZoneOffset.UTC), result.beginRegistratie)
+    }
+
+    @Test
+    fun `should deserialize beginRegistratie with zoned datetime`() {
+        val json = """
+            {
+                "url": "https://www.example.com/847789d3-a8b3-469a-ae01-a49a6bd21783",
+                "auteur": "test",
+                "bestandsnaam": "test.txt",
+                "bestandsomvang": 123,
+                "beginRegistratie": "2026-03-23T14:37:41+01:00[Europe/Amsterdam]",
+                "bestandsdelen": [],
+                "lock": null
+            }
+        """.trimIndent()
+
+        val result = objectMapper.readValue<CreateDocumentResult>(json)
+
+        assertEquals(OffsetDateTime.of(2026, 3, 23, 14, 37, 41, 0, ZoneOffset.ofHours(1)), result.beginRegistratie)
+    }
 
     @Test
     fun `should get uuid from url`() {
@@ -29,7 +95,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -51,7 +117,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(bestandsdeel),
             "847789d3-a8b3-469a-ae01-a49a6bd21783"
         )
@@ -66,7 +132,7 @@ internal class CreateDocumentResultTest {
             "",
             "",
             0L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
