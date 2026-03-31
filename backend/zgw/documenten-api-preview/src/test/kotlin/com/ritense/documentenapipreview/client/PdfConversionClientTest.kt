@@ -128,6 +128,8 @@ internal class PdfConversionClientTest {
                 val contentDisposition = splitHeaders.first { it.contains("Content-Disposition") }
                 val name = contentDisposition
                     .substring(contentDisposition.indexOf("name=") + 5, contentDisposition.length - 1)
+                    .split(";")
+                    .first()
                     .replace("\"","")
 
                 val output: ByteArrayOutputStream = ByteArrayOutputStream()
