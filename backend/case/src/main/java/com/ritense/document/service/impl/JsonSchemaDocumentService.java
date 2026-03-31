@@ -831,6 +831,47 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    public void assignTeamToDocuments(List<UUID> documentIds, String teamKey) {
+        var documentIdObjects = documentIds.stream()
+            .map(documentId -> (Document.Id) JsonSchemaDocumentId.existingId(documentId))
+            .toList();
+        List<JsonSchemaDocument> documents = runWithoutAuthorization(() ->
+            documentRepository.findAllById(documentIdObjects)
+        );
+
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                documents
+            )
+        );
+
+        var team = teamManagementService == null ? null : teamManagementService.findByKey(teamKey);
+        if (teamManagementService != null && team == null) {
+            throw new NoSuchElementException("Team not found: " + teamKey);
+        }
+        var teamTitle = team != null ? team.getTitle() : teamKey;
+
+        documents.forEach(document -> {
+            document.setAssignedTeamKey(teamKey);
+            document.setAssignedTeamTitle(teamTitle);
+        });
+        documentRepository.saveAll(documents);
+
+        documents.forEach(document -> {
+            publishDocumentAssigneeChangedEvent(document.id().getId(), null, teamTitle);
+
+            outboxService.send(() ->
+                new DocumentUpdated(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        });
+    }
+
+    @Override
     public void unassignTeamFromDocument(
         @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId
     ) {

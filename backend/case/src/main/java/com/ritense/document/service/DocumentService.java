@@ -77,6 +77,8 @@ public interface DocumentService {
 
     void assignTeamToDocument(UUID documentId, String teamKey);
 
+    void assignTeamToDocuments(List<UUID> documentIds, String teamKey);
+
     void unassignTeamFromDocument(UUID documentId);
 
     void setInternalStatus(Document.Id documentId, @Nullable String internalStatusKey);

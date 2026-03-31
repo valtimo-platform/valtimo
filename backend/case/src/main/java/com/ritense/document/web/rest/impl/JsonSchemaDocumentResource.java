@@ -158,9 +158,7 @@ public class JsonSchemaDocumentResource implements DocumentResource {
             documentService.assignUserToDocuments(request.getDocumentIds(), request.getAssigneeId());
         }
         if (request.getAssignedTeamKey() != null) {
-            request.getDocumentIds().forEach(documentId -> {
-                documentService.assignTeamToDocument(documentId, request.getAssignedTeamKey());
-            });
+            documentService.assignTeamToDocuments(request.getDocumentIds(), request.getAssignedTeamKey());
         }
         return ResponseEntity.ok().build();
     }
