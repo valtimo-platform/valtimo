@@ -28,5 +28,6 @@
     <property name="jsonType" value="JSON" dbms="postgresql"/>
 
     <include file="changelog/20231020-add-outbox-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260331-increase-created-on-precision.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
