@@ -75,7 +75,7 @@ maintenance:
     - name: Ritense BV
       email: support@ritense.com
       website: 'https://www.ritense.com/'
-      until: '2099-12-31' # TODO: set actual contract end date
+      until: '31-03-2028'
   contacts:
     - name: Rutger Haagsma
       email: rutger.haagsma@ritense.com
