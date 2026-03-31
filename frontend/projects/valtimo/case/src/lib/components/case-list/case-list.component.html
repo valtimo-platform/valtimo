@@ -139,6 +139,7 @@
       <valtimo-case-list-tabs
         [assigneeFilter]="obs.assigneeFilter"
         [selectedRowCount]="carbonList?.model?.selectedRowsCount() ?? 0"
+        [visibleTabs]="visibleCaseTabs"
         (tabChangeEvent)="onTabChange($event)"
       ></valtimo-case-list-tabs>
     </div>
@@ -151,6 +152,7 @@
       <valtimo-case-list-tabs
         [assigneeFilter]="orchestration.assigneeFilter$ | async"
         [selectedRowCount]="0"
+        [visibleTabs]="visibleCaseTabs"
         (tabChangeEvent)="onTabChange($event)"
       ></valtimo-case-list-tabs>
     </div>

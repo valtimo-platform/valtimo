@@ -26,7 +26,8 @@ import {
   QUICK_SEARCH_SERVICE,
   QuickSearchStateService,
 } from '@valtimo/components';
-import {CaseListTab, SearchFieldValues, SortState} from '@valtimo/shared';
+import {CaseListTab, ConfigService, SearchFieldValues, SortState} from '@valtimo/shared';
+import {TeamsApiService} from '@valtimo/teams';
 import {
   BehaviorSubject,
   combineLatest,
@@ -36,7 +37,7 @@ import {
   Subscription,
   take,
 } from 'rxjs';
-import {CASE_LIST_TABLE_TRANSLATIONS} from '../../constants';
+import {CASE_LIST_TABLE_TRANSLATIONS, DEFAULT_CASE_LIST_TABS} from '../../constants';
 import {BulkAssign, CaseListQuickSearchParams} from '../../models';
 import {
   CaseBulkAssignService,
@@ -84,6 +85,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public loadingExport = false;
+  public visibleCaseTabs: CaseListTab[] | null = null;
 
   public readonly orchestration = inject(CaseListOrchestrationService);
 
@@ -117,7 +119,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly searchService: CaseListSearchService,
     private readonly statusService: CaseListStatusService,
     @Inject(QUICK_SEARCH_SERVICE)
-    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>,
+    private readonly configService: ConfigService,
+    private readonly teamsApiService: TeamsApiService
   ) {}
 
   public ngOnInit(): void {
@@ -125,6 +129,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.subscribeToPagination();
     this.subscribeToCanHaveAssignee();
     this.subscribeToSearchFields();
+    this.resolveVisibleCaseTabs();
   }
 
   public ngOnDestroy(): void {
@@ -334,6 +339,15 @@ export class CaseListComponent implements OnInit, OnDestroy {
   private subscribeToSearchFields(): void {
     this._searchFieldsSubscription = this.orchestration.searchFields$.subscribe(() => {
       this.orchestration.setLoadingSearchFields(false);
+    });
+  }
+
+  private resolveVisibleCaseTabs(): void {
+    const tabs = this.configService.config?.visibleCaseListTabs || DEFAULT_CASE_LIST_TABS;
+
+    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
+      this.visibleCaseTabs =
+        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
     });
   }
 }
