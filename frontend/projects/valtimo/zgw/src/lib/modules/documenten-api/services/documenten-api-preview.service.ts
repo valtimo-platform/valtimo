@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 import {PluginManagementService} from '@valtimo/plugin';
-import {PluginConfiguration} from '../../zaken-api';
 
 @Injectable({
   providedIn: 'root',
@@ -32,9 +31,18 @@ export class DocumentenApiPreviewService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public canGeneratePreview(): Observable<boolean> {
+  public canGeneratePreview(documentenApiPluginConfigurationId: string): Observable<boolean> {
     return this.pluginManagementService
       .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview')
-      .pipe(map(configurations => configurations.length > 0));
+      .pipe(
+        map(configurations =>
+          configurations.some(
+            configuration =>
+              'documentenApiConfigurationId' in configuration.properties &&
+              configuration.properties['documentenApiConfigurationId'] ===
+                documentenApiPluginConfigurationId
+          )
+        )
+      );
   }
 }
