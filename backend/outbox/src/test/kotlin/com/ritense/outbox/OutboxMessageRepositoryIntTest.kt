@@ -61,9 +61,9 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
     @Test
     fun `should fetch batch of messages ordered by created_on`() {
         insertOutboxMessage("event 1")
-        Thread.sleep(1000) // MySQL DATETIME has second precision, so sleep > 1s for distinct timestamps
+        Thread.sleep(10)
         insertOutboxMessage("event 2")
-        Thread.sleep(1000)
+        Thread.sleep(10)
         insertOutboxMessage("event 3")
 
         val messages = TransactionTemplate(platformTransactionManager).execute {
