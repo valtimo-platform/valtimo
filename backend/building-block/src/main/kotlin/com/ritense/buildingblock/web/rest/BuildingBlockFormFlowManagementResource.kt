@@ -53,7 +53,12 @@ class BuildingBlockFormFlowManagementResource(
     ): ResponseEntity<Page<FormFlowDefinitionDto>> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val definitions = buildingBlockFormFlowDefinitionService.getFormFlowDefinitions(buildingBlockId, pageable)
-            .map { FormFlowDefinitionDto.of(it, buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, it.id.key)) }
+            .map {
+                FormFlowDefinitionDto.of(
+                    it,
+                    buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, it.id.key)
+                )
+            }
         return ResponseEntity.ok(definitions)
     }
 
@@ -99,6 +104,9 @@ class BuildingBlockFormFlowManagementResource(
         @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
+        if (definitionDto.key != definitionKey) {
+            return ResponseEntity.badRequest().build()
+        }
         if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
