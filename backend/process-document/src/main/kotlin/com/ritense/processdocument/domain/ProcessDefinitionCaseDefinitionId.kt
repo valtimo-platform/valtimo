@@ -22,7 +22,7 @@ import jakarta.persistence.Embeddable
 import jakarta.persistence.Embedded
 
 @Embeddable
-class ProcessDefinitionCaseDefinitionId(
+data class ProcessDefinitionCaseDefinitionId(
     @Embedded
     val processDefinitionId: ProcessDefinitionId,
     @Embedded
