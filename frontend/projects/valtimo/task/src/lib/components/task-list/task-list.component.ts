@@ -60,6 +60,7 @@ import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
+import {TeamsApiService} from '@valtimo/teams';
 import {
   CAN_VIEW_CASE_PERMISSION,
   CAN_VIEW_TASK_PERMISSION,
@@ -290,7 +291,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
     private readonly pageTitleService: PageTitleService,
-    private readonly sseService: SseService
+    private readonly sseService: SseService,
+    private readonly teamsApiService: TeamsApiService
   ) {}
 
   public ngOnInit(): void {
@@ -416,15 +418,18 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   private setVisibleTabs(): void {
-    const visibleTabs = this.configService.config?.visibleTaskListTabs;
+    const configuredTabs =
+      this.configService.config?.visibleTaskListTabs || this._DEFAULT_TASK_LIST_TABS;
 
-    if (visibleTabs) {
-      this.visibleTabs$.next(visibleTabs);
-      this.taskListService.setSelectedTaskType(visibleTabs[0]);
-    } else {
-      this.visibleTabs$.next(this._DEFAULT_TASK_LIST_TABS);
-      this.taskListService.setSelectedTaskType(this._DEFAULT_TASK_LIST_TABS[0]);
-    }
+    this.visibleTabs$.next(configuredTabs);
+    this.taskListService.setSelectedTaskType(configuredTabs[0]);
+
+    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
+      if (teams.length === 0) {
+        const tabs = configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
+        this.visibleTabs$.next(tabs);
+      }
+    });
   }
 
   private disableLoadingAnimation(): void {
