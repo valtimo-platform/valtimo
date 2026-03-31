@@ -21,7 +21,7 @@ To configure this plugin the following properties have to be entered:
 * **Configuration ID (`configurationId`).** The plugin will be saved under this ID. The ID must be in the format of a UUID.
 * **Configuration name (`configurationTitle`).** A user-friendly name that is used to identify the plugin (default value is "Documenten API Preview").
 * **PDF Conversion URL (`pdfConversionUrl`).** Contains the complete base URL pointing to the server hosting the [Gotenberg][1] API (for example: `https://gotenberg:3000`). 
-* **Configuration documenten-api plug-in (`documentenApiConfigurationId`).** Contains a reference to the configuration of the "Documenten API plugin". The preview plugin will retrieve documents based on this configuration.
+* **Documenten API plugin configuration (`documentenApiConfigurationId`).** Contains a reference to the configuration of the "Documenten API plugin". The preview plugin will retrieve documents based on this configuration.
 
 ## Configure the Content Security Policy (CSP)
 

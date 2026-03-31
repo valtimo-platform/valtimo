@@ -28,11 +28,11 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       description: 'Plugin voor het weergeven (preview) van documenten binnen GZAC.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Hier kunt je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+        'Hier kun je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       pdfConversionUrl: 'PDF Conversie URL',
       pdfConversionUrlTooltip:
         'In dit veld moet de verwijzing komen naar de locatie van de PDF conversie server (Project Gotenberg).',
-      documentenApiPluginConfiguration: 'Configuratie documenten-api plug-in',
+      documentenApiPluginConfiguration: 'Documenten API configuratie',
       documentenApiPluginConfigurationTooltip:
         'Selecteer de plugin die gebruikt wordt voor het ontsluiten van documenten. Deze plugin zal worden gebruikt om de originele documenten te ontsluiten zodat deze geconverteerd kunnen worden naar PDF voor weergave in GZAC.',
     },
@@ -46,7 +46,7 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       pdfConversionUrlTooltip: 'This field must contain the URL to the PDF conversion server.',
       documentenApiPluginConfiguration: 'Document API configuration',
       documentenApiPluginConfigurationTooltip:
-        'Select the plugin that can access the documents. This plugin will be used to access the original document so it can be convert it to PDF and previewed in GZAC.',
+        'Select the plugin that can access the documents. This plugin will be used to access the original document so it can be converted to PDF and previewed in GZAC.',
     },
   },
 };
