@@ -24,6 +24,8 @@
   }
 }
 
-:host form cds-combo-box + cds-combo-box {
-  margin-top: 1rem;
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
