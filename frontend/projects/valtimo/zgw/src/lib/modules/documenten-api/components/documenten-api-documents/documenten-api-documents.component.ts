@@ -57,7 +57,7 @@ import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/o
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
-  DOCUMENTEN_COLUMN_KEYS,
+  DOCUMENTEN_COLUMN_KEYS, DocumentenApiFilePermissions,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -158,25 +158,25 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     {
       label: 'document.preview',
       callback: this.onPreviewActionClick.bind(this),
-      disabledCallback: this.previewDisabled.bind(this),
+      disabled$: this.previewDisabled.bind(this),
       type: 'normal',
     },
     {
       label: 'document.download',
       callback: this.onDownloadActionClick.bind(this),
-      disabledCallback: this.downloadDisabled.bind(this),
+      disabled$: this.downloadDisabled.bind(this),
       type: 'normal',
     },
     {
       label: 'document.edit',
       callback: this.onEditMetadata.bind(this),
-      disabledCallback: this.editDisabled.bind(this),
+      disabled$: this.editDisabled.bind(this),
       type: 'normal',
     },
     {
       label: 'document.delete',
       callback: this.onDeleteActionClick.bind(this),
-      disabledCallback: this.deleteDisabled.bind(this),
+      disabled$: this.deleteDisabled.bind(this),
       type: 'danger',
     },
   ];
@@ -301,6 +301,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
           content: trefwoord,
         })),
       }));
+      console.log('DEBUG: relatedFiles', relatedFiles);
       return translatedFiles || [];
     }),
     tap(() => {
@@ -317,9 +318,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
     this.configService.getFeatureToggleObservable('enablePbacDocumentenApiDocuments');
 
-  public filePermissions: {
-    [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
-  } = {};
+  public filePermissions$ = new BehaviorSubject<DocumentenApiFilePermissions>({})
+
+  public get filePermissions(): DocumentenApiFilePermissions {
+    return this.filePermissions$.getValue();
+  }
 
   public readonly canCreateResource$: Observable<boolean> = this.documentId$.pipe(
     switchMap(documentId =>
@@ -329,9 +332,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       })
     )
   );
-
-  private readonly _showPreviewButton$: Observable<boolean> =
-    this.documentenApiPreviewService.canGeneratePreview();
 
   private readonly _subscriptions = new Subscription();
 
@@ -361,6 +361,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
     this.registerPermissionSubscriptions();
+    this.documentenApiPreviewService.retrieveDocumentenApiPreviewPluginConfigurations();
   }
 
   public registerPermissionSubscriptions(): void {
@@ -389,17 +390,18 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
             });
           })
         )
-        .subscribe(permissions =>
-          permissions.files.map(
-            file =>
-              (this.filePermissions[file.fileId] = {
-                canView: permissions.canView[file.fileId],
-                canModify: permissions.canModify[file.fileId],
-                canDelete: permissions.canDelete[file.fileId],
-              })
-          )
-        )
-    );
+        .subscribe(permissions => {
+            const documentenApiFilePermissions: DocumentenApiFilePermissions = {};
+            permissions.files.forEach(file => {
+                documentenApiFilePermissions[file.fileId] = {
+                    canView: permissions.canView[file.fileId],
+                    canModify: permissions.canModify[file.fileId],
+                    canDelete: permissions.canDelete[file.fileId],
+                  }
+            })
+          this.filePermissions$.next(documentenApiFilePermissions);
+        })
+    )
   }
 
   public ngOnDestroy(): void {
@@ -535,9 +537,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onRowClick(event: any): void {
-    console.log(
-      `DEBUG: handling "onRowClick" event. Preview is: ${this.previewDisabled(event) ? 'disabled' : 'enabled'}`
-    );
     if (!this.previewDisabled(event)) {
       this.previewDocument(event, false);
     } else if (this.filePermissions[event.fileId]?.canView) {
@@ -578,24 +577,24 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this._refetch$.next(null);
   }
 
-  private previewDisabled(file: DocumentenApiRelatedFile): boolean {
-    return !this._showPreviewButton$ || !this.filePermissions[file.fileId]?.canView;
+  private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return combineLatest([this.documentenApiPreviewService.canGeneratePreview(file?.pluginConfigurationId), this.filePermissions$]).pipe(
+      map(([canGeneratePreview, permissions]) => !canGeneratePreview || !permissions[file.fileId]?.canView)
+      )
   }
 
-  private downloadDisabled(file: DocumentenApiRelatedFile): boolean {
-    return !this.filePermissions[file.fileId]?.canView;
+  private downloadDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.filePermissions$.pipe(map((permissions) => !permissions[file.fileId]?.canView))
   }
 
-  private editDisabled(file: DocumentenApiRelatedFile): boolean {
-    return (
-      (!this.supportedDocumentenApiFeatures$.value.supportsUpdatingDefinitiveDocument &&
-        file.status === 'definitief') ||
-      !this.filePermissions[file.fileId]?.canModify
-    );
+  private editDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return  combineLatest([this.filePermissions$, this.supportedDocumentenApiFeatures$]).pipe(
+      map(([permissions, supportedFeatures]) => file.status === 'definitief' || !permissions[file.fileId]?.canModify || !supportedFeatures.supportsUpdatingDefinitiveDocument)
+    )
   }
 
-  private deleteDisabled(file: DocumentenApiRelatedFile): boolean {
-    return !this.filePermissions[file.fileId]?.canDelete;
+  private deleteDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.filePermissions$.pipe(map((permissions) => !permissions[file.fileId]?.canDelete))
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
