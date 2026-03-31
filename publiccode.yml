@@ -75,7 +75,7 @@ maintenance:
     - name: Ritense BV
       email: support@ritense.com
       website: 'https://www.ritense.com/'
-      until: '31-03-2028'
+      until: '2028-03-31'
   contacts:
     - name: Rutger Haagsma
       email: rutger.haagsma@ritense.com
