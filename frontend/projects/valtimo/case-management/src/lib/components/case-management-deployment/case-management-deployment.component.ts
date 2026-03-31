@@ -228,24 +228,20 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
       switchMap(res =>
         this.translateService.stream('key').pipe(
           tap(() => {
-            switch (res.code) {
-              case 'OK':
-                this._deploymentNotificationObject$.next(null);
-                break;
-              case 'BUILDING_BLOCK_NOT_FINAL':
-              case 'CONFIGURATION_ISSUES':
-                this._deploymentNotificationObject$.next({
-                  type: 'warning',
-                  title: this.translateService.instant(
-                    'caseManagement.deployment.notFinalizableWarning.title'
-                  ),
-                  message: this.translateService.instant(
-                    `caseManagement.deployment.notFinalizableWarning.${res.code}`
-                  ),
-                  showClose: false,
-                  lowContrast: true,
-                });
-                break;
+            if (res.finalizable) {
+              this._deploymentNotificationObject$.next(null);
+            } else {
+              this._deploymentNotificationObject$.next({
+                type: 'warning',
+                title: this.translateService.instant(
+                  'caseManagement.deployment.notFinalizableWarning.title'
+                ),
+                message: this.translateService.instant(
+                  `caseManagement.deployment.notFinalizableWarning.${res.code}`
+                ),
+                showClose: false,
+                lowContrast: true,
+              });
             }
           }),
           map(() => res)
