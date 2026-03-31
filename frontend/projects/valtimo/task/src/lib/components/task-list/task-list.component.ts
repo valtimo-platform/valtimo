@@ -421,14 +421,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
     const configuredTabs =
       this.configService.config?.visibleTaskListTabs || this._DEFAULT_TASK_LIST_TABS;
 
-    this.visibleTabs$.next(configuredTabs);
-    this.taskListService.setSelectedTaskType(configuredTabs[0]);
-
     this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
-      if (teams.length === 0) {
-        const tabs = configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
-        this.visibleTabs$.next(tabs);
-      }
+      const tabs =
+        teams.length > 0
+          ? configuredTabs
+          : configuredTabs.filter(tab => tab !== TaskListTab.TEAM);
+
+      this.visibleTabs$.next(tabs);
+      this.taskListService.setSelectedTaskType(tabs[0]);
     });
   }
 
