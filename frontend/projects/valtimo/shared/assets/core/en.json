@@ -1221,6 +1221,12 @@
       "noResultsDescription": "Come back later.",
       "noResultsTitle": "All tasks have been assigned"
     },
+    "team": {
+      "title": "Team tasks",
+      "description": "Overview of all tasks assigned to your teams",
+      "noResultsDescription": "No tasks have been assigned to your teams yet.",
+      "noResultsTitle": "No team tasks"
+    },
     "all": {
       "title": "All tasks",
       "description": "Overview of all tasks",
