@@ -1153,7 +1153,8 @@
         "downloadOriginal": "Download origineel",
         "modal": {
           "header": "Document weergave"
-        }
+        },
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
       }
     },
     "notifications": {

@@ -26,13 +26,14 @@
         {{ fileName ?? ('zgw.documents.preview.modal.header' | translate) }}
       </h3>
 
-      <a
-              class="download-link"
-              href="#"
+      <button
+              tabindex="-1"
+              cdsButton="tertiary"
+              class="download-button"
               (click)="onDownload()"
       >
         {{ 'zgw.documents.preview.downloadOriginal' | translate }}
-      </a>
+      </button>
   </cds-modal-header>
 
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -44,7 +45,7 @@
             autofocus
     >
       <p>
-        Your browser does not support PDF viewing.
+        {{ 'zgw.documents.preview.nosupport' | translate }}
       </p>
     </object>
   </div>

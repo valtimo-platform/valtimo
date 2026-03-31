@@ -1128,7 +1128,8 @@
         "downloadOriginal": "Download original",
         "modal": {
           "header": "Document preview"
-        }
+        },
+        "pdfViewerNotSupported": "Your browser does not support PDF viewing."
       }
     },
     "notifications": {

@@ -537,11 +537,15 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onRowClick(event: any): void {
-    if (!this.previewDisabled(event)) {
-      this.previewDocument(event, false);
-    } else if (this.filePermissions[event.fileId]?.canView) {
-      this.downloadDocument(event, false);
-    }
+    this.previewDisabled(event)
+      .pipe(take(1))
+      .subscribe((previewDisabled: boolean) => {
+        if (!previewDisabled) {
+          this.previewDocument(event, false);
+        } else if (this.filePermissions[event.fileId]?.canView) {
+          this.downloadDocument(event, false);
+        }
+      });
   }
 
   public onPaginationClicked(page: number): void {

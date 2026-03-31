@@ -84,7 +84,6 @@ export class DocumentenApiPreviewConfigurationComponent
       formValue.documentenApiConfigurationId
     );
 
-    console.log(`Document Preview configuration is: ${valid ? 'VALID' : 'INVALID'} `);
     this.valid$.next(valid);
     this.valid.emit(valid);
   }
