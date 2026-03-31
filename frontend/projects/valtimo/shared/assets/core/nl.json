@@ -1252,6 +1252,12 @@
       "noResultsDescription": "Kom later nog eens terug.",
       "noResultsTitle": "Alle taken zijn al toegewezen"
     },
+    "team": {
+      "title": "Teamtaken",
+      "description": "Overzicht van alle taken toegewezen aan je teams",
+      "noResultsDescription": "Er zijn nog geen taken aan je teams toegewezen.",
+      "noResultsTitle": "Geen teamtaken"
+    },
     "all": {
       "title": "Alle taken",
       "description": "Overzicht van alle taken",

@@ -267,6 +267,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   private readonly _DEFAULT_TASK_LIST_TABS: TaskListTab[] = [
     TaskListTab.MINE,
+    TaskListTab.TEAM,
     TaskListTab.OPEN,
     TaskListTab.ALL,
   ];
