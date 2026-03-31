@@ -16,6 +16,7 @@
 
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -27,6 +28,7 @@ import {AssigneeFilter, CaseListTab, ConfigService} from '@valtimo/shared';
 import {Tab, Tabs} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {DEFAULT_CASE_LIST_TABS} from '../../constants';
+import {TeamsApiService} from '@valtimo/teams';
 
 @Component({
   standalone: false,
@@ -49,10 +51,21 @@ export class CaseListTabsComponent implements OnInit {
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
   public readonly tabChange$ = new BehaviorSubject<CaseListTab | null>(null);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly teamsApiService: TeamsApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   public ngOnInit(): void {
-    this.visibleCaseTabs = this.configService.config?.visibleCaseListTabs || null;
+    const tabs = this.configService.config?.visibleCaseListTabs || this.defaultTabs;
+    this.visibleCaseTabs = tabs;
+
+    this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
+      this.visibleCaseTabs =
+        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
+      this.cdr.markForCheck();
+    });
   }
 
   public trackByIndex(index: number): number {

@@ -113,4 +113,8 @@ export class TeamsApiService extends BaseApiService {
   public removeTeamUser(teamKey: string, username: string): Observable<void> {
     return this.httpClient.delete<void>(this.getApiUrl(`v1/team/${teamKey}/user/${username}`));
   }
+
+  public getCurrentUserTeams(): Observable<{key: string}[]> {
+    return this.httpClient.get<{key: string}[]>(this.getApiUrl('v1/user/team'));
+  }
 }
