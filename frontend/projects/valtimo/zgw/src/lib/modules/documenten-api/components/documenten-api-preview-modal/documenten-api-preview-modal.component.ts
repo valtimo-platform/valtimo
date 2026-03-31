@@ -73,7 +73,7 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
   public fileName: string | undefined;
 
   private readonly _valtimoEndpointUri!: string;
-  private _showModalSubscription!: Subscription;
+  private readonly _subscriptions: Subscription[] = [];
 
   constructor(
     configService: ConfigService,
@@ -86,38 +86,42 @@ export class DocumentenApiPreviewModalComponent implements OnInit, OnDestroy {
 
   public ngOnInit() {
     if (this.showModalSubject$) {
-      this._showModalSubscription = this.showModalSubject$.subscribe(showModal => {
-        this.modalOpen$.next(showModal);
-      });
+      this._subscriptions.push(
+        this.showModalSubject$.subscribe(showModal => {
+          this.modalOpen$.next(showModal);
+        })
+      );
     }
 
     this.setPdfSrc();
   }
 
   private setPdfSrc(): void {
-    this.relatedFile$.subscribe(document => {
-      if (!document) {
-        return;
-      }
+    this._subscriptions.push(
+      this.relatedFile$.subscribe(document => {
+        if (!document) {
+          return;
+        }
 
-      this.fileName = document.bestandsnaam;
+        this.fileName = document.bestandsnaam;
 
-      let pdfUri: string = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${document.fileId}`;
+        let pdfUri: string = `${this._valtimoEndpointUri}v1/documenten-api-preview/${document.pluginConfigurationId}/preview/${document.fileId}`;
 
-      this.loading$.next(true);
-      this.http
-        .get(pdfUri.toString(), {
-          responseType: 'blob',
-        })
-        .subscribe(blob => {
-          this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
-          this.loading$.next(false);
-        });
-    });
+        this.loading$.next(true);
+        this.http
+          .get(pdfUri.toString(), {
+            responseType: 'blob',
+          })
+          .subscribe(blob => {
+            this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+            this.loading$.next(false);
+          });
+      })
+    );
   }
 
   public ngOnDestroy(): void {
-    this._showModalSubscription.unsubscribe();
+    this._subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
   public onClose(): void {
