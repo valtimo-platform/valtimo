@@ -16,13 +16,16 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
-import {map, Observable} from 'rxjs';
+import {BehaviorSubject, map, Observable} from 'rxjs';
 import {PluginManagementService} from '@valtimo/plugin';
+import {PluginConfiguration} from '../../zaken-api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DocumentenApiPreviewService extends BaseApiService {
+  private _documentenApiPreviewPluginConfigurations$ = new BehaviorSubject<PluginConfiguration[]>([])
+
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService,
@@ -31,18 +34,21 @@ export class DocumentenApiPreviewService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  public retrieveDocumentenApiPreviewPluginConfigurations(): void {
+    this.pluginManagementService
+      .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview').subscribe(configurations => {
+        this._documentenApiPreviewPluginConfigurations$.next(configurations)
+    })
+  }
+
   public canGeneratePreview(documentenApiPluginConfigurationId: string): Observable<boolean> {
-    return this.pluginManagementService
-      .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview')
-      .pipe(
-        map(configurations =>
-          configurations.some(
-            configuration =>
-              'documentenApiConfigurationId' in configuration.properties &&
-              configuration.properties['documentenApiConfigurationId'] ===
-                documentenApiPluginConfigurationId
-          )
-        )
-      );
+    return this._documentenApiPreviewPluginConfigurations$.pipe(map((configurations) => (
+      configurations.some(
+        configuration =>
+          'documentenApiConfigurationId' in configuration.properties &&
+          configuration.properties['documentenApiConfigurationId'] ===
+          documentenApiPluginConfigurationId
+      ))
+    ))
   }
 }

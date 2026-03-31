@@ -31,6 +31,7 @@ import {
 import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 import {EllipsisPipe} from '../../pipes';
 import {ViewContentModule} from '../view-content/view-content.module';
+import {ActionItemDisabledPipe} from './action-item-disabled.pipe';
 import {CarbonListComponent} from './carbon-list.component';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component';
@@ -38,6 +39,7 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
 
 @NgModule({
   declarations: [
+    ActionItemDisabledPipe,
     CarbonListComponent,
     CarbonListFilterPipe,
     CarbonNoResultsComponent,

@@ -114,7 +114,7 @@
   >
     @for (action of data.actions; track action.label) {
       <cds-overflow-menu-option
-        [disabled]="action.disabledCallback ? action.disabledCallback(data.item) : false"
+        [disabled]="action | actionItemDisabled: data.item | async"
         [type]="action.type"
         (selected)="action.callback(data.item)"
       >

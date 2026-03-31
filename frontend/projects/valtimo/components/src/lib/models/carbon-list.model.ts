@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {TemplateRef} from '@angular/core';
+import {Observable} from 'rxjs';
 import {CarbonTag} from './carbon-tag.model';
 
 enum ViewType {
@@ -63,6 +64,7 @@ interface ActionItem {
   label: string;
   callback: (_) => void;
   disabledCallback?: (_) => boolean;
+  disabled$?: (_) => Observable<boolean>;
   iconClass?: string;
   type?: 'normal' | 'danger';
 }
