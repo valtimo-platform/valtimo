@@ -36,6 +36,7 @@ test.describe('Case details management — Form Flows', () => {
 
     await page.goto('/');
     await formFlowsPage.goToCaseManagement(CASE_IDENTIFIER);
+    await formFlowsPage.ensureDraftVersionSelected();
     await formFlowsPage.switchToFormFlowsTab();
   });
 
