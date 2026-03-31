@@ -53,7 +53,7 @@ class BuildingBlockFormFlowManagementResource(
     ): ResponseEntity<Page<FormFlowDefinitionDto>> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
         val definitions = buildingBlockFormFlowDefinitionService.getFormFlowDefinitions(buildingBlockId, pageable)
-            .map { FormFlowDefinitionDto.of(it, buildingBlockFormFlowDefinitionImporter.isAutoDeployed(it.id.key)) }
+            .map { FormFlowDefinitionDto.of(it, buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, it.id.key)) }
         return ResponseEntity.ok(definitions)
     }
 
@@ -70,7 +70,7 @@ class BuildingBlockFormFlowManagementResource(
         return ResponseEntity.ok(
             FormFlowDefinitionDto.of(
                 definition,
-                buildingBlockFormFlowDefinitionImporter.isAutoDeployed(definitionKey)
+                buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)
             )
         )
     }
@@ -99,7 +99,7 @@ class BuildingBlockFormFlowManagementResource(
         @RequestBody definitionDto: FormFlowDefinitionDto
     ): ResponseEntity<FormFlowDefinitionDto> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(definitionKey)) {
+        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         val saved = buildingBlockFormFlowDefinitionService.save(buildingBlockId, definitionDto)
@@ -114,7 +114,7 @@ class BuildingBlockFormFlowManagementResource(
         @PathVariable definitionKey: String
     ): ResponseEntity<Unit> {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(definitionKey)) {
+        if (buildingBlockFormFlowDefinitionImporter.isAutoDeployed(buildingBlockId, definitionKey)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
         buildingBlockFormFlowDefinitionService.delete(buildingBlockId, definitionKey)

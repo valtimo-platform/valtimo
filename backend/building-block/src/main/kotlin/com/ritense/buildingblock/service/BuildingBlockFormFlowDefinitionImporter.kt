@@ -63,15 +63,26 @@ class BuildingBlockFormFlowDefinitionImporter(
 
     override fun partOfBuildingBlockDefinition() = true
 
-    fun isAutoDeployed(formFlowDefinitionKey: String): Boolean {
+    fun isAutoDeployed(buildingBlockDefinitionId: BuildingBlockDefinitionId, formFlowDefinitionKey: String): Boolean {
         withLoggingContext("formFlowDefinitionKey" to formFlowDefinitionKey) {
             return ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-                .getResources(FORM_FLOW_DEFINITIONS_PATH.replace("{formFlowKey}", formFlowDefinitionKey))
+                .getResources(
+                    FORM_FLOW_DEFINITIONS_PATH
+                        .replace("{buildingBlockKey}", buildingBlockDefinitionId.key)
+                        .replace("{versionTag}", buildingBlockDefinitionId.versionTag.let {
+                            "${it.major}-${it.minor}-${it.patch}"
+                        })
+                        .replace("{formFlowKey}", formFlowDefinitionKey)
+                )
                 .size > 0
         }
     }
 
-    private fun deploy(formFlowKey: String, formFlowJson: String, buildingBlockDefinitionId: BuildingBlockDefinitionId) {
+    private fun deploy(
+        formFlowKey: String,
+        formFlowJson: String,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ) {
         withLoggingContext("formFlowDefinitionKey" to formFlowKey) {
             validate(formFlowJson)
 
@@ -98,7 +109,9 @@ class BuildingBlockFormFlowDefinitionImporter(
 
     private fun validate(formFlowJson: String) {
         val definitionJsonObject = JSONObject(JSONTokener(formFlowJson))
-        val schema = SchemaLoader.load(JSONObject(JSONTokener(loadFormFlowSchemaResource().inputStream)))
+        val schema = loadFormFlowSchemaResource().inputStream.use { inputStream ->
+            SchemaLoader.load(JSONObject(JSONTokener(inputStream)))
+        }
         schema.validate(definitionJsonObject)
     }
 
@@ -118,7 +131,7 @@ class BuildingBlockFormFlowDefinitionImporter(
     private companion object {
         private const val FORM_FLOW_SCHEMA_PATH = "classpath:config/form-flow/schema/formflow.schema.json"
         private const val FORM_FLOW_DEFINITIONS_PATH =
-            "classpath:config/building-block/*/*/form-flow/{formFlowKey}.form-flow.json"
+            "classpath*:config/building-block/{buildingBlockKey}/{versionTag}/form-flow/{formFlowKey}.form-flow.json"
         val PATH_REGEX = """/form-flow/([^/]+)\.form-flow\.json""".toRegex()
         val logger = KotlinLogging.logger {}
     }

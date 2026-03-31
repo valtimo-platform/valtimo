@@ -89,7 +89,9 @@ class FormFlowDefinitionImporter(
     private fun validate(formFlowJson: String) {
         val definitionJsonObject = JSONObject(JSONTokener(formFlowJson))
 
-        val schema = SchemaLoader.load(JSONObject(JSONTokener(loadFormFlowSchemaResource().inputStream)))
+        val schema = loadFormFlowSchemaResource().inputStream.use { inputStream ->
+            SchemaLoader.load(JSONObject(JSONTokener(inputStream)))
+        }
         schema.validate(definitionJsonObject)
     }
 

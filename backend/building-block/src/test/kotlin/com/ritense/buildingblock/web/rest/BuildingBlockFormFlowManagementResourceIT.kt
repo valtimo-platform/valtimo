@@ -24,6 +24,7 @@ import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.AfterEach
@@ -44,16 +45,6 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 
-/**
- * Integration test for [BuildingBlockFormFlowManagementResource].
- *
- * Seeds the database with both a building-block-linked and a case-linked form flow to verify
- * that the building-block endpoints only expose form flows that belong to the requested
- * building block definition — not those belonging to a case definition.
- *
- * Write operation tests (POST/PUT/DELETE) stub the service layer because the auto-deployed
- * `bezwaar` building block is marked `final`, which prevents real write operations.
- */
 class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
@@ -70,7 +61,6 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
 
     private val base = "/api/management/v1/building-block"
 
-    // bezwaar/1.0.0 is auto-deployed from test resources — assertBuildingBlockDefinitionExists passes
     private val bbId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
     private val caseId = CaseDefinitionId("bb-case", "1.0.0")
 
@@ -93,13 +83,9 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Data-isolation tests — the spy calls through to the real service so the
-    // actual database query is exercised.
-    // -----------------------------------------------------------------------
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `GET all returns only building-block form flows, not case form flows`() {
         mockMvc.get("$base/{key}/version/{versionTag}/form-flow-definition", "bezwaar", "1.0.0")
             .andExpect {
@@ -110,7 +96,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `GET by key returns the building-block form flow`() {
         mockMvc.get("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
             "bezwaar", "1.0.0", "bb-test-flow")
@@ -121,7 +107,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `GET by key returns 404 for a case form flow that has the same key`() {
         // case-test-flow exists in the DB but belongs to a case, not this building block
         mockMvc.get("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
@@ -129,13 +115,8 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
             .andExpect { status { isNotFound() } }
     }
 
-    // -----------------------------------------------------------------------
-    // Write operation tests — bezwaar is final so the real checker blocks writes;
-    // we stub the service layer to test the resource logic in isolation.
-    // -----------------------------------------------------------------------
-
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `POST create returns 400 when definition already exists`() {
         val dto = FormFlowDefinitionDto(key = "bb-test-flow", startStep = "start", steps = emptyList())
 
@@ -150,7 +131,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `POST create returns 200 with the saved definition`() {
         val newDefinitionId = FormFlowDefinitionId.existingId("new-flow", bbId)
         val savedDefinition = FormFlowDefinition(newDefinitionId, "start", emptySet())
@@ -173,7 +154,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `PUT update returns 200 with the updated definition`() {
         val updatedDefinition = FormFlowDefinition(bbDefinitionId, "updated-start", emptySet())
         val dto = FormFlowDefinitionDto(key = "bb-test-flow", startStep = "updated-start", steps = emptyList())
@@ -193,13 +174,13 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `PUT update returns 403 when definition is auto-deployed (read-only)`() {
         val dto = FormFlowDefinitionDto(key = "readonly-flow", startStep = "start", steps = emptyList())
 
         doReturn(true)
             .whenever(buildingBlockFormFlowDefinitionImporter)
-            .isAutoDeployed(eq("readonly-flow"))
+            .isAutoDeployed(any(), eq("readonly-flow"))
 
         mockMvc.put("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
             "bezwaar", "1.0.0", "readonly-flow") {
@@ -209,7 +190,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `DELETE returns 200`() {
         doNothing()
             .whenever(buildingBlockFormFlowDefinitionService)
@@ -221,11 +202,11 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `DELETE returns 403 when definition is auto-deployed (read-only)`() {
         doReturn(true)
             .whenever(buildingBlockFormFlowDefinitionImporter)
-            .isAutoDeployed(eq("readonly-flow"))
+            .isAutoDeployed(any(), eq("readonly-flow"))
 
         mockMvc.delete("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
             "bezwaar", "1.0.0", "readonly-flow")
