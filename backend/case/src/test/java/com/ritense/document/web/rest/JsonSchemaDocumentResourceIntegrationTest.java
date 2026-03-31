@@ -139,7 +139,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         when(userManagementService.findById(user.getId())).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(loggedInUser);
 
-        AssignToDocumentsRequest assignToDocumentsRequest = new AssignToDocumentsRequest(List.of(document.id().getId(), document2.id().getId()), user.getId());
+        AssignToDocumentsRequest assignToDocumentsRequest = new AssignToDocumentsRequest(List.of(document.id().getId(), document2.id().getId()), user.getId(), null);
 
         mockMvc.perform(
                 post("/api/v1/document/assign")
@@ -191,7 +191,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         when(userManagementService.findById(user.getId())).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(loggedInUser);
 
-        AssignToDocumentsRequest assignToDocumentsRequest = new AssignToDocumentsRequest(List.of(document.id().getId()), user.getId());
+        AssignToDocumentsRequest assignToDocumentsRequest = new AssignToDocumentsRequest(List.of(document.id().getId()), user.getId(), null);
 
         mockMvc.perform(
                 post("/api/v1/document/assign")
