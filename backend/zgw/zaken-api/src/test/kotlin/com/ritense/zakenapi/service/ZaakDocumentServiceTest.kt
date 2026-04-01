@@ -54,6 +54,7 @@ import org.springframework.data.domain.Pageable
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class ZaakDocumentServiceTest {
@@ -313,7 +314,7 @@ class ZaakDocumentServiceTest {
         url = uri,
         bronorganisatie = Rsin("404797441"),
         auteur = "y",
-        beginRegistratie = LocalDateTime.now(),
+        beginRegistratie = OffsetDateTime.now(),
         creatiedatum = LocalDate.now(),
         taal = "nl",
         titel = "titel",

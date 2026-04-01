@@ -54,7 +54,7 @@ class ConfigurationIssueSseEventMapperTest {
     }
 
     @Test
-    fun `map should fallback to resultId when result is not ObjectNode`() {
+    fun `map should return null when result is not ObjectNode and caseDefinitionVersionTag is missing`() {
         val event = ValtimoEvent(
             id = "test-id",
             type = ConfigurationIssueUpdated.TYPE,
@@ -68,10 +68,7 @@ class ConfigurationIssueSseEventMapperTest {
 
         val result = mapper.map(event)
 
-        assertThat(result).isInstanceOf(ConfigurationIssueUpdatedSseEvent::class.java)
-        val sseEvent = result as ConfigurationIssueUpdatedSseEvent
-        assertThat(sseEvent.caseDefinitionKey).isEqualTo("fallback-key")
-        assertThat(sseEvent.caseDefinitionVersionTag).isEqualTo("")
+        assertThat(result).isNull()
     }
 
     @Test
