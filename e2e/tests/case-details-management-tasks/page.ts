@@ -18,6 +18,7 @@ import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 import * as ApiUtils from '../../utils/api.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 export class CaseDetailsManagementTasksPage {
   constructor(
@@ -36,6 +37,10 @@ export class CaseDetailsManagementTasksPage {
 
   async switchToTasksTab() {
     await this.page.getByRole('tab', {name: 'Tasks'}).click();
+  }
+
+  async ensureDraftVersionSelected(): Promise<string> {
+    return ensureDraftVersionSelected(this.page);
   }
 
   async switchToColumnsSubTab() {

@@ -18,12 +18,6 @@
 
 * **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../features/access-control/container-conditions.md) for details.
 
-* **Configure case definition name and key during import**
-
-  The case definition import wizard now includes a configure step where you can change the name and key before
-  importing. This allows importing the same ZIP multiple times under different names. The step also shows warnings
-  when a matching key or version already exists.
-
 ## Enhancements
 
 * **New enhancement title**
