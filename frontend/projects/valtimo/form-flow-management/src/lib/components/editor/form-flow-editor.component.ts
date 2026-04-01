@@ -24,9 +24,13 @@ import {
   PageTitleService,
 } from '@valtimo/components';
 import {
+  BuildingBlockManagementParams,
   CaseManagementParams,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
+  getContextObservable,
   GlobalNotificationService,
+  ManagementContext,
 } from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {
@@ -35,6 +39,7 @@ import {
   finalize,
   map,
   Observable,
+  of,
   switchMap,
   take,
   tap,
@@ -58,21 +63,51 @@ export class FormFlowEditorComponent implements OnDestroy {
   public readonly formFlowDefinitionId$ = new BehaviorSubject<FormFlowDefinitionId | null>(null);
   public readonly CARBON_THEME = 'g10';
 
-  private readonly _params$: Observable<FormFlowEditorParams> = combineLatest([
-    getCaseManagementRouteParams(this.route),
-    this.route.params as Observable<{formFlowDefinitionKey: string}>,
-  ]).pipe(
-    map(([caseManagementParams, params]) => ({
-      ...(caseManagementParams ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}),
-      ...params,
-    }))
+  private readonly _context$: Observable<ManagementContext | null> = getContextObservable(
+    this.route
   );
+
+  private readonly _params$: Observable<FormFlowEditorParams> = this._context$.pipe(
+    switchMap(context => {
+      if (context === 'buildingBlock') {
+        return combineLatest([
+          getBuildingBlockManagementRouteParams(this.route),
+          this.route.params as Observable<{formFlowDefinitionKey: string}>,
+        ]).pipe(
+          map(([bbParams, params]) => ({
+            caseDefinitionKey: bbParams?.buildingBlockDefinitionKey ?? '',
+            caseDefinitionVersionTag: bbParams?.buildingBlockDefinitionVersionTag ?? '',
+            formFlowDefinitionKey: params.formFlowDefinitionKey,
+          }))
+        );
+      }
+
+      return combineLatest([
+        getCaseManagementRouteParams(this.route),
+        this.route.params as Observable<{formFlowDefinitionKey: string}>,
+      ]).pipe(
+        map(([caseManagementParams, params]) => ({
+          ...(caseManagementParams ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}),
+          ...params,
+        }))
+      );
+    })
+  );
+
   public readonly formFlowSchemaJson = formFlowSchemaJson;
 
-  private readonly _formFlowDefinition2$ = this._params$.pipe(
+  private readonly _formFlowDefinition2$ = combineLatest([this._params$, this._context$]).pipe(
     tap(() => this.loading$.next(true)),
-    switchMap((params: FormFlowEditorParams) => {
-      this.initBreadcrumbs(params);
+    switchMap(([params, context]) => {
+      this.initBreadcrumbs(params, context);
+
+      if (context === 'buildingBlock') {
+        return this.formFlowService.getBuildingBlockFormFlowDefinitionByKey(
+          params.caseDefinitionKey,
+          params.caseDefinitionVersionTag,
+          params.formFlowDefinitionKey
+        );
+      }
 
       return this.formFlowService.getFormFlowDefinitionByKey(
         params.caseDefinitionKey,
@@ -127,20 +162,31 @@ export class FormFlowEditorComponent implements OnDestroy {
   public updateFormFlowDefinition(): void {
     this.loading$.next(true);
 
-    combineLatest([this._params$, this._updatedModelValue$])
+    combineLatest([this._params$, this._updatedModelValue$, this._context$])
       .pipe(
         take(1),
-        switchMap(([params, updatedModelValue]) =>
-          this.formFlowService.updateFormFlowDefinition(
+        switchMap(([params, updatedModelValue, context]) => {
+          const updatedDefinition = {
+            ...(JSON.parse(updatedModelValue) as FormFlowDefinition),
+            key: params.formFlowDefinitionKey,
+          };
+
+          if (context === 'buildingBlock') {
+            return this.formFlowService.updateBuildingBlockFormFlowDefinition(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag,
+              params.formFlowDefinitionKey,
+              updatedDefinition
+            );
+          }
+
+          return this.formFlowService.updateFormFlowDefinition(
             params.caseDefinitionKey,
             params.caseDefinitionVersionTag,
             params.formFlowDefinitionKey,
-            {
-              ...(JSON.parse(updatedModelValue) as FormFlowDefinition),
-              key: params.formFlowDefinitionKey,
-            }
-          )
-        ),
+            updatedDefinition
+          );
+        }),
         finalize(() => this.loading$.next(false))
       )
       .subscribe(result => {
@@ -150,16 +196,24 @@ export class FormFlowEditorComponent implements OnDestroy {
 
   public onDelete(): void {
     this.loading$.next(true);
-    this._params$
+    combineLatest([this._params$, this._context$])
       .pipe(
         take(1),
-        switchMap((params: CaseManagementParams & {formFlowDefinitionKey: string}) =>
-          this.formFlowService.deleteFormFlowDefinition(
+        switchMap(([params, context]) => {
+          if (context === 'buildingBlock') {
+            return this.formFlowService.deleteBuildingBlockFormFlowDefinition(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag,
+              params.formFlowDefinitionKey
+            );
+          }
+
+          return this.formFlowService.deleteFormFlowDefinition(
             params.caseDefinitionKey,
             params.caseDefinitionVersionTag,
             params.formFlowDefinitionKey
-          )
-        )
+          );
+        })
       )
       .subscribe(() => {
         this.router.navigate(['../'], {relativeTo: this.route});
@@ -173,7 +227,7 @@ export class FormFlowEditorComponent implements OnDestroy {
   public downloadFormFlowDefinition(model: EditorModel): void {
     this._params$
       .pipe(take(1))
-      .subscribe((params: CaseManagementParams & {formFlowDefinitionKey: string}) =>
+      .subscribe((params: FormFlowEditorParams) =>
         this.formFlowDownloadService.downloadJson(JSON.parse(model.value), params)
       );
   }
@@ -201,21 +255,42 @@ export class FormFlowEditorComponent implements OnDestroy {
     });
   }
 
-  private initBreadcrumbs(params: FormFlowEditorParams): void {
-    const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+  private initBreadcrumbs(
+    params: FormFlowEditorParams,
+    context: ManagementContext | null
+  ): void {
+    if (context === 'buildingBlock') {
+      const route = `/building-block-management/building-block/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
 
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
-      content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-      href: route,
-    });
+      this.breadcrumbService.setThirdBreadcrumb({
+        route: [route],
+        content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
+        href: `${route}/general`,
+      });
 
-    const routeWithFormFlows = `${route}/form-flows`;
+      const routeWithFormFlows = `${route}/form-flows`;
 
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [routeWithFormFlows],
-      content: this.translateService.instant('caseManagement.tabs.formFlows'),
-      href: routeWithFormFlows,
-    });
+      this.breadcrumbService.setFourthBreadcrumb({
+        route: [routeWithFormFlows],
+        content: this.translateService.instant('buildingBlockManagement.tabs.formFlows'),
+        href: routeWithFormFlows,
+      });
+    } else {
+      const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+
+      this.breadcrumbService.setThirdBreadcrumb({
+        route: [route],
+        content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
+        href: route,
+      });
+
+      const routeWithFormFlows = `${route}/form-flows`;
+
+      this.breadcrumbService.setFourthBreadcrumb({
+        route: [routeWithFormFlows],
+        content: this.translateService.instant('caseManagement.tabs.formFlows'),
+        href: routeWithFormFlows,
+      });
+    }
   }
 }

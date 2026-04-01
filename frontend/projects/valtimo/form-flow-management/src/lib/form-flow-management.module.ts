@@ -42,7 +42,6 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
 @NgModule({
   declarations: [
     FormFlowOverviewComponent,
-    NewFormFlowModalComponent,
     FormFlowEditorComponent,
     DeleteFormFlowModalComponent,
   ],
@@ -65,6 +64,7 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     CarbonListModule,
     DropdownModule,
     ConfirmationModalModule,
+    NewFormFlowModalComponent,
   ],
 })
 export class FormFlowManagementModule {}
