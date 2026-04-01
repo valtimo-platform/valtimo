@@ -1826,7 +1826,8 @@
       "objecttypeVersion": "Objecttype versie",
       "formDefinitionView": "View formulier definitie",
       "formDefinitionEdit": "Wijzig formulier definitie",
-      "showInDataMenu": "Toon in menu"
+      "showInDataMenu": "Toon in menu",
+      "suppressOutbox": "Outbox onderdrukken"
     },
     "tooltips": {
       "title": "De naam van deze configuratie. Onder deze naam is deze configuratie terug te vinden in de rest van de applicatie.",
@@ -1834,7 +1835,8 @@
       "objecttypeVersion": "De versie van het objecttype",
       "formDefinitionView": "De naam van de formio IO definitie die wordt gebruikt om het object weer te geven.",
       "formDefinitionEdit": "De naam van de formio IO definitie die wordt gebruikt om het object te bewerken.",
-      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is"
+      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is",
+      "suppressOutbox": "Wanneer ingeschakeld, wordt de outbox-flow overgeslagen bij leesacties voor dit objecttype."
     },
     "cancel": "Annuleren",
     "add": "Object toevoegen",

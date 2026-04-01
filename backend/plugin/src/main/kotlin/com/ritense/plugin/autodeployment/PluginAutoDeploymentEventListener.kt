@@ -34,14 +34,12 @@ import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 
-@Transactional
 class PluginAutoDeploymentEventListener(
     private val resourceLoader: ResourceLoader,
     private val pluginService: PluginService,
     private val objectMapper: ObjectMapper
 ) {
 
-    @Transactional
     @Order(Ordered.LOWEST_PRECEDENCE-1)
     @EventListener(ApplicationReadyEvent::class)
     fun deployPluginConfigurations(){

@@ -30,6 +30,8 @@ import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.objectenapi.web.rest.result.FormType
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.objecttypenapi.client.Objecttype
+import com.ritense.outbox.OutboxContext
+import com.ritense.outbox.OutboxContext.Companion.runWithSuppressedOutbox
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -191,7 +193,9 @@ class ZaakObjectService(
             pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId)) as ObjectenApiPlugin
         val objectUrl = objectsApiPlugin.getObjectUrl(objectId)
         logger.debug { "Getting object for url $objectUrl" }
-        return objectsApiPlugin.getObject(objectUrl)
+        return runWithSuppressedOutbox(objectManagement.suppressOutbox) {
+            objectsApiPlugin.getObject(objectUrl)
+        }
     }
 
     private fun findZakenApiPlugin(zaakUrl: URI): ZakenApiPlugin {

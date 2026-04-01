@@ -16,6 +16,7 @@
 
 package com.ritense.outbox
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -52,5 +53,80 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
         }
 
         assertThat(outboxMessage1Ref.await()!!.message).isNotEqualTo(outboxMessage2Ref.await()!!.message)
+    }
+
+    @Test
+    fun `should fetch batch of messages ordered by created_on`() {
+        insertOutboxMessage("event 1")
+        Thread.sleep(10) // ensure distinct created_on timestamps
+        insertOutboxMessage("event 2")
+        Thread.sleep(10)
+        insertOutboxMessage("event 3")
+
+        val messages = TransactionTemplate(platformTransactionManager).execute {
+            outboxMessageRepository.findOutboxMessages(10)
+        }!!
+
+        assertThat(messages).hasSize(3)
+        assertThat(messages[0].message).contains("event 1")
+        assertThat(messages[1].message).contains("event 2")
+        assertThat(messages[2].message).contains("event 3")
+    }
+
+    @Test
+    fun `should limit batch size`() {
+        insertOutboxMessage("event 1")
+        insertOutboxMessage("event 2")
+        insertOutboxMessage("event 3")
+
+        val messages = TransactionTemplate(platformTransactionManager).execute {
+            outboxMessageRepository.findOutboxMessages(2)
+        }!!
+
+        assertThat(messages).hasSize(2)
+    }
+
+    @Test
+    fun `should return empty list when no messages exist`() {
+        val messages = TransactionTemplate(platformTransactionManager).execute {
+            outboxMessageRepository.findOutboxMessages(10)
+        }!!
+
+        assertThat(messages).isEmpty()
+    }
+
+    @Test
+    fun `should skip locked messages in batch fetch`(): Unit = runBlocking {
+        insertOutboxMessage("event 1")
+        Thread.sleep(10)
+        insertOutboxMessage("event 2")
+        Thread.sleep(10)
+        insertOutboxMessage("event 3")
+
+        // First transaction locks the first 2 messages
+        val locksAcquired = CompletableDeferred<Unit>()
+        val batch1Ref = async(Dispatchers.IO) {
+            TransactionTemplate(platformTransactionManager).execute {
+                val messages = outboxMessageRepository.findOutboxMessages(2)
+                locksAcquired.complete(Unit)
+                Thread.sleep(1000) // hold the lock
+                messages
+            }
+        }
+
+        // Second transaction should skip the locked messages and get the 3rd
+        locksAcquired.await()
+        val batch2Ref = async(Dispatchers.IO) {
+            TransactionTemplate(platformTransactionManager).execute {
+                outboxMessageRepository.findOutboxMessages(2)
+            }
+        }
+
+        val batch1 = batch1Ref.await()!!
+        val batch2 = batch2Ref.await()!!
+
+        assertThat(batch1).hasSize(2)
+        assertThat(batch2).hasSize(1)
+        assertThat(batch1.map { it.id }).doesNotContainAnyElementsOf(batch2.map { it.id })
     }
 }
