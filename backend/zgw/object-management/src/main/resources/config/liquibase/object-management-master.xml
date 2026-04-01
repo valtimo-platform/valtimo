@@ -25,5 +25,6 @@
 
     <include file="changelog/20221221-add-object-management-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230130-switch-configuration-id-columns.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20260324-add-suppress-outbox-to-object-management.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

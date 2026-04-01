@@ -162,6 +162,15 @@
         name="showInDataMenu"
         [defaultValue]="prefillObject?.showInDataMenu"
       ></v-input>
+
+      <v-input
+        [margin]="true"
+        type="checkbox"
+        [title]="'objectManagement.labels.suppressOutbox' | translate"
+        [tooltip]="'objectManagement.tooltips.suppressOutbox' | translate"
+        name="suppressOutbox"
+        [defaultValue]="prefillObject?.suppressOutbox"
+      ></v-input>
     </v-form>
   </ng-container>
 </ng-template>

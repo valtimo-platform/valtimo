@@ -9,7 +9,7 @@ data class Rsin(private val value: String) : Validatable {
     companion object {
         @JvmStatic
         @JsonCreator
-        fun create(value: String) = value
+        fun create(value: String) = Rsin(value)
     }
 
     @JsonValue
