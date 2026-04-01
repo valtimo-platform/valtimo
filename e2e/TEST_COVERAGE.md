@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 39         | 289            |
-| **Total**                   | **20**   | **349**   | **41**     | **308**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 56         | 272            |
+| **Total**                   | **20**   | **349**   | **58**     | **291**        |
 
-**Coverage:** `41 / 349` — `11.7%`
+**Coverage:** `58 / 349` — `16.6%`
 
 ---
 
@@ -185,20 +185,20 @@
 
 | #    | Function             | Test Scenarios                 | Coverage | Notes                                           |
 |:-----|:---------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 6.58 | View form flows list | Display list of form flows     |    ❌    |                                                 |
-| 6.59 | Create form flow     | Create new form flow           |    ❌    |                                                 |
-| 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ❌    |                                                 |
+| 6.58 | View form flows list | Display list of form flows     |    ✅    | case-details-management-form-flows.spec.ts      |
+| 6.59 | Create form flow     | Create new form flow           |    ✅    | case-details-management-form-flows.spec.ts      |
+| 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.61 | Save form flow       | Save form flow                 |    ❌    |                                                 |
 
 #### 6I · Tasks
 
 | #    | Function                    | Test Scenarios                       | Coverage | Notes                                           |
 |:-----|:----------------------------|:-------------------------------------|:--------:|:------------------------------------------------|
-| 6.62 | View task list columns      | View task list columns configuration |    ❌    |                                                 |
-| 6.63 | Add task list column        | Add column to task list              |    ❌    |                                                 |
-| 6.64 | Rearrange task list columns | Rearrange task list columns          |    ❌    |                                                 |
-| 6.65 | View task search fields     | View task list search fields         |    ❌    |                                                 |
-| 6.66 | Add task search field       | Add task list search field           |    ❌    |                                                 |
+| 6.62 | View task list columns      | View task list columns configuration |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.63 | Add task list column        | Add column to task list              |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.64 | Rearrange task list columns | Rearrange task list columns          |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.65 | View task search fields     | View task list search fields         |    ✅    | case-details-management-tasks.spec.ts           |
+| 6.66 | Add task search field       | Add task list search field           |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |    ❌    |                                                 |
 
 #### 6J · Case List
@@ -216,9 +216,9 @@
 
 | #    | Function       | Test Scenarios                                 | Coverage | Notes                                           |
 |:-----|:---------------|:-----------------------------------------------|:--------:|:------------------------------------------------|
-| 6.74 | View tabs      | View tabs configuration                        |    ❌    |                                                 |
-| 6.75 | Add tab        | Add tab (Standard / FormIO / Custom / Widgets) |    ❌    |                                                 |
-| 6.76 | Rearrange tabs | Rearrange tabs order                           |    ❌    |                                                 |
+| 6.74 | View tabs      | View tabs configuration                        |    ✅    | case-details-management-tabs.spec.ts            |
+| 6.75 | Add tab        | Add tab (Standard / FormIO / Custom / Widgets) |    ✅    | case-details-management-tabs.spec.ts            |
+| 6.76 | Rearrange tabs | Rearrange tabs order                           |    ✅    | case-details-management-tabs.spec.ts            |
 
 #### 6L · Case Details — Statuses
 
@@ -431,14 +431,14 @@
 
 | #    | Function                  | Test Scenarios               | Coverage | Notes                                           |
 |:-----|:--------------------------|:-----------------------------|:--------:|:------------------------------------------------|
-| 11.1 | View roles list           | Display list of roles        |    ❌    |                                                 |
-| 11.2 | Add new role              | Add new role                 |    ❌    |                                                 |
-| 11.3 | Enter role name           | Enter role name              |    ❌    |                                                 |
-| 11.4 | Create role               | Create role                  |    ❌    |                                                 |
-| 11.5 | View role details         | Select and view role details |    ❌    |                                                 |
+| 11.1 | View roles list           | Display list of roles        |    ✅    | access-control.spec.ts                          |
+| 11.2 | Add new role              | Add new role                 |    ✅    | access-control.spec.ts                          |
+| 11.3 | Enter role name           | Enter role name              |    ✅    | access-control.spec.ts                          |
+| 11.4 | Create role               | Create role                  |    ✅    | access-control.spec.ts                          |
+| 11.5 | View role details         | Select and view role details |    ✅    | access-control.spec.ts                          |
 | 11.6 | Edit role metadata        | Edit role metadata           |    ❌    |                                                 |
 | 11.7 | Export role configuration | Export role configuration    |    ❌    |                                                 |
-| 11.8 | Delete role               | Delete role                  |    ❌    |                                                 |
+| 11.8 | Delete role               | Delete role                  |    ✅    | access-control.spec.ts                          |
 
 #### 11B · Permissions
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   41    |
-| ❌ Not covered           |   308   |
+| ✅ Covered by Playwright |   58    |
+| ❌ Not covered           |   291   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    0    |
-| **Coverage %**           | **11.7%** |
+| **Coverage %**           | **16.6%** |
