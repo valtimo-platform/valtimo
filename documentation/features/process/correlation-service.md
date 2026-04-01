@@ -19,10 +19,12 @@ The first argument is the key of the message that should be sent. In this exampl
 As shown in the example above, Valtimo provides a `sendStartMessage` method. The following variations are possible:
 
 ```kotlin
-fun sendStartMessage(message: String): MessageCorrelationResult
-fun sendStartMessage(message: String, businessKey: String?): MessageCorrelationResult
-fun sendStartMessage(message: String, businessKey: String?, variables: Map<String, Any>?): MessageCorrelationResult
-fun sendStartMessageWithProcessDefinitionKey(message: String,targetProcessDefinitionKey: String,businessKey: String?, variables: Map<String, Any>?): MessageCorrelationResult
+fun sendStartMessage(message: String, businessKey: String): MessageCorrelationResult
+fun sendStartMessage(message: String, businessKey: String, vararg variables: Any?): MessageCorrelationResult
+fun sendStartMessage(message: String, businessKey: String, variables: Map<String, Any?>?): MessageCorrelationResult
+fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String)
+fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, vararg variables: Any?)
+fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, variables: Map<String, Any?>?)
 ```
 
 Variables passed on will be stored as process variables for the process. Providing a target process definition key means the message will be correlated to a process definition matching that process definition key.
