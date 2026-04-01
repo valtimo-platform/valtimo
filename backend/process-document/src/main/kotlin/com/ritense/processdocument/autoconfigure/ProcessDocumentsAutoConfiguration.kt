@@ -43,7 +43,6 @@ import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumen
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.CaseTaskContributor
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
@@ -75,6 +74,7 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
@@ -298,7 +298,7 @@ class ProcessDocumentsAutoConfiguration {
         searchFieldV2Service: SearchFieldV2Service,
         queryDialectHelper: QueryDialectHelper,
         userTaskOpenedStatusService: UserTaskOpenedStatusService,
-        caseTaskContributors: List<CaseTaskContributor>
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -309,7 +309,7 @@ class ProcessDocumentsAutoConfiguration {
             searchFieldV2Service,
             queryDialectHelper,
             userTaskOpenedStatusService,
-            caseTaskContributors
+            taskBusinessKeyResolvers
         )
     }
 

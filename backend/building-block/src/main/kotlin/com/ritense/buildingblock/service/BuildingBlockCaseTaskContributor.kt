@@ -17,86 +17,28 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.processdocument.service.CaseTaskContributor
+import com.ritense.valtimo.contract.database.ExpressionHelper.cast
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
 import java.util.UUID
 
 /**
- * Integrates building block tasks into the case task list infrastructure.
+ * Resolves building block business keys to case document IDs.
  *
  * Building block processes use the building block document ID as their process instance business key,
- * not the case document ID. This causes two problems:
- * 1. BB tasks are missing from case-filtered task views (solved by [CaseTaskContributor])
- * 2. The task list returns the BB document ID instead of the case document ID (solved by [TaskBusinessKeyResolver])
- *
- * Both are solved via correlated subqueries on [BuildingBlockInstance], which links
- * the BB document (documentId) back to the parent case document (caseDocumentId).
+ * not the case document ID. This resolver maps BB document IDs back to case document IDs via a
+ * correlated subquery on [BuildingBlockInstance]. It is used inside a COALESCE expression so that
+ * BB tasks are matched to the correct case document, while non-BB tasks fall through to the
+ * original business key.
  */
 class BuildingBlockCaseTaskContributor(
     private val queryDialectHelper: QueryDialectHelper
-) : CaseTaskContributor, TaskBusinessKeyResolver {
+) : TaskBusinessKeyResolver {
 
-    /**
-     * Includes building block tasks in the case-filtered task list.
-     *
-     * Without this, tasks from BB sub-processes are excluded because their business key
-     * points to the BB document, not the case document. This predicate is OR'd with the
-     * default direct business key match in [CaseTaskListSearchService].
-     *
-     * Generates: EXISTS (SELECT 1 FROM building_block_instance bbi
-     *   WHERE CAST(bbi.document_id AS VARCHAR) = pi.business_key_
-     *     AND bbi.case_document_id = doc.id)
-     */
-    override fun createTaskInclusionPredicate(
-        cb: CriteriaBuilder,
-        query: AbstractQuery<*>,
-        taskRoot: Root<OperatonTask>,
-        documentRoot: Root<JsonSchemaDocument>,
-        caseDefinitionName: String
-    ): Predicate? {
-        val subquery = query.subquery(Long::class.java)
-        val bbiRoot = subquery.from(BuildingBlockInstance::class.java)
-        subquery.select(cb.literal(1L))
-        subquery.where(
-            cb.and(
-                // Link BB instance to the task via the process instance business key
-                cb.equal(
-                    queryDialectHelper.uuidToString(cb, bbiRoot.get("documentId")),
-                    taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey")
-                ),
-                // Link BB instance to the case document
-                cb.equal(
-                    bbiRoot.get<UUID>("caseDocumentId"),
-                    documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
-                )
-            )
-        )
-
-        return cb.exists(subquery)
-    }
-
-    /**
-     * Resolves building block business keys to case document IDs in the task list query.
-     *
-     * Used by [OperatonTaskService.findTasksFiltered] inside a COALESCE expression so that
-     * BB tasks return the case document ID as their business key instead of the BB document ID.
-     * For non-BB tasks (where no matching BuildingBlockInstance exists) the subquery returns null,
-     * and COALESCE falls through to the original business key.
-     *
-     * Generates: (SELECT CAST(bbi.case_document_id AS VARCHAR) FROM building_block_instance bbi
-     *   WHERE CAST(bbi.document_id AS VARCHAR) = pi.business_key_)
-     */
     override fun resolveBusinessKeyExpression(
         cb: CriteriaBuilder,
         query: AbstractQuery<*>,
@@ -109,6 +51,23 @@ class BuildingBlockCaseTaskContributor(
             cb.equal(
                 queryDialectHelper.uuidToString(cb, bbiRoot.get("documentId")),
                 businessKeyPath
+            )
+        )
+        return subquery
+    }
+
+    override fun resolveCaseDocumentId(
+        cb: CriteriaBuilder,
+        query: AbstractQuery<*>,
+        businessKeyPath: Path<String>
+    ): Expression<UUID> {
+        val subquery = query.subquery(UUID::class.java)
+        val bbiRoot = subquery.from(BuildingBlockInstance::class.java)
+        subquery.select(bbiRoot.get("caseDocumentId"))
+        subquery.where(
+            cb.equal(
+                bbiRoot.get<UUID>("documentId"),
+                businessKeyPath.cast(UUID::class.java)
             )
         )
         return subquery
