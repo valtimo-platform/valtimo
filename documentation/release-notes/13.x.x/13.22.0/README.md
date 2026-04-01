@@ -18,6 +18,8 @@
 
 * **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../features/access-control/container-conditions.md) for details.
 
+* **Cross-case message correlation** — The `sendCatchEventMessage` and `sendCatchEventMessageToAll` methods on `correlationService` can now be called without a business key, allowing messages to be correlated to process instances across all cases. See [correlating messages](../../features/process/correlation-service.md) for details.
+
 ## Bugfixes
 
 * Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
