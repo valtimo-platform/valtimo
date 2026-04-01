@@ -230,14 +230,14 @@ class CorrelationServiceImplTest {
         verify(builder).setVariables(mapOf("k1" to "v1"))
     }
 
-    // --- sendCatchEventMessage without businessKey ---
+    // --- sendGlobalCatchEventMessage ---
 
     @Test
-    fun `sendCatchEventMessage without businessKey should correlate without businessKey filter`() {
+    fun `sendGlobalCatchEventMessage should correlate without businessKey filter`() {
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateWithResult()).thenReturn(result)
 
-        val actual = correlationService.sendCatchEventMessage(messageName)
+        val actual = correlationService.sendGlobalCatchEventMessage(messageName)
 
         assertEquals(result, actual)
         verify(builder, never()).processInstanceBusinessKey(any())
@@ -245,22 +245,22 @@ class CorrelationServiceImplTest {
     }
 
     @Test
-    fun `sendCatchEventMessage without businessKey should not associate document`() {
+    fun `sendGlobalCatchEventMessage should not associate document`() {
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateWithResult()).thenReturn(result)
 
-        correlationService.sendCatchEventMessage(messageName)
+        correlationService.sendGlobalCatchEventMessage(messageName)
 
         verify(associationService, never()).createProcessDocumentInstance(any(), any(), any())
     }
 
     @Test
-    fun `sendCatchEventMessage without businessKey with variables map should set variables`() {
+    fun `sendGlobalCatchEventMessage with variables map should set variables`() {
         val variables = mapOf("key1" to "value1" as Any?)
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateWithResult()).thenReturn(result)
 
-        val actual = correlationService.sendCatchEventMessage(messageName, variables)
+        val actual = correlationService.sendGlobalCatchEventMessage(messageName, variables)
 
         assertEquals(result, actual)
         verify(builder, never()).processInstanceBusinessKey(any())
@@ -349,14 +349,14 @@ class CorrelationServiceImplTest {
         verify(associationService).createProcessDocumentInstance(eq(processInstanceId2), eq(documentId), eq("process-2"))
     }
 
-    // --- sendCatchEventMessageToAll without businessKey ---
+    // --- sendGlobalCatchEventMessageToAll ---
 
     @Test
-    fun `sendCatchEventMessageToAll without businessKey should correlate without businessKey filter`() {
+    fun `sendGlobalCatchEventMessageToAll should correlate without businessKey filter`() {
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateAllWithResult()).thenReturn(listOf(result))
 
-        val actual = correlationService.sendCatchEventMessageToAll(messageName)
+        val actual = correlationService.sendGlobalCatchEventMessageToAll(messageName)
 
         assertEquals(listOf(result), actual)
         verify(builder, never()).processInstanceBusinessKey(any())
@@ -364,22 +364,22 @@ class CorrelationServiceImplTest {
     }
 
     @Test
-    fun `sendCatchEventMessageToAll without businessKey should not associate document`() {
+    fun `sendGlobalCatchEventMessageToAll should not associate document`() {
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateAllWithResult()).thenReturn(listOf(result))
 
-        correlationService.sendCatchEventMessageToAll(messageName)
+        correlationService.sendGlobalCatchEventMessageToAll(messageName)
 
         verify(associationService, never()).createProcessDocumentInstance(any(), any(), any())
     }
 
     @Test
-    fun `sendCatchEventMessageToAll without businessKey with variables map should set variables`() {
+    fun `sendGlobalCatchEventMessageToAll with variables map should set variables`() {
         val variables = mapOf("key1" to "value1" as Any?)
         val result = mockCorrelationResultWithExecution()
         whenever(builder.correlateAllWithResult()).thenReturn(listOf(result))
 
-        val actual = correlationService.sendCatchEventMessageToAll(messageName, variables)
+        val actual = correlationService.sendGlobalCatchEventMessageToAll(messageName, variables)
 
         assertEquals(listOf(result), actual)
         verify(builder, never()).processInstanceBusinessKey(any())
@@ -387,10 +387,10 @@ class CorrelationServiceImplTest {
     }
 
     @Test
-    fun `sendCatchEventMessageToAll without businessKey with empty results should return empty list`() {
+    fun `sendGlobalCatchEventMessageToAll with empty results should return empty list`() {
         whenever(builder.correlateAllWithResult()).thenReturn(emptyList())
 
-        val actual = correlationService.sendCatchEventMessageToAll(messageName)
+        val actual = correlationService.sendGlobalCatchEventMessageToAll(messageName)
 
         assertEquals(emptyList(), actual)
     }

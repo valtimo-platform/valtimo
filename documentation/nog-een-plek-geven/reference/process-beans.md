@@ -56,14 +56,14 @@ This process bean provides a way to manipulate jobs within the current process.
 fun sendStartMessage(message: String, businessKey: String)
 fun sendStartMessage(message: String, businessKey: String, variables: Map<String, Any>?)
 fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, variables: Map<String, Any>?)
-fun sendCatchEventMessage(message: String)
-fun sendCatchEventMessage(message: String, variables: Map<String, Any>?)
 fun sendCatchEventMessage(message: String, businessKey: String)
 fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?)
-fun sendCatchEventMessageToAll(message: String)
-fun sendCatchEventMessageToAll(message: String, variables: Map<String, Any>?)
 fun sendCatchEventMessageToAll(message: String, businessKey: String)
 fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessage(message: String)
+fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessageToAll(message: String)
+fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any>?)
 ```
 
 Information on all methods can be found [here](../../features/process/correlation-service.md).
