@@ -54,6 +54,7 @@ public class FormUtils {
         }
     }
 
+    // The text column in the Operaton variables table is of type varchar(4000)
     private static final int MAX_STRING_LENGTH = 4000;
 
     public static VariableMap createTypedVariableMap(Map<String, Object> variables) {
