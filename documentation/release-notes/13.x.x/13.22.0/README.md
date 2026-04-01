@@ -18,7 +18,7 @@
 
 * **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../features/access-control/container-conditions.md) for details.
 
-* **Cross-case message correlation** — The `sendCatchEventMessage` and `sendCatchEventMessageToAll` methods on `correlationService` can now be called without a business key, allowing messages to be correlated to process instances across all cases. See [correlating messages](../../features/process/correlation-service.md) for details.
+* **Cross-case message correlation** — New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
 
 ## Bugfixes
 
