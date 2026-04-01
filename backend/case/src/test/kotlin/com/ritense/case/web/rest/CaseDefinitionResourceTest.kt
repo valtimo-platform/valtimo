@@ -19,14 +19,17 @@ package com.ritense.case.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.BaseTest
+import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
+import com.ritense.case.web.rest.dto.CaseDefinitionImportPreviewResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -44,9 +47,11 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -66,6 +71,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var caseDefinitionChecker: CaseDefinitionChecker
     lateinit var configurationIssueRepository: com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
+    lateinit var caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService
     lateinit var mapper: ObjectMapper
 
     @BeforeEach
@@ -77,6 +83,7 @@ class CaseDefinitionResourceTest : BaseTest() {
         caseDefinitionRepository = mock()
         caseDefinitionChecker = mock()
         configurationIssueRepository = mock()
+        caseDefinitionImportPreviewService = mock()
         resource = CaseDefinitionResource(
             service,
             activeCaseDefinitionService,
@@ -85,6 +92,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             caseDefinitionRepository,
             caseDefinitionChecker,
             configurationIssueRepository,
+            caseDefinitionImportPreviewService,
         )
 
         mapper = MapperSingleton.get()
@@ -472,6 +480,82 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.canUpdateGlobalConfiguration").value(true))
+    }
+
+    @Test
+    fun `should return preview from import ZIP`() {
+        val previewResponse = CaseDefinitionImportPreviewResponse(
+            key = "my-case",
+            name = "My Case",
+            versionTag = "1.0.0",
+            isFinal = false,
+        )
+        whenever(caseDefinitionImportPreviewService.preview(any())).thenReturn(previewResponse)
+
+        val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/case/import/preview").file(file)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("my-case"))
+            .andExpect(jsonPath("$.name").value("My Case"))
+            .andExpect(jsonPath("$.versionTag").value("1.0.0"))
+            .andExpect(jsonPath("$.isFinal").value(false))
+    }
+
+    @Test
+    fun `should return bad request when preview fails`() {
+        whenever(caseDefinitionImportPreviewService.preview(any()))
+            .thenThrow(ImportServiceException("No .case-definition.json found in ZIP"))
+
+        val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/case/import/preview").file(file)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should import with key and name overrides`() {
+        val caseDefinitionId = CaseDefinitionId("new-key", "1.0.0")
+        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
+        whenever(importService.import(any(), any(), eq("new-key"), eq("New Name")))
+            .thenReturn(caseDefinitionId)
+
+        val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/case/import")
+                .file(file)
+                .param("key", "new-key")
+                .param("name", "New Name")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+
+        verify(importService).import(any(), any(), eq("new-key"), eq("New Name"))
+    }
+
+    @Test
+    fun `should import without overrides`() {
+        val caseDefinitionId = CaseDefinitionId("original-key", "1.0.0")
+        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
+        whenever(importService.import(any(), any(), isNull(), isNull()))
+            .thenReturn(caseDefinitionId)
+
+        val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/case/import").file(file)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+
+        verify(importService).import(any(), any(), isNull(), isNull())
     }
 
     companion object {
