@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  AutoKeyInputComponent,
   CarbonListModule,
   CarbonMultiInputModule,
   ConfirmationModalModule,
@@ -184,6 +185,7 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
     CaseManagementHeaderComponent,
+    AutoKeyInputComponent,
   ],
   providers: [TabManagementService],
 })

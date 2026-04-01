@@ -576,6 +576,14 @@
           "description": "Beschrijving"
         }
       },
+      "importOrigin": {
+        "title": "Importherkomst",
+        "fields": {
+          "originalKey": "Oorspronkelijke sleutel",
+          "originalName": "Oorspronkelijke naam",
+          "originalVersionTag": "Oorspronkelijke versie"
+        }
+      },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
@@ -712,19 +720,14 @@
     "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
     "importDefinition": {
       "title": "Case-definitie importeren",
-      "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
       "startUpload": "Begin het uploaden",
-      "checkbox": {
-        "message": "Ik begrijp dat configuraties mogelijk worden overschreven",
-        "error": "Dit veld is verplicht"
-      },
       "info": {
         "title": "Let op",
         "message": "Controleer of de plugin-configuraties die gebruikt worden in de proceskoppelingen aanwezig zijn."
       },
       "upload": {
         "title": "Upload bestand",
-        "description": "De maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "description": "De maximale bestandsgrootte is 500kb. Ondersteund bestandstype is ZIP.",
         "buttonText": "Selecteer bestand"
       },
       "progressBar": {
@@ -733,9 +736,26 @@
         "finished": "Dossier-definitie succesvol geïmporteerd",
         "label": "Dossier-definitie importeren"
       },
-      "invalidJsonError": {
-        "text": "Zorg ervoor dat deze een geldige JSON-waarde bevat.",
-        "title": "Het bestand bevat een fout."
+      "invalidZipError": {
+        "title": "Ongeldig bestand",
+        "text": "Het bestand kon niet worden gelezen als een geldig case-definitie archief."
+      },
+      "configure": {
+        "draftTag": "Concept",
+        "finalTag": "Definitief",
+        "newVersionWarning": {
+          "title": "Nieuwe versie",
+          "message": "Er bestaat al een case-definitie met deze key. Dit wordt geïmporteerd als nieuwe versie."
+        },
+        "existingDraftWarning": {
+          "title": "Waarschuwing",
+          "message": "Er bestaat al een conceptversie met deze key en versie. Importeren overschrijft het bestaande concept."
+        },
+        "overrideConfirm": "Ik begrijp dat het bestaande concept wordt overschreven",
+        "existingFinalWarning": {
+          "title": "Kan niet importeren",
+          "message": "Er bestaat al een definitieve versie met deze key en versie. Wijzig de key om onder een andere naam te importeren."
+        }
       },
       "steps": {
         "accessControl": {
