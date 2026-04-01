@@ -29,9 +29,17 @@ interface CorrelationService {
     fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, vararg variables: Any?)
     fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, variables: Map<String, Any?>?)
 
+    fun sendCatchEventMessage(message: String): MessageCorrelationResult
+    fun sendCatchEventMessage(message: String, vararg variables: Any?): MessageCorrelationResult
+    fun sendCatchEventMessage(message: String, variables: Map<String, Any?>?): MessageCorrelationResult
+
     fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult
     fun sendCatchEventMessage(message: String, businessKey: String, vararg variables: Any?): MessageCorrelationResult
     fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any?>?): MessageCorrelationResult
+
+    fun sendCatchEventMessageToAll(message: String): List<MessageCorrelationResult>
+    fun sendCatchEventMessageToAll(message: String, vararg variables: Any?): List<MessageCorrelationResult>
+    fun sendCatchEventMessageToAll(message: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
 
     fun sendCatchEventMessageToAll(message: String, businessKey: String): List<MessageCorrelationResult>
     fun sendCatchEventMessageToAll(message: String, businessKey: String, vararg variables: Any?): List<MessageCorrelationResult>
