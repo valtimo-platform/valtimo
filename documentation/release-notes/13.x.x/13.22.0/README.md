@@ -18,12 +18,6 @@
 
 * **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../features/access-control/container-conditions.md) for details.
 
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
 ## Bugfixes
 
 * Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
