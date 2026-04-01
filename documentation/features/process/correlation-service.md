@@ -35,10 +35,12 @@ There are two different ways to correlate message catch events. Either correlati
 
 ```kotlin
 fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult
-fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?): MessageCorrelationResult
+fun sendCatchEventMessage(message: String, businessKey: String, vararg variables: Any?): MessageCorrelationResult
+fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any?>?): MessageCorrelationResult
 
 fun sendCatchEventMessageToAll(message: String, businessKey: String): List<MessageCorrelationResult>
-fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any>?): List<MessageCorrelationResult>
+fun sendCatchEventMessageToAll(message: String, businessKey: String, vararg variables: Any?): List<MessageCorrelationResult>
+fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
 ```
 
 Variables passed on will be stored in the process. The provided business key will correlate the message to events with process instances matching that business key.
@@ -49,10 +51,12 @@ To correlate messages across all process instances regardless of which case they
 
 ```kotlin
 fun sendGlobalCatchEventMessage(message: String): MessageCorrelationResult
-fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any>?): MessageCorrelationResult
+fun sendGlobalCatchEventMessage(message: String, vararg variables: Any?): MessageCorrelationResult
+fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any?>?): MessageCorrelationResult
 
 fun sendGlobalCatchEventMessageToAll(message: String): List<MessageCorrelationResult>
-fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any>?): List<MessageCorrelationResult>
+fun sendGlobalCatchEventMessageToAll(message: String, vararg variables: Any?): List<MessageCorrelationResult>
+fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
 ```
 
 Since no business key is provided, these methods will not create a process-document association for the correlated process instances.
