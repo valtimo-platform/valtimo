@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-export {
-  CONFIRMATION_MODAL_TEST_IDS,
-  VALUE_PATH_SELECTOR_TEST_IDS,
-  STEPPER_FOOTER_STEP_TEST_IDS,
-  JSON_EDITOR_TEST_IDS,
-  ARBITRARY_AMOUNT_VALUE_TEST_IDS,
-  VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS,
-  KEY_VALUE_TEST_IDS,
-  KEY_VALUE_PATH_SELECTOR_TEST_IDS,
-  VALUE_PATH_SELECTOR_VALUE_TEST_IDS,
-  KEY_DROPDOWN_VALUE_TEST_IDS,
-  SINGLE_VALUE_TEST_IDS,
-  AUTO_KEY_INPUT_TEST_IDS,
-  RIGHT_SIDEBAR_TEST_IDS,
-} from '../../frontend/projects/valtimo/components/src/lib/constants/components.test-ids';
+package com.ritense.case.web.rest.dto
+
+data class CaseDefinitionImportPreviewResponse(
+    val key: String,
+    val name: String,
+    val versionTag: String,
+    val isFinal: Boolean,
+)
