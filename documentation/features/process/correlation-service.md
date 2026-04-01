@@ -4,7 +4,7 @@ When modeling a process, correlating a message (e.g. to start another process) d
 
 ## How to use
 
-Valtimo provides several methods that can be used inside a BPMN, accessible through the `correlationService` bean. Which method to use depends on the use case. For more information on the separate use cases see the two sections below.
+Valtimo provides several methods that can be used inside a BPMN, accessible through the `correlationService` bean. Which method to use depends on the use case. For more information on the separate use cases see the three sections below.
 
 These methods can be used in expressions applied to message throw events like this:
 
@@ -31,7 +31,7 @@ Variables passed on will be stored as process variables for the process. Providi
 
 ### Correlating message catch events
 
-There are two different ways to correlate message catch events. Either correlating a single message to a single catch event, or correlating a single message to any number of catch events. Valtimo supports both of these ways through the `sendCatchEventMessage` and `sendCatchEventMessageToAll` methods. The following variations are possible:
+There are different ways to correlate message catch events. Either correlating a single message to a single catch event, or correlating a single message to any number of catch events. These methods correlate within the same case (by business key). To correlate across all cases, see the next section. Valtimo supports both of these ways through the `sendCatchEventMessage` and `sendCatchEventMessageToAll` methods. The following variations are possible:
 
 ```kotlin
 fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult
@@ -58,5 +58,3 @@ fun sendGlobalCatchEventMessageToAll(message: String): List<MessageCorrelationRe
 fun sendGlobalCatchEventMessageToAll(message: String, vararg variables: Any?): List<MessageCorrelationResult>
 fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
 ```
-
-Since no business key is provided, these methods will not create a process-document association for the correlated process instances.
