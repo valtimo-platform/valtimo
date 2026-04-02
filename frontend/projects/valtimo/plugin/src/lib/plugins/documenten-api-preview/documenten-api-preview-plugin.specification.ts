@@ -34,7 +34,7 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
         'In dit veld moet de verwijzing komen naar de locatie van de PDF conversie server (Project Gotenberg).',
       documentenApiPluginConfiguration: 'Documenten API configuratie',
       documentenApiPluginConfigurationTooltip:
-        'Selecteer de plugin die gebruikt wordt voor het ontsluiten van documenten. Deze plugin zal worden gebruikt om de originele documenten te ontsluiten zodat deze geconverteerd kunnen worden naar PDF voor weergave in GZAC.',
+        'Selecteer de plugin die gebruikt wordt voor het ontsluiten van documenten. Deze plugin zal worden gebruikt om de originele documenten te ontsluiten zodat deze geconverteerd kunnen worden naar PDF voor weergave in de browser.',
     },
     en: {
       title: 'Documenten API Preview',
@@ -46,7 +46,7 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       pdfConversionUrlTooltip: 'This field must contain the URL to the PDF conversion server.',
       documentenApiPluginConfiguration: 'Document API configuration',
       documentenApiPluginConfigurationTooltip:
-        'Select the plugin that can access the documents. This plugin will be used to access the original document so it can be converted to PDF and previewed in GZAC.',
+        'Select the plugin that can access the documents. This plugin will be used to access the original document so it can be converted to PDF and previewed in the browser.',
     },
   },
 };
