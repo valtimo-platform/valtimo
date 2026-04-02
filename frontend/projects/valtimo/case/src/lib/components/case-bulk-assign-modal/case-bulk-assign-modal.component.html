@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
         candidateUserItems: candidateUserItems$ | async,
         teamItems: teamItems$ | async,
         canAssignAllDocuments: canAssignAllDocuments$ | async,
-        canAssignAnyDocuments: canAssignAnyDocuments$ | async
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async,
       } as obs"
     >
       <cds-inline-notification
@@ -35,7 +35,7 @@
           title: ('case.bulkAssign.modal.warningTitle' | translate),
           message: ('case.bulkAssign.modal.cannotAssignAnyWarning' | translate),
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
 
@@ -46,7 +46,7 @@
           title: ('case.bulkAssign.modal.warningTitle' | translate),
           message: ('case.bulkAssign.modal.cannotAssignSomeWarning' | translate),
           showClose: false,
-          lowContrast: true
+          lowContrast: true,
         }"
       ></cds-inline-notification>
 
@@ -57,6 +57,7 @@
           [items]="obs.candidateUserItems"
           [label]="'case.bulkAssign.modal.selectLabel' | translate"
           [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+          [cdsLayer]="1"
         >
           <cds-dropdown-list></cds-dropdown-list>
         </cds-combo-box>
@@ -68,6 +69,7 @@
           [items]="obs.teamItems"
           [label]="'case.bulkAssign.modal.selectTeamLabel' | translate"
           [placeholder]="'case.bulkAssign.modal.selectPlaceholder' | translate"
+          [cdsLayer]="1"
         >
           <cds-dropdown-list></cds-dropdown-list>
         </cds-combo-box>
@@ -78,7 +80,7 @@
   <cds-modal-footer>
     <ng-container
       *ngIf="{
-        canAssignAnyDocuments: canAssignAnyDocuments$ | async
+        canAssignAnyDocuments: canAssignAnyDocuments$ | async,
       } as obs"
     >
       <button cdsButton="ghost" (click)="closeModal()">{{ 'interface.cancel' | translate }}</button>
