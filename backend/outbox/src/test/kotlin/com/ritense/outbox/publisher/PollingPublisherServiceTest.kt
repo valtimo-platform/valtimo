@@ -305,6 +305,60 @@ class PollingPublisherServiceTest {
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
     }
 
+    @Test
+    fun `should recover from OPEN state after wait duration elapses`() {
+        val circuitBreaker = CircuitBreaker.of(
+            "test-recovery",
+            CircuitBreakerConfig.custom()
+                .failureRateThreshold(100f)
+                .minimumNumberOfCalls(1)
+                .slidingWindowSize(1)
+                .waitDurationInOpenState(Duration.ofSeconds(1))
+                .permittedNumberOfCallsInHalfOpenState(1)
+                .automaticTransitionFromOpenToHalfOpenEnabled(true)
+                .build()
+        )
+
+        val failMsg = OutboxMessage(message = "fail")
+        val okMsg = OutboxMessage(message = "ok")
+        // 1st call: failure (opens circuit), 2nd call: success (HALF_OPEN recovery)
+        whenever(outboxService.getOldestMessages(any()))
+            .thenReturn(listOf(failMsg))
+            .thenReturn(listOf(okMsg))
+            .thenReturn(emptyList())
+        whenever(messagePublisher.publishBatch(listOf(failMsg))).thenReturn(
+            listOf(MessagePublishResult(messageId = failMsg.id, success = false, error = RuntimeException("fail")))
+        )
+        whenever(messagePublisher.publishBatch(listOf(okMsg))).thenReturn(
+            listOf(MessagePublishResult(messageId = okMsg.id, success = true))
+        )
+
+        val service = PollingPublisherService(
+            outboxService, messagePublisher, transactionManager,
+            batchSize = 5,
+            circuitBreaker = circuitBreaker
+        )
+
+        // First poll: failure opens the circuit breaker
+        service.pollAndPublishAll()
+        assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.OPEN)
+
+        // Poll while OPEN: should skip entirely
+        service.pollAndPublishAll()
+        verify(outboxService, times(1)).getOldestMessages(any())
+
+        // Wait for automatic OPEN → HALF_OPEN transition (1s wait duration + 500ms margin)
+        val deadline = System.currentTimeMillis() + 1500
+        while (circuitBreaker.state != CircuitBreaker.State.HALF_OPEN) {
+            assertThat(System.currentTimeMillis()).isLessThan(deadline)
+            Thread.sleep(50)
+        }
+
+        // Poll in HALF_OPEN: should succeed and close the circuit breaker
+        service.pollAndPublishAll()
+        assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
+    }
+
     private fun createCircuitBreaker(
         failureThreshold: Float,
         minimumCalls: Int,
