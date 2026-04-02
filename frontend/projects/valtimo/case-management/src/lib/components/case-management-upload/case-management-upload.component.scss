@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,14 +72,28 @@
     max-width: unset;
   }
 
-  &__checkbox {
+  &__configure {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
+  }
 
-    &--invalid ::ng-deep label::before {
-      border-color: colors.$red-60;
-      margin-inline: 0;
+  &__version-field {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0 1rem;
+    background-color: var(--cds-layer-01);
+    border-bottom: 1px solid var(--cds-border-strong);
+
+    span {
+      color: var(--cds-text-primary);
+      font-size: 0.875rem;
+      line-height: 1.125rem;
+      font-weight: 400;
+      letter-spacing: 0.16px;
     }
   }
 
