@@ -29,7 +29,6 @@
 * Fixed sensitive data logging in inbox messages and null safety issues in SSE event mappers.
 * Fixed MySQL outbox message query missing ordering.
 * Fixed RabbitMQ outbox publisher null safety on confirmation result.
-* Fixed storage of strings exceeding 4000 characters in Operaton process variables. Long strings are now serialized as Java objects to bypass the database column size limit, and are deserialized back to strings transparently.
 
 ## Deprecations
 
