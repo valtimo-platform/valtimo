@@ -19,11 +19,10 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
-import {AssigneeFilter, CaseListTab, ConfigService} from '@valtimo/shared';
+import {AssigneeFilter, CaseListTab} from '@valtimo/shared';
 import {Tab, Tabs} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {DEFAULT_CASE_LIST_TABS} from '../../constants';
@@ -35,25 +34,19 @@ import {DEFAULT_CASE_LIST_TABS} from '../../constants';
   styleUrls: ['./case-list-tabs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseListTabsComponent implements OnInit {
+export class CaseListTabsComponent {
   @ViewChild(Tabs) tabsComponent: Tabs;
 
   @Input() public assigneeFilter: AssigneeFilter | null = null;
   @Input() public selectedRowCount = 0;
+  @Input() public visibleTabs: Array<CaseListTab> | null = null;
 
   @Output() public tabChangeEvent = new EventEmitter<CaseListTab>();
 
   public activeTab: CaseListTab | null = null;
-  public visibleCaseTabs: Array<CaseListTab> | null = null;
   public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
   public readonly tabChange$ = new BehaviorSubject<CaseListTab | null>(null);
-
-  constructor(private readonly configService: ConfigService) {}
-
-  public ngOnInit(): void {
-    this.visibleCaseTabs = this.configService.config?.visibleCaseListTabs || null;
-  }
 
   public trackByIndex(index: number): number {
     return index;

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="!visibleCaseTabs; else configuredTabs">
+<ng-container *ngIf="!visibleTabs; else configuredTabs">
   <cds-tabs type="contained" class="case-list-tabs">
     <cds-tab
       *ngFor="let tab of defaultTabs; trackBy: trackByIndex"
@@ -29,7 +29,7 @@
 <ng-template #configuredTabs>
   <cds-tabs type="contained" class="case-list-tabs">
     <cds-tab
-      *ngFor="let tab of visibleCaseTabs; trackBy: trackByIndex"
+      *ngFor="let tab of visibleTabs; trackBy: trackByIndex"
       [active]="assigneeFilter === tab"
       heading="{{ 'case.tabs.' + tab | translate }}"
       [id]="tab"

@@ -163,6 +163,7 @@ enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+  TEAM = 'team',
 }
 
 enum CaseListTab {

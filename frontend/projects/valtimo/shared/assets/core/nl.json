@@ -25,6 +25,7 @@
       "modal": {
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
+        "selectTeamLabel": "Toewijzen aan team",
         "selectPlaceholder": "Kies een optie",
         "title": "Wijs geselecteerde cases toe aan",
         "warningTitle": "Waarschuwing",
@@ -1250,6 +1251,12 @@
       "description": "Overzicht van alle niet toegewezen taken",
       "noResultsDescription": "Kom later nog eens terug.",
       "noResultsTitle": "Alle taken zijn al toegewezen"
+    },
+    "team": {
+      "title": "Teamtaken",
+      "description": "Overzicht van alle taken toegewezen aan je teams",
+      "noResultsDescription": "Er zijn nog geen taken aan je teams toegewezen.",
+      "noResultsTitle": "Geen teamtaken"
     },
     "all": {
       "title": "Alle taken",

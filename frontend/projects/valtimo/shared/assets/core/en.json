@@ -25,6 +25,7 @@
       "modal": {
         "confirm": "Assign",
         "selectLabel": "Assign to user",
+        "selectTeamLabel": "Assign to team",
         "selectPlaceholder": "Choose an option",
         "title": "Assign selected cases to",
         "warningTitle": "Warning",
@@ -1219,6 +1220,12 @@
       "description": "Overview of all unassigned tasks",
       "noResultsDescription": "Come back later.",
       "noResultsTitle": "All tasks have been assigned"
+    },
+    "team": {
+      "title": "Team tasks",
+      "description": "Overview of all tasks assigned to your teams",
+      "noResultsDescription": "No tasks have been assigned to your teams yet.",
+      "noResultsTitle": "No team tasks"
     },
     "all": {
       "title": "All tasks",
