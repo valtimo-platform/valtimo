@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* The case task list now loads significantly faster when building blocks are used.

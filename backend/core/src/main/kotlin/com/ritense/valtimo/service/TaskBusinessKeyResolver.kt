@@ -20,17 +20,29 @@ import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
+import java.util.UUID
 
 interface TaskBusinessKeyResolver {
 
     /**
      * Creates an expression that resolves the business key for tasks where the
      * process instance business key doesn't directly refer to the case document.
-     * Returns a subquery that yields the resolved key, or null if not applicable.
+     * Returns a subquery that yields the resolved key as a string, or null if not applicable.
      */
     fun resolveBusinessKeyExpression(
         cb: CriteriaBuilder,
         query: AbstractQuery<*>,
         businessKeyPath: Path<String>
     ): Expression<String>?
+
+    /**
+     * Resolves a task's business key to its case document UUID using native UUID types.
+     * This variant allows the database to use UUID indexes for efficient lookups.
+     * Returns a subquery yielding the case document UUID, or null if not applicable.
+     */
+    fun resolveCaseDocumentId(
+        cb: CriteriaBuilder,
+        query: AbstractQuery<*>,
+        businessKeyPath: Path<String>
+    ): Expression<UUID>? = null
 }
