@@ -17,7 +17,6 @@
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
-import com.ritense.valtimo.contract.database.ExpressionHelper.cast
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import jakarta.persistence.criteria.AbstractQuery
@@ -67,7 +66,7 @@ class BuildingBlockCaseTaskContributor(
         subquery.where(
             cb.equal(
                 bbiRoot.get<UUID>("documentId"),
-                businessKeyPath.cast(UUID::class.java)
+                queryDialectHelper.stringToUuid(cb, businessKeyPath)
             )
         )
         return subquery

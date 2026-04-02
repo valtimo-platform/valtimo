@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,17 +43,16 @@ import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.database.ExpressionHelper.cast
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.AbstractQuery
@@ -253,7 +252,7 @@ class CaseTaskListSearchService(
         } else {
             val coalesce = cb.coalesce<UUID>()
             resolverExpressions.forEach { coalesce.value(it) }
-            coalesce.value(businessKeyPath.cast(UUID::class.java))
+            coalesce.value(queryDialectHelper.stringToUuid(cb, businessKeyPath))
             cb.equal(coalesce, documentId)
         }
 
