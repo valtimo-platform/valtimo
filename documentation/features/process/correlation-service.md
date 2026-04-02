@@ -59,4 +59,4 @@ fun sendGlobalCatchEventMessageToAll(message: String, vararg variables: Any?): L
 fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
 ```
 
-Since no business key is provided, these methods will not create a process-document association — though this is only relevant in uncommon cases where a process is started outside of the normal flow, in which case managing that association is the responsibility of the caller.
+Since no business key is provided, these methods will not create a process-document association — though this is only relevant in uncommon cases where a process is started outside the normal flow, in which case managing that association is the responsibility of the caller.
