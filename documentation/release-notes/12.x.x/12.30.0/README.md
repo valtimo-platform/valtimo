@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed deserialization of `beginRegistratie` in Documenten API responses
