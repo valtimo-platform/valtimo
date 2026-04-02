@@ -54,6 +54,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -143,7 +144,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.of(2020, 1, 1, 1, 1, 1),
+            OffsetDateTime.parse("2020-01-01T01:01:01Z"),
             listOf(),
             null
         )
@@ -236,7 +237,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -328,7 +329,7 @@ internal class DocumentenApiPluginTest {
             "returnedAuthor",
             "returnedFileName",
             1L,
-            LocalDateTime.now(),
+            OffsetDateTime.now(),
             listOf(),
             null
         )
@@ -466,7 +467,7 @@ internal class DocumentenApiPluginTest {
                 titel = "titel",
                 auteur = "auteur",
                 taal = "taal",
-                beginRegistratie = LocalDateTime.now(),
+                beginRegistratie = OffsetDateTime.now(),
                 status = DEFINITIEF
             )
         )
