@@ -5,7 +5,8 @@
 
 .cds--modal-content {
   overflow: hidden;
-  height: 100vh;
+  height: auto;
+  padding: 16px;
 }
 
 .download-button {
@@ -18,7 +19,7 @@
 }
 
 .pdf-object {
-  height: 88vh;
+  height: 75vh;
   width: 100%;
 }
 
