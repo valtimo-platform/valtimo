@@ -21,6 +21,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260324-add-suppress-outbox-to-object-management.xml" relativeToChangelogFile="true"/>
+    <include file="20260327-add-import-origin-to-case-definition.xml" relativeToChangelogFile="true"/>
     <include file="20260330-form-flow-blueprint-support.xml" relativeToChangelogFile="true"/>
 
 

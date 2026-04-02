@@ -27,6 +27,9 @@ export class CaseDefinition {
   autoAssignTasks: boolean;
   active: boolean;
   conflictingVersions: string;
+  originalKey?: string;
+  originalName?: string;
+  originalVersionTag?: string;
 }
 
 export class ReleaseVersionData {
@@ -59,6 +62,13 @@ export interface CaseDefinitionConfigurationIssue {
   resolved: boolean;
   createdAt: string;
   resolvedAt: string | null;
+}
+
+export interface CaseDefinitionImportPreview {
+  key: string;
+  name: string;
+  versionTag: string;
+  isFinal: boolean;
 }
 
 export interface ConfigurationIssueUpdatedSseEvent {
