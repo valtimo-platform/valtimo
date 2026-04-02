@@ -15,52 +15,54 @@
   -->
 
 <v-form
-        (valueChange)="formValueChange($event)"
-        *ngIf="{
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
   <v-input
-          name="configurationTitle"
-          data-test-id="documentenApiPreviewConfigurationTitle"
-          [title]="'configurationTitle' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [disabled]="obs.disabled"
-          [defaultValue]="obs.prefill?.configurationTitle"
-          [required]="true"
-          [trim]="true"
-          [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
-          placeholder="Documenten API Preview Plugin"
+    name="configurationTitle"
+    data-test-id="documentenApiPreviewConfigurationTitle"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationTitle"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    placeholder="Documenten API Preview Plugin"
   >
   </v-input>
   <v-input
-          name="pdfConversionUrl"
-          data-test-id="pdfConversionUrl"
-          [title]="'pdfConversionUrl' | pluginTranslate: pluginId | async"
-          [margin]="true"
-          [disabled]="obs.disabled"
-          [defaultValue]="obs.prefill?.pdfConversionUrl"
-          [required]="true"
-          [trim]="true"
-          [tooltip]="'pdfConversionUrlTooltip' | pluginTranslate: pluginId | async"
-          placeholder="https://gotenberg:3000/"
+    name="pdfConversionUrl"
+    data-test-id="pdfConversionUrl"
+    [title]="'pdfConversionUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.pdfConversionUrl"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'pdfConversionUrlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://gotenberg:3000/"
   >
   </v-input>
   <ng-container
-          *ngIf="{documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async} as documentenApiObs"
+    *ngIf="{
+      documentenApiPluginSelectItems: documentenApiPluginSelectItems$ | async,
+    } as documentenApiObs"
   >
     <v-select
-            [loading]="!documentenApiObs.documentenApiPluginSelectItems"
-            [items]="documentenApiObs.documentenApiPluginSelectItems"
-            [margin]="true"
-            name="documentenApiConfigurationId"
-            data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
-            [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
-            [disabled]="obs.disabled"
-            [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
-            [required]="true"
-            [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+      [loading]="!documentenApiObs.documentenApiPluginSelectItems"
+      [items]="documentenApiObs.documentenApiPluginSelectItems"
+      [margin]="true"
+      name="documentenApiConfigurationId"
+      data-test-id="documentenPreviewDocumentenApiPluginConfiguration"
+      [title]="'documentenApiPluginConfiguration' | pluginTranslate: pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.documentenApiConfigurationId"
+      [required]="true"
+      [tooltip]="'documentenApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
 </v-form>

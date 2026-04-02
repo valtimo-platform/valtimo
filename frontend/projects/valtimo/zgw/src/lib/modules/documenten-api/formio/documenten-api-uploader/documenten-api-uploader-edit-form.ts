@@ -128,7 +128,7 @@ export const documentenApiUploaderEditForm = () => ({
       key: 'customOptions.acceptedFiles',
       label: 'Accepted file types (leave blank for no restrictions)',
       placeholder: '.png, .docx, .pdf',
-      defaultValue: ''
+      defaultValue: '',
     },
     {
       type: 'checkbox',
