@@ -154,7 +154,12 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     @Override
     @PostMapping("/v1/document/assign")
     public ResponseEntity<Void> assignHandlerToDocuments(@RequestBody @Valid AssignToDocumentsRequest request) {
-        documentService.assignUserToDocuments(request.getDocumentIds(), request.getAssigneeId());
+        if (request.getAssigneeId() != null) {
+            documentService.assignUserToDocuments(request.getDocumentIds(), request.getAssigneeId());
+        }
+        if (request.getAssignedTeamKey() != null) {
+            documentService.assignTeamToDocuments(request.getDocumentIds(), request.getAssignedTeamKey());
+        }
         return ResponseEntity.ok().build();
     }
 

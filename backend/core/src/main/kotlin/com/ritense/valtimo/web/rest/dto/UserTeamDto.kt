@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-.v-overflow-menu-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: var(--cds-icon-primary);
+package com.ritense.valtimo.web.rest.dto
 
-  &:hover {
-    background-color: var(--cds-layer-active);
-  }
-
-  &.--compact {
-    width: 2rem;
-    height: 2rem;
-    min-height: 2rem;
-  }
-}
+data class UserTeamDto(val key: String)

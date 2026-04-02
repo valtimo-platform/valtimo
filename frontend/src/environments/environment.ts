@@ -205,7 +205,7 @@ export const environment: ValtimoConfig = {
   defaultDefinitionTable: defaultDefinitionColumns,
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
-  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.TEAM, TaskListTab.OPEN, TaskListTab.ALL],
   visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
   customTaskList: {
     fields: [
