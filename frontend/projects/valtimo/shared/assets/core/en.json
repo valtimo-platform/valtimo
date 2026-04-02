@@ -569,6 +569,14 @@
           "description": "Description"
         }
       },
+      "importOrigin": {
+        "title": "Import origin",
+        "fields": {
+          "originalKey": "Original key",
+          "originalName": "Original name",
+          "originalVersionTag": "Original version"
+        }
+      },
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
@@ -705,30 +713,42 @@
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
     "importDefinition": {
       "title": "Import case definition",
-      "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
       "startUpload": "Start upload",
-      "checkbox": {
-        "message": "I understand that configurations may be overwritten",
-        "error": "This field is mandatory"
-      },
       "info": {
         "title": "Attention",
         "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
       },
       "upload": {
         "title": "Upload file",
-        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "description": "Max file size is 500kb. Supported file type is ZIP.",
         "buttonText": "Select file"
       },
       "progressBar": {
         "active": "This may take a while",
-        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
         "finished": "Case definition successfully imported",
         "label": "Importing case definition"
       },
-      "invalidJsonError": {
-        "text": "Please make sure it contains a valid JSON value.",
-        "title": "The file contains an error."
+      "invalidZipError": {
+        "title": "Invalid file",
+        "text": "The file could not be read as a valid case definition archive."
+      },
+      "configure": {
+        "draftTag": "Draft",
+        "finalTag": "Final",
+        "newVersionWarning": {
+          "title": "New version",
+          "message": "A case definition with this key already exists. This will be imported as a new version."
+        },
+        "existingDraftWarning": {
+          "title": "Warning",
+          "message": "A draft version with this key and version already exists. Importing will override the existing draft."
+        },
+        "overrideConfirm": "I understand that the existing draft will be overridden",
+        "existingFinalWarning": {
+          "title": "Cannot import",
+          "message": "A finalized version with this key and version already exists. Change the key to import under a different name."
+        }
       },
       "steps": {
         "accessControl": {
