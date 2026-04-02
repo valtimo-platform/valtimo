@@ -218,6 +218,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     if (!bulkAssign?.assigneeId && !bulkAssign?.assignedTeamKey) return;
 
     this.bulkAssignService.bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey).subscribe(() => {
+      this.carbonList.model.selectAll(false);
       this.forceRefresh();
     });
   }
