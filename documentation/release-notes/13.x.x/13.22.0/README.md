@@ -18,11 +18,6 @@
 
 * **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../../features/access-control/container-conditions.md) for details.
 
-* **Added the Documenten API Preview plugin**
-
-  The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
-  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
-
 ## Enhancements
 
 * **New enhancement title**
