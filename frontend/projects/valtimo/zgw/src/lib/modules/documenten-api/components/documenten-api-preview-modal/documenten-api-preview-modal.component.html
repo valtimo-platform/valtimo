@@ -15,45 +15,35 @@
   -->
 
 <cds-modal
-        [open]="modalOpen$ | async"
-        size="lg"
-        passiveModal
-        (close)="onClose()"
-        *ngIf="{loading: loading$ | async} as obs"
+  [open]="modalOpen$ | async"
+  size="lg"
+  passiveModal
+  (close)="onClose()"
+  *ngIf="{loading: loading$ | async} as obs"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1" >
-      <h3 class="header">
-        {{ fileName ?? ('zgw.documents.preview.modal.header' | translate) }}
-      </h3>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
+    <h3 class="header">
+      {{ fileName ?? ('zgw.documents.preview.modal.header' | translate) }}
+    </h3>
 
-      <button
-              tabindex="-1"
-              cdsButton="tertiary"
-              class="download-button"
-              (click)="onDownload()"
-      >
-        {{ 'zgw.documents.preview.downloadOriginal' | translate }}
-      </button>
+    <button tabindex="-1" cdsButton="tertiary" class="download-button" (click)="onDownload()">
+      {{ 'zgw.documents.preview.downloadOriginal' | translate }}
+    </button>
   </cds-modal-header>
 
   <ng-container *ngIf="obs.loading === false; else loading">
-  <div body class="cds--modal-content">
-    <object
-            class="pdf-object"
-            [data]="pdfSrc"
-            type="application/pdf"
-            autofocus
-    >
-      <p>
-        {{ 'zgw.documents.preview.nosupport' | translate }}
-      </p>
-    </object>
-  </div>
+    <div body class="cds--modal-content">
+      <object class="pdf-object" [data]="pdfSrc" type="application/pdf" autofocus>
+        <p>
+          {{ 'zgw.documents.preview.nosupport' | translate }}
+        </p>
+      </object>
+    </div>
   </ng-container>
 </cds-modal>
 
 <ng-template #loading>
-  <div class="loading-container pb-2" >
+  <div class="loading-container pb-2">
     <cds-loading size="normal"></cds-loading>
   </div>
 </ng-template>

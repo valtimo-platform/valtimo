@@ -24,7 +24,9 @@ import {PluginConfiguration} from '../../zaken-api';
   providedIn: 'root',
 })
 export class DocumentenApiPreviewService extends BaseApiService {
-  private _documentenApiPreviewPluginConfigurations$ = new BehaviorSubject<PluginConfiguration[]>([])
+  private _documentenApiPreviewPluginConfigurations$ = new BehaviorSubject<PluginConfiguration[]>(
+    []
+  );
 
   constructor(
     protected readonly httpClient: HttpClient,
@@ -36,19 +38,22 @@ export class DocumentenApiPreviewService extends BaseApiService {
 
   public retrieveDocumentenApiPreviewPluginConfigurations(): void {
     this.pluginManagementService
-      .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview').subscribe(configurations => {
-        this._documentenApiPreviewPluginConfigurations$.next(configurations)
-    })
+      .getPluginConfigurationsByPluginDefinitionKey('documentenapipreview')
+      .subscribe(configurations => {
+        this._documentenApiPreviewPluginConfigurations$.next(configurations);
+      });
   }
 
   public canGeneratePreview(documentenApiPluginConfigurationId: string): Observable<boolean> {
-    return this._documentenApiPreviewPluginConfigurations$.pipe(map((configurations) => (
-      configurations.some(
-        configuration =>
-          'documentenApiConfigurationId' in configuration.properties &&
-          configuration.properties['documentenApiConfigurationId'] ===
-          documentenApiPluginConfigurationId
-      ))
-    ))
+    return this._documentenApiPreviewPluginConfigurations$.pipe(
+      map(configurations =>
+        configurations.some(
+          configuration =>
+            'documentenApiConfigurationId' in configuration.properties &&
+            configuration.properties['documentenApiConfigurationId'] ===
+              documentenApiPluginConfigurationId
+        )
+      )
+    );
   }
 }
