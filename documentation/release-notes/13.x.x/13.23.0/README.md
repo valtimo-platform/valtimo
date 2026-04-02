@@ -18,4 +18,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* Fixed outbox circuit breaker never recovering from OPEN state.
