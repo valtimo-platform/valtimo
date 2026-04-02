@@ -28,6 +28,7 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
@@ -95,38 +96,41 @@ class RabbitMessagePublisher(
         }
 
         // Phase 3: collect results per message
-        return pending.map { (message, correlationData) ->
-            val future = correlationData.future.toCompletableFuture()
-            if (!future.isDone) {
-                return@map MessagePublishResult(
-                    messageId = message.id,
-                    success = false,
-                    error = MessagePublishingFailed("Outbox message delivery was not confirmed in time: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
-                )
-            }
-            val result = future.get()
-                ?: return@map MessagePublishResult(
-                    messageId = message.id,
-                    success = false,
-                    error = MessagePublishingFailed("Outbox message confirmation result was null: routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
-                )
-            if (!result.isAck) {
-                return@map MessagePublishResult(
-                    messageId = message.id,
-                    success = false,
-                    error = MessagePublishingFailed("Outbox message was not acknowledged: reason=${result.reason}, routingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
-                )
-            }
-            val returned = correlationData.returned
-            if (returned != null) {
-                return@map MessagePublishResult(
-                    messageId = message.id,
-                    success = false,
-                    error = MessagePublishingFailed("Could not deliver outbox message: returnedRoutingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}, configuredRoutingKey=${routingKey}, msgId=${message.id}, correlationId=${correlationData.id}")
-                )
-            }
-            MessagePublishResult(messageId = message.id, success = true)
+        return pending.map { (message, correlationData) -> collectResult(message, correlationData) }
+    }
+
+    private fun collectResult(message: OutboxMessage, correlationData: CorrelationData): MessagePublishResult {
+        val ctx = "routingKey=$routingKey, msgId=${message.id}, correlationId=${correlationData.id}"
+
+        fun failure(reason: String) = MessagePublishResult(
+            messageId = message.id,
+            success = false,
+            error = MessagePublishingFailed("$reason: $ctx")
+        )
+
+        val future = correlationData.future.toCompletableFuture()
+        if (!future.isDone) {
+            return failure("Outbox message delivery was not confirmed in time")
         }
+
+        val result = try {
+            future.get()
+        } catch (e: ExecutionException) {
+            return failure("Confirmation future failed, cause=${e.cause?.message ?: e.message}")
+        } catch (_: CancellationException) {
+            return failure("Confirmation future was cancelled")
+        } ?: return failure("Outbox message confirmation result was null")
+
+        if (!result.isAck) {
+            return failure("Outbox message was not acknowledged, reason=${result.reason}")
+        }
+
+        val returned = correlationData.returned
+        if (returned != null) {
+            return failure("Could not deliver outbox message, returnedRoutingKey=${returned.routingKey}, code=${returned.replyCode}, msg=${returned.replyText}")
+        }
+
+        return MessagePublishResult(messageId = message.id, success = true)
     }
 
     companion object {

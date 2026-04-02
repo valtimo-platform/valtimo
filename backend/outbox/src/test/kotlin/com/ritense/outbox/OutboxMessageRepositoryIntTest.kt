@@ -20,6 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty
@@ -120,7 +121,7 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
         }
 
         // Second transaction should skip the locked messages and get the 3rd
-        locksAcquired.await()
+        withTimeout(2_000) { locksAcquired.await() }
         val batch2Ref = async(Dispatchers.IO) {
             TransactionTemplate(platformTransactionManager).execute {
                 outboxMessageRepository.findOutboxMessages(2)
