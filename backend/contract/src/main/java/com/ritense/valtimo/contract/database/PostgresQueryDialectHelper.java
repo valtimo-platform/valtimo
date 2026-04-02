@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,11 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     @Override
     public Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column) {
         return cast(column, String.class);
+    }
+
+    @Override
+    public Expression<UUID> stringToUuid(CriteriaBuilder cb, Expression<String> expression) {
+        return cast(expression, UUID.class);
     }
 
     private Expression<String> getValueForPathText(CriteriaBuilder cb, Path column, String path) {
