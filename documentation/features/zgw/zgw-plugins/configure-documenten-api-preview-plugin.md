@@ -23,6 +23,25 @@ To configure this plugin the following properties have to be entered:
 * **PDF Conversion URL (`pdfConversionUrl`).** Contains the complete base URL pointing to the server hosting the [Gotenberg][1] API (for example: `https://gotenberg:3000`). 
 * **Documenten API plugin configuration (`documentenApiConfigurationId`).** Contains a reference to the configuration of the "Documenten API plugin". The preview plugin will retrieve documents based on this configuration.
 
+## Configure `application.yaml`
+
+For the Documenten API Preview plugin to work correctly, the following MIME types must be added to the
+`application.yaml` configuration:
+
+```yaml
+spring:
+  servlet:
+    multipart:
+      enabled: true
+  codec:
+    mime-types:
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+```
+
+These MIME types are required to support the conversion of Word documents (`.doc` and `.docx`) to PDF via the
+Gotenberg API.
+
 ## Configure the Content Security Policy (CSP)
 
 Internally the Valtimo downloads the PDF file into a `blob` field and uses the HTML `<object>`, `<iframe>` tags to 
