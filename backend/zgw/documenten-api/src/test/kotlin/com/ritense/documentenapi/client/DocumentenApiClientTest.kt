@@ -74,8 +74,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class
-DocumentenApiClientTest {
+internal class DocumentenApiClientTest {
 
     lateinit var mockDocumentenApi: MockWebServer
 
