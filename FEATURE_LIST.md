@@ -18,8 +18,8 @@
 | Category | Number of Features | Number of Functions |
 |----------|-------------------|-------------------|
 | User Features | 5 | 21 |
-| Admin Features | 15 | 328 |
-| **Total** | **20** | **349** |
+| Admin Features | 16 | 336 |
+| **Total** | **21** | **357** |
 
 ---
 
@@ -487,24 +487,35 @@
 | 20.1 | Migrate process instances | _TBD_ | _TBD_ | <ul><li>⬜ Migrate process instances (_TBD_)</li></ul> | 🔴 |
 | 20.2 | View migration status | _TBD_ | _TBD_ | <ul><li>⬜ View migration status (_TBD_)</li></ul> | 🔴 |
 
+### Feature 21: Team Management 🟢
+
+| Section | Function # | Function Name | Component | Path | Test Scenarios | Doc |
+|---------|-----------|---------------|-----------|------|----------------|-----|
+| **21A. Overview** | 21.1 | View teams list | _TBD_ | `/teams` | <ul><li>⬜ Display list of all teams (_TBD_)</li></ul> | 🟢 |
+| 21A | 21.2 | Create new team | _TBD_ | `/teams` | <ul><li>⬜ Create a new team with key and title (_TBD_)</li></ul> | 🟢 |
+| **21B. Details** | 21.3 | View team details | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Display team key and title (_TBD_)</li></ul> | 🟢 |
+| 21B | 21.4 | Edit team details | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Update team title (_TBD_)</li></ul> | 🟢 |
+| 21B | 21.5 | Delete team | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Delete a team (_TBD_)</li></ul> | 🟢 |
+| **21C. Members** | 21.6 | View team members | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Display list of users in the team (_TBD_)</li></ul> | 🟢 |
+| 21C | 21.7 | Add member to team | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Search and add a user to the team (_TBD_)</li></ul> | 🟢 |
+| 21C | 21.8 | Remove member from team | _TBD_ | `/teams/:teamKey` | <ul><li>⬜ Remove a user from the team (_TBD_)</li></ul> | 🟢 |
+
 ---
 
 ## Total Count
 
 | Metric | Number |
 |--------|--------|
-| **Total Features** | 20 |
-| **Total Functions** | 349 |
-| **Documented Functions (🟢)** | 318 (Features 6, 9, 10, 11, 13, 14, 15) |
+| **Total Features** | 21 |
+| **Total Functions** | 357 |
+| **Documented Functions (🟢)** | 326 (Features 6, 9, 10, 11, 13, 14, 15, 21) |
 | **Functions to document (🟡🔴)** | 31 |
 
 ---
-
-## Yet to process
 
 - [ ] Process Cases (User) screenshots
 - [ ] Other admin features screenshots (if needed)
 
 ---
 
-*Last updated: February 10, 2026*
+*Last updated: March 12, 2026*

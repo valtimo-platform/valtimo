@@ -34,6 +34,7 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
 
     private String assigneeName;
     private UUID documentId;
+    private String assignedTeamTitle;
 
     @JsonCreator
     public DocumentAssigneeChangedEvent(UUID id,
@@ -41,12 +42,22 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
                                         LocalDateTime occurredOn,
                                         String user,
                                         UUID documentId,
-                                        String assigneeName) {
+                                        String assigneeName,
+                                        String assignedTeamTitle) {
         super(id, origin, occurredOn, user);
         assertArgumentNotNull(documentId, "documentId is required");
-        assertArgumentNotNull(assigneeName, "assignee name is required");
         this.documentId = documentId;
         this.assigneeName = assigneeName;
+        this.assignedTeamTitle = assignedTeamTitle;
+    }
+
+    public DocumentAssigneeChangedEvent(UUID id,
+                                        String origin,
+                                        LocalDateTime occurredOn,
+                                        String user,
+                                        UUID documentId,
+                                        String assigneeName) {
+        this(id, origin, occurredOn, user, documentId, assigneeName, null);
     }
 
     public void setDocumentId(UUID documentId) {
@@ -72,6 +83,15 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
     }
 
 
+    @JsonProperty
+    @JsonView(AuditView.Public.class)
+    public String getAssignedTeamTitle() {
+        return assignedTeamTitle;
+    }
+
+    public void setAssignedTeamTitle(String assignedTeamTitle) {
+        this.assignedTeamTitle = assignedTeamTitle;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -87,11 +107,12 @@ public class DocumentAssigneeChangedEvent extends AuditMetaData
 
         DocumentAssigneeChangedEvent that = (DocumentAssigneeChangedEvent) o;
         return Objects.equals(assigneeName, that.assigneeName)
-            && Objects.equals(documentId, that.documentId);
+            && Objects.equals(documentId, that.documentId)
+            && Objects.equals(assignedTeamTitle, that.assignedTeamTitle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), assigneeName, documentId);
+        return Objects.hash(super.hashCode(), assigneeName, documentId, assignedTeamTitle);
     }
 }

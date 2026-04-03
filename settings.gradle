@@ -78,6 +78,7 @@ include(
     ":backend:resource:local-resource",
     ":backend:resource:temporary-resource-storage",
     ":backend:search",
+    ":backend:team",
     ":backend:test-utils-common",
     ":backend:value-resolver",
     ":backend:dependencies",

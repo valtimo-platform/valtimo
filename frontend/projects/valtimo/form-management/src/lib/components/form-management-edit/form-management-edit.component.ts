@@ -38,6 +38,9 @@ import {
   EditorModule,
   FormIoModule,
   FormIoTagsService,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -54,7 +57,6 @@ import {
 } from '@valtimo/shared';
 import {
   ButtonModule,
-  DialogModule,
   IconModule,
   IconService,
   InputModule,
@@ -93,7 +95,9 @@ import {FormManagementUploadComponent} from '../form-management-upload';
     EditorModule,
     FormIoModule,
     RenderInPageHeaderDirective,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
     TagModule,
     ConfirmationModalModule,
     SpinnerModule,

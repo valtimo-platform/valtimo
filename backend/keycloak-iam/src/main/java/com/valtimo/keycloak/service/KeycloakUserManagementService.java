@@ -22,6 +22,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.UserNotFoundException;
@@ -72,17 +73,20 @@ public class KeycloakUserManagementService implements UserManagementService {
     private final String clientName;
     private final UserCache userCache;
     private final AuthorizationService authorizationService;
+    private final TeamManagementService teamManagementService;
 
     public KeycloakUserManagementService(
         KeycloakService keycloakService,
         String keycloakClientName,
         UserCache userCache,
-        AuthorizationService authorizationService
+        AuthorizationService authorizationService,
+        TeamManagementService teamManagementService
     ) {
         this.keycloakService = keycloakService;
         this.clientName = keycloakClientName;
         this.userCache = userCache;
         this.authorizationService = authorizationService;
+        this.teamManagementService = teamManagementService;
     }
 
     @Override
@@ -265,6 +269,16 @@ public class KeycloakUserManagementService implements UserManagementService {
             ).getId());
         } else {
             return SYSTEM_ACCOUNT;
+        }
+    }
+
+    @Override
+    public List<String> getCurrentUserTeams() {
+        ManageableUser user = getCurrentUser();
+        if (user == null || user.getUsername() == null || teamManagementService == null) {
+            return List.of();
+        } else {
+            return teamManagementService.findTeamKeysByUsername(user.getUsername());
         }
     }
 

@@ -23,17 +23,21 @@
 
     <div class="row">
       <div class="col-12">
-        <button
-          cdsButton="primary"
-          [size]="'md'"
-          [cdsOverflowMenu]="addPropertyList"
-          [customPane]="true"
-          placement="bottom"
-          class="add-button"
-        >
-          {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
-          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-        </button>
+        <v-overflow-menu placement="bottom-start" class="add-button">
+          <button overflowTrigger cdsButton="primary" [size]="'md'">
+            {{ 'addPatchBesluitProperty' | pluginTranslate: pluginId | async }}
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
+
+          @for (propertyOption of propertyOptions; track propertyOption) {
+            <v-overflow-menu-option
+              *ngIf="!hasPropertyBeenAdded(propertyOption)"
+              (selected)="addProperty(propertyOption)"
+            >
+              {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+            </v-overflow-menu-option>
+          }
+        </v-overflow-menu>
       </div>
     </div>
 
@@ -64,13 +68,3 @@
   </v-form>
 </ng-container>
 
-<ng-template #addPropertyList>
-  @for (propertyOption of propertyOptions; track propertyOption) {
-    <cds-overflow-menu-option
-      *ngIf="!hasPropertyBeenAdded(propertyOption)"
-      (click)="addProperty(propertyOption)"
-    >
-      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
-    </cds-overflow-menu-option>
-  }
-</ng-template>
