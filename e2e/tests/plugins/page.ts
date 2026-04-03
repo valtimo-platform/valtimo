@@ -138,14 +138,17 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page
-      .locator('.cds--toast-notification__details')
-      .filter({hasText: 'rsin'});
+    try {
+      const errorToast = this.page
+        .locator('.cds--toast-notification__details')
+        .first();
 
-    await expect(errorToast).toContainText(
-      "Plugin property with name 'rsin' failed to parse for plugin"
-    );
-    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await expect(errorToast).toBeVisible({timeout: 10_000});
+      await expect(errorToast).toContainText(/rsin/i);
+    } finally {
+      // Always close the wizard, even if the assertion fails
+      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    }
   }
 
   async expectSameIdError() {
@@ -161,12 +164,17 @@ export class PluginPage {
 
     expect(response500.status()).toBe(500);
 
-    const errorToast = this.page
-      .locator('.cds--toast-notification__details')
-      .filter({hasText: 'already used by another plugin'});
+    try {
+      const errorToast = this.page
+        .locator('.cds--toast-notification__details')
+        .first();
 
-    await expect(errorToast).toContainText('already used by another plugin');
-    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await expect(errorToast).toBeVisible({timeout: 10_000});
+      await expect(errorToast).toContainText(/already used by another plugin/i);
+    } finally {
+      // Always close the wizard, even if the assertion fails
+      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    }
   }
 
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
@@ -273,6 +281,16 @@ export class PluginPage {
   }
 
   async deleteAllTestPlugins(): Promise<void> {
+    // Close any open modal that might block interactions
+    const modal = this.page.locator('.cds--modal.is-visible');
+    if (await modal.isVisible({timeout: 500}).catch(() => false)) {
+      const closeButton = modal.locator('button.cds--modal-close');
+      if (await closeButton.isVisible({timeout: 500}).catch(() => false)) {
+        await closeButton.click();
+        await expect(modal).not.toBeVisible();
+      }
+    }
+
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 

@@ -109,8 +109,14 @@ export class CaseManagementPage {
 
   // Case form
   async saveConfiguration() {
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/management/v1/case-definition/draft') &&
+        res.request().method() === 'POST'
+    );
     await expect(this.createSaveButton).toBeEnabled();
     await this.createSaveButton.click();
+    return await responsePromise;
   }
 
   async fillCaseForm() {
@@ -224,6 +230,12 @@ export class CaseManagementPage {
     // Enable key editing and fill custom key
     await this.changeConfigureKey(key);
 
+    // If an existing draft warning appears, confirm the override checkbox
+    const overrideCheckbox = this.overrideCheckbox;
+    if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
+      await overrideCheckbox.locator('input[type="checkbox"]').click({force: true});
+    }
+
     const responsePromise = this.page.waitForResponse(
       res =>
         res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
@@ -263,9 +275,10 @@ export class CaseManagementPage {
   }
 
   async assertExistingDraftWarning() {
-    await expect(this.page.getByText('Warning')).toBeVisible();
+    const dialog = this.page.getByRole('dialog');
+    await expect(dialog.getByText('Warning', {exact: true})).toBeVisible();
     await expect(
-      this.page.getByText(
+      dialog.getByText(
         'A draft version with this key and version already exists. Importing will override the existing draft.'
       )
     ).toBeVisible();

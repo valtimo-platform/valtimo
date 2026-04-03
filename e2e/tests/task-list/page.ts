@@ -38,7 +38,7 @@ export class TaskListPage {
 
   async selectCaseFromDropdown(caseName: string) {
     await this.caseDropdown.click();
-    await this.page.getByRole('option', {name: caseName}).click();
+    await this.page.getByRole('option', {name: caseName}).first().click();
   }
 
   async assertTaskTableVisible() {

@@ -35,22 +35,35 @@ test.describe('Task list', () => {
     // Need at least 2 options (All cases + one case definition) to test this
     test.skip(optionCount < 2, 'Not enough case definitions to test dropdown selection');
 
-    // Select the second option (first case definition after "All cases")
-    const secondOption = options.nth(1);
-    const secondOptionText = (await secondOption.innerText()).trim();
-    await secondOption.click();
+    // Find a unique option to avoid duplicate names
+    let targetOption = options.nth(1);
+    let targetOptionText = (await targetOption.innerText()).trim();
+
+    // Check for duplicates — if the chosen option name appears more than once, try others
+    for (let i = 1; i < optionCount; i++) {
+      const candidate = options.nth(i);
+      const candidateText = (await candidate.innerText()).trim();
+      const matchCount = await page.getByRole('option', {name: candidateText}).count();
+      if (matchCount === 1) {
+        targetOption = candidate;
+        targetOptionText = candidateText;
+        break;
+      }
+    }
+
+    await targetOption.click();
 
     // Wait for the task list to reload after selection
     await taskListPage.waitForTaskListLoaded();
 
     // Act: select the same item again
-    await taskListPage.selectCaseFromDropdown(secondOptionText);
+    await taskListPage.selectCaseFromDropdown(targetOptionText);
 
     // Assert: the task list should still be functional
     await taskListPage.assertTaskTableVisible();
     await taskListPage.assertTabsVisible();
 
     // Verify the dropdown still shows the selected case
-    await expect(taskListPage.caseDropdown).toContainText(secondOptionText);
+    await expect(taskListPage.caseDropdown).toContainText(targetOptionText);
   });
 });
