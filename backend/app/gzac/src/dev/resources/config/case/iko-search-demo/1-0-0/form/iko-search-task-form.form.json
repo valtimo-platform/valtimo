@@ -20,13 +20,20 @@
                 {"attr": "href", "value": "/iko/demo/bsn/details/{{ data.ikoSearchResult }}"},
                 {"attr": "target", "value": "_blank"}
             ],
-            "content": "Open details in nieuw tabblad (BSN: {{ data.ikoSearchResult }})",
+            "content": "Open persoon in nieuw tabblad (BSN: {{ data.ikoSearchResult }})",
             "conditional": {
                 "show": true,
                 "when": "ikoSearchResult",
                 "eq": ""
             },
             "customConditional": "show = !!data.ikoSearchResult;"
+        },
+        {
+            "type": "htmlelement",
+            "key": "spacer",
+            "tag": "div",
+            "content": "&nbsp;",
+            "className": ""
         },
         {
             "type": "button",
