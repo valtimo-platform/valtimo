@@ -17,7 +17,7 @@
 import {CaseListTab} from '@valtimo/shared';
 import {CarbonListNoResultsMessage, CarbonListTranslations} from '@valtimo/components';
 
-const DEFAULT_CASE_LIST_TABS: CaseListTab[] = [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN];
+const DEFAULT_CASE_LIST_TABS: CaseListTab[] = [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN];
 
 const CASE_LIST_TABLE_TRANSLATIONS: CarbonListTranslations = {
   select: {

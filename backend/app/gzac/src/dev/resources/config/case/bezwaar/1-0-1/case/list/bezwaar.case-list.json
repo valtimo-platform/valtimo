@@ -79,5 +79,16 @@
         "sortable": true,
         "order": 6,
         "exportable": true
+    },
+    {
+        "key": "team",
+        "title": "Team",
+        "path": "case:assignedTeamTitle",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 7
     }
 ]

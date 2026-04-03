@@ -120,7 +120,7 @@ class ValtimoAuthorizationService(
         val factory = (authorizationSpecificationFactories.firstOrNull {
             it.canCreate(request, permissionSupplier)
         } as AuthorizationSpecificationFactory<T>?)
-            ?: throw AccessDeniedException("No specification found for given context.")
+            ?: throw AccessDeniedException("Missing AuthorizationSpecificationFactory<${request.resourceType.name}>")
         return factory.create(request, permissionSupplier)
     }
 
