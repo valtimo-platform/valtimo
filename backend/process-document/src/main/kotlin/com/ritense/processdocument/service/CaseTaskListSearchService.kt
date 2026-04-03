@@ -42,17 +42,20 @@ import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.contract.utils.SecurityUtils
+import com.ritense.valtimo.task.domain.TaskTeam
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byTeamKeys
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
-import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.AbstractQuery
@@ -101,7 +104,8 @@ class CaseTaskListSearchService(
     private val searchFieldV2Service: SearchFieldV2Service,
     private val queryDialectHelper: QueryDialectHelper,
     private val userTaskOpenedStatusService: UserTaskOpenedStatusService,
-    private val taskBusinessKeyResolvers: List<TaskBusinessKeyResolver> = emptyList()
+    private val taskBusinessKeyResolvers: List<TaskBusinessKeyResolver> = emptyList(),
+    private val teamManagementService: TeamManagementService? = null
 ) {
     private val CONTENT = "content"
     private val INTERNAL_STATUS = "internalStatus"
@@ -189,7 +193,8 @@ class CaseTaskListSearchService(
             taskRoot.get<String?>(CaseTaskProperties.ASSIGNEE.propertyName),
             taskRoot.get<LocalDateTime?>(CaseTaskProperties.DUE_DATE.propertyName),
             taskRoot.get<OperatonExecution?>("processInstance").get<String>("id"),
-            documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
+            documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id"),
+            taskTeamSubquery(query, taskRoot, "teamTitle")
         )
 
         query.select(
@@ -231,7 +236,7 @@ class CaseTaskListSearchService(
         val authorizationPredicate: Predicate =
             getAuthorizationSpecification(OperatonTaskActionProvider.VIEW_LIST).toPredicate(taskRoot, query as AbstractQuery<*>, cb)
 
-        val assignmentFilterPredicate: Predicate = constructAssignmentFilter(advancedSearchRequest.assigneeFilter, cb, taskRoot)
+        val assignmentFilterPredicate: Predicate = constructAssignmentFilter(advancedSearchRequest.assigneeFilter, cb, query, taskRoot)
 
         val searchRequestPredicate: Array<Predicate> = constructSearchCriteriaFilter(advancedSearchRequest, cb, query, taskRoot, documentRoot)
 
@@ -269,6 +274,7 @@ class CaseTaskListSearchService(
     private fun constructAssignmentFilter(
         assignmentFilter: TaskFilter,
         cb: CriteriaBuilder,
+        query: CriteriaQuery<*>,
         taskRoot: Root<OperatonTask>
     ): Predicate {
         val assignmentFilterPredicate: Predicate = when (assignmentFilter) {
@@ -283,6 +289,16 @@ class CaseTaskListSearchService(
 
             TaskFilter.OPEN -> {
                 cb.and(taskRoot.get<Any>(OperatonTaskSpecificationHelper.ASSIGNEE).isNull)
+            }
+
+            TaskFilter.TEAM -> {
+                val teamManagement = teamManagementService
+                    ?: throw IllegalStateException(
+                        "No teamManagementService found. In order to use this feature, the team library must be included."
+                    )
+                val username = userManagementService.currentUser.username
+                val teamKeys = teamManagement.findTeamKeysByUsername(username)
+                byTeamKeys(teamKeys).toPredicate(taskRoot, query, cb)
             }
         }
         return assignmentFilterPredicate
@@ -375,7 +391,7 @@ class CaseTaskListSearchService(
             } else if (searchCriteria.path.startsWith(CASE_PREFIX)) {
                 getValueExpressionForCasePrefix(documentRoot, searchCriteria)
             } else if (searchCriteria.path.startsWith(TASK_PREFIX)) {
-                getValueExpressionForTaskPrefix(taskRoot, searchCriteria)
+                getValueExpressionForTaskPrefix(query, taskRoot, searchCriteria)
             } else {
                 throw IllegalArgumentException("Search path doesn't start with known prefix: '" + searchCriteria.path + "'")
             }
@@ -440,11 +456,24 @@ class CaseTaskListSearchService(
     }
 
     private fun getValueExpressionForTaskPrefix(
+        query: AbstractQuery<*>,
         taskRoot: Root<OperatonTask>,
         searchCriteria: AdvancedSearchRequest.OtherFilter
     ): Expression<Comparable<Any>> {
         val taskColumnName = searchCriteria.path.substring(TASK_PREFIX.length)
+        if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
+            @Suppress("UNCHECKED_CAST")
+            return taskTeamSubquery(query, taskRoot, "teamTitle") as Expression<Comparable<Any>>
+        }
         return taskRoot.get<Any>(taskColumnName).`as`(searchCriteria.getDataType())
+    }
+
+    private fun taskTeamSubquery(query: AbstractQuery<*>, taskRoot: Root<OperatonTask>, column: String): Expression<String> {
+        val subquery = query.subquery(String::class.java)
+        val taskTeamRoot = subquery.from(TaskTeam::class.java)
+        subquery.select(taskTeamRoot.get(column))
+        subquery.where(entityManager.criteriaBuilder.equal(taskTeamRoot.get<String>("taskId"), taskRoot.get<String>("id")))
+        return subquery.selection
     }
 
     private fun getValueExpressionForCasePrefix(
@@ -618,7 +647,12 @@ class CaseTaskListSearchService(
                     }
 
                     property.startsWith(TASK_PREFIX) -> {
-                        expression = taskRoot.get<Any>(property.substring(TASK_PREFIX.length))
+                        val taskColumnName = property.substring(TASK_PREFIX.length)
+                        expression = if (taskColumnName == CaseTaskProperties.ASSIGNED_TEAM_TITLE.propertyName) {
+                            taskTeamSubquery(query, taskRoot, "teamTitle")
+                        } else {
+                            taskRoot.get<Any>(taskColumnName)
+                        }
                     }
 
                     else -> {
@@ -776,6 +810,9 @@ enum class CaseTaskProperties(val propertyName: String) {
     },
     DUE_DATE("dueDate") {
         override fun getValueFromObject(caseTask: CaseTask) = caseTask.dueDate
+    },
+    ASSIGNED_TEAM_TITLE("assignedTeamTitle") {
+        override fun getValueFromObject(caseTask: CaseTask) = caseTask.assignedTeamTitle
     };
 
     abstract fun getValueFromObject(caseTask: CaseTask): Any?

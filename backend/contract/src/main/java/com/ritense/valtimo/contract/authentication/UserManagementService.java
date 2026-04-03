@@ -71,4 +71,8 @@ public interface UserManagementService {
     default String getCurrentUserId() {
         throw new NotImplementedException("Failed to get current user ID because method is not implemented.");
     }
+
+    default List<String> getCurrentUserTeams() {
+        throw new NotImplementedException("Failed to get current user teams because method is not implemented.");
+    }
 }
