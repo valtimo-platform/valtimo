@@ -12,7 +12,14 @@
                 "actions": [
                     {
                         "name": "Ga naar Klant",
-                        "navigateTo": "http://localhost:4200/iko/demo/bsn/details/${doc:ikoSearchResult}"
+                        "navigateTo": "/iko/demo/bsn/details/${doc:ikoSearchResult}"
+                    }
+                ],
+                "displayConditions": [
+                    {
+                        "path": "doc:ikoSearchResult",
+                        "operator": ">",
+                        "value": "0"
                     }
                 ],
                 "properties": {

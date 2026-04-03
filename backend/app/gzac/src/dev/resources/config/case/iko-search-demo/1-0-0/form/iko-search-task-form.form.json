@@ -17,8 +17,9 @@
             "key": "submit",
             "label": "Versturen",
             "input": true,
-            "action": "submit",
-            "disableOnInvalid": true
+            "action": "custom",
+            "disableOnInvalid": true,
+            "custom": "window.open('/iko/demo/bsn/details/' + data.ikoSearchResult, '_blank'); form.submit();"
         }
     ]
 }
