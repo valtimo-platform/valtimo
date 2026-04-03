@@ -44,7 +44,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams} from '../../models';
+import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams, FormFlowRouteParams} from '../../models';
 import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
 import formFlowSchemaJson from './formflow.schema.json';
@@ -72,7 +72,7 @@ export class FormFlowEditorComponent implements OnDestroy {
       if (context === 'buildingBlock') {
         return combineLatest([
           getBuildingBlockManagementRouteParams(this.route),
-          this.route.params as Observable<{formFlowDefinitionKey: string}>,
+          this.route.params as Observable<FormFlowRouteParams>,
         ]).pipe(
           map(([bbParams, params]) => ({
             caseDefinitionKey: bbParams?.buildingBlockDefinitionKey ?? '',
@@ -84,7 +84,7 @@ export class FormFlowEditorComponent implements OnDestroy {
 
       return combineLatest([
         getCaseManagementRouteParams(this.route),
-        this.route.params as Observable<{formFlowDefinitionKey: string}>,
+        this.route.params as Observable<FormFlowRouteParams>,
       ]).pipe(
         map(([caseManagementParams, params]) => ({
           ...(caseManagementParams ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}),

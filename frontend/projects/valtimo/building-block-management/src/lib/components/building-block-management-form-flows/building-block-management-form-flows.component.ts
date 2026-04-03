@@ -37,17 +37,13 @@ import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {FormFlowDefinitionItem} from '../../models';
 import {ListFormFlowDefinition, NewFormFlowModalComponent} from '@valtimo/form-flow-management';
-
-interface FormFlowDefinitionItem extends ListFormFlowDefinition {
-  latestVersion: number;
-}
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-form-flows',
   templateUrl: './building-block-management-form-flows.component.html',
-  styleUrls: ['./building-block-management-form-flows.component.scss'],
   imports: [
     CommonModule,
     CarbonListModule,
