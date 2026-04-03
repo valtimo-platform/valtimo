@@ -14,14 +14,7 @@ are scoped to a specific building block version and can be used in user tasks wi
 * Build the form flow using the editor.
 * Click **Create**.
 
-### Uploading a form flow
-
-* Open a building block definition.
-* Go to the **Form flows** tab.
-* Click the **Upload** button.
-* Enter a **Key** for the form flow.
-* Make changes in the editor.
-* Click **Save**.
+<img width="1728" height="893" alt="Screenshot 2026-04-03 at 15 09 30" src="https://github.com/user-attachments/assets/f99fe4af-326a-458f-93eb-1fb1aef40807" />
 
 ### Editing a form flow
 
@@ -30,6 +23,8 @@ are scoped to a specific building block version and can be used in user tasks wi
 * Click on the form flow you want to edit.
 * Make changes in the form flow editor.
 * Click **Save**.
+
+<img width="1728" height="893" alt="Screenshot 2026-04-03 at 15 09 48" src="https://github.com/user-attachments/assets/4fda33b1-4405-4f98-92d1-76696da6dd8c" />
 
 ### Deleting a form flow
 
@@ -42,6 +37,8 @@ are scoped to a specific building block version and can be used in user tasks wi
 Form flows cannot be created, edited, or deleted when the building block version is finalized. Auto-deployed
 form flows are always read-only and cannot be modified or deleted through the UI.
 {% endhint %}
+
+<img width="1728" height="893" alt="Screenshot 2026-04-03 at 15 10 27" src="https://github.com/user-attachments/assets/5ddf0796-7810-468b-9d6a-e03af2511f02" />
 
 ## Using form flows in user tasks
 
