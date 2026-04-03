@@ -20,7 +20,7 @@
 
 * **Pipelined RabbitMQ confirms** — The RabbitMQ publisher now sends all confirmations in parallel instead of one-by-one.
 
-* **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../features/access-control/container-conditions.md) for details.
+* **Case definition-scoped access control permissions** - Permissions can now use `CaseDefinition` as a container condition. See [container conditions](../../../features/access-control/container-conditions.md) for details.
 
 * **Teams**
 

@@ -9,9 +9,12 @@
 * Fixed a bug where building blocks could not update the internal case status, case tags, or assignee of the calling
   case. The building block now correctly references the case definition of the parent case.
 
+* Fixed deserialization of `beginRegistratie` in Documenten API responses
+
 * Fixed a bug where the operaton version tag was used instead of the camunda version tag. Upon saving your process
   definition again, they should now become visible. When using auto deployment for process definitions or decision
   definitions, make sure to update the files in your project as well.
+
 
 * **Fixed auto-deployment of global forms and object management configurations**
 

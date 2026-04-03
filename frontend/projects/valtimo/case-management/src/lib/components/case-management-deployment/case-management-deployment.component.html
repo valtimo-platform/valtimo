@@ -24,6 +24,7 @@
     isGloballyActive: isGloballyActive$ | async,
     caseDefinitionFinalizationCheckResult: caseDefinitionFinalizationCheckResult$ | async,
     deploymentNotificationObject: deploymentNotificationObject$ | async,
+    importOriginEntries: importOriginEntries$ | async,
   } as obs"
 >
   <cds-notification
@@ -90,6 +91,23 @@
         context: {data: obs.releaseInformationDataEntries}
       "
     ></ng-container>
+
+    <div class="import-origin" *ngIf="obs.importOriginEntries?.length > 0">
+      <p class="deployment-panel-title">
+        {{ 'caseManagement.deployment.importOrigin.title' | translate }}
+      </p>
+
+      <div class="release-version-columns">
+        <div *ngFor="let entry of obs.importOriginEntries" class="release-version-data">
+          <label class="release-version-data__label">
+            {{ 'caseManagement.deployment.importOrigin.fields.' + entry.key | translate }}
+          </label>
+          <div class="release-version-data__value">
+            {{ entry.value }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </ng-container>
 

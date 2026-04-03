@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,8 +57,8 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
-import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
+import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
@@ -156,10 +156,12 @@ public class DocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
-        JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
+        JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
+        ObjectMapper objectMapper
     ) {
         return new CaseJsonSchemaDocumentDefinitionImporter(
-            jsonSchemaDocumentDefinitionService
+            jsonSchemaDocumentDefinitionService,
+            objectMapper
         );
     }
 
