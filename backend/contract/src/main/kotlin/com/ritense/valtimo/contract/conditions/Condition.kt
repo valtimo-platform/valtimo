@@ -27,7 +27,7 @@ import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 import java.time.LocalDateTime
 
 /**
@@ -84,9 +84,10 @@ data class Condition<T : Comparable<T>>(
                 val expressionWithoutPrefixSuffix = it.substringAfter("\${").substringBefore("}")
 
                 val expressionContextRoot = getExpressionContextRoot()
-                val context = StandardEvaluationContext()
-
-                context.setRootObject(expressionContextRoot)
+                val context = SimpleEvaluationContext
+                    .forReadOnlyDataBinding()
+                    .withRootObject(expressionContextRoot)
+                    .build()
 
                 val spelExpression = parser.parseExpression(expressionWithoutPrefixSuffix)
 
