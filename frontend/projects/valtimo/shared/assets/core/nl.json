@@ -25,6 +25,7 @@
       "modal": {
         "confirm": "Toewijzen",
         "selectLabel": "Toewijzen aan gebruiker",
+        "selectTeamLabel": "Toewijzen aan team",
         "selectPlaceholder": "Kies een optie",
         "title": "Wijs geselecteerde cases toe aan",
         "warningTitle": "Waarschuwing",
@@ -48,6 +49,10 @@
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
+      },
+      "TEAM": {
+        "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
+        "title": "Geen teamdossiers"
       },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
@@ -78,6 +83,7 @@
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers",
+      "TEAM": "Teamdossiers",
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
@@ -235,6 +241,7 @@
     "delete": "Verwijderen",
     "download": "Downloaden",
     "edit": "Bewerken",
+    "preview": "Weergeven",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -576,6 +583,14 @@
           "description": "Beschrijving"
         }
       },
+      "importOrigin": {
+        "title": "Importherkomst",
+        "fields": {
+          "originalKey": "Oorspronkelijke sleutel",
+          "originalName": "Oorspronkelijke naam",
+          "originalVersionTag": "Oorspronkelijke versie"
+        }
+      },
       "notFinalizableWarning": {
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van concept-bouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die het gebruikt definitief zijn.",
@@ -712,19 +727,14 @@
     "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
     "importDefinition": {
       "title": "Case-definitie importeren",
-      "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
       "startUpload": "Begin het uploaden",
-      "checkbox": {
-        "message": "Ik begrijp dat configuraties mogelijk worden overschreven",
-        "error": "Dit veld is verplicht"
-      },
       "info": {
         "title": "Let op",
         "message": "Controleer of de plugin-configuraties die gebruikt worden in de proceskoppelingen aanwezig zijn."
       },
       "upload": {
         "title": "Upload bestand",
-        "description": "De maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "description": "De maximale bestandsgrootte is 500kb. Ondersteund bestandstype is ZIP.",
         "buttonText": "Selecteer bestand"
       },
       "progressBar": {
@@ -733,9 +743,26 @@
         "finished": "Dossier-definitie succesvol geïmporteerd",
         "label": "Dossier-definitie importeren"
       },
-      "invalidJsonError": {
-        "text": "Zorg ervoor dat deze een geldige JSON-waarde bevat.",
-        "title": "Het bestand bevat een fout."
+      "invalidZipError": {
+        "title": "Ongeldig bestand",
+        "text": "Het bestand kon niet worden gelezen als een geldig case-definitie archief."
+      },
+      "configure": {
+        "draftTag": "Concept",
+        "finalTag": "Definitief",
+        "newVersionWarning": {
+          "title": "Nieuwe versie",
+          "message": "Er bestaat al een case-definitie met deze key. Dit wordt geïmporteerd als nieuwe versie."
+        },
+        "existingDraftWarning": {
+          "title": "Waarschuwing",
+          "message": "Er bestaat al een conceptversie met deze key en versie. Importeren overschrijft het bestaande concept."
+        },
+        "overrideConfirm": "Ik begrijp dat het bestaande concept wordt overschreven",
+        "existingFinalWarning": {
+          "title": "Kan niet importeren",
+          "message": "Er bestaat al een definitieve versie met deze key en versie. Wijzig de key om onder een andere naam te importeren."
+        }
       },
       "steps": {
         "accessControl": {
@@ -1127,6 +1154,13 @@
       "noColumns": {
         "description": "Klik hier om een kolom voor dit document te configureren",
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
+      },
+      "preview": {
+        "downloadOriginal": "Download origineel",
+        "modal": {
+          "header": "Document weergave"
+        },
+        "pdfViewerNotSupported": "Uw browser biedt geen ondersteuning voor het weergeven van PDF bestanden."
       }
     },
     "notifications": {
@@ -1245,6 +1279,12 @@
       "description": "Overzicht van alle niet toegewezen taken",
       "noResultsDescription": "Kom later nog eens terug.",
       "noResultsTitle": "Alle taken zijn al toegewezen"
+    },
+    "team": {
+      "title": "Teamtaken",
+      "description": "Overzicht van alle taken toegewezen aan je teams",
+      "noResultsDescription": "Er zijn nog geen taken aan je teams toegewezen.",
+      "noResultsTitle": "Geen teamtaken"
     },
     "all": {
       "title": "Alle taken",
@@ -1569,6 +1609,19 @@
     "remove": "Toewijzing ongedaan maken",
     "fetchingUsers": "Gebruikers ophalen...",
     "submitButtonText": "Gebruiker toewijzen aan dossier"
+  },
+  "assignment": {
+    "assignThisCase": "Dossier toewijzen",
+    "assignThisTask": "Taak toewijzen",
+    "clickToEdit": "Klik om te bewerken",
+    "selectUser": "Selecteer gebruiker",
+    "selectTeam": "Selecteer team",
+    "confirm": "Bevestigen",
+    "update": "Bijwerken",
+    "unassign": "Toewijzing ongedaan maken",
+    "unassignAll": "Alles vrijgeven",
+    "loading": "Laden...",
+    "me": "mij"
   },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
@@ -2586,5 +2639,56 @@
     "rootObject": "Hoofdniveau",
     "manageRequiredFields": "Vereiste velden beheren",
     "requiredFields": "Vereiste velden"
+  },
+  "teams": {
+    "title": "Teams",
+    "listColumns": {
+      "name": "Naam",
+      "members": "Leden"
+    },
+    "newTeam": "Nieuw team",
+    "noResults": {
+      "title": "Er zijn geen teams",
+      "description": "Er zijn nog geen teams aangemaakt"
+    },
+    "createEditModal": {
+      "createTitle": "Nieuw team aanmaken",
+      "editTitle": "Team bewerken",
+      "createDescription": "Maak een nieuw team van gebruikers aan om toe te wijzen aan dossiers en taken",
+      "teamName": "Teamnaam",
+      "teamNamePlaceholder": "Teamnaam",
+      "create": "Team aanmaken",
+      "save": "Team opslaan"
+    },
+    "deleteModal": {
+      "title": "Team verwijderen",
+      "content": "Weet u zeker dat u dit team wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "detail": {
+      "title": "Team detail",
+      "more": "Meer",
+      "editTeam": "Team bewerken",
+      "deleteTeam": "Team verwijderen",
+      "addMember": "Lid toevoegen",
+      "removeMember": "Lid verwijderen",
+      "memberColumns": {
+        "name": "Naam",
+        "email": "E-mail"
+      },
+      "noMembers": {
+        "title": "Er zijn geen leden",
+        "description": "Er zijn nog geen leden aan dit team toegevoegd"
+      },
+      "addMemberModal": {
+        "selectMember": "Selecteer lid",
+        "selectMemberPlaceholder": "Kies optie(s)",
+        "noUsersAvailable": "Geen beschikbare gebruikers gevonden",
+        "addToTeam": "Toevoegen aan team"
+      },
+      "removeMemberModal": {
+        "title": "Lid verwijderen",
+        "content": "Weet u zeker dat u dit lid uit het team wilt verwijderen?"
+      }
+    }
   }
 }

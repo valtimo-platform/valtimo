@@ -42,6 +42,10 @@ data class CaseDefinitionResponseDto(
     val conflictingVersions: String? = null,
 
     val hasConfigurationIssues: Boolean = false,
+
+    val originalKey: String? = null,
+    val originalName: String? = null,
+    val originalVersionTag: String? = null,
 ) {
     companion object {
         fun of(caseDefinition: CaseDefinition, hasConfigurationIssues: Boolean = false) =
@@ -62,6 +66,9 @@ data class CaseDefinitionResponseDto(
                 externalStartFormUrl =  caseDefinition.externalStartFormUrl,
                 externalStartFormDescription =  caseDefinition.externalStartFormDescription,
                 hasConfigurationIssues = hasConfigurationIssues,
+                originalKey = caseDefinition.originalKey,
+                originalName = caseDefinition.originalName,
+                originalVersionTag = caseDefinition.originalVersionTag,
             )
 
     fun of(caseDefinition: CaseDefinition, conflictingVersions: String?) =
@@ -83,6 +90,9 @@ data class CaseDefinitionResponseDto(
             externalStartFormDescription = caseDefinition.externalStartFormDescription,
 
             conflictingVersions = conflictingVersions,
+            originalKey = caseDefinition.originalKey,
+            originalName = caseDefinition.originalName,
+            originalVersionTag = caseDefinition.originalVersionTag,
         )
     }
 }

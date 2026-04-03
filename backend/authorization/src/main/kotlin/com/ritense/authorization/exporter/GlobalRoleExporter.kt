@@ -22,18 +22,18 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
-import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.GlobalExportRequest
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class GlobalRoleExporter(
     private val objectMapper: ObjectMapper,
     private val roleRepository: RoleRepository
-) : Exporter<ExportRequest> {
+) : Exporter<GlobalExportRequest> {
 
-    override fun supports(): Class<ExportRequest> = ExportRequest::class.java
+    override fun supports(): Class<GlobalExportRequest> = GlobalExportRequest::class.java
 
-    override fun export(request: ExportRequest): ExportResult {
+    override fun export(request: GlobalExportRequest): ExportResult {
         val roles = roleRepository.findAll()
 
         if (roles.isEmpty()) {
@@ -51,6 +51,6 @@ class GlobalRoleExporter(
     }
 
     companion object {
-        private const val PATH = "global/role/global.role.json"
+        private const val PATH = "config/global/role/global.role.json"
     }
 }

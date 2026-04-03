@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,13 @@ data class CaseDefinition(
     val externalStartFormUrl: String? = null,
     @Column(name = "external_start_form_description", nullable = true, length = 512)
     val externalStartFormDescription: String? = null,
+
+    @Column(name = "original_key", nullable = true)
+    val originalKey: String? = null,
+    @Column(name = "original_name", nullable = true)
+    val originalName: String? = null,
+    @Column(name = "original_version_tag", nullable = true)
+    val originalVersionTag: String? = null,
 ) {
     init {
         require(

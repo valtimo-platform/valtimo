@@ -24,6 +24,7 @@ dependencies {
     api(project(":backend:zgw:besluiten-api"))
     api(project(":backend:zgw:catalogi-api"))
     api(project(":backend:zgw:documenten-api"))
+    api(project(":backend:zgw:documenten-api-preview"))
     api(project(":backend:zgw:klantinteracties-api"))
     api(project(":backend:zgw:notificaties-api"))
     api(project(":backend:zgw:object-management"))

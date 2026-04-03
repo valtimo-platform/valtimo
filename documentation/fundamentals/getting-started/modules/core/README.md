@@ -14,5 +14,6 @@
 * [Process document](process-document.md)
 * [Resource](resource.md)
 * [Temporary resource storage](temporary-resource-storage.md)
+* [Team](team.md)
 * [Value resolvers](value-resolver.md)
 * [Web](web/)

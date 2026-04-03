@@ -20,11 +20,21 @@ public class UpdateAssigneeRequest {
 
     private String assigneeId;
 
+    private String assignedTeamKey;
+
     public String getAssigneeId() {
         return assigneeId;
     }
 
     public void setAssigneeId(String assigneeId) {
         this.assigneeId = assigneeId;
+    }
+
+    public String getAssignedTeamKey() {
+        return assignedTeamKey;
+    }
+
+    public void setAssignedTeamKey(String assignedTeamKey) {
+        this.assignedTeamKey = assignedTeamKey;
     }
 }

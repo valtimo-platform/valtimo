@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.impl.delegate.DocumentDelegate
@@ -38,12 +37,11 @@ import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
 import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMapper
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
-import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
+import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.CaseTaskContributor
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
@@ -65,6 +63,7 @@ import com.ritense.processdocument.web.TaskListResource
 import com.ritense.search.repository.SearchFieldV2Repository
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -76,9 +75,11 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
+import java.util.Optional
 import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
@@ -252,13 +253,11 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(ProcessDocumentLinkImporter::class)
     fun processDocumentLinkImporter(
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        documentDefinitionService: DocumentDefinitionService,
         objectMapper: ObjectMapper,
         processService: OperatonProcessService
     ): ProcessDocumentLinkImporter {
         return ProcessDocumentLinkImporter(
             processDefinitionCaseDefinitionService,
-            documentDefinitionService,
             objectMapper,
             processService
         )
@@ -299,7 +298,8 @@ class ProcessDocumentsAutoConfiguration {
         searchFieldV2Service: SearchFieldV2Service,
         queryDialectHelper: QueryDialectHelper,
         userTaskOpenedStatusService: UserTaskOpenedStatusService,
-        caseTaskContributors: List<CaseTaskContributor>
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>,
+        teamManagementService: Optional<TeamManagementService>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -310,7 +310,8 @@ class ProcessDocumentsAutoConfiguration {
             searchFieldV2Service,
             queryDialectHelper,
             userTaskOpenedStatusService,
-            caseTaskContributors
+            taskBusinessKeyResolvers,
+            teamManagementService.orElse(null)
         )
     }
 

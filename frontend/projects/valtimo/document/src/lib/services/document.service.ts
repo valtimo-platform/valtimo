@@ -24,6 +24,7 @@ import {
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
+  TeamResponseDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
@@ -505,11 +506,12 @@ export class DocumentService {
 
   public assignHandlerToDocument(
     documentId: string,
-    assigneeId: string
+    assigneeId?: string,
+    assignedTeamKey?: string
   ): Observable<AssignHandlerToDocumentResult> {
     return this.http.post<AssignHandlerToDocumentResult>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/assign`,
-      {assigneeId}
+      {assigneeId, assignedTeamKey}
     );
   }
 
@@ -520,6 +522,13 @@ export class DocumentService {
   public getCandidateUsers(documentId: string): Observable<Array<NamedUser>> {
     return this.http.get<Array<NamedUser>>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-user`
+    );
+  }
+
+  public getCandidateTeams(documentId: string): Observable<Page<TeamResponseDto>> {
+    return this.http.get<Page<TeamResponseDto>>(
+      `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-team`,
+      {params: {size: '1000'}}
     );
   }
 

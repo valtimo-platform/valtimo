@@ -124,28 +124,29 @@
     }
 
     <div class="valtimo-form-management-edit__header">
-      <cds-overflow-menu>
-        <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
+      <v-overflow-menu placement="bottom-end">
+        <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+        <v-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
           {{ 'Download' | translate }}
-        </cds-overflow-menu-option>
+        </v-overflow-menu-option>
 
-        <cds-overflow-menu-option
+        <v-overflow-menu-option
           [disabled]="
             obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion
           "
           (selected)="showUploadModal()"
         >
           {{ 'Upload' | translate }}
-        </cds-overflow-menu-option>
+        </v-overflow-menu-option>
 
-        <cds-overflow-menu-option
+        <v-overflow-menu-option
           *ngIf="(obs.context === 'case' && obs.isDraftVersion) || obs.context === 'independent'"
           (selected)="showDuplicateModal(obs.formDefinition)"
         >
           {{ 'formManagement.duplicate' | translate }}
-        </cds-overflow-menu-option>
+        </v-overflow-menu-option>
 
-        <cds-overflow-menu-option
+        <v-overflow-menu-option
           [disabled]="
             obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration || !obs.isDraftVersion
           "
@@ -153,8 +154,8 @@
           (selected)="delete()"
         >
           {{ 'interface.delete' | translate }}
-        </cds-overflow-menu-option>
-      </cds-overflow-menu>
+        </v-overflow-menu-option>
+      </v-overflow-menu>
 
       @if (obs.context === 'case') {
         <button

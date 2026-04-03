@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.domain.instance
 
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.valtimo.contract.annotation.AllOpen
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -31,7 +32,8 @@ import java.util.UUID
 // Alternatively: Set to document instance ID, so it works the same way it works for cases.
 @Entity
 @Table(name = "building_block_instance")
-open class BuildingBlockInstance(
+@AllOpen
+class BuildingBlockInstance(
     @Id
     @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
@@ -74,7 +76,7 @@ open class BuildingBlockInstance(
             nullable = false
         )
     )
-    open var definition: BuildingBlockDefinition
+    var definition: BuildingBlockDefinition
 ) {
 
 }

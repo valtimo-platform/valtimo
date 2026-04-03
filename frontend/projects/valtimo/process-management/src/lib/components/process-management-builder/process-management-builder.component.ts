@@ -31,6 +31,9 @@ import {
   BreadcrumbService,
   FitPageDirective,
   ModalService,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
+  OverflowMenuTriggerComponent,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -69,7 +72,6 @@ import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-plat
 import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json';
 import {
   ButtonModule,
-  DialogModule,
   DropdownModule,
   IconModule,
   IconService,
@@ -138,7 +140,9 @@ import {PluginTranslationService} from '@valtimo/plugin';
     TagModule,
     ProcessLinkModule,
     ProcessLinkModule,
-    DialogModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    OverflowMenuTriggerComponent,
     ToggleModule,
     TooltipModule,
   ],

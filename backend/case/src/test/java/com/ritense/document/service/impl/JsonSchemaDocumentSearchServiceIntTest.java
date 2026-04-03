@@ -60,6 +60,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -148,8 +149,16 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             return null;
         });
 
-        var user = new ValtimoUserBuilder().username(USERNAME).email(USERNAME).id(USER_ID).build();
+        var user = new ValtimoUserBuilder()
+            .username(USERNAME)
+            .name(USERNAME)
+            .email(USERNAME)
+            .id(USER_ID)
+            .roles(List.of(FULL_ACCESS_ROLE))
+            .build();
+        when(userManagementService.findByUsername(USERNAME)).thenReturn(user);
         when(userManagementService.findByUsername(USER_ID)).thenReturn(user);
+        when(userManagementService.findById(USERNAME)).thenReturn(user);
         when(userManagementService.findById(USER_ID)).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(user);
     }
@@ -1189,6 +1198,39 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void shouldSearchForTeamCases() {
+        documentRepository.deleteAllInBatch();
+
+        var document1 = createDocument("{\"street\": \"Alpaccalaan\"}").resultingDocument().orElseThrow();
+        var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
+        var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
+
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
+
+        runWithoutAuthorization(() -> {
+            documentService.assignTeamToDocument(document1.id().getId(), "team1");
+            documentService.assignTeamToDocument(document2.id().getId(), "team2");
+            return null;
+        });
+
+        var searchRequest = new AdvancedSearchRequest()
+            .assigneeFilter(AssigneeFilter.TEAM);
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
+        );
+
+        assertThat(result.toList()).hasSize(1);
+        assertThat(result.toList().get(0).id().getId()).isEqualTo(document1.id().getId());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
     void shouldSearchForOpenCases() {
         documentRepository.deleteAllInBatch();
 
@@ -1196,11 +1238,13 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
 
+        mockTeamFindByKey("some-team", "Some Team");
+
         runWithoutAuthorization(() -> {
-                documentService.assignUserToDocument(document2.id().getId(), USER_ID);
-                return null;
-            }
-        );
+            documentService.assignUserToDocument(document2.id().getId(), USER_ID);
+            documentService.assignTeamToDocument(document3.id().getId(), "some-team");
+            return null;
+        });
 
         var searchRequest = new AdvancedSearchRequest()
             .assigneeFilter(AssigneeFilter.OPEN);
@@ -1212,9 +1256,8 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
 
-        assertThat(result.toList()).hasSize(2);
+        assertThat(result.toList()).hasSize(1);
         assertThat(result.toList().get(0).id().getId()).isEqualTo(document1.id().getId());
-        assertThat(result.toList().get(1).id().getId()).isEqualTo(document3.id().getId());
     }
 
     @Test
@@ -1225,12 +1268,22 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var document1 = createDocument("{\"street\": \"Alpaccalaan\"}").resultingDocument().orElseThrow();
         var document2 = createDocument("{\"street\": \"Baarnseweg\"}").resultingDocument().orElseThrow();
         var document3 = createDocument("{\"street\": \"Comeniuslaan\"}").resultingDocument().orElseThrow();
+        var document4 = createDocument("{\"street\": \"Dennenlaan\"}").resultingDocument().orElseThrow();
+        var document5 = createDocument("{\"street\": \"Edelweiss\"}").resultingDocument().orElseThrow();
+
+        when(teamManagementService.findTeamKeysByUsername(USERNAME)).thenReturn(List.of("team1"));
+        mockTeamFindByKey("team1", "Team 1");
+        mockTeamFindByKey("team2", "Team 2");
 
         runWithoutAuthorization(() -> {
-                documentService.assignUserToDocument(document2.id().getId(), USER_ID);
-                return null;
-            }
-        );
+            documentService.unassignUserFromDocument(document1.id().getId());
+            documentService.assignUserToDocument(document2.id().getId(), USERNAME);
+            documentService.assignTeamToDocument(document3.id().getId(), "team1");
+            documentService.assignTeamToDocument(document4.id().getId(), "team1");
+            documentService.assignUserToDocument(document4.id().getId(), USERNAME);
+            documentService.assignTeamToDocument(document5.id().getId(), "team2");
+            return null;
+        });
 
         var searchRequest = new AdvancedSearchRequest()
             .assigneeFilter(AssigneeFilter.MINE);
@@ -1242,8 +1295,9 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             PageRequest.of(0, 10, Sort.by(Direction.ASC, "doc:street"))
         );
 
-        assertThat(result.toList()).hasSize(1);
-        assertThat(result.toList().get(0).id().getId()).isEqualTo(document2.id().getId());
+        assertThat(result.toList()).hasSize(2);
+        List<UUID> resultIds = result.getContent().stream().map(d -> d.id().getId()).toList();
+        assertThat(resultIds).containsExactly(document2.id().getId(), document4.id().getId());
     }
 
     @Test
@@ -1456,5 +1510,12 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
                 )
             )
         );
+    }
+
+    private void mockTeamFindByKey(String key, String title) {
+        when(teamManagementService.findByKey(key)).thenReturn(new com.ritense.valtimo.contract.authentication.Team() {
+            @Override public String getKey() { return key; }
+            @Override public String getTitle() { return title; }
+        });
     }
 }

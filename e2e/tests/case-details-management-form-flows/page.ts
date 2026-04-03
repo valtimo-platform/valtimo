@@ -17,6 +17,7 @@
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 export class CaseDetailsManagementFormFlowsPage {
   constructor(
@@ -35,6 +36,10 @@ export class CaseDetailsManagementFormFlowsPage {
 
   async switchToFormFlowsTab() {
     await this.page.getByRole('tab', {name: 'Form Flows'}).click();
+  }
+
+  async ensureDraftVersionSelected(): Promise<string> {
+    return ensureDraftVersionSelected(this.page);
   }
 
   // ─── UI Elements ──────────────────────────────────────────────────

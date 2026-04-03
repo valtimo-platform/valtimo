@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    teams: teams$ | async,
+    pagination: pagination$ | async,
+    canCreateTeam: canCreateTeam$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    [fields]="FIELDS"
+    [items]="obs.teams"
+    [loading]="$loading()"
+    [actionItems]="ACTION_ITEMS"
+    [pagination]="obs.pagination"
+    paginationIdentifier="teams"
+    (rowClicked)="onRowClick($event)"
+    (paginationClicked)="onPaginationClicked($event)"
+    (paginationSet)="onPaginationSet($event)"
+  >
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="teamActions"></ng-container>
+
+    <valtimo-no-results
+      [action]="teamActions"
+      [description]="'teams.noResults.description' | translate"
+      [title]="'teams.noResults.title' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+</ng-container>
+
+<ng-template #teamActions>
+  <button
+    cdsButton="primary"
+    [disabled]="(canCreateTeam$ | async) === false"
+    (click)="showCreateModal()"
+  >
+    {{ 'teams.newTeam' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<valtimo-teams-create-edit-modal></valtimo-teams-create-edit-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="teams.deleteModal.content"
+  [outputOnConfirm]="teamToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="teams.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

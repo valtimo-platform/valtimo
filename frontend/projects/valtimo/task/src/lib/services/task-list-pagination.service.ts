@@ -27,6 +27,7 @@ export class TaskListPaginationService {
     [TaskListTab.ALL]: this.getDefaultPagination(),
     [TaskListTab.MINE]: this.getDefaultPagination(),
     [TaskListTab.OPEN]: this.getDefaultPagination(),
+    [TaskListTab.TEAM]: this.getDefaultPagination(),
   });
 
   private readonly _paginationForCurrentTaskType$: Observable<TaskPageParams> = combineLatest([
