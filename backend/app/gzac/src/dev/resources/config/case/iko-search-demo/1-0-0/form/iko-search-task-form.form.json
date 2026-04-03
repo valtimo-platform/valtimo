@@ -13,13 +13,28 @@
             "tableView": true
         },
         {
+            "type": "htmlelement",
+            "key": "detailLink",
+            "tag": "a",
+            "attrs": [
+                {"attr": "href", "value": "/iko/demo/bsn/details/{{ data.ikoSearchResult }}"},
+                {"attr": "target", "value": "_blank"}
+            ],
+            "content": "Open details in nieuw tabblad (BSN: {{ data.ikoSearchResult }})",
+            "conditional": {
+                "show": true,
+                "when": "ikoSearchResult",
+                "eq": ""
+            },
+            "customConditional": "show = !!data.ikoSearchResult;"
+        },
+        {
             "type": "button",
             "key": "submit",
             "label": "Versturen",
             "input": true,
-            "action": "custom",
-            "disableOnInvalid": true,
-            "custom": "window.open('/iko/demo/bsn/details/' + data.ikoSearchResult, '_blank'); form.submit();"
+            "action": "submit",
+            "disableOnInvalid": true
         }
     ]
 }
