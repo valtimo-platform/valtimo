@@ -27,5 +27,6 @@ class CaseTask (
     val assignee: String?,
     val dueDate: LocalDateTime?,
     val processInstanceId: String,
-    val documentInstanceId: UUID
+    val documentInstanceId: UUID,
+    val assignedTeamTitle: String? = null
 )
