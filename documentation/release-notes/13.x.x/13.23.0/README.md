@@ -6,9 +6,10 @@
 
 ## New Features
 
-* **New feature title**
+* **Added the Documenten API Preview plugin**
 
-  New feature explanation.
+  The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
+  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
 
 ## Enhancements
 
