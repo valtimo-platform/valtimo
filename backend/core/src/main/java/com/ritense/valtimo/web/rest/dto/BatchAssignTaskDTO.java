@@ -20,6 +20,7 @@ import java.util.List;
 
 public class BatchAssignTaskDTO {
     String assignee;
+    String assignedTeamKey;
     List<String> tasksIds;
 
     public String getAssignee() {
@@ -28,6 +29,14 @@ public class BatchAssignTaskDTO {
 
     public void setAssignee(String assignee) {
         this.assignee = assignee;
+    }
+
+    public String getAssignedTeamKey() {
+        return assignedTeamKey;
+    }
+
+    public void setAssignedTeamKey(String assignedTeamKey) {
+        this.assignedTeamKey = assignedTeamKey;
     }
 
     public List<String> getTasksIds() {

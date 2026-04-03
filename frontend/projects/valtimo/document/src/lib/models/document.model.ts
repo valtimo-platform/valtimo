@@ -104,6 +104,8 @@ interface Document {
   relatedFiles: RelatedFile[];
   assigneeFullName: string;
   assigneeId: string;
+  assignedTeamKey?: string;
+  assignedTeamTitle?: string;
   internalStatus?: string;
   caseTags?: CaseTag[];
 }

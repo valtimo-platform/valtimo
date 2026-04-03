@@ -1,0 +1,214 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    loading: loading$ | async,
+    userItems: userItems$ | async,
+    teamItems: teamItems$ | async,
+    mouseIsOver: mouseIsOver$ | async,
+    selectedUserId: selectedUserId$ | async,
+    selectedTeamKey: selectedTeamKey$ | async,
+    editToggletipOpen: editToggletipOpen$ | async,
+    showUserComboBox: showUserComboBox$ | async,
+    showTeamComboBox: showTeamComboBox$ | async,
+  } as obs"
+>
+  <ng-container *ngIf="isAssigned || hasPermission">
+    <div
+      class="assignment-container"
+      (mouseenter)="onMouseEnter()"
+      (mouseleave)="onMouseLeave()"
+    >
+      <!-- Assigned state: display pills with icons -->
+      <div
+        class="assigned-display element"
+        [ngClass]="{
+          active: hasPermission
+            ? isAssigned && !obs.mouseIsOver && !obs.editToggletipOpen
+            : isAssigned,
+        }"
+      >
+        <span class="assignment-pill" *ngIf="_assignedTeamKey">
+          <svg cdsIcon="group" size="16" class="pill-icon"></svg>
+          <span class="pill-text">{{ _assignedTeamTitle }}</span>
+        </span>
+
+        <span class="assignment-pill" *ngIf="_assigneeId">
+          <svg cdsIcon="user" size="16" class="pill-icon"></svg>
+          <span class="pill-text">{{ _assigneeFullName || _assigneeId }}</span>
+        </span>
+      </div>
+
+      <!-- Click to edit button (appears on hover when assigned) -->
+      <cds-toggletip
+        *ngIf="hasPermission && isAssigned"
+        align="bottom"
+        class="element"
+        [autoAlign]="true"
+        [isOpen]="open$ | async"
+        [ngClass]="{active: isAssigned && (obs.mouseIsOver || obs.editToggletipOpen)}"
+        (onOpen)="onOpenEditToggletip()"
+        (onClose)="onCloseEditToggletip()"
+      >
+        <button
+          cdsToggletipButton
+          [removeClassnames]="['cds--toggletip-button']"
+          cdsButton="ghost"
+          size="sm"
+          class="click-to-edit-button"
+        >
+          {{ 'assignment.clickToEdit' | translate }}
+        </button>
+
+        <div cdsToggletipContent class="assignment-popover-content">
+          <cds-combo-box
+            *ngIf="obs.showUserComboBox && obs.userItems?.length > 0"
+            [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
+            [label]="'assignment.selectUser' | translate"
+            [placeholder]="'assignment.selectUser' | translate"
+            [appendInline]="true"
+            [dropUp]="false"
+            [cdsLayer]="1"
+            [items]="obs.userItems"
+            [disabled]="obs.disabled"
+            itemValueKey="id"
+            (selected)="onUserSelect($event)"
+            (clear)="onUserClear()"
+          >
+            <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+          </cds-combo-box>
+
+          <cds-combo-box
+            *ngIf="obs.showTeamComboBox && obs.teamItems?.length > 0"
+            [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
+            [label]="'assignment.selectTeam' | translate"
+            [placeholder]="'assignment.selectTeam' | translate"
+            [appendInline]="true"
+            [dropUp]="false"
+            [cdsLayer]="1"
+            [items]="obs.teamItems"
+            [disabled]="obs.disabled"
+            itemValueKey="id"
+            (selected)="onTeamSelect($event)"
+            (clear)="onTeamClear()"
+          >
+            <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+          </cds-combo-box>
+
+          <button
+            cdsButton
+            [attr.data-carbon-theme]="toggletipTheme$ | async"
+            [cdsLayer]="1"
+            class="submit-button"
+            [disabled]="!hasEditChanges || obs.disabled"
+            (click)="onUpdate()"
+          >
+            {{ 'assignment.update' | translate }}
+          </button>
+
+          <button
+            cdsButton="danger--tertiary"
+            [cdsLayer]="1"
+            [attr.data-carbon-theme]="toggletipTheme$ | async"
+            [disabled]="obs.disabled"
+            (click)="onUnassign()"
+          >
+            {{ 'assignment.unassignAll' | translate }}
+          </button>
+        </div>
+      </cds-toggletip>
+
+      <!-- Assign button: always rendered for layout sizing (position: relative via .main).
+           When hasPermission is false it stays hidden and non-interactive. -->
+      <cds-toggletip
+        align="bottom"
+        class="element main"
+        [autoAlign]="true"
+        [isOpen]="open$ | async"
+        [ngClass]="{active: hasPermission && !isAssigned}"
+        (onOpen)="onOpenAssignToggletip()"
+      >
+        <button
+          cdsToggletipButton
+          [removeClassnames]="['cds--toggletip-button']"
+          cdsButton="tertiary"
+          size="sm"
+          class="assign-button"
+        >
+          <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+
+          {{ assignButtonTranslationKey | translate }}
+        </button>
+
+        <div cdsToggletipContent class="assignment-popover-content">
+          <ng-container *ngIf="!obs.loading; else loadingTemplate">
+            <cds-combo-box
+              *ngIf="obs.showUserComboBox && obs.userItems?.length > 0"
+              [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
+              [label]="'assignment.selectUser' | translate"
+              [placeholder]="'assignment.selectUser' | translate"
+              [appendInline]="true"
+              [dropUp]="false"
+              [cdsLayer]="1"
+              [items]="obs.userItems"
+              [disabled]="obs.disabled"
+              (selected)="onUserSelect($event)"
+              (clear)="onUserClear()"
+            >
+              <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+            </cds-combo-box>
+
+            <cds-combo-box
+              *ngIf="obs.showTeamComboBox && obs.teamItems?.length > 0"
+              [attr.data-carbon-theme]="toggletipDropdownTheme$ | async"
+              [label]="'assignment.selectTeam' | translate"
+              [placeholder]="'assignment.selectTeam' | translate"
+              [appendInline]="true"
+              [dropUp]="false"
+              [cdsLayer]="1"
+              [items]="obs.teamItems"
+              [disabled]="obs.disabled"
+              (selected)="onTeamSelect($event)"
+              (clear)="onTeamClear()"
+            >
+              <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+            </cds-combo-box>
+
+            <button
+              cdsButton
+              [attr.data-carbon-theme]="toggletipTheme$ | async"
+              class="submit-button"
+              [disabled]="(!obs.selectedUserId && !obs.selectedTeamKey) || obs.disabled"
+              (click)="onConfirm()"
+            >
+              {{ 'assignment.confirm' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+            </button>
+          </ng-container>
+
+          <ng-template #loadingTemplate>
+            <span class="loading-text" [attr.data-carbon-theme]="toggletipTheme$ | async">
+              {{ 'assignment.loading' | translate }}
+            </span>
+          </ng-template>
+        </div>
+      </cds-toggletip>
+    </div>
+  </ng-container>
+</ng-container>

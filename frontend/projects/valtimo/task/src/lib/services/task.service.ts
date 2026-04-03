@@ -35,6 +35,7 @@ import {
   NamedUser,
   Page,
   TaskListTab,
+  TeamResponseDto,
 } from '@valtimo/shared';
 import {TaskProcessLinkResult} from '@valtimo/process-link';
 
@@ -112,6 +113,13 @@ export class TaskService extends BaseApiService {
 
   public getCandidateUsers(id: string): Observable<NamedUser[]> {
     return this.httpClient.get<NamedUser[]>(this.getApiUrl(`/v2/task/${id}/candidate-user`));
+  }
+
+  public getCandidateTeams(id: string): Observable<Page<TeamResponseDto>> {
+    return this.httpClient.get<Page<TeamResponseDto>>(
+      this.getApiUrl(`/v1/task/${id}/candidate-team`),
+      {params: {size: '1000'}}
+    );
   }
 
   public assignTask(id: string, assigneeRequest: AssigneeRequest): Observable<any> {

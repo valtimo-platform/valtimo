@@ -197,9 +197,10 @@ class BuildingBlockCallActivityListener(
 
         // Handle document targets - write to parent building block doc or case doc
         if (otherTargets.isNotEmpty()) {
-            val targetDocumentId = if (buildingBlockInstance.parentBuildingBlockInstanceId != null) {
-                val parentInstance = buildingBlockInstanceService.get(buildingBlockInstance.parentBuildingBlockInstanceId)
-                    ?: throw IllegalStateException("Parent building block instance not found: ${buildingBlockInstance.parentBuildingBlockInstanceId}")
+            val parentId = buildingBlockInstance.parentBuildingBlockInstanceId
+            val targetDocumentId = if (parentId != null) {
+                val parentInstance = buildingBlockInstanceService.get(parentId)
+                    ?: throw IllegalStateException("Parent building block instance not found: $parentId")
                 parentInstance.documentId
             } else {
                 buildingBlockInstance.caseDocumentId
