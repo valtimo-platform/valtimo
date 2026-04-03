@@ -43,8 +43,8 @@ export const ikoSearchFormioEditForm = () => ({
       type: 'textfield',
       input: true,
       key: 'customOptions.ikoViewKey',
-      label: 'IKO Key',
-      placeholder: 'IKO Key',
+      label: 'IKO Beeld Key',
+      placeholder: 'IKO Beeld Key',
       tooltip: 'The IKO aggregate key used to load search actions.',
       validate: {
         required: true,
