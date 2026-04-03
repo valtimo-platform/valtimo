@@ -34,7 +34,7 @@ import {
   FormioSubmission,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {StartableItem} from '@valtimo/document';
 import {ProcessService, StartProcessLinkType} from '@valtimo/process';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -81,6 +81,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     FormCustomComponentConfig | {}
   >({});
   private _caseDefinitionVersionTag: string;
+  private _buildingBlockDefinitionKey: string | null = null;
+  private _buildingBlockDefinitionVersionTag: string | null = null;
 
   public readonly closeModalEvent = new EventEmitter();
 
@@ -145,17 +147,27 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       });
   }
 
-  public openModal(
-    processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition,
-    documentId: string
+  public openModalForStartableItem(
+    item: StartableItem,
+    documentId: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
   ): void {
     this.isLoading$.next(true);
     this.documentId$.next(documentId);
-    this.caseDefinitionKey$.next(processDefinitionCaseDefinition.id.caseDefinitionId.key);
-    this._caseDefinitionVersionTag = processDefinitionCaseDefinition.id.caseDefinitionId.versionTag;
-    this.processDefinitionKey$.next(processDefinitionCaseDefinition.processDefinitionKey);
-    this.processDefinitionId$.next(processDefinitionCaseDefinition.id.processDefinitionId);
-    this.processName$.next(processDefinitionCaseDefinition.processDefinitionName);
+    this.caseDefinitionKey$.next(caseDefinitionKey);
+    this._caseDefinitionVersionTag = caseDefinitionVersionTag;
+    this.processDefinitionKey$.next(item.key);
+    this.processDefinitionId$.next(item.processDefinitionId);
+    this.processName$.next(item.name || item.key);
+
+    if (item.type === 'BUILDING_BLOCK') {
+      this._buildingBlockDefinitionKey = item.key;
+      this._buildingBlockDefinitionVersionTag = item.versionTag;
+    } else {
+      this._buildingBlockDefinitionKey = null;
+      this._buildingBlockDefinitionVersionTag = null;
+    }
 
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
       callback(null, submission);
@@ -202,9 +214,16 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   public gotoFormLinkScreen(): void {
     this.closeCdsModal();
-    this.router.navigate([
-      `/case-management/case/${this.caseDefinitionKey$.getValue()}/version/${this._caseDefinitionVersionTag}/processes/${this.processDefinitionKey$.getValue()}`,
-    ]);
+
+    if (this._buildingBlockDefinitionKey && this._buildingBlockDefinitionVersionTag) {
+      this.router.navigate([
+        `/building-block-management/building-block/${this._buildingBlockDefinitionKey}/version/${this._buildingBlockDefinitionVersionTag}/process-definition/${this.processDefinitionId$.getValue()}`,
+      ]);
+    } else {
+      this.router.navigate([
+        `/case-management/case/${this.caseDefinitionKey$.getValue()}/version/${this._caseDefinitionVersionTag}/processes/${this.processDefinitionKey$.getValue()}`,
+      ]);
+    }
   }
 
   public onCloseSelect(): void {

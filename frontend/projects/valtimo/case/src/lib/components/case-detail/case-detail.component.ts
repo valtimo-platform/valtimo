@@ -46,7 +46,7 @@ import {
   DocumentService,
   InternalCaseStatus,
   InternalCaseStatusUtils,
-  ProcessDefinitionCaseDefinition,
+  StartableItem,
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
@@ -104,12 +104,11 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public document: ValtimoDocument | null = null;
   public caseDefinitionKey: string;
+  public caseDefinitionVersionTag: string;
   public documentDefinitionTitle: string;
   public documentId: string;
   public processDefinitionListFields: Array<any> = [];
-  public processDefinitionCaseDefinitions: (ProcessDefinitionCaseDefinition & {
-    displayName?: string;
-  })[] = [];
+  public startableItems: (StartableItem & {displayName?: string})[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
@@ -359,14 +358,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public getAllAssociatedProcessDefinitions(): void {
     this._subscriptions.add(
       combineLatest([
-        this.documentService.findProcessDefinitionCaseDefinitionsForDocument(this.documentId, {
-          startableByUser: true,
-        }),
+        this.documentService.getStartableItems({caseDocumentId: this.documentId}),
         this.translateService.stream('key'),
-      ]).subscribe(([processDefinitionCaseDefinitions]) => {
-        this.processDefinitionCaseDefinitions = this.mapProcessDocumentDefinitions(
-          processDefinitionCaseDefinitions
-        );
+      ]).subscribe(([startableItems]) => {
+        this.startableItems = this.mapStartableItems(startableItems);
         this.setProcessDropdownWidth();
 
         this.processDefinitionListFields = [
@@ -379,16 +374,21 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  public startProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
-    this.supportingProcessStart.openModal(processDefinitionCaseDefinition, this.documentId);
+  public startItem(item: StartableItem): void {
+    this.supportingProcessStart.openModalForStartableItem(
+      item,
+      this.documentId,
+      this.caseDefinitionKey,
+      this.caseDefinitionVersionTag
+    );
   }
 
   public openWidgetProcessSubscription(): void {
     this._subscriptions.add(
       this.widgetsService.startProcessEvent
         .pipe(switchMap(() => this.widgetsService.activeProcess$))
-        .subscribe(processDefinitionCaseDefinition => {
-          this.startProcess(processDefinitionCaseDefinition);
+        .subscribe(item => {
+          this.startItem(item);
         })
     );
   }
@@ -545,6 +545,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   private initBreadcrumb(): void {
     this.documentService.getDocumentDefinition(this.caseDefinitionKey).subscribe(definition => {
       this.documentDefinitionTitle = definition.schema.title;
+      this.caseDefinitionVersionTag = definition.id.blueprintId.blueprintVersionTag;
       this.setBreadcrumb();
     });
   }
@@ -653,23 +654,18 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private mapProcessDocumentDefinitions(
-    processDefinitionCaseDefinitions: ProcessDefinitionCaseDefinition[]
-  ): (ProcessDefinitionCaseDefinition & {displayName: string})[] {
-    return processDefinitionCaseDefinitions.map(
-      (processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) => ({
-        ...processDefinitionCaseDefinition,
-        displayName:
-          this.translateService.instant(processDefinitionCaseDefinition?.processDefinitionKey) !==
-          processDefinitionCaseDefinition?.processDefinitionKey
-            ? this.translateService.instant(processDefinitionCaseDefinition.processDefinitionKey)
-            : processDefinitionCaseDefinition.processDefinitionName,
-      })
-    );
+  private mapStartableItems(items: StartableItem[]): (StartableItem & {displayName: string})[] {
+    return items.map(item => ({
+      ...item,
+      displayName:
+        this.translateService.instant(item.key) !== item.key
+          ? this.translateService.instant(item.key)
+          : item.name || item.key,
+    }));
   }
 
   private setProcessDropdownWidth(): void {
-    const longestName = this.processDefinitionCaseDefinitions.reduce(
+    const longestName = this.startableItems.reduce(
       (acc, curr) =>
         !!curr.displayName && curr.displayName.length > acc ? curr.displayName.length : acc,
       0
