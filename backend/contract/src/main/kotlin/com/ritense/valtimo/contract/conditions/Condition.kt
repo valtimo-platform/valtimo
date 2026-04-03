@@ -25,7 +25,8 @@ import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.DataBindingMethodResolver
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 
 /**
  * A condition that can generically be used for different features where user entered conditions are required.
@@ -81,9 +82,11 @@ data class Condition<T : Comparable<T>>(
                 val expressionWithoutPrefixSuffix = it.substringAfter("\${").substringBefore("}")
 
                 val expressionContextRoot = getExpressionContextRoot()
-                val context = StandardEvaluationContext()
-
-                context.setRootObject(expressionContextRoot)
+                val context = SimpleEvaluationContext
+                    .forReadOnlyDataBinding()
+                    .withMethodResolvers(DataBindingMethodResolver.forInstanceMethodInvocation())
+                    .withRootObject(expressionContextRoot)
+                    .build()
 
                 val spelExpression = parser.parseExpression(expressionWithoutPrefixSuffix)
 
