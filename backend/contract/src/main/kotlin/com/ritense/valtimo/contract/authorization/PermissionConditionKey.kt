@@ -20,7 +20,8 @@ enum class PermissionConditionKey(val key: String) {
     CURRENT_USER_ROLES("\${currentUserRoles}"),
     CURRENT_USER_NAME("\${currentUsername}"),
     @Deprecated("Use 'CURRENT_USER_NAME' instead")
-    CURRENT_USER_IDENTIFIER("\${currentUserIdentifier}");
+    CURRENT_USER_IDENTIFIER("\${currentUserIdentifier}"),
+    CURRENT_USER_TEAMS("\${currentUserTeams}");
 
     companion object {
         private val map = entries.associateBy(PermissionConditionKey::key)

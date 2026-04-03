@@ -62,6 +62,7 @@ import com.ritense.processdocument.web.TaskListResource
 import com.ritense.search.repository.SearchFieldV2Repository
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -77,6 +78,7 @@ import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
+import java.util.Optional
 import org.operaton.bpm.engine.HistoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
@@ -295,7 +297,8 @@ class ProcessDocumentsAutoConfiguration {
         searchFieldV2Service: SearchFieldV2Service,
         queryDialectHelper: QueryDialectHelper,
         userTaskOpenedStatusService: UserTaskOpenedStatusService,
-        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>,
+        teamManagementService: Optional<TeamManagementService>
     ): CaseTaskListSearchService {
         return CaseTaskListSearchService(
             entityManager,
@@ -306,7 +309,8 @@ class ProcessDocumentsAutoConfiguration {
             searchFieldV2Service,
             queryDialectHelper,
             userTaskOpenedStatusService,
-            taskBusinessKeyResolvers
+            taskBusinessKeyResolvers,
+            teamManagementService.orElse(null)
         )
     }
 

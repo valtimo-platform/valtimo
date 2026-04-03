@@ -78,6 +78,8 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
@@ -89,6 +91,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -126,6 +129,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final CaseTagService caseTagService;
 
+    private final TeamManagementService teamManagementService;
+
     private final EntityManager entityManager;
 
     public JsonSchemaDocumentService(
@@ -140,6 +145,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         ObjectMapper objectMapper,
         InternalCaseStatusService internalCaseStatusService,
         CaseTagService caseTagService,
+        TeamManagementService teamManagementService,
         EntityManager entityManager
     ) {
         this.documentRepository = documentRepository;
@@ -153,6 +159,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.objectMapper = objectMapper;
         this.internalCaseStatusService = internalCaseStatusService;
         this.caseTagService = caseTagService;
+        this.teamManagementService = teamManagementService;
         this.entityManager = entityManager;
     }
 
@@ -667,7 +674,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName());
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -693,7 +700,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             logger.debug("Cannot set assignee for the invalid user id {}", assigneeId);
             throw new IllegalArgumentException("Cannot set assignee for the invalid user id " + assigneeId);
         }
-        if (assignee.getUsername().equals(userManagementService.getCurrentUser().getUsername())) {
+        if (assignee.getUsername() != null && assignee.getUsername().equals(userManagementService.getCurrentUser().getUsername())) {
             try {
                 authorizationService.requirePermission(
                     new EntityAuthorizationRequest<>(
@@ -740,7 +747,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
 
         // Publish an event to update the audit log
-        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName());
+        publishDocumentAssigneeChangedEvent(documentId, assignee.getFullName(), null);
 
         outboxService.send(() ->
             new DocumentAssigned(
@@ -766,7 +773,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             )
         );
 
-        document.unassign();
+        document.unassignUser();
         documentRepository.save(document);
         applicationEventPublisher.publishEvent(
             new DocumentUnassignedEvent(
@@ -780,6 +787,122 @@ public class JsonSchemaDocumentService implements DocumentService {
 
         outboxService.send(() ->
             new DocumentUnassigned(
+                document.id().toString(),
+                objectMapper.valueToTree(document)
+            )
+        );
+    }
+
+    @Override
+    public void assignTeamToDocument(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId,
+        String teamKey
+    ) {
+        JsonSchemaDocument document = runWithoutAuthorization(
+            () -> getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
+        );
+
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                document
+            )
+        );
+
+        var team = teamManagementService == null ? null : teamManagementService.findByKey(teamKey);
+        if (teamManagementService != null && team == null) {
+            throw new NoSuchElementException("Team not found: " + teamKey);
+        }
+        var teamTitle = team != null ? team.getTitle() : teamKey;
+        document.setAssignedTeamKey(teamKey);
+        document.setAssignedTeamTitle(teamTitle);
+        documentRepository.save(document);
+
+        // Publish an event to update the audit log
+        publishDocumentAssigneeChangedEvent(documentId, null, teamTitle);
+
+        outboxService.send(() ->
+            new DocumentUpdated(
+                document.id().toString(),
+                objectMapper.valueToTree(document)
+            )
+        );
+    }
+
+    @Override
+    public void assignTeamToDocuments(List<UUID> documentIds, String teamKey) {
+        var documentIdObjects = documentIds.stream()
+            .map(documentId -> (Document.Id) JsonSchemaDocumentId.existingId(documentId))
+            .toList();
+        List<JsonSchemaDocument> documents = runWithoutAuthorization(() ->
+            documentRepository.findAllById(documentIdObjects)
+        );
+
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                documents
+            )
+        );
+
+        var team = teamManagementService == null ? null : teamManagementService.findByKey(teamKey);
+        if (teamManagementService != null && team == null) {
+            throw new NoSuchElementException("Team not found: " + teamKey);
+        }
+        var teamTitle = team != null ? team.getTitle() : teamKey;
+
+        documents.forEach(document -> {
+            document.setAssignedTeamKey(teamKey);
+            document.setAssignedTeamTitle(teamTitle);
+        });
+        documentRepository.saveAll(documents);
+
+        documents.forEach(document -> {
+            publishDocumentAssigneeChangedEvent(document.id().getId(), null, teamTitle);
+
+            outboxService.send(() ->
+                new DocumentUpdated(
+                    document.id().toString(),
+                    objectMapper.valueToTree(document)
+                )
+            );
+        });
+    }
+
+    @Override
+    public void unassignTeamFromDocument(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId
+    ) {
+        JsonSchemaDocument document = runWithoutAuthorization(
+            () -> getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
+        );
+
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                document
+            )
+        );
+
+        document.setAssignedTeamKey(null);
+        document.setAssignedTeamTitle(null);
+        documentRepository.save(document);
+
+        applicationEventPublisher.publishEvent(
+            new DocumentUnassignedEvent(
+                UUID.randomUUID(),
+                RequestHelper.getOrigin(),
+                LocalDateTime.now(),
+                AuditHelper.getActor(),
+                documentId
+            )
+        );
+
+        outboxService.send(() ->
+            new DocumentUpdated(
                 document.id().toString(),
                 objectMapper.valueToTree(document)
             )
@@ -924,7 +1047,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private void publishDocumentAssigneeChangedEvent(
         @LoggableResource(resourceType = JsonSchemaDocument.class) UUID documentId,
-        String assigneeFullName
+        String assigneeFullName,
+        String teamTitle
     ) {
         applicationEventPublisher.publishEvent(
             new DocumentAssigneeChangedEvent(
@@ -933,7 +1057,8 @@ public class JsonSchemaDocumentService implements DocumentService {
                 LocalDateTime.now(),
                 AuditHelper.getActor(),
                 documentId,
-                assigneeFullName
+                assigneeFullName,
+                teamTitle
             )
         );
     }
@@ -992,6 +1117,26 @@ public class JsonSchemaDocumentService implements DocumentService {
         ).stream().map(Role::getKey).collect(Collectors.toSet());
 
         return userManagementService.findNamedUserByRolesWithoutAuthorization(authorizedRoles);
+    }
+
+    @Override
+    public Page<Team> getCandidateTeams(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId,
+        Pageable pageable
+    ) {
+        var document = AuthorizationContext.runWithoutAuthorization(() -> get(documentId.toString()));
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                ASSIGN,
+                document
+            )
+        );
+
+        if (teamManagementService == null) {
+            return Page.empty(pageable);
+        }
+        return runWithoutAuthorization(() -> teamManagementService.findAll(pageable));
     }
 
     public void assignUserToDocuments(List<UUID> documentIds, String assigneeId) {
@@ -1060,7 +1205,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
         // Publish an event to update the audit log
         documents.forEach(document -> {
-            publishDocumentAssigneeChangedEvent(document.id().getId(), assignee.getFullName());
+            publishDocumentAssigneeChangedEvent(document.id().getId(), assignee.getFullName(), null);
 
             outboxService.send(() ->
                 new DocumentAssigned(
