@@ -148,7 +148,8 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>,
     statusFilter?: Array<string | null>,
-    caseTagsFilter?: Array<string | null>
+    caseTagsFilter?: Array<string | null>,
+    globalSearchFilter?: string
   ): Observable<Documents> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
@@ -157,6 +158,7 @@ export class DocumentService {
       ...(otherFilters && {otherFilters}),
       ...(statusFilter && {statusFilter}),
       ...(caseTagsFilter && {caseTagsFilter}),
+      ...(globalSearchFilter && {globalSearchFilter}),
     };
 
     return this.http
@@ -174,7 +176,8 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>,
     statusFilter?: Array<string | null>,
-    caseTagsFilter?: Array<string | null>
+    caseTagsFilter?: Array<string | null>,
+    globalSearchFilter?: string
   ): Observable<SpecifiedDocuments> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
@@ -183,6 +186,7 @@ export class DocumentService {
       ...(otherFilters && {otherFilters}),
       ...(statusFilter && {statusFilter}),
       ...(caseTagsFilter && {caseTagsFilter}),
+      ...(globalSearchFilter && {globalSearchFilter}),
     };
 
     return this.http

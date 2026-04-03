@@ -1,0 +1,67 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+dockerCompose {
+    projectName = "case-mongodb"
+    integrationTestingPostgresql {
+        isRequiredBy(project.tasks.integrationTestingPostgresql)
+        useComposeFiles.addAll(
+            "../docker-resources/docker-compose-base-test-postgresql.yml",
+            "docker-compose-override-postgresql.yml"
+        )
+    }
+}
+
+dependencies {
+    implementation project(":backend:authorization")
+    implementation project(":backend:case")
+    implementation project(":backend:inbox")
+    implementation project(":backend:outbox")
+
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
+
+    testImplementation project(':backend:test-utils-common')
+    testImplementation project(':backend:core')
+    testImplementation(project(':backend:audit')) {
+        exclude(group: "com.ritense.valtimo", module: "case")
+    }
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "org.postgresql:postgresql"
+    testImplementation "org.springframework.security:spring-security-test"
+
+    jar {
+        enabled = true
+        manifest {
+            attributes("Implementation-Title": "Ritense Case MongoDB module")
+            attributes("Implementation-Version": projectVersion)
+        }
+    }
+}
+
+tasks.named("integrationTestingPostgresql") {
+    systemProperty("liquibase.duplicateFileMode", "WARN")
+}
+
+apply from: "gradle/publishing.gradle"

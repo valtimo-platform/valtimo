@@ -361,6 +361,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
+        this.searchService.globalSearchFilter$.pipe(debounceTime(300), distinctUntilChanged()),
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(
@@ -372,6 +373,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
           prevSelectedStatuses,
           prevCaseTagKeys,
           prevForceRefresh,
+          ,
+          ,
+          ,
+          prevGlobalSearchFilter,
         ],
         [
           currSearchRequest,
@@ -380,6 +385,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
           currSelectedStatuses,
           currCaseTagKeys,
           currForceRefresh,
+          ,
+          ,
+          ,
+          currGlobalSearchFilter,
         ]
       ) =>
         isEqual(
@@ -390,6 +399,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...prevSelectedStatuses,
             ...prevCaseTagKeys,
             forceRefresh: prevForceRefresh,
+            globalSearchFilter: prevGlobalSearchFilter,
           },
           {
             ...currSearchRequest,
@@ -398,6 +408,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...currSelectedStatuses,
             ...currCaseTagKeys,
             forceRefresh: currForceRefresh,
+            globalSearchFilter: currGlobalSearchFilter,
           }
         )
     ),
@@ -411,6 +422,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
         _,
         hasApiColumnConfig,
         allStatuses,
+        ,
+        globalSearchFilter,
       ]) => {
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
         const statusKeys: (string | null)[] =
@@ -419,6 +432,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             : selectedStatuses.map((statusKey: string) =>
                 statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
               );
+        const activeGlobalFilter = globalSearchFilter || undefined;
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
@@ -428,7 +442,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  selectedCaseTagKeys
+                  selectedCaseTagKeys,
+                  activeGlobalFilter
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
@@ -436,7 +451,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  selectedCaseTagKeys
+                  selectedCaseTagKeys,
+                  activeGlobalFilter
                 ),
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
@@ -452,7 +468,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                selectedCaseTagKeys
+                selectedCaseTagKeys,
+                activeGlobalFilter
               )
             : this.documentService.getSpecifiedDocumentsSearch(
                 documentSearchRequest,
@@ -460,7 +477,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                selectedCaseTagKeys
+                selectedCaseTagKeys,
+                activeGlobalFilter
               ),
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
@@ -607,6 +625,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public search(searchFieldValues: SearchFieldValues): void {
     this.searchService.search(searchFieldValues);
+  }
+
+  public onGlobalSearchFilterChange(value: string): void {
+    this.searchService.setGlobalSearchFilter(value);
   }
 
   public rowClick(item: any): void {

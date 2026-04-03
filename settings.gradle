@@ -33,6 +33,7 @@ include(
     ":backend:authorization",
     ":backend:building-block",
     ":backend:case",
+    ":backend:case-mongodb",
     ":backend:changelog",
     ":backend:command-handling",
     ":backend:contract",

@@ -37,6 +37,7 @@ export class AdvancedDocumentSearchRequestHttpBody {
   searchOperator?: SearchOperator;
   otherFilters?: Array<SearchFilter | SearchFilterRange>;
   assigneeFilter?: AssigneeFilter;
+  globalSearchFilter?: string;
 }
 
 export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearchRequest {
@@ -46,6 +47,7 @@ export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearch
   sort?: SortState;
   searchOperator?: SearchOperator;
   otherFilters?: Array<SearchFilter | SearchFilterRange>;
+  globalSearchFilter?: string;
 
   constructor(
     definitionName: string,
@@ -53,7 +55,8 @@ export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearch
     size: number,
     sort?: SortState,
     searchOperator?: SearchOperator,
-    otherFilters?: Array<SearchFilter | SearchFilterRange>
+    otherFilters?: Array<SearchFilter | SearchFilterRange>,
+    globalSearchFilter?: string
   ) {
     this.definitionName = definitionName;
     this.page = page;
@@ -61,6 +64,7 @@ export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearch
     this.sort = sort;
     this.otherFilters = otherFilters;
     this.searchOperator = searchOperator;
+    this.globalSearchFilter = globalSearchFilter;
   }
 
   asHttpBody(): AdvancedDocumentSearchRequestHttpBody {
@@ -73,6 +77,9 @@ export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearch
     }
     if (this.searchOperator) {
       httpBody.searchOperator = this.searchOperator;
+    }
+    if (this.globalSearchFilter) {
+      httpBody.globalSearchFilter = this.globalSearchFilter;
     }
 
     return httpBody;

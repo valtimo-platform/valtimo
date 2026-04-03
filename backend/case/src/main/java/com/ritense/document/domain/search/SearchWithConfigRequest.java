@@ -29,6 +29,7 @@ public class SearchWithConfigRequest {
     private List<SearchWithConfigFilter> otherFilters = List.of();
     private Set<String> statusFilter = Set.of();
     private Set<String> caseTagsFilter = Set.of();
+    private String globalSearchFilter;
 
     public SearchWithConfigRequest() {
     }
@@ -83,6 +84,14 @@ public class SearchWithConfigRequest {
 
     public void setCaseTagsFilter(Set<String> caseTagsFilter) {
         this.caseTagsFilter = caseTagsFilter;
+    }
+
+    public String getGlobalSearchFilter() {
+        return globalSearchFilter;
+    }
+
+    public void setGlobalSearchFilter(String globalSearchFilter) {
+        this.globalSearchFilter = globalSearchFilter;
     }
 
     public static class SearchWithConfigFilter {

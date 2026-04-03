@@ -89,6 +89,14 @@
       (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
     ></valtimo-case-tags-selector>
   </valtimo-search-fields>
+
+  <v-input
+    [titleTranslationKey]="'list.globalSearchFilter'"
+    [placeholder]="'list.globalSearchFilterPlaceholder' | translate"
+    [disabled]="!obs.loaded"
+    [fullWidth]="true"
+    (valueChange)="onGlobalSearchFilterChange($event)"
+  ></v-input>
 </ng-template>
 
 <ng-template #list let-obs="obs">

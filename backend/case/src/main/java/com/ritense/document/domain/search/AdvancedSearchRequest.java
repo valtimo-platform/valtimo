@@ -28,6 +28,7 @@ public class AdvancedSearchRequest {
     private List<OtherFilter> otherFilters = List.of();
     private Set<String> statusFilter = new HashSet<>();
     private Set<String> caseTagsFilter = new HashSet<>();
+    private String globalSearchFilter;
 
     public AdvancedSearchRequest() {
         // Jackson needs the empty constructor
@@ -92,6 +93,19 @@ public class AdvancedSearchRequest {
 
     public void setCaseTagsFilter(Set<String> caseTagsFilter) {
         this.caseTagsFilter = caseTagsFilter != null ? caseTagsFilter : new HashSet<>();
+    }
+
+    public String getGlobalSearchFilter() {
+        return globalSearchFilter;
+    }
+
+    public void setGlobalSearchFilter(String globalSearchFilter) {
+        this.globalSearchFilter = globalSearchFilter;
+    }
+
+    public AdvancedSearchRequest globalSearchFilter(String globalSearchFilter) {
+        setGlobalSearchFilter(globalSearchFilter);
+        return this;
     }
 
     public static class OtherFilter {

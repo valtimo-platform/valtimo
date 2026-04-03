@@ -80,6 +80,18 @@ services:
         volumes:
             - gzac-database-data-mysql:/var/lib/mysql # persist data even if container shuts down
 
+    gzac-mongodb:
+        container_name: gzac-docker-compose-gzac-mongodb
+        image: mongo:8.2.6
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: gzac
+            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_DATABASE: gzac
+        volumes:
+            - gzac-mongodb-data:/data/db
+
     gzac-rabbitmq:
         image: rabbitmq:4.1.0-management
         container_name: gzac-docker-compose-gzac-rabbitmq
@@ -720,3 +732,4 @@ services:
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
+    gzac-mongodb-data:

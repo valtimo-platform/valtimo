@@ -1585,7 +1585,9 @@
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
     "automaticallyGenerated": "Automatically generated",
-    "search": "Search..."
+    "search": "Search...",
+    "globalSearchFilter": "Search entire document",
+    "globalSearchFilterPlaceholder": "Search across all document fields..."
   },
   "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
   "customers": {

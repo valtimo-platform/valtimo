@@ -1612,7 +1612,9 @@
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
     "showingResult": "{{number}} resultaat zichtbaar",
     "automaticallyGenerated": "Automatisch gegenereerd",
-    "search": "Zoeken..."
+    "search": "Zoeken...",
+    "globalSearchFilter": "Zoek in geheel document",
+    "globalSearchFilterPlaceholder": "Zoek in alle documentvelden..."
   },
   "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
   "customers": {

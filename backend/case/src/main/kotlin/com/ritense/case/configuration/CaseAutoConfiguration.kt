@@ -59,7 +59,6 @@ import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
@@ -412,7 +411,7 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseExporter::class)
     fun caseExporter(
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-        documentSearchService: JsonSchemaDocumentSearchService,
+        documentSearchService: DocumentSearchService,
         outboxService: OutboxService,
         mapper: ObjectMapper,
         caseListRowMapper: CaseListRowMapper

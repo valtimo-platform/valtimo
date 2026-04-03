@@ -1,6 +1,8 @@
 logging:
     file:
         name: /tmp/spring.log
+    level:
+        com.ritense.document.mongodb.authorization: DEBUG
 
 management:
     endpoints:
@@ -29,6 +31,9 @@ spring:
             enabled: false
         livereload:
             enabled: false
+    data:
+        mongodb:
+            uri: ${SPRING_DATA_MONGODB_URI:mongodb://gzac:password@localhost:27017/gzac?authSource=admin}
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}

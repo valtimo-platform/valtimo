@@ -73,6 +73,7 @@ public class SearchRequestMapper {
         advancedSearchRequest.setOtherFilters(otherFilters);
         advancedSearchRequest.setStatusFilter(searchRequest.getStatusFilter());
         advancedSearchRequest.setCaseTagsFilter(searchRequest.getCaseTagsFilter());
+        advancedSearchRequest.setGlobalSearchFilter(searchRequest.getGlobalSearchFilter());
         return advancedSearchRequest;
     }
 

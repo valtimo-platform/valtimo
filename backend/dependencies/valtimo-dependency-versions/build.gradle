@@ -28,6 +28,7 @@ dependencies {
         api(project(":backend:authorization"))
         api(project(":backend:building-block"))
         api(project(":backend:case"))
+        api(project(":backend:case-mongodb"))
         api(project(":backend:changelog"))
         api(project(":backend:command-handling"))
         api(project(":backend:contract"))

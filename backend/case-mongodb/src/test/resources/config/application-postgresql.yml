@@ -1,0 +1,17 @@
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:3364/case-mongodb-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database: postgresql
+    data:
+        mongodb:
+            uri: mongodb://localhost:37017/case-mongodb-test
+
+valtimo:
+    database: postgres
