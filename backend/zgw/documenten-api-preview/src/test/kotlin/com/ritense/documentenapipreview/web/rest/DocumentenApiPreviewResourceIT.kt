@@ -51,6 +51,7 @@ import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -159,7 +160,7 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
             formaat = null,
             taal = "Mock taal",
             versie = null,
-            beginRegistratie = LocalDateTime.now(),
+            beginRegistratie = OffsetDateTime.now(),
             bestandsnaam = "mock_document.docx",
             bestandsomvang = null,
             link = null,
