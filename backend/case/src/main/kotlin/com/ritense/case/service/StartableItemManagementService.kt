@@ -44,7 +44,7 @@ class StartableItemManagementService(
 
         val sortOrderMap = startableItemRepository
             .findAllByIdCaseDefinitionId(caseDefinitionId)
-            .associate { it.id.itemKey to it.sortOrder }
+            .associate { (it.id.itemKey to it.id.itemType) to it.sortOrder }
 
         return allItems
             .map { item ->
@@ -54,7 +54,7 @@ class StartableItemManagementService(
                     key = item.key,
                     versionTag = item.versionTag,
                     processDefinitionId = item.processDefinitionId,
-                    sortOrder = sortOrderMap[item.key]
+                    sortOrder = sortOrderMap[item.key to item.type]
                 )
             }
             .sortedWith(compareBy(
@@ -79,8 +79,7 @@ class StartableItemManagementService(
 
         startableItemRepository.save(
             StartableItem(
-                id = StartableItemId(caseDefinitionId, item.key),
-                itemType = item.type,
+                id = StartableItemId(caseDefinitionId, item.key, item.type),
                 sortOrder = maxSortOrder + 1
             )
         )
@@ -103,7 +102,7 @@ class StartableItemManagementService(
 
         provider.deleteItem(caseDefinitionId, itemKey, versionTag)
 
-        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, itemKey))
+        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, itemKey, item.type))
     }
 
     @Transactional
@@ -112,13 +111,12 @@ class StartableItemManagementService(
         items: List<StartableItemOrderEntry>
     ): List<ManagementStartableItemDto> {
         val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
-        val existingItemsByKey = existingItems.associateBy { it.key }
+        val existingItemsByKeyAndType = existingItems.associateBy { it.key to it.type }
 
         val entities = items.mapNotNull { entry ->
-            val item = existingItemsByKey[entry.key] ?: return@mapNotNull null
+            existingItemsByKeyAndType[entry.key to entry.type] ?: return@mapNotNull null
             StartableItem(
-                id = StartableItemId(caseDefinitionId, entry.key),
-                itemType = item.type,
+                id = StartableItemId(caseDefinitionId, entry.key, entry.type),
                 sortOrder = entry.sortOrder
             )
         }

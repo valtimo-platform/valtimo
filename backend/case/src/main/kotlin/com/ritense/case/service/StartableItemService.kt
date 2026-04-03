@@ -62,10 +62,10 @@ class StartableItemService(
 
         val sortOrderMap = startableItemRepository
             .findAllByIdCaseDefinitionId(caseDefinitionId)
-            .associate { it.id.itemKey to it.sortOrder }
+            .associate { (it.id.itemKey to it.id.itemType) to it.sortOrder }
 
         return allItems.sortedWith(compareBy(
-            { sortOrderMap[it.key] ?: Int.MAX_VALUE },
+            { sortOrderMap[it.key to it.type] ?: Int.MAX_VALUE },
             { it.name ?: it.key }
         ))
     }

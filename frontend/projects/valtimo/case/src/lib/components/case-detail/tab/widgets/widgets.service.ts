@@ -48,9 +48,9 @@ export class WidgetsService {
     distinctUntilChanged()
   );
 
-  public get activeProcess$(): Observable<StartableItem> {
+  public get activeProcess$(): Observable<StartableItem | undefined> {
     return combineLatest([this._activeProcessKey$, this.startableItems$]).pipe(
-      map(([activeProcessKey, items]: [string, StartableItem[]]) => {
+      map(([activeProcessKey, items]: [string | null, StartableItem[]]) => {
         return items.find((item: StartableItem) => activeProcessKey === item.key);
       })
     );

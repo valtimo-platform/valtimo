@@ -16,12 +16,9 @@
 
 package com.ritense.case.domain
 
-import com.ritense.case.web.rest.dto.StartableItemType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 
 @Entity
@@ -30,10 +27,6 @@ data class StartableItem(
 
     @EmbeddedId
     val id: StartableItemId,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "item_type", nullable = false)
-    val itemType: StartableItemType,
 
     @Column(name = "sort_order", nullable = false)
     val sortOrder: Int

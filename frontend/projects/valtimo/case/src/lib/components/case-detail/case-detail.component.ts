@@ -410,7 +410,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public openWidgetProcessSubscription(): void {
     this._subscriptions.add(
       this.widgetsService.startProcessEvent
-        .pipe(switchMap(() => this.widgetsService.activeProcess$))
+        .pipe(
+          switchMap(() => this.widgetsService.activeProcess$),
+          filter((item): item is StartableItem => !!item)
+        )
         .subscribe(item => {
           this.startItem(item);
         })
