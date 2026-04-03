@@ -1,0 +1,74 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd" logicalFilePath="config/liquibase/changelog/20260330-add-case-definition-building-block-link.xml">
+
+    <changeSet author="Ritense" id="1">
+        <createTable tableName="case_definition_building_block_link">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_version_tag" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="building_block_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="building_block_definition_version_tag" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="input_mappings" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="output_mappings" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="plugin_configuration_mappings" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                tableName="case_definition_building_block_link"
+                columnNames="id"
+                constraintName="pk_case_def_bb_link"/>
+
+        <addForeignKeyConstraint
+                baseTableName="case_definition_building_block_link"
+                baseColumnNames="building_block_definition_key, building_block_definition_version_tag"
+                referencedTableName="building_block_definition"
+                referencedColumnNames="building_block_definition_key, building_block_definition_version_tag"
+                onDelete="CASCADE"
+                constraintName="fk_casedefbblink_bbdef"/>
+
+        <createIndex indexName="idx_casedefbblink_casedef" tableName="case_definition_building_block_link">
+            <column name="case_definition_key"/>
+            <column name="case_definition_version_tag"/>
+        </createIndex>
+
+        <createIndex indexName="idx_casedefbblink_bbdef" tableName="case_definition_building_block_link">
+            <column name="building_block_definition_key"/>
+            <column name="building_block_definition_version_tag"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

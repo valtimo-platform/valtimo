@@ -16,7 +16,7 @@
 
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
 import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {DocumentService, StartableItem} from '@valtimo/document';
 import {
   CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION,
   WIDGET_PERMISSION_RESOURCE,
@@ -36,12 +36,11 @@ export class WidgetProcess {
     return this._baseDocumentId$.getValue();
   }
 
-  private readonly _processDefinitionCaseDefinition$ = combineLatest([
+  private readonly _startableItems$ = combineLatest([
     this._baseDocumentId$,
     this._baseWidgetConfiguration$,
   ]).pipe(
     switchMap(([documentId, widgetConfiguration]: [string | null, BasicWidget | null]) => {
-      // if no action is set we don't need to check for permissions
       if (
         !documentId ||
         !widgetConfiguration ||
@@ -49,29 +48,26 @@ export class WidgetProcess {
       ) {
         return of(null);
       }
-      return this.documentService.findProcessDefinitionCaseDefinitionsForDocument(documentId, {
-        startableByUser: true,
-      });
+      return this.documentService.getStartableItems({caseDocumentId: documentId});
     })
   );
 
   public readonly canCreateCamundaExecution$: Observable<boolean> = combineLatest([
-    this._processDefinitionCaseDefinition$,
+    this._startableItems$,
     this._baseWidgetConfiguration$,
   ]).pipe(
     switchMap(
-      ([processDefinitionCaseDefinition, widgetConfiguration]: [
-        ProcessDefinitionCaseDefinition[] | null,
+      ([startableItems, widgetConfiguration]: [
+        StartableItem[] | null,
         BasicWidget | null,
       ]) => {
-        let requiredProcess = processDefinitionCaseDefinition.find(
-          (processDefinition: ProcessDefinitionCaseDefinition) =>
-            widgetConfiguration.actions[0].processDefinitionKey ===
-            processDefinition.processDefinitionKey
+        let requiredProcess = startableItems.find(
+          (item: StartableItem) =>
+            widgetConfiguration.actions[0].processDefinitionKey === item.key
         );
         return this.permissionService.requestPermission(CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, {
           resource: WIDGET_PERMISSION_RESOURCE.camundaProcessDefinition,
-          identifier: requiredProcess.id.processDefinitionId,
+          identifier: requiredProcess.processDefinitionId,
         });
       }
     )
