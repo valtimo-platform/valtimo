@@ -31,6 +31,7 @@ import java.io.InputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 class DocumentenApiPreviewPluginTest {
     private lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
@@ -99,7 +100,7 @@ class DocumentenApiPreviewPluginTest {
             formaat = null,
             taal = "Mock taal",
             versie = null,
-            beginRegistratie = LocalDateTime.now(),
+            beginRegistratie = OffsetDateTime.now(),
             bestandsnaam = "mock_document.docx",
             bestandsomvang = null,
             link = null,
