@@ -261,11 +261,12 @@ export class FormFlowEditorComponent implements OnDestroy {
   ): void {
     if (context === 'buildingBlock') {
       const route = `/building-block-management/building-block/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+      const generalRoute = `${route}/general`;
 
       this.breadcrumbService.setThirdBreadcrumb({
-        route: [route],
+        route: [generalRoute],
         content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-        href: `${route}/general`,
+        href: generalRoute,
       });
 
       const routeWithFormFlows = `${route}/form-flows`;
