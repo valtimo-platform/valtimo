@@ -26,5 +26,5 @@
 * Fixed an issue in the migration script when upgrading from Valtimo 12. When the summary form is used for user tasks this
   will no longer cause an error when migrating.
 
-* Fixed an issue in forms where conditions on fields that were contained in a Data Grid type field were not working 
+* Fixed an issue in forms where conditions on fields that were contained in a Data Grid type field were not working
   correctly.

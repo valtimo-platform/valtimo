@@ -16,6 +16,11 @@
 
 import {User} from '@valtimo/shared';
 
+interface AssignedTeam {
+  key: string;
+  title: string;
+}
+
 interface Task {
   assignee: string;
   caseDefinitionId: string;
@@ -45,6 +50,7 @@ interface Task {
   caseDocumentId: string;
   processDefinitionKey: string;
   valtimoAssignee: User;
+  assignedTeam?: AssignedTeam;
   isOpened?: boolean;
   locked?: boolean;
   caseLocked?: boolean;
@@ -57,7 +63,8 @@ interface ListItemField {
 }
 
 interface AssigneeRequest {
-  assignee: string;
+  assignee?: string;
+  assignedTeamKey?: string;
 }
 
 interface SpecifiedTask {
@@ -89,6 +96,7 @@ interface SetTaskDueDateRequest {
 }
 
 export {
+  AssignedTeam,
   AssigneeRequest,
   ListItemField,
   Task,
