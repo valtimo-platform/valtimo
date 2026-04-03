@@ -48,6 +48,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
@@ -56,7 +57,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(basePackages = ["com.ritense.authorization"])
 @EntityScan("com.ritense.authorization")
 class AuthorizationAutoConfiguration(
-    userManagementService: UserManagementService
+    @Lazy userManagementService: UserManagementService
 ) {
 
     init {

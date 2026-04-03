@@ -26,6 +26,7 @@ import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.service.UserSettingsService;
+import com.ritense.valtimo.web.rest.dto.UserTeamDto;
 import com.ritense.valtimo.web.rest.util.HeaderUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -180,5 +181,13 @@ public class UserResource {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/v1/user/team")
+    public ResponseEntity<List<UserTeamDto>> getCurrentUserTeams() {
+        List<UserTeamDto> teams = userManagementService.getCurrentUserTeams().stream()
+            .map(UserTeamDto::new)
+            .toList();
+        return ResponseEntity.ok(teams);
     }
 }

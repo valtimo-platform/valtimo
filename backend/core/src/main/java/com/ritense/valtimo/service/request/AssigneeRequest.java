@@ -18,21 +18,29 @@ package com.ritense.valtimo.service.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
 
 public class AssigneeRequest {
 
     @JsonProperty
     private final String assignee;
 
+    @JsonProperty
+    private final String assignedTeamKey;
+
     @JsonCreator
     public AssigneeRequest(
-        @JsonProperty(value = "assignee", required = true) @NotNull String assignee
+        @JsonProperty(value = "assignee") String assignee,
+        @JsonProperty(value = "assignedTeamKey") String assignedTeamKey
     ) {
         this.assignee = assignee;
+        this.assignedTeamKey = assignedTeamKey;
     }
 
     public String getAssignee() {
         return this.assignee;
+    }
+
+    public String getAssignedTeamKey() {
+        return this.assignedTeamKey;
     }
 }
