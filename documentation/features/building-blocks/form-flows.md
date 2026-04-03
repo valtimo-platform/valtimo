@@ -14,7 +14,7 @@ are scoped to a specific building block version and can be used in user tasks wi
 * Build the form flow using the editor.
 * Click **Create**.
 
-<img width="1728" height="893" alt="Screenshot 2026-04-03 at 15 09 30" src="https://github.com/user-attachments/assets/f99fe4af-326a-458f-93eb-1fb1aef40807" />
+<figure><img src="../building-blocks/images/building-block-add-form-flow.png" alt="" width="375"><figcaption><p>Add form flow</p></figcaption></figure>
 
 ### Editing a form flow
 
@@ -24,7 +24,7 @@ are scoped to a specific building block version and can be used in user tasks wi
 * Make changes in the form flow editor.
 * Click **Save**.
 
-<img width="1728" height="893" alt="Screenshot 2026-04-03 at 15 09 48" src="https://github.com/user-attachments/assets/4fda33b1-4405-4f98-92d1-76696da6dd8c" />
+<figure><img src="../building-blocks/images/building-block-edit-form-flow.png" alt="" width="375"><figcaption><p>Edit form flow</p></figcaption></figure>
 
 ### Deleting a form flow
 
@@ -32,6 +32,8 @@ are scoped to a specific building block version and can be used in user tasks wi
 * Go to the **Form flows** tab.
 * Click the delete action on the form flow row.
 * Confirm the deletion.
+
+<figure><img src="../building-blocks/images/building-block-delete-form-flow.png" alt="" width="375"><figcaption><p>Delete form flow</p></figcaption></figure>
 
 {% hint style="warning" %}
 Form flows cannot be created, edited, or deleted when the building block version is finalized. Auto-deployed
