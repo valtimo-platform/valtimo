@@ -56,7 +56,6 @@ import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byTeamKeys
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
-import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.AbstractQuery
