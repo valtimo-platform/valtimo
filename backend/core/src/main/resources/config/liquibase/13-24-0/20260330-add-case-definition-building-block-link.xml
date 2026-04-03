@@ -61,6 +61,11 @@
                 onDelete="CASCADE"
                 constraintName="fk_casedefbblink_bbdef"/>
 
+        <addUniqueConstraint
+                tableName="case_definition_building_block_link"
+                columnNames="case_definition_key, case_definition_version_tag, building_block_definition_key, building_block_definition_version_tag"
+                constraintName="uk_casedefbblink_case_bbdef"/>
+
         <createIndex indexName="idx_casedefbblink_casedef" tableName="case_definition_building_block_link">
             <column name="case_definition_key"/>
             <column name="case_definition_version_tag"/>

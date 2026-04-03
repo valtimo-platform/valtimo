@@ -16,10 +16,13 @@
 
 package com.ritense.case.domain
 
+import com.ritense.case.web.rest.dto.StartableItemType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Embeddable
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import java.io.Serializable
 
 @Embeddable
@@ -29,5 +32,9 @@ data class StartableItemId(
     val caseDefinitionId: CaseDefinitionId,
 
     @Column(name = "item_key", nullable = false)
-    val itemKey: String
+    val itemKey: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "item_type", nullable = false)
+    val itemType: StartableItemType
 ) : Serializable

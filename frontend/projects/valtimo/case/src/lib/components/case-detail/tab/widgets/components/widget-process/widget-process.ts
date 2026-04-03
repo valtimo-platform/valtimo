@@ -61,10 +61,16 @@ export class WidgetProcess {
         StartableItem[] | null,
         BasicWidget | null,
       ]) => {
-        let requiredProcess = startableItems.find(
+        const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
+        const requiredProcess = startableItems?.find(
           (item: StartableItem) =>
-            widgetConfiguration.actions[0].processDefinitionKey === item.key
+            item.key === processDefinitionKey && !!item.processDefinitionId
         );
+
+        if (!requiredProcess) {
+          return of(false);
+        }
+
         return this.permissionService.requestPermission(CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, {
           resource: WIDGET_PERMISSION_RESOURCE.camundaProcessDefinition,
           identifier: requiredProcess.processDefinitionId,

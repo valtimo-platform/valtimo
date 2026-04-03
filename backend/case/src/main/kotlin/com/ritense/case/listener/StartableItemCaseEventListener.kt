@@ -39,8 +39,7 @@ class StartableItemCaseEventListener(
             startableItemRepository.findAllByIdCaseDefinitionId(event.basedOnCaseDefinitionId!!).forEach { item ->
                 startableItemRepository.save(
                     StartableItem(
-                        id = StartableItemId(event.caseDefinitionId, item.id.itemKey),
-                        itemType = item.itemType,
+                        id = StartableItemId(event.caseDefinitionId, item.id.itemKey, item.id.itemType),
                         sortOrder = item.sortOrder
                     )
                 )

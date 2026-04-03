@@ -49,6 +49,9 @@ class BuildingBlockEndEventListener(
     )
     fun onEndEvent(event: OperatonExecutionEvent) {
         val execution = event.delegateExecution
+        if (execution.parentId != execution.processInstanceId) {
+            return
+        }
         val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
             ?: return

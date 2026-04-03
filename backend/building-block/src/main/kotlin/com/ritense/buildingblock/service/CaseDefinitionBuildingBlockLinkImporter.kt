@@ -30,9 +30,11 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @SkipComponentScan
 @Component
+@Transactional
 class CaseDefinitionBuildingBlockLinkImporter(
     private val objectMapper: ObjectMapper,
     private val linkRepository: CaseDefinitionBuildingBlockLinkRepository

@@ -25,7 +25,7 @@
             <column name="case_definition_key" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="case_definition_version_tag" type="VARCHAR(255)">
+            <column name="case_definition_version_tag" type="VARCHAR(200)">
                 <constraints nullable="false"/>
             </column>
             <column name="item_key" type="VARCHAR(255)">
@@ -39,7 +39,7 @@
             </column>
         </createTable>
         <addPrimaryKey tableName="startable_item"
-                       columnNames="case_definition_key, case_definition_version_tag, item_key"/>
+                       columnNames="case_definition_key, case_definition_version_tag, item_key, item_type"/>
     </changeSet>
 
 </databaseChangeLog>
