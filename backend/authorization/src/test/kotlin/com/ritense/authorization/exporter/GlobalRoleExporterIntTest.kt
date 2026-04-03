@@ -21,7 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.BaseIntegrationTest
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
-import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.GlobalExportRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,14 +39,11 @@ class GlobalRoleExporterIntTest @Autowired constructor(
         val roleKey = "ROLE_TEST_EXPORTER"
         roleRepository.save(Role(key = roleKey))
 
-        val result = globalRoleExporter.export(object : ExportRequest() {
-            override fun equals(other: Any?): Boolean = true
-            override fun hashCode(): Int = 0
-        })
+        val result = globalRoleExporter.export(GlobalExportRequest())
 
         assertThat(result.exportFiles).hasSize(1)
         val exportFile = result.exportFiles.single()
-        assertThat(exportFile.path).isEqualTo("global/role/global.role.json")
+        assertThat(exportFile.path).isEqualTo("config/global/role/global.role.json")
 
         val roleKeys: List<String> = objectMapper.readValue(exportFile.content)
         assertThat(roleKeys).contains(roleKey)

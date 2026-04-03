@@ -39,9 +39,10 @@
             </p>
           </div>
 
-          <cds-overflow-menu *ngIf="item.supportedActionIds?.length > 0">
+          <v-overflow-menu *ngIf="item.supportedActionIds?.length > 0" placement="bottom-end">
+            <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
             @for (actionId of item.supportedActionIds; track actionId) {
-              <cds-overflow-menu-option (click)="actions[actionId].callback(item, $event)">
+              <v-overflow-menu-option (selected)="actions[actionId].callback(item, $event)">
                 <i
                   *ngIf="!!actions[actionId].icon"
                   class="icon mdi"
@@ -49,9 +50,9 @@
                 ></i>
 
                 {{ actions[actionId]?.label || '-' }}
-              </cds-overflow-menu-option>
+              </v-overflow-menu-option>
             }
-          </cds-overflow-menu>
+          </v-overflow-menu>
         </div>
       </li>
     }

@@ -91,6 +91,12 @@ public class HistoricDocument implements Document {
     @Column(name = "document_assignee_full_name", columnDefinition = "VARCHAR(255)")
     private String assigneeFullName;
 
+    @Column(name = "document_team_key", columnDefinition = "VARCHAR(255)")
+    private String assignedTeamKey;
+
+    @Column(name = "document_team_title", columnDefinition = "VARCHAR(255)")
+    private String assignedTeamTitle;
+
     @Type(value = JsonType.class)
     @Column(name = "document_relations", columnDefinition = "json")
     private Set<? extends DocumentRelation> documentRelations = new HashSet<>();
@@ -116,6 +122,8 @@ public class HistoricDocument implements Document {
         this.sequence = document.sequence();
         this.assigneeId = document.assigneeId();
         this.assigneeFullName = document.assigneeFullName();
+        this.assignedTeamKey = document.assignedTeamKey();
+        this.assignedTeamTitle = document.assignedTeamTitle();
         this.documentRelations = document.relations();
         this.relatedFiles = document.relatedFiles();
     }
@@ -192,6 +200,16 @@ public class HistoricDocument implements Document {
     @Override
     public String assigneeFullName() {
         return assigneeFullName;
+    }
+
+    @Override
+    public String assignedTeamKey() {
+        return assignedTeamKey;
+    }
+
+    @Override
+    public String assignedTeamTitle() {
+        return assignedTeamTitle;
     }
 
     @Override

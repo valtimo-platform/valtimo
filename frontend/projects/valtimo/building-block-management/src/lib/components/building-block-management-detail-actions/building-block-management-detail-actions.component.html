@@ -25,22 +25,18 @@
   </div>
 
   <div class="building-block-buttons">
-    <ng-template #trigger>
-      <button cdsButton="tertiary">
+    <v-overflow-menu
+      class="overflow-button"
+      [menuWidth]="250"
+      placement="bottom-end"
+    >
+      <button overflowTrigger cdsButton="tertiary">
         {{ 'buildingBlockManagement.actions.more' | translate }}
         <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
       </button>
-    </ng-template>
 
-    <cds-overflow-menu
-      [customTrigger]="trigger"
-      class="overflow-button"
-      valtimoCdsOverflowButton
-      [width]="250"
-      [offset]="{y: 48, x: 37}"
-    >
-      <cds-overflow-menu-option
-        [id]="'exportBuildingBlock'"
+      <v-overflow-menu-option
+        optionId="exportBuildingBlock"
         (selected)="export()"
         [disabled]="(actionInProgress$ | async) || (exporting$ | async)"
       >
@@ -48,24 +44,24 @@
           'buildingBlockManagement.overflowMenu.export'
             | translate: {value: buildingBlockName$ | async}
         }}
-      </cds-overflow-menu-option>
+      </v-overflow-menu-option>
 
-      <cds-overflow-menu-option
+      <v-overflow-menu-option
         *ngIf="!obs.isFinal"
         [disabled]="actionInProgress$ | async"
         (selected)="finalizeDraft()"
       >
         {{ 'buildingBlockManagement.actions.makeFinal' | translate }}
-      </cds-overflow-menu-option>
+      </v-overflow-menu-option>
 
-      <cds-overflow-menu-option
+      <v-overflow-menu-option
         *ngIf="obs.isFinal"
         [disabled]="actionInProgress$ | async"
         (selected)="openDraftModal()"
       >
         {{ 'buildingBlockManagement.actions.createDraft' | translate }}
-      </cds-overflow-menu-option>
-    </cds-overflow-menu>
+      </v-overflow-menu-option>
+    </v-overflow-menu>
   </div>
 </div>
 

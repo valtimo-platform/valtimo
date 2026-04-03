@@ -43,7 +43,8 @@ import {
 } from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService, Direction} from '@valtimo/shared';
-import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {OverflowMenuComponent} from '@valtimo/components';
 import {
   BehaviorSubject,
   combineLatest,
@@ -87,7 +88,7 @@ import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-moda
     IconModule,
     TranslateModule,
     DocumentenApiFilterComponent,
-    DialogModule,
+    OverflowMenuComponent,
     ConfirmationModalModule,
     DocumentenApiPreviewModalComponent,
   ],

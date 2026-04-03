@@ -101,19 +101,16 @@
 </ng-template>
 
 <ng-template #actionsMenuTemplate let-data="data">
-  <cds-overflow-menu
+  <v-overflow-menu
     *ngIf="showActionItems"
     [open]="currentOpenActionId === data.item"
     (openChange)="handleActionOpenChange(data.item, $event)"
-    [flip]="true"
-    [offset]="{x: 0, y: 50}"
-    [autoAlign]="true"
-    placement="bottom"
-    role="menu"
+    placement="bottom-end"
     (click)="$event.stopPropagation()"
   >
+    <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
     @for (action of data.actions; track action.label) {
-      <cds-overflow-menu-option
+      <v-overflow-menu-option
         [disabled]="action | actionItemDisabled: data.item | async"
         [type]="action.type"
         (selected)="action.callback(data.item)"
@@ -121,9 +118,9 @@
         <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
         {{ action.label | translate }}
-      </cds-overflow-menu-option>
+      </v-overflow-menu-option>
     }
-  </cds-overflow-menu>
+  </v-overflow-menu>
 </ng-template>
 
 <ng-template #rowDisabled let-data="data">

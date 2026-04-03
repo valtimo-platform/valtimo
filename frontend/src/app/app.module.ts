@@ -125,6 +125,7 @@ import {CaseManagementModule} from '@valtimo/case-management';
 import {IkoModule} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
@@ -212,6 +213,7 @@ export function tabsFactory() {
     WidgetModule,
     IkoModule,
     BuildingBlockManagementModule,
+    TeamsModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [

@@ -159,13 +159,14 @@
           <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
 
-        <cds-overflow-menu class="overflow-button">
-          <cds-overflow-menu-option
+        <v-overflow-menu class="overflow-button" placement="bottom-end">
+          <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+          <v-overflow-menu-option
             [disabled]="actionsObs.loading"
             (selected)="export(actionsObs.isReadOnlyProcess)"
             >{{ 'interface.export' | translate }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
+          </v-overflow-menu-option>
+        </v-overflow-menu>
       </div>
     </div>
   </ng-template>

@@ -41,10 +41,13 @@ import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
 import com.ritense.valtimo.contract.utils.TestUtil;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -270,6 +273,28 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].firstName").value("John"))
             .andExpect(jsonPath("$[0].lastName").value("Doe"));
+    }
+
+    @Test
+    void shouldGetCandidateTeams() throws Exception {
+        final var json = "{\"firstName\": \"John\"}";
+        final var content = new JsonDocumentContent(json);
+        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+
+        var teams = List.<Team>of(new Team() {
+            @Override public String getKey() { return "team-1"; }
+            @Override public String getTitle() { return "Team One"; }
+        });
+        when(documentService.getCandidateTeams(any(), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(teams, Pageable.ofSize(20), teams.size()));
+
+        mockMvc.perform(get("/api/v1/document/{document-id}/candidate-team", document.id())
+                .accept(APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)))
+            .andExpect(jsonPath("$.content[0].key").value("team-1"))
+            .andExpect(jsonPath("$.content[0].title").value("Team One"));
     }
 
 }
