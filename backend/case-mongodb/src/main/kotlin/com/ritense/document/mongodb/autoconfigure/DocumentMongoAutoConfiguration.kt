@@ -26,6 +26,7 @@ import com.ritense.document.mongodb.authorization.mapper.JsonSchemaDocumentDefin
 import com.ritense.document.mongodb.converter.DocumentToJsonNodeReadConverter
 import com.ritense.document.mongodb.converter.DocumentToObjectNodeReadConverter
 import com.ritense.document.mongodb.converter.JsonNodeWriteConverter
+import com.ritense.document.mongodb.domain.JsonSchemaDocumentDocument
 import com.ritense.document.mongodb.handler.DocumentMongoEventHandler
 import com.ritense.document.mongodb.repository.JsonSchemaDocumentMongoRepository
 import com.ritense.document.mongodb.service.DocumentMongoBackfillService
@@ -39,6 +40,7 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.SearchFieldService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -46,8 +48,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions
+import org.springframework.data.mongodb.core.index.Index
+import org.springframework.data.mongodb.core.index.TextIndexDefinition
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 
 @AutoConfiguration
@@ -159,4 +164,54 @@ class DocumentMongoAutoConfiguration {
         backfillService: DocumentMongoBackfillService,
     ): DocumentMongoBackfillResource =
         DocumentMongoBackfillResource(backfillService)
+
+    /**
+     * Creates the indexes for the [JsonSchemaDocumentDocument] collection on startup.
+     *
+     * This is done programmatically rather than relying solely on [@CompoundIndex] annotations,
+     * because [spring.data.mongodb.auto-index-creation] is typically disabled in production.
+     * [MongoTemplate.indexOps] + [ensureIndex] is idempotent: it creates missing indexes and
+     * is a no-op when the index already exists with the same definition.
+     */
+    @Bean
+    fun documentMongoIndexInitializer(mongoTemplate: MongoTemplate): ApplicationRunner = ApplicationRunner {
+        val ops = mongoTemplate.indexOps(JsonSchemaDocumentDocument::class.java)
+
+        ops.ensureIndex(
+            Index()
+                .on("definitionId.blueprintId.blueprintType", Sort.Direction.ASC)
+                .on("definitionId.name", Sort.Direction.ASC)
+                .on("createdOn", Sort.Direction.DESC)
+                .named("idx_type_name_created"),
+        )
+        ops.ensureIndex(
+            Index()
+                .on("definitionId.blueprintId.blueprintType", Sort.Direction.ASC)
+                .on("definitionId.name", Sort.Direction.ASC)
+                .on("internalStatus", Sort.Direction.ASC)
+                .on("createdOn", Sort.Direction.DESC)
+                .named("idx_type_name_status_created"),
+        )
+        ops.ensureIndex(
+            Index()
+                .on("definitionId.blueprintId.blueprintType", Sort.Direction.ASC)
+                .on("definitionId.name", Sort.Direction.ASC)
+                .on("assigneeId", Sort.Direction.ASC)
+                .on("createdOn", Sort.Direction.DESC)
+                .named("idx_type_name_assignee_created"),
+        )
+        ops.ensureIndex(
+            Index()
+                .on("definitionId.blueprintId.blueprintType", Sort.Direction.ASC)
+                .on("definitionId.name", Sort.Direction.ASC)
+                .on("sequence", Sort.Direction.ASC)
+                .named("idx_type_name_sequence"),
+        )
+        ops.ensureIndex(
+            TextIndexDefinition.builder()
+                .onField("contentText")
+                .named("idx_content_text")
+                .build(),
+        )
+    }
 }

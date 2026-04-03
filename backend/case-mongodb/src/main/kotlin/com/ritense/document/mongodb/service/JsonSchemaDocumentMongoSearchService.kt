@@ -51,6 +51,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.TextCriteria
 import java.util.regex.Pattern
 
 class JsonSchemaDocumentMongoSearchService(
@@ -90,7 +91,7 @@ class JsonSchemaDocumentMongoSearchService(
             parts.add(Criteria.where("content.${sc.path}").`is`(sc.value))
         }
 
-        return executeSearch(Criteria().andOperator(*parts.toTypedArray()), pageable)
+        return executeSearch(Criteria().andOperator(*parts.toTypedArray()), null, pageable)
     }
 
     override fun search(
@@ -162,13 +163,15 @@ class JsonSchemaDocumentMongoSearchService(
         advancedSearchRequest: AdvancedSearchRequest
     ): Long {
         SearchRequestValidator.validate(advancedSearchRequest)
-        val combined = buildCombinedCriteria(
+        val (criteria, textCriteria) = buildCombinedCriteria(
             documentDefinitionName,
             blueprintType,
             advancedSearchRequest,
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
-        return mongoTemplate.count(Query(combined), JsonSchemaDocumentDocument::class.java)
+        val query = Query(criteria)
+        textCriteria?.let { query.addCriteria(it) }
+        return mongoTemplate.count(query, JsonSchemaDocumentDocument::class.java)
     }
 
     private fun search(
@@ -179,8 +182,8 @@ class JsonSchemaDocumentMongoSearchService(
         action: Action<JsonSchemaDocument>
     ): Page<JsonSchemaDocument> {
         SearchRequestValidator.validate(advancedSearchRequest)
-        val combined = buildCombinedCriteria(documentDefinitionName, blueprintType, advancedSearchRequest, action)
-        return executeSearch(combined, pageable)
+        val (criteria, textCriteria) = buildCombinedCriteria(documentDefinitionName, blueprintType, advancedSearchRequest, action)
+        return executeSearch(criteria, textCriteria, pageable)
     }
 
     private fun buildCombinedCriteria(
@@ -188,7 +191,7 @@ class JsonSchemaDocumentMongoSearchService(
         blueprintType: BlueprintType,
         searchRequest: AdvancedSearchRequest,
         action: Action<JsonSchemaDocument>
-    ): Criteria {
+    ): Pair<Criteria, TextCriteria?> {
         val parts = mutableListOf<Criteria>()
 
         parts.add(buildAuthCriteria(action))
@@ -210,15 +213,15 @@ class JsonSchemaDocumentMongoSearchService(
             parts.add(Criteria.where("caseTags.key").`in`(searchRequest.caseTagsFilter))
         }
 
-        if (!searchRequest.globalSearchFilter.isNullOrEmpty()) {
-            parts.add(buildGlobalSearchCriteria(searchRequest.globalSearchFilter))
-        }
-
         if (!searchRequest.otherFilters.isNullOrEmpty()) {
             parts.add(buildOtherFiltersCriteria(searchRequest.otherFilters, searchRequest.searchOperator))
         }
 
-        return Criteria().andOperator(*parts.toTypedArray())
+        val textCriteria = searchRequest.globalSearchFilter
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { TextCriteria.forDefaultLanguage().matching(it.trim()) }
+
+        return Criteria().andOperator(*parts.toTypedArray()) to textCriteria
     }
 
     private fun buildAuthCriteria(action: Action<JsonSchemaDocument>): Criteria {
@@ -290,9 +293,6 @@ class JsonSchemaDocumentMongoSearchService(
         }
     }
 
-    private fun buildGlobalSearchCriteria(filter: String): Criteria =
-        Criteria.where("contentText").regex(".*${Pattern.quote(filter.trim())}.*", "i")
-
     private fun applyEqualCriteria(criteria: Criteria, value: Any?): Criteria {
         return if (value is String) {
             criteria.regex("^${Pattern.quote(value.trim())}$", "i")
@@ -308,16 +308,19 @@ class JsonSchemaDocumentMongoSearchService(
         return criteria.regex(".*${Pattern.quote(value.trim())}.*", "i")
     }
 
-    private fun executeSearch(combined: Criteria, pageable: Pageable): Page<JsonSchemaDocument> {
+    private fun executeSearch(combined: Criteria, textCriteria: TextCriteria?, pageable: Pageable): Page<JsonSchemaDocument> {
         val translatedSort = translateSort(pageable.sort)
         val dataQuery = Query(combined).with(translatedSort)
+        textCriteria?.let { dataQuery.addCriteria(it) }
         if (pageable.isPaged) {
-            dataQuery.skip(pageable.offset).limit(pageable.pageSize)
+            dataQuery.with(pageable)
         }
 
-        val total = mongoTemplate.count(Query(combined), JsonSchemaDocumentDocument::class.java)
-        val ids = mongoTemplate.find(dataQuery, JsonSchemaDocumentDocument::class.java).map { it.id }
+        val countQuery = Query(combined)
+        textCriteria?.let { countQuery.addCriteria(it) }
+        val total = mongoTemplate.count(countQuery, JsonSchemaDocumentDocument::class.java)
 
+        val ids = mongoTemplate.find(dataQuery, JsonSchemaDocumentDocument::class.java).map { it.id }
         val docIds = ids.map { JsonSchemaDocumentId.existingId(it) }
         val entities = runWithoutAuthorization { jpaRepository.findAllById(docIds) }
         val entityMap = entities.associateBy { it.id().toString() }

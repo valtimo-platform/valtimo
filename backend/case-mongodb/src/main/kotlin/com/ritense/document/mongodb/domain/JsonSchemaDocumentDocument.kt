@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.web.rest.dto.CaseTagResponseDto
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.CompoundIndex
+import org.springframework.data.mongodb.core.index.CompoundIndexes
+import org.springframework.data.mongodb.core.index.TextIndexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
@@ -32,8 +35,36 @@ import java.time.LocalDateTime
  * - [caseTags] matches the `caseTags()` getter → [CaseTagResponseDto] list
  * - [relations] matches the `relations()` getter → stored as [Any] (can be array or object) to avoid JPA entity coupling
  * - [relatedFiles] matches the `relatedFiles()` getter → stored as [Any] (RelatedFile is an interface)
+ *
+ * Indexes follow the ESR rule (Equality → Sort → Range):
+ * - The two equality fields that appear in every query are blueprintType + definitionName.
+ * - Variants cover the optional equality filters (status, assigneeId) with createdOn as the sort tail.
+ * - A separate index covers sequence-based sorting.
+ * - A MongoDB text index on [contentText] supports full-text / global search.
  */
 @Document(collection = "json_schema_document")
+@CompoundIndexes(
+    // Base index: no optional filters, sort by creation date (most common case-list query)
+    CompoundIndex(
+        name = "idx_type_name_created",
+        def = "{'definitionId.blueprintId.blueprintType': 1, 'definitionId.name': 1, 'createdOn': -1}",
+    ),
+    // Status filter + sort by creation date
+    CompoundIndex(
+        name = "idx_type_name_status_created",
+        def = "{'definitionId.blueprintId.blueprintType': 1, 'definitionId.name': 1, 'internalStatus': 1, 'createdOn': -1}",
+    ),
+    // Assignee filter + sort by creation date
+    CompoundIndex(
+        name = "idx_type_name_assignee_created",
+        def = "{'definitionId.blueprintId.blueprintType': 1, 'definitionId.name': 1, 'assigneeId': 1, 'createdOn': -1}",
+    ),
+    // Sequence-based sort / filter
+    CompoundIndex(
+        name = "idx_type_name_sequence",
+        def = "{'definitionId.blueprintId.blueprintType': 1, 'definitionId.name': 1, 'sequence': 1}",
+    ),
+)
 data class JsonSchemaDocumentDocument(
     @Id val id: String,
     val content: ObjectNode?,
@@ -50,5 +81,5 @@ data class JsonSchemaDocumentDocument(
     val relations: Any?,
     val relatedFiles: Any?,
     val retentionDate: LocalDateTime?,
-    val contentText: String? = null,
+    @TextIndexed val contentText: String? = null,
 )
