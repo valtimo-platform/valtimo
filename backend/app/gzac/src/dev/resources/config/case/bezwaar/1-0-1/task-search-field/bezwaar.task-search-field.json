@@ -1,0 +1,22 @@
+[
+    {
+        "key": "assignee",
+        "title": "Assignee",
+        "path": "task:assignee",
+        "dataType": "text",
+        "fieldType": "single",
+        "matchType": "like",
+        "dropdownDataProvider": null,
+        "required": false
+    },
+    {
+        "key": "team",
+        "title": "Team",
+        "path": "task:assignedTeamTitle",
+        "dataType": "text",
+        "fieldType": "single",
+        "matchType": "like",
+        "dropdownDataProvider": null,
+        "required": false
+    }
+]

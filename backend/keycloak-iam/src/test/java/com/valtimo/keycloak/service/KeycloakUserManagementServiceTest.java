@@ -81,7 +81,13 @@ class KeycloakUserManagementServiceTest {
         cacheManager = new ConcurrentMapCacheManager();
         cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
         authorizationService = mock(AuthorizationService.class);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache, authorizationService);
+        userManagementService = new KeycloakUserManagementService(
+            keycloakService,
+            "clientName",
+            cacheManagerUserCache,
+            authorizationService,
+            mock()
+        );
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));

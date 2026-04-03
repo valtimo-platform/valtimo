@@ -144,6 +144,12 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Column(name = "assignee_full_name", columnDefinition = "varchar(255)")
     private String assigneeFullName;
 
+    @Column(name = "assigned_team_key", columnDefinition = "varchar(255)")
+    private String assignedTeamKey;
+
+    @Column(name = "assigned_team_title", columnDefinition = "varchar(255)")
+    private String assignedTeamTitle;
+
     @Type(JsonType.class)
     @Column(name = "document_relations", columnDefinition = "json")
     private Set<JsonSchemaDocumentRelation> documentRelations = new HashSet<>();
@@ -333,7 +339,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         this.assigneeFullName = fullName;
     }
 
-    public void unassign() {
+    public void unassignUser() {
         this.assigneeId = null;
         this.assigneeFullName = null;
     }
@@ -427,6 +433,27 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Override
     public String assigneeFullName() {
         return assigneeFullName;
+    }
+
+    @Override
+    public String assignedTeamKey() {
+        return assignedTeamKey;
+    }
+
+    @Override
+    public String assignedTeamTitle() {
+        return assignedTeamTitle;
+    }
+
+    public void setAssignedTeamKey(String assignedTeamKey) {
+        this.assignedTeamKey = assignedTeamKey;
+        if (assignedTeamKey == null) {
+            this.assignedTeamTitle = null;
+        }
+    }
+
+    public void setAssignedTeamTitle(String assignedTeamTitle) {
+        this.assignedTeamTitle = assignedTeamTitle;
     }
 
     @Override

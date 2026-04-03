@@ -80,7 +80,7 @@ interface SearchFieldColumnView {
 
 type SearchOperator = 'AND' | 'OR';
 
-type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL';
+type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL' | 'TEAM';
 
 interface SearchFilter {
   key: string;
