@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@
     backButtonEnabled: backButtonEnabled$ | async,
     isStepAfterUpload: isStepAfterUpload$ | async,
     nextButtonDisabled: nextButtonDisabled$ | async,
-    notificationObj: notificationObj$ | async,
-    showCheckboxError: showCheckboxError$ | async,
     showCloseButton: showCloseButton$ | async,
     uploadStatus: uploadStatus$ | async,
+    preview: preview$ | async,
+    importWarning: importWarning$ | async,
   } as obs"
   valtimoCdsModal
   [open]="open"
@@ -70,28 +70,93 @@
         class="valtimo-definition-uploader__file-uploader"
       >
       </cds-file-uploader>
+    </form>
 
-      <cds-inline-notification
-        data-test-id="uploadWarningNotification"
-        [notificationObj]="obs.notificationObj"
-      ></cds-inline-notification>
+    <form
+      *ngSwitchCase="UPLOAD_STEP.CONFIGURE"
+      [formGroup]="configureForm"
+      class="valtimo-definition-uploader__configure"
+    >
+      <cds-label>
+        {{ 'caseManagement.createDefinition.name' | translate }}
+        <input
+          formControlName="name"
+          cdsText
+          [attr.data-test-id]="testIds.nameInput"
+        />
+      </cds-label>
 
-      <div class="valtimo-uploader__checkbox">
-        <cds-checkbox
-          data-test-id="uploadWarningCheckbox"
-          [attr.data-test-id]="testIds.uploadWarningCheckbox"
-          [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
-          (checkedChange)="onCheckedChange($event)"
+      <valtimo-auto-key-input
+        [mode]="'add'"
+        [sourceText]="nameControl.value"
+        formControlName="caseDefinitionKey"
+        labelTranslationKey="caseManagement.createDefinition.key"
+      >
+      </valtimo-auto-key-input>
+
+      <div class="valtimo-definition-uploader__version-label">
+        <label class="cds--label">
+          {{ 'caseManagement.createDefinition.version' | translate }}
+        </label>
+        <div
+          class="valtimo-definition-uploader__version-field"
+          [attr.data-test-id]="testIds.versionTag"
         >
-          {{ 'caseManagement.importDefinition.checkbox.message' | translate }}
-        </cds-checkbox>
-
-        <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
-          <svg cdsIcon="warning--filled" size="16"></svg>
-
-          {{ 'caseManagement.importDefinition.checkbox.error' | translate }}
+          <cds-tag class="cds-tag--no-margin" [type]="obs.preview?.isFinal ? 'green' : 'red'">
+            {{
+              (obs.preview?.isFinal
+                ? 'caseManagement.importDefinition.configure.finalTag'
+                : 'caseManagement.importDefinition.configure.draftTag'
+              ) | translate
+            }}
+          </cds-tag>
+          <span>{{ obs.preview?.versionTag }}</span>
         </div>
       </div>
+
+      <ng-container [ngSwitch]="obs.importWarning">
+        <cds-inline-notification
+          *ngSwitchCase="IMPORT_WARNING.NEW_VERSION"
+          [notificationObj]="{
+            type: 'info',
+            title: ('caseManagement.importDefinition.configure.newVersionWarning.title' | translate),
+            message: ('caseManagement.importDefinition.configure.newVersionWarning.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+
+        <ng-container *ngSwitchCase="IMPORT_WARNING.EXISTING_DRAFT">
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'warning',
+              title: ('caseManagement.importDefinition.configure.existingDraftWarning.title' | translate),
+              message: ('caseManagement.importDefinition.configure.existingDraftWarning.message' | translate),
+              showClose: false,
+              lowContrast: true
+            }"
+          ></cds-inline-notification>
+          <cds-checkbox
+            [attr.data-test-id]="testIds.overrideCheckbox"
+            (checkedChange)="overrideConfirmed$.next($event)"
+          >
+            {{
+              'caseManagement.importDefinition.configure.overrideConfirm' | translate
+            }}
+          </cds-checkbox>
+        </ng-container>
+
+        <cds-inline-notification
+          *ngSwitchCase="IMPORT_WARNING.EXISTING_FINAL"
+          [notificationObj]="{
+            type: 'error',
+            title: ('caseManagement.importDefinition.configure.existingFinalWarning.title' | translate),
+            message: ('caseManagement.importDefinition.configure.existingFinalWarning.message' | translate),
+            showClose: false,
+            lowContrast: true
+          }"
+        ></cds-inline-notification>
+      </ng-container>
     </form>
 
     <cds-progress-bar
@@ -134,7 +199,7 @@
         (click)="onNextClick(obs.activeStep)"
       >
         {{
-          (obs.activeStep === UPLOAD_STEP.FILE_SELECT
+          (obs.activeStep === UPLOAD_STEP.CONFIGURE
             ? 'caseManagement.importDefinition.startUpload'
             : 'interface.next'
           ) | translate

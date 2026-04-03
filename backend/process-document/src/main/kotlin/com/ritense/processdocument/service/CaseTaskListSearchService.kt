@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,13 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper
 import com.ritense.valtimo.service.OperatonTaskService.TaskFilter
+import com.ritense.valtimo.service.TaskBusinessKeyResolver
+import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.AbstractQuery
@@ -100,7 +101,7 @@ class CaseTaskListSearchService(
     private val searchFieldV2Service: SearchFieldV2Service,
     private val queryDialectHelper: QueryDialectHelper,
     private val userTaskOpenedStatusService: UserTaskOpenedStatusService,
-    private val caseTaskContributors: List<CaseTaskContributor> = emptyList()
+    private val taskBusinessKeyResolvers: List<TaskBusinessKeyResolver> = emptyList()
 ) {
     private val CONTENT = "content"
     private val INTERNAL_STATUS = "internalStatus"
@@ -198,7 +199,6 @@ class CaseTaskListSearchService(
             )
         )
 
-        // TODO: look into ability to re-use where predicate in list and count query. improves performance
         query.where(constructWhere(cb, query, taskRoot, documentRoot, caseDefinitionName, advancedSearchRequest))
 
         query.orderBy(constructOrderBy(query, cb, taskRoot, documentRoot, pageable.sort))
@@ -233,7 +233,6 @@ class CaseTaskListSearchService(
 
         val assignmentFilterPredicate: Predicate = constructAssignmentFilter(advancedSearchRequest.assigneeFilter, cb, taskRoot)
 
-        // TODO: look into options to improve performance as with complex rules this takes quite some time to finish
         val searchRequestPredicate: Array<Predicate> = constructSearchCriteriaFilter(advancedSearchRequest, cb, query, taskRoot, documentRoot)
 
         val caseDefPredicate = cb.equal(
@@ -241,24 +240,25 @@ class CaseTaskListSearchService(
             caseDefinitionName
         )
 
-        val directMatch = cb.equal(
-            taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey"),
-            queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id"))
-        )
+        val businessKeyPath = taskRoot.get<OperatonExecution>("processInstance").get<String>("businessKey")
+        val documentId = documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
 
-        val contributorPredicates = caseTaskContributors.mapNotNull { contributor ->
-            contributor.createTaskInclusionPredicate(cb, query, taskRoot, documentRoot, caseDefinitionName)
+        val resolverExpressions = taskBusinessKeyResolvers.mapNotNull { resolver ->
+            resolver.resolveCaseDocumentId(cb, query, businessKeyPath)
         }
 
-        val taskMatchPredicate = if (contributorPredicates.isEmpty()) {
-            directMatch
+        val taskDocumentMatch = if (resolverExpressions.isEmpty()) {
+            cb.equal(businessKeyPath, queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id")))
         } else {
-            cb.or(directMatch, *contributorPredicates.toTypedArray())
+            val coalesce = cb.coalesce<UUID>()
+            resolverExpressions.forEach { coalesce.value(it) }
+            coalesce.value(queryDialectHelper.stringToUuid(cb, businessKeyPath))
+            cb.equal(coalesce, documentId)
         }
 
         val where = cb.and(
             caseDefPredicate,
-            taskMatchPredicate,
+            taskDocumentMatch,
             assignmentFilterPredicate,
             authorizationPredicate,
             *searchRequestPredicate

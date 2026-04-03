@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.iko.domain
+package com.ritense.case.web.rest.dto
 
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.FetchType.EAGER
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-
-@Embeddable
-data class IkoSearchActionId(
-
-    @Column(name = "`key`", updatable = false, nullable = false)
+data class CaseDefinitionImportPreviewResponse(
     val key: String,
-
-    @ManyToOne(fetch = EAGER)
-    @JoinColumn(name = "iko_view_key", referencedColumnName = "key")
-    val ikoView: IkoView,
+    val name: String,
+    val versionTag: String,
+    val isFinal: Boolean,
 )

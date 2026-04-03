@@ -19,11 +19,13 @@ package com.ritense.case.web.rest
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
+import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionConfigurationIssueDto
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
+import com.ritense.case.web.rest.dto.CaseDefinitionImportPreviewResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
@@ -78,6 +80,7 @@ class CaseDefinitionResource(
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
+    private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
 ) {
 
     @RunWithoutAuthorization
@@ -373,14 +376,35 @@ class CaseDefinitionResource(
             .body(baos.toByteArray())
     }
 
+    @PostMapping("/management/v1/case/import/preview")
+    @RunWithoutAuthorization
+    fun importPreview(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<CaseDefinitionImportPreviewResponse> {
+        return try {
+            val preview = caseDefinitionImportPreviewService.preview(file.inputStream)
+            ResponseEntity.ok(preview)
+        } catch (exception: ImportServiceException) {
+            logger.info(exception) { "Import preview failed" }
+            ResponseEntity.badRequest().build()
+        }
+    }
+
     @PostMapping("/management/v1/case/import")
     @RunWithoutAuthorization
     fun import(
-        @RequestParam("file") file: MultipartFile
+        @RequestParam("file") file: MultipartFile,
+        @RequestParam("key", required = false) key: String?,
+        @RequestParam("name", required = false) name: String?,
     ): ResponseEntity<CaseDefinitionImportResponse> {
         return try {
             val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-            val caseDefinitionId = importService.import(file.inputStream, skipImportOfCaseDefinitions)
+            val caseDefinitionId = importService.import(
+                file.inputStream,
+                skipImportOfCaseDefinitions,
+                key,
+                name,
+            )
             service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
         } catch (exception: ImportServiceException) {

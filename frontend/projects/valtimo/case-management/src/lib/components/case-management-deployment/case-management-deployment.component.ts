@@ -195,6 +195,20 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
       })
     );
 
+  public readonly importOriginEntries$: Observable<{key: string; value: string}[]> =
+    this.caseDefinition$.pipe(
+      map(caseDefinition => {
+        const entries: {key: string; value: string}[] = [];
+        if (caseDefinition.originalName)
+          entries.push({key: 'originalName', value: caseDefinition.originalName});
+        if (caseDefinition.originalKey)
+          entries.push({key: 'originalKey', value: caseDefinition.originalKey});
+        if (caseDefinition.originalVersionTag)
+          entries.push({key: 'originalVersionTag', value: caseDefinition.originalVersionTag});
+        return entries;
+      })
+    );
+
   public readonly releaseInformationDataEntries$: Observable<
     {key: string; value: string | Date}[]
   > = this.caseDefinition$.pipe(
