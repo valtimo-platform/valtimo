@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.repository.ExpressionOperator
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -80,6 +81,18 @@ class ConditionTest {
         assertThat(value).isNotNull
         assertThat(value.value).isEqualTo("69")
         assertThat(value.value).isNotEqualTo(69)
+    }
+
+    @Test
+    fun `should allow instance method calls like plusMinutes on LocalDateTime`() {
+        val condition = Condition(
+            path = "/xyz",
+            operator = ExpressionOperator.LESS_THAN,
+            value = "\${localDateTimeNow.plusMinutes(1)}" as Comparable<Any>
+        )
+
+        val result = condition.isValid { LocalDateTime.now() }
+        assertThat(result).isTrue()
     }
 
     @Test
