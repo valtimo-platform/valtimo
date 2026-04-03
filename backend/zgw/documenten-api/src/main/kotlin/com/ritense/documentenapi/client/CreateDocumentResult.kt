@@ -16,14 +16,17 @@
 
 package com.ritense.documentenapi.client
 
-import java.time.LocalDateTime
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.ritense.valtimo.contract.json.Iso8601Deserializer
+import java.time.OffsetDateTime
 
 class CreateDocumentResult(
     val url: String,
     val auteur: String,
     val bestandsnaam: String,
     val bestandsomvang: Long,
-    val beginRegistratie: LocalDateTime,
+    @JsonDeserialize(using = Iso8601Deserializer::class)
+    val beginRegistratie: OffsetDateTime,
     val bestandsdelen: List<Bestandsdeel>,
     val lock: String?
 ) {

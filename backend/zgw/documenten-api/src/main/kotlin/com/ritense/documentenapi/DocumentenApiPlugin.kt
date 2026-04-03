@@ -416,7 +416,7 @@ class DocumentenApiPlugin(
             documentCreateResult.auteur,
             documentCreateResult.bestandsnaam,
             documentCreateResult.bestandsomvang,
-            documentCreateResult.beginRegistratie
+            documentCreateResult.beginRegistratie.toLocalDateTime()
         )
         applicationEventPublisher.publishEvent(event)
         execution.setVariable(storedDocumentKey, documentCreateResult.url)
