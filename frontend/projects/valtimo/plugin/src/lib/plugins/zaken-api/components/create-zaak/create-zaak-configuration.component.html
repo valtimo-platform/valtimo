@@ -94,18 +94,21 @@
 
       <div class="property-row">
         <div class="property-input-col">
-          <button
-            cdsButton="primary"
-            class="add-button"
-            [size]="'md'"
-            [cdsOverflowMenu]="addCasePropertyList"
-            [customPane]="true"
-            placement="bottom,top"
-          >
-            {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
+          <v-overflow-menu placement="bottom-start" class="add-button">
+            <button overflowTrigger cdsButton="primary" [size]="'md'">
+              {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
 
-            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-          </button>
+              <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+            </button>
+
+            @for (propertyOption of propertyOptions; track propertyOption) {
+              @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
+                <v-overflow-menu-option (selected)="addProperty(propertyOption)">
+                  {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+                </v-overflow-menu-option>
+              }
+            }
+          </v-overflow-menu>
         </div>
       </div>
 
@@ -174,12 +177,3 @@
   }
 </ng-container>
 
-<ng-template #addCasePropertyList>
-  @for (propertyOption of propertyOptions; track propertyOption) {
-    @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
-      <cds-overflow-menu-option (click)="addProperty(propertyOption)">
-        {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
-      </cds-overflow-menu-option>
-    }
-  }
-</ng-template>

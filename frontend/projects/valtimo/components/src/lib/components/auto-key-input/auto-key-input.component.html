@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@
       "
       [readOnly]="!obs.editingKey || obs.mode === 'edit'"
       [invalid]="!!obs.idError"
+      [attr.data-test-id]="testIds.input"
       (input)="onInputChange($event)"
       (blur)="onTouched()"
     />
@@ -44,6 +45,7 @@
     <cds-icon-button
       *ngIf="(obs.mode === 'add' || obs.mode === 'duplicate') && !obs.editingKey"
       [disabled]="$disabled()"
+      [attr.data-test-id]="testIds.editButton"
       (click)="enableKeyEditing()"
       kind="secondary"
     >

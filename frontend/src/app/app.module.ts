@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- import {BrowserModule} from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
@@ -86,6 +86,8 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  DocumentenApiPreviewPluginModule,
+  documentenApiPreviewPluginSpecification,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -123,6 +125,7 @@ import {CaseManagementModule} from '@valtimo/case-management';
 import {IkoModule, registerIkoSearchFormioComponent} from '@valtimo/iko';
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
+import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
 export function tabsFactory() {
@@ -181,6 +184,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
+    DocumentenApiPreviewPluginModule,
     KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
@@ -209,6 +213,7 @@ export function tabsFactory() {
     WidgetModule,
     IkoModule,
     BuildingBlockManagementModule,
+    TeamsModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -219,6 +224,7 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
+        documentenApiPreviewPluginSpecification,
         klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,

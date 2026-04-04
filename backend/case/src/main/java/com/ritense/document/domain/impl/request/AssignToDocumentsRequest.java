@@ -28,15 +28,20 @@ public class AssignToDocumentsRequest {
     private final List<UUID> documentIds;
 
     @JsonProperty
-    @NotNull
     private final String assigneeId;
 
+    @JsonProperty
+    private final String assignedTeamKey;
+
     @JsonCreator
-    public AssignToDocumentsRequest(@JsonProperty(value = "documentIds", required = true) List<UUID> documentIds,
-                                    @JsonProperty(value = "assigneeId", required = true) String assigneeId
+    public AssignToDocumentsRequest(
+        @JsonProperty(value = "documentIds", required = true) List<UUID> documentIds,
+        @JsonProperty(value = "assigneeId") String assigneeId,
+        @JsonProperty(value = "assignedTeamKey") String assignedTeamKey
     ) {
         this.documentIds = documentIds;
         this.assigneeId = assigneeId;
+        this.assignedTeamKey = assignedTeamKey;
     }
 
     public List<UUID> getDocumentIds() {
@@ -45,5 +50,9 @@ public class AssignToDocumentsRequest {
 
     public String getAssigneeId() {
         return assigneeId;
+    }
+
+    public String getAssignedTeamKey() {
+        return assignedTeamKey;
     }
 }

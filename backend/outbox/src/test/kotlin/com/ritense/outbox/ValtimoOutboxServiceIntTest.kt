@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,20 @@ class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should batch multiple deferred messages in a single transaction for read-only callers`() {
+        TransactionTemplate(transactionManager).apply {
+            isReadOnly = true
+        }.executeWithoutResult {
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event1")))
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event2")))
+            outboxService.send(objectMapper.writeValueAsString(OrderCreatedEvent("event3")))
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).hasSize(3)
+    }
+
+    @Test
     fun `should throw error when no transaction exists`() {
         val event = OrderCreatedEvent("textBook")
 
@@ -122,6 +136,28 @@ class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
         assertThat(result["data"]["userId"].textValue()).isEqualTo("user@ritense.com")
         val roles = result["data"]["roles"].toList().map { it.textValue() }
         assertThat(roles).containsExactlyInAnyOrder("ADMIN", "USER")
+    }
+
+    @Test
+    @Transactional
+    fun `should skip message when outbox is suppressed`() {
+        OutboxContext.runWithSuppressedOutbox {
+            outboxService.send { TestEvent() }
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).isEmpty()
+    }
+
+    @Test
+    @Transactional
+    fun `should not skip message when outbox suppress is false`() {
+        OutboxContext.runWithSuppressedOutbox(suppress = false) {
+            outboxService.send { TestEvent() }
+        }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages).hasSize(1)
     }
 
     data class OrderCreatedEvent(

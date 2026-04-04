@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.task.domain.TaskTeam
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.KEY
 import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.BUSINESS_KEY
@@ -143,6 +144,19 @@ class OperatonTaskSpecificationHelper {
 
         @JvmStatic
         fun byActive() = bySuspensionState(SuspensionState.ACTIVE.stateCode)
+
+        @JvmStatic
+        fun byTeamKeys(teamKeys: Collection<String>) = Specification<OperatonTask> { root, query, cb ->
+            if (teamKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                val subquery = query!!.subquery(String::class.java)
+                val taskTeamRoot = subquery.from(TaskTeam::class.java)
+                subquery.select(taskTeamRoot.get("taskId"))
+                subquery.where(taskTeamRoot.get<Any>("teamKey").`in`(teamKeys))
+                root.get<Any>(ID).`in`(subquery)
+            }
+        }
 
     }
 

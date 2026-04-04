@@ -28,4 +28,5 @@ interface ObjectManagementInfo {
     val showInDataMenu: Boolean
     val formDefinitionView: String?
     val formDefinitionEdit: String?
+    val suppressOutbox: Boolean
 }

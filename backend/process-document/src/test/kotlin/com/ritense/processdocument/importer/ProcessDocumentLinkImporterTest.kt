@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package com.ritense.processdocument.importer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
@@ -26,8 +24,8 @@ import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -41,12 +39,10 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
 class ProcessDocumentLinkImporterTest(
     @Mock private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-    @Mock private val documentDefinitionService: DocumentDefinitionService,
     @Mock private val processService: OperatonProcessService
 ) {
     private lateinit var processDocumentLinkImporter: ProcessDocumentLinkImporter
@@ -57,7 +53,6 @@ class ProcessDocumentLinkImporterTest(
 
         processDocumentLinkImporter = ProcessDocumentLinkImporter(
             processDefinitionCaseDefinitionService,
-            documentDefinitionService,
             ObjectMapper(),
             processService
         )
@@ -96,10 +91,6 @@ class ProcessDocumentLinkImporterTest(
             ]
         """.trimIndent()
 
-        val documentDefinition = mock<JsonSchemaDocumentDefinition>()
-        whenever(documentDefinitionService.findByNameAndCaseDefinitionId(any(), any()))
-            .thenReturn(Optional.of(documentDefinition))
-
         val processDefinition = mock<OperatonProcessDefinition>()
         val processDefinitionId = "test"
         whenever(processService.getLatestDefinitionByKeyAndBlueprint(any(), any())).thenReturn(processDefinition)
@@ -133,10 +124,6 @@ class ProcessDocumentLinkImporterTest(
                 }
             ]
         """.trimIndent()
-
-        val documentDefinition = mock<JsonSchemaDocumentDefinition>()
-        whenever(documentDefinitionService.findByNameAndCaseDefinitionId(any(), any()))
-            .thenReturn(Optional.of(documentDefinition))
 
         val processDefinition = mock<OperatonProcessDefinition>()
         val processDefinitionId = "test"

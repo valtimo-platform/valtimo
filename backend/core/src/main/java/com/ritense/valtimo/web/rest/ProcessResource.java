@@ -28,6 +28,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
@@ -443,7 +444,9 @@ public class ProcessResource extends AbstractProcessResource {
                 .and(byProcessInstanceId(processInstanceId))
         );
         return Optional.ofNullable(task)
-                .map(taskResult -> ResponseEntity.ok(OperatonTaskDto.of(taskResult)))
+                .map(taskResult -> ResponseEntity.ok(
+                    OperatonTaskDto.of(taskResult, Optional.ofNullable(operatonTaskService.getAssignedTeam(taskResult.getId())).map(TeamDto::from).orElse(null))
+                ))
                 .orElse(ResponseEntity.noContent().build());
     }
 

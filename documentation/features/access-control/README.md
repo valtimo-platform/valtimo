@@ -35,6 +35,7 @@ Valtimo supports access control on several types of resources:
 - [Cases](../case/#access-control)
 - [Documents](../case/document-definition.md#access-control)
 - [Tasks](../case/tasks/#access-control)
+- [Teams](../teams/README.md)
 - [Users](../keycloak/access-control.md)
 - [ZGW Documents](../case/zgw/zgw-documents/access-control.md)
 

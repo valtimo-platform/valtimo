@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="case-list-toolbar">
+  <valtimo-list-column-view
+    [availableFields]="availableFields"
+    [disabled]="!hasApiColumnConfig"
+    [hiddenColumns]="hiddenColumns"
+    (viewUpdateEvent)="viewUpdateEvent.emit($event)"
+  ></valtimo-list-column-view>
+
+  <cds-tooltip *ngIf="canExport" [description]="'case.exportButtonTooltip' | translate">
+    <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
+
+    <button
+      *ngIf="!loadingExport"
+      data-testid="case-list-export-button"
+      cdsButton="ghost"
+      iconOnly="true"
+      (click)="exportEvent.emit()"
+      [disabled]="disableExport"
+    >
+      <svg cdsIcon="download" size="16"></svg>
+    </button>
+  </cds-tooltip>
+
+  <button
+    *ngIf="canCreate"
+    cdsButton="primary"
+    [disabled]="disableStart"
+    (click)="startCaseEvent.emit()"
+  >
+    {{ 'Start Case' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

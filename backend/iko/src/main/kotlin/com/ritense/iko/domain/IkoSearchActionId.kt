@@ -23,7 +23,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 
 @Embeddable
-class IkoSearchActionId(
+data class IkoSearchActionId(
 
     @Column(name = "`key`", updatable = false, nullable = false)
     val key: String,
