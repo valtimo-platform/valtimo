@@ -22,7 +22,8 @@ interface CandidateUser {
 
 interface BulkAssign {
   ids: string[];
-  assigneeId: string;
+  assigneeId?: string;
+  assignedTeamKey?: string;
 }
 
 export {CandidateUser, BulkAssign};

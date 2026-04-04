@@ -69,5 +69,8 @@ class ValtimoImportTypes {
         const val IKO_LIST_COLUMN = "ikolistcolumn"
         const val IKO_TAB = "ikotab"
         const val IKO_WIDGET = "ikowidget"
+
+        // TEAM
+        const val TEAM = "team"
     }
 }

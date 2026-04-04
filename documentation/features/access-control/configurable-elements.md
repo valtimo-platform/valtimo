@@ -154,6 +154,18 @@ define what can be configured for that element.
 			<td valign="top">Core</td>
 		</tr>
 		<tr>
+			<td valign="top">
+				<strong>Teams</strong>
+			</td>
+			<td valign="top">
+				<a href="../teams/README.md#access-control">Teams</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.team.domain.Team</code>
+			</td>
+			<td valign="top">Team</td>
+		</tr>
+		<tr>
 			<td valign="top"></td>
 			<td valign="top">
 				<a href="../case/tasks/#access-control">Identity links</a>

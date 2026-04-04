@@ -75,11 +75,13 @@ export class CarbonListRow {
   // ─── Selection (Checkboxes) ─────────────────────────────────────
 
   async select() {
-    await this.locator.locator('input[type="checkbox"]').check();
+    // Carbon's cds-checkbox uses (checkedChange) not native DOM change.
+    // Click the visible cds-checkbox element to trigger the model update.
+    await this.locator.locator('td.cds--table-column-checkbox cds-checkbox').click();
   }
 
   async deselect() {
-    await this.locator.locator('input[type="checkbox"]').uncheck();
+    await this.locator.locator('td.cds--table-column-checkbox cds-checkbox').click();
   }
 
   // ─── Move Row Up/Down ───────────────────────────────────────────

@@ -34,12 +34,15 @@ import com.ritense.document.web.rest.DocumentResource;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.Team;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -131,14 +134,32 @@ public class JsonSchemaDocumentResource implements DocumentResource {
         @RequestBody @Valid UpdateAssigneeRequest request
     ) {
         logger.debug("REST call /api/v1/document/{}/assign", documentId);
-        documentService.assignUserToDocument(documentId, request.getAssigneeId());
+        if (request.getAssigneeId() != null) {
+            if (request.getAssigneeId().isEmpty()) {
+                documentService.unassignUserFromDocument(documentId);
+            } else {
+                documentService.assignUserToDocument(documentId, request.getAssigneeId());
+            }
+        }
+        if (request.getAssignedTeamKey() != null) {
+            if (request.getAssignedTeamKey().isEmpty()) {
+                documentService.unassignTeamFromDocument(documentId);
+            } else {
+                documentService.assignTeamToDocument(documentId, request.getAssignedTeamKey());
+            }
+        }
         return ResponseEntity.ok().build();
     }
 
     @Override
     @PostMapping("/v1/document/assign")
     public ResponseEntity<Void> assignHandlerToDocuments(@RequestBody @Valid AssignToDocumentsRequest request) {
-        documentService.assignUserToDocuments(request.getDocumentIds(), request.getAssigneeId());
+        if (request.getAssigneeId() != null) {
+            documentService.assignUserToDocuments(request.getDocumentIds(), request.getAssigneeId());
+        }
+        if (request.getAssignedTeamKey() != null) {
+            documentService.assignTeamToDocuments(request.getDocumentIds(), request.getAssignedTeamKey());
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -150,11 +171,22 @@ public class JsonSchemaDocumentResource implements DocumentResource {
 
         try {
             documentService.unassignUserFromDocument(documentId);
+            documentService.unassignTeamFromDocument(documentId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("Failed to unassign a user to a document", e);
+            logger.error("Failed to unassign a user or team from a document", e);
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/v1/document/{document-id}/candidate-team")
+    @Override
+    public ResponseEntity<Page<Team>> getCandidateTeams(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId,
+        Pageable pageable
+    ) {
+        Page<Team> teams = documentService.getCandidateTeams(JsonSchemaDocumentId.existingId(documentId), pageable);
+        return ResponseEntity.ok(teams);
     }
 
     @Override

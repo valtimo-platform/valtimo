@@ -27,6 +27,7 @@ import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginC
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
@@ -69,6 +70,7 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionReposito
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.importer.ImportService
@@ -90,6 +92,7 @@ import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
+import com.ritense.document.autoconfiguration.DocumentAuthorizationAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -102,7 +105,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
-@AutoConfiguration
+@AutoConfiguration(before = [DocumentAuthorizationAutoConfiguration::class])
 @EnableJpaRepositories(
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
@@ -362,6 +365,20 @@ class BuildingBlockAutoConfiguration {
         processLinkService,
         processDefinitionBuildingBlockDefinitionRepository
     )
+
+    @Bean
+    @ConditionalOnMissingBean(name = ["jsonSchemaDocumentCaseDefinitionMapper"])
+    fun jsonSchemaDocumentCaseDefinitionMapper(
+        @Lazy caseDocumentResolver: CaseDocumentResolver,
+        @Lazy documentService: JsonSchemaDocumentService,
+        @Lazy caseDefinitionService: CaseDefinitionService,
+    ): JsonSchemaDocumentCaseDefinitionMapper {
+        return JsonSchemaDocumentCaseDefinitionMapper(
+            caseDocumentResolver,
+            documentService,
+            caseDefinitionService,
+        )
+    }
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockSupportedProcessLinksHandler::class)

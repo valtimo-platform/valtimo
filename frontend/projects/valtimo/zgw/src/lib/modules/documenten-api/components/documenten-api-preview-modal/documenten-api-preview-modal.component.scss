@@ -1,0 +1,32 @@
+.cds--modal-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+.cds--modal-content {
+  overflow: hidden;
+  height: auto;
+  padding: 16px;
+}
+
+.download-button {
+  margin-inline-start: 3rem;
+  display: inline-block;
+}
+
+.header {
+  display: inline-block;
+}
+
+.pdf-object {
+  height: 75vh;
+  width: 100%;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 88vh;
+  width: 100%;
+}
