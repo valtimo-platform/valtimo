@@ -11,6 +11,12 @@
   The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
   Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
 
+* **Publish notification plugin action for Notificaties API**
+
+  A new plugin action "Publiceer een notificatie" has been added to the Notificaties API plugin. This action allows
+  publishing notifications via the Notificaties API from a BPMN process, for example from a send task or intermediate
+  throw event. 
+
 ## Enhancements
 
 * **New enhancement title**
