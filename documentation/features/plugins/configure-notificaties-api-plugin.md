@@ -33,7 +33,7 @@ After saving the configuration Valtimo automatically ensures the required kanale
 
 The Notificaties API plugin supports the following actions that can be configured in process links.
 
-A general description on how to create process links can be found [here](configure-plugin.md).
+A general description on how to create process links can be found in the [process link configuration guide](configure-plugin.md).
 
 ### Publish notification (Publiceer een notificatie)
 
