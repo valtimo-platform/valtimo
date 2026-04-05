@@ -101,16 +101,18 @@ export class PublishNotificatieConfigurationComponent
 
   private openPrefillSubscription(): void {
     if (this.prefillConfiguration$) {
-      this.prefillSubscription = this.prefillConfiguration$
-        .pipe(take(1))
-        .subscribe(config => {
-          if (config?.kenmerken) {
-            this.kenmerken = config.kenmerken;
-            this.kenmerkenDefaultValues = Object.entries(config.kenmerken).map(
-              ([key, value]) => ({key, value})
-            );
-          }
-        });
+      this.prefillSubscription = this.prefillConfiguration$.pipe(take(1)).subscribe(config => {
+        if (!config) return;
+
+        this.kenmerken = config.kenmerken ?? {};
+        this.kenmerkenDefaultValues = Object.entries(this.kenmerken).map(([key, value]) => ({
+          key,
+          value,
+        }));
+
+        this.formValue$.next({...config, kenmerken: this.kenmerken});
+        this.handleValid(config);
+      });
     }
   }
 }
