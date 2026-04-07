@@ -2,9 +2,9 @@
 
 ## New Features
 
-* **New feature title**
+* **Cross-case message correlation**
 
-  New feature explanation.
+  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
 
 ## Enhancements
 

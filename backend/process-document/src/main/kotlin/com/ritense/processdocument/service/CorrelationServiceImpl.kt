@@ -120,6 +120,24 @@ class CorrelationServiceImpl(
         return sendCatchEventMessage(message, businessKey, toVariableMap(*variables))
     }
 
+    override fun sendGlobalCatchEventMessage(message: String): MessageCorrelationResult {
+        return sendGlobalCatchEventMessage(message, null)
+    }
+
+    override fun sendGlobalCatchEventMessage(
+        message: String,
+        variables: Map<String, Any?>?
+    ): MessageCorrelationResult {
+        return correlate(message, null, variables)
+    }
+
+    override fun sendGlobalCatchEventMessage(
+        message: String,
+        vararg variables: Any?
+    ): MessageCorrelationResult {
+        return sendGlobalCatchEventMessage(message, toVariableMap(*variables))
+    }
+
     override fun sendCatchEventMessageToAll(message: String, businessKey: String): List<MessageCorrelationResult> {
         return sendCatchEventMessageToAll(message, businessKey, null)
     }
@@ -145,6 +163,24 @@ class CorrelationServiceImpl(
         vararg variables: Any?
     ): List<MessageCorrelationResult> {
         return sendCatchEventMessageToAll(message, businessKey, toVariableMap(*variables))
+    }
+
+    override fun sendGlobalCatchEventMessageToAll(message: String): List<MessageCorrelationResult> {
+        return sendGlobalCatchEventMessageToAll(message, null)
+    }
+
+    override fun sendGlobalCatchEventMessageToAll(
+        message: String,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult> {
+        return correlateAll(message, null, variables)
+    }
+
+    override fun sendGlobalCatchEventMessageToAll(
+        message: String,
+        vararg variables: Any?
+    ): List<MessageCorrelationResult> {
+        return sendGlobalCatchEventMessageToAll(message, toVariableMap(*variables))
     }
 
     override fun sendMessage(message: String, execution: DelegateExecution): MessageCorrelationResult {
@@ -202,11 +238,11 @@ class CorrelationServiceImpl(
 
     private fun correlate(
         message: String,
-        businessKey: String,
+        businessKey: String?,
         variables: Map<String, Any?>?
     ): MessageCorrelationResult {
         val builder = runtimeService.createMessageCorrelation(message)
-        builder.processInstanceBusinessKey(businessKey)
+        businessKey?.let { builder.processInstanceBusinessKey(it) }
         variables?.run { builder.setVariables(variables) }
         return builder.correlateWithResult()
     }
@@ -226,11 +262,11 @@ class CorrelationServiceImpl(
 
     private fun correlateAll(
         message: String,
-        businessKey: String,
+        businessKey: String?,
         variables: Map<String, Any?>?
     ): List<MessageCorrelationResult> {
         val builder = runtimeService.createMessageCorrelation(message)
-        builder.processInstanceBusinessKey(businessKey)
+        businessKey?.let { builder.processInstanceBusinessKey(it) }
         variables?.run { builder.setVariables(variables) }
         return builder.correlateAllWithResult()
     }
