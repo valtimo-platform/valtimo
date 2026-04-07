@@ -220,8 +220,10 @@ export class CaseManagementPage {
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
     if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
-      await overrideCheckbox.locator('input[type="checkbox"]').click({force: true});
+      await overrideCheckbox.click();
     }
+
+    const key = await this.configureKeyInput.inputValue();
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -230,7 +232,6 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled();
     await this.uploadWizardNextButton.click();
 
-    const key = await this.configureKeyInput.inputValue();
     return {response: await responsePromise, key};
   }
 
@@ -252,9 +253,11 @@ export class CaseManagementPage {
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
     if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
-      await overrideCheckbox.locator('input[type="checkbox"]').click({force: true});
+      await overrideCheckbox.click();
     }
 
+
+    const actualKey = await this.configureKeyInput.inputValue();
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -263,13 +266,14 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled();
     await this.uploadWizardNextButton.click();
 
-    const actualKey = await this.configureKeyInput.inputValue();
     return {response: await responsePromise, key: actualKey};
   }
 
   async changeConfigureKey(key: string) {
-    await this.configureKeyEditButton.click();
-    await expect(this.configureKeyEditButton).not.toBeVisible();
+    if (await this.configureKeyEditButton.isVisible({timeout: 1000}).catch(() => false)) {
+      await this.configureKeyEditButton.click();
+      await expect(this.configureKeyEditButton).not.toBeVisible();
+    }
     await this.configureKeyInput.clear();
     await this.configureKeyInput.fill(key);
   }

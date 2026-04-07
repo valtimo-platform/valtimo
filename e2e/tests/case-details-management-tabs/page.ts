@@ -142,4 +142,21 @@ export class CaseDetailsManagementTabsPage {
       // Tab may already have been deleted by the test
     }
   }
+
+  /**
+   * Delete a tab across ALL versions of a case definition.
+   * Needed because leftover tabs from a previous run may exist under a different version tag.
+   */
+  async deleteTabFromAllVersions(caseDefinitionKey: string, tabKey: string) {
+    try {
+      const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
+        `/api/management/v1/case-definition/${caseDefinitionKey}/version`
+      );
+      for (const v of versions) {
+        await this.deleteTabViaApi(caseDefinitionKey, v.versionTag, tabKey);
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
 }

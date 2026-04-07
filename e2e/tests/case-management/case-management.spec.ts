@@ -39,12 +39,22 @@ test.describe('Case management', () => {
     caseManagementPage = new CaseManagementPage(page, request);
 
     // Best-effort API cleanup of draft versions from previous runs.
-    // This may fail for finalized versions — the test flow handles that gracefully.
     for (const key of ['test-case', 'test-case-import', 'custom-import-key']) {
       try {
-        await ApiUtils.apiDelete(`/api/management/v1/case-definition/case/${key}`);
+        const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
+          `/api/management/v1/case-definition/${key}/version`
+        );
+        for (const v of versions) {
+          try {
+            await ApiUtils.apiDelete(
+              `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
+            );
+          } catch {
+            // May be finalized — cannot delete
+          }
+        }
       } catch {
-        // May not exist or may be finalized — test flow handles this
+        // Case definition may not exist
       }
     }
 
@@ -56,9 +66,20 @@ test.describe('Case management', () => {
     // Best-effort cleanup of keys created during this run
     for (const key of createdKeys) {
       try {
-        await ApiUtils.apiDelete(`/api/management/v1/case-definition/case/${key}`);
+        const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
+          `/api/management/v1/case-definition/${key}/version`
+        );
+        for (const v of versions) {
+          try {
+            await ApiUtils.apiDelete(
+              `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
+            );
+          } catch {
+            // May be finalized — cannot delete
+          }
+        }
       } catch {
-        // Best effort — may fail for finalized versions
+        // Case definition may not exist
       }
     }
     await context.close();
@@ -164,9 +185,7 @@ test.describe('Case management', () => {
         await caseManagementPage.assertExistingDraftWarning();
 
         // Act: check the override checkbox and verify next becomes enabled
-        await caseManagementPage.overrideCheckbox
-          .locator('input[type="checkbox"]')
-          .click({force: true});
+        await caseManagementPage.overrideCheckbox.click();
         await expect(caseManagementPage.uploadWizardNextButton).toBeEnabled();
       }
 

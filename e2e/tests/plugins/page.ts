@@ -180,10 +180,9 @@ export class PluginPage {
   async duplicateConfigurationName(configurationName: string, configurationIdTestId: string) {
     await this.page
       .locator(`tr:has(td:has-text("${configurationName}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Duplicate'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Duplicate'}).click();
 
     const input = this.page.getByTestId(configurationIdTestId).locator('input');
     const val = await input.inputValue();
@@ -210,10 +209,9 @@ export class PluginPage {
   ): Promise<void> {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Edit'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Edit'}).click();
     await this.editPluginName(configurationNameTestId, newConfigurationName);
   }
 
@@ -232,10 +230,9 @@ export class PluginPage {
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
       .first()
-      .getByRole('menu')
-      .locator('button')
+      .locator('.v-overflow-menu__trigger')
       .click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.waitForResponse(
       res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
     );
@@ -246,8 +243,7 @@ export class PluginPage {
 
     await this.page
       .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .getByRole('menu')
-      .locator('button')
+      .locator('.v-overflow-menu__trigger')
       .click();
 
     const [response] = await Promise.all([

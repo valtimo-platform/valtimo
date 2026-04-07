@@ -39,15 +39,15 @@ test.describe('Case details management — Tabs', () => {
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
 
-    // Clean up leftover tabs from previous failed runs
+    // Clean up leftover tabs from previous failed runs (across all versions)
     const tabKey = tabTestData.title.toLowerCase().replace(/\s+/g, '-');
     const updatedTabKey = tabTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
     const reorderKeyA = tabReorderTestData.titleA.toLowerCase().replace(/\s+/g, '-');
     const reorderKeyB = tabReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
-    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, tabKey);
-    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, updatedTabKey);
-    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyA);
-    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyB);
+    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, tabKey);
+    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, updatedTabKey);
+    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, reorderKeyA);
+    await tabsPage.deleteTabFromAllVersions(CASE_IDENTIFIER, reorderKeyB);
 
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();

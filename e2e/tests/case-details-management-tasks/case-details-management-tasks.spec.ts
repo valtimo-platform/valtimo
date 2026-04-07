@@ -42,6 +42,13 @@ test.describe('Case details management — Tasks', () => {
     await page.goto('/');
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
+
+    // Clean up leftover data from previous failed runs
+    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnTestData.key);
+    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyA);
+    await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyB);
+    await tasksPage.deleteSearchFieldViaApi(CASE_IDENTIFIER, taskSearchFieldTestData.key);
+
     await tasksPage.switchToTasksTab();
   });
 

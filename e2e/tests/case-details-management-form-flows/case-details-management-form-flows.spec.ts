@@ -37,6 +37,10 @@ test.describe('Case details management — Form Flows', () => {
     await page.goto('/');
     await formFlowsPage.goToCaseManagement(CASE_IDENTIFIER);
     await formFlowsPage.ensureDraftVersionSelected();
+
+    // Clean up leftover form flow from previous failed runs
+    await formFlowsPage.deleteFormFlowViaApi(formFlowTestData.key);
+
     await formFlowsPage.switchToFormFlowsTab();
   });
 
