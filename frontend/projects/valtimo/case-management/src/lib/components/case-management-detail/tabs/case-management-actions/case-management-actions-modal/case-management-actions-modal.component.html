@@ -1,0 +1,142 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{showModal: showModal$ | async, editingItem: editingItem$ | async} as obs"
+  [open]="obs.showModal"
+  showFooter="true"
+  valtimoCdsModal
+  (close)="onCloseModal()"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>{{ modalTitle }}</h3>
+
+    <p cdsModalHeaderDescription>{{ modalDescription }}</p>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
+    <ng-container *ngIf="$step() === 'selectType'">
+      <div class="action-type-tiles">
+        <button class="action-type-tile" (click)="onSelectType(StartableItemType.PROCESS)">
+          <svg
+            class="action-type-tile__icon"
+            focusable="false"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            width="20"
+            height="20"
+            viewBox="0 0 32 32"
+          >
+            <path
+              d="M26,14H22V8a2,2,0,0,0-2-2H14V2H6V10h4v4H6v8h4v4H6v8h8V26H10V22h4v4h8V18H18V14h4v4h8V10H22v4h4Zm-18,6V16h4v4Zm0-12V4h4V8ZM12,28H8V24h4Zm8-6H16V18h4Zm8-6H24V12h4Z"
+            />
+          </svg>
+
+          <span class="action-type-tile__label">
+            {{ 'caseManagement.actions.type.PROCESS' | translate }}
+          </span>
+        </button>
+
+        <button class="action-type-tile" (click)="onSelectType(StartableItemType.BUILDING_BLOCK)">
+          <svg
+            class="action-type-tile__icon"
+            focusable="false"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            width="20"
+            height="20"
+            viewBox="0 0 32 32"
+          >
+            <path
+              d="M28,20H26v2h2v6H4V22H6V20H4a2.0023,2.0023,0,0,0-2,2v6a2.0023,2.0023,0,0,0,2,2H28a2.0023,2.0023,0,0,0,2-2V22A2.0023,2.0023,0,0,0,28,20Z"
+            />
+            <path
+              d="M28,4H4A2.0023,2.0023,0,0,0,2,6v6a2.0023,2.0023,0,0,0,2,2H6V12H4V6H28v6H26v2h2a2.0023,2.0023,0,0,0,2-2V6A2.0023,2.0023,0,0,0,28,4Z"
+            />
+            <path
+              d="M22,10H10a2.0023,2.0023,0,0,0-2,2v8a2.0023,2.0023,0,0,0,2,2H22a2.0023,2.0023,0,0,0,2-2V12A2.0023,2.0023,0,0,0,22,10Zm0,10H10V12H22Z"
+            />
+          </svg>
+
+          <span class="action-type-tile__label">
+            {{ 'caseManagement.actions.type.BUILDING_BLOCK' | translate }}
+          </span>
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="$step() === 'selectItem'">
+      <form [formGroup]="formGroup">
+        <ng-container *ngIf="$selectedType() === StartableItemType.PROCESS">
+          <ng-container *ngIf="availableProcessItems$ | async as processItems">
+            <cds-combo-box
+              [items]="processItems || []"
+              [label]="'caseManagement.actions.modal.selectProcess' | translate"
+              [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
+              [appendInline]="false"
+              [dropUp]="false"
+              (selected)="onComboBoxSelected($event)"
+            >
+              <cds-dropdown-list></cds-dropdown-list>
+            </cds-combo-box>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="$selectedType() === StartableItemType.BUILDING_BLOCK">
+          <ng-container *ngIf="availableBuildingBlockItems$ | async as buildingBlockItems">
+            <cds-combo-box
+              [items]="buildingBlockItems || []"
+              [label]="'caseManagement.actions.modal.selectBuildingBlock' | translate"
+              [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
+              [appendInline]="false"
+              [dropUp]="false"
+              (selected)="onComboBoxSelected($event)"
+            >
+              <cds-dropdown-list></cds-dropdown-list>
+            </cds-combo-box>
+          </ng-container>
+        </ng-container>
+      </form>
+    </ng-container>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <div class="footer-spacer"></div>
+
+    <button
+      *ngIf="$step() === 'selectItem' && !isEditMode"
+      cdsButton="secondary"
+      (click)="onBack()"
+    >
+      {{ 'caseManagement.actions.modal.back' | translate }}
+    </button>
+
+    <button
+      *ngIf="$step() === 'selectItem'"
+      cdsButton="primary"
+      [disabled]="formGroup.invalid || $saving()"
+      (click)="onSubmit()"
+    >
+      {{ primaryButtonLabel }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

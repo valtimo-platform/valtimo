@@ -37,7 +37,9 @@
     [header]="false"
     [loading]="listObs.loading"
     [dragAndDrop]="true"
-    [dragAndDropDisabled]="dragAndDropDisabled() || !(hasEditPermissions$ | async)"
+    [dragAndDropDisabled]="dragAndDropDisabled() || !obs.hasEditPermissions"
+    [actionItems]="ACTION_ITEMS"
+    [showActionItems]="obs.hasEditPermissions"
     (itemsReordered)="onItemsReorderedEvent($event)"
   >
     <ng-container carbonToolbarContent>
@@ -61,10 +63,26 @@
   </ng-template>
 
   <ng-template #addItemButton>
-    <button cdsButton="primary" *ngIf="obs.hasEditPermissions">
+    <button
+      cdsButton="primary"
+      *ngIf="obs.hasEditPermissions"
+      (click)="onAddItemClick()"
+    >
       {{ 'caseManagement.actions.addItem' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
     </button>
   </ng-template>
 </ng-container>
+
+<valtimo-case-management-actions-modal></valtimo-case-management-actions-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="caseManagement.actions.deleteModal.content"
+  [outputOnConfirm]="itemToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="caseManagement.actions.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

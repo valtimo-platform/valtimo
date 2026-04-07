@@ -70,6 +70,10 @@ class StartableProcessItemProvider(
             .firstOrNull()
             ?: throw NoSuchElementException("Process definition '$processDefinitionId' is not linked to case definition '$caseDefinitionId'")
 
+        val processDefinitionName = pdcd.processDefinitionName
+        val processDefinitionKey = pdcd.processDefinitionKey
+            ?: error("Process definition key is null")
+
         processDefinitionCaseDefinitionRepository.save(
             ProcessDefinitionCaseDefinition(
                 id = pdcd.id,
@@ -80,8 +84,8 @@ class StartableProcessItemProvider(
 
         return StartableItemDto(
             type = StartableItemType.PROCESS,
-            name = pdcd.processDefinitionName,
-            key = pdcd.processDefinitionKey ?: error("Process definition key is null"),
+            name = processDefinitionName,
+            key = processDefinitionKey,
             versionTag = null,
             processDefinitionId = pdcd.id.processDefinitionId.id
         )

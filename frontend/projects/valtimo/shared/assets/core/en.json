@@ -721,7 +721,7 @@
         "name": "Name",
         "type": "Type"
       },
-      "addItem": "Add item",
+      "addItem": "Add an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
@@ -730,6 +730,27 @@
       "type": {
         "PROCESS": "Process",
         "BUILDING_BLOCK": "Building block"
+      },
+      "modal": {
+        "addTitle": "Add an action",
+        "addDescription": "Select a process or a building block for the user to start",
+        "addProcessTitle": "Add process as action",
+        "addBuildingBlockTitle": "Add building block as action",
+        "editProcessTitle": "Edit process action",
+        "editBuildingBlockTitle": "Edit building block action",
+        "selectProcess": "Select a process",
+        "selectBuildingBlock": "Select a building block",
+        "selectProcessDescription": "Select a process for the user to start",
+        "selectBuildingBlockDescription": "Select a building block for the user to start",
+        "filterPlaceholder": "Filter...",
+        "add": "Add",
+        "save": "Save",
+        "back": "Back",
+        "next": "Next"
+      },
+      "deleteModal": {
+        "title": "Delete action",
+        "content": "Are you sure you want to delete this action? This cannot be undone."
       }
     },
     "importDefinition": {

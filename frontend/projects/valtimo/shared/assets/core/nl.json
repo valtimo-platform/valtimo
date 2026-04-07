@@ -737,7 +737,7 @@
         "name": "Naam",
         "type": "Type"
       },
-      "addItem": "Item toevoegen",
+      "addItem": "Actie toevoegen",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
@@ -746,6 +746,27 @@
       "type": {
         "PROCESS": "Proces",
         "BUILDING_BLOCK": "Bouwblok"
+      },
+      "modal": {
+        "addTitle": "Actie toevoegen",
+        "addDescription": "Selecteer een proces of bouwblok dat de gebruiker kan starten",
+        "addProcessTitle": "Proces toevoegen als actie",
+        "addBuildingBlockTitle": "Bouwblok toevoegen als actie",
+        "editProcessTitle": "Procesactie bewerken",
+        "editBuildingBlockTitle": "Bouwblokactie bewerken",
+        "selectProcess": "Selecteer een proces",
+        "selectBuildingBlock": "Selecteer een bouwblok",
+        "selectProcessDescription": "Selecteer een proces dat de gebruiker kan starten",
+        "selectBuildingBlockDescription": "Selecteer een bouwblok dat de gebruiker kan starten",
+        "filterPlaceholder": "Filteren...",
+        "add": "Toevoegen",
+        "save": "Opslaan",
+        "back": "Terug",
+        "next": "Volgende"
+      },
+      "deleteModal": {
+        "title": "Actie verwijderen",
+        "content": "Weet u zeker dat u deze actie wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
       }
     },
     "importDefinition": {

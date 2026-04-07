@@ -14,85 +14,134 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {CaseManagementParams} from '@valtimo/shared';
+import {runAfterCarbonModalClosed} from '@valtimo/components';
+import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {BehaviorSubject, Observable, of} from 'rxjs';
-import {catchError, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, map, take} from 'rxjs/operators';
 import {
+  CreateStartableItemRequest,
   ManagementStartableItem,
   StartableItemOrderEntry,
+  StartableItemType,
   UpdateStartableItemOrderRequest,
 } from '../models';
+import {StartableItemApiService} from './startable-item-api.service';
 
 @Injectable()
 export class StartableItemManagementService {
-  private _valtimoEndpointBase: string;
   private _params!: CaseManagementParams;
 
-  public readonly items$ = new BehaviorSubject<ManagementStartableItem[]>([]);
-  public readonly loading$ = new BehaviorSubject<boolean>(false);
+  private readonly _items$ = new BehaviorSubject<ManagementStartableItem[]>([]);
+  public readonly items$ = this._items$.asObservable();
+
+  private readonly _loading$ = new BehaviorSubject<boolean>(false);
+  public readonly loading$ = this._loading$.asObservable();
+
+  private readonly _showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showModal$ = this._showModal$.asObservable();
+
+  private readonly _editingItem$ = new BehaviorSubject<ManagementStartableItem | null>(null);
+  public readonly editingItem$ = this._editingItem$.asObservable();
+
+  private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
+
+  private readonly _itemToDelete$ = new BehaviorSubject<ManagementStartableItem | null>(null);
+  public readonly itemToDelete$ = this._itemToDelete$.asObservable();
+
+  public readonly usedProcessDefinitionIds$: Observable<string[]> = this._items$.pipe(
+    map(items =>
+      items
+        .filter(item => item.type === StartableItemType.PROCESS && !!item.processDefinitionId)
+        .map(item => item.processDefinitionId!)
+    )
+  );
+
+  public readonly usedBuildingBlockKeys$: Observable<string[]> = this._items$.pipe(
+    map(items =>
+      items.filter(item => item.type === StartableItemType.BUILDING_BLOCK).map(item => item.key)
+    )
+  );
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly http: HttpClient
-  ) {
-    this._valtimoEndpointBase = `${this.configService.config.valtimoApi.endpointUri}management/v1/case-definition`;
+    private readonly startableItemApiService: StartableItemApiService,
+    private readonly documentService: DocumentService
+  ) {}
+
+  public get linkedProcessDefinitions$(): Observable<ProcessDocumentDefinition[]> {
+    return this.documentService.findProcessDocumentDefinitionsByVersion(
+      this._params.caseDefinitionKey,
+      this._params.caseDefinitionVersionTag
+    );
   }
 
   public setParams(params: CaseManagementParams): void {
     this._params = params;
   }
 
-  private get _caseDefinitionUrl(): string {
-    return `${this._valtimoEndpointBase}/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}`;
+  public getParams(): CaseManagementParams {
+    return this._params;
   }
 
   public loadItems(): void {
-    this.loading$.next(true);
-    this.getItemList()
+    this._loading$.next(true);
+    this.startableItemApiService
+      .getItems(this._params)
       .pipe(take(1))
       .subscribe({
         next: (items: ManagementStartableItem[]) => {
-          this.items$.next(items);
-          this.loading$.next(false);
+          this._items$.next(items);
+          this._loading$.next(false);
         },
         error: error => {
           console.error(error);
-          this.loading$.next(false);
+          this._loading$.next(false);
         },
       });
   }
 
-  public dispatchAction(
-    actionResult: Observable<ManagementStartableItem | ManagementStartableItem[] | null>
-  ): void {
-    actionResult
-      .pipe(
-        tap(() => {
-          this.loading$.next(true);
-          this.items$.next([]);
-        }),
-        switchMap((result: ManagementStartableItem | ManagementStartableItem[] | null) =>
-          Array.isArray(result) ? of(result) : this.getItemList()
-        ),
-        take(1),
-        catchError(error => of(error))
-      )
-      .subscribe({
-        next: (items: ManagementStartableItem[]) => {
-          this.loading$.next(false);
-          this.items$.next(items);
-        },
-        error: error => {
-          console.error(error);
-        },
-      });
+  public showCreateModal(): void {
+    this._editingItem$.next(null);
+    this._showModal$.next(true);
   }
 
-  public updateOrder(
-    items: ManagementStartableItem[]
-  ): Observable<ManagementStartableItem[]> {
+  public showEditModal(item: ManagementStartableItem): void {
+    this._editingItem$.next(item);
+    this._showModal$.next(true);
+  }
+
+  public hideModal(): void {
+    this._showModal$.next(false);
+    runAfterCarbonModalClosed(() => this._editingItem$.next(null));
+  }
+
+  public showDeleteConfirmation(item: ManagementStartableItem): void {
+    this._itemToDelete$.next(item);
+    this._showDeleteModal$.next(true);
+  }
+
+  public hideDeleteModal(): void {
+    this._showDeleteModal$.next(false);
+    this._itemToDelete$.next(null);
+  }
+
+  public createItem(request: CreateStartableItemRequest): Observable<ManagementStartableItem> {
+    return this.startableItemApiService.createItem(this._params, request);
+  }
+
+  public deleteItem(item: ManagementStartableItem): Observable<void> {
+    return this.startableItemApiService.deleteItem(
+      this._params,
+      item.key,
+      item.versionTag ?? '0'
+    );
+  }
+
+  public updateOrder(items: ManagementStartableItem[]): void {
+    this._items$.next(items);
+
     const request: UpdateStartableItemOrderRequest = {
       items: items.map(
         (item, index): StartableItemOrderEntry => ({
@@ -102,15 +151,22 @@ export class StartableItemManagementService {
         })
       ),
     };
-    return this.http.put<ManagementStartableItem[]>(
-      `${this._caseDefinitionUrl}/startable-item/order`,
-      request
-    );
-  }
 
-  private getItemList(): Observable<ManagementStartableItem[]> {
-    return this.http.get<ManagementStartableItem[]>(
-      `${this._caseDefinitionUrl}/startable-item`
-    );
+    this.startableItemApiService
+      .updateOrder(this._params, request)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.loadItems();
+          return of([]);
+        })
+      )
+      .subscribe({
+        next: (updatedItems: ManagementStartableItem[]) => {
+          if (updatedItems.length) {
+            this._items$.next(updatedItems);
+          }
+        },
+      });
   }
 }
