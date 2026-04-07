@@ -8,9 +8,9 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Dependencies**
 
-  New enhancement explanation.
+  Many dependencies have been updated to the latest minor / patch.
 
 ## Bugfixes
 
