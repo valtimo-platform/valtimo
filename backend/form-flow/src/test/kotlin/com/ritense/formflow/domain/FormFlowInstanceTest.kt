@@ -57,7 +57,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val instance = FormFlowInstance(
             formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
+                id = FormFlowDefinitionId.existingId("test", caseDefinitionId),
                 startStep = "test",
                 steps = mutableSetOf(
                     FormFlowStep(
@@ -86,7 +86,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val instance = FormFlowInstance(
             formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
+                id = FormFlowDefinitionId.existingId("test", caseDefinitionId),
                 startStep = "test",
                 steps = mutableSetOf(
                     FormFlowStep(
@@ -110,7 +110,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val instance = FormFlowInstance(
             formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
+                id = FormFlowDefinitionId.existingId("test", caseDefinitionId),
                 startStep = "lastStep",
                 steps = mutableSetOf(
                     FormFlowStep(

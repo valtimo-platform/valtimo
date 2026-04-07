@@ -6,6 +6,12 @@
 
 ## New Features
 
+* **Form flow management for building blocks**
+
+  Building blocks now support form flow definitions. Form flows can be created, edited, and deleted through the **Form flows** tab in building block
+  management. They are also included automatically in building block imports and exports. For more information, see
+  [Building block form flows](../../features/building-blocks/form-flows.md).
+
 * **Added the Documenten API Preview plugin**
 
   The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".

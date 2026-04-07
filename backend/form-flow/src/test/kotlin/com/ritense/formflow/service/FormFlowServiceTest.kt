@@ -31,6 +31,7 @@ import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
 import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -51,6 +52,7 @@ internal class FormFlowServiceTest : BaseTest() {
     lateinit var formFlowService: FormFlowService
     lateinit var formFlowInstanceRepository: FormFlowInstanceRepository
     lateinit var formFlowAdditionalPropertiesSearchRepository: FormFlowAdditionalPropertiesSearchRepository
+    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
     lateinit var expressionProcessor: SpelExpressionProcessor
 
     @BeforeEach
@@ -58,12 +60,14 @@ internal class FormFlowServiceTest : BaseTest() {
         val formFlowDefinitionRepository = mock(FormFlowDefinitionRepository::class.java)
         formFlowInstanceRepository = mock(FormFlowInstanceRepository::class.java)
         formFlowAdditionalPropertiesSearchRepository = mock(FormFlowAdditionalPropertiesSearchRepository::class.java)
+        buildingBlockDefinitionChecker = mock(BuildingBlockDefinitionChecker::class.java)
         formFlowService = FormFlowService(
             formFlowDefinitionRepository,
             formFlowInstanceRepository,
             formFlowAdditionalPropertiesSearchRepository,
             emptyList(),
             mock(),
+            buildingBlockDefinitionChecker,
         )
 
         val expressionProcessorFactory = spy(SpelExpressionProcessorFactory())
@@ -144,7 +148,7 @@ internal class FormFlowServiceTest : BaseTest() {
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
         val definition = FormFlowDefinition(
-            FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf(step)
+            FormFlowDefinitionId.existingId("test", caseDefinitionId), "start-step", setOf(step)
         )
         val formFlowInstance = FormFlowInstance(
             formFlowDefinition = definition

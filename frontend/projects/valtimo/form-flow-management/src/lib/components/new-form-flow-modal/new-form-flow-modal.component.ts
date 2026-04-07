@@ -15,15 +15,25 @@
  */
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormBuilder, Validators} from '@angular/forms';
+import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {FormFlowDefinition} from '../../models';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
+import {ButtonModule, InputModule, ModalModule} from 'carbon-components-angular';
 
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'valtimo-new-form-flow-modal',
   templateUrl: './new-form-flow-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    ModalModule,
+    InputModule,
+    ButtonModule,
+    ValtimoCdsModalDirective,
+  ],
 })
 export class NewFormFlowModalComponent {
   @Input() open = false;

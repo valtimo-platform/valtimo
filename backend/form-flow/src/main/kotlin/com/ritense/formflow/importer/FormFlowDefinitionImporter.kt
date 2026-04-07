@@ -71,17 +71,15 @@ class FormFlowDefinitionImporter(
 
             try {
                 val existingDefinition = formFlowService.findDefinitionOrNull(formFlowKey, caseDefinitionId)
-                var definitionId = FormFlowDefinitionId.newId(formFlowKey, caseDefinitionId)
+                val definitionId = FormFlowDefinitionId.newId(formFlowKey, caseDefinitionId)
 
-                if (existingDefinition != null) {
-                    if (formFlowDefinitionConfig.contentEquals(existingDefinition)) {
-                        logger.info("Form Flow already deployed - {}", definitionId.toString())
-                        return
-                    }
+                if (existingDefinition != null && formFlowDefinitionConfig.contentEquals(existingDefinition)) {
+                    logger.info { "Form Flow already deployed - $definitionId" }
+                    return
                 }
 
                 formFlowService.save(formFlowDefinitionConfig.toDefinition(definitionId))
-                logger.info("Deployed Form Flow - {}", definitionId.toString())
+                logger.info { "Deployed Form Flow - $definitionId" }
             } catch (e: Exception) {
                 throw RuntimeException("Failed to deploy Form Flow $formFlowKey", e)
             }
@@ -91,7 +89,9 @@ class FormFlowDefinitionImporter(
     private fun validate(formFlowJson: String) {
         val definitionJsonObject = JSONObject(JSONTokener(formFlowJson))
 
-        val schema = SchemaLoader.load(JSONObject(JSONTokener(loadFormFlowSchemaResource().inputStream)))
+        val schema = loadFormFlowSchemaResource().inputStream.use { inputStream ->
+            SchemaLoader.load(JSONObject(JSONTokener(inputStream)))
+        }
         schema.validate(definitionJsonObject)
     }
 

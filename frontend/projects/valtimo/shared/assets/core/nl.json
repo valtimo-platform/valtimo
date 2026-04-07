@@ -2370,7 +2370,8 @@
       "general": "Algemeen",
       "document": "Document",
       "processes": "Processen",
-      "forms": "Formulieren"
+      "forms": "Formulieren",
+      "formFlows": "Form flows"
     },
     "formDefinition": {
       "name": "Naam"
