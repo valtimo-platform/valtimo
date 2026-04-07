@@ -68,8 +68,8 @@ export class CarbonListRow {
    * Note: menu items are rendered in a portal/overlay, so we use page-scoped getByRole.
    */
   async clickAction(actionName: string) {
-    await this.locator.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: actionName}).click();
+    await this.locator.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: actionName}).click();
   }
 
   // ─── Selection (Checkboxes) ─────────────────────────────────────
