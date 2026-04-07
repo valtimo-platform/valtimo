@@ -36,6 +36,9 @@ interface MessagePublisher {
             try {
                 publish(message)
                 MessagePublishResult(messageId = message.id, success = true)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                MessagePublishResult(messageId = message.id, success = false, error = e)
             } catch (e: Exception) {
                 MessagePublishResult(messageId = message.id, success = false, error = e)
             }
