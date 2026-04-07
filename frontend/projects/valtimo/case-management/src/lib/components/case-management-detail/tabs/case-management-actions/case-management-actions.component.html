@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    routeParams: caseManagementRouteParams$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
+  } as obs"
+>
+  <cds-inline-notification
+    [notificationObj]="{
+      type: 'info',
+      title: '',
+      message: ('caseManagement.actions.infoNotification.message' | translate),
+      showClose: false,
+      lowContrast: true
+    }"
+  ></cds-inline-notification>
+
+  <valtimo-carbon-list
+    *ngIf="{fields: fields$ | async, loading: loading$ | async, items: items$ | async} as listObs"
+    [items]="listObs.items"
+    [fields]="listObs.fields"
+    [header]="false"
+    [loading]="listObs.loading"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="dragAndDropDisabled() || !(hasEditPermissions$ | async)"
+    (itemsReordered)="onItemsReorderedEvent($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="addItemButton"></ng-container>
+    </ng-container>
+
+    <valtimo-no-results
+      [action]="addItemButton"
+      [description]="'caseManagement.actions.noResultsDescription' | translate"
+      [title]="'caseManagement.actions.noResults' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #typeColumn let-data="data">
+    <cds-tag
+      class="cds-tag--no-margin"
+      [type]="data.item.type === StartableItemType.PROCESS ? 'blue' : 'purple'"
+    >
+      {{ 'caseManagement.actions.type.' + data.item.type | translate }}
+    </cds-tag>
+  </ng-template>
+
+  <ng-template #addItemButton>
+    <button cdsButton="primary" *ngIf="obs.hasEditPermissions">
+      {{ 'caseManagement.actions.addItem' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
+</ng-container>

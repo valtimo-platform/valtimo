@@ -14,9 +14,26 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.model';
-export * from './case-list.model';
-export * from './case-deployment.model';
-export * from './startable-item.model';
+export enum StartableItemType {
+  PROCESS = 'PROCESS',
+  BUILDING_BLOCK = 'BUILDING_BLOCK',
+}
+
+export interface ManagementStartableItem {
+  type: StartableItemType;
+  name: string | null;
+  key: string;
+  versionTag: string | null;
+  processDefinitionId: string | null;
+  sortOrder: number | null;
+}
+
+export interface StartableItemOrderEntry {
+  key: string;
+  type: StartableItemType;
+  sortOrder: number;
+}
+
+export interface UpdateStartableItemOrderRequest {
+  items: StartableItemOrderEntry[];
+}
