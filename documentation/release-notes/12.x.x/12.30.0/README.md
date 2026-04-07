@@ -15,3 +15,4 @@
 ## Bugfixes
 
 * Fixed outbox circuit breaker never recovering from OPEN state.
+* Fixed deserialization of `beginRegistratie` in Documenten API responses
