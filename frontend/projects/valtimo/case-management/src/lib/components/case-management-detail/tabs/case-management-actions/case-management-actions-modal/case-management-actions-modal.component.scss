@@ -1,0 +1,61 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.action-type-tiles {
+  display: flex;
+  gap: 16px;
+}
+
+.action-type-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  padding: 24px;
+  min-height: 120px;
+  background-color: var(--cds-layer-02, #393939);
+  color: var(--cds-text-on-color, #fff);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--cds-layer-hover-02, #474747);
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+.footer-spacer {
+  flex: 1;
+}
+
+:host ::ng-deep {
+  cds-modal-footer .cds--modal-footer {
+    display: flex;
+    align-items: center;
+  }
+}

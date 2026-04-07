@@ -37,3 +37,17 @@ export interface StartableItemOrderEntry {
 export interface UpdateStartableItemOrderRequest {
   items: StartableItemOrderEntry[];
 }
+
+export interface CreateStartableItemRequest {
+  type: StartableItemType;
+  properties: CreateStartableItemProcessProperties | CreateStartableItemBuildingBlockProperties;
+}
+
+export interface CreateStartableItemProcessProperties {
+  processDefinitionId: string;
+}
+
+export interface CreateStartableItemBuildingBlockProperties {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+}
