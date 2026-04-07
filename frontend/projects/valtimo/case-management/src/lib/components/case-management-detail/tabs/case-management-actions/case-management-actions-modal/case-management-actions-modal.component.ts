@@ -19,8 +19,7 @@ import {ChangeDetectionStrategy, Component, OnDestroy, signal} from '@angular/co
 import {FormBuilder, FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
-import {BuildingBlockDefinitionDto} from '@valtimo/shared';
-import {ProcessDocumentDefinition} from '@valtimo/document';
+import {BuildingBlockDefinitionDto, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {ProcessLinkBuildingBlockApiService} from '@valtimo/process-link';
 import {
   ButtonModule,
@@ -97,17 +96,17 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
     map(([definitions, usedIds, editingItem]) =>
       definitions
         .filter(
-          (def: ProcessDocumentDefinition) =>
-            !usedIds.includes(def.latestVersionId) ||
+          (def: CaseProcessDefinitionResponseDto) =>
+            !usedIds.includes(def.processDefinition.id) ||
             (editingItem?.type === StartableItemType.PROCESS &&
-              editingItem?.processDefinitionId === def.latestVersionId)
+              editingItem?.processDefinitionId === def.processDefinition.id)
         )
         .map(
-          (def: ProcessDocumentDefinition): ListItem => ({
-            content: def.processName || def.id.processDefinitionKey,
-            key: def.id.processDefinitionKey,
-            id: def.latestVersionId,
-            selected: editingItem?.processDefinitionId === def.latestVersionId,
+          (def: CaseProcessDefinitionResponseDto): ListItem => ({
+            content: def.processDefinition.name || def.processDefinition.key,
+            key: def.processDefinition.key,
+            id: def.processDefinition.id,
+            selected: editingItem?.processDefinitionId === def.processDefinition.id,
           })
         )
         .sort((a, b) => a.content.localeCompare(b.content))

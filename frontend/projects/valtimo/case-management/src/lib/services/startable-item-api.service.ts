@@ -16,7 +16,12 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {
+  BaseApiService,
+  CaseManagementParams,
+  CaseProcessDefinitionResponseDto,
+  ConfigService,
+} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   CreateStartableItemRequest,
@@ -72,6 +77,16 @@ export class StartableItemApiService extends BaseApiService {
     return this.httpClient.put<ManagementStartableItem[]>(
       `${this.getCaseDefinitionUrl(params)}/order`,
       request
+    );
+  }
+
+  public getLinkedProcessDefinitions(
+    params: CaseManagementParams
+  ): Observable<CaseProcessDefinitionResponseDto[]> {
+    return this.httpClient.get<CaseProcessDefinitionResponseDto[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/process-definition`
+      )
     );
   }
 }
