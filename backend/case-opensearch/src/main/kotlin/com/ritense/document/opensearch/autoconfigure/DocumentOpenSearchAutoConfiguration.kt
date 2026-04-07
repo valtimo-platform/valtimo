@@ -1,0 +1,155 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.document.opensearch.autoconfigure
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
+import com.ritense.document.autoconfigure.DocumentAutoConfiguration
+import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
+import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
+import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
+import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.handler.DocumentOpenSearchEventHandler
+import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.security.DocumentOpenSearchHttpSecurityConfigurer
+import com.ritense.document.opensearch.service.DocumentOpenSearchBackfillService
+import com.ritense.document.opensearch.service.DocumentOpenSearchQueryService
+import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
+import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
+import com.ritense.document.opensearch.web.DocumentOpenSearchBackfillResource
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.SearchFieldService
+import com.ritense.outbox.OutboxService
+import com.ritense.valtimo.contract.authentication.UserManagementService
+import org.springframework.boot.ApplicationRunner
+import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.annotation.Bean
+import org.springframework.core.annotation.Order
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
+
+@AutoConfiguration
+@AutoConfigureBefore(DocumentAutoConfiguration::class)
+@ConditionalOnClass(ElasticsearchOperations::class)
+@EnableElasticsearchRepositories(basePackages = ["com.ritense.document.opensearch.repository"])
+class DocumentOpenSearchAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun jsonSchemaDocumentDefinitionOpenSearchMapper(): JsonSchemaDocumentDefinitionOpenSearchMapper =
+        JsonSchemaDocumentDefinitionOpenSearchMapper()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun jsonSchemaDocumentCaseDefinitionOpenSearchMapper(): JsonSchemaDocumentCaseDefinitionOpenSearchMapper =
+        JsonSchemaDocumentCaseDefinitionOpenSearchMapper()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun openSearchPermissionConditionTranslator(
+        openSearchMappers: List<OpenSearchAuthorizationEntityMapper<*, *>>,
+        authorizationService: AuthorizationService,
+        documentRepository: JsonSchemaDocumentRepository,
+    ): OpenSearchPermissionConditionTranslator =
+        OpenSearchPermissionConditionTranslator(openSearchMappers, authorizationService, documentRepository)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchQueryService(
+        elasticsearchOperations: ElasticsearchOperations,
+        authorizationService: AuthorizationService,
+        translator: OpenSearchPermissionConditionTranslator,
+    ): DocumentOpenSearchQueryService =
+        DocumentOpenSearchQueryService(elasticsearchOperations, authorizationService, translator)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchSyncService(
+        repository: JsonSchemaDocumentOpenSearchRepository,
+        objectMapper: ObjectMapper,
+    ): DocumentOpenSearchSyncService =
+        DocumentOpenSearchSyncService(repository, objectMapper)
+
+    @Bean
+    fun documentOpenSearchEventHandler(syncService: DocumentOpenSearchSyncService): DocumentOpenSearchEventHandler =
+        DocumentOpenSearchEventHandler(syncService)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchBackfillService(
+        jpaRepository: JsonSchemaDocumentRepository,
+        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+        objectMapper: ObjectMapper,
+    ): DocumentOpenSearchBackfillService =
+        DocumentOpenSearchBackfillService(jpaRepository, openSearchRepository, objectMapper)
+
+    @Order(294)
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchHttpSecurityConfigurer(): DocumentOpenSearchHttpSecurityConfigurer =
+        DocumentOpenSearchHttpSecurityConfigurer()
+
+    @Bean
+    @ConditionalOnMissingBean(DocumentSearchService::class)
+    fun documentSearchService(
+        elasticsearchOperations: ElasticsearchOperations,
+        translator: OpenSearchPermissionConditionTranslator,
+        authorizationService: AuthorizationService,
+        jpaRepository: JsonSchemaDocumentRepository,
+        userManagementService: UserManagementService,
+        searchFieldService: SearchFieldService,
+        outboxService: OutboxService,
+        objectMapper: ObjectMapper,
+    ): JsonSchemaDocumentOpenSearchService =
+        JsonSchemaDocumentOpenSearchService(
+            elasticsearchOperations,
+            translator,
+            authorizationService,
+            jpaRepository,
+            userManagementService,
+            searchFieldService,
+            outboxService,
+            objectMapper,
+        )
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchBackfillResource(
+        backfillService: DocumentOpenSearchBackfillService,
+    ): DocumentOpenSearchBackfillResource =
+        DocumentOpenSearchBackfillResource(backfillService)
+
+    /**
+     * Creates the OpenSearch index and mappings on startup if the index does not yet exist.
+     * Setting [com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument]'s
+     * createIndex = false means spring-data-opensearch won't auto-create it, so we do it here.
+     */
+    @Bean
+    fun documentOpenSearchIndexInitializer(elasticsearchOperations: ElasticsearchOperations): ApplicationRunner =
+        ApplicationRunner {
+            val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
+            if (!indexOps.exists()) {
+                indexOps.create()
+                indexOps.putMapping(indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java))
+            }
+        }
+}

@@ -1,0 +1,16 @@
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:3365/case-opensearch-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database: postgresql
+    elasticsearch:
+        uris: http://localhost:39200
+
+valtimo:
+    database: postgres
