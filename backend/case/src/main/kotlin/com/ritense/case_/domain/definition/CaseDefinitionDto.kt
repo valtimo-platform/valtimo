@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,9 @@ data class CaseDefinitionDto(
     val final: Boolean,
     val canHaveAssignee: Boolean = false,
     val autoAssignTasks: Boolean = false,
+    val originalKey: String? = null,
+    val originalName: String? = null,
+    val originalVersionTag: String? = null,
 ) {
     @JsonIgnore
     fun getCaseDefinitionId(): CaseDefinitionId = CaseDefinitionId(key, versionTag)
@@ -45,7 +48,10 @@ data class CaseDefinitionDto(
             basedOnVersionTag = basedOnVersionTag?.let { Semver(it) },
             final = final,
             canHaveAssignee = canHaveAssignee,
-            autoAssignTasks = autoAssignTasks
+            autoAssignTasks = autoAssignTasks,
+            originalKey = originalKey,
+            originalName = originalName,
+            originalVersionTag = originalVersionTag,
         )
     }
 }

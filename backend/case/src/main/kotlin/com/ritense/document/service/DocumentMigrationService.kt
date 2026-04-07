@@ -47,7 +47,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.expression.common.TemplateParserContext
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.SimpleEvaluationContext
 import org.springframework.integration.json.JsonPropertyAccessor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -202,9 +202,9 @@ class DocumentMigrationService(
 
         val jsonPropertyAccessor = JsonPropertyAccessor()
         jsonPropertyAccessor.setObjectMapper(objectMapper)
-        val evaluationContext = StandardEvaluationContext()
-        evaluationContext.addPropertyAccessor(MapAccessor())
-        evaluationContext.addPropertyAccessor(jsonPropertyAccessor)
+        val evaluationContext = SimpleEvaluationContext
+            .forPropertyAccessors(MapAccessor(), jsonPropertyAccessor)
+            .build()
 
         return SpelExpressionParser()
             .parseExpression(expression, parserContext)

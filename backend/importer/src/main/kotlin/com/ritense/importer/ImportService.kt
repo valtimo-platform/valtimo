@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,12 @@ import java.io.InputStream
 interface ImportService {
     fun importGlobal(inputStream: InputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
+    fun import(
+        inputStream: InputStream,
+        caseDefinitionIdList: List<CaseDefinitionId>,
+        keyOverride: String?,
+        nameOverride: String?,
+    ): CaseDefinitionId? = import(inputStream, caseDefinitionIdList)
     fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
     fun importBuildingBlockDefinition(entries: List<ZipFileEntry>, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
 }

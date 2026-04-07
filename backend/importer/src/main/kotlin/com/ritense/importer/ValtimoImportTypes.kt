@@ -51,6 +51,7 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_ARTWORK = "buildingblockartwork"
         const val BUILDING_BLOCK_PROCESS_LINK = "buildingblockprocesslink"
         const val BUILDING_BLOCK_FORM_DEFINITION = "buildingblockformdefinition"
+        const val BUILDING_BLOCK_FORM_FLOW_DEFINITION = "buildingblockformflowdefinition"
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
 
@@ -69,5 +70,8 @@ class ValtimoImportTypes {
         const val IKO_LIST_COLUMN = "ikolistcolumn"
         const val IKO_TAB = "ikotab"
         const val IKO_WIDGET = "ikowidget"
+
+        // TEAM
+        const val TEAM = "team"
     }
 }

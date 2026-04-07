@@ -163,12 +163,14 @@ enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+  TEAM = 'team',
 }
 
 enum CaseListTab {
   MINE = 'MINE',
   OPEN = 'OPEN',
   ALL = 'ALL',
+  TEAM = 'TEAM',
 }
 
 enum Language {
