@@ -16,6 +16,7 @@
 
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../constants';
 import {BuildingBlockFormDefinitionDto, BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
+import {ListFormFlowDefinition} from '@valtimo/form-flow-management';
 
 type BuildingBlockManagementTabKey =
   | (typeof BUILDING_BLOCK_MANAGEMENT_TABS)[keyof typeof BUILDING_BLOCK_MANAGEMENT_TABS]
@@ -29,8 +30,13 @@ interface BuildingBlockFormDefinitionItem extends BuildingBlockFormDefinitionDto
   readOnlyText: string;
 }
 
+interface FormFlowDefinitionItem extends ListFormFlowDefinition {
+  latestVersion: number;
+}
+
 export {
   BuildingBlockManagementTabKey,
   BuildingBlockProcessDefinitionItem,
   BuildingBlockFormDefinitionItem,
+  FormFlowDefinitionItem,
 };

@@ -56,4 +56,8 @@ enum DOCUMENTEN_COLUMN_KEYS {
   TAGS = 'tags',
 }
 
-export {DocumentenApiRelatedFile, DOCUMENTEN_COLUMN_KEYS};
+interface DocumentenApiFilePermissions {
+  [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
+}
+
+export {DocumentenApiRelatedFile, DOCUMENTEN_COLUMN_KEYS, DocumentenApiFilePermissions};
