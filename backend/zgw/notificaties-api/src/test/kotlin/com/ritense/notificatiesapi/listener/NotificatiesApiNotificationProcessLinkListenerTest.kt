@@ -84,6 +84,7 @@ class NotificatiesApiNotificationProcessLinkListenerTest {
             processDefinitionCaseDefinitionService,
             processDocumentService,
             caseDefinitionService,
+            objectMapper,
         )
     }
 

@@ -16,15 +16,16 @@
 
 package com.ritense.notificatiesapi.listener
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -46,6 +47,7 @@ open class NotificatiesApiNotificationProcessLinkListener(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val processDocumentService: ProcessDocumentService,
     private val caseDefinitionService: CaseDefinitionService,
+    private val objectMapper: ObjectMapper,
 ) {
 
     @Transactional
@@ -77,20 +79,17 @@ open class NotificatiesApiNotificationProcessLinkListener(
         processLink: PluginProcessLink
     ): Boolean {
         val properties = processLink.actionProperties ?: return true
+        val filter = objectMapper.treeToValue(properties, ReceiveNotificatieProperties::class.java)
 
-        val kanaalFilter = properties.get("kanaal")?.takeIf { !it.isNull }?.asText()
-        val actieFilter = properties.get("actie")?.takeIf { !it.isNull }?.asText()
-        val kenmerkenFilter = properties.get("kenmerken")?.takeIf { !it.isNull && it.isObject }
-
-        if (!kanaalFilter.isNullOrBlank() && !event.kanaal.equals(kanaalFilter, ignoreCase = true)) {
+        if (!filter.kanaal.isNullOrBlank() && !event.kanaal.equals(filter.kanaal, ignoreCase = true)) {
             return false
         }
-        if (!actieFilter.isNullOrBlank() && !event.actie.equals(actieFilter, ignoreCase = true)) {
+        if (!filter.actie.isNullOrBlank() && !event.actie.equals(filter.actie, ignoreCase = true)) {
             return false
         }
-        kenmerkenFilter?.fields()?.forEach { (key, value) ->
+        filter.kenmerken?.forEach { (key, value) ->
             val eventValue = event.kenmerken[key]
-            if (eventValue == null || !eventValue.equals(value.asText(), ignoreCase = true)) {
+            if (eventValue == null || !eventValue.equals(value, ignoreCase = true)) {
                 return false
             }
         }

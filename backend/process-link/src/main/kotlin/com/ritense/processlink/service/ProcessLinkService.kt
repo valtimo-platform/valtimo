@@ -101,7 +101,7 @@ class ProcessLinkService(
     fun getProcessLinksByProcessDefinitionIdAndActivityTypes(
         @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String,
         activityTypes: List<ActivityTypeWithEventName>
-    ): ProcessLink? {
+    ): List<ProcessLink> {
         return processLinkRepository.findByProcessDefinitionIdAndActivityTypeIn(processDefinitionId, activityTypes)
     }
 

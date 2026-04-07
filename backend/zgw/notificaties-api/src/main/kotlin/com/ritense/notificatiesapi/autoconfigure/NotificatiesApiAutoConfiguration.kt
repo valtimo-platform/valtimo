@@ -224,6 +224,7 @@ class NotificatiesApiAutoConfiguration {
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         processDocumentService: ProcessDocumentService,
         caseDefinitionService: CaseDefinitionService,
+        objectMapper: ObjectMapper,
     ): NotificatiesApiNotificationProcessLinkListener {
         return NotificatiesApiNotificationProcessLinkListener(
             pluginProcessLinkRepository,
@@ -233,6 +234,7 @@ class NotificatiesApiAutoConfiguration {
             processDefinitionCaseDefinitionService,
             processDocumentService,
             caseDefinitionService,
+            objectMapper,
         )
     }
 

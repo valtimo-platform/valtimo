@@ -72,10 +72,8 @@ export class ReceiveNotificatieConfigurationComponent
       }),
       {} as {[key: string]: string}
     );
-    const currentFormValue = this.formValue$.value;
-    if (currentFormValue) {
-      this.formValue$.next({...currentFormValue, kenmerken: this.kenmerken});
-    }
+    const currentFormValue = this.formValue$.value ?? {};
+    this.formValue$.next({...currentFormValue, kenmerken: this.kenmerken});
   }
 
   private openSaveSubscription(): void {
@@ -95,13 +93,20 @@ export class ReceiveNotificatieConfigurationComponent
       this.prefillSubscription = this.prefillConfiguration$
         .pipe(take(1))
         .subscribe(config => {
-          if (config?.kenmerken) {
-            this.kenmerken = config.kenmerken;
-            this.kenmerkenDefaultValues = Object.entries(config.kenmerken).map(
-              ([key, value]) => ({key, value})
-            );
+          if (config) {
+            this.formValue$.next({...config});
+            if (config.kenmerken) {
+              this.kenmerken = config.kenmerken;
+              this.kenmerkenDefaultValues = Object.entries(config.kenmerken).map(
+                ([key, value]) => ({key, value})
+              );
+            }
+          } else {
+            this.formValue$.next({});
           }
         });
+    } else {
+      this.formValue$.next({});
     }
   }
 }

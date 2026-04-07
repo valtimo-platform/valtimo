@@ -86,7 +86,7 @@ class ProcessLinkActivityService(
         val processLink = processLinkService.getProcessLinksByProcessDefinitionIdAndActivityTypes(
             processDefinitionId,
             listOf(ActivityTypeWithEventName.START_EVENT_START, ActivityTypeWithEventName.MESSAGE_START_EVENT_START)
-        ) ?: return null
+        ).firstOrNull() ?: return null
 
         var authorizationRequest = RelatedEntityAuthorizationRequest<OperatonExecution>(
             OperatonExecution::class.java,
