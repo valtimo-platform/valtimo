@@ -36,4 +36,5 @@
 
 ## Bugfixes
 
+* Fixed outbox circuit breaker never recovering from OPEN state.
 * The case task list now loads significantly faster when building blocks are used.

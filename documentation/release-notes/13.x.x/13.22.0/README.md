@@ -62,3 +62,11 @@ The following will be removed in 14.0:
 * `OutboxMessageRepository.findOutboxMessage()` — use `findOutboxMessages(batchSize)`
 * `ValtimoOutboxService.getOldestMessage()` — use `getOldestMessages(batchSize)`
 * `ValtimoOutboxService.deleteMessage(id)` — use `deleteMessages(ids)`
+
+## Known issues
+
+This version has the following known issues:
+
+* **Outbox circuit breaker never recovers from OPEN state**
+  * Discovered in version 13.22.0
+  * Fixed in 13.23.0. Workaround: Disable the circuit breaker using the `valtimo.outbox.publisher.polling.circuit-breaker.enabled` property.
