@@ -45,8 +45,6 @@
 
   New enhancement explanation.
 
-* **Cross-case message correlation** — New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
-
 ## Bugfixes
 
 * **Replaced Carbon overflow menus with custom overflow components**
