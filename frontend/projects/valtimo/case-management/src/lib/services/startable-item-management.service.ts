@@ -15,11 +15,10 @@
  */
 
 import {Injectable} from '@angular/core';
-import {CaseManagementParams} from '@valtimo/shared';
+import {CaseManagementParams, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {runAfterCarbonModalClosed} from '@valtimo/components';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {BehaviorSubject, Observable, of} from 'rxjs';
-import {catchError, map, take} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, take} from 'rxjs/operators';
 import {
   CreateStartableItemRequest,
   ManagementStartableItem,
@@ -31,7 +30,7 @@ import {StartableItemApiService} from './startable-item-api.service';
 
 @Injectable()
 export class StartableItemManagementService {
-  private _params!: CaseManagementParams;
+  private readonly _params$ = new BehaviorSubject<CaseManagementParams | null>(null);
 
   private readonly _items$ = new BehaviorSubject<ManagementStartableItem[]>([]);
   public readonly items$ = this._items$.asObservable();
@@ -65,30 +64,30 @@ export class StartableItemManagementService {
     )
   );
 
+  public readonly linkedProcessDefinitions$: Observable<CaseProcessDefinitionResponseDto[]> =
+    this._params$.pipe(
+      filter((params): params is CaseManagementParams => params !== null),
+      switchMap(params =>
+        this.startableItemApiService.getLinkedProcessDefinitions(params)
+      )
+    );
+
   constructor(
-    private readonly startableItemApiService: StartableItemApiService,
-    private readonly documentService: DocumentService
+    private readonly startableItemApiService: StartableItemApiService
   ) {}
 
-  public get linkedProcessDefinitions$(): Observable<ProcessDocumentDefinition[]> {
-    return this.documentService.findProcessDocumentDefinitionsByVersion(
-      this._params.caseDefinitionKey,
-      this._params.caseDefinitionVersionTag
-    );
-  }
-
   public setParams(params: CaseManagementParams): void {
-    this._params = params;
+    this._params$.next(params);
   }
 
   public getParams(): CaseManagementParams {
-    return this._params;
+    return this._params$.value!;
   }
 
   public loadItems(): void {
     this._loading$.next(true);
     this.startableItemApiService
-      .getItems(this._params)
+      .getItems(this.getParams())
       .pipe(take(1))
       .subscribe({
         next: (items: ManagementStartableItem[]) => {
@@ -128,12 +127,12 @@ export class StartableItemManagementService {
   }
 
   public createItem(request: CreateStartableItemRequest): Observable<ManagementStartableItem> {
-    return this.startableItemApiService.createItem(this._params, request);
+    return this.startableItemApiService.createItem(this.getParams(), request);
   }
 
   public deleteItem(item: ManagementStartableItem): Observable<void> {
     return this.startableItemApiService.deleteItem(
-      this._params,
+      this.getParams(),
       item.key,
       item.versionTag ?? '0'
     );
@@ -153,7 +152,7 @@ export class StartableItemManagementService {
     };
 
     this.startableItemApiService
-      .updateOrder(this._params, request)
+      .updateOrder(this.getParams(), request)
       .pipe(
         take(1),
         catchError(() => {
