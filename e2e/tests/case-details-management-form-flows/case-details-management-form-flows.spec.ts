@@ -72,7 +72,7 @@ test.describe('Case details management — Form Flows', () => {
   test.describe('Edit form flow JSON', () => {
     test('Open form flow and see JSON editor', async () => {
       // Navigate back to list first (creation left us on the editor)
-      await page.goBack();
+      await formFlowsPage.navigateBackToFormFlowsList();
 
       // Act
       await formFlowsPage.openFormFlow(formFlowTestData.key);
@@ -86,7 +86,7 @@ test.describe('Case details management — Form Flows', () => {
 
   test.describe('Delete form flow', () => {
     test('Navigate back to form flows list', async () => {
-      await page.goBack();
+      await formFlowsPage.navigateBackToFormFlowsList();
       await formFlowsPage.assertFormFlowExists(formFlowTestData.key);
     });
 

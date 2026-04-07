@@ -36,6 +36,7 @@ export class CaseDetailsManagementFormFlowsPage {
 
   async switchToFormFlowsTab() {
     await this.page.getByRole('tab', {name: 'Form Flows'}).click();
+    await expect(this.formFlowsList).toBeVisible();
   }
 
   async ensureDraftVersionSelected(): Promise<string> {
@@ -75,6 +76,7 @@ export class CaseDetailsManagementFormFlowsPage {
     await this.addFormFlowButton.click();
     await this.formFlowKeyInput.fill(key);
     await this.createFormFlowButton.click();
+    await this.page.waitForURL(new RegExp(`form-flows/${key}$`));
   }
 
   async deleteFormFlow(key: string) {
@@ -82,6 +84,11 @@ export class CaseDetailsManagementFormFlowsPage {
     const row = list.row(key);
     await row.clickAction('Delete');
     await this.page.getByRole('button', {name: 'Delete'}).click();
+  }
+
+  async navigateBackToFormFlowsList() {
+    await this.page.getByRole('button', {name: 'Back'}).click();
+    await expect(this.formFlowsList).toBeVisible();
   }
 
   async openFormFlow(key: string) {
