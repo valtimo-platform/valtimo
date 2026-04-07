@@ -96,8 +96,10 @@ test.describe('Case management', () => {
       test.describe('Case handler', () => {
         test('Can have handler is false', async () => {
           // Arrange: ensure toggle starts as true so clicking it sets it to false
-          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
-          if (checked === 'false') {
+          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
+          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+
+          if (!(await canHaveHandlerSwitch.isChecked())) {
             await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
           }
 
@@ -105,20 +107,16 @@ test.describe('Case management', () => {
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
           //Assert
-          await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
-            'ng-reflect-checked',
-            'false'
-          );
-          await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-disabled',
-            'true'
-          );
+          await expect(canHaveHandlerSwitch).not.toBeChecked();
+          await expect(autoAssignSwitch).toBeDisabled();
         });
 
         test('Can have handler is true & cannot automatically assign', async () => {
           // Arrange: ensure toggle starts as false so clicking it sets it to true
-          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
-          if (checked === 'true') {
+          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
+          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+
+          if (await canHaveHandlerSwitch.isChecked()) {
             await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
           }
 
@@ -126,43 +124,27 @@ test.describe('Case management', () => {
           await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
 
           // Assert
-          await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
-            'ng-reflect-checked',
-            'true'
-          );
-          await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-disabled',
-            'false'
-          );
-          await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-checked',
-            'false'
-          );
+          await expect(canHaveHandlerSwitch).toBeChecked();
+          await expect(autoAssignSwitch).toBeEnabled();
+          await expect(autoAssignSwitch).not.toBeChecked();
         });
 
         test('Can have handler is true & can automatically assign', async () => {
           // Arrange: ensure canHaveHandler is true before testing auto-assign
-          const checked = await caseDetailsManagementPage.caseHandlerCanHaveHandler.getAttribute('ng-reflect-checked');
-          if (checked === 'false') {
+          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
+          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+
+          if (!(await canHaveHandlerSwitch.isChecked())) {
             await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
           }
 
           // Assert canHaveHandler is true
-          await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
-            'ng-reflect-checked',
-            'true'
-          );
-          await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-disabled',
-            'false'
-          );
+          await expect(canHaveHandlerSwitch).toBeChecked();
+          await expect(autoAssignSwitch).toBeEnabled();
 
           await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();
 
-          await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-            'ng-reflect-checked',
-            'true'
-          );
+          await expect(autoAssignSwitch).toBeChecked();
         });
       });
 
@@ -293,23 +275,11 @@ test.describe('Case management', () => {
         await ensureFinalVersionSelected(page);
 
         //Assert
-        await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler).toHaveAttribute(
-          'ng-reflect-is-read-only',
-          'true'
-        );
-        await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign).toHaveAttribute(
-          'ng-reflect-is-read-only',
-          'true'
-        );
-        await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute('disabled');
-        await expect(caseDetailsManagementPage.externalFormUrl).toHaveAttribute(
-          'ng-reflect-is-read-only',
-          'true'
-        );
-        await expect(caseDetailsManagementPage.externalFormDescription).toHaveAttribute(
-          'ng-reflect-is-read-only',
-          'true'
-        );
+        await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch')).toBeDisabled();
+        await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch')).toBeDisabled();
+        await expect(caseDetailsManagementPage.hasExternalForm).toBeDisabled();
+        await expect(caseDetailsManagementPage.externalFormUrl).toBeDisabled();
+        await expect(caseDetailsManagementPage.externalFormDescription).toBeDisabled();
       });
     });
 
