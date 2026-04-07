@@ -34,6 +34,10 @@
 
   `DocumentMigrationService` and `Condition` evaluated user-supplied SpEL expressions using `StandardEvaluationContext`, which grants unrestricted access to Java types and methods. An authenticated admin could exploit this to execute arbitrary OS commands, exfiltrate environment variables, or load arbitrary classes. Both classes now use `SimpleEvaluationContext`, which only allows property access and blocks type references, method invocation, and constructors.
 
+* **Dependencies**
+
+  Many dependencies have been updated to the latest minor / patch.
+
 ## Bugfixes
 
 * Fixed outbox circuit breaker never recovering from OPEN state.
