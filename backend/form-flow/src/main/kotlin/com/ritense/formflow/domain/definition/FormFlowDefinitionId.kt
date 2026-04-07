@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.formflow.domain.definition
 
 import com.ritense.formflow.domain.AbstractId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
@@ -30,9 +31,12 @@ data class FormFlowDefinitionId(
     val key: String,
 
     @Embedded
-    val caseDefinitionId: CaseDefinitionId
+    val blueprintId: FormFlowDefinitionBlueprintId
 
 ) : AbstractId<FormFlowDefinitionId>() {
+
+    val caseDefinitionId: CaseDefinitionId?
+        get() = blueprintId.asCaseDefinitionId()
 
     override fun toString(): String {
         return key
@@ -55,15 +59,23 @@ data class FormFlowDefinitionId(
 
     companion object {
         fun newId(key: String, caseDefinitionId: CaseDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(key, caseDefinitionId).newIdentity()
+            return FormFlowDefinitionId(key, FormFlowDefinitionBlueprintId.forCase(caseDefinitionId)).newIdentity()
+        }
+
+        fun newId(key: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): FormFlowDefinitionId {
+            return FormFlowDefinitionId(key, FormFlowDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId)).newIdentity()
         }
 
         fun existingId(id: FormFlowDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(id.key, id.caseDefinitionId)
+            return FormFlowDefinitionId(id.key, id.blueprintId)
         }
 
         fun existingId(key: String, caseDefinitionId: CaseDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(key, caseDefinitionId)
+            return FormFlowDefinitionId(key, FormFlowDefinitionBlueprintId.forCase(caseDefinitionId))
+        }
+
+        fun existingId(key: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): FormFlowDefinitionId {
+            return FormFlowDefinitionId(key, FormFlowDefinitionBlueprintId.forBuildingBlock(buildingBlockDefinitionId))
         }
     }
 }

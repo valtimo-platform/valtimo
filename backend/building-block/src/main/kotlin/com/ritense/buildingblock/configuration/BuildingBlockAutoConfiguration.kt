@@ -51,6 +51,9 @@ import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
@@ -68,6 +71,7 @@ import com.ritense.buildingblock.service.StartableBuildingBlockItemProvider
 import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionArtworkResource
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFieldResource
+import com.ritense.buildingblock.web.rest.BuildingBlockFormFlowManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
@@ -82,6 +86,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.formflow.service.FormFlowService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -715,4 +720,44 @@ class BuildingBlockAutoConfiguration {
     fun caseDefinitionBuildingBlockLinkCaseEventListener(
         linkRepository: CaseDefinitionBuildingBlockLinkRepository,
     ) = CaseDefinitionBuildingBlockLinkCaseEventListener(linkRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)
+    fun buildingBlockFormFlowDefinitionService(
+        formFlowService: FormFlowService,
+        definitionChecker: BuildingBlockDefinitionChecker
+    ): BuildingBlockFormFlowDefinitionService {
+        return BuildingBlockFormFlowDefinitionService(formFlowService, definitionChecker)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormFlowManagementResource::class)
+    fun buildingBlockFormFlowManagementResource(
+        buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
+        buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
+    ): BuildingBlockFormFlowManagementResource {
+        return BuildingBlockFormFlowManagementResource(
+            buildingBlockFormFlowDefinitionService,
+            buildingBlockFormFlowDefinitionImporter
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionExporter::class)
+    fun buildingBlockFormFlowDefinitionExporter(
+        objectMapper: ObjectMapper,
+        formFlowService: FormFlowService
+    ): BuildingBlockFormFlowDefinitionExporter {
+        return BuildingBlockFormFlowDefinitionExporter(objectMapper, formFlowService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionImporter::class)
+    fun buildingBlockFormFlowDefinitionImporter(
+        formFlowService: FormFlowService,
+        objectMapper: ObjectMapper,
+        resourceLoader: ResourceLoader,
+    ): BuildingBlockFormFlowDefinitionImporter {
+        return BuildingBlockFormFlowDefinitionImporter(formFlowService, objectMapper, resourceLoader)
+    }
 }

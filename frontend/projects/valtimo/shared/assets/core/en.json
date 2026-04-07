@@ -2334,7 +2334,8 @@
       "general": "General",
       "document": "Document",
       "processes": "Processes",
-      "forms": "Forms"
+      "forms": "Forms",
+      "formFlows": "Form flows"
     },
     "formDefinition": {
       "name": "Name"

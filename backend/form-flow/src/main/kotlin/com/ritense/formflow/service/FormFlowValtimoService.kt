@@ -26,6 +26,7 @@ import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.logging.withLoggingContext
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import org.springframework.stereotype.Service
@@ -57,10 +58,13 @@ class FormFlowValtimoService(
             val jsonPatchBuilder = JsonPatchBuilder()
             val verifiedSubmissionData = objectMapper.createObjectNode()
 
-            val caseDefinitionId = formFlowInstance.formFlowDefinition.id.caseDefinitionId
+            val blueprintId = formFlowInstance.formFlowDefinition.id.blueprintId
+            val resolvedId: BlueprintId = blueprintId.asBuildingBlockDefinitionId()
+                ?: blueprintId.asCaseDefinitionId()
+                ?: throw IllegalStateException("Cannot resolve blueprint id for form '${currentStepTypeProperties.definition}'")
             val validJsonPointers = formDefinitionService.getFormDefinitionByName(
                 currentStepTypeProperties.definition,
-                caseDefinitionId
+                resolvedId
             )
                 .orElseThrow().inputFields
                 .mapNotNull { field -> FormIoFormDefinition.getKey(field).getOrNull() }
