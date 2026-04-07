@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="5.2.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_sender" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+
+
+  <bpmn:process camunda:versionTag="CD:correlation-test-sender:1.0.0" id="correlation-test-sender" isClosed="false" isExecutable="true" name="Correlation test sender" processType="None">
+
+
+    <bpmn:startEvent id="sender-start-event" isInterrupting="true" name="Start" parallelMultiple="false">
+
+
+      <bpmn:outgoing>flow-start-to-task</bpmn:outgoing>
+
+
+    </bpmn:startEvent>
+
+
+    <bpmn:userTask camunda:candidateGroups="ROLE_USER" completionQuantity="1" id="sender-user-task" implementation="##unspecified" isForCompensation="false" name="Complete to send message" startQuantity="1">
+
+
+      <bpmn:incoming>flow-start-to-task</bpmn:incoming>
+
+
+      <bpmn:outgoing>flow-task-to-throw</bpmn:outgoing>
+
+
+    </bpmn:userTask>
+
+
+    <bpmn:intermediateThrowEvent id="sender-throw-event" name="Send correlation message">
+
+
+      <bpmn:incoming>flow-task-to-throw</bpmn:incoming>
+
+
+      <bpmn:outgoing>flow-throw-to-end</bpmn:outgoing>
+
+
+      <bpmn:messageEventDefinition camunda:expression="${correlationService.sendGlobalCatchEventMessageToAll(&quot;correlation-test-message&quot;)}" id="msg-def-sender"/>
+
+
+    </bpmn:intermediateThrowEvent>
+
+
+    <bpmn:endEvent id="sender-end-event" name="End">
+
+
+      <bpmn:incoming>flow-throw-to-end</bpmn:incoming>
+
+
+    </bpmn:endEvent>
+
+
+    <bpmn:sequenceFlow id="flow-start-to-task" sourceRef="sender-start-event" targetRef="sender-user-task"/>
+
+
+    <bpmn:sequenceFlow id="flow-task-to-throw" sourceRef="sender-user-task" targetRef="sender-throw-event"/>
+
+
+    <bpmn:sequenceFlow id="flow-throw-to-end" sourceRef="sender-throw-event" targetRef="sender-end-event"/>
+
+
+  </bpmn:process>
+
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_sender">
+
+
+    <bpmndi:BPMNPlane bpmnElement="correlation-test-sender" id="BPMNPlane_sender">
+
+
+      <bpmndi:BPMNShape bpmnElement="sender-start-event" id="shape-start">
+
+
+        <dc:Bounds height="36" width="36" x="179" y="99"/>
+
+
+      </bpmndi:BPMNShape>
+
+
+      <bpmndi:BPMNShape bpmnElement="sender-user-task" id="shape-task">
+
+
+        <dc:Bounds height="80" width="100" x="270" y="77"/>
+
+
+      </bpmndi:BPMNShape>
+
+
+      <bpmndi:BPMNShape bpmnElement="sender-throw-event" id="shape-throw">
+
+
+        <dc:Bounds height="36" width="36" x="432" y="99"/>
+
+
+      </bpmndi:BPMNShape>
+
+
+      <bpmndi:BPMNShape bpmnElement="sender-end-event" id="shape-end">
+
+
+        <dc:Bounds height="36" width="36" x="532" y="99"/>
+
+
+      </bpmndi:BPMNShape>
+
+
+      <bpmndi:BPMNEdge bpmnElement="flow-start-to-task" id="edge-start-to-task">
+
+
+        <di:waypoint x="215" y="117"/>
+
+
+        <di:waypoint x="270" y="117"/>
+
+
+      </bpmndi:BPMNEdge>
+
+
+      <bpmndi:BPMNEdge bpmnElement="flow-task-to-throw" id="edge-task-to-throw">
+
+
+        <di:waypoint x="370" y="117"/>
+
+
+        <di:waypoint x="432" y="117"/>
+
+
+      </bpmndi:BPMNEdge>
+
+
+      <bpmndi:BPMNEdge bpmnElement="flow-throw-to-end" id="edge-throw-to-end">
+
+
+        <di:waypoint x="468" y="117"/>
+
+
+        <di:waypoint x="532" y="117"/>
+
+
+      </bpmndi:BPMNEdge>
+
+
+    </bpmndi:BPMNPlane>
+
+
+  </bpmndi:BPMNDiagram>
+
+
+</bpmn:definitions>

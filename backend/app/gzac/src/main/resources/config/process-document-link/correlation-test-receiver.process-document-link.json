@@ -1,0 +1,7 @@
+[
+  {
+    "processDefinitionKey" : "correlation-test-receiver",
+    "canInitializeDocument" : true,
+    "startableByUser" : true
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "activityId" : "sender-start-event",
+    "activityType" : "bpmn:StartEvent:start",
+    "formDefinitionName" : "start-form-correlation-test-sender",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : [],
+    "processLinkType" : "form"
+  },
+  {
+    "activityId" : "sender-user-task",
+    "activityType" : "bpmn:UserTask:create",
+    "formDefinitionName" : "empty-form",
+    "viewModelEnabled" : false,
+    "formDisplayType" : "modal",
+    "formSize" : "medium",
+    "subtitles" : [],
+    "processLinkType" : "form"
+  }
+]

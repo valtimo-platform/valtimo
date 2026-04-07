@@ -1,0 +1,9 @@
+[
+  {
+    "key" : "progress",
+    "name" : "Progress",
+    "type" : "standard",
+    "contentKey" : "progress",
+    "showTasks" : false
+  }
+]

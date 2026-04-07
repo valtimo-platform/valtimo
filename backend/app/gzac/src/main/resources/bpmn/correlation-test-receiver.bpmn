@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="5.2.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_receiver" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:process camunda:versionTag="CD:correlation-test-receiver:1.0.0" id="correlation-test-receiver" isClosed="false" isExecutable="true" name="Correlation test receiver" processType="None">
+            
+    
+    <bpmn:startEvent id="receiver-start-event" isInterrupting="true" name="Start" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>flow-start-to-catch</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:intermediateCatchEvent id="receiver-catch-event" name="Wait for correlation message" parallelMultiple="false">
+                  
+      
+      <bpmn:incoming>flow-start-to-catch</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>flow-catch-to-task</bpmn:outgoing>
+                  
+      
+      <bpmn:messageEventDefinition id="msg-def-receiver" messageRef="Message_correlation_test"/>
+                
+    
+    </bpmn:intermediateCatchEvent>
+            
+    
+    <bpmn:userTask camunda:candidateGroups="ROLE_USER" completionQuantity="1" id="receiver-message-received-task" implementation="##unspecified" isForCompensation="false" name="Message received" startQuantity="1">
+                  
+      
+      <bpmn:incoming>flow-catch-to-task</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>flow-task-to-end</bpmn:outgoing>
+                
+    
+    </bpmn:userTask>
+            
+    
+    <bpmn:endEvent id="receiver-end-event" name="End">
+                  
+      
+      <bpmn:incoming>flow-task-to-end</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="flow-start-to-catch" sourceRef="receiver-start-event" targetRef="receiver-catch-event"/>
+            
+    
+    <bpmn:sequenceFlow id="flow-catch-to-task" sourceRef="receiver-catch-event" targetRef="receiver-message-received-task"/>
+            
+    
+    <bpmn:sequenceFlow id="flow-task-to-end" sourceRef="receiver-message-received-task" targetRef="receiver-end-event"/>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmn:message id="Message_correlation_test" name="correlation-test-message"/>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_receiver">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="correlation-test-receiver" id="BPMNPlane_receiver">
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="receiver-start-event" id="shape-start">
+                        
+        
+        <dc:Bounds height="36" width="36" x="179" y="99"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="receiver-catch-event" id="shape-catch">
+                        
+        
+        <dc:Bounds height="36" width="36" x="272" y="99"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="receiver-message-received-task" id="shape-task">
+                        
+        
+        <dc:Bounds height="80" width="100" x="370" y="77"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="receiver-end-event" id="shape-end">
+                        
+        
+        <dc:Bounds height="36" width="36" x="532" y="99"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow-start-to-catch" id="edge-start-to-catch">
+                        
+        
+        <di:waypoint x="215" y="117"/>
+                        
+        
+        <di:waypoint x="272" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow-catch-to-task" id="edge-catch-to-task">
+                        
+        
+        <di:waypoint x="308" y="117"/>
+                        
+        
+        <di:waypoint x="370" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow-task-to-end" id="edge-task-to-end">
+                        
+        
+        <di:waypoint x="470" y="117"/>
+                        
+        
+        <di:waypoint x="532" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

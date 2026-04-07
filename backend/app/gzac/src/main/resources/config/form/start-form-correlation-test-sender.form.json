@@ -1,0 +1,12 @@
+{
+  "display" : "form",
+  "components" : [
+    {
+      "key" : "submit",
+      "type" : "button",
+      "input" : true,
+      "label" : "translate:bezwaarStartForm.start",
+      "tableView" : false
+    }
+  ]
+}
