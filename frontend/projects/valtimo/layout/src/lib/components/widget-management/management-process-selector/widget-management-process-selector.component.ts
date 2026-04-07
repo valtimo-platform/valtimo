@@ -66,9 +66,7 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
           ? this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey
           : undefined;
 
-        return items
-          .filter((item: StartableItem) => item.type === 'PROCESS')
-          .map((item: StartableItem) => {
+        return items.map((item: StartableItem) => {
           const mappedItem: ListItem = {
             content: item.name || item.key,
             key: item.key,

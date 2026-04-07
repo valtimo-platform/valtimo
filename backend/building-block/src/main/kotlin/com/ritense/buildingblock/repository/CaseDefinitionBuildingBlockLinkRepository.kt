@@ -20,6 +20,8 @@ import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 interface CaseDefinitionBuildingBlockLinkRepository :
@@ -32,5 +34,7 @@ interface CaseDefinitionBuildingBlockLinkRepository :
         buildingBlockDefinitionId: BuildingBlockDefinitionId
     ): CaseDefinitionBuildingBlockLink?
 
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM CaseDefinitionBuildingBlockLink l WHERE l.caseDefinitionId = :caseDefinitionId")
     fun deleteAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId)
 }
