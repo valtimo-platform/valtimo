@@ -57,6 +57,7 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
@@ -119,13 +120,15 @@ class FormFlowAutoConfiguration {
         formFlowAdditionalPropertiesSearchRepository: FormFlowAdditionalPropertiesSearchRepository,
         formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>,
         caseDefinitionChecker: CaseDefinitionChecker,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): FormFlowService {
         return FormFlowService(
             formFlowDefinitionRepository,
             formFlowInstanceRepository,
             formFlowAdditionalPropertiesSearchRepository,
             formFlowStepTypeHandlers,
-            caseDefinitionChecker
+            caseDefinitionChecker,
+            buildingBlockDefinitionChecker
         )
     }
 

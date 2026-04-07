@@ -74,6 +74,10 @@ interface FormFlowEditorParams {
   caseDefinitionVersionTag: string;
 }
 
+interface FormFlowRouteParams {
+  formFlowDefinitionKey: string;
+}
+
 export {
   ListFormFlowDefinition,
   FormFlowDefinition,
@@ -86,4 +90,5 @@ export {
   DeleteFormFlowsRequest,
   LoadedValue,
   FormFlowEditorParams,
+  FormFlowRouteParams,
 };
