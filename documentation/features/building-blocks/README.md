@@ -178,3 +178,208 @@ separately when you want to move or reuse it on its own.
 {% hint style="info" %}
 Before importing, make sure any required process definitions or plugin configurations already exist in your environment.
 {% endhint %}
+
+## Auto-deployment
+
+Building blocks can be configured via auto-deployment files in the application resources. These files are loaded at
+application startup.
+
+### Building block definition
+
+The building block definition and its related files are placed under:
+
+```
+config/building-block/<key>/<version>/
+├── building-block/
+│   ├── definition/<key>.building-block-definition.json
+│   ├── building-block-definition-main-process-definition.json
+│   └── building-block-process-definition-links.json  (optional)
+├── document/
+│   └── definition/<key>.schema.document-definition.json
+├── bpmn/
+│   └── <process-key>.bpmn
+├── form/
+│   └── <form-name>.form.json
+├── form-flow/
+│   └── <form-flow-key>.form-flow.json  (optional)
+└── process-link/
+    └── <process-key>.process-link.json
+```
+
+#### Building block definition file
+
+`<key>.building-block-definition.json` defines the building block metadata:
+
+```json
+{
+    "key": "household-verification",
+    "name": "Household Verification",
+    "description": "Verifies the household composition of the applicant.",
+    "versionTag": "1.0.0",
+    "final": false
+}
+```
+
+#### Main process definition
+
+`building-block-definition-main-process-definition.json` sets the main process for the building block:
+
+```json
+{
+    "processDefinitionKey": "household-verification-process"
+}
+```
+
+#### Additional process definition links
+
+If the building block uses more than one process (e.g. sub-processes called via call activities),
+`building-block-process-definition-links.json` lists the additional processes:
+
+```json
+[
+    {
+        "processDefinitionKey": "brp-lookup",
+        "main": false
+    }
+]
+```
+
+### Start form
+
+Building blocks that are started ad-hoc (not from a call activity in a case process) require a **start form**.
+This is a Form.io form linked to the `StartEvent` of the building block's main process via a process link.
+
+1. Create a Form.io form definition in the building block's `form/` directory (e.g. `start-form-income-check.form.json`).
+2. Add a process link entry in the building block's `process-link/<process-key>.process-link.json` that links the
+   `StartEvent` to the form:
+
+```json
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-income-check"
+    }
+]
+```
+
+The `formDefinitionName` must match the name of the form file (without the `.form.json` suffix).
+
+{% hint style="info" %}
+The start form is what users see when they manually start a building block instance. Without it, the building block
+cannot be started ad-hoc. Building blocks that are only used via call activities from a case process do not require
+a start form.
+{% endhint %}
+
+### Linking building blocks to a case
+
+To link building blocks to a case definition via auto-deployment, create a file with the naming pattern
+`<name>.case-building-block-links.json` in the case's `building-block-link/` directory:
+
+```
+config/case/<case-key>/<version>/
+└── building-block-link/
+    └── <name>.case-building-block-links.json
+```
+
+This file contains an array of building block links, each specifying the building block to use, plugin configuration
+mappings, and input/output data mappings:
+
+```json
+[
+    {
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {
+            "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        },
+        "inputMappings": [
+            {
+                "source": "doc:/applicantName",
+                "target": "doc:/applicantName"
+            },
+            {
+                "source": "doc:/householdSize",
+                "target": "doc:/householdSize"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/eligibilityResult",
+                "target": "doc:/incomeEligibilityResult"
+            }
+        ]
+    }
+]
+```
+
+| Field                               | Description                                                                                                                     |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `buildingBlockDefinitionKey`        | The key of the building block definition to link.                                                                               |
+| `buildingBlockDefinitionVersionTag` | The version of the building block to use.                                                                                       |
+| `pluginConfigurationMappings`       | Maps plugin definition keys used in the building block to specific plugin configuration IDs in the environment.                 |
+| `inputMappings`                     | Maps case document fields (`source`) to building block document fields (`target`). Uses `doc:/` prefix for document paths.      |
+| `outputMappings`                    | Maps building block document fields (`source`) back to case document fields (`target`). Uses `doc:/` prefix for document paths. |
+
+{% hint style="warning" %}
+When building block links are imported, all existing links for the case definition are replaced with the links from
+the file. Make sure the file contains all desired building block links for the case.
+{% endhint %}
+
+### Building block process links
+
+Building block processes support the same process link types as case processes. The process link file is placed at
+`config/building-block/<key>/<version>/process-link/<process-key>.process-link.json`.
+
+In addition to form and form-flow links, building block processes can include **plugin** and **building block**
+process links (for nested building blocks). Plugin process links inside building blocks use `pluginDefinitionKey`
+instead of `pluginConfigurationId`, because the actual plugin configuration is resolved at runtime through the
+plugin configuration mappings:
+
+```json
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-household-verification"
+    },
+    {
+        "activityId": "CallIncomeCheckActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:applicantName",
+                "target": "applicantName"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "eligibilityResult",
+                "target": "doc:incomeEligibilityResult",
+                "syncTiming": "END"
+            }
+        ]
+    },
+    {
+        "activityId": "PatchZaakTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginDefinitionKey": "zakenapi",
+        "pluginActionDefinitionKey": "patch-zaak",
+        "actionProperties": {
+            "explanation": "Verification completed"
+        }
+    }
+]
+```
+
+{% hint style="info" %}
+Building block process links for call activities use `doc:` prefix (without leading slash) for source fields and
+bare field names for target fields in input mappings. Output mappings use bare field names for source and `doc:`
+prefix for target, with an optional `syncTiming` field (`END` by default).
+{% endhint %}
