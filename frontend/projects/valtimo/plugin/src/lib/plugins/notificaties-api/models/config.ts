@@ -22,4 +22,10 @@ interface NotificatiesApiConfig extends PluginConfigurationData {
   authHeader: string;
 }
 
-export {NotificatiesApiConfig};
+interface ReceiveNotificatieConfig {
+  kanaal?: string;
+  actie?: string;
+  kenmerken?: {[key: string]: string};
+}
+
+export {NotificatiesApiConfig, ReceiveNotificatieConfig};

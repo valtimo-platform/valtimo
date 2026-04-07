@@ -21,9 +21,14 @@ import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.plugin.annotation.Plugin
+import com.ritense.plugin.annotation.PluginAction
+import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.processlink.domain.ActivityTypeWithEventName.INTERMEDIATE_CATCH_EVENT_END
+import com.ritense.processlink.domain.ActivityTypeWithEventName.MESSAGE_START_EVENT_START
+import com.ritense.processlink.domain.ActivityTypeWithEventName.RECEIVE_TASK_END
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
@@ -52,6 +57,20 @@ class NotificatiesApiPlugin(
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
+
+    @PluginAction(
+        key = "receive-notificatie",
+        title = "Ontvang een notificatie",
+        description = "Wacht op een binnenkomende notificatie via de Notificaties API",
+        activityTypes = [RECEIVE_TASK_END, INTERMEDIATE_CATCH_EVENT_END, MESSAGE_START_EVENT_START]
+    )
+    fun receiveNotificatie(
+        @PluginActionProperty kanaal: String?,
+        @PluginActionProperty actie: String?,
+        @PluginActionProperty kenmerken: Map<String, String>?,
+    ) {
+        logger.debug { "Receive notificatie action invoked for kanaal='$kanaal', actie='$actie', kenmerken=$kenmerken" }
+    }
 
     fun ensureKanalenExist(kanalen: Set<String>) = withLoggingContext(
         PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()

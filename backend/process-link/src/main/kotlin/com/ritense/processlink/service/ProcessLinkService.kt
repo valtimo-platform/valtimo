@@ -98,6 +98,13 @@ class ProcessLinkService(
         return processLinkRepository.findByProcessDefinitionIdAndActivityType(processDefinitionId, activityType)
     }
 
+    fun getProcessLinksByProcessDefinitionIdAndActivityTypes(
+        @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String,
+        activityTypes: List<ActivityTypeWithEventName>
+    ): ProcessLink? {
+        return processLinkRepository.findByProcessDefinitionIdAndActivityTypeIn(processDefinitionId, activityTypes)
+    }
+
     @Transactional(noRollbackFor = [ProcessLinkExistsException::class])
     @Throws(ProcessLinkExistsException::class)
     fun createProcessLink(createRequest: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
