@@ -30,6 +30,11 @@ export interface UploadCaseOptions {
   archiveName?: string;
 }
 
+export interface ConfigureStepResult {
+  response: Awaited<ReturnType<Page['waitForResponse']>>;
+  key: string;
+}
+
 export class CaseManagementPage {
   constructor(
     private readonly page: Page,
@@ -50,7 +55,7 @@ export class CaseManagementPage {
   }
 
   get uploadCaseButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.uploadButton);
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.uploadButton).first();
   }
 
   get fileUploader() {
@@ -133,14 +138,14 @@ export class CaseManagementPage {
     await this.fillCaseForm();
   }
 
-  async uploadCase(options?: UploadCaseOptions) {
+  async uploadCase(options?: UploadCaseOptions): Promise<ConfigureStepResult> {
     const archiveName = options?.archiveName ?? DEFAULT_CASE_ARCHIVE;
     await this.uploadCaseButton.click();
     await this.pluginConfigurationStep();
     await this.uploadFileStep(archiveName);
-    const response = await this.configureStep();
+    const result = await this.configureStep();
 
-    if (response.status() === 200) {
+    if (result.response.status() === 200) {
       // Success: click Next to advance through remaining steps
       await this.uploadWizardNextButton.click();
       await this.accessControlStep();
@@ -150,6 +155,8 @@ export class CaseManagementPage {
       await expect(this.uploadWizardFinishButton).toBeVisible();
       await this.uploadWizardFinishButton.click();
     }
+
+    return result;
   }
 
   async uploadInvalidCase(options?: UploadCaseOptions) {
@@ -199,10 +206,16 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeDisabled();
   }
 
-  async configureStep() {
+  async configureStep(): Promise<ConfigureStepResult> {
     await expect(this.configureNameInput).toBeVisible();
     await expect(this.configureKeyInput).toBeVisible();
     await expect(this.configureVersionTag).toBeVisible();
+
+    if (await this.page.getByText('Cannot import').isVisible({timeout: 1000}).catch(() => false)) {
+      const currentKey = await this.configureKeyInput.inputValue();
+      const uniqueSuffix = Date.now().toString(36);
+      await this.changeConfigureKey(`${currentKey}-${uniqueSuffix}`);
+    }
 
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
@@ -217,10 +230,11 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled();
     await this.uploadWizardNextButton.click();
 
-    return await responsePromise;
+    const key = await this.configureKeyInput.inputValue();
+    return {response: await responsePromise, key};
   }
 
-  async configureStepWithCustomKey(name: string, key: string) {
+  async configureStepWithCustomKey(name: string, key: string): Promise<ConfigureStepResult> {
     await expect(this.configureNameInput).toBeVisible();
 
     // Clear and fill custom name
@@ -230,11 +244,17 @@ export class CaseManagementPage {
     // Enable key editing and fill custom key
     await this.changeConfigureKey(key);
 
+    if (await this.page.getByText('Cannot import').isVisible({timeout: 1000}).catch(() => false)) {
+      const uniqueSuffix = Date.now().toString(36);
+      await this.changeConfigureKey(`${key}-${uniqueSuffix}`);
+    }
+
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
     if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
       await overrideCheckbox.locator('input[type="checkbox"]').click({force: true});
     }
+
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -243,7 +263,8 @@ export class CaseManagementPage {
     await expect(this.uploadWizardNextButton).toBeEnabled();
     await this.uploadWizardNextButton.click();
 
-    return await responsePromise;
+    const actualKey = await this.configureKeyInput.inputValue();
+    return {response: await responsePromise, key: actualKey};
   }
 
   async changeConfigureKey(key: string) {

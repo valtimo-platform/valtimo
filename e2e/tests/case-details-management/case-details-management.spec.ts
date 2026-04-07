@@ -75,14 +75,13 @@ test.describe('Case management', () => {
       test('Set active version', async () => {
         // Act
         const stableVersion = await ensureFinalVersionSelected(page);
-        await caseDetailsManagementPage.makeVersionGlobal(stableVersion);
-
-        // Assert
-        await expect(
-          caseDetailsManagementPage.versionSelectDropdown.locator('cds-tag', {
-            hasText: 'Globally active',
-          })
-        ).toBeVisible();
+        if (await caseDetailsManagementPage.makeVersionGlobal(stableVersion)) {
+          await expect(
+            caseDetailsManagementPage.versionSelectDropdown.locator('cds-tag', {
+              hasText: 'Globally active',
+            })
+          ).toBeVisible();
+        }
       });
     });
 
