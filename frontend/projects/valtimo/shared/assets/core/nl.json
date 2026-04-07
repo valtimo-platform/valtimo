@@ -504,7 +504,13 @@
     "setGlobalActiveVersionConfigurationIssuesWarning": "Deze versie heeft onopgeloste configuratieproblemen. Los deze op voordat u deze als actieve versie instelt.",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie", "draft": "Concept", "status": "Status"},
+    "listColumns": {
+      "name": "Naam",
+      "key": "Key",
+      "version": "Versie",
+      "draft": "Concept",
+      "status": "Status"
+    },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",
     "globalActiveVersionModal": {
@@ -642,6 +648,7 @@
       "general": "Algemeen",
       "cases": "Configuratie",
       "processes": "Processen",
+      "actions": "Acties",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Formulieren",
@@ -725,6 +732,22 @@
       }
     },
     "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "actions": {
+      "columns": {
+        "name": "Naam",
+        "type": "Type"
+      },
+      "addItem": "Item toevoegen",
+      "noResults": "Geen acties geconfigureerd",
+      "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
+      "infoNotification": {
+        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+      },
+      "type": {
+        "PROCESS": "Proces",
+        "BUILDING_BLOCK": "Bouwblok"
+      }
+    },
     "importDefinition": {
       "title": "Case-definitie importeren",
       "startUpload": "Begin het uploaden",

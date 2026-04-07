@@ -632,6 +632,7 @@
       "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
+      "actions": "Actions",
       "document": "Document",
       "zgw": "ZGW",
       "forms": "Forms",
@@ -715,6 +716,22 @@
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "actions": {
+      "columns": {
+        "name": "Name",
+        "type": "Type"
+      },
+      "addItem": "Add item",
+      "noResults": "No actions configured",
+      "noResultsDescription": "No actions are configured for this case type.",
+      "infoNotification": {
+        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+      },
+      "type": {
+        "PROCESS": "Process",
+        "BUILDING_BLOCK": "Building block"
+      }
+    },
     "importDefinition": {
       "title": "Import case definition",
       "startUpload": "Start upload",
