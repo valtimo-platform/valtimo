@@ -157,7 +157,6 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(caseDefinitionKey);
     this._caseDefinitionVersionTag = caseDefinitionVersionTag;
-    this.processDefinitionKey$.next(item.key);
     this.processDefinitionId$.next(item.processDefinitionId);
     this.processName$.next(item.name || item.key);
 
@@ -167,6 +166,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     } else {
       this._buildingBlockDefinitionKey = null;
       this._buildingBlockDefinitionVersionTag = null;
+      this.processDefinitionKey$.next(item.key);
     }
 
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
