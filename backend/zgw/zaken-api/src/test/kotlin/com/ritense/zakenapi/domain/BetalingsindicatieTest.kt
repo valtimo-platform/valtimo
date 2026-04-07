@@ -29,14 +29,14 @@ class BetalingsindicatieTest {
 
     @Test
     fun `should deserialize to null when empty`() {
-        val result: Betalingsindicatie = objectMapper.treeToValue(TextNode(""))
+        val result: Betalingsindicatie? = objectMapper.treeToValue(TextNode(""))
 
         assertNull(result)
     }
 
     @Test
     fun `should deserialize to null when value does not exist`() {
-        val result: Betalingsindicatie = objectMapper.treeToValue(TextNode("invalid key"))
+        val result: Betalingsindicatie? = objectMapper.treeToValue(TextNode("invalid key"))
 
         assertNull(result)
     }
