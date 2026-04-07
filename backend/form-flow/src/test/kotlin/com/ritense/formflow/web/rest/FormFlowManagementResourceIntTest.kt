@@ -84,7 +84,7 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     @Test
     fun `should delete form flow definition by key`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf()))
+        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId.existingId("test", caseDefinitionId), "start-step", setOf()))
         mockMvc
             .perform(delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}", "profile", "1.0.0", "test"))
             .andDo(print())
@@ -114,7 +114,7 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     @Test
     fun `should update form flow definition`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf()))
+        formFlowService.save(FormFlowDefinition(FormFlowDefinitionId.existingId("test", caseDefinitionId), "start-step", setOf()))
 
         val definition = FormFlowDefinitionDto(
             key = "test",
