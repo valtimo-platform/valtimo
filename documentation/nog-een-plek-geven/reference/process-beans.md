@@ -60,6 +60,10 @@ fun sendCatchEventMessage(message: String, businessKey: String)
 fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?)
 fun sendCatchEventMessageToAll(message: String, businessKey: String)
 fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessage(message: String)
+fun sendGlobalCatchEventMessage(message: String, variables: Map<String, Any>?)
+fun sendGlobalCatchEventMessageToAll(message: String)
+fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any>?)
 ```
 
 Information on all methods can be found [here](../../features/process/correlation-service.md).

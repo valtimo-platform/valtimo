@@ -6,9 +6,21 @@
 
 ## New Features
 
-* **New feature title**
+* **Form flow management for building blocks**
 
-  New feature explanation.
+  Building blocks now support form flow definitions. Form flows can be created, edited, and deleted through the **Form flows** tab in building block
+  management. They are also included automatically in building block imports and exports. For more information, see
+  [Building block form flows](../../features/building-blocks/form-flows.md).
+
+* **Added the Documenten API Preview plugin**
+
+  The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
+  Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
+
+* **Cross-case message correlation**
+
+  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
+
 
 ## Enhancements
 
@@ -16,6 +28,13 @@
 
   New enhancement explanation.
 
+## Security
+
+* **Fixed SpEL injection vulnerability**
+
+  `DocumentMigrationService` and `Condition` evaluated user-supplied SpEL expressions using `StandardEvaluationContext`, which grants unrestricted access to Java types and methods. An authenticated admin could exploit this to execute arbitrary OS commands, exfiltrate environment variables, or load arbitrary classes. Both classes now use `SimpleEvaluationContext`, which only allows property access and blocks type references, method invocation, and constructors.
+
 ## Bugfixes
 
+* Fixed outbox circuit breaker never recovering from OPEN state.
 * The case task list now loads significantly faster when building blocks are used.

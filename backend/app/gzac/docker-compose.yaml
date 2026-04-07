@@ -97,6 +97,13 @@ services:
               rabbitmq-server
             "
 
+    # Gotenberg (PDF conversion API)
+    gotenberg:
+        image: gotenberg/gotenberg:8
+        container_name: gotenberg-pdf-conversion-api
+        ports:
+            - "3000:3000"
+
     # ZGW
 
     openzaak:

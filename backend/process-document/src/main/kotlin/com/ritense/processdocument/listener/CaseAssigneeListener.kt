@@ -17,7 +17,6 @@ package com.ritense.processdocument.listener
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
@@ -61,32 +60,35 @@ class CaseAssigneeListener(
             )
 
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-                val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
-                val tasks = runWithoutAuthorization {
-                    operatonTaskService.findTasks(
-                        byProcessInstanceBusinessKey(caseDocument.id().toString())
-                            .and(byCandidateGroups(assignee.roles))
-                    )
-
-                }
-
-                logger.debug { "Updating assignee on ${tasks.size} task(s)" }
-                for (task in tasks) {
-                    try {
-                        authorizationService.requirePermission(
-                            DelegateUserEntityAuthorizationRequest(
-                                OperatonTask::class.java,
-                                OperatonTaskActionProvider.Companion.ASSIGNABLE,
-                                assignee.username,
-                                task
-                            )
+                val assigneeUsername = caseDocument.assigneeId()
+                if (assigneeUsername != null) {
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val tasks = runWithoutAuthorization {
+                        operatonTaskService.findTasks(
+                            byProcessInstanceBusinessKey(caseDocument.id().toString())
+                                .and(byCandidateGroups(assignee.roles))
                         )
-                    } catch (_: AccessDeniedException) {
-                        logger.info { "Auto assigning user to task ${task.id} failed." }
-                        continue
+
                     }
-                    runWithoutAuthorization {
-                        operatonTaskService.assign(task.id, assignee.id)
+
+                    logger.debug { "Updating assignee on ${tasks.size} task(s)" }
+                    for (task in tasks) {
+                        try {
+                            authorizationService.requirePermission(
+                                DelegateUserEntityAuthorizationRequest(
+                                    OperatonTask::class.java,
+                                    OperatonTaskActionProvider.Companion.ASSIGNABLE,
+                                    assignee.username,
+                                    task
+                                )
+                            )
+                        } catch (_: AccessDeniedException) {
+                            logger.info { "Auto assigning user to task ${task.id} failed." }
+                            continue
+                        }
+                        runWithoutAuthorization {
+                            operatonTaskService.assign(task.id, assignee.id)
+                        }
                     }
                 }
             }

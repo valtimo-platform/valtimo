@@ -21,13 +21,14 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, forkJoin, map, Observable, take, switchMap, catchError, of} from 'rxjs';
 import {CandidateUser, BulkAssign} from '../../models';
 import {CaseBulkAssignService} from '../../services';
 import {CAN_ASSIGN_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {PermissionService} from '@valtimo/access-control';
+import {TeamsApiService} from '@valtimo/teams';
 
 @Component({
   standalone: false,
@@ -117,27 +118,49 @@ export class CaseBulkAssignModalComponent {
     )
   );
 
+  public readonly teamItems$: Observable<ListItem[]> = this.teamsApiService.getTeams({size: 1000}).pipe(
+    map(page =>
+      page.content.map(team => ({
+        id: team.key,
+        content: team.title,
+        selected: this.formGroup.get('team')?.value?.id === team.key,
+      }))
+    ),
+    catchError(() => of([] as ListItem[]))
+  );
+
   public formGroup: FormGroup = this.fb.group({
-    assignee: this.fb.control(null, Validators.required),
+    assignee: this.fb.control(null),
+    team: this.fb.control(null),
   });
+
+  public get isFormValid(): boolean {
+    return !!this.formGroup.get('assignee')?.value || !!this.formGroup.get('team')?.value;
+  }
 
   constructor(
     private bulkAssignService: CaseBulkAssignService,
     private fb: FormBuilder,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private teamsApiService: TeamsApiService
   ) {}
 
   public closeModal(confirm?: boolean): void {
     const assignee: ListItem | null = this.formGroup.get('assignee')?.value ?? null;
+    const team: ListItem | null = this.formGroup.get('team')?.value ?? null;
 
-    if (!confirm || !assignee?.id) {
+    if (!confirm || (!assignee?.id && !team?.id)) {
       this.closeEvent.emit(null);
       this.formGroup.reset();
       return;
     }
 
     this.permittedDocumentIds$.pipe(take(1)).subscribe((permittedDocumentIds: string[]) => {
-      this.closeEvent.emit({ids: permittedDocumentIds, assigneeId: assignee.id});
+      this.closeEvent.emit({
+        ids: permittedDocumentIds,
+        assigneeId: assignee?.id ?? undefined,
+        assignedTeamKey: team?.id ?? undefined,
+      });
       this.formGroup.reset();
     });
   }
