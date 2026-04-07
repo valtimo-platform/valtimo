@@ -8,9 +8,8 @@
 
 ## Enhancements
 
-* **Store large process variable strings**
-
-  Process variables with String values exceeding 4000 characters are now stored as serialized Java objects instead of plain text, preventing data truncation in the Camunda variables table.
+* **Introduced support for strings exceeding 4000 characters in Camunda process variables**  
+  Long strings are now serialized as Java objects to bypass the database column size limit, and are deserialized back to strings transparently.
 
 ## Bugfixes
 
