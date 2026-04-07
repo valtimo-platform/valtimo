@@ -17,6 +17,11 @@
   The new "Documenten API Preview" plugin allows users to preview documents stored via the "Documenten API".
   Documentation on configuring the "Documenten API Preview" plugin can be found in the [Documenten API Preview plugin configuration guide](../../../features/zgw/zgw-plugins/configure-documenten-api-preview-plugin.md).
 
+* **Cross-case message correlation**
+
+  New `sendGlobalCatchEventMessage` and `sendGlobalCatchEventMessageToAll` methods on `correlationService` allow messages to be correlated to process instances across all cases, without requiring a business key. See [correlating messages](../../features/process/correlation-service.md) for details.
+
+
 ## Enhancements
 
 * **New enhancement title**
