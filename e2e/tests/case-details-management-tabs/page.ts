@@ -96,8 +96,8 @@ export class CaseDetailsManagementTabsPage {
 
   async deleteTab(title: string) {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.getByRole('menu').locator('button').click();
-    await this.page.getByRole('menuitem', {name: 'Delete'}).click();
+    await row.locator('.v-overflow-menu__trigger').click();
+    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 

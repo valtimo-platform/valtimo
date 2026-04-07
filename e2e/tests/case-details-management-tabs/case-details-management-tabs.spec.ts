@@ -38,6 +38,17 @@ test.describe('Case details management — Tabs', () => {
     await page.goto('/');
     await tabsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await tabsPage.ensureDraftVersionSelected();
+
+    // Clean up leftover tabs from previous failed runs
+    const tabKey = tabTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const updatedTabKey = tabTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyA = tabReorderTestData.titleA.toLowerCase().replace(/\s+/g, '-');
+    const reorderKeyB = tabReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
+    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, tabKey);
+    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, updatedTabKey);
+    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyA);
+    await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyB);
+
     // ensureDraftVersionSelected may redirect to /general — navigate to Case details > Tabs
     await tabsPage.switchToCaseDetailsTabs();
   });
