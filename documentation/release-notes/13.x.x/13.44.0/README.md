@@ -32,14 +32,15 @@ noticeably on configurations with large document schemas or many process links.
 
 ## Bugfixes
 
-| Area | Fix |
-|------|-----|
-| Case configuration | A field path the case model does not allow is rejected instead of accepted |
-| Case definitions | A new draft based on an existing version of a case with building blocks can be created again |
-| Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
-| Cases | The progress tab shows the name of every process, instead of leaving some blank |
-| Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
-| List columns | The **Path** field is empty again when the column modal is reopened after cancelling |
-| Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
-| Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
-| Field pickers | Lists in a case can be picked as a field, not only as a collection |
+| Area               | Fix                                                                                                                      |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------|
+| Case configuration | A field path the case model does not allow is rejected instead of accepted                                               |
+| Case definitions   | A new draft based on an existing version of a case with building blocks can be created again                             |
+| Cases              | The process selector on the Progress tab shows long process names in full instead of cutting them off                    |
+| Cases              | The progress tab shows the name of every process, instead of leaving some blank                                          |
+| Plugins            | Re-saving a plugin configuration removes settings from older versions that are no longer used                            |
+| List columns       | The **Path** field is empty again when the column modal is reopened after cancelling                                     |
+| Plugins            | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
+| Field pickers      | A case model with an unreadable reference no longer stops every field picker from loading                                |
+| Field pickers      | Lists in a case can be picked as a field, not only as a collection                                                       |
+| Verzoek plugin     | Creating a zaakdossier with an empty initiator type no longer fails when creating the initiator zaakrol                  |
