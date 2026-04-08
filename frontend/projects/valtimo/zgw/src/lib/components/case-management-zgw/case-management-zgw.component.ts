@@ -87,6 +87,7 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
                 supportsSortableColumns: false,
                 supportsTrefwoorden: false,
                 supportsUpdatingDefinitiveDocument: false,
+                supportsObjectInformatieObjecten: false,
               } as SupportedDocumentenApiFeatures)
             )
           )

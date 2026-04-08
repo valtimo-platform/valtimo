@@ -29,6 +29,8 @@ import com.ritense.documentenapi.event.DocumentInformatieObjectViewed
 import com.ritense.documentenapi.event.DocumentListed
 import com.ritense.documentenapi.event.DocumentStored
 import com.ritense.documentenapi.event.DocumentUpdated
+import com.ritense.documentenapi.event.ObjectInformatieObjectCreated
+import com.ritense.documentenapi.event.ObjectInformatieObjectDeleted
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.outbox.OutboxService
 import com.ritense.resource.authorization.ResourcePermission
@@ -179,6 +181,9 @@ class DocumentenApiClient(
         // the only page sizes that are supported are those that can fit n times in the itemsPerPage
         require(ITEMS_PER_PAGE % pageable.pageSize == 0) { "Page size is not supported" }
         requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
+        val objectFilterUrl = documentSearchRequest.zaakUrl ?: documentSearchRequest.objectUrl
+        requireNotNull(objectFilterUrl) { "Either zaakUrl or objectUrl is required" }
+
         if (!authorizationService.hasPermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
@@ -205,7 +210,8 @@ class DocumentenApiClient(
                         .optionalQueryParam("creatiedatum__gte", documentSearchRequest.creatiedatumFrom)
                         .optionalQueryParam("creatiedatum__lte", documentSearchRequest.creatiedatumTo)
                         .optionalQueryParam("trefwoorden", documentSearchRequest.trefwoorden?.joinToString(","))
-                        .queryParam("objectinformatieobjecten__object", documentSearchRequest.zaakUrl)
+                        .queryParam("objectinformatieobjecten__object", objectFilterUrl)
+                        .optionalQueryParam("objectinformatieobjecten__objectType", documentSearchRequest.objectType)
                         .queryParam("page", pageToRequest)
                         .addSortParameter(pageable)
                         .build()
@@ -366,6 +372,65 @@ class DocumentenApiClient(
             DocumentUpdated(result.url.toASCIIString(), objectMapper.valueToTree(result))
         }
         return result
+    }
+
+    fun linkDocument(
+        authentication: DocumentenApiAuthentication,
+        baseUrl: URI,
+        caseDocumentId: UUID,
+        request: ObjectInformatieObjectRequest,
+    ): ObjectInformatieObject {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.CREATE,
+                ResourcePermission(caseDocumentId)
+            )
+        )
+
+        val result = restClient(authentication)
+            .post()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("objectinformatieobjecten")
+                    .build()
+            }
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body<ObjectInformatieObject>()!!
+
+        outboxService.send {
+            ObjectInformatieObjectCreated(result.url.toString(), objectMapper.valueToTree(result))
+        }
+        return result
+    }
+
+    fun deleteDocumentLink(
+        authentication: DocumentenApiAuthentication,
+        baseUrl: URI,
+        caseDocumentId: UUID,
+        url: URI,
+    ) {
+        require(url.toString().startsWith(baseUrl.toString())) {
+            "objectInformatieObjectUrl '$url' does not start with baseUrl '$baseUrl'"
+        }
+
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ResourcePermission::class.java,
+                ResourcePermissionActionProvider.DELETE,
+                ResourcePermission(caseDocumentId)
+            )
+        )
+
+        restClient(authentication)
+            .delete()
+            .uri(url)
+            .retrieve()
+            .toBodilessEntity()
+
+        outboxService.send { ObjectInformatieObjectDeleted(url.toASCIIString()) }
     }
 
     private fun toObjectUrl(baseUrl: URI, objectId: String): URI {

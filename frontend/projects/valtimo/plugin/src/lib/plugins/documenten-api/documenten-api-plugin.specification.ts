@@ -21,6 +21,9 @@ import {DocumentenApiConfigurationComponent} from './components/documenten-api-c
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
+import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
+import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -31,7 +34,10 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
     'store-uploaded-document-in-parts': StoreUploadedDocumentInPartsConfigurationComponent,
     'download-document': DownloadDocumentConfigurationComponent,
+    'link-document-to-object': LinkDocumentToObjectConfigurationComponent,
+    'delete-document-link': DeleteDocumentLinkConfigurationComponent,
   },
+  functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
     nl: {
       title: 'Documenten API',
@@ -40,6 +46,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-uploaded-document': 'Geupload document opslaan',
       'store-uploaded-document-in-parts': 'Geupload document opslaan in bestandsdelen',
       'download-document': 'Download document',
+      'link-document-to-object': 'Document koppelen aan object',
+      'delete-document-link': 'Documentkoppeling verwijderen',
       storeUploadedDocumentMessage:
         'Het opslaan van een geupload document heeft geen configuratie nodig.',
       storeUploadedDocumentInPartsMessage:
@@ -96,6 +104,28 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
       processVariableName:
         'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      linkDocumentToObjectMessage:
+        "Koppelt het document waarvan de URL is opgeslagen in de procesvariabele 'documentUrl' aan een object. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      linkDocumentToObjectExperimentalWarning:
+        '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
+      deleteDocumentLinkMessage:
+        "Verwijdert een objectinformatieobject-koppeling op basis van de opgegeven URL. " +
+        "De koppelingsactie 'Document koppelen aan object' slaat deze URL op in de procesvariabele 'objectInformatieObjectUrl'. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      deleteDocumentLinkExperimentalWarning:
+        '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "De URL van het object waaraan het document gekoppeld moet worden. " +
+        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren, bijv. 'pv:objectUrl'.",
+      objectType: 'Objecttype',
+      objectTypeTooltip:
+        "Het type van het object, bijv. 'zaak', 'besluit' of 'apiname'. " +
+        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren.",
+      objectInformatieObjectUrl: 'Objectinformatieobject URL',
+      objectInformatieObjectUrlTooltip:
+        "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ",
     },
     en: {
       title: 'Documenten API',
@@ -104,6 +134,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-uploaded-document': 'Save uploaded document',
       'store-uploaded-document-in-parts': 'Save uploaded document in parts',
       'download-document': 'Download document',
+      'link-document-to-object': 'Link document to object',
+      'delete-document-link': 'Delete document link',
       storeUploadedDocumentMessage:
         'Saving an uploaded document does not require any configuration.',
       storeUploadedDocumentInPartsMessage:
@@ -160,6 +192,29 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Downloading a document form the Documenten API does not require any configuration.',
       processVariableName:
         'What is the name of the process variable you want to download the document to?',
+      linkDocumentToObjectMessage:
+        "Links the document whose URL is stored in the process variable 'documentUrl' to an object. For Zaak items use the Zaken API to ensure backwards compatibility." +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      linkDocumentToObjectExperimentalWarning:
+        '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
+      deleteDocumentLinkMessage:
+        "Deletes an objectinformatieobject link by its URL. " +
+        "The 'Link document to object' action stores this URL in the process variable 'objectInformatieObjectUrl'. " +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      deleteDocumentLinkExperimentalWarning:
+        '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "The URL of the object to link the document to. " +
+        "Use 'pv:variableName' to reference a process variable, e.g. 'pv:objectUrl'.",
+      objectType: 'Object type',
+      objectTypeTooltip:
+        "The type of the object, e.g. 'zaak', 'besluit' or 'apiname'. " +
+        "Use 'pv:variableName' to reference a process variable.",
+      objectInformatieObjectUrl: 'Objectinformatieobject URL',
+      objectInformatieObjectUrlTooltip:
+        "The URL of the objectinformatieobject link to delete. " +
+        "The preceding action stores this in the process variable 'objectInformatieObjectUrl'.",
     },
   },
 };
