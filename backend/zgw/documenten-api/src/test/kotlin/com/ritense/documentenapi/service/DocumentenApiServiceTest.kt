@@ -47,7 +47,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import java.net.URI
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class DocumentenApiServiceTest {
@@ -153,7 +153,7 @@ class DocumentenApiServiceTest {
         url = URI("http://localhost/informatieobjecttype/0e757153-fce3-44bc-a47f-494840784a16"),
         bronorganisatie = Rsin("404797441"),
         auteur = "y",
-        beginRegistratie = LocalDateTime.now(),
+        beginRegistratie = OffsetDateTime.now(),
         creatiedatum = LocalDate.now(),
         taal = "nl",
         titel = "titel",
