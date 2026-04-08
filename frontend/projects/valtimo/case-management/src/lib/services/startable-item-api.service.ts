@@ -26,6 +26,7 @@ import {Observable} from 'rxjs';
 import {
   CreateStartableItemRequest,
   ManagementStartableItem,
+  StartableItemType,
   UpdateStartableItemOrderRequest,
 } from '../models';
 
@@ -70,6 +71,18 @@ export class StartableItemApiService extends BaseApiService {
     );
   }
 
+  public updateItem(
+    params: CaseManagementParams,
+    itemKey: string,
+    versionTag: string,
+    request: CreateStartableItemRequest
+  ): Observable<ManagementStartableItem> {
+    return this.httpClient.put<ManagementStartableItem>(
+      `${this.getCaseDefinitionUrl(params)}/${itemKey}/version/${versionTag}`,
+      request
+    );
+  }
+
   public updateOrder(
     params: CaseManagementParams,
     request: UpdateStartableItemOrderRequest
@@ -77,6 +90,18 @@ export class StartableItemApiService extends BaseApiService {
     return this.httpClient.put<ManagementStartableItem[]>(
       `${this.getCaseDefinitionUrl(params)}/order`,
       request
+    );
+  }
+
+  public getItemProperties(
+    params: CaseManagementParams,
+    itemKey: string,
+    versionTag: string,
+    type: StartableItemType
+  ): Observable<any> {
+    return this.httpClient.get<any>(
+      `${this.getCaseDefinitionUrl(params)}/${itemKey}/version/${versionTag}/properties`,
+      {params: {type}}
     );
   }
 

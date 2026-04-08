@@ -30,52 +30,30 @@
   <section cdsModalContent [cdsLayer]="1">
     <ng-container *ngIf="$step() === 'selectType'">
       <div class="action-type-tiles">
-        <button class="action-type-tile" (click)="onSelectType(StartableItemType.PROCESS)">
-          <svg
-            class="action-type-tile__icon"
-            focusable="false"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            width="20"
-            height="20"
-            viewBox="0 0 32 32"
-          >
-            <path
-              d="M26,14H22V8a2,2,0,0,0-2-2H14V2H6V10h4v4H6v8h4v4H6v8h8V26H10V22h4v4h8V18H18V14h4v4h8V10H22v4h4Zm-18,6V16h4v4Zm0-12V4h4V8ZM12,28H8V24h4Zm8-6H16V18h4Zm8-6H24V12h4Z"
-            />
-          </svg>
-
+        <button
+          class="action-type-tile"
+          [disabled]="$processItemsEmpty()"
+          [vTooltip]="'caseManagement.actions.modal.noProcessesAvailable' | translate"
+          [tooltipDisabled]="!$processItemsEmpty()"
+          (click)="onSelectType(StartableItemType.PROCESS)"
+        >
           <span class="action-type-tile__label">
             {{ 'caseManagement.actions.type.PROCESS' | translate }}
           </span>
+          <svg cdsIcon="flow--modeler" size="20" class="action-type-tile__icon"></svg>
         </button>
 
-        <button class="action-type-tile" (click)="onSelectType(StartableItemType.BUILDING_BLOCK)">
-          <svg
-            class="action-type-tile__icon"
-            focusable="false"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            width="20"
-            height="20"
-            viewBox="0 0 32 32"
-          >
-            <path
-              d="M28,20H26v2h2v6H4V22H6V20H4a2.0023,2.0023,0,0,0-2,2v6a2.0023,2.0023,0,0,0,2,2H28a2.0023,2.0023,0,0,0,2-2V22A2.0023,2.0023,0,0,0,28,20Z"
-            />
-            <path
-              d="M28,4H4A2.0023,2.0023,0,0,0,2,6v6a2.0023,2.0023,0,0,0,2,2H6V12H4V6H28v6H26v2h2a2.0023,2.0023,0,0,0,2-2V6A2.0023,2.0023,0,0,0,28,4Z"
-            />
-            <path
-              d="M22,10H10a2.0023,2.0023,0,0,0-2,2v8a2.0023,2.0023,0,0,0,2,2H22a2.0023,2.0023,0,0,0,2-2V12A2.0023,2.0023,0,0,0,22,10Zm0,10H10V12H22Z"
-            />
-          </svg>
-
+        <button
+          class="action-type-tile"
+          [disabled]="$buildingBlockItemsEmpty()"
+          [vTooltip]="'caseManagement.actions.modal.noBuildingBlocksAvailable' | translate"
+          [tooltipDisabled]="!$buildingBlockItemsEmpty()"
+          (click)="onSelectType(StartableItemType.BUILDING_BLOCK)"
+        >
           <span class="action-type-tile__label">
             {{ 'caseManagement.actions.type.BUILDING_BLOCK' | translate }}
           </span>
+          <svg cdsIcon="block-storage--alt" size="20" class="action-type-tile__icon"></svg>
         </button>
       </div>
     </ng-container>
@@ -83,33 +61,29 @@
     <ng-container *ngIf="$step() === 'selectItem'">
       <form [formGroup]="formGroup">
         <ng-container *ngIf="$selectedType() === StartableItemType.PROCESS">
-          <ng-container *ngIf="availableProcessItems$ | async as processItems">
-            <cds-combo-box
-              [items]="processItems || []"
-              [label]="'caseManagement.actions.modal.selectProcess' | translate"
-              [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
-              [appendInline]="false"
-              [dropUp]="false"
-              (selected)="onComboBoxSelected($event)"
-            >
-              <cds-dropdown-list></cds-dropdown-list>
-            </cds-combo-box>
-          </ng-container>
+          <cds-combo-box
+            [items]="(availableProcessItems$ | async) || []"
+            [label]="'caseManagement.actions.modal.selectProcess' | translate"
+            [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
+            [appendInline]="false"
+            [dropUp]="false"
+            (selected)="onComboBoxSelected($event)"
+          >
+            <cds-dropdown-list></cds-dropdown-list>
+          </cds-combo-box>
         </ng-container>
 
         <ng-container *ngIf="$selectedType() === StartableItemType.BUILDING_BLOCK">
-          <ng-container *ngIf="availableBuildingBlockItems$ | async as buildingBlockItems">
-            <cds-combo-box
-              [items]="buildingBlockItems || []"
-              [label]="'caseManagement.actions.modal.selectBuildingBlock' | translate"
-              [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
-              [appendInline]="false"
-              [dropUp]="false"
-              (selected)="onComboBoxSelected($event)"
-            >
-              <cds-dropdown-list></cds-dropdown-list>
-            </cds-combo-box>
-          </ng-container>
+          <cds-combo-box
+            [items]="(availableBuildingBlockItems$ | async) || []"
+            [label]="'caseManagement.actions.modal.selectBuildingBlock' | translate"
+            [placeholder]="'caseManagement.actions.modal.filterPlaceholder' | translate"
+            [appendInline]="false"
+            [dropUp]="false"
+            (selected)="onComboBoxSelected($event)"
+          >
+            <cds-dropdown-list></cds-dropdown-list>
+          </cds-combo-box>
         </ng-container>
       </form>
     </ng-container>

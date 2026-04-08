@@ -60,6 +60,7 @@ class CaseDefinitionBuildingBlockLinkImporter(
         logger.debug { "Importing ${dtos.size} building block links for case definition '$caseDefinitionId'" }
 
         linkRepository.deleteAllByCaseDefinitionId(caseDefinitionId)
+        linkRepository.flush()
 
         dtos.forEach { dto ->
             val link = CaseDefinitionBuildingBlockLink(

@@ -746,7 +746,9 @@
         "add": "Add",
         "save": "Save",
         "back": "Back",
-        "next": "Next"
+        "next": "Next",
+        "noProcessesAvailable": "No more processes available to configure as action",
+        "noBuildingBlocksAvailable": "No more building blocks available to configure as action"
       },
       "deleteModal": {
         "title": "Delete action",

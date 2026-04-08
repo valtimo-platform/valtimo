@@ -75,7 +75,11 @@
   </ng-template>
 </ng-container>
 
-<valtimo-case-management-actions-modal></valtimo-case-management-actions-modal>
+<valtimo-case-management-actions-modal
+  (configureBuildingBlock)="onConfigureBuildingBlock($event)"
+></valtimo-case-management-actions-modal>
+
+<valtimo-process-link-modal></valtimo-process-link-modal>
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"
