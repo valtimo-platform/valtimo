@@ -156,7 +156,7 @@ test.describe('Case management', () => {
         await caseManagementPage.dashboardStep();
 
         // Assert: the case appears in the list under the actual key used
-        await expect(page.getByRole('cell', {name: result.key})).toBeVisible();
+        await expect(page.getByRole('cell', {name: result.key, exact: true})).toBeVisible();
       }
     });
 

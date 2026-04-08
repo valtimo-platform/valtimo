@@ -90,7 +90,7 @@ test.describe('Case management', () => {
         //Arrange
         draftVersion = await ensureDraftVersionSelected(page);
         await page.reload();
-        await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle');
       });
 
       test.describe('Case handler', () => {

@@ -242,7 +242,7 @@ export class CaseManagementPage {
 
     // Handle draft override warning — check the confirmation checkbox
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.click();
+      await this.overrideCheckbox.locator('label').click();
     }
 
     const key = await this.configureKeyInput.inputValue();
@@ -280,8 +280,9 @@ export class CaseManagementPage {
     }
 
     // Handle draft override warning — check the confirmation checkbox
+    // Must click the inner label, not the cds-checkbox host, for the checkedChange event to fire
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.click();
+      await this.overrideCheckbox.locator('label').click();
     }
 
     const actualKey = await this.configureKeyInput.inputValue();
