@@ -70,7 +70,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation "io.mockk:mockk:1.13.13"
+    testImplementation "io.mockk:mockk:1.14.9"
 
     jar {
         enabled = true

@@ -11,6 +11,9 @@
 * **Introduced support for strings exceeding 4000 characters in Camunda process variables**  
   Long strings are now serialized as Java objects to bypass the database column size limit, and are deserialized back to strings transparently.
 
+* **Dependencies**
+  Many dependencies have been updated to the latest minor / patch.
+
 ## Bugfixes
 
 * Fixed outbox circuit breaker never recovering from OPEN state.
