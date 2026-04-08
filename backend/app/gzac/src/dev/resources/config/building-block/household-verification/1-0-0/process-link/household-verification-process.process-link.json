@@ -1,5 +1,11 @@
 [
     {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-household-verification"
+    },
+    {
         "activityId": "CallIncomeCheckActivity",
         "activityType": "bpmn:CallActivity:start",
         "processLinkType": "building-block",

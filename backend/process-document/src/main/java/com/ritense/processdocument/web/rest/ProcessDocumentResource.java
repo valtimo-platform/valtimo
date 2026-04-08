@@ -74,6 +74,7 @@ public class ProcessDocumentResource {
         this.activeCaseDefinitionService = activeCaseDefinitionService;
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "caseDefinitionKey") String caseDefinitionKey,
@@ -92,6 +93,7 @@ public class ProcessDocumentResource {
         return ResponseEntity.ok(processDocumentDefinitions);
     }
 
+    @Deprecated(since = "13.x", forRemoval = true)
     @GetMapping("/v1/document-instance/{documentId}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "documentId") UUID documentId,
