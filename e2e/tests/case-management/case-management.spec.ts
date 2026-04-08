@@ -87,16 +87,20 @@ test.describe('Case management', () => {
 
   test.describe('Success test', () => {
     test('Add a case', async () => {
+      // Use a unique name to avoid collisions with leftover data from previous runs
+      const uniqueSuffix = Date.now().toString(36);
+      const caseName = `Test Case ${uniqueSuffix}`;
+
       // Intercept navigation to case detail page to stay on the list
       await page.route('**/case-management/case/**', route => route.abort());
 
       // Act
-      await caseManagementPage.addCase();
+      const key = await caseManagementPage.addCase(caseName);
       const response = await caseManagementPage.saveConfiguration();
 
       // Assert
       expect(response.status()).toBe(200);
-      createdKeys.push('test-case');
+      createdKeys.push(key);
 
       // Cleanup route interception
       await page.unroute('**/case-management/case/**');

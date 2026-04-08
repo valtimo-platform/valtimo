@@ -51,12 +51,23 @@ import {CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS} from '../../../../../constants';
 export class CaseManagementTagsModalComponent implements OnInit, OnDestroy {
   protected readonly testIds = CASE_MANAGEMENT_TAGS_MODAL_TEST_IDS;
 
+  private _closedAnimationTimeout: ReturnType<typeof setTimeout> | undefined;
+
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
+    // Cancel any pending 'closed' animation delay to prevent it from
+    // overwriting a newer type (e.g. opening the modal right after the
+    // component is created would race with the initial 'closed' delay).
+    if (this._closedAnimationTimeout) {
+      clearTimeout(this._closedAnimationTimeout);
+      this._closedAnimationTimeout = undefined;
+    }
+
     if (value === 'closed') {
-      setTimeout(() => {
+      this._closedAnimationTimeout = setTimeout(() => {
         this._typeAnimationDelay$.next(value);
+        this._closedAnimationTimeout = undefined;
       }, CARBON_CONSTANTS.modalAnimationMs);
     } else {
       this._typeAnimationDelay$.next(value);

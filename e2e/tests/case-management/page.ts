@@ -126,20 +126,27 @@ export class CaseManagementPage {
     return response;
   }
 
-  async fillCaseForm() {
+  async fillCaseForm(customName?: string) {
     for (let field of caseConfiguration.fields) {
       const inputWrapper = this.page.getByTestId(field.testId);
       if (field.isAutoKey) continue;
 
-      if (field.type === 'input') await inputWrapper.fill(field.value);
+      if (field.type === 'input') {
+        const value =
+          customName && field.testId === 'caseDefinitionNameInput' ? customName : field.value;
+        await inputWrapper.fill(value);
+      }
     }
   }
 
-  async addCase() {
+  async addCase(customName?: string): Promise<string> {
     await this.createCaseButton.click();
     // Wait for the create case modal to be fully rendered before filling
     await expect(this.createSaveButton).toBeVisible();
-    await this.fillCaseForm();
+    await this.fillCaseForm(customName);
+    // Return the auto-generated key
+    const keyInput = this.page.getByTestId('caseDefinitionKeyInput');
+    return keyInput.inputValue();
   }
 
   async uploadCase(options?: UploadCaseOptions): Promise<ConfigureStepResult> {
@@ -211,21 +218,31 @@ export class CaseManagementPage {
   }
 
   async configureStep(): Promise<ConfigureStepResult> {
+    // Set up validation response waiter immediately — the frontend triggers a
+    // debounced (400ms) key validation call when the configure step initializes.
+    // Must be registered before the response arrives.
+    const initialValidation = this.waitForKeyValidationResponse();
+
     await expect(this.configureNameInput).toBeVisible();
     await expect(this.configureKeyInput).toBeVisible();
     await expect(this.configureVersionTag).toBeVisible();
 
-    // Wait longer for backend validation — CI may be slow to check existing definitions
-    if (await this.page.getByText('Cannot import').isVisible({timeout: 5000}).catch(() => false)) {
+    // Wait for the initial validation API response, then for the UI to reflect the result
+    await initialValidation;
+    await this.awaitConfigureValidation();
+
+    // Handle "Cannot import" — change key to avoid finalized version collision
+    if (await this.page.getByText('Cannot import').isVisible()) {
       const currentKey = await this.configureKeyInput.inputValue();
       const uniqueSuffix = Date.now().toString(36);
+      const validationPromise = this.waitForKeyValidationResponse();
       await this.changeConfigureKey(`${currentKey}-${uniqueSuffix}`);
+      await validationPromise;
     }
 
-    // If an existing draft warning appears, confirm the override checkbox
-    const overrideCheckbox = this.overrideCheckbox;
-    if (await overrideCheckbox.isVisible({timeout: 5000}).catch(() => false)) {
-      await overrideCheckbox.click();
+    // Handle draft override warning — check the confirmation checkbox
+    if (await this.overrideCheckbox.isVisible()) {
+      await this.overrideCheckbox.click();
     }
 
     const key = await this.configureKeyInput.inputValue();
@@ -247,19 +264,24 @@ export class CaseManagementPage {
     await this.configureNameInput.clear();
     await this.configureNameInput.fill(name);
 
-    // Enable key editing and fill custom key
+    // Enable key editing and fill custom key.
+    // The frontend debounces key changes (400ms) before calling the validation API,
+    // so we must wait for the actual response before checking for warnings.
+    const keyValidationPromise = this.waitForKeyValidationResponse();
     await this.changeConfigureKey(key);
+    await keyValidationPromise;
 
-    // Wait longer for backend validation — CI may be slow to check existing definitions
-    if (await this.page.getByText('Cannot import').isVisible({timeout: 5000}).catch(() => false)) {
+    // Handle "Cannot import" — change key to avoid finalized version collision
+    if (await this.page.getByText('Cannot import').isVisible()) {
       const uniqueSuffix = Date.now().toString(36);
+      const retryValidationPromise = this.waitForKeyValidationResponse();
       await this.changeConfigureKey(`${key}-${uniqueSuffix}`);
+      await retryValidationPromise;
     }
 
-    // If an existing draft warning appears, confirm the override checkbox
-    const overrideCheckbox = this.overrideCheckbox;
-    if (await overrideCheckbox.isVisible({timeout: 5000}).catch(() => false)) {
-      await overrideCheckbox.click();
+    // Handle draft override warning — check the confirmation checkbox
+    if (await this.overrideCheckbox.isVisible()) {
+      await this.overrideCheckbox.click();
     }
 
     const actualKey = await this.configureKeyInput.inputValue();
@@ -272,6 +294,28 @@ export class CaseManagementPage {
     await this.uploadWizardNextButton.click();
 
     return {response: await responsePromise, key: actualKey};
+  }
+
+  private waitForKeyValidationResponse() {
+    return this.page
+      .waitForResponse(
+        res =>
+          /\/management\/v1\/case-definition\/[^/]+\/version/.test(res.url()) &&
+          res.request().method() === 'GET',
+        {timeout: 15_000}
+      )
+      .catch(() => {});
+  }
+
+  private async awaitConfigureValidation() {
+    await Promise.race([
+      expect(this.uploadWizardNextButton).toBeEnabled({timeout: 15_000}).catch(() => {}),
+      this.page
+        .getByText('Cannot import')
+        .waitFor({state: 'visible', timeout: 15_000})
+        .catch(() => {}),
+      this.overrideCheckbox.waitFor({state: 'visible', timeout: 15_000}).catch(() => {}),
+    ]);
   }
 
   async changeConfigureKey(key: string) {
