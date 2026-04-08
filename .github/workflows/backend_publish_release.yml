@@ -17,6 +17,8 @@ jobs:
     needs: [build_run_tests]
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'release/') }}
+    outputs:
+      version_release: ${{ steps.version.outputs.version_release }}
     env:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -83,3 +85,11 @@ jobs:
         with:
           name: build-reports
           path: backend/build/reports
+
+  trigger_template_releases:
+    needs: [publish]
+    if: ${{ needs.publish.outputs.version_release != '' }}
+    uses: ./.github/workflows/trigger_backend_template_releases.yml
+    with:
+      version: ${{ needs.publish.outputs.version_release }}
+    secrets: inherit

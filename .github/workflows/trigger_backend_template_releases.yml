@@ -1,0 +1,38 @@
+name: Trigger backend template releases
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version to release (e.g. 12.30.0.RELEASE)'
+        required: true
+        type: string
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - generiekzaakafhandelcomponent/gzac-backend-template
+          - generiekzaakafhandelcomponent/gzac-evenementenvergunning-demo-backend
+          - valtimo-platform/valtimo-backend-template
+    steps:
+      - name: Determine target branch
+        id: branch
+        run: |
+          MAJOR=$(echo "${{ inputs.version }}" | cut -d. -f1)
+          echo "ref=v/${MAJOR}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger release workflow
+        if: ${{ secrets.TEMPLATE_RELEASE_PAT != '' }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.TEMPLATE_RELEASE_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ matrix.repo }}/actions/workflows/release.yml/dispatches" \
+            -d '{"ref": "${{ steps.branch.outputs.ref }}", "inputs": {"version": "${{ inputs.version }}"}}'
+
+      - name: Skip - PAT not configured
+        if: ${{ secrets.TEMPLATE_RELEASE_PAT == '' }}
+        run: echo "TEMPLATE_RELEASE_PAT not configured, skipping trigger for ${{ matrix.repo }}"

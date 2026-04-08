@@ -1,0 +1,168 @@
+name: Finalize release
+
+# Runs after either backend or frontend publish release completes.
+# Waits until both have succeeded, then:
+# 1. Finalizes release notes (renames next-minor, updates date and SUMMARY.md)
+# 2. Tags the release branch with the semver version
+# 3. Merges the release branch into the stable branch (v12-stable or v13-stable)
+# 4. Creates a new empty next-minor template on the stable branch
+
+on:
+  workflow_run:
+    workflows: ["Backend - Publish release", "Frontend - Publish release"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'release/') }}
+
+    steps:
+      - name: "Parse release/x.y.z branch into semver and stable branch name"
+        id: version
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          SEMVER="${BRANCH#release/}"
+          MAJOR=$(echo "$SEMVER" | cut -d. -f1)
+          echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
+          echo "stable_branch=v${MAJOR}-stable" >> "$GITHUB_OUTPUT"
+
+      - name: "Verify both backend and frontend publish workflows succeeded on this branch"
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = '${{ github.event.workflow_run.head_branch }}';
+
+            const backendRuns = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'backend_publish_release.yml',
+              branch: branch,
+              status: 'success',
+              per_page: 1,
+            });
+
+            const frontendRuns = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'frontend_publish_release.yml',
+              branch: branch,
+              status: 'success',
+              per_page: 1,
+            });
+
+            const bothDone = backendRuns.data.total_count > 0 && frontendRuns.data.total_count > 0;
+            console.log(`Backend success: ${backendRuns.data.total_count > 0}, Frontend success: ${frontendRuns.data.total_count > 0}`);
+            core.setOutput('both_done', bothDone.toString());
+
+      - name: "Checkout the release branch"
+        if: steps.check.outputs.both_done == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+
+      - name: "Rename release-notes"
+        if: steps.check.outputs.both_done == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mv "${NOTES_DIR}/next-minor" "${NOTES_DIR}/${VERSION}"
+          sed -i "s/# ${MAJOR}.XX.X/# ${VERSION}/" "${NOTES_DIR}/${VERSION}/README.md"
+          RELEASE_DATE=$(date +"%d-%m-%Y")
+          sed -i "s/Release date xx-xx-xxxx/Release date ${RELEASE_DATE}/" "${NOTES_DIR}/${VERSION}/README.md"
+
+      - name: "Insert a link to the new release notes in SUMMARY.md"
+        if: steps.check.outputs.both_done == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          FIRST_ENTRY="  \* \[${MAJOR}\."
+          NEW_LINE="  * [${VERSION}](release-notes/${MAJOR}.x.x/${VERSION}/README.md)"
+          sed -i "0,/${FIRST_ENTRY}/s||${NEW_LINE}\n&|" documentation/SUMMARY.md
+
+      - name: "Commit release notes changes to the release branch"
+        if: steps.check.outputs.both_done == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          git add documentation/
+          git commit -m "Release notes for ${VERSION}"
+          git push
+
+      - name: "Create a git tag for the release version and push it"
+        if: steps.check.outputs.both_done == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping"
+          else
+            git tag "$VERSION"
+            git push origin "$VERSION"
+            echo "Tagged and pushed $VERSION"
+          fi
+
+      - name: "Merge release branch into stable branch (e.g. v12-stable or v13-stable)"
+        if: steps.check.outputs.both_done == 'true'
+        run: |
+          STABLE="${{ steps.version.outputs.stable_branch }}"
+          RELEASE="${{ github.event.workflow_run.head_branch }}"
+          git fetch origin "$STABLE"
+          git checkout "$STABLE"
+          git merge "$RELEASE" --no-edit
+          git push origin "$STABLE"
+          echo "Merged $RELEASE into $STABLE"
+
+      - name: "v13+: Create next-minor release notes template on the stable branch"
+        if: steps.check.outputs.both_done == 'true' && !startsWith(steps.version.outputs.semver, '12.')
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          STABLE="${{ steps.version.outputs.stable_branch }}"
+          NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          mkdir -p "${NOTES_DIR}/next-minor"
+          printf '%s\n' \
+            "# ${MAJOR}.XX.X" \
+            "" \
+            "{% hint style=\"info\" %}" \
+            "**Release date xx-xx-xxxx**" \
+            "{% endhint %}" \
+            "" \
+            "" \
+            > "${NOTES_DIR}/next-minor/README.md"
+          git add "${NOTES_DIR}/next-minor/README.md"
+          git commit -m "Add empty next-minor release notes template"
+          git push origin "$STABLE"
+
+      - name: "v12: Create next rc branch with next-minor release notes template"
+        if: steps.check.outputs.both_done == 'true' && startsWith(steps.version.outputs.semver, '12.')
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          NEXT_MINOR=$((MINOR + 1))
+          RC_BRANCH="rc/${MAJOR}.${NEXT_MINOR}.0"
+          STABLE="${{ steps.version.outputs.stable_branch }}"
+          NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          git checkout -b "$RC_BRANCH"
+          mkdir -p "${NOTES_DIR}/next-minor"
+          printf '%s\n' \
+            "# ${MAJOR}.XX.X" \
+            "" \
+            "{% hint style=\"info\" %}" \
+            "**Release date xx-xx-xxxx**" \
+            "{% endhint %}" \
+            "" \
+            "" \
+            > "${NOTES_DIR}/next-minor/README.md"
+          git add "${NOTES_DIR}/next-minor/README.md"
+          git commit -m "Add empty next-minor release notes template"
+          git push origin "$RC_BRANCH"
+          echo "Created branch $RC_BRANCH with next-minor template"
