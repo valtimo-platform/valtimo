@@ -28,5 +28,7 @@ data class DocumentSearchRequest(
     val creatiedatumTo: LocalDate? = null,
     val auteur: String? = null,
     val trefwoorden: List<String>? = null,
-    @JsonIgnore val zaakUrl: URI? = null
+    @JsonIgnore val zaakUrl: URI? = null,
+    @JsonIgnore val objectUrl: URI? = null,
+    @JsonIgnore val objectType: String? = null,
 )

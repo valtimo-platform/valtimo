@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-interface SupportedDocumentenApiFeatures {
-  selectedVersion: string;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
-  supportsObjectInformatieObjecten: boolean;
-}
+package com.ritense.documentenapi.client
 
-interface DocumentenApiManagementVersion extends SupportedDocumentenApiFeatures {
-  detectedVersions: string;
-}
+import java.net.URI
 
-export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
+data class ObjectInformatieObject(
+    val url: URI,
+    val informatieobject: URI,
+    val `object`: URI,
+    val objectType: String,
+)

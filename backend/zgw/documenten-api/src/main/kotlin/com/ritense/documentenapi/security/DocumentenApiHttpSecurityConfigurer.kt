@@ -35,7 +35,7 @@ class DocumentenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")).authenticated()
                     .requestMatchers(antMatcher(PUT, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
                     .requestMatchers(antMatcher(DELETE, "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")).authenticated()
-
+                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api/{pluginConfigurationId}/object-files")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document-column")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/documenten-api/version")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")).authenticated()
