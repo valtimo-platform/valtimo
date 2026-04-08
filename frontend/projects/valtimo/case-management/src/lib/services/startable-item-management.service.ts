@@ -130,6 +130,44 @@ export class StartableItemManagementService {
     return this.startableItemApiService.createItem(this.getParams(), request);
   }
 
+  public updateItem(
+    item: ManagementStartableItem,
+    request: CreateStartableItemRequest
+  ): Observable<ManagementStartableItem> {
+    return this.startableItemApiService.updateItem(
+      this.getParams(),
+      item.key,
+      item.versionTag ?? '0',
+      request
+    );
+  }
+
+  public getItemProperties(
+    itemKey: string,
+    versionTag: string,
+    type: StartableItemType
+  ): Observable<any> {
+    return this.startableItemApiService.getItemProperties(
+      this.getParams(),
+      itemKey,
+      versionTag,
+      type
+    );
+  }
+
+  public updateItemByKeyAndVersion(
+    key: string,
+    versionTag: string,
+    request: CreateStartableItemRequest
+  ): Observable<ManagementStartableItem> {
+    return this.startableItemApiService.updateItem(
+      this.getParams(),
+      key,
+      versionTag,
+      request
+    );
+  }
+
   public deleteItem(item: ManagementStartableItem): Observable<void> {
     return this.startableItemApiService.deleteItem(
       this.getParams(),

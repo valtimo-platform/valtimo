@@ -16,35 +16,38 @@
 
 .action-type-tiles {
   display: flex;
-  gap: 16px;
+  gap: 1px;
 }
 
 .action-type-tile {
   display: flex;
-  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex: 1;
-  padding: 24px;
-  min-height: 120px;
-  background-color: var(--cds-layer-02, #393939);
-  color: var(--cds-text-on-color, #fff);
+  padding: var(--cds-spacing-05, 1rem);
+  background-color: var(--cds-background-inverse, #393939);
+  color: var(--cds-text-inverse, #fff);
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
 
-  &:hover {
-    background-color: var(--cds-layer-hover-02, #474747);
+  &:hover:not(:disabled) {
+    background-color: var(--cds-background-inverse-hover, #474747);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   &__icon {
-    width: 24px;
-    height: 24px;
+    fill: currentColor;
   }
 
   &__label {
-    font-size: 14px;
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
     font-weight: 400;
   }
 }

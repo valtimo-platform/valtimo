@@ -19,6 +19,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   signal,
   TemplateRef,
   ViewChild,
@@ -37,12 +38,21 @@ import {
   EditPermissionsService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
+import {
+  BuildingBlockStateService,
+  ProcessLinkModule,
+  ProcessLinkStateService,
+  ProcessLinkStepService,
+} from '@valtimo/process-link';
 import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, Observable, of, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, take} from 'rxjs/operators';
 import {ManagementStartableItem, StartableItemType} from '../../../../models';
 import {StartableItemManagementService} from '../../../../services';
-import {CaseManagementActionsModalComponent} from './case-management-actions-modal/case-management-actions-modal.component';
+import {
+  BuildingBlockConfigRequest,
+  CaseManagementActionsModalComponent,
+} from './case-management-actions-modal/case-management-actions-modal.component';
 
 @Component({
   standalone: true,
@@ -60,10 +70,11 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
     TagModule,
     CaseManagementActionsModalComponent,
     ConfirmationModalModule,
+    ProcessLinkModule,
   ],
   providers: [StartableItemManagementService],
 })
-export class CaseManagementActionsComponent implements AfterViewInit {
+export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('typeColumn') typeColumnTemplate: TemplateRef<any>;
 
   public readonly StartableItemType = StartableItemType;
@@ -113,16 +124,28 @@ export class CaseManagementActionsComponent implements AfterViewInit {
     },
   ];
 
+  private readonly _subscriptions = new Subscription();
+  private _pendingBuildingBlockRequest: BuildingBlockConfigRequest | null = null;
+
   constructor(
     private readonly cd: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
     private readonly startableItemManagementService: StartableItemManagementService,
-    private readonly editPermissionsService: EditPermissionsService
-  ) {}
+    private readonly editPermissionsService: EditPermissionsService,
+    private readonly processLinkStateService: ProcessLinkStateService,
+    private readonly processLinkStepService: ProcessLinkStepService,
+    private readonly buildingBlockStateService: BuildingBlockStateService
+  ) {
+    this.subscribeToProcessLinkEvents();
+  }
 
   public ngAfterViewInit(): void {
     this.cd.detectChanges();
     this.setFields();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public onAddItemClick(): void {
@@ -149,12 +172,139 @@ export class CaseManagementActionsComponent implements AfterViewInit {
       });
   }
 
+  public onConfigureBuildingBlock(request: BuildingBlockConfigRequest): void {
+    this._pendingBuildingBlockRequest = request;
+    this.openProcessLinkModalForBuildingBlock(
+      request.buildingBlockDefinitionKey,
+      request.buildingBlockDefinitionVersionTag
+    );
+  }
+
   private onEditItem(item: ManagementStartableItem): void {
-    this.startableItemManagementService.showEditModal(item);
+    if (item.type === StartableItemType.BUILDING_BLOCK) {
+      this.openProcessLinkModalForBuildingBlockEdit(item);
+    } else {
+      this.startableItemManagementService.showEditModal(item);
+    }
   }
 
   private onDeleteItem(item: ManagementStartableItem): void {
     this.startableItemManagementService.showDeleteConfirmation(item);
+  }
+
+  private openProcessLinkModalForBuildingBlock(key: string, versionTag: string): void {
+    this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
+
+    this.processLinkStateService.setModalParams({
+      element: {id: 'ad-hoc', name: key, activityListenerType: 'callActivity'} as any,
+      processDefinitionKey: '',
+      processDefinitionId: '',
+    });
+    this.processLinkStateService.setElementName(key);
+    this.buildingBlockStateService.setDefinitionKey(key, versionTag);
+
+    // Set the process link type without triggering default step navigation
+    this.processLinkStepService.setHasOneProcessLinkType(true);
+    this.processLinkStateService.selectProcessLinkType('building-block', true);
+
+    // Override: skip directly to the configureBuildingBlockPlugins step
+    // since the building block is already selected in the actions modal
+    this.processLinkStepService.setConfigureBuildingBlockPluginsStep(key);
+
+    this.processLinkStateService.showModal();
+  }
+
+  private openProcessLinkModalForBuildingBlockEdit(item: ManagementStartableItem): void {
+    this._pendingBuildingBlockRequest = null;
+    this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
+
+    this.startableItemManagementService
+      .getItemProperties(item.key, item.versionTag ?? '', StartableItemType.BUILDING_BLOCK)
+      .pipe(take(1))
+      .subscribe(properties => {
+        this.processLinkStateService.setModalParams({
+          element: {id: 'ad-hoc', name: item.name || item.key, activityListenerType: 'callActivity'} as any,
+          processDefinitionKey: '',
+          processDefinitionId: '',
+        });
+
+        this.processLinkStateService.selectProcessLink({
+          id: `${item.key}:${item.versionTag}`,
+          processDefinitionId: '',
+          activityId: 'ad-hoc',
+          activityType: 'callActivity',
+          processLinkType: 'building-block',
+          buildingBlockDefinitionKey: item.key,
+          buildingBlockDefinitionVersionTag: item.versionTag ?? '',
+          inputMappings: properties?.inputMappings ?? [],
+          outputMappings: properties?.outputMappings ?? [],
+          pluginConfigurationMappings: properties?.pluginConfigurationMappings ?? {},
+        } as any);
+
+        this.processLinkStateService.showModal();
+      });
+  }
+
+  private subscribeToProcessLinkEvents(): void {
+    this._subscriptions.add(
+      this.processLinkStateService.processLinkCreateEvents$.subscribe(event => {
+        this.processLinkStateService.stopSaving();
+        this.processLinkStateService.closeModal();
+        this.saveBuildingBlockStartableItem(event as any);
+      })
+    );
+
+    this._subscriptions.add(
+      this.processLinkStateService.processLinkUpdateEvents$.subscribe(event => {
+        this.processLinkStateService.stopSaving();
+        this.processLinkStateService.closeModal();
+        this.updateBuildingBlockStartableItem(event as any);
+      })
+    );
+  }
+
+  private saveBuildingBlockStartableItem(event: any): void {
+    const request = {
+      type: StartableItemType.BUILDING_BLOCK,
+      properties: {
+        buildingBlockDefinitionKey: event.buildingBlockDefinitionKey,
+        buildingBlockDefinitionVersionTag: event.buildingBlockDefinitionVersionTag,
+        inputMappings: event.inputMappings || [],
+        outputMappings: event.outputMappings || [],
+        pluginConfigurationMappings: event.pluginConfigurationMappings || {},
+      },
+    };
+
+    this.startableItemManagementService
+      .createItem(request)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this._pendingBuildingBlockRequest = null;
+        this.startableItemManagementService.loadItems();
+      });
+  }
+
+  private updateBuildingBlockStartableItem(event: any): void {
+    const key = event.buildingBlockDefinitionKey;
+    const versionTag = event.buildingBlockDefinitionVersionTag;
+
+    const request = {
+      type: StartableItemType.BUILDING_BLOCK,
+      properties: {
+        buildingBlockDefinitionKey: key,
+        buildingBlockDefinitionVersionTag: versionTag,
+        inputMappings: event.inputMappings || [],
+        outputMappings: event.outputMappings || [],
+        pluginConfigurationMappings: event.pluginConfigurationMappings || {},
+      },
+    };
+
+    this.startableItemManagementService
+      .updateItemByKeyAndVersion(key, versionTag, request)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.startableItemManagementService.loadItems();
+      });
   }
 
   private setFields(): void {

@@ -24,6 +24,7 @@ import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.CreateCaseDefinitionBuildingBlockLinkDto
+import com.ritense.buildingblock.web.rest.dto.UpdateCaseDefinitionBuildingBlockLinkDto
 import com.ritense.case.service.StartableItemProvider
 import com.ritense.case.web.rest.dto.StartableItemDto
 import com.ritense.case.web.rest.dto.StartableItemType
@@ -93,9 +94,41 @@ class StartableBuildingBlockItemProvider(
         )
     }
 
+    override fun updateItem(
+        caseDefinitionId: CaseDefinitionId,
+        itemKey: String,
+        versionTag: String,
+        properties: JsonNode
+    ): StartableItemDto {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+        val dto = objectMapper.treeToValue(properties, UpdateCaseDefinitionBuildingBlockLinkDto::class.java)
+        val linkDto = caseDefinitionBuildingBlockLinkService.updateLink(caseDefinitionId, buildingBlockDefinitionId, dto)
+
+        val mainProcessLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
+
+        return StartableItemDto(
+            type = StartableItemType.BUILDING_BLOCK,
+            name = mainProcessLink?.processDefinitionName ?: linkDto.buildingBlockDefinitionKey,
+            key = linkDto.buildingBlockDefinitionKey,
+            versionTag = linkDto.buildingBlockDefinitionVersionTag,
+            processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id
+        )
+    }
+
     override fun deleteItem(caseDefinitionId: CaseDefinitionId, itemKey: String, versionTag: String) {
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
         caseDefinitionBuildingBlockLinkService.deleteLink(caseDefinitionId, buildingBlockDefinitionId)
+    }
+
+    override fun getItemProperties(
+        caseDefinitionId: CaseDefinitionId,
+        itemKey: String,
+        versionTag: String
+    ): JsonNode {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+        val linkDto = caseDefinitionBuildingBlockLinkService.getLink(caseDefinitionId, buildingBlockDefinitionId)
+        return objectMapper.valueToTree(linkDto)
     }
 
     private fun hasExecutionPermission(processDefinitionId: String, document: Document?): Boolean {

@@ -15,23 +15,24 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, Output, signal} from '@angular/core';
 import {FormBuilder, FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
+import {runAfterCarbonModalClosed, TooltipModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {BuildingBlockDefinitionDto, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {ProcessLinkBuildingBlockApiService} from '@valtimo/process-link';
+import {FlowModeler20, BlockStorageAlt20} from '@carbon/icons';
 import {
   ButtonModule,
   ComboBoxModule,
   IconModule,
+  IconService,
   LayerModule,
   LoadingModule,
   ModalModule,
   ProgressIndicatorModule,
-  TilesModule,
 } from 'carbon-components-angular';
-import {catchError, combineLatest, EMPTY, map, Observable, of, Subscription, switchMap} from 'rxjs';
+import {catchError, combineLatest, EMPTY, map, Observable, of, Subscription} from 'rxjs';
 import {
   CreateStartableItemRequest,
   ManagementStartableItem,
@@ -39,11 +40,17 @@ import {
 } from '../../../../../models';
 import {StartableItemManagementService} from '../../../../../services';
 
+export interface BuildingBlockConfigRequest {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+}
+
 interface ListItem {
   content: string;
   key: string;
   id: string;
   selected: boolean;
+  versionTag?: string;
 }
 
 type ModalStep = 'selectType' | 'selectItem' | 'configureBuildingBlock';
@@ -64,12 +71,14 @@ type ModalStep = 'selectType' | 'selectItem' | 'configureBuildingBlock';
     ReactiveFormsModule,
     ComboBoxModule,
     ValtimoCdsModalDirective,
-    TilesModule,
+    TooltipModule,
     ProgressIndicatorModule,
     LoadingModule,
   ],
 })
 export class CaseManagementActionsModalComponent implements OnDestroy {
+  @Output() public readonly configureBuildingBlock = new EventEmitter<BuildingBlockConfigRequest>();
+
   public readonly showModal$ = this.stateService.showModal$;
   public readonly editingItem$ = this.stateService.editingItem$;
 
@@ -77,6 +86,8 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
   public readonly $selectedType = signal<StartableItemType | null>(null);
   public readonly $saving = signal(false);
   public readonly $loading = signal(false);
+  public readonly $processItemsEmpty = signal(false);
+  public readonly $buildingBlockItemsEmpty = signal(false);
 
   public readonly StartableItemType = StartableItemType;
 
@@ -97,9 +108,10 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
       definitions
         .filter(
           (def: CaseProcessDefinitionResponseDto) =>
-            !usedIds.includes(def.processDefinition.id) ||
-            (editingItem?.type === StartableItemType.PROCESS &&
-              editingItem?.processDefinitionId === def.processDefinition.id)
+            !def.processCaseLink?.canInitializeDocument &&
+            (!usedIds.includes(def.processDefinition.id) ||
+              (editingItem?.type === StartableItemType.PROCESS &&
+                editingItem?.processDefinitionId === def.processDefinition.id))
         )
         .map(
           (def: CaseProcessDefinitionResponseDto): ListItem => ({
@@ -134,12 +146,14 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
             key: def.key,
             id: def.key,
             selected: editingItem?.key === def.key,
+            versionTag: def.versionTag,
           })
         )
         .sort((a, b) => a.content.localeCompare(b.content))
     )
   );
 
+  private _buildingBlockItems: ListItem[] = [];
   private _editingItem: ManagementStartableItem | null = null;
   private readonly _subscriptions = new Subscription();
 
@@ -147,8 +161,21 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
     private readonly stateService: StartableItemManagementService,
     private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService,
     private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly iconService: IconService
   ) {
+    this.iconService.registerAll([FlowModeler20, BlockStorageAlt20]);
+    this._subscriptions.add(
+      this.availableProcessItems$.subscribe(items => {
+        this.$processItemsEmpty.set(items.length === 0);
+      })
+    );
+    this._subscriptions.add(
+      this.availableBuildingBlockItems$.subscribe(items => {
+        this._buildingBlockItems = items;
+        this.$buildingBlockItemsEmpty.set(items.length === 0);
+      })
+    );
     this._subscriptions.add(
       this.stateService.editingItem$.subscribe(item => {
         this._editingItem = item;
@@ -211,6 +238,9 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
 
   public get primaryButtonLabel(): string {
     if (this.$step() === 'selectType') return '';
+    if (this.$selectedType() === StartableItemType.BUILDING_BLOCK) {
+      return this.translateService.instant('caseManagement.actions.modal.next');
+    }
     if (this.isEditMode) {
       return this.translateService.instant('caseManagement.actions.modal.save');
     }
@@ -233,6 +263,18 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
 
   public onSubmit(): void {
     if (this.formGroup.invalid || this.$saving()) return;
+
+    const selectedId = this.selectedItemControl.value;
+    if (!selectedId) return;
+
+    if (this.$selectedType() === StartableItemType.BUILDING_BLOCK) {
+      this.configureBuildingBlock.emit({
+        buildingBlockDefinitionKey: selectedId,
+        buildingBlockDefinitionVersionTag: this.getSelectedBuildingBlockVersionTag(selectedId),
+      });
+      this.onCloseModal();
+      return;
+    }
 
     this.$saving.set(true);
 
@@ -306,9 +348,8 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
           };
 
     this.stateService
-      .deleteItem(this._editingItem)
+      .updateItem(this._editingItem, request)
       .pipe(
-        switchMap(() => this.stateService.createItem(request)),
         catchError(() => {
           this.$saving.set(false);
           this.stateService.loadItems();
@@ -323,8 +364,8 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
       });
   }
 
-  private getSelectedBuildingBlockVersionTag(_key: string): string {
-    return 'latest';
+  private getSelectedBuildingBlockVersionTag(key: string): string {
+    return this._buildingBlockItems.find(item => item.key === key)?.versionTag ?? '';
   }
 
   private resetState(): void {

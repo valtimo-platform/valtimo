@@ -88,6 +88,52 @@ class StartableItemManagementService(
     }
 
     @Transactional
+    fun updateItem(
+        caseDefinitionId: CaseDefinitionId,
+        oldItemKey: String,
+        oldVersionTag: String,
+        newType: StartableItemType,
+        newProperties: JsonNode
+    ): StartableItemDto {
+        val existingItems = startableItemProviders.flatMap { it.getStartableItems(caseDefinitionId) }
+        val oldItem = existingItems.find { it.key == oldItemKey }
+            ?: throw NoSuchElementException("Startable item not found: $oldItemKey")
+
+        val oldSortOrder = startableItemRepository
+            .findAllByIdCaseDefinitionId(caseDefinitionId)
+            .find { it.id.itemKey == oldItemKey && it.id.itemType == oldItem.type }
+            ?.sortOrder
+
+        if (oldItem.type == newType) {
+            val provider = startableItemProviders.find { it.type == newType }
+                ?: throw UnsupportedOperationException("No provider found for type: $newType")
+            return provider.updateItem(caseDefinitionId, oldItemKey, oldVersionTag, newProperties)
+        }
+
+        val oldProvider = startableItemProviders.find { it.type == oldItem.type }
+            ?: throw UnsupportedOperationException("No provider found for type: ${oldItem.type}")
+        oldProvider.deleteItem(caseDefinitionId, oldItemKey, oldVersionTag)
+        startableItemRepository.deleteById(StartableItemId(caseDefinitionId, oldItemKey, oldItem.type))
+
+        val newProvider = startableItemProviders.find { it.type == newType }
+            ?: throw UnsupportedOperationException("No provider found for type: $newType")
+        val newItem = newProvider.createItem(caseDefinitionId, newProperties)
+
+        val sortOrder = oldSortOrder ?: (startableItemRepository
+            .findAllByIdCaseDefinitionId(caseDefinitionId)
+            .maxOfOrNull { it.sortOrder }?.plus(1) ?: 0)
+
+        startableItemRepository.save(
+            StartableItem(
+                id = StartableItemId(caseDefinitionId, newItem.key, newItem.type),
+                sortOrder = sortOrder
+            )
+        )
+
+        return newItem
+    }
+
+    @Transactional
     fun deleteItem(
         caseDefinitionId: CaseDefinitionId,
         itemKey: String,
@@ -103,6 +149,19 @@ class StartableItemManagementService(
         provider.deleteItem(caseDefinitionId, itemKey, versionTag)
 
         startableItemRepository.deleteById(StartableItemId(caseDefinitionId, itemKey, item.type))
+    }
+
+    @Transactional(readOnly = true)
+    fun getItemProperties(
+        caseDefinitionId: CaseDefinitionId,
+        itemKey: String,
+        versionTag: String,
+        type: StartableItemType
+    ): JsonNode {
+        val provider = startableItemProviders.find { it.type == type }
+            ?: throw UnsupportedOperationException("No provider found for type: $type")
+        return provider.getItemProperties(caseDefinitionId, itemKey, versionTag)
+            ?: throw UnsupportedOperationException("Provider for type $type does not support item properties")
     }
 
     @Transactional
