@@ -28,8 +28,31 @@
                     {
                         "type": "field",
                         "field": "groupId",
-                        "operator": "==",
-                        "value": "ROLE_USER"
+                        "operator": "in",
+                        "value": "${currentUserRoles}"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+        "actions": [
+            "view_list",
+            "view",
+            "complete"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "groupId",
+                        "operator": "in",
+                        "value": "${currentUserTeams}"
                     }
                 ]
             }

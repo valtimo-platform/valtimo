@@ -65,6 +65,7 @@ import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder;
 import com.ritense.valtimo.contract.event.TaskAssignedEvent;
 import com.ritense.valtimo.contract.event.TaskDueDateSetEvent;
+import com.ritense.valtimo.contract.event.TaskTeamAssignedEvent;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.event.TaskAssigned;
@@ -673,13 +674,17 @@ public class OperatonTaskService {
         var team = teamManagementService != null ? teamManagementService.findByKey(teamKey) : null;
         var teamTitle = team != null ? team.getTitle() : teamKey;
 
-        var taskTeam = taskTeamRepository.findById(taskId)
-            .orElse(new TaskTeam(taskId, teamKey, teamTitle));
+        var existingTaskTeam = taskTeamRepository.findById(taskId).orElse(null);
+        var formerTeamKey = existingTaskTeam != null ? existingTaskTeam.getTeamKey() : null;
+        var formerTeamTitle = existingTaskTeam != null ? existingTaskTeam.getTeamTitle() : null;
+
+        var taskTeam = existingTaskTeam != null ? existingTaskTeam : new TaskTeam(taskId, teamKey, teamTitle);
         taskTeam.setTeamKey(teamKey);
         taskTeam.setTeamTitle(teamTitle);
         taskTeamRepository.save(taskTeam);
 
         outboxService.send(() -> new TaskAssigned(task.getId(), objectMapper.valueToTree(task)));
+        applicationEventPublisher.publishEvent(new TaskTeamAssignedEvent(taskId, formerTeamKey, formerTeamTitle, teamKey, teamTitle));
     }
 
     @Transactional
@@ -687,9 +692,14 @@ public class OperatonTaskService {
         final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, ASSIGN);
 
+        var existingTaskTeam = taskTeamRepository.findById(taskId).orElse(null);
+        var formerTeamKey = existingTaskTeam != null ? existingTaskTeam.getTeamKey() : null;
+        var formerTeamTitle = existingTaskTeam != null ? existingTaskTeam.getTeamTitle() : null;
+
         taskTeamRepository.deleteById(taskId);
 
         outboxService.send(() -> new TaskUnassigned(task.getId(), objectMapper.valueToTree(task)));
+        applicationEventPublisher.publishEvent(new TaskTeamAssignedEvent(taskId, formerTeamKey, formerTeamTitle, null, null));
     }
 
     @Transactional(readOnly = true)

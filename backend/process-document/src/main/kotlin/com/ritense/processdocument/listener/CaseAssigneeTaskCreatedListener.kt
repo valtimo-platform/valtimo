@@ -82,6 +82,14 @@ open class CaseAssigneeTaskCreatedListener(
                     val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
                     val taskId = delegateTask.id
 
+                    val candidateGroups = delegateTask.candidates
+                        .mapNotNull { it.groupId }
+                        .filter { it.isNotBlank() }
+
+                    if (candidateGroups.none { it in assignee.roles }) {
+                        return
+                    }
+
                     TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                         override fun beforeCommit(readOnly: Boolean) {
                             val operatonTask = operatonTaskRepository.findById(taskId).getOrNull() ?: return

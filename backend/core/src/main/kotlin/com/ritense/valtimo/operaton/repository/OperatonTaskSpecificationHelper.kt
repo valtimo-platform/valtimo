@@ -21,6 +21,7 @@ import com.ritense.valtimo.task.domain.TaskTeam
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.ID as PROCESS_DEFINITION_ID
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.KEY
 import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.BUSINESS_KEY
+import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ROOT_PROCESS_INSTANCE
 import com.ritense.valtimo.operaton.repository.OperatonProcessInstanceSpecificationHelper.Companion.ID as PROCESS_INSTANCE_ID
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.springframework.data.jpa.domain.Specification
@@ -70,17 +71,44 @@ class OperatonTaskSpecificationHelper {
             cb.equal(root.get<Any>(PROCESS_INSTANCE).get<Any>(PROCESS_INSTANCE_ID), processInstanceId)
         }
 
+        /**
+         * Matches on the task's own process instance business key. Note: child processes can have
+         * different business keys (e.g. building block document IDs). Use
+         * [byRootProcessInstanceBusinessKey] when matching on the case document ID.
+         */
         @JvmStatic
         fun byProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
             cb.equal(root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY), businessKey)
         }
 
+        /**
+         * Matches on the task's own process instance business key. Note: child processes can have
+         * different business keys (e.g. building block document IDs). Use
+         * [byRootProcessInstanceBusinessKeys] when matching on case document IDs.
+         */
         @JvmStatic
         fun byProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
             if (businessKeys.isEmpty()) {
                 cb.equal(cb.literal(0), 1)
             } else {
                 root.get<Any>(PROCESS_INSTANCE).get<Any>(BUSINESS_KEY).`in`(businessKeys)
+            }
+        }
+
+        @JvmStatic
+        fun byRootProcessInstanceBusinessKey(businessKey: String) = Specification<OperatonTask> { root, _, cb ->
+            cb.equal(
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(ROOT_PROCESS_INSTANCE).get<Any>(BUSINESS_KEY),
+                businessKey
+            )
+        }
+
+        @JvmStatic
+        fun byRootProcessInstanceBusinessKeys(businessKeys: Collection<String>) = Specification<OperatonTask> { root, _, cb ->
+            if (businessKeys.isEmpty()) {
+                cb.equal(cb.literal(0), 1)
+            } else {
+                root.get<Any>(PROCESS_INSTANCE).get<Any>(ROOT_PROCESS_INSTANCE).get<Any>(BUSINESS_KEY).`in`(businessKeys)
             }
         }
 
@@ -156,6 +184,14 @@ class OperatonTaskSpecificationHelper {
                 subquery.where(taskTeamRoot.get<Any>("teamKey").`in`(teamKeys))
                 root.get<Any>(ID).`in`(subquery)
             }
+        }
+
+        @JvmStatic
+        fun byHasTeam() = Specification<OperatonTask> { root, query, _ ->
+            val subquery = query!!.subquery(String::class.java)
+            val taskTeamRoot = subquery.from(TaskTeam::class.java)
+            subquery.select(taskTeamRoot.get("taskId"))
+            root.get<Any>(ID).`in`(subquery)
         }
 
     }

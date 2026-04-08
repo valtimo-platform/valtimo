@@ -32,7 +32,7 @@ import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKey
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -65,7 +65,7 @@ class CaseAssigneeListener(
                     val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
-                            byProcessInstanceBusinessKey(caseDocument.id().toString())
+                            byRootProcessInstanceBusinessKey(caseDocument.id().toString())
                                 .and(byCandidateGroups(assignee.roles))
                         )
 
@@ -108,7 +108,7 @@ class CaseAssigneeListener(
             )
             if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
                 val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKey(caseDocument.id().toString())
+                    byRootProcessInstanceBusinessKey(caseDocument.id().toString())
                         .and(byAssigned())
                 )
                 logger.debug { "Removing assignee from ${tasks.size} task(s)" }

@@ -30,7 +30,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKeys
+import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byRootProcessInstanceBusinessKeys
 import com.ritense.valtimo.service.OperatonTaskService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -64,7 +64,7 @@ class BuildingBlockCaseAssigneeListener(
 
                 val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
                 val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKeys(businessKeys)
+                    byRootProcessInstanceBusinessKeys(businessKeys)
                         .and(byCandidateGroups(assignee.roles))
                 )
                 logger.debug { "Updating assignee on ${tasks.size} building block task(s)" }
@@ -93,7 +93,7 @@ class BuildingBlockCaseAssigneeListener(
                 if (businessKeys.isEmpty()) return
 
                 val tasks = operatonTaskService.findTasks(
-                    byProcessInstanceBusinessKeys(businessKeys)
+                    byRootProcessInstanceBusinessKeys(businessKeys)
                         .and(byAssigned())
                 )
                 logger.debug { "Removing assignee from ${tasks.size} building block task(s)" }

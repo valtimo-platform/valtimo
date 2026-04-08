@@ -7,8 +7,14 @@ A team has a unique key, a title, and a list of members.
 
 * **Case assignment**: Cases (documents) can be assigned to teams. This allows all members of the team to see and manage
   the case.
+* **Automatic task team assignment**: When a user task is created, the case's assigned team is automatically assigned to
+  the task — but only if one of the task's BPMN candidate groups matches the team key. This requires the case definition
+  to have `canHaveAssignee` and `autoAssignTasks` enabled. Tasks without candidate groups are never auto-assigned. When
+  the team assignee on a case document changes, all open tasks whose candidate groups match the new team key are updated.
+  When the case is unassigned, the team is removed from all open tasks.
 * **Access control**: Teams can be used in access control rules to grant or deny access to resources based on team
-  membership.
+  membership. For example, tasks can be restricted so that users only see tasks whose candidate group matches one of
+  their teams. See [Tasks access control](../case/tasks/README.md) for an example.
 
 ## Access control
 

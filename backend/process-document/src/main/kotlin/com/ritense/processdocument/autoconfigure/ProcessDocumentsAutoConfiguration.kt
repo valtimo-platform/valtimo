@@ -31,6 +31,7 @@ import com.ritense.processdocument.importer.CaseDefinitionProcessLinkImporter
 import com.ritense.processdocument.importer.ProcessDocumentLinkImporter
 import com.ritense.processdocument.listener.CaseAssigneeListener
 import com.ritense.processdocument.listener.CaseAssigneeTaskCreatedListener
+import com.ritense.processdocument.listener.CaseTaskTeamAutoAssignListener
 import com.ritense.processdocument.listener.DecisionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
@@ -221,6 +222,24 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             caseDocumentResolver,
             authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseTaskTeamAutoAssignListener::class)
+    fun caseTaskTeamAutoAssignListener(
+        operatonTaskService: OperatonTaskService,
+        documentService: DocumentService,
+        caseDefinitionService: CaseDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        teamManagementService: TeamManagementService?,
+    ): CaseTaskTeamAutoAssignListener {
+        return CaseTaskTeamAutoAssignListener(
+            operatonTaskService,
+            documentService,
+            caseDefinitionService,
+            processDocumentService,
+            teamManagementService
         )
     }
 
