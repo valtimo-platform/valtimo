@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.service.DocumentService
 import com.ritense.formflow.domain.FormFlowProcessLink
+import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.logging.LoggableResource
@@ -122,12 +123,23 @@ class FormFlowProcessLinkActivityHandler(
 
     private fun createFormFlowInstance(task: OperatonTask, processLink: FormFlowProcessLink): FormFlowInstance {
         val additionalProperties = getAdditionalProperties(task)
-        val processDefinitionCaseDefinitionLink = processDefinitionCaseDefinitionService
-            .findByProcessDefinitionId(ProcessDefinitionId(processLink.processDefinitionId))
-
-        val formFlowDefinition = formFlowService
-            .findDefinition(processLink.formFlowDefinitionKey, processDefinitionCaseDefinitionLink.id.caseDefinitionId)!!
+        val formFlowDefinition = findFormFlowDefinition(processLink)
         return formFlowService.save(formFlowDefinition.createInstance(additionalProperties))
+    }
+
+    private fun findFormFlowDefinition(processLink: FormFlowProcessLink): FormFlowDefinition {
+        val caseLink = try {
+            processDefinitionCaseDefinitionService
+                .findByProcessDefinitionId(ProcessDefinitionId(processLink.processDefinitionId))
+        } catch (e: Exception) {
+            null
+        }
+        return if (caseLink != null) {
+            formFlowService.findDefinition(processLink.formFlowDefinitionKey, caseLink.id.caseDefinitionId)
+        } else {
+            formFlowService.findDefinitionByKey(processLink.formFlowDefinitionKey)
+                ?: throw IllegalStateException("FormFlow definition '${processLink.formFlowDefinitionKey}' not found")
+        }
     }
 
 }

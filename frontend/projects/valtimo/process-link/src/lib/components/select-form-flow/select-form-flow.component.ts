@@ -15,9 +15,16 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
+import {
+  BuildingBlockManagementParams,
+  CaseManagementParams,
+  getBuildingBlockManagementRouteParams,
+  getCaseManagementRouteParams,
+  getContextObservable,
+  Page,
+} from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, tap} from 'rxjs';
 import {filter, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
 import {
@@ -46,13 +53,28 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   public subtitlesValue: string[] = [];
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$: Observable<ListFormFlowDefinition[]> =
-    getCaseManagementRouteParams(this.route).pipe(
-      switchMap((params: CaseManagementParams | undefined) =>
-        this.formFlowService.getFormFlowDefinitions(
-          params?.caseDefinitionKey ?? '',
-          params?.caseDefinitionVersionTag ?? ''
-        )
-      ),
+    getContextObservable(this.route).pipe(
+      switchMap(context => {
+        if (context === 'buildingBlock') {
+          return getBuildingBlockManagementRouteParams(this.route).pipe(
+            switchMap((params: BuildingBlockManagementParams | undefined) =>
+              this.formFlowService.getBuildingBlockFormFlowDefinitions(
+                params?.buildingBlockDefinitionKey ?? '',
+                params?.buildingBlockDefinitionVersionTag ?? ''
+              )
+            )
+          );
+        }
+
+        return getCaseManagementRouteParams(this.route).pipe(
+          switchMap((params: CaseManagementParams | undefined) =>
+            this.formFlowService.getFormFlowDefinitions(
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? ''
+            )
+          )
+        );
+      }),
       map((formFlowDefinitions: Page<ListFormFlowDefinition>) => formFlowDefinitions.content)
     );
 

@@ -45,8 +45,9 @@ class FormFlowInstance(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
         JoinColumn(name = "form_flow_definition_key", referencedColumnName = "form_flow_definition_key"),
-        JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-        JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
+        JoinColumn(name = "blueprint_type", referencedColumnName = "blueprint_type"),
+        JoinColumn(name = "blueprint_key", referencedColumnName = "blueprint_key"),
+        JoinColumn(name = "blueprint_version_tag", referencedColumnName = "blueprint_version_tag")
     )
     val formFlowDefinition: FormFlowDefinition,
     @Embedded
