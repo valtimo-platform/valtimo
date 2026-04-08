@@ -141,7 +141,7 @@ Access to the search fields can be configured through access control. More infor
    "conditions": [
       {
          "type": "field",
-         "field": "id.document_definition_name",
+         "field": "id.documentDefinitionName",
          "operator": "==",
          "value": "evenementenvergunning"
       }
