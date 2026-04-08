@@ -8,9 +8,8 @@
 
 ## Enhancements
 
-* **New enhancement title**
-
-  New enhancement explanation.
+* **Introduced support for strings exceeding 4000 characters in Camunda process variables**  
+  Long strings are now serialized as Java objects to bypass the database column size limit, and are deserialized back to strings transparently.
 
 ## Bugfixes
 

@@ -16,14 +16,14 @@
 
 package com.ritense.valtimo.service.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.CombinableMatcher.both;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.camunda.bpm.engine.variable.VariableMap;
-import org.hamcrest.collection.IsMapContaining;
+import org.camunda.bpm.engine.variable.value.ObjectValue;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.junit.jupiter.api.Test;
 
 class FormUtilsTest {
@@ -39,8 +39,59 @@ class FormUtilsTest {
 
         VariableMap typedVariableMap = FormUtils.createTypedVariableMap(variables);
 
-        assertThat(typedVariableMap, both(IsMapContaining.hasKey("leeftijd")).and(IsMapContaining.hasValue(LONG_VALUE)));
-        assertThat(typedVariableMap, both(IsMapContaining.hasKey("huidige_tijd")).and(IsMapContaining.hasValue(DATE_VALUE)));
+        assertThat(typedVariableMap).containsEntry("leeftijd", LONG_VALUE);
+        assertThat(typedVariableMap).containsEntry("huidige_tijd", DATE_VALUE);
+    }
+
+    @Test
+    void createTypedVariableMapShouldNotStoreShortStringAsObjectValue() {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("shortText", "hello");
+
+        VariableMap typedVariableMap = FormUtils.createTypedVariableMap(variables);
+
+        TypedValue typedValue = typedVariableMap.getValueTyped("shortText");
+        assertThat(typedValue).isNotInstanceOf(ObjectValue.class);
+        assertThat(typedValue.getValue()).isEqualTo("hello");
+    }
+
+    @Test
+    void createTypedVariableMapShouldStoreLongStringAsObjectValue() {
+        String longString = "a".repeat(4001);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("longText", longString);
+
+        VariableMap typedVariableMap = FormUtils.createTypedVariableMap(variables);
+
+        TypedValue typedValue = typedVariableMap.getValueTyped("longText");
+        assertThat(typedValue).isInstanceOf(ObjectValue.class);
+        assertThat(typedValue.getValue()).isEqualTo(longString);
+    }
+
+    @Test
+    void createTypedVariableMapShouldNotStoreStringAtExactLimitAsObjectValue() {
+        String exactLimitString = "a".repeat(4000);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("exactLimit", exactLimitString);
+
+        VariableMap typedVariableMap = FormUtils.createTypedVariableMap(variables);
+
+        TypedValue typedValue = typedVariableMap.getValueTyped("exactLimit");
+        assertThat(typedValue).isNotInstanceOf(ObjectValue.class);
+        assertThat(typedValue.getValue()).isEqualTo(exactLimitString);
+    }
+
+    @Test
+    void createTypedVariableMapShouldStoreStringJustOverLimitAsObjectValue() {
+        String overLimitString = "a".repeat(4001);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("overLimit", overLimitString);
+
+        VariableMap typedVariableMap = FormUtils.createTypedVariableMap(variables);
+
+        TypedValue typedValue = typedVariableMap.getValueTyped("overLimit");
+        assertThat(typedValue).isInstanceOf(ObjectValue.class);
+        assertThat(typedValue.getValue()).isEqualTo(overLimitString);
     }
 
 }
