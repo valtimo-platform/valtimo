@@ -5,7 +5,8 @@ name: Finalize release
 # 1. Finalizes release notes (renames next-minor, updates date and SUMMARY.md)
 # 2. Tags the release branch with the semver version
 # 3. Merges the release branch into the stable branch (v12-stable or v13-stable)
-# 4. Creates a new empty next-minor template on the stable branch
+# 4. v13+: Merges stable into next-minor branch and adds empty release notes template
+# 4. v12: Creates a new rc/{major}.{next_minor}.0 branch from the release branch with empty release notes template
 
 on:
   workflow_run:
@@ -17,7 +18,7 @@ permissions:
   actions: read
 
 jobs:
-  tag:
+  finalize:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'release/') }}
 
@@ -120,13 +121,16 @@ jobs:
           git push origin "$STABLE"
           echo "Merged $RELEASE into $STABLE"
 
-      - name: "v13+: Create next-minor release notes template on the stable branch"
+      - name: "v13+: Merge stable into next-minor branch, then add release notes template"
         if: steps.check.outputs.both_done == 'true' && !startsWith(steps.version.outputs.semver, '12.')
         run: |
           VERSION="${{ steps.version.outputs.semver }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           STABLE="${{ steps.version.outputs.stable_branch }}"
           NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          git fetch origin next-minor
+          git checkout next-minor
+          git merge "$STABLE" --no-edit
           mkdir -p "${NOTES_DIR}/next-minor"
           printf '%s\n' \
             "# ${MAJOR}.XX.X" \
@@ -139,9 +143,9 @@ jobs:
             > "${NOTES_DIR}/next-minor/README.md"
           git add "${NOTES_DIR}/next-minor/README.md"
           git commit -m "Add empty next-minor release notes template"
-          git push origin "$STABLE"
+          git push origin next-minor
 
-      - name: "v12: Create next rc branch with next-minor release notes template"
+      - name: "v12: Create next rc branch from release branch with next-minor release notes template"
         if: steps.check.outputs.both_done == 'true' && startsWith(steps.version.outputs.semver, '12.')
         run: |
           VERSION="${{ steps.version.outputs.semver }}"
@@ -149,8 +153,9 @@ jobs:
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           NEXT_MINOR=$((MINOR + 1))
           RC_BRANCH="rc/${MAJOR}.${NEXT_MINOR}.0"
-          STABLE="${{ steps.version.outputs.stable_branch }}"
+          RELEASE="${{ github.event.workflow_run.head_branch }}"
           NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
+          git checkout "$RELEASE"
           git checkout -b "$RC_BRANCH"
           mkdir -p "${NOTES_DIR}/next-minor"
           printf '%s\n' \
