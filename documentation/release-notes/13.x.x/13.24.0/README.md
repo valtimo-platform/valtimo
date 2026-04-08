@@ -1,4 +1,4 @@
-# 13.x.x
+# 13.24.0
 
 {% hint style="info" %}
 **Release date 15-04-2026**
