@@ -147,6 +147,16 @@ interface ProcessDefinitionCaseDefinition {
   processDefinitionKey: string;
 }
 
+type StartableItemType = 'PROCESS' | 'BUILDING_BLOCK';
+
+interface StartableItem {
+  type: StartableItemType;
+  name: string | null;
+  key: string;
+  versionTag: string | null;
+  processDefinitionId: string | null;
+}
+
 interface ProcessDocumentInstanceId {
   processInstanceId: string;
   documentId: string;
@@ -440,6 +450,8 @@ export {
   RelatedFileListItem,
   SortResult,
   SpecifiedDocuments,
+  StartableItem,
+  StartableItemType,
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
