@@ -16,6 +16,11 @@ the original documents to PDF format is done using the open-source project [Gote
 a Docker-based API specifically designed to convert documents to PDF. This means the "Documenten API Preview plugin" 
 requires some configuration. A general description on how to configure plugins can be found in the [plugin configuration guide](./configure-plugin.md).
 
+> IMPORTANT:
+> 
+> The [Gotenberg][1] PDF conversion API is provided as a docker container and should be installed separately from the 
+> plugin (see [installation guide](https://gotenberg.dev/docs/getting-started/installation)).  
+
 To configure this plugin the following properties have to be entered:
 
 * **Configuration ID (`configurationId`).** The plugin will be saved under this ID. The ID must be in the format of a UUID.
