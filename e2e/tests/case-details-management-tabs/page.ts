@@ -89,8 +89,11 @@ export class CaseDetailsManagementTabsPage {
     const key = title.toLowerCase().replace(/\s+/g, '-');
     await this.addTabButton.click();
     await this.page.getByRole('button', {name: 'Widgets component'}).click();
+    // Wait for the tab form and footer actions to fully render (ensures ngOnInit disabled contentKey)
+    await expect(this.addTabConfirmButton).toBeVisible();
     await this.tabNameInput.fill(title);
     await this.tabKeyInput.fill(key);
+    await expect(this.addTabConfirmButton).toBeEnabled();
     await this.addTabConfirmButton.click();
   }
 

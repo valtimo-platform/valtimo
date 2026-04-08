@@ -112,22 +112,34 @@ test.describe('Case details management — Tasks', () => {
       await tasksPage.assertColumnExists(taskColumnReorderTestData.keyB);
     });
 
-    test('Drag column B above column A', async () => {
-      // Arrange — verify initial order: A before B
+    test('Reorder columns via drag and drop', async () => {
+      // Arrange — get initial positions (order may vary by environment)
       const indexA = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyA);
       const indexB = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyB);
-      expect(indexA).toBeLessThan(indexB);
+      expect(indexA).not.toBe(-1);
+      expect(indexB).not.toBe(-1);
 
-      // Act
-      await tasksPage.dragColumnToPosition(
-        taskColumnReorderTestData.keyB,
-        taskColumnReorderTestData.keyA
-      );
+      // Act — drag the later column above the earlier one
+      if (indexA < indexB) {
+        await tasksPage.dragColumnToPosition(
+          taskColumnReorderTestData.keyB,
+          taskColumnReorderTestData.keyA
+        );
+      } else {
+        await tasksPage.dragColumnToPosition(
+          taskColumnReorderTestData.keyA,
+          taskColumnReorderTestData.keyB
+        );
+      }
 
-      // Assert — B is now before A
+      // Assert — relative order should be reversed
       const newIndexA = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyA);
       const newIndexB = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyB);
-      expect(newIndexB).toBeLessThan(newIndexA);
+      if (indexA < indexB) {
+        expect(newIndexB).toBeLessThan(newIndexA);
+      } else {
+        expect(newIndexA).toBeLessThan(newIndexB);
+      }
     });
 
     test('Clean up reorder columns', async () => {

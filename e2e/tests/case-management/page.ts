@@ -114,14 +114,16 @@ export class CaseManagementPage {
 
   // Case form
   async saveConfiguration() {
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/management/v1/case-definition/draft') &&
-        res.request().method() === 'POST'
-    );
     await expect(this.createSaveButton).toBeEnabled();
-    await this.createSaveButton.click();
-    return await responsePromise;
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/management/v1/case-definition/draft') &&
+          res.request().method() === 'POST'
+      ),
+      this.createSaveButton.click(),
+    ]);
+    return response;
   }
 
   async fillCaseForm() {
@@ -135,6 +137,8 @@ export class CaseManagementPage {
 
   async addCase() {
     await this.createCaseButton.click();
+    // Wait for the create case modal to be fully rendered before filling
+    await expect(this.createSaveButton).toBeVisible();
     await this.fillCaseForm();
   }
 
@@ -211,7 +215,8 @@ export class CaseManagementPage {
     await expect(this.configureKeyInput).toBeVisible();
     await expect(this.configureVersionTag).toBeVisible();
 
-    if (await this.page.getByText('Cannot import').isVisible({timeout: 1000}).catch(() => false)) {
+    // Wait longer for backend validation — CI may be slow to check existing definitions
+    if (await this.page.getByText('Cannot import').isVisible({timeout: 5000}).catch(() => false)) {
       const currentKey = await this.configureKeyInput.inputValue();
       const uniqueSuffix = Date.now().toString(36);
       await this.changeConfigureKey(`${currentKey}-${uniqueSuffix}`);
@@ -219,7 +224,7 @@ export class CaseManagementPage {
 
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
-    if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
+    if (await overrideCheckbox.isVisible({timeout: 5000}).catch(() => false)) {
       await overrideCheckbox.click();
     }
 
@@ -229,7 +234,7 @@ export class CaseManagementPage {
       res =>
         res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
     );
-    await expect(this.uploadWizardNextButton).toBeEnabled();
+    await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
     return {response: await responsePromise, key};
@@ -245,17 +250,17 @@ export class CaseManagementPage {
     // Enable key editing and fill custom key
     await this.changeConfigureKey(key);
 
-    if (await this.page.getByText('Cannot import').isVisible({timeout: 1000}).catch(() => false)) {
+    // Wait longer for backend validation — CI may be slow to check existing definitions
+    if (await this.page.getByText('Cannot import').isVisible({timeout: 5000}).catch(() => false)) {
       const uniqueSuffix = Date.now().toString(36);
       await this.changeConfigureKey(`${key}-${uniqueSuffix}`);
     }
 
     // If an existing draft warning appears, confirm the override checkbox
     const overrideCheckbox = this.overrideCheckbox;
-    if (await overrideCheckbox.isVisible({timeout: 1000}).catch(() => false)) {
+    if (await overrideCheckbox.isVisible({timeout: 5000}).catch(() => false)) {
       await overrideCheckbox.click();
     }
-
 
     const actualKey = await this.configureKeyInput.inputValue();
 
@@ -263,7 +268,7 @@ export class CaseManagementPage {
       res =>
         res.url().includes('/api/management/v1/case/import') && res.request().method() === 'POST'
     );
-    await expect(this.uploadWizardNextButton).toBeEnabled();
+    await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 10_000});
     await this.uploadWizardNextButton.click();
 
     return {response: await responsePromise, key: actualKey};

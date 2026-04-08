@@ -74,9 +74,13 @@ export class CaseDetailsManagementFormFlowsPage {
 
   async createFormFlow(key: string) {
     await this.addFormFlowButton.click();
+    await expect(this.formFlowKeyInput).toBeVisible();
     await this.formFlowKeyInput.fill(key);
-    await this.createFormFlowButton.click();
-    await this.page.waitForURL(new RegExp(`form-flows/${key}$`));
+    await expect(this.createFormFlowButton).toBeEnabled();
+    await Promise.all([
+      this.page.waitForURL(new RegExp(`form-flows/${key}$`)),
+      this.createFormFlowButton.click(),
+    ]);
   }
 
   async deleteFormFlow(key: string) {

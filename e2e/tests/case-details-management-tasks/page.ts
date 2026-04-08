@@ -136,18 +136,24 @@ export class CaseDetailsManagementTasksPage {
   async selectDropdownItem(dropdownLocator: Locator, itemText: string) {
     await dropdownLocator.click();
     await this.page.getByRole('listbox').getByText(itemText, {exact: true}).click();
+    // Verify the dropdown reflects the selection (ensures Angular form control is updated)
+    await expect(dropdownLocator).toContainText(itemText);
   }
 
   // ─── Actions ──────────────────────────────────────────────────────
 
   async addColumn(column: {title?: string; key: string; path: string; displayType: string}) {
     await this.addColumnButton.click();
+    await expect(this.columnKeyInput).toBeVisible();
+
     if (column.title) {
       await this.columnTitleInput.fill(column.title);
     }
     await this.columnKeyInput.fill(column.key);
     await this.columnPathInput.fill(column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
+
+    await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
   }
 
@@ -166,6 +172,8 @@ export class CaseDetailsManagementTasksPage {
 
   async addSearchField(field: {title: string; key: string; path: string; dataType: string; matchType?: string; fieldType: string}) {
     await this.addSearchFieldButton.click();
+    await expect(this.searchFieldKeyInput).toBeVisible();
+
     await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
     await this.searchFieldKeyInput.fill(field.key);
     await this.searchFieldPathToggle.click();
@@ -178,6 +186,8 @@ export class CaseDetailsManagementTasksPage {
       }
     }
     await this.selectDropdownItem(this.searchFieldFieldTypeDropdown, field.fieldType);
+
+    await expect(this.searchFieldSaveButton).toBeEnabled();
     await this.searchFieldSaveButton.click();
   }
 

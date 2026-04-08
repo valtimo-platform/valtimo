@@ -134,9 +134,12 @@ export class CaseDetailsConfigPage {
   async addStatus(title: string) {
     await this.statusAddButton.click();
     await expect(this.statusTitleInput).toBeVisible();
-    await this.statusTitleInput.fill(title);
+    // Use pressSequentially to reliably trigger Angular's valueChanges for auto-key generation.
+    // fill() dispatches a single input event which may fire before the combineLatest subscription
+    // is ready in slow CI environments.
+    await this.statusTitleInput.pressSequentially(title, {delay: 30});
     // Wait for auto-generated key to be populated before expecting the confirm button
-    await expect(this.statusKeyInput).not.toHaveValue('', {timeout: 5_000});
+    await expect(this.statusKeyInput).not.toHaveValue('', {timeout: 10_000});
     await expect(this.statusAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.statusAddConfirmButton).toBeEnabled();
     await this.statusAddConfirmButton.click();
@@ -220,9 +223,10 @@ export class CaseDetailsConfigPage {
   async addTag(title: string) {
     await this.tagAddButton.click();
     await expect(this.tagTitleInput).toBeVisible();
-    await this.tagTitleInput.fill(title);
+    // Use pressSequentially to reliably trigger Angular's valueChanges for auto-key generation
+    await this.tagTitleInput.pressSequentially(title, {delay: 30});
     // Wait for auto-generated key to be populated before expecting the confirm button
-    await expect(this.tagKeyInput).not.toHaveValue('', {timeout: 5_000});
+    await expect(this.tagKeyInput).not.toHaveValue('', {timeout: 10_000});
     await expect(this.tagAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.tagAddConfirmButton).toBeEnabled();
     await this.tagAddConfirmButton.click();

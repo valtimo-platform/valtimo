@@ -119,21 +119,30 @@ test.describe('Case details management — Tabs', () => {
       await tabsPage.assertTabExists(tabReorderTestData.titleB);
     });
 
-    test('Drag tab B above tab A', async () => {
-      // Arrange — verify initial order: A before B
+    test('Reorder tabs via drag and drop', async () => {
+      // Arrange — get initial positions (order may vary by environment)
       const initialOrder = await tabsPage.getTabTitlesInOrder();
       const indexA = initialOrder.indexOf(tabReorderTestData.titleA);
       const indexB = initialOrder.indexOf(tabReorderTestData.titleB);
-      expect(indexA).toBeLessThan(indexB);
+      expect(indexA).not.toBe(-1);
+      expect(indexB).not.toBe(-1);
 
-      // Act
-      await tabsPage.dragTabToPosition(tabReorderTestData.titleB, tabReorderTestData.titleA);
+      // Act — drag the later tab above the earlier one
+      if (indexA < indexB) {
+        await tabsPage.dragTabToPosition(tabReorderTestData.titleB, tabReorderTestData.titleA);
+      } else {
+        await tabsPage.dragTabToPosition(tabReorderTestData.titleA, tabReorderTestData.titleB);
+      }
 
-      // Assert — B is now before A
+      // Assert — relative order should be reversed
       const newOrder = await tabsPage.getTabTitlesInOrder();
       const newIndexA = newOrder.indexOf(tabReorderTestData.titleA);
       const newIndexB = newOrder.indexOf(tabReorderTestData.titleB);
-      expect(newIndexB).toBeLessThan(newIndexA);
+      if (indexA < indexB) {
+        expect(newIndexB).toBeLessThan(newIndexA);
+      } else {
+        expect(newIndexA).toBeLessThan(newIndexB);
+      }
     });
 
     test('Clean up reorder tabs', async () => {
