@@ -40,7 +40,7 @@ class CaseDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        deploy(request.content.toString(Charsets.UTF_8))
+        deploy(request.content.toString(Charsets.UTF_8), request.keyOverride, request.nameOverride)
         request.caseDefinitionId?.let {
             applicationEventPublisher.publishEvent(CaseConfigurationIssuesResetEvent(it))
         }
@@ -48,13 +48,15 @@ class CaseDefinitionImporter(
 
     override fun afterImport(request: ImportRequest) {
         val caseDefinitionDto = toCaseDefinitionDto(request.content.toString(Charsets.UTF_8))
+            .let { applyOverrides(it, request.keyOverride, request.nameOverride) }
         if (caseDefinitionDto.final) {
             caseDefinitionRepository.save(caseDefinitionDto.toEntity())
         }
     }
 
-    private fun deploy(fileContent: String) {
+    private fun deploy(fileContent: String, keyOverride: String?, nameOverride: String?) {
         val caseDefinitionDto = toCaseDefinitionDto(fileContent)
+            .let { applyOverrides(it, keyOverride, nameOverride) }
         val caseDefinitionId = caseDefinitionDto.getCaseDefinitionId()
 
         caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId, caseDefinitionDto.final)
@@ -65,6 +67,17 @@ class CaseDefinitionImporter(
 
         caseDefinitionRepository.save(caseDefinition)
         logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
+    }
+
+    private fun applyOverrides(dto: CaseDefinitionDto, keyOverride: String?, nameOverride: String?): CaseDefinitionDto {
+        if (keyOverride == null && nameOverride == null) return dto
+        return dto.copy(
+            key = keyOverride ?: dto.key,
+            name = nameOverride ?: dto.name,
+            originalKey = dto.key,
+            originalName = dto.name,
+            originalVersionTag = dto.versionTag,
+        )
     }
 
     private fun toCaseDefinitionDto(fileContent: String): CaseDefinitionDto {

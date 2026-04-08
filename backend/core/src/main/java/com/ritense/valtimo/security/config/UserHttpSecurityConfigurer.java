@@ -47,6 +47,7 @@ public class UserHttpSecurityConfigurer implements HttpSecurityConfigurer {
                 .requestMatchers(antMatcher(POST, USER_URL + "/send-verification-email/{userId}")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/user/settings")).authenticated()
                 .requestMatchers(antMatcher(PUT, "/api/v1/user/settings")).authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v1/user/team")).authenticated()
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);

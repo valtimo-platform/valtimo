@@ -20,6 +20,7 @@ export * from './documenten-api-documents/documenten-api-documents.component';
 export * from './documenten-api-filter/documenten-api-filter.component';
 export * from './documenten-api-link-process/case-management-link-process.component';
 export * from './documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+export * from './documenten-api-preview-modal/documenten-api-preview-modal.component';
 export * from './documenten-api-tag-modal/documenten-api-tag-modal.component';
 export * from './documenten-api-tags/documenten-api-tags.component';
 export * from './documenten-api-upload-field-model/documenten-api-upload-field-modal.component';

@@ -32,6 +32,7 @@ import {
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
 import {PluginsWithDependencies} from '@valtimo/process-link';
+import {FormFlowDefinition, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 
 @Injectable({
   providedIn: 'root',
@@ -259,6 +260,68 @@ export class BuildingBlockManagementApiService extends BaseApiService {
   ): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`)
+    );
+  }
+
+  public getBuildingBlockFormFlowDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<Page<ListFormFlowDefinition>> {
+    return this.httpClient.get<Page<ListFormFlowDefinition>>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition`
+      )
+    );
+  }
+
+  public getBuildingBlockFormFlowDefinitionByKey(
+    key: string,
+    versionTag: string,
+    formFlowDefinitionKey: string
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.get<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition/${formFlowDefinitionKey}`
+      )
+    );
+  }
+
+  public createBuildingBlockFormFlowDefinition(
+    key: string,
+    versionTag: string,
+    definition: FormFlowDefinition
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.post<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition`
+      ),
+      definition
+    );
+  }
+
+  public updateBuildingBlockFormFlowDefinition(
+    key: string,
+    versionTag: string,
+    definitionKey: string,
+    updatedDefinition: FormFlowDefinition
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.put<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition/${definitionKey}`
+      ),
+      updatedDefinition
+    );
+  }
+
+  public deleteBuildingBlockFormFlowDefinition(
+    key: string,
+    versionTag: string,
+    definitionKey: string
+  ): Observable<null> {
+    return this.httpClient.delete<null>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form-flow-definition/${definitionKey}`
+      )
     );
   }
 }

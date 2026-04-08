@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ritense.outbox.rabbitmq
 
 import com.ritense.outbox.OutboxMessage
@@ -209,6 +225,67 @@ class RabbitMessagePublisherTest {
         Assertions.assertThat(results[0].success).isFalse()
         Assertions.assertThat(results[0].error!!.message).contains("not confirmed in time")
         Assertions.assertThat(results[1].success).isTrue()
+    }
+
+    @Test
+    fun `publishBatch should handle ExecutionException per message`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        var callCount = 0
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            callCount++
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            if (callCount == 2) {
+                correlationData.future.completeExceptionally(RuntimeException("broker error"))
+            } else {
+                correlationData.future.complete(CorrelationData.Confirm(true, null))
+            }
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "ok1"),
+            OutboxMessage(message = "fail"),
+            OutboxMessage(message = "ok2")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results[0].success).isTrue()
+        Assertions.assertThat(results[1].success).isFalse()
+        Assertions.assertThat(results[1].error!!.message).contains("Confirmation future failed")
+        Assertions.assertThat(results[1].error!!.message).contains("broker error")
+        Assertions.assertThat(results[2].success).isTrue()
+    }
+
+    @Test
+    fun `publishBatch should handle CancellationException per message`() {
+        val rabbitTemplate = getMockedRabbitTemplate()
+        var callCount = 0
+
+        whenever(rabbitTemplate.convertAndSend(any<String>(), eq("test"), any<String>(), any<CorrelationData>())).thenAnswer { answer ->
+            callCount++
+            val correlationData = answer.getArgument(3, CorrelationData::class.java)
+            if (callCount == 2) {
+                correlationData.future.toCompletableFuture().cancel(true)
+            } else {
+                correlationData.future.complete(CorrelationData.Confirm(true, null))
+            }
+        }
+
+        val publisher = RabbitMessagePublisher(rabbitTemplate, "test")
+        val messages = listOf(
+            OutboxMessage(message = "ok1"),
+            OutboxMessage(message = "cancelled"),
+            OutboxMessage(message = "ok2")
+        )
+
+        val results = publisher.publishBatch(messages)
+
+        Assertions.assertThat(results[0].success).isTrue()
+        Assertions.assertThat(results[1].success).isFalse()
+        Assertions.assertThat(results[1].error!!.message).contains("cancelled")
+        Assertions.assertThat(results[2].success).isTrue()
     }
 
     @Test

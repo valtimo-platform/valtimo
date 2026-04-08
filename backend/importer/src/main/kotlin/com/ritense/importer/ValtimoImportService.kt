@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,6 +225,16 @@ class ValtimoImportService(
 
     @Transactional
     override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId? {
+        return import(inputStream, caseDefinitionIdList, null, null)
+    }
+
+    @Transactional
+    override fun import(
+        inputStream: InputStream,
+        caseDefinitionIdList: List<CaseDefinitionId>,
+        keyOverride: String?,
+        nameOverride: String?,
+    ): CaseDefinitionId? {
         return runImporter {
             val entriesWithRawPath = readZipEntriesWithRawPath(inputStream)
             val buildingBlockEntries = groupBuildingBlockEntries(entriesWithRawPath)
@@ -253,7 +263,7 @@ class ValtimoImportService(
                 val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
                     .readValue(caseDefinitionEntries?.first()?.content!!) // TODO: Throw proper error message
                 caseDefinitionId = CaseDefinitionId(
-                    caseDefinitionMap["key"] as String,
+                    keyOverride ?: (caseDefinitionMap["key"] as String),
                     caseDefinitionMap["versionTag"] as String
                 )
 
@@ -264,7 +274,11 @@ class ValtimoImportService(
                 importerEntriesList.filter { it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                     entries.forEach { entry ->
                         logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                        importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+                        importer.import(ImportRequest(
+                            entry.fileName, entry.content, caseDefinitionId,
+                            keyOverride = keyOverride,
+                            nameOverride = nameOverride,
+                        ))
                     }
                 }
 
@@ -274,7 +288,11 @@ class ValtimoImportService(
 
             importerEntriesList.filter { it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
-                    importer.afterImport(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+                    importer.afterImport(ImportRequest(
+                        entry.fileName, entry.content, caseDefinitionId,
+                        keyOverride = keyOverride,
+                        nameOverride = nameOverride,
+                    ))
                 }
             }
 

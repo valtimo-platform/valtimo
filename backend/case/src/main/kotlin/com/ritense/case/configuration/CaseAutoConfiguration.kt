@@ -32,6 +32,7 @@ import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
+import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseExporter
@@ -95,6 +96,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EntityScan(basePackages = ["com.ritense.case.domain"])
 class CaseAutoConfiguration {
 
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionImportPreviewService::class)
+    fun caseDefinitionImportPreviewService(
+        objectMapper: ObjectMapper,
+    ) = CaseDefinitionImportPreviewService(objectMapper)
+
     @ConditionalOnMissingBean(name = ["caseDefinitionResource"])
     @Bean
     fun caseDefinitionResource(
@@ -105,6 +112,7 @@ class CaseAutoConfiguration {
         caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
         configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
+        caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -114,6 +122,7 @@ class CaseAutoConfiguration {
             caseDefinitionRepository,
             caseDefinitionChecker,
             configurationIssueRepository,
+            caseDefinitionImportPreviewService,
         )
     }
 

@@ -23,8 +23,8 @@ import org.springframework.boot.actuate.health.Health
 /**
  * Exposes the outbox publisher circuit breaker state via the /actuator/health endpoint.
  *
- * Reports DOWN when the circuit breaker is OPEN (publisher is failing),
- * UP when CLOSED or HALF_OPEN (normal operation or recovery testing).
+ * Always reports UP so the outbox status does not affect the overall application health.
+ * The circuit breaker state is included as informational details.
  *
  * Only active when spring-boot-starter-actuator is on the classpath.
  */
@@ -40,22 +40,13 @@ class OutboxPublisherHealthIndicator(
         }
 
         val metrics = circuitBreaker.metrics
-        val details = mapOf(
-            "circuitBreakerState" to circuitBreaker.state.name,
-            // failureRate is -1.0 until minimumNumberOfCalls is reached
-            "failureRate" to "${metrics.failureRate}%",
-            "slidingWindow" to mapOf(
+        builder.up()
+            .withDetail("circuitBreakerState", circuitBreaker.state.name)
+            .withDetail("failureRate", "${metrics.failureRate}%")
+            .withDetail("slidingWindow", mapOf(
                 "successful" to metrics.numberOfSuccessfulCalls,
                 "failed" to metrics.numberOfFailedCalls,
                 "rejected" to metrics.numberOfNotPermittedCalls
-            )
-        )
-
-        when (circuitBreaker.state) {
-            CircuitBreaker.State.CLOSED -> builder.up().withDetails(details)
-            CircuitBreaker.State.HALF_OPEN -> builder.up().withDetails(details)
-            CircuitBreaker.State.OPEN -> builder.down().withDetails(details)
-            else -> builder.unknown().withDetails(details)
-        }
+            ))
     }
 }

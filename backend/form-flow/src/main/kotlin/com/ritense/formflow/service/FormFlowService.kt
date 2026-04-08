@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchReposit
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
 import com.ritense.logging.withLoggingContext
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.domain.Page
@@ -44,6 +47,7 @@ class FormFlowService(
     private val formFlowAdditionalPropertiesSearchRepository: FormFlowAdditionalPropertiesSearchRepository,
     private val formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
 ) {
 
     fun getFormFlowDefinitions(): List<FormFlowDefinition> {
@@ -51,16 +55,32 @@ class FormFlowService(
     }
 
     fun getFormFlowDefinitions(caseDefinitionId: CaseDefinitionId): List<FormFlowDefinition> {
-        return formFlowDefinitionRepository.findAllByIdCaseDefinitionId(caseDefinitionId)
+        return formFlowDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.CASE, caseDefinitionId.key, caseDefinitionId.versionTag
+        )
     }
 
     fun getFormFlowDefinitions(caseDefinitionId: CaseDefinitionId, pageable: Pageable): Page<FormFlowDefinition> {
-        return formFlowDefinitionRepository.findAllByIdCaseDefinitionId(caseDefinitionId, pageable)
+        return formFlowDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.CASE, caseDefinitionId.key, caseDefinitionId.versionTag, pageable
+        )
+    }
+
+    fun getFormFlowDefinitions(buildingBlockDefinitionId: BuildingBlockDefinitionId): List<FormFlowDefinition> {
+        return formFlowDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK, buildingBlockDefinitionId.key, buildingBlockDefinitionId.versionTag
+        )
+    }
+
+    fun getFormFlowDefinitions(buildingBlockDefinitionId: BuildingBlockDefinitionId, pageable: Pageable): Page<FormFlowDefinition> {
+        return formFlowDefinitionRepository.findAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK, buildingBlockDefinitionId.key, buildingBlockDefinitionId.versionTag, pageable
+        )
     }
 
     fun findDefinition(formFlowId: FormFlowDefinitionId): FormFlowDefinition {
-        withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowId.toString()) {
-            return formFlowDefinitionRepository.getReferenceById(formFlowId)
+        return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowId.toString()) {
+            formFlowDefinitionRepository.getReferenceById(formFlowId)
         }
     }
 
@@ -70,13 +90,39 @@ class FormFlowService(
         }
     }
 
+    fun findDefinition(formFlowDefinitionKey: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): FormFlowDefinition {
+        return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowDefinitionKey) {
+            findDefinition(FormFlowDefinitionId.existingId(formFlowDefinitionKey, buildingBlockDefinitionId))
+        }
+    }
+
     fun findDefinitionOrNull(formFlowDefinitionKey: String, caseDefinitionId: CaseDefinitionId): FormFlowDefinition? {
         return formFlowDefinitionRepository.findByIdOrNull(FormFlowDefinitionId.existingId(formFlowDefinitionKey, caseDefinitionId))
     }
 
+    fun findDefinitionOrNull(formFlowDefinitionKey: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): FormFlowDefinition? {
+        return formFlowDefinitionRepository.findByIdOrNull(FormFlowDefinitionId.existingId(formFlowDefinitionKey, buildingBlockDefinitionId))
+    }
+
+    fun findDefinitionByKey(formFlowDefinitionKey: String): FormFlowDefinition? {
+        val definitions = formFlowDefinitionRepository.findAllByKey(formFlowDefinitionKey)
+        return when {
+            definitions.isEmpty() -> null
+            definitions.size == 1 -> definitions[0]
+            else -> throw IllegalStateException(
+                "Multiple form flow definitions found for key '$formFlowDefinitionKey' — specify the blueprint id"
+            )
+        }
+    }
+
     fun save(formFlowDefinition: FormFlowDefinition): FormFlowDefinition {
         return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowDefinition.id.toString()) {
-            caseDefinitionChecker.assertCanUpdateCaseDefinition(formFlowDefinition.id.caseDefinitionId)
+            val blueprintId = formFlowDefinition.id.blueprintId
+            if (blueprintId.isBuildingBlock()) {
+                buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(blueprintId.asBuildingBlockDefinitionId()!!)
+            } else {
+                caseDefinitionChecker.assertCanUpdateCaseDefinition(blueprintId.asCaseDefinitionId()!!)
+            }
             formFlowDefinitionRepository.save(formFlowDefinition)
         }
     }
@@ -119,9 +165,23 @@ class FormFlowService(
         formFlowDefinitionRepository.deleteById(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
     }
 
+    fun deleteByKeyAndBuildingBlockDefinition(definitionKey: String, buildingBlockDefinitionId: BuildingBlockDefinitionId) {
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+        formFlowDefinitionRepository.deleteById(FormFlowDefinitionId.existingId(definitionKey, buildingBlockDefinitionId))
+    }
+
     fun deleteAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        formFlowDefinitionRepository.deleteAllByIdCaseDefinitionId(caseDefinitionId)
+        formFlowDefinitionRepository.deleteAllByBlueprintId(
+            BlueprintType.CASE, caseDefinitionId.key, caseDefinitionId.versionTag
+        )
+    }
+
+    fun deleteAllByBuildingBlockDefinitionId(buildingBlockDefinitionId: BuildingBlockDefinitionId) {
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
+        formFlowDefinitionRepository.deleteAllByBlueprintId(
+            BlueprintType.BUILDING_BLOCK, buildingBlockDefinitionId.key, buildingBlockDefinitionId.versionTag
+        )
     }
 
     fun getBreadcrumbs(instance: FormFlowInstance): List<FormFlowBreadcrumb> {

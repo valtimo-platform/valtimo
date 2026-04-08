@@ -1,0 +1,45 @@
+[
+    {
+        "title": "Created on",
+        "key": "createTime",
+        "path": "task:createTime",
+        "displayType": {
+            "type": "date",
+            "displayTypeParameters": {
+                "dateFormat": ""
+            }
+        },
+        "sortable": true,
+        "defaultSort": "DESC"
+    },
+    {
+        "title": "Name",
+        "key": "name",
+        "path": "task:name",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true
+    },
+    {
+        "title": "Assignee",
+        "key": "assignee",
+        "path": "task:assignee",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true
+    },
+    {
+        "title": "Team",
+        "key": "team",
+        "path": "task:assignedTeamTitle",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true
+    }
+]

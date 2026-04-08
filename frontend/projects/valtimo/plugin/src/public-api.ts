@@ -48,6 +48,11 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+/* documenten api preview plugin */
+export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
+export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';
+export * from './lib/plugins/documenten-api-preview/models/config';
+export * from './lib/plugins/documenten-api-preview/components/documenten-api-preview-configuration/documenten-api-preview-configuration.component';
 /* klantinteracties api plugin */
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin-module';
 export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin.specification';
