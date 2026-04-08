@@ -21,13 +21,14 @@ jobs:
   finalize:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'release/') }}
+    env:
+      RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
 
     steps:
       - name: "Parse release/x.y.z branch into semver and stable branch name"
         id: version
         run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          SEMVER="${BRANCH#release/}"
+          SEMVER="${RELEASE_BRANCH#release/}"
           MAJOR=$(echo "$SEMVER" | cut -d. -f1)
           echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           echo "stable_branch=v${MAJOR}-stable" >> "$GITHUB_OUTPUT"
@@ -37,7 +38,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const branch = '${{ github.event.workflow_run.head_branch }}';
+            const branch = process.env.RELEASE_BRANCH;
 
             const backendRuns = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
@@ -65,7 +66,7 @@ jobs:
         if: steps.check.outputs.both_done == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ env.RELEASE_BRANCH }}
           fetch-depth: 0
 
       - name: "Rename release-notes"
@@ -114,12 +115,11 @@ jobs:
         if: steps.check.outputs.both_done == 'true'
         run: |
           STABLE="${{ steps.version.outputs.stable_branch }}"
-          RELEASE="${{ github.event.workflow_run.head_branch }}"
           git fetch origin "$STABLE"
           git checkout "$STABLE"
-          git merge "$RELEASE" --no-edit
+          git merge "$RELEASE_BRANCH" --no-edit
           git push origin "$STABLE"
-          echo "Merged $RELEASE into $STABLE"
+          echo "Merged $RELEASE_BRANCH into $STABLE"
 
       - name: "v13+: Merge stable into next-minor branch, then add release notes template"
         if: steps.check.outputs.both_done == 'true' && !startsWith(steps.version.outputs.semver, '12.')
@@ -153,9 +153,8 @@ jobs:
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           NEXT_MINOR=$((MINOR + 1))
           RC_BRANCH="rc/${MAJOR}.${NEXT_MINOR}.0"
-          RELEASE="${{ github.event.workflow_run.head_branch }}"
           NOTES_DIR="documentation/release-notes/${MAJOR}.x.x"
-          git checkout "$RELEASE"
+          git checkout "$RELEASE_BRANCH"
           git checkout -b "$RC_BRANCH"
           mkdir -p "${NOTES_DIR}/next-minor"
           printf '%s\n' \

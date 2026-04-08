@@ -1,5 +1,7 @@
 name: Trigger backend template releases
 
+permissions: {}
+
 on:
   workflow_call:
     inputs:
