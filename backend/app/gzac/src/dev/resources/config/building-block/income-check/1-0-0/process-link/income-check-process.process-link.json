@@ -1,5 +1,11 @@
 [
     {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-income-check"
+    },
+    {
         "activityId": "PatchZaakIncomeCheckTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",

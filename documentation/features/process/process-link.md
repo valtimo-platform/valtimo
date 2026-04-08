@@ -94,6 +94,29 @@ This is an example of an auto-deployment file for two user task for a process:
          "objectUrl": "pv:myObjectUrl",
          "someOtherProperty": "${VALTIMO_MY_PROPERTY}"
       }
+   },
+   {
+      "activityId": "CallSubsidyCalculatorActivity",
+      "activityType": "bpmn:CallActivity:start",
+      "processLinkType": "building-block",
+      "buildingBlockDefinitionKey": "subsidy-calculator",
+      "buildingBlockDefinitionVersionTag": "1.0.0",
+      "pluginConfigurationMappings": {
+         "zakenapi": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+      },
+      "inputMappings": [
+         {
+            "source": "doc:applicantName",
+            "target": "applicantName"
+         }
+      ],
+      "outputMappings": [
+         {
+            "source": "calculatedSubsidy",
+            "target": "doc:calculatedSubsidy",
+            "syncTiming": "END"
+         }
+      ]
    }
 ]
 ```

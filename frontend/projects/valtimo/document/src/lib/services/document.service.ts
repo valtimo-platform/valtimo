@@ -57,6 +57,7 @@ import {
   ProcessDocumentDefinitionSearch,
   ProcessDocumentInstance,
   SpecifiedDocuments,
+  StartableItem,
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
@@ -281,24 +282,6 @@ export class DocumentService {
     return this.http.delete<void>(`${this.valtimoEndpointUri}v1/document/${documentId}`);
   }
 
-  // ProcessDefinitionCaseDefinition-calls
-  public findProcessDefinitionCaseDefinitions(
-    caseDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link`
-    );
-  }
-
-  public findProcessDefinitionCaseDefinitionsByStartableByUser(
-    caseDefinitionKey: string,
-    startableByUser: boolean
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?startableByUser=${startableByUser}`
-    );
-  }
-
   public findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
     caseDefinitionKey: string,
     canInitializeDocument: boolean
@@ -308,17 +291,19 @@ export class DocumentService {
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsForDocument(
-    documentId: string,
-    searchRequest: ProcessDocumentDefinitionSearch
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    const params = new HttpParams({
-      fromObject: searchRequest as any,
+  public getStartableItems(params: {
+    caseDocumentId?: string;
+    caseDefinitionKey?: string;
+    caseDefinitionVersionTag?: string;
+  }): Observable<StartableItem[]> {
+    const httpParams = new HttpParams({
+      fromObject: Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v != null)
+      ) as Record<string, string>,
     });
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/document-instance/${documentId}/case-process-link`,
-      {params}
-    );
+    return this.http.get<StartableItem[]>(`${this.valtimoEndpointUri}v1/case/startable-item`, {
+      params: httpParams,
+    });
   }
 
   // Case definition calls

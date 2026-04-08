@@ -1,5 +1,11 @@
 [
     {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-subsidy-calculator"
+    },
+    {
         "activityId": "ReviewCalculationTask",
         "activityType": "bpmn:UserTask:create",
         "processLinkType": "form-flow",

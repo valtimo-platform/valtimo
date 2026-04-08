@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core'
 import {AbstractControl, FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {DocumentService, StartableItem} from '@valtimo/document';
 import {CaseManagementParams} from '@valtimo/shared';
 import {ComboBoxModule, InputModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
@@ -57,21 +57,20 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
   public readonly processDefinitionItems$: Observable<ListItem[]> =
     this.widgetManagementService.params$.pipe(
       switchMap((params: CaseManagementParams | null) =>
-        this.documentService.findProcessDefinitionCaseDefinitionsByStartableByUser(
-          params?.caseDefinitionKey ?? '',
-          true
-        )
+        this.documentService.getStartableItems({
+          caseDefinitionKey: params?.caseDefinitionKey ?? '',
+        })
       ),
-      map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
+      map((items: StartableItem[]) => {
         const selectedProcessKey: string | undefined = this.widgetWizardService.$editMode()
           ? this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey
           : undefined;
 
-        return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
+        return items.map((item: StartableItem) => {
           const mappedItem: ListItem = {
-            content: definition.processDefinitionName,
-            key: definition.processDefinitionKey,
-            selected: selectedProcessKey === definition.processDefinitionKey,
+            content: item.name || item.key,
+            key: item.key,
+            selected: selectedProcessKey === item.key,
           };
 
           if (mappedItem.selected)

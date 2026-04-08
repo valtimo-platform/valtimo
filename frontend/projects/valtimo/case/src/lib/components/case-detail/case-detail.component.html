@@ -232,8 +232,8 @@
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
     cdsButton="primary"
-    [disabled]="processDefinitionCaseDefinitions.length === 0"
-    [ngbTooltip]="processDefinitionCaseDefinitions.length === 0 ? 'No action' : null"
+    [disabled]="startableItems.length === 0"
+    [ngbTooltip]="startableItems.length === 0 ? 'No action' : null"
   >
     {{ 'case.startSubProcess' | translate }}
 
@@ -334,11 +334,11 @@
             <ng-container *ngTemplateOutlet="customStartTrigger"></ng-container>
           </ng-container>
           <v-overflow-menu-option
-            *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
-            [attr.title]="processDefinitionCaseDefinition.displayName"
-            (selected)="startProcess(processDefinitionCaseDefinition)"
+            *ngFor="let startableItem of startableItems"
+            [attr.title]="startableItem.displayName"
+            (selected)="startItem(startableItem)"
           >
-            {{ processDefinitionCaseDefinition.displayName }}
+            {{ startableItem.displayName }}
           </v-overflow-menu-option>
         </v-overflow-menu>
       </div>
