@@ -120,7 +120,7 @@ test.describe('Case details management — Tabs', () => {
     });
 
     test('Reorder tabs via drag and drop', async () => {
-      // Arrange — get initial positions (order may vary by environment)
+      // Get initial positions
       const initialOrder = await tabsPage.getTabTitlesInOrder();
       const indexA = initialOrder.indexOf(tabReorderTestData.titleA);
       const indexB = initialOrder.indexOf(tabReorderTestData.titleB);

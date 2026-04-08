@@ -43,7 +43,7 @@ test.describe('Case details management — Tasks', () => {
     await tasksPage.goToCaseManagement(CASE_IDENTIFIER);
     await tasksPage.ensureDraftVersionSelected();
 
-    // Clean up leftover data from previous failed runs
+    // Clean up leftover data
     await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnTestData.key);
     await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyA);
     await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyB);
@@ -113,7 +113,7 @@ test.describe('Case details management — Tasks', () => {
     });
 
     test('Reorder columns via drag and drop', async () => {
-      // Arrange — get initial positions (order may vary by environment)
+      // Get initial positions
       const indexA = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyA);
       const indexB = await tasksPage.getColumnIndexInList(taskColumnReorderTestData.keyB);
       expect(indexA).not.toBe(-1);

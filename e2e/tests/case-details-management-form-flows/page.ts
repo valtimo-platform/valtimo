@@ -17,7 +17,9 @@
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
-import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {ensureDraftVersionSelected, getVersionFromUrl} from '../../utils/version.utils';
+import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
+import {waitForResponse} from '../../components/request';
 
 export class CaseDetailsManagementFormFlowsPage {
   constructor(
@@ -98,6 +100,47 @@ export class CaseDetailsManagementFormFlowsPage {
   async openFormFlow(key: string) {
     const list = new CarbonList(this.page);
     await list.row(key).click();
+  }
+
+  // ─── Editor Elements ───────────────────────────────────────────────
+
+  get saveButton() {
+    return this.page.getByRole('button', {name: 'Save'});
+  }
+
+  get monacoEditor() {
+    return this.page.locator('.monaco-editor').first();
+  }
+
+  // ─── Save Actions ─────────────────────────────────────────────────
+
+  async editFormFlowJson(json: object) {
+    await clearMonacoEditor(this.page);
+    await pasteToMonacoEditor(this.page, JSON.stringify(json, null, 2));
+  }
+
+  async pasteRawTextInEditor(text: string) {
+    await clearMonacoEditor(this.page);
+    await pasteToMonacoEditor(this.page, text);
+  }
+
+  async saveFormFlow(formFlowKey: string, caseKey: string) {
+    const versionTag = await getVersionFromUrl(this.page);
+    const [response] = await Promise.all([
+      waitForResponse(
+        this.page,
+        'PUT',
+        `/api/management/v1/case-definition/${caseKey}/version/${versionTag}/form-flow-definition/${formFlowKey}`
+      ),
+      this.saveButton.click(),
+    ]);
+    return response;
+  }
+
+  async assertSaveSuccessNotification(key: string) {
+    await expect(
+      this.page.getByText(`${key} was saved successfully`).first()
+    ).toBeVisible({timeout: 15_000});
   }
 
   // ─── Assertions ───────────────────────────────────────────────────

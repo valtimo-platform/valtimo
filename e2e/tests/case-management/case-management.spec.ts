@@ -26,7 +26,7 @@ test.describe('Case management', () => {
   let caseManagementPage;
   let request;
 
-  // Track keys created during this run so we can clean them up
+  // Track keys created
   const createdKeys: string[] = [];
 
   // Arrange
@@ -38,7 +38,7 @@ test.describe('Case management', () => {
 
     caseManagementPage = new CaseManagementPage(page, request);
 
-    // Best-effort API cleanup of draft versions from previous runs.
+    // Cleanup of draft versions
     for (const key of ['test-case', 'test-case-import', 'custom-import-key']) {
       try {
         const versions = await ApiUtils.apiGet<Array<{versionTag: string; finalized: boolean}>>(
@@ -63,7 +63,7 @@ test.describe('Case management', () => {
   });
 
   test.afterAll(async () => {
-    // Best-effort cleanup of keys created during this run
+    //Cleanup of keys
     for (const key of createdKeys) {
       try {
         const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
@@ -87,7 +87,7 @@ test.describe('Case management', () => {
 
   test.describe('Success test', () => {
     test('Add a case', async () => {
-      // Use a unique name to avoid collisions with leftover data from previous runs
+      // Use a unique name
       const uniqueSuffix = Date.now().toString(36);
       const caseName = `Test Case ${uniqueSuffix}`;
 
@@ -189,7 +189,8 @@ test.describe('Case management', () => {
         await caseManagementPage.assertExistingDraftWarning();
 
         // Act: check the override checkbox and verify next becomes enabled
-        await caseManagementPage.overrideCheckbox.click();
+        // Must click the inner label, not the cds-checkbox host, for checkedChange to fire
+        await caseManagementPage.overrideCheckbox.locator('label').click();
         await expect(caseManagementPage.uploadWizardNextButton).toBeEnabled();
       }
 
@@ -212,13 +213,17 @@ test.describe('Case management', () => {
         // Token may have expired or version may already be finalized
       }
 
-      // Act: try to import the same archive again
+      // Act: try to import the same archive again, explicitly setting the key to the one
+      // that was finalized (the first import may have used a different key due to collision handling)
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
       await caseManagementPage.pluginConfigurationStep();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
 
-      // Assert: final version warning blocks import (either from this run or a previous one)
+      // Change the key to the finalized one so the "Cannot import" warning appears
+      await caseManagementPage.changeConfigureKey(importedKey);
+
+      // Assert: final version warning blocks import (wait for validation API to complete)
       await caseManagementPage.assertExistingFinalWarning();
 
       // Close wizard

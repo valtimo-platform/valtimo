@@ -90,7 +90,11 @@ test.describe('Case management', () => {
         //Arrange
         draftVersion = await ensureDraftVersionSelected(page);
         await page.reload();
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
+        // Wait for Angular to render the handler section with data from the API
+        await caseDetailsManagementPage.caseHandlerCanHaveHandler
+          .getByRole('switch')
+          .waitFor({state: 'attached', timeout: 15_000});
       });
 
       test.describe('Case handler', () => {

@@ -86,7 +86,71 @@ test.describe('Case details management — Form Flows', () => {
     });
   });
 
-  // ─── 6.61 Delete form flow (cleanup) ───────────────────────────────
+  // ─── 6.61 Save form flow ───────────────────────────────────────────
+
+  test.describe('Save form flow', () => {
+    test.describe('Success', () => {
+      test('Save button is initially enabled with valid JSON', async () => {
+        // We're on the editor from 6.60
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+      });
+
+      test('Save form flow with modified JSON', async () => {
+        const validFormFlowJson = {
+          startStep: 'step1',
+          steps: [
+            {
+              key: 'step1',
+              type: {
+                name: 'form',
+                properties: {definition: 'test-form'},
+              },
+              nextSteps: [],
+              onBack: [],
+              onOpen: [],
+              onComplete: [],
+            },
+          ],
+        };
+
+        // Act — edit the JSON and save
+        await formFlowsPage.editFormFlowJson(validFormFlowJson);
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+        await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+        // Assert — success notification appears
+        await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+      });
+    });
+
+    test.describe('Failure scenarios', () => {
+      test('Save button is disabled when JSON is invalid', async () => {
+        // Act — paste syntactically invalid JSON
+        await formFlowsPage.pasteRawTextInEditor('{ this is not valid json }');
+
+        // Assert — save button should be disabled due to JSON parse error
+        await expect(formFlowsPage.saveButton).toBeDisabled({timeout: 10_000});
+
+        // Restore valid JSON so subsequent tests (delete) can proceed
+        await formFlowsPage.editFormFlowJson({
+          startStep: 'step1',
+          steps: [
+            {
+              key: 'step1',
+              type: {name: 'form', properties: {definition: 'test-form'}},
+              nextSteps: [],
+              onBack: [],
+              onOpen: [],
+              onComplete: [],
+            },
+          ],
+        });
+        await expect(formFlowsPage.saveButton).toBeEnabled({timeout: 10_000});
+      });
+    });
+  });
+
+  // ─── Delete form flow (cleanup) ───────────────────────────────────
 
   test.describe('Delete form flow', () => {
     test('Navigate back to form flows list', async () => {

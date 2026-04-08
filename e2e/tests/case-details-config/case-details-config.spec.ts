@@ -23,6 +23,7 @@ import {
   statusVisibilityTestData,
   statusReorderTestData,
   tagTestData,
+  tagColorTestData,
 } from './case-details-config';
 import {CaseDetailsConfigPage} from './page';
 
@@ -47,7 +48,7 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.goToCaseDetailsConfig(CASE_IDENTIFIER);
     draftVersion = await caseDetailsConfigPage.ensureDraftVersionSelected();
 
-    // Clean up leftover data from previous failed runs
+    // Clean up leftover data
     const statusKey = statusTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
     const originalStatusKey = statusTestData.title.toLowerCase().replace(/\s+/g, '-');
     const colorStatusKey = statusColorTestData.title.toLowerCase().replace(/\s+/g, '-');
@@ -65,6 +66,8 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
+    const colorTagKey = tagColorTestData.title.toLowerCase().replace(/\s+/g, '-');
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, colorTagKey);
   });
 
   test.afterAll(async () => {
@@ -77,6 +80,7 @@ test.describe('Case details configuration', () => {
     const reorderKeyB = statusReorderTestData.titleB.toLowerCase().replace(/\s+/g, '-');
     const tagKey = tagTestData.updatedTitle.toLowerCase().replace(/\s+/g, '-');
     const originalTagKey = tagTestData.title.toLowerCase().replace(/\s+/g, '-');
+    const colorTagKey = tagColorTestData.title.toLowerCase().replace(/\s+/g, '-');
 
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, statusKey);
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, originalStatusKey);
@@ -86,6 +90,7 @@ test.describe('Case details configuration', () => {
     await caseDetailsConfigPage.deleteStatusViaApi(CASE_IDENTIFIER, reorderKeyB);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, tagKey);
     await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, originalTagKey);
+    await caseDetailsConfigPage.deleteTagViaApi(CASE_IDENTIFIER, draftVersion, colorTagKey);
 
     await context.close();
   });
@@ -269,6 +274,37 @@ test.describe('Case details configuration', () => {
 
         // Assert
         await caseDetailsConfigPage.assertTagNotExists(tagTestData.updatedTitle);
+      });
+    });
+
+    test.describe('Set tag color', () => {
+      test('Add a tag and set its color', async () => {
+        // Arrange
+        await caseDetailsConfigPage.addTag(tagColorTestData.title);
+        await caseDetailsConfigPage.assertTagExists(tagColorTestData.title);
+
+        // Act — edit the tag and change color to Red
+        await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
+        await caseDetailsConfigPage.selectTagColor('Red');
+        await caseDetailsConfigPage.saveTag();
+
+        // Assert — verify color tag in the list shows 'Red'
+        await caseDetailsConfigPage.assertTagColorInList(tagColorTestData.title, 'Red');
+      });
+
+      test('Change tag color to a different value', async () => {
+        // Act — edit again and change to Green
+        await caseDetailsConfigPage.openTagEditModal(tagColorTestData.title);
+        await caseDetailsConfigPage.selectTagColor('Green');
+        await caseDetailsConfigPage.saveTag();
+
+        // Assert
+        await caseDetailsConfigPage.assertTagColorInList(tagColorTestData.title, 'Green');
+      });
+
+      test('Clean up color test tag', async () => {
+        await caseDetailsConfigPage.deleteTag(tagColorTestData.title);
+        await caseDetailsConfigPage.assertTagNotExists(tagColorTestData.title);
       });
     });
   });

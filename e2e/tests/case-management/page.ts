@@ -218,9 +218,6 @@ export class CaseManagementPage {
   }
 
   async configureStep(): Promise<ConfigureStepResult> {
-    // Set up validation response waiter immediately — the frontend triggers a
-    // debounced (400ms) key validation call when the configure step initializes.
-    // Must be registered before the response arrives.
     const initialValidation = this.waitForKeyValidationResponse();
 
     await expect(this.configureNameInput).toBeVisible();
@@ -265,8 +262,6 @@ export class CaseManagementPage {
     await this.configureNameInput.fill(name);
 
     // Enable key editing and fill custom key.
-    // The frontend debounces key changes (400ms) before calling the validation API,
-    // so we must wait for the actual response before checking for warnings.
     const keyValidationPromise = this.waitForKeyValidationResponse();
     await this.changeConfigureKey(key);
     await keyValidationPromise;
@@ -362,7 +357,8 @@ export class CaseManagementPage {
   }
 
   async assertExistingFinalWarning() {
-    await expect(this.page.getByText('Cannot import')).toBeVisible();
+    // Allow extra time for the debounced (400ms) key validation API to respond
+    await expect(this.page.getByText('Cannot import')).toBeVisible({timeout: 10_000});
     await expect(
       this.page.getByText('A finalized version with this key and version already exists.')
     ).toBeVisible();

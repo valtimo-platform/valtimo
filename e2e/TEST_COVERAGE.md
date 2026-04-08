@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 2          | 19             |
-| Admin Features (ROLE_ADMIN) | 15       | 328       | 56         | 272            |
-| **Total**                   | **20**   | **349**   | **58**     | **291**        |
+| Admin Features (ROLE_ADMIN) | 15       | 328       | 58         | 270            |
+| **Total**                   | **20**   | **349**   | **60**     | **289**        |
 
-**Coverage:** `58 / 349` — `16.6%`
+**Coverage:** `60 / 349` — `17.2%`
 
 ---
 
@@ -188,7 +188,7 @@
 | 6.58 | View form flows list | Display list of form flows     |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.59 | Create form flow     | Create new form flow           |    ✅    | case-details-management-form-flows.spec.ts      |
 | 6.60 | Edit form flow JSON  | Edit form flow JSON definition |    ✅    | case-details-management-form-flows.spec.ts      |
-| 6.61 | Save form flow       | Save form flow                 |    ❌    |                                                 |
+| 6.61 | Save form flow       | Save form flow, invalid JSON   |    ✅    | case-details-management-form-flows.spec.ts      |
 
 #### 6I · Tasks
 
@@ -236,7 +236,7 @@
 |:-----|:--------------|:------------------------|:--------:|:------------------------------------------------|
 | 6.82 | View tags     | View tags configuration |    ✅    | case-details-config.spec.ts                     |
 | 6.83 | Add tag       | Add new tag             |    ✅    | case-details-config.spec.ts                     |
-| 6.84 | Set tag color | Set tag color           |    ❌    |                                                 |
+| 6.84 | Set tag color | Set tag color, change color |    ✅    | case-details-config.spec.ts                     |
 
 #### 6N · Case Details — Header
 
@@ -727,8 +727,8 @@
 |:-------------------------|:-------:|
 | Total Features           |   20    |
 | Total Functions          |   349   |
-| ✅ Covered by Playwright |   58    |
-| ❌ Not covered           |   291   |
+| ✅ Covered by Playwright |   60    |
+| ❌ Not covered           |   289   |
 | ⏳ In progress           |    0    |
 | `N/A` Not applicable     |    0    |
-| **Coverage %**           | **16.6%** |
+| **Coverage %**           | **17.2%** |

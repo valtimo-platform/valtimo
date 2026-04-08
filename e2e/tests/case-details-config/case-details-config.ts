@@ -40,3 +40,7 @@ export const tagTestData = {
   title: `E2e Test Tag ${tagSuffix}`,
   updatedTitle: `E2e Updated Tag ${tagSuffix}`,
 };
+
+export const tagColorTestData = {
+  title: `E2e Color Tag ${tagSuffix}`,
+};

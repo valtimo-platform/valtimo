@@ -133,14 +133,12 @@ export class CaseDetailsConfigPage {
 
   async addStatus(title: string) {
     await this.statusAddButton.click();
+    // Wait for the modal to be fully in 'add' mode. The Add button only renders when
+    // Angular's isAdd$ emits true, which also enables auto-key generation.
+    await expect(this.statusAddConfirmButton).toBeAttached({timeout: 10_000});
     await expect(this.statusTitleInput).toBeVisible();
-    // Use pressSequentially to reliably trigger Angular's valueChanges for auto-key generation.
-    // fill() dispatches a single input event which may fire before the combineLatest subscription
-    // is ready in slow CI environments.
     await this.statusTitleInput.pressSequentially(title, {delay: 30});
-    // Wait for auto-generated key to be populated before expecting the confirm button
     await expect(this.statusKeyInput).not.toHaveValue('', {timeout: 10_000});
-    await expect(this.statusAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.statusAddConfirmButton).toBeEnabled();
     await this.statusAddConfirmButton.click();
   }
@@ -222,12 +220,12 @@ export class CaseDetailsConfigPage {
 
   async addTag(title: string) {
     await this.tagAddButton.click();
+    // Wait for the modal to be fully in 'add' mode. The Add button only renders when
+    // Angular's isAdd$ emits true, which also enables auto-key generation.
+    await expect(this.tagAddConfirmButton).toBeAttached({timeout: 10_000});
     await expect(this.tagTitleInput).toBeVisible();
-    // Use pressSequentially to reliably trigger Angular's valueChanges for auto-key generation
     await this.tagTitleInput.pressSequentially(title, {delay: 30});
-    // Wait for auto-generated key to be populated before expecting the confirm button
     await expect(this.tagKeyInput).not.toHaveValue('', {timeout: 10_000});
-    await expect(this.tagAddConfirmButton).toBeVisible({timeout: 10_000});
     await expect(this.tagAddConfirmButton).toBeEnabled();
     await this.tagAddConfirmButton.click();
   }
@@ -252,6 +250,26 @@ export class CaseDetailsConfigPage {
 
   async assertTagNotExists(title: string) {
     await expect(this.page.locator(`td:has-text("${title}")`)).toHaveCount(0);
+  }
+
+  async openTagEditModal(title: string) {
+    await this.page.locator(`tr:has(td:has-text("${title}"))`).click();
+  }
+
+  async selectTagColor(colorName: string) {
+    await this.tagColorDropdown.click();
+    await this.page.getByRole('listbox').getByText(colorName, {exact: true}).click();
+  }
+
+  async saveTag() {
+    await expect(this.tagSaveButton).toBeEnabled();
+    await this.tagSaveButton.click();
+  }
+
+  async assertTagColorInList(title: string, expectedColorLabel: string) {
+    const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
+    const colorTag = row.locator('cds-tag');
+    await expect(colorTag).toContainText(expectedColorLabel);
   }
 
   // ─── API Cleanup ──────────────────────────────────────────────────

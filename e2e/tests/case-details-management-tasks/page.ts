@@ -152,7 +152,6 @@ export class CaseDetailsManagementTasksPage {
     await this.columnKeyInput.fill(column.key);
     await this.columnPathInput.fill(column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
-
     await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
   }

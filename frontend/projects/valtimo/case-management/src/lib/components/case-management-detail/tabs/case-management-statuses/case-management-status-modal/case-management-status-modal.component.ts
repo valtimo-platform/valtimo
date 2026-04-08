@@ -64,9 +64,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
-    // Cancel any pending 'closed' animation delay to prevent it from
-    // overwriting a newer type (e.g. opening the modal right after the
-    // component is created would race with the initial 'closed' delay).
+    // Cancel any pending closed animation delay
     if (this._closedAnimationTimeout) {
       clearTimeout(this._closedAnimationTimeout);
       this._closedAnimationTimeout = undefined;
